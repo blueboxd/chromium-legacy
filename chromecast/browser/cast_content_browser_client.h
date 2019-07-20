@@ -42,7 +42,6 @@ class MetricsService;
 
 namespace net {
 class SSLPrivateKey;
-class URLRequestContextGetter;
 class X509Certificate;
 }
 
@@ -81,12 +80,9 @@ class CastContentBrowserClient
   ~CastContentBrowserClient() override;
 
   // Creates and returns the CastService instance for the current process.
-  // Note: |request_context_getter| might be different than the main request
-  // getter accessible via CastBrowserProcess.
   virtual std::unique_ptr<CastService> CreateCastService(
       content::BrowserContext* browser_context,
       PrefService* pref_service,
-      net::URLRequestContextGetter* request_context_getter,
       media::VideoPlaneController* video_plane_controller,
       CastWindowManager* window_manager);
 

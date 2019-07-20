@@ -24,11 +24,10 @@ using ::testing::_;
 
 class MockContentIndexProvider : public ContentIndexProvider {
  public:
-  MOCK_METHOD2(OnContentAdded,
-               void(ContentIndexEntry entry,
-                    base::WeakPtr<ContentIndexProvider::Client>));
-  MOCK_METHOD2(OnContentDeleted,
+  MOCK_METHOD1(OnContentAdded, void(ContentIndexEntry entry));
+  MOCK_METHOD3(OnContentDeleted,
                void(int64_t service_Worker_registration_id,
+                    const url::Origin& origin,
                     const std::string& description_id));
 };
 
@@ -141,7 +140,7 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     base::RunLoop run_loop;
     blink::mojom::ContentIndexError error;
     database_->DeleteEntry(
-        service_worker_registration_id_, id,
+        service_worker_registration_id_, origin_, id,
         base::BindOnce(&DatabaseErrorCallback, run_loop.QuitClosure(), &error));
     run_loop.Run();
 
@@ -183,6 +182,8 @@ class ContentIndexDatabaseTest : public ::testing::Test {
   ContentIndexDatabase* database() { return database_.get(); }
 
   TestBrowserThreadBundle& thread_bundle() { return thread_bundle_; }
+
+  const url::Origin& origin() { return origin_; }
 
   GURL launch_url() { return origin_.GetURL(); }
 
@@ -297,11 +298,9 @@ TEST_F(ContentIndexDatabaseTest, DeleteNonExistentEntry) {
 TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
   {
     std::unique_ptr<ContentIndexEntry> out_entry;
-    ContentIndexProvider::Client* client_ptr;
-    EXPECT_CALL(*provider(), OnContentAdded(_, _))
-        .WillOnce(testing::Invoke([&](auto entry, auto client) {
+    EXPECT_CALL(*provider(), OnContentAdded(_))
+        .WillOnce(testing::Invoke([&](auto entry) {
           out_entry = std::make_unique<ContentIndexEntry>(std::move(entry));
-          client_ptr = client.get();
         }));
     EXPECT_EQ(AddEntry(CreateDescription("id")),
               blink::mojom::ContentIndexError::NONE);
@@ -316,12 +315,11 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
     EXPECT_EQ(out_entry->description->id, "id");
     EXPECT_EQ(out_entry->launch_url, launch_url());
     EXPECT_FALSE(out_entry->registration_time.is_null());
-    EXPECT_EQ(client_ptr, database());
   }
 
   {
-    EXPECT_CALL(*provider(),
-                OnContentDeleted(service_worker_registration_id(), "id"));
+    EXPECT_CALL(*provider(), OnContentDeleted(service_worker_registration_id(),
+                                              origin(), "id"));
     EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
     thread_bundle().RunUntilIdle();
   }
@@ -330,14 +328,14 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
 TEST_F(ContentIndexDatabaseTest, ProviderInitializatied) {
   // If nothing is registered the provider shouldn't be notified.
   {
-    EXPECT_CALL(*provider(), OnContentAdded(_, _)).Times(0);
+    EXPECT_CALL(*provider(), OnContentAdded(_)).Times(0);
     database()->InitializeProviderWithEntries();
     thread_bundle().RunUntilIdle();
   }
 
   // Add two entries.
   {
-    EXPECT_CALL(*provider(), OnContentAdded(_, _)).Times(2);
+    EXPECT_CALL(*provider(), OnContentAdded(_)).Times(2);
     EXPECT_EQ(AddEntry(CreateDescription("id1")),
               blink::mojom::ContentIndexError::NONE);
     EXPECT_EQ(AddEntry(CreateDescription("id2")),
@@ -347,7 +345,7 @@ TEST_F(ContentIndexDatabaseTest, ProviderInitializatied) {
 
   // Simulate initialization.
   {
-    EXPECT_CALL(*provider(), OnContentAdded(_, _)).Times(2);
+    EXPECT_CALL(*provider(), OnContentAdded(_)).Times(2);
     database()->InitializeProviderWithEntries();
     thread_bundle().RunUntilIdle();
   }

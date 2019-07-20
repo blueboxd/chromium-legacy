@@ -1679,6 +1679,7 @@ void WebFormControlElementToFormField(
   field->id_attribute = element.GetAttribute(*kId).Utf16();
   field->name_attribute = element.GetAttribute(*kName).Utf16();
   field->unique_renderer_id = element.UniqueRendererFormControlId();
+  field->form_control_ax_id = element.GetAxId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = element.GetAttribute(*kAutocomplete).Utf8();
   if (field->autocomplete_attribute.size() > kMaxDataLength) {

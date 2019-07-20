@@ -42,8 +42,8 @@ struct VizDevToolsParams {
 interface VizMain {
   CreateFrameSinkManager(FrameSinkManagerParams params);
 
-  CreateGpuService(GpuService& gpu_service,
-                   GpuHost gpu_host,
+  CreateGpuService(pending_receiver<GpuService> gpu_service,
+                   pending_remote<GpuHost> gpu_host,
                    discardable_memory.mojom.DiscardableSharedMemoryManager discardable_memory_manager,
                    handle<shared_buffer>? activity_flags,
                    gfx.mojom.SubpixelRendering subpixel_rendering);

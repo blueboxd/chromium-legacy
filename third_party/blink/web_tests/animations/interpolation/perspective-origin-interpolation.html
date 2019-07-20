@@ -97,5 +97,14 @@ assertInterpolation({
   {at: 1, is: '100% 150%'},
   {at: 1.5, is: '150% 200%'}
 ]);
+
+// Regression test for https://crbug.com/984700
+assertInterpolation({
+  property: 'perspective-origin',
+  from: '20% 25%',
+  to: '40% 50%',
+}, [
+  {at: 3.40282e+38, is: '3.35544e+07px 3.35544e+07px'}
+]);
 </script>
 </body>

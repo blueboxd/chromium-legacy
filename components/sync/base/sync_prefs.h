@@ -15,13 +15,16 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/user_demographics.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 class PrefService;
 
@@ -180,6 +183,12 @@ class SyncPrefs : public CryptoSyncPrefs,
 
   // Gets the local sync backend enabled state.
   bool IsLocalSyncEnabled() const;
+
+  // Gets user demographics. Returns an empty optional if not all demographics
+  // are available. Birth year and gender are mutually inclusive to avoid being
+  // able to infer demographic information that has low entropy (e.g., custom
+  // gender).
+  base::Optional<UserDemographics> GetUserDemographics();
 
  private:
   static void RegisterTypeSelectedPref(user_prefs::PrefRegistrySyncable* prefs,

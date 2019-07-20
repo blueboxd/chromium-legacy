@@ -51,6 +51,8 @@ class InputMethodManagerHost;
 class InputMethodManagerInstance;
 class IntentHelperHost;
 class IntentHelperInstance;
+class KeymasterHost;
+class KeymasterInstance;
 class KioskHost;
 class KioskInstance;
 class LockScreenInstance;
@@ -177,6 +179,10 @@ class ArcBridgeService {
   intent_helper() {
     return &intent_helper_;
   }
+  ConnectionHolder<mojom::KeymasterInstance, mojom::KeymasterHost>*
+  keymaster() {
+    return &keymaster_;
+  }
   ConnectionHolder<mojom::KioskInstance, mojom::KioskHost>* kiosk() {
     return &kiosk_;
   }
@@ -281,6 +287,7 @@ class ArcBridgeService {
       input_method_manager_;
   ConnectionHolder<mojom::IntentHelperInstance, mojom::IntentHelperHost>
       intent_helper_;
+  ConnectionHolder<mojom::KeymasterInstance, mojom::KeymasterHost> keymaster_;
   ConnectionHolder<mojom::KioskInstance, mojom::KioskHost> kiosk_;
   ConnectionHolder<mojom::LockScreenInstance> lock_screen_;
   ConnectionHolder<mojom::MediaSessionInstance> media_session_;

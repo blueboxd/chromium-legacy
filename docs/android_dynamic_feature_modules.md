@@ -28,9 +28,7 @@ Currently (March 2019), DFMs have the following limitations:
 ## Getting started
 
 This guide walks you through the steps to create a DFM called _Foo_ and add it
-to the public Monochrome bundle. If you want to ship a DFM, you will also have
-to add it to the public Chrome Modern and Trichrome Chrome bundle as well as the
-downstream bundles.
+to the Chrome bundles.
 
 *** note
 **Note:** To make your own module you'll essentially have to replace every
@@ -71,7 +69,7 @@ and add:
 
 Then, add a package ID for Foo so that Foo's resources have unique identifiers.
 For this, add a new ID to
-`//chrome/android/features/dynamic_feature_modules.gni`:
+`//chrome/android/modules/chrome_feature_modules.gni`:
 
 ```gn
 resource_packages_id_mapping = [
@@ -80,72 +78,24 @@ resource_packages_id_mapping = [
 ]
 ```
 
-Next, create a template that contains the Foo module target.
-
-*** note
-**Note:** We put the module target into a template because we have to
-instantiate it for each Chrome bundle (Chrome Modern, Monochrome and Trichrome
-for both upstream and downstream) you want to ship your module in.
-***
-
-To do this, create `//chrome/android/features/foo/foo_module_tmpl.gni` and add
-the following:
+Next, create a descriptor configuring the Foo module. To do this, create
+`//chrome/android/features/foo/foo_module.gni` and add the following:
 
 ```gn
-import("//build/config/android/rules.gni")
-import("//build/config/locales.gni")
-import("//chrome/android/features/dynamic_feature_modules.gni")
-
-template("foo_module_tmpl") {
-  android_app_bundle_module(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "base_module_target",
-                             "module_name",
-                             "uncompress_shared_libraries",
-                             "version_code",
-                             "version_name",
-                           ])
-    android_manifest = "//chrome/android/features/foo/java/AndroidManifest.xml"
-    min_sdk_version = 21
-    target_sdk_version = android_sdk_version
-    proguard_enabled = !is_java_debug
-    aapt_locale_whitelist = locales
-    package_name = "foo"
-    package_name_to_id_mapping = resource_packages_id_mapping
-  }
+foo_module_desc = {
+  name = "foo"
+  manifest = "//chrome/android/features/foo/java/AndroidManifest.xml"
 }
 ```
 
-Then, instantiate the module template in `//chrome/android/BUILD.gn` inside the
-`monochrome_or_trichrome_public_bundle_tmpl` template and add it to the bundle
-target:
+Then, add the module descriptor to the appropriate descriptor list in
+//chrome/android/modules/chrome_feature_modules.gni, e.g. the Chrome Modern
+list:
 
 ```gn
+import("//chrome/android/features/foo/foo_module.gni")
 ...
-import("modules/foo/foo_module_tmpl.gni")
-...
-template("monochrome_or_trichrome_public_bundle_tmpl") {
-  ...
-  foo_module_tmpl("${target_name}__foo_bundle_module") {
-    manifest_package = manifest_package
-    module_name = "Foo" + _bundle_name
-    base_module_target = ":$_base_module_target_name"
-    uncompress_shared_libraries = true
-    version_code = _version_code
-    version_name = _version_name
-  }
-  ...
-  android_app_bundle(target_name) {
-    ...
-    extra_modules += [
-      {
-        name = "foo"
-        module_target = ":${target_name}__foo_bundle_module"
-      },
-    ]
-  }
-}
+chrome_modern_module_descs += [ foo_module_desc ]
 ```
 
 The next step is to add Foo to the list of feature modules for UMA recording.
@@ -338,14 +288,14 @@ android_library("java") {
 }
 ```
 
-Then, add this new library as a dependency of the Foo module target in
-`//chrome/android/features/foo/foo_module_tmpl.gni`:
+Then, add this new library as a dependency of the Foo module descriptor in
+`//chrome/android/features/foo/foo_module.gni`:
 
 ```gn
-android_app_bundle_module(target_name) {
+foo_module_desc = {
   ...
-  deps = [
-    "//chrome/android/module/foo:java",
+  java_deps = [
+    "//chrome/android/features/foo:java",
   ]
 }
 ```
@@ -374,16 +324,13 @@ Coming soon (
 
 You can already add third party native code or native Chrome code that has no
 dependency on other Chrome code. To add such code add it as a loadable module to
-the bundle module target in `//chrome/android/features/foo/foo_module_tmpl.gni`:
+the module descriptor in `//chrome/android/features/foo/foo_module.gni`:
 
 ```gn
-...
-template("foo_module_tmpl") {
+foo_module_desc = {
   ...
-  android_app_bundle_module(target_name) {
-    ...
-    loadable_modules = [ "//path/to/lib.so" ]
-  }
+  loadable_modules_32_bit = [ "//path/to/32/bit/lib.so" ]
+  loadable_modules_64_bit = [ "//path/to/64/bit/lib.so" ]
 }
 ```
 
@@ -619,7 +566,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     ...
     if (_target_type != "android_app_bundle_module") {
       deps += [
-        "//chrome/android/module/foo:java",
+        "//chrome/android/features/foo:java",
       ]
     }
   }

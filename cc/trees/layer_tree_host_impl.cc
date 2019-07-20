@@ -2275,7 +2275,6 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
 viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     FrameData* frame) {
-  TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::GenerateCompositorFrame");
   TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
                          TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,

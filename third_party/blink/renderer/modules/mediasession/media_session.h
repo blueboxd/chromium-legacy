@@ -62,8 +62,8 @@ class MODULES_EXPORT MediaSession final
   void NotifyActionChange(const String& action, ActionChangeType);
 
   // blink::mojom::blink::MediaSessionClient implementation.
-  void DidReceiveAction(
-      media_session::mojom::blink::MediaSessionAction) override;
+  void DidReceiveAction(media_session::mojom::blink::MediaSessionAction,
+                        mojom::blink::MediaSessionActionDetailsPtr) override;
 
   // Returns null when the ExecutionContext is not document.
   mojom::blink::MediaSessionService* GetService();

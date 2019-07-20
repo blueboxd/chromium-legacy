@@ -215,6 +215,8 @@ TEST_F(PreviewsProberTest, OK) {
 
   histogram_tester.ExpectUniqueSample("Previews.Prober.DidSucceed.Litepages",
                                       true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Prober.NumAttemptsBeforeSuccess.Litepages", 1, 1);
   histogram_tester.ExpectUniqueSample("Previews.Prober.ResponseCode.Litepages",
                                       net::HTTP_OK, 1);
   histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
@@ -535,6 +537,58 @@ TEST_F(PreviewsProberTest, RetryLinear) {
                                     0);
   histogram_tester.ExpectUniqueSample("Previews.Prober.NetError.Litepages",
                                       std::abs(net::ERR_FAILED), 3);
+  histogram_tester.ExpectTotalCount(
+      "Previews.Prober.NumAttemptsBeforeSuccess.Litepages", 0);
+}
+
+TEST_F(PreviewsProberTest, RetryThenSucceed) {
+  base::HistogramTester histogram_tester;
+  PreviewsProber::RetryPolicy retry_policy;
+  retry_policy.max_retries = 2;
+  retry_policy.backoff = PreviewsProber::Backoff::kLinear;
+  retry_policy.base_interval = base::TimeDelta::FromMilliseconds(1000);
+
+  std::unique_ptr<PreviewsProber> prober =
+      NewProberWithRetryPolicy(retry_policy);
+  EXPECT_EQ(prober->LastProbeWasSuccessful(), base::nullopt);
+
+  prober->SendNowIfInactive(false);
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  // First retry.
+  FastForward(base::TimeDelta::FromMilliseconds(999));
+  VerifyNoRequests();
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
+  EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
+  EXPECT_TRUE(prober->is_active());
+
+  // Second retry should be another 1000ms later and be the final one.
+  FastForward(base::TimeDelta::FromMilliseconds(999));
+  VerifyNoRequests();
+  FastForward(base::TimeDelta::FromMilliseconds(1));
+  VerifyRequest();
+  MakeResponseAndWait(net::HTTP_OK, net::OK);
+  EXPECT_TRUE(prober->LastProbeWasSuccessful().value());
+  EXPECT_FALSE(prober->is_active());
+
+  histogram_tester.ExpectBucketCount("Previews.Prober.DidSucceed.Litepages",
+                                     false, 2);
+  histogram_tester.ExpectBucketCount("Previews.Prober.DidSucceed.Litepages",
+                                     true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.Prober.NumAttemptsBeforeSuccess.Litepages", 3, 1);
+  histogram_tester.ExpectUniqueSample("Previews.Prober.ResponseCode.Litepages",
+                                      net::HTTP_OK, 1);
+  histogram_tester.ExpectBucketCount("Previews.Prober.NetError.Litepages",
+                                     std::abs(net::ERR_FAILED), 2);
+  histogram_tester.ExpectBucketCount("Previews.Prober.NetError.Litepages",
+                                     std::abs(net::OK), 1);
+  histogram_tester.ExpectTotalCount("Previews.Prober.NetError.Litepages", 3);
 }
 
 TEST_F(PreviewsProberTest, RetryExponential) {

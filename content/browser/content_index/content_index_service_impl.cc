@@ -22,7 +22,7 @@ namespace {
 
 void CreateOnIO(blink::mojom::ContentIndexServiceRequest request,
                 const url::Origin& origin,
-                scoped_refptr<ContentIndexContext> content_index_context) {
+                scoped_refptr<ContentIndexContextImpl> content_index_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   mojo::MakeStrongBinding(std::make_unique<ContentIndexServiceImpl>(
@@ -51,7 +51,7 @@ void ContentIndexServiceImpl::Create(
 
 ContentIndexServiceImpl::ContentIndexServiceImpl(
     const url::Origin& origin,
-    scoped_refptr<ContentIndexContext> content_index_context)
+    scoped_refptr<ContentIndexContextImpl> content_index_context)
     : origin_(origin),
       content_index_context_(std::move(content_index_context)) {}
 
@@ -90,7 +90,7 @@ void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   content_index_context_->database().DeleteEntry(
-      service_worker_registration_id, content_id, std::move(callback));
+      service_worker_registration_id, origin_, content_id, std::move(callback));
 }
 
 void ContentIndexServiceImpl::GetDescriptions(

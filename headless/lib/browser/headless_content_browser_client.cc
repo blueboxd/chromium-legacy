@@ -19,7 +19,6 @@
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -296,13 +295,6 @@ base::OnceClosure HeadlessContentBrowserClient::SelectClientCertificate(
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   delegate->ContinueWithCertificate(nullptr, nullptr);
   return base::OnceClosure();
-}
-
-void HeadlessContentBrowserClient::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_.reset(
-      new HeadlessResourceDispatcherHostDelegate);
-  content::ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
 }
 
 bool HeadlessContentBrowserClient::ShouldEnableStrictSiteIsolation() {

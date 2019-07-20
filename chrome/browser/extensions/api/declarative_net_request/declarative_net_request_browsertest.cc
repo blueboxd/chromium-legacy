@@ -197,8 +197,8 @@ class RulesetCountWaiter : public RulesetManager::TestObserver {
 class ScopedRulesetManagerTestObserver {
  public:
   ScopedRulesetManagerTestObserver(RulesetManager::TestObserver* observer,
-                                   scoped_refptr<InfoMap> info_map)
-      : info_map_(std::move(info_map)) {
+                                   content::BrowserContext* browser_context)
+      : browser_context_(browser_context) {
     SetRulesetManagerTestObserver(observer);
   }
 
@@ -208,17 +208,12 @@ class ScopedRulesetManagerTestObserver {
 
  private:
   void SetRulesetManagerTestObserver(RulesetManager::TestObserver* observer) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(
-            [](RulesetManager::TestObserver* observer, InfoMap* info_map) {
-              info_map->GetRulesetManager()->SetObserverForTest(observer);
-            },
-            observer, base::RetainedRef(info_map_)));
-    content::RunAllTasksUntilIdle();
+    declarative_net_request::RulesMonitorService::Get(browser_context_)
+        ->ruleset_manager()
+        ->SetObserverForTest(observer);
   }
 
-  scoped_refptr<InfoMap> info_map_;
+  content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRulesetManagerTestObserver);
 };
@@ -1560,9 +1555,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RendererCacheCleared) {
   // script.js.
   URLRequestMonitor script_monitor(
       embedded_test_server()->GetURL("example.com", "/cached/script.js"));
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &script_monitor,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&script_monitor, profile());
 
   GURL url = embedded_test_server()->GetURL(
       "example.com", "/cached/page_with_cacheable_script.html");
@@ -2028,9 +2021,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Set-up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &ruleset_count_waiter,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
+                                                   profile());
 
   set_has_background_script(true);
 
@@ -2176,8 +2168,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(profile());
+  const auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(profile());
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
 
   // Mimic extension prefs corruption by overwriting the indexed ruleset
@@ -2227,9 +2219,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &ruleset_count_waiter,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
+                                                   profile());
 
   TestRule rule = CreateGenericRule();
   rule.condition->url_filter = std::string("*");
@@ -2237,8 +2228,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ruleset_count_waiter.WaitForRulesetCount(1);
 
   const ExtensionId extension_id = last_loaded_extension_id();
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(profile());
+  const auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(profile());
   EXPECT_TRUE(rules_monitor_service->HasRegisteredRuleset(extension_id));
 
   // Add a dynamic rule.
@@ -2557,24 +2548,26 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Set up an observer for RulesetMatcher to monitor the number of extension
   // rulesets.
   RulesetCountWaiter ruleset_count_waiter;
-  ScopedRulesetManagerTestObserver scoped_observer(
-      &ruleset_count_waiter,
-      base::WrapRefCounted(ExtensionSystem::Get(profile())->info_map()));
+  ScopedRulesetManagerTestObserver scoped_observer(&ruleset_count_waiter,
+                                                   profile());
 
-  EXPECT_FALSE(ExtensionWebRequestEventRouter::GetInstance()
-                   ->HasAnyExtraHeadersListenerOnUI(profile()));
+  EXPECT_FALSE(
+      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          profile()));
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules({rule}));
   ruleset_count_waiter.WaitForRulesetCount(1);
   content::RunAllTasksUntilIdle();
-  EXPECT_TRUE(ExtensionWebRequestEventRouter::GetInstance()
-                  ->HasAnyExtraHeadersListenerOnUI(profile()));
+  EXPECT_TRUE(
+      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          profile()));
   test_referrer_blocked(true);
 
   DisableExtension(last_loaded_extension_id());
   ruleset_count_waiter.WaitForRulesetCount(0);
   content::RunAllTasksUntilIdle();
-  EXPECT_FALSE(ExtensionWebRequestEventRouter::GetInstance()
-                   ->HasAnyExtraHeadersListenerOnUI(profile()));
+  EXPECT_FALSE(
+      ExtensionWebRequestEventRouter::GetInstance()->HasAnyExtraHeadersListener(
+          profile()));
   test_referrer_blocked(false);
 }
 

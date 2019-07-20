@@ -60,6 +60,7 @@ class SerialPortImpl : public mojom::SerialPort {
   void GetPortInfo(GetPortInfoCallback callback) override;
   void SetBreak(SetBreakCallback callback) override;
   void ClearBreak(ClearBreakCallback callback) override;
+  void Close(CloseCallback callback) override;
 
   void OnOpenCompleted(OpenCallback callback, bool success);
   void WriteToPort(MojoResult result, const mojo::HandleSignalsState& state);

@@ -245,18 +245,20 @@ bool ContentProtectionManager::ShouldPollDisplaySecurity() const {
 }
 
 void ContentProtectionManager::ToggleDisplaySecurityPolling() {
-  const bool polling = security_timer_.IsRunning();
-  const bool should_poll = ShouldPollDisplaySecurity();
-
-  if (polling && !should_poll) {
+  if (ShouldPollDisplaySecurity()) {
+    if (!security_timer_.IsRunning()) {
+      security_timer_.Start(
+          FROM_HERE, kDisplaySecurityPollingPeriod,
+          base::BindRepeating(
+              &ContentProtectionManager::QueueDisplaySecurityQueries,
+              weak_ptr_factory_.GetWeakPtr()));
+    }
+  } else {
     security_timer_.Stop();
+
+    // Query once if polling was stopped or not started. The latter case happens
+    // when all displays are internal.
     QueueDisplaySecurityQueries();
-  } else if (!polling && should_poll) {
-    security_timer_.Start(
-        FROM_HERE, kDisplaySecurityPollingPeriod,
-        base::BindRepeating(
-            &ContentProtectionManager::QueueDisplaySecurityQueries,
-            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -269,6 +271,9 @@ bool ContentProtectionManager::TriggerDisplaySecurityTimeoutForTesting() {
 }
 
 void ContentProtectionManager::QueueDisplaySecurityQueries() {
+  if (disabled())
+    return;
+
   for (DisplaySnapshot* display : layout_manager_->GetDisplayStates()) {
     int64_t display_id = display->display_id();
 

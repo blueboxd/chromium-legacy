@@ -12,12 +12,13 @@ PendingReceiverState::PendingReceiverState() = default;
 PendingReceiverState::PendingReceiverState(ScopedMessagePipeHandle pipe)
     : pipe(std::move(pipe)) {}
 
-PendingReceiverState::PendingReceiverState(PendingReceiverState&&) = default;
+PendingReceiverState::PendingReceiverState(PendingReceiverState&&) noexcept =
+    default;
 
 PendingReceiverState::~PendingReceiverState() = default;
 
-PendingReceiverState& PendingReceiverState::operator=(PendingReceiverState&&) =
-    default;
+PendingReceiverState& PendingReceiverState::operator=(
+    PendingReceiverState&&) noexcept = default;
 
 void PendingReceiverState::reset() {
   pipe.reset();

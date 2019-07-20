@@ -27,7 +27,7 @@ cr.define('cr.ui', function() {
    * it.
    *
    */
-  class FocusOutlineManager {
+  /* #export */ class FocusOutlineManager {
     /**
      * @param {!Document} doc The document to attach the focus outline manager
      *     to.
@@ -96,5 +96,6 @@ cr.define('cr.ui', function() {
     }
   }
 
+  // #cr_define_end
   return {FocusOutlineManager: FocusOutlineManager};
 });

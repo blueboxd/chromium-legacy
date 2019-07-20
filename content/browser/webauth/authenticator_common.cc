@@ -1026,7 +1026,7 @@ void AuthenticatorCommon::Cancel() {
 void AuthenticatorCommon::OnRegisterResponse(
     device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
-    base::Optional<device::FidoTransportProtocol> transport_used) {
+    const device::FidoAuthenticator* authenticator) {
   if (!request_) {
     // Either the callback was called immediately and |request_| has not yet
     // been assigned (this is a bug), or a navigation caused the request to be
@@ -1106,7 +1106,9 @@ void AuthenticatorCommon::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+      DCHECK(authenticator);
 
+      auto transport_used = authenticator->AuthenticatorTransport();
       if (transport_used) {
         request_delegate_->UpdateLastTransportUsed(*transport_used);
       }
@@ -1137,7 +1139,7 @@ void AuthenticatorCommon::OnRegisterResponse(
                                   AttestationPromptResult::kQueried);
         awaiting_attestation_response_ = true;
         request_delegate_->ShouldReturnAttestation(
-            relying_party_id_,
+            relying_party_id_, authenticator,
             base::BindOnce(
                 &AuthenticatorCommon::OnRegisterResponseAttestationDecided,
                 weak_factory_.GetWeakPtr(), std::move(*response_data),
@@ -1234,7 +1236,7 @@ void AuthenticatorCommon::OnSignResponse(
     device::FidoReturnCode status_code,
     base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
         response_data,
-    base::Optional<device::FidoTransportProtocol> transport_used) {
+    const device::FidoAuthenticator* authenticator) {
   DCHECK(!response_data || !response_data->empty());  // empty vector is invalid
 
   if (!request_) {
@@ -1311,9 +1313,11 @@ void AuthenticatorCommon::OnSignResponse(
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
+      DCHECK(authenticator);
 
-      if (transport_used) {
-        request_delegate_->UpdateLastTransportUsed(*transport_used);
+      if (authenticator->AuthenticatorTransport()) {
+        request_delegate_->UpdateLastTransportUsed(
+            *authenticator->AuthenticatorTransport());
       }
 
       // Show an account picker for requests with empty allow lists (where

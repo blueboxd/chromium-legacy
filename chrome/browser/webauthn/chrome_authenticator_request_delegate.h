@@ -60,17 +60,6 @@ class ChromeAuthenticatorRequestDelegate
 
   AuthenticatorRequestDialogModel* WeakDialogModelForTesting() const;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
-                           TestTransportPrefType);
-  FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
-                           TestPairedDeviceAddressPreference);
-
-  content::RenderFrameHost* render_frame_host() const {
-    return render_frame_host_;
-  }
-  content::BrowserContext* browser_context() const;
-
   // content::AuthenticatorRequestClientDelegate:
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
@@ -84,6 +73,7 @@ class ChromeAuthenticatorRequestDelegate
       const std::string& relying_party_id) override;
   void ShouldReturnAttestation(
       const std::string& relying_party_id,
+      const device::FidoAuthenticator* authenticator,
       base::OnceCallback<void(bool)> callback) override;
   bool SupportsResidentKeys() override;
   void SelectAccount(
@@ -121,6 +111,17 @@ class ChromeAuthenticatorRequestDelegate
   void OnStartOver() override;
   void OnModelDestroyed() override;
   void OnCancelRequest() override;
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
+                           TestTransportPrefType);
+  FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
+                           TestPairedDeviceAddressPreference);
+
+  content::RenderFrameHost* render_frame_host() const {
+    return render_frame_host_;
+  }
+  content::BrowserContext* browser_context() const;
 
   void AddFidoBleDeviceToPairedList(std::string ble_authenticator_id);
   base::Optional<device::FidoTransportProtocol> GetLastTransportUsed() const;

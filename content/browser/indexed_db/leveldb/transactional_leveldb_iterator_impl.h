@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/indexed_db/leveldb/transactional_leveldb_iterator.h"
 #include "content/common/content_export.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -57,8 +58,9 @@ class CONTENT_EXPORT TransactionalLevelDBIteratorImpl
 
   std::unique_ptr<leveldb::Iterator> iterator_;
 
-  // State used to facilitate memory purging.
-  TransactionalLevelDBDatabase* db_;
+  // State used to facilitate memory purging. Sometimes this is destroyed before
+  // we are, so use a WeakPtr.
+  base::WeakPtr<TransactionalLevelDBDatabase> db_;
   IteratorState iterator_state_ = IteratorState::ACTIVE;
   std::string key_before_eviction_;
   const leveldb::Snapshot* snapshot_;

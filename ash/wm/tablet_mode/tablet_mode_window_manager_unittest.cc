@@ -1801,24 +1801,22 @@ TEST_F(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
   std::unique_ptr<aura::Window> window(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
 
-  // 1. Clamshell -> tablet. If overview is active, it should still be kept
-  // active after transition.
+  // 1. Clamshell -> tablet. If overview is active, it should be ended after
+  // transition since clamshell splitview is not enabled.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   EXPECT_TRUE(overview_controller->StartOverview());
   EXPECT_TRUE(overview_controller->InOverviewSession());
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   EXPECT_TRUE(manager);
-  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 
-  // 2. Tablet -> Clamshell. If overview is active, it should still be kept
-  // active after transition.
+  // 2. Tablet -> Clamshell. If overview is active, it should be ended after
+  // transition.
   DestroyTabletModeWindowManager();
-  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // 3. Clamshell -> tablet. If overview is inactive, it should still be kept
   // inactive after transition. All windows will be maximized.
-  EXPECT_TRUE(overview_controller->EndOverview());
-  EXPECT_FALSE(overview_controller->InOverviewSession());
   CreateTabletModeWindowManager();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());

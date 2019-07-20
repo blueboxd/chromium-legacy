@@ -8,8 +8,10 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -22,7 +24,9 @@
 
 namespace extensions {
 
-TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
+using ExtensionWebRequestPermissionsTest = ExtensionsTest;
+
+TEST_F(ExtensionWebRequestPermissionsTest, TestHideRequestForURL) {
   enum HideRequestMask {
     HIDE_NONE = 0,
     HIDE_RENDERER_REQUEST = 1,
@@ -33,12 +37,8 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
                HIDE_MAIN_FRAME_NAVIGATION | HIDE_BROWSER_SUB_RESOURCE_REQUEST,
   };
 
-  // The InfoMap requires methods to be called on the IO thread. Fake it.
-  content::TestBrowserThreadBundle thread_bundle(
-      content::TestBrowserThreadBundle::IO_MAINLOOP);
-
   ExtensionsAPIClient api_client;
-  auto info_map = base::MakeRefCounted<extensions::InfoMap>();
+  auto* permission_helper = PermissionHelper::Get(browser_context());
 
   struct TestCase {
     const char* url;
@@ -132,7 +132,7 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_RENDERER_REQUEST;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map.get(), request));
+                WebRequestPermissions::HideRequest(permission_helper, request));
     }
 
     {
@@ -142,7 +142,7 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
       bool expect_hidden = test_case.expected_hide_request_mask &
                            HIDE_BROWSER_SUB_RESOURCE_REQUEST;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map.get(), request));
+                WebRequestPermissions::HideRequest(permission_helper, request));
     }
 
     {
@@ -152,7 +152,7 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_MAIN_FRAME_NAVIGATION;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map.get(), request));
+                WebRequestPermissions::HideRequest(permission_helper, request));
     }
 
     {
@@ -162,7 +162,7 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
       bool expect_hidden =
           test_case.expected_hide_request_mask & HIDE_SUB_FRAME_NAVIGATION;
       EXPECT_EQ(expect_hidden,
-                WebRequestPermissions::HideRequest(info_map.get(), request));
+                WebRequestPermissions::HideRequest(permission_helper, request));
     }
   }
 
@@ -173,7 +173,7 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
   {
     WebRequestInfo non_sensitive_request(create_request_params(
         non_sensitive_url, content::ResourceType::kScript, kRendererProcessId));
-    EXPECT_FALSE(WebRequestPermissions::HideRequest(info_map.get(),
+    EXPECT_FALSE(WebRequestPermissions::HideRequest(permission_helper,
                                                     non_sensitive_request));
   }
 
@@ -181,21 +181,18 @@ TEST(ExtensionWebRequestPermissions, TestHideRequestForURL) {
   {
     const int kWebstoreProcessId = 42;
     const int kSiteInstanceId = 23;
-    info_map->RegisterExtensionProcess(extensions::kWebStoreAppId,
-                                       kWebstoreProcessId, kSiteInstanceId);
+    ProcessMap::Get(browser_context())
+        ->Insert(extensions::kWebStoreAppId, kWebstoreProcessId,
+                 kSiteInstanceId);
     WebRequestInfo sensitive_request_info(create_request_params(
         non_sensitive_url, content::ResourceType::kScript, kWebstoreProcessId));
-    EXPECT_TRUE(WebRequestPermissions::HideRequest(info_map.get(),
+    EXPECT_TRUE(WebRequestPermissions::HideRequest(permission_helper,
                                                    sensitive_request_info));
   }
 }
 
-TEST(ExtensionWebRequestPermissions,
-     CanExtensionAccessURLWithWithheldPermissions) {
-  // The InfoMap requires methods to be called on the IO thread. Fake it.
-  content::TestBrowserThreadBundle thread_bundle(
-      content::TestBrowserThreadBundle::IO_MAINLOOP);
-
+TEST_F(ExtensionWebRequestPermissionsTest,
+       CanExtensionAccessURLWithWithheldPermissions) {
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("ext").AddPermission("<all_urls>").Build();
   URLPatternSet all_urls(
@@ -207,10 +204,9 @@ TEST(ExtensionWebRequestPermissions,
           APIPermissionSet(), ManifestPermissionSet(), all_urls.Clone(),
           URLPatternSet()) /* withheld permissions */);
 
-  scoped_refptr<InfoMap> info_map = base::MakeRefCounted<InfoMap>();
-  info_map->AddExtension(extension.get(), base::Time(), false, false);
+  ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
 
-  auto get_access = [extension, info_map](
+  auto get_access = [extension, this](
                         const GURL& url,
                         const base::Optional<url::Origin>& initiator,
                         const base::Optional<content::ResourceType>&
@@ -219,7 +215,7 @@ TEST(ExtensionWebRequestPermissions,
     constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL;
     return WebRequestPermissions::CanExtensionAccessURL(
-        info_map.get(), extension->id(), url, kTabId,
+        PermissionHelper::Get(browser_context()), extension->id(), url, kTabId,
         false /* crosses incognito */, kPermissionsCheck, initiator,
         resource_type);
   };
@@ -293,11 +289,10 @@ TEST(ExtensionWebRequestPermissions,
   }
 }
 
-TEST(ExtensionWebRequestPermissions,
-     RequireAccessToURLAndInitiatorWithWithheldPermissions) {
-  // The InfoMap requires methods to be called on the IO thread. Fake it.
-  content::TestBrowserThreadBundle thread_bundle(
-      content::TestBrowserThreadBundle::IO_MAINLOOP);
+TEST_F(ExtensionWebRequestPermissionsTest,
+       RequireAccessToURLAndInitiatorWithWithheldPermissions) {
+  ExtensionsAPIClient api_client;
+
   const char* kGoogleCom = "https://google.com/";
   const char* kExampleCom = "https://example.com/";
   const char* kYahooCom = "https://yahoo.com";
@@ -322,10 +317,9 @@ TEST(ExtensionWebRequestPermissions,
           kWithheldPatternSet.Clone(),
           kWithheldPatternSet.Clone()) /* withheld permissions */);
 
-  scoped_refptr<InfoMap> info_map = base::MakeRefCounted<InfoMap>();
-  info_map->AddExtension(extension.get(), base::Time(), false, false);
+  ExtensionRegistry::Get(browser_context())->AddEnabled(extension);
 
-  auto get_access = [extension, info_map](
+  auto get_access = [extension, this](
                         const GURL& url,
                         const base::Optional<url::Origin>& initiator,
                         const base::Optional<content::ResourceType>&
@@ -334,7 +328,7 @@ TEST(ExtensionWebRequestPermissions,
     constexpr WebRequestPermissions::HostPermissionsCheck kPermissionsCheck =
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR;
     return WebRequestPermissions::CanExtensionAccessURL(
-        info_map.get(), extension->id(), url, kTabId,
+        PermissionHelper::Get(browser_context()), extension->id(), url, kTabId,
         false /* crosses incognito */, kPermissionsCheck, initiator,
         resource_type);
   };

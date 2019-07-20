@@ -1056,6 +1056,16 @@ const IDNTestCase kIdnCases[] = {
     {"xn--4fkv10r.com", L"ㄧ猫.com", true},
     // U+4E00 with another ideograph.
     {"xn--4gqc.com", L"一丁.com", true},
+
+    // CJK ideographs looking like slashes should be blocked when next to
+    // non-CJK.
+    {"example.xn--comtest-k63k", L"example.com丶test", false},
+    {"example.xn--comtest-u83k", L"example.com乀test", false},
+    {"example.xn--comtest-283k", L"example.com乁test", false},
+    {"example.xn--comtest-m83k", L"example.com丿test", false},
+    // This is allowed because the ideographs are not immediately next to
+    // non-CJK.
+    {"xn--oiqsace.com", L"丶乀乁丿.com", true},
 };
 
 struct AdjustOffsetCase {

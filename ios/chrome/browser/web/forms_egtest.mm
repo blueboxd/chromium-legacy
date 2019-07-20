@@ -238,6 +238,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
       disabler.reset();
     }
 
+    [ChromeEarlGrey
+        waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
     [self confirmResendWarning];
   }
 
@@ -283,6 +285,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
       disabler.reset();
     }
 
+    [ChromeEarlGrey
+        waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
     [self confirmResendWarning];
   }
 
@@ -327,6 +331,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
       disabler.reset();
     }
 
+    [ChromeEarlGrey
+        waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
     [self confirmResendWarning];
   }
 
@@ -359,6 +365,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
   // Back-forward navigation with WKBasedNavigationManager is served from
   // WKWebView's app-cache, so it won't trigger repost warning.
   if (![ChromeEarlGrey isSlimNavigationManagerEnabled]) {
+    [ChromeEarlGrey
+        waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
     [self confirmResendWarning];
   }
 
@@ -402,6 +410,8 @@ id<GREYMatcher> ResendPostButtonMatcher() {
       disabler.reset();
     }
 
+    [ChromeEarlGrey
+        waitForSufficientlyVisibleElementWithMatcher:ResendPostButtonMatcher()];
     [[EarlGrey selectElementWithMatcher:ElementToDismissAlert(@"Cancel")]
         performAction:grey_tap()];
   }

@@ -24,13 +24,12 @@ class BrowserContext;
 
 // Handles interacting with the Service Worker Database for Content Index
 // entries. This is owned by the ContentIndexContext.
-class CONTENT_EXPORT ContentIndexDatabase
-    : public ContentIndexProvider::Client {
+class CONTENT_EXPORT ContentIndexDatabase {
  public:
   ContentIndexDatabase(
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
-  ~ContentIndexDatabase() override;
+  ~ContentIndexDatabase();
 
   void InitializeProviderWithEntries();
 
@@ -42,6 +41,7 @@ class CONTENT_EXPORT ContentIndexDatabase
                 blink::mojom::ContentIndexService::AddCallback callback);
 
   void DeleteEntry(int64_t service_worker_registration_id,
+                   const url::Origin& origin,
                    const std::string& entry_id,
                    blink::mojom::ContentIndexService::DeleteCallback callback);
 
@@ -49,10 +49,9 @@ class CONTENT_EXPORT ContentIndexDatabase
       int64_t service_worker_registration_id,
       blink::mojom::ContentIndexService::GetDescriptionsCallback callback);
 
-  // ContentIndexProvider::Client implementation.
   void GetIcon(int64_t service_worker_registration_id,
                const std::string& description_id,
-               base::OnceCallback<void(SkBitmap)> icon_callback) override;
+               base::OnceCallback<void(SkBitmap)> icon_callback);
 
   // Called when the storage partition is shutting down.
   void Shutdown();
@@ -69,6 +68,7 @@ class CONTENT_EXPORT ContentIndexDatabase
                    blink::ServiceWorkerStatusCode status);
   void DidDeleteEntry(
       int64_t service_worker_registration_id,
+      const url::Origin& origin,
       const std::string& entry_id,
       blink::mojom::ContentIndexService::DeleteCallback callback,
       blink::ServiceWorkerStatusCode status);
@@ -89,6 +89,7 @@ class CONTENT_EXPORT ContentIndexDatabase
   // Callbacks on the UI thread to notify |provider_| of updates.
   void NotifyProviderContentAdded(std::vector<ContentIndexEntry> entries);
   void NotifyProviderContentDeleted(int64_t service_worker_registration_id,
+                                    const url::Origin& origin,
                                     const std::string& entry_id);
 
   // Lives on the UI thread.

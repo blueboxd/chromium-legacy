@@ -454,6 +454,7 @@ source_set("blink_headers") {
     "web/web_media_player_action.h",
     "web/web_memory_statistics.h",
     "web/web_menu_item_info.h",
+    "web/web_message_port_converter.h",
     "web/web_meta_element.h",
     "web/web_navigation_control.h",
     "web/web_navigation_params.h",

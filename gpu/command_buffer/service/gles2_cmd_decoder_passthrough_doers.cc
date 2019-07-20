@@ -4625,7 +4625,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
-    GLfloat clip_rect_corner_radius,
+    const GLfloat* rounded_corner_bounds,
     GLint sorting_context_id,
     const GLfloat* transform) {
   if (!ca_layer_shared_state_) {
@@ -4636,7 +4636,11 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerSharedStateCHROMIUM(
   ca_layer_shared_state_->is_clipped = is_clipped;
   ca_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(
       gfx::RectF(clip_rect[0], clip_rect[1], clip_rect[2], clip_rect[3]));
-  ca_layer_shared_state_->clip_rect_corner_radius = clip_rect_corner_radius;
+
+  ca_layer_shared_state_->rounded_corner_bounds =
+      gfx::RRectF(rounded_corner_bounds[0], rounded_corner_bounds[1],
+                  rounded_corner_bounds[2], rounded_corner_bounds[3],
+                  rounded_corner_bounds[4]);
   ca_layer_shared_state_->sorting_context_id = sorting_context_id;
   ca_layer_shared_state_->transform =
       gfx::Transform(transform[0], transform[4], transform[8], transform[12],
@@ -4679,7 +4683,7 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
 
   ui::CARendererLayerParams params = ui::CARendererLayerParams(
       ca_layer_shared_state_->is_clipped, ca_layer_shared_state_->clip_rect,
-      ca_layer_shared_state_->clip_rect_corner_radius,
+      ca_layer_shared_state_->rounded_corner_bounds,
       ca_layer_shared_state_->sorting_context_id,
       ca_layer_shared_state_->transform, image,
       gfx::RectF(contents_rect[0], contents_rect[1], contents_rect[2],

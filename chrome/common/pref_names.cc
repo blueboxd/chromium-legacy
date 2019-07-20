@@ -2707,4 +2707,9 @@ const char kSharingVapidKey[] = "sharing.vapid_key";
 const char kSharingSyncedDevices[] = "sharing.synced_devices";
 const char kSharingFCMRegistration[] = "sharing.fcm_registration";
 
+#if !defined(OS_ANDROID)
+// Dictionary that contains all of the Hats Survey Metadata.
+const char kHatsSurveyMetadata[] = "hats.survey_metadata";
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace prefs

@@ -77,6 +77,7 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
   // AutofillPopupView:
   void Show() override;
   void Hide() override;
+  base::Optional<int32_t> GetAxUniqueId() override;
 
   // AutofillPopupBaseView:
   // TODO(crbug.com/831603): Remove these overrides and the corresponding

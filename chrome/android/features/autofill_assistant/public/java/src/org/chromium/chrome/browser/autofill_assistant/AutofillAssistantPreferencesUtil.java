@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.preferences.autofill_assistant.AutofillAssistantPreferences;
 
 /** Autofill Assistant related preferences util class. */
@@ -13,7 +14,8 @@ class AutofillAssistantPreferencesUtil {
     private AutofillAssistantPreferencesUtil() {}
 
     /** Peference keeping track of whether the onboarding has been accepted. */
-    private static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
+    @VisibleForTesting
+    public static final String AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED =
             "AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED";
 
     /** LEGACY preference for when the `do not show again' checkbox still existed. */

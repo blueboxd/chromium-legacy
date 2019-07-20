@@ -870,6 +870,88 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchAckAfterActivateAndReactivate) {
   EXPECT_EQ(web_contents_impl, shell()->web_contents());
 }
 
+// TODO(crbug.com/985078): Fix on Mac.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, TouchStateClearedBeforeActivation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Create portal and wait for navigation.
+  Portal* portal = nullptr;
+  {
+    PortalCreatedObserver portal_created_observer(main_frame);
+    GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(
+        ExecJs(main_frame,
+               JsReplace("var portal = document.createElement('portal');"
+                         "portal.src = $1;"
+                         "document.body.appendChild(portal);"
+                         "document.body.addEventListener('touchstart', e => {"
+                         "  portal.activate();"
+                         "}, {passive: false});",
+                         a_url)));
+    portal = portal_created_observer.WaitUntilPortalCreated();
+  }
+  WebContentsImpl* portal_contents = portal->GetPortalContents();
+
+  // The portal should not have navigated yet, wait for the first navigation.
+  TestNavigationObserver navigation_observer(portal_contents);
+  navigation_observer.Wait();
+
+  RenderFrameHostImpl* portal_frame = portal_contents->GetMainFrame();
+  EXPECT_TRUE(ExecJs(portal_frame,
+                     "window.addEventListener('portalactivate', e => {"
+                     "  var portal = e.adoptPredecessor();"
+                     "  document.body.appendChild(portal);"
+                     "  portal.activate();"
+                     "});"));
+  WaitForHitTestDataOrChildSurfaceReady(portal_frame);
+
+  PortalInterceptorForTesting* portal_interceptor =
+      PortalInterceptorForTesting::From(portal);
+  RenderWidgetHostImpl* render_widget_host = main_frame->GetRenderWidgetHost();
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.position = gfx::PointF(20, 20);
+
+  // Activate the portal, and then wait for the predecessor to be reactivated.
+  Portal* adopted_portal = nullptr;
+  {
+    PortalCreatedObserver adoption_observer(portal_frame);
+    std::unique_ptr<SyntheticTapGesture> gesture =
+        std::make_unique<SyntheticTapGesture>(params);
+    InputEventAckWaiter input_event_ack_waiter(
+        render_widget_host, blink::WebInputEvent::Type::kTouchCancel);
+    render_widget_host->QueueSyntheticGesture(
+        std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+    // Wait for synthetic cancel event to be sent.
+    input_event_ack_waiter.Wait();
+    portal_interceptor->WaitForActivate();
+    EXPECT_EQ(portal_contents, shell()->web_contents());
+    adopted_portal = adoption_observer.WaitUntilPortalCreated();
+  }
+  PortalInterceptorForTesting* adopted_portal_interceptor =
+      PortalInterceptorForTesting::From(adopted_portal);
+  adopted_portal_interceptor->WaitForActivate();
+  // Sanity check to see if the predecessor was reactivated.
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
+
+  InputEventAckWaiter input_event_ack_waiter(
+      render_widget_host, blink::WebInputEvent::Type::kTouchStart);
+  std::unique_ptr<SyntheticTapGesture> gesture =
+      std::make_unique<SyntheticTapGesture>(params);
+  render_widget_host->QueueSyntheticGesture(
+      std::move(gesture), base::Bind([](SyntheticGesture::Result) {}));
+  // Waits for touch to be acked. If touch state wasn't cleared before initial
+  // activation, a DCHECK will be hit before the ack is sent.
+  input_event_ack_waiter.Wait();
+}
+#endif
+
 // Tests that the outer FrameTreeNode is deleted after activation.
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, FrameDeletedAfterActivation) {
   EXPECT_TRUE(NavigateToURL(

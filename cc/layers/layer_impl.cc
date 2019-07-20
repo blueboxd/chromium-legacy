@@ -940,11 +940,6 @@ float LayerImpl::GetIdealContentsScale() const {
   float device_scale = layer_tree_impl()->device_scale_factor();
 
   float default_scale = page_scale * device_scale;
-  if (!layer_tree_impl()
-           ->settings()
-           .layer_transforms_should_scale_layer_contents) {
-    return default_scale;
-  }
 
   const auto& transform = ScreenSpaceTransform();
   if (transform.HasPerspective()) {

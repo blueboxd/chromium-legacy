@@ -34,6 +34,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
   bool ShouldHideResponseHeader(const GURL& url,
                                 const std::string& header_name) const override;
   bool ShouldHideBrowserNetworkRequest(
+      content::BrowserContext* context,
       const WebRequestInfo& request) const override;
   void NotifyWebRequestWithheld(int render_process_id,
                                 int render_frame_id,
@@ -80,6 +81,7 @@ class ChromeExtensionsAPIClient : public ExtensionsAPIClient {
 #endif
 
   AutomationInternalApiDelegate* GetAutomationInternalApiDelegate() override;
+  std::vector<KeyedServiceBaseFactory*> GetFactoryDependencies() override;
 
  private:
   std::unique_ptr<ChromeMetricsPrivateDelegate> metrics_private_delegate_;

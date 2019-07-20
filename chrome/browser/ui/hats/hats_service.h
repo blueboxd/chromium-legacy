@@ -8,14 +8,29 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+class PrefRegistrySimple;
+class Profile;
 
 // This class provides the client side logic for determining if a
 // survey should be shown for any trigger based on input from a finch
 // configuration. It is created on a per profile basis.
 class HatsService : public KeyedService {
  public:
-  HatsService();
+  struct SurveyMetadata {
+    SurveyMetadata();
+    ~SurveyMetadata();
+
+    base::Optional<int> last_major_version;
+    base::Optional<base::Time> last_survey_started_time;
+  };
+
+  explicit HatsService(Profile* profile);
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // This is the public function that will launch the "satisfaction" survey if
   // it's appropriate.
@@ -24,13 +39,14 @@ class HatsService : public KeyedService {
   // Returns the en-us site ID for the HaTS survey.
   const std::string& en_site_id() const { return en_site_id_; }
 
+  void SetSurveyMetadataForTesting(const SurveyMetadata& metadata);
+
  private:
   // This returns true is the survey trigger specified should be shown.
   bool ShouldShowSurvey(const std::string& trigger) const;
 
-  // a temporary flag to ensure that hats is not launched multiple times
-  // TODO: replace with pref lookup
-  static bool launch_hats_;
+  // Profile associated with this service.
+  Profile* const profile_;
 
   // Trigger string identifier.
   const std::string trigger_;

@@ -3136,7 +3136,7 @@ class MockCALayerGLES2Interface : public TestGLES2Interface {
                void(GLfloat opacity,
                     GLboolean is_clipped,
                     const GLfloat* clip_rect,
-                    GLfloat clip_rect_corner_radius,
+                    const GLfloat* rounded_corner_bounds,
                     GLint sorting_context_id,
                     const GLfloat* transform));
   MOCK_METHOD6(ScheduleCALayerCHROMIUM,
@@ -3313,16 +3313,15 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
       case 0:
         // Subtest 0 is a simple round rect that matches the clip rect, and
         // should be handled by CALayers.
-        EXPECT_CALL(gl(),
-                    ScheduleCALayerSharedStateCHROMIUM(_, _, _, radius, _, _))
+        EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _))
             .Times(1);
         EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
         break;
       case 1:
-        // Subtest 1 doesn't match clip and rounded rect, so no CALayers should
-        // be scheduled.
+        // Subtest 1 doesn't match clip and rounded rect, but we can still
+        // use CALayers.
         sqs->clip_rect = gfx::Rect(3, 3, 4, 4);
-        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(0);
+        EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
         break;
       case 2:
         // Subtest 2 has a non-simple rounded rect.

@@ -288,11 +288,6 @@ struct CORE_EXPORT NGInlineItemsData {
   void AssertEndOffset(unsigned index, unsigned offset) const {
     items[index].AssertEndOffset(offset);
   }
-
-  // Returns the non-zero-length inline item whose |StartOffset() <= offset| and
-  // |EndOffset() > offset|, namely, contains the character at |offset|.
-  // Note: This function is not a trivial getter, but does a binary search.
-  const NGInlineItem& FindItemForTextOffset(unsigned offset) const;
 };
 
 }  // namespace blink

@@ -67,32 +67,152 @@ DawnCompareFunction AsDawnEnum<DawnCompareFunction>(
 template <>
 DawnTextureFormat AsDawnEnum<DawnTextureFormat>(
     const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "rgba8unorm") {
-    return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
-  }
-  if (webgpu_enum == "rg8unorm") {
-    return DAWN_TEXTURE_FORMAT_RG8_UNORM;
-  }
+  // Normal 8 bit formats
   if (webgpu_enum == "r8unorm") {
     return DAWN_TEXTURE_FORMAT_R8_UNORM;
   }
-  if (webgpu_enum == "rgba8uint") {
-    return DAWN_TEXTURE_FORMAT_RGBA8_UINT;
-  }
-  if (webgpu_enum == "r8g8uint") {
-    return DAWN_TEXTURE_FORMAT_RG8_UINT;
+  if (webgpu_enum == "r8snorm") {
+    return DAWN_TEXTURE_FORMAT_R8_SNORM;
   }
   if (webgpu_enum == "r8uint") {
     return DAWN_TEXTURE_FORMAT_R8_UINT;
   }
+  if (webgpu_enum == "r8sint") {
+    return DAWN_TEXTURE_FORMAT_R8_SINT;
+  }
+
+  // Normal 16 bit formats
+  if (webgpu_enum == "r16unorm") {
+    return DAWN_TEXTURE_FORMAT_R16_UNORM;
+  }
+  if (webgpu_enum == "r16snorm") {
+    return DAWN_TEXTURE_FORMAT_R16_SNORM;
+  }
+  if (webgpu_enum == "r16uint") {
+    return DAWN_TEXTURE_FORMAT_R16_UINT;
+  }
+  if (webgpu_enum == "r16sint") {
+    return DAWN_TEXTURE_FORMAT_R16_SINT;
+  }
+  if (webgpu_enum == "r16float") {
+    return DAWN_TEXTURE_FORMAT_R16_FLOAT;
+  }
+  if (webgpu_enum == "rg8unorm") {
+    return DAWN_TEXTURE_FORMAT_RG8_UNORM;
+  }
+  if (webgpu_enum == "rg8snorm") {
+    return DAWN_TEXTURE_FORMAT_RG8_SNORM;
+  }
+  if (webgpu_enum == "rg8uint") {
+    return DAWN_TEXTURE_FORMAT_RG8_UINT;
+  }
+  if (webgpu_enum == "rg8sint") {
+    return DAWN_TEXTURE_FORMAT_RG8_SINT;
+  }
+
+  // Normal 32 bit formats
+  if (webgpu_enum == "r32uint") {
+    return DAWN_TEXTURE_FORMAT_R32_UINT;
+  }
+  if (webgpu_enum == "r32sint") {
+    return DAWN_TEXTURE_FORMAT_R32_SINT;
+  }
+  if (webgpu_enum == "r32float") {
+    return DAWN_TEXTURE_FORMAT_R32_FLOAT;
+  }
+  if (webgpu_enum == "rg16unorm") {
+    return DAWN_TEXTURE_FORMAT_RG16_UNORM;
+  }
+  if (webgpu_enum == "rg16snorm") {
+    return DAWN_TEXTURE_FORMAT_RG16_SNORM;
+  }
+  if (webgpu_enum == "rg16uint") {
+    return DAWN_TEXTURE_FORMAT_RG16_UINT;
+  }
+  if (webgpu_enum == "rg16sint") {
+    return DAWN_TEXTURE_FORMAT_RG16_SINT;
+  }
+  if (webgpu_enum == "rg16float") {
+    return DAWN_TEXTURE_FORMAT_RG16_FLOAT;
+  }
+  if (webgpu_enum == "rgba8unorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_UNORM;
+  }
+  if (webgpu_enum == "rgba8unorm-srgb") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_UNORM_SRGB;
+  }
+  if (webgpu_enum == "rgba8snorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_SNORM;
+  }
+  if (webgpu_enum == "rgba8uint") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_UINT;
+  }
+  if (webgpu_enum == "rgba8sint") {
+    return DAWN_TEXTURE_FORMAT_RGBA8_SINT;
+  }
   if (webgpu_enum == "bgra8unorm") {
     return DAWN_TEXTURE_FORMAT_BGRA8_UNORM;
   }
-  if (webgpu_enum == "depth32float-stencil8") {
+  if (webgpu_enum == "bgra8unorm-srgb") {
+    return DAWN_TEXTURE_FORMAT_BGRA8_UNORM_SRGB;
+  }
+
+  // Packed 32 bit formats
+  if (webgpu_enum == "rgb10a2unorm") {
+    return DAWN_TEXTURE_FORMAT_RGB10_A2_UNORM;
+  }
+  if (webgpu_enum == "rg11b10float") {
+    return DAWN_TEXTURE_FORMAT_RG11_B10_FLOAT;
+  }
+
+  // Normal 64 bit formats
+  if (webgpu_enum == "rg32uint") {
+    return DAWN_TEXTURE_FORMAT_RG32_UINT;
+  }
+  if (webgpu_enum == "rg32sint") {
+    return DAWN_TEXTURE_FORMAT_RG32_SINT;
+  }
+  if (webgpu_enum == "rg32float") {
+    return DAWN_TEXTURE_FORMAT_RG32_FLOAT;
+  }
+  if (webgpu_enum == "rgba16unorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_UNORM;
+  }
+  if (webgpu_enum == "rgba16snorm") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_SNORM;
+  }
+  if (webgpu_enum == "rgba16uint") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_UINT;
+  }
+  if (webgpu_enum == "rgba16sint") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_SINT;
+  }
+  if (webgpu_enum == "rgba16float") {
+    return DAWN_TEXTURE_FORMAT_RGBA16_FLOAT;
+  }
+
+  // Normal 128 bit formats
+  if (webgpu_enum == "rgba32uint") {
+    return DAWN_TEXTURE_FORMAT_RGBA32_UINT;
+  }
+  if (webgpu_enum == "rgba32sint") {
+    return DAWN_TEXTURE_FORMAT_RGBA32_SINT;
+  }
+  if (webgpu_enum == "rgba32float") {
+    return DAWN_TEXTURE_FORMAT_RGBA32_FLOAT;
+  }
+
+  // Depth / Stencil formats
+  if (webgpu_enum == "depth32float") {
+    return DAWN_TEXTURE_FORMAT_DEPTH32_FLOAT;
+  }
+  if (webgpu_enum == "depth24plus") {
+    return DAWN_TEXTURE_FORMAT_DEPTH24_PLUS;
+  }
+  if (webgpu_enum == "depth24plus-stencil8") {
     return DAWN_TEXTURE_FORMAT_DEPTH24_PLUS_STENCIL8;
   }
-  // TODO(crbug.com/dawn/128): Implement the remaining texture formats.
-  NOTREACHED();
+
   return DAWN_TEXTURE_FORMAT_FORCE32;
 }
 

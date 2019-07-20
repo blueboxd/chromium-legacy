@@ -51,6 +51,7 @@ bool StructTraits<
 
   out->properties_mask = data.properties_mask();
   out->unique_renderer_id = data.unique_renderer_id();
+  out->form_control_ax_id = data.form_control_ax_id();
   out->max_length = data.max_length();
   out->is_autofilled = data.is_autofilled();
 

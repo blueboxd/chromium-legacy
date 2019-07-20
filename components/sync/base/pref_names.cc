@@ -121,6 +121,15 @@ const char kEnableLocalSyncBackend[] = "sync.enable_local_sync_backend";
 // flag is present.
 const char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
 
+// Stores birth year of the syncing user that is provided by the sync server.
+const char kSyncDemographicsBirthYear[] = "sync.demographics.birth_year";
+
+// Stores the encoded gender of the syncing user that is provided by the sync
+// server. The gender is encoded using the Gender enum defined in
+// metrics::UserDemographicsProto
+// (third_party/metrics_proto/user_demographics.proto).
+const char kSyncDemographicsGender[] = "sync.demographics.gender";
+
 }  // namespace prefs
 
 }  // namespace syncer

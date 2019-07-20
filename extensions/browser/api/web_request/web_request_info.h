@@ -25,10 +25,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-namespace content {
-class ResourceContext;
-}  // namespace content
-
 namespace network {
 struct ResourceResponseHead;
 }
@@ -51,7 +47,6 @@ struct WebRequestInfoInitParams {
       int render_frame_id,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
       int32_t routing_id,
-      content::ResourceContext* resource_context,
       const network::ResourceRequest& request,
       bool is_download,
       bool is_async);
@@ -76,7 +71,6 @@ struct WebRequestInfoInitParams {
   int web_view_instance_id = -1;
   int web_view_rules_registry_id = -1;
   int web_view_embedder_process_id = -1;
-  content::ResourceContext* resource_context = nullptr;
   base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
 
  private:
@@ -172,9 +166,6 @@ struct WebRequestInfo {
   const int web_view_instance_id;
   const int web_view_rules_registry_id;
   const int web_view_embedder_process_id;
-
-  // The ResourceContext associated with this request. May be null.
-  content::ResourceContext* const resource_context;
 
   // The Declarative Net Request action associated with this request. Mutable
   // since this is lazily computed. Cached to avoid redundant computations.

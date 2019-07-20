@@ -1954,8 +1954,6 @@ void RenderTextHarfBuzz::ShapeRuns(
 
   std::string preferred_fallback_family;
 
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX) || \
-    defined(OS_FUCHSIA)
   Font fallback_font(primary_font);
   bool fallback_found;
   {
@@ -1977,7 +1975,6 @@ void RenderTextHarfBuzz::ShapeRuns(
     if (runs.empty())
       return;
   }
-#endif  // OS_ANDROID || OS_WIN || OS_MACOSX || OS_FUCHSIA
 
   std::vector<Font> fallback_font_list;
   {

@@ -134,6 +134,9 @@ struct FormFieldData {
   // SameFieldAs().
   uint32_t unique_renderer_id = kNotSetFormControlRendererId;
 
+  // The ax node id of the form control in the accessibility tree.
+  int32_t form_control_ax_id = 0;
+
   // The unique identifier of the section (e.g. billing vs. shipping address)
   // of this field.
   std::string section;

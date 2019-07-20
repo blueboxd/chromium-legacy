@@ -24,7 +24,7 @@ TEST(AutocompleteInputTest, InputType) {
     const base::string16 input;
     const metrics::OmniboxInputType type;
   } input_cases[] = {
-    {base::string16(), metrics::OmniboxInputType::INVALID},
+    {base::string16(), metrics::OmniboxInputType::EMPTY},
     {ASCIIToUTF16("?"), metrics::OmniboxInputType::QUERY},
     {ASCIIToUTF16("?foo"), metrics::OmniboxInputType::QUERY},
     {ASCIIToUTF16("?foo bar"), metrics::OmniboxInputType::QUERY},

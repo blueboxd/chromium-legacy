@@ -7,6 +7,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,6 +16,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/browser_test.h"
 
 namespace {
@@ -63,6 +65,8 @@ class HatsServiceBrowserTestBase : public InProcessBrowserTest {
   }
 
   bool HatsDialogShowRequested() { return hats_dialog_show_requested_; }
+
+  void ResetHatsDialogShowRequested() { hats_dialog_show_requested_ = false; }
 
  private:
   void OnHatsDialogShow(const std::string& action) {
@@ -135,7 +139,12 @@ class HatsServiceProbabilityOne : public HatsServiceBrowserTestBase {
         HatsServiceFactory::GetForProfile(browser()->profile(), false));
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kHappinessTrackingSurveysForDesktop,
-        {{"probability", "1.000"}});
+        {{"probability", "1.000"}, {"survey", "satisfaction"}});
+    GetHatsService()->SetSurveyMetadataForTesting({});
+  }
+
+  void TearDownOnMainThread() override {
+    GetHatsService()->SetSurveyMetadataForTesting({});
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -159,4 +168,47 @@ IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, AlwaysShow) {
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
   GetHatsService()->LaunchSatisfactionSurvey();
   EXPECT_TRUE(HatsDialogShowRequested());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
+                       DoubleShowOnlyResultsInOneShow) {
+  SetMetricsConsent(true);
+  ASSERT_TRUE(
+      g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven());
+
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_TRUE(HatsDialogShowRequested());
+  ResetHatsDialogShowRequested();
+
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_FALSE(HatsDialogShowRequested());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, SameMajorVersionNoShow) {
+  SetMetricsConsent(true);
+  HatsService::SurveyMetadata metadata;
+  metadata.last_major_version = version_info::GetVersion().components()[0];
+  GetHatsService()->SetSurveyMetadataForTesting(metadata);
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_FALSE(HatsDialogShowRequested());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne, DifferentMajorVersionShow) {
+  SetMetricsConsent(true);
+  HatsService::SurveyMetadata metadata;
+  metadata.last_major_version = 42;
+  ASSERT_NE(42u, version_info::GetVersion().components()[0]);
+  GetHatsService()->SetSurveyMetadataForTesting(metadata);
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_TRUE(HatsDialogShowRequested());
+}
+
+IN_PROC_BROWSER_TEST_F(HatsServiceProbabilityOne,
+                       SurveyStartedBeforeRequiredElapsedTimeNoShow) {
+  SetMetricsConsent(true);
+  HatsService::SurveyMetadata metadata;
+  metadata.last_survey_started_time = base::Time::Now();
+  GetHatsService()->SetSurveyMetadataForTesting(metadata);
+  GetHatsService()->LaunchSatisfactionSurvey();
+  EXPECT_FALSE(HatsDialogShowRequested());
 }

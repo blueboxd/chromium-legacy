@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {assertNotReached} from './assert.m.js';
+
 /**
  * @fileoverview PromiseResolver is a helper class that allows creating a
  * Promise that will be fulfilled (resolved or rejected) some time later.
@@ -18,7 +20,7 @@
 
 /** @template T */
 // eslint-disable-next-line no-var
-var PromiseResolver = class {
+/* #export */ var PromiseResolver = class {
   constructor() {
     /** @private {function(T=): void} */
     this.resolve_;

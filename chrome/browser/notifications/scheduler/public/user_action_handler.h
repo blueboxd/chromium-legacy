@@ -16,15 +16,17 @@ namespace notifications {
 // Each event needs to provide an unique id of the notification shown.
 class UserActionHandler {
  public:
-  // Called when the user clicks on the notification.
-  virtual void OnClick(const std::string& notification_id) = 0;
+  // Called when the user clicks on the notification. |guid| is the internal id
+  // to track the notification persist to disk.
+  virtual void OnClick(SchedulerClientType type, const std::string& guid) = 0;
 
   // Called when the user clicks on a button on the notification.
-  virtual void OnActionClick(const std::string& notification_id,
+  virtual void OnActionClick(SchedulerClientType type,
+                             const std::string& guid,
                              ActionButtonType button_type) = 0;
 
   // Called when the user cancels or dismiss the notification.
-  virtual void OnDismiss(const std::string& notification_id) = 0;
+  virtual void OnDismiss(SchedulerClientType type, const std::string& guid) = 0;
 
   ~UserActionHandler() = default;
 

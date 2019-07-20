@@ -69,6 +69,9 @@ class CORE_EXPORT ColorChooserPopupUIController final
   void OpenPopup();
   void Dispose();
 
+  void WriteColorPickerDocument(SharedBuffer*);
+  void WriteColorSuggestionPickerDocument(SharedBuffer*);
+
   Member<ChromeClient> chrome_client_;
   PagePopup* popup_;
   Locale& locale_;

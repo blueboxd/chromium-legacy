@@ -369,9 +369,17 @@ class WebViewHelper {
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
 
+  void set_viewport_enabled(bool viewport) {
+    DCHECK(!web_view_)
+        << "set_viewport_enabled() should be called before Initialize.";
+    viewport_enabled_ = viewport;
+  }
+
  private:
   void InitializeWebView(TestWebViewClient*,
                          class WebView* opener);
+
+  bool viewport_enabled_ = false;
 
   WebViewImpl* web_view_;
   UseMockScrollbarSettings mock_scrollbar_settings_;
@@ -380,6 +388,9 @@ class WebViewHelper {
   TestWebViewClient* test_web_view_client_ = nullptr;
   std::unique_ptr<TestWebWidgetClient> owned_test_web_widget_client_;
   TestWebWidgetClient* test_web_widget_client_ = nullptr;
+
+  // The Platform should not change during the lifetime of the test!
+  Platform* const platform_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewHelper);
 };

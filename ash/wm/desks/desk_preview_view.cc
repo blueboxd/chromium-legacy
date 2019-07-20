@@ -91,7 +91,7 @@ void MirrorLayerTree(ui::Layer* source_layer,
   // but we want to show a preview of the windows in their untransformed state
   // outside of overview mode.
   // TODO(afakhry): Is it safe to do this for all layers in the subtree, or
-  // should we limit this for the mirrors of the top level windows' layers.
+  // should we limit this for the mirrors of the top level windows' layers?
   mirror->SetTransform(gfx::Transform());
 }
 

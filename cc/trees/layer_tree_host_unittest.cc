@@ -2468,10 +2468,6 @@ MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
@@ -2519,10 +2515,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoExtraCommitFromInvalidate);
 class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
     : public LayerTreeHostTest {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
@@ -2578,10 +2570,6 @@ SINGLE_AND_MULTI_THREAD_TEST_F(
 
 class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
  public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));

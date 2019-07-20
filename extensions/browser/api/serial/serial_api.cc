@@ -227,14 +227,22 @@ bool SerialDisconnectFunction::Prepare() {
   return true;
 }
 
-void SerialDisconnectFunction::Work() {
+void SerialDisconnectFunction::AsyncWorkStart() {
   SerialConnection* connection = GetSerialConnection(params_->connection_id);
   if (!connection) {
     error_ = kErrorSerialConnectionNotFound;
+    AsyncWorkCompleted();
     return;
   }
-  RemoveSerialConnection(params_->connection_id);
+
+  connection->Close(
+      base::BindOnce(&SerialDisconnectFunction::OnCloseComplete, this));
+}
+
+void SerialDisconnectFunction::OnCloseComplete() {
   results_ = serial::Disconnect::Results::Create(true);
+  RemoveSerialConnection(params_->connection_id);
+  AsyncWorkCompleted();
 }
 
 SerialSendFunction::SerialSendFunction() {}

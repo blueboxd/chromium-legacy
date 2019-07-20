@@ -8,6 +8,7 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desks_util.h"
@@ -445,6 +446,8 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   DividerView* divider_view = new DividerView(this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(params);
+  aura::Window* widget_window = divider_widget_->GetNativeWindow();
+  widget_window->SetProperty(kHideInDeskMiniViewKey, true);
   divider_widget_->SetVisibilityAnimationTransition(
       views::Widget::ANIMATE_NONE);
   divider_widget_->SetContentsView(divider_view);

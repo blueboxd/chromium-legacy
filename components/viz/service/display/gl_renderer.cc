@@ -3342,8 +3342,13 @@ void GLRenderer::ScheduleCALayers() {
                             ca_layer_overlay.shared_state->clip_rect.y(),
                             ca_layer_overlay.shared_state->clip_rect.width(),
                             ca_layer_overlay.shared_state->clip_rect.height()};
-    GLfloat clip_rect_corner_radius =
-        ca_layer_overlay.shared_state->clip_rect_corner_radius;
+
+    const gfx::RectF& rect =
+        ca_layer_overlay.shared_state->rounded_corner_bounds.rect();
+    GLfloat rounded_corner_bounds[5] = {
+        rect.x(), rect.y(), rect.width(), rect.height(),
+        ca_layer_overlay.shared_state->rounded_corner_bounds.GetSimpleRadius()};
+
     GLint sorting_context_id =
         ca_layer_overlay.shared_state->sorting_context_id;
     GLfloat transform[16];
@@ -3354,7 +3359,7 @@ void GLRenderer::ScheduleCALayers() {
       shared_state = ca_layer_overlay.shared_state;
       gl_->ScheduleCALayerSharedStateCHROMIUM(
           ca_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
-          clip_rect_corner_radius, sorting_context_id, transform);
+          rounded_corner_bounds, sorting_context_id, transform);
     }
     gl_->ScheduleCALayerCHROMIUM(
         texture_id, contents_rect, ca_layer_overlay.background_color,
@@ -3676,8 +3681,13 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
                           ca_layer_overlay->shared_state->clip_rect.y(),
                           ca_layer_overlay->shared_state->clip_rect.width(),
                           ca_layer_overlay->shared_state->clip_rect.height()};
-  GLfloat clip_rect_corner_radius =
-      ca_layer_overlay->shared_state->clip_rect_corner_radius;
+
+  const gfx::RectF& rect =
+      ca_layer_overlay->shared_state->rounded_corner_bounds.rect();
+  GLfloat rounded_corner_rect[5] = {
+      rect.x(), rect.y(), rect.width(), rect.height(),
+      ca_layer_overlay->shared_state->rounded_corner_bounds.GetSimpleRadius()};
+
   GLint sorting_context_id = ca_layer_overlay->shared_state->sorting_context_id;
   SkMatrix44 transform = ca_layer_overlay->shared_state->transform;
   GLfloat gl_transform[16];
@@ -3687,7 +3697,7 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
   // The alpha has already been applied when copying the RPDQ to an IOSurface.
   GLfloat alpha = 1;
   gl_->ScheduleCALayerSharedStateCHROMIUM(alpha, is_clipped, clip_rect,
-                                          clip_rect_corner_radius,
+                                          rounded_corner_rect,
                                           sorting_context_id, gl_transform);
   gl_->ScheduleCALayerCHROMIUM(overlay_texture->texture.id(), contents_rect,
                                ca_layer_overlay->background_color,

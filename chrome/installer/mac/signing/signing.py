@@ -89,6 +89,18 @@ def get_parts(config):
                 CodeSignOptions.HARDENED_RUNTIME,
                 entitlements='helper-renderer-entitlements.plist',
                 verify_options=VerifyOptions.DEEP),
+        'helper-gpu-app':
+            CodeSignedProduct(
+                '{0.framework_dir}/Helpers/{0.product} Helper (GPU).app'
+                .format(config),
+                '{}.helper.gpu'.format(uncustomized_bundle_id),
+                # Do not use |full_hardened_runtime_options| because library
+                # validation is incompatible with more permissive code signing
+                # entitlements.
+                options=CodeSignOptions.RESTRICT + CodeSignOptions.KILL +
+                CodeSignOptions.HARDENED_RUNTIME,
+                entitlements='helper-gpu-entitlements.plist',
+                verify_options=VerifyOptions.DEEP),
         'helper-plugin-app':
             CodeSignedProduct(
                 '{0.framework_dir}/Helpers/{0.product} Helper (Plugin).app'

@@ -11,7 +11,6 @@
 #include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
-#include "ui/accessibility/accessibility_switches.h"
 
 namespace ash {
 
@@ -44,8 +43,6 @@ class AutoclickMenuBubbleControllerTest : public AshTestBase {
 
   // testing::Test:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalAccessibilityAutoclick);
     AshTestBase::SetUp();
     Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
   }

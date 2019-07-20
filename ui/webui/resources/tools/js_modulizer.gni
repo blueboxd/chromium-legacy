@@ -4,8 +4,14 @@
 
 # TODO(dpapad): Share these with polymer_modulizer.gni.
 common_namespace_rewrites = [
+  "cr.addSingletonGetter|addSingletonGetter",
+  "cr.addWebUIListener|addWebUIListener",
   "cr.dispatchSimpleEvent|dispatchSimpleEvent",
+  "cr.removeWebUIListener|removeWebUIListener",
+  "cr.sendWithPromise|sendWithPromise",
   "cr.ui.FocusOutlineManager|FocusOutlineManager",
+  "Polymer.RenderStatus.afterNextRender|afterNextRender",
+  "Polymer.RenderStatus.beforeNextRender|beforeNextRender",
 ]
 
 template("js_modulizer") {
@@ -31,6 +37,10 @@ template("js_modulizer") {
     args += [ "--namespace_rewrites" ] + common_namespace_rewrites
     if (defined(invoker.namespace_rewrites)) {
       args += invoker.namespace_rewrites
+    }
+
+    if (defined(invoker.deps)) {
+      deps = invoker.deps
     }
   }
 }

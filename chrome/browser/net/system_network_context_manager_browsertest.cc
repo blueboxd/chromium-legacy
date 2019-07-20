@@ -169,6 +169,18 @@ void RunStubResolverConfigTests(bool async_dns_feature_enabled) {
   EXPECT_EQ(false, dns_over_https_servers->at(1)->use_post);
   servers.GetList().clear();
   methods.GetList().clear();
+
+  // Test case with policy BuiltInDnsClientEnabled enabled.
+  local_state->Set(prefs::kDnsOverHttpsServers, servers);
+  local_state->Set(prefs::kDnsOverHttpsServerMethods, methods);
+  GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
+  EXPECT_EQ(async_dns_feature_enabled, stub_resolver_enabled);
+  EXPECT_FALSE(dns_over_https_servers.has_value());
+  local_state->Set(prefs::kBuiltInDnsClientEnabled,
+                   base::Value(!async_dns_feature_enabled));
+  GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
+  EXPECT_EQ(!async_dns_feature_enabled, stub_resolver_enabled);
+  EXPECT_FALSE(dns_over_https_servers.has_value());
 }
 
 }  // namespace

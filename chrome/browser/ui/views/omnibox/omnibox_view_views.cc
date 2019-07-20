@@ -848,8 +848,12 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // URL. Otherwise, we would have to use the FormatURL offset adjustments.
   size_t offset = GetText().find(original_text);
   if (offset != base::string16::npos) {
+    AutocompleteMatch match;
+    model()->ClassifyString(original_selected_text, &match, nullptr);
+    bool selection_classifes_as_search =
+        AutocompleteMatch::IsSearchType(match.type);
     if (start != end && gesture == UnelisionGesture::MOUSE_RELEASE &&
-        !model()->ClassifiesAsSearch(original_selected_text)) {
+        !selection_classifes_as_search) {
       // For user selections that look like a URL instead of a Search:
       // If we are uneliding at the end of a drag-select (on mouse release),
       // and the selection spans to the beginning of the elided URL, ensure that
@@ -1010,7 +1014,9 @@ base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   base::string16 selection_text = gfx::TruncateString(
       clipboard_text, kMaxSelectionTextLength, gfx::WORD_BREAK);
 
-  if (model()->ClassifiesAsSearch(clipboard_text))
+  AutocompleteMatch match;
+  model()->ClassifyString(clipboard_text, &match, nullptr);
+  if (AutocompleteMatch::IsSearchType(match.type))
     return l10n_util::GetStringFUTF16(IDS_PASTE_AND_SEARCH, selection_text);
 
   // To ensure the search and url strings began to truncate at the exact same
@@ -1020,7 +1026,7 @@ base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   const float kMaxSelectionPixelWidth = GetStringWidthF(
       selection_text, Textfield::GetFontList(), gfx::Typesetter::BROWSER);
   base::string16 url = url_formatter::ElideUrl(
-      GURL(clipboard_text), Textfield::GetFontList(), kMaxSelectionPixelWidth,
+      match.destination_url, Textfield::GetFontList(), kMaxSelectionPixelWidth,
       gfx::Typesetter::BROWSER);
 
   return l10n_util::GetStringFUTF16(IDS_PASTE_AND_GO, url);

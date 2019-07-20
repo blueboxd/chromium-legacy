@@ -157,6 +157,7 @@ void BookmarkBridge::LoadEmptyPartnerBookmarkShimForTesting(
       return;
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
       std::make_unique<BookmarkPermanentNode>(0, BookmarkNode::FOLDER));
+  PartnerBookmarksShim::DisablePartnerBookmarksEditing();
   DCHECK(partner_bookmarks_shim_->IsLoaded());
 }
 

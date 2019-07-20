@@ -563,12 +563,14 @@ bool OverviewController::ToggleOverview(
 
   if (InOverviewSession()) {
     // Do not allow ending overview if we're in single split mode unless swiping
-    // up from the shelf in tablet mode.
+    // up from the shelf in tablet mode, or ending overview immediately without
+    // animations.
     if (windows.empty() &&
         Shell::Get()->split_view_controller()->InTabletSplitViewMode() &&
         Shell::Get()->split_view_controller()->state() !=
             SplitViewState::kBothSnapped &&
-        type != OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
+        type != OverviewSession::EnterExitOverviewType::kSwipeFromShelf &&
+        type != OverviewSession::EnterExitOverviewType::kImmediateExit) {
       return true;
     }
 

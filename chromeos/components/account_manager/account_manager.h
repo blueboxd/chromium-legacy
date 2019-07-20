@@ -267,7 +267,11 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
 
   // Reads accounts from |accounts| and inserts them in |accounts_| and runs all
   // callbacks waiting on |AccountManager| initialization.
-  void InsertAccountsAndRunInitializationCallbacks(const AccountMap& accounts);
+  // |initialization_start_time| is the time at which
+  // |AccountManager::Initialize| was called.
+  void InsertAccountsAndRunInitializationCallbacks(
+      const base::TimeTicks& initialization_start_time,
+      const AccountMap& accounts);
 
   // Accepts a closure and runs it immediately if |AccountManager| has already
   // been initialized, otherwise saves the |closure| for running later, when the

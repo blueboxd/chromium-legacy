@@ -220,7 +220,11 @@ class UkmBrowserTestBase : public SyncTest {
 
     metrics::UnsentLogStore* log_store =
         ukm_service()->reporting_service_.ukm_log_store();
-    EXPECT_FALSE(log_store->has_staged_log());
+    if (log_store->has_staged_log()) {
+      // For testing purposes, we are examining the content of a staged log
+      // without ever sending the log, so discard any previously staged log.
+      log_store->DiscardStagedLog();
+    }
     log_store->StageNextLog();
     EXPECT_TRUE(log_store->has_staged_log());
 
@@ -1223,5 +1227,105 @@ IN_PROC_BROWSER_TEST_P(UkmConsentParamBrowserTest, GroupPolicyConsentCheck) {
 INSTANTIATE_TEST_SUITE_P(UkmConsentParamBrowserTests,
                          UkmConsentParamBrowserTest,
                          testing::Bool());
+
+// Verify that sources kept alive in-memory will be discarded by UKM service in
+// one reporting cycle after the web contents are destroyed when the tab is
+// closed or when the user navigated away in the same tab.
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, EvictObsoleteSources) {
+  MetricsConsentOverride metrics_consent(true);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  Browser* sync_browser = CreateBrowser(profile);
+
+  // Navigate to a URL in a new tab.
+  AddTabAtIndexToBrowser(sync_browser, 1, GURL("https://www.chromium.org"),
+                         ui::PAGE_TRANSITION_TYPED, true);
+  ukm::SourceId source_id1 = ukm::GetSourceIdForWebContentsDocument(
+      sync_browser->tab_strip_model()->GetWebContentsAt(1));
+  ukm::SourceId source_id2 = ukm::kInvalidSourceId;
+
+  // The UKM report contains this newly-created source.
+  BuildAndStoreUkmLog();
+  ukm::Report report = GetUkmReport();
+  bool has_source_id1 = false;
+  bool has_source_id2 = false;
+  for (const auto& s : report.sources()) {
+    has_source_id1 |= s.id() == source_id1;
+    has_source_id2 |= s.id() == source_id2;
+  }
+  EXPECT_TRUE(has_source_id1);
+  EXPECT_FALSE(has_source_id2);
+
+  // Navigate to a URL in another new tab.
+  AddTabAtIndexToBrowser(sync_browser, 2, GURL("https://www.google.com"),
+                         ui::PAGE_TRANSITION_TYPED, true);
+  source_id2 = ukm::GetSourceIdForWebContentsDocument(
+      sync_browser->tab_strip_model()->GetWebContentsAt(2));
+
+  // The next report should again contain source 1 because the tab is still
+  // alive, and also source 2 associated to the new tab that has just been
+  // opened.
+  BuildAndStoreUkmLog();
+  report = GetUkmReport();
+  has_source_id1 = false;
+  has_source_id2 = false;
+  for (const auto& s : report.sources()) {
+    has_source_id1 |= s.id() == source_id1;
+    has_source_id2 |= s.id() == source_id2;
+  }
+  EXPECT_TRUE(has_source_id1);
+  EXPECT_TRUE(has_source_id2);
+
+  // Close the tab corresponding to source 1, this should mark source 1 as
+  // obsolete. Next report will still contain source 1 because we might have
+  // associated entries before it was closed.
+  sync_browser->tab_strip_model()->CloseWebContentsAt(
+      1, TabStripModel::CloseTypes::CLOSE_NONE);
+
+  BuildAndStoreUkmLog();
+  report = GetUkmReport();
+  has_source_id1 = false;
+  has_source_id2 = false;
+  for (const auto& s : report.sources()) {
+    has_source_id1 |= s.id() == source_id1;
+    has_source_id2 |= s.id() == source_id2;
+  }
+  EXPECT_TRUE(has_source_id1);
+  EXPECT_TRUE(has_source_id2);
+
+  // Navigate to a new URL in the current tab, this will mark source 2 that was
+  // in the current tab as obsolete.
+  ui_test_utils::NavigateToURL(sync_browser, GURL("https://www.wikipedia.org"));
+
+  // The previous report was the last one that could potentially contain entries
+  // for source 1. Source 1 is thus no longer included in future reports. This
+  // report will still contain source 2 because we might have associated entries
+  // since the last report.
+  BuildAndStoreUkmLog();
+  report = GetUkmReport();
+  has_source_id1 = false;
+  has_source_id2 = false;
+  for (const auto& s : report.sources()) {
+    has_source_id1 |= s.id() == source_id1;
+    has_source_id2 |= s.id() == source_id2;
+  }
+  EXPECT_FALSE(has_source_id1);
+  EXPECT_TRUE(has_source_id2);
+
+  // Neither source 1 or source 2 is alive anymore.
+  BuildAndStoreUkmLog();
+  report = GetUkmReport();
+  has_source_id1 = false;
+  has_source_id2 = false;
+  for (const auto& s : report.sources()) {
+    has_source_id1 |= s.id() == source_id1;
+    has_source_id2 |= s.id() == source_id2;
+  }
+  EXPECT_FALSE(has_source_id1);
+  EXPECT_FALSE(has_source_id2);
+
+  CloseBrowserSynchronously(sync_browser);
+}
 
 }  // namespace metrics

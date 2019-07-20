@@ -80,6 +80,11 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
                                    SplitviewAnimationType type,
                                    const gfx::Transform& target_transform);
 
+// Restores split view and overview based on the current split view's state.
+// If |refresh_snapped_windows| is true, it will update the left and right
+// snapped windows based on the MRU windows snapped states.
+void MaybeRestoreSplitView(bool refresh_snapped_windows);
+
 // Returns true if we allow dragging an overview window to snap to split view in
 // clamshell mode.
 ASH_EXPORT bool IsClamshellSplitViewModeEnabled();

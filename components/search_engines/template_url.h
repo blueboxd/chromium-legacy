@@ -151,7 +151,7 @@ class TemplateURLRef {
     base::string16 original_query;
 
     // The type the original input query was identified as.
-    metrics::OmniboxInputType input_type = metrics::OmniboxInputType::INVALID;
+    metrics::OmniboxInputType input_type = metrics::OmniboxInputType::EMPTY;
 
     // If the search request is from the omnibox, this may specify how the user
     // last interacted with the omnibox.

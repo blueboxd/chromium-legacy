@@ -21,9 +21,14 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
  protected:
-  LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
-
   enum Flags { kContainsEnclosingIntRect = 1 << 0 };
+
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+
+  LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
 
   void CheckPaintInvalidationVisualRect(
       const LayoutObject& object,
@@ -671,7 +676,6 @@ TEST_P(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode) {
 
 TEST_P(VisualRectMappingTest,
        DifferentPaintInvalidaitionContainerForAbsolutePosition) {
-  EnableCompositing();
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
 
@@ -718,7 +722,6 @@ TEST_P(VisualRectMappingTest,
 
 TEST_P(VisualRectMappingTest,
        ContainerOfAbsoluteAbovePaintInvalidationContainer) {
-  EnableCompositing();
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
 
@@ -976,7 +979,6 @@ TEST_P(VisualRectMappingTest, AbsoluteUnderRelativeInlineVerticalRL) {
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
     * { margin: 0; }
@@ -1007,7 +1009,6 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
     * { margin: 0; }
@@ -1037,7 +1038,6 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
     * { margin: 0; }
@@ -1071,7 +1071,6 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
     * { margin: 0; }
@@ -1104,7 +1103,6 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
 }
 
 TEST_P(VisualRectMappingTest, PerspectivePlusScroll) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
     * { margin: 0; }

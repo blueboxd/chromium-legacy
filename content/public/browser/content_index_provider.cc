@@ -24,6 +24,4 @@ ContentIndexProvider::ContentIndexProvider() = default;
 
 ContentIndexProvider::~ContentIndexProvider() = default;
 
-ContentIndexProvider::Client::~Client() = default;
-
 }  // namespace content

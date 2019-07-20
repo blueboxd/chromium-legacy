@@ -12,8 +12,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
-#include "chrome/browser/sharing/fcm_constants.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -142,7 +143,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
   void RegisterDeviceSync() {
     base::RunLoop run_loop;
     sharing_device_registration_.RegisterDevice(
-        base::BindLambdaForTesting([&](SharingDeviceRegistration::Result r) {
+        base::BindLambdaForTesting([&](SharingDeviceRegistrationResult r) {
           result_ = r;
           devices_ = sync_prefs_.GetSyncedDevices();
           fcm_registration_ = sync_prefs_.GetFCMRegistration();
@@ -154,7 +155,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
   void UnregisterDeviceSync() {
     base::RunLoop run_loop;
     sharing_device_registration_.UnregisterDevice(
-        base::BindLambdaForTesting([&](SharingDeviceRegistration::Result r) {
+        base::BindLambdaForTesting([&](SharingDeviceRegistrationResult r) {
           result_ = r;
           devices_ = sync_prefs_.GetSyncedDevices();
           fcm_registration_ = sync_prefs_.GetFCMRegistration();
@@ -188,7 +189,7 @@ class SharingDeviceRegistrationTest : public testing::Test {
   // callback results
   std::map<std::string, SharingSyncPreference::Device> devices_;
   base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration_;
-  SharingDeviceRegistration::Result result_;
+  SharingDeviceRegistrationResult result_;
 };
 
 }  // namespace
@@ -199,7 +200,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
 
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
   std::string guid =
       fake_local_device_info_provider_.GetLocalDeviceInfo()->guid();
   auto it = devices_.find(guid);
@@ -221,7 +222,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
 
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Device should be re-registered with the new FCM token.
   it = devices_.find(guid);
@@ -239,7 +240,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
 
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Instance ID now returns a new token, however it shouldn't be invoked.
   SetInstanceIDFCMToken(kFCMToken2);
@@ -250,7 +251,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
   // Register device again without changing VAPID keys.
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   auto it = devices_.find(guid);
   ASSERT_NE(devices_.end(), it);
@@ -269,7 +270,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
 
   // First register the device.
   RegisterDeviceSync();
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Advance time so registration is expired.
   scoped_task_environment_.FastForwardBy(kRegistrationExpiration);
@@ -278,7 +279,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
   // which will return a different FCM token.
   SetInstanceIDFCMToken(kFCMToken2);
   RegisterDeviceSync();
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Device should be registered with the new FCM token.
   auto it = devices_.find(guid);
@@ -293,7 +294,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
 
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::FCM_TRANSIENT_ERROR, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kFcmTransientError, result_);
   std::string guid =
       fake_local_device_info_provider_.GetLocalDeviceInfo()->guid();
   auto it = devices_.find(guid);
@@ -305,7 +306,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_FatalError) {
 
   RegisterDeviceSync();
 
-  EXPECT_EQ(SharingDeviceRegistration::Result::FCM_FATAL_ERROR, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kFcmFatalError, result_);
   std::string guid =
       fake_local_device_info_provider_.GetLocalDeviceInfo()->guid();
   auto it = devices_.find(guid);
@@ -319,12 +320,12 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
 
   // First register the device.
   RegisterDeviceSync();
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
   ASSERT_NE(devices_.end(), devices_.find(guid));
 
   // Then unregister the device.
   UnregisterDeviceSync();
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
   ASSERT_EQ(devices_.end(), devices_.find(guid));
   EXPECT_FALSE(fcm_registration_);
 
@@ -332,7 +333,7 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   // which will return a different FCM token.
   SetInstanceIDFCMToken(kFCMToken2);
   RegisterDeviceSync();
-  EXPECT_EQ(SharingDeviceRegistration::Result::SUCCESS, result_);
+  EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Device should be registered with the new FCM token.
   auto it = devices_.find(guid);

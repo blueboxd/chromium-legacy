@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_active_popup.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_node_position.h"
@@ -389,54 +390,88 @@ void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
   }
 }
 
+std::vector<AXPlatformNodeWin*>
+AXPlatformNodeWin::CreatePlatformNodeVectorFromRelationIdVector(
+    std::vector<int32_t>& relation_id_list) {
+  std::vector<AXPlatformNodeWin*> platform_node_list;
+
+  for (int32_t id : relation_id_list) {
+    AXPlatformNode* platform_node = GetDelegate()->GetFromNodeID(id);
+    if (IsValidUiaRelationTarget(platform_node)) {
+      platform_node_list.push_back(
+          static_cast<AXPlatformNodeWin*>(platform_node));
+    }
+  }
+
+  return platform_node_list;
+}
+
+SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsSafeArray(
+    std::vector<AXPlatformNodeWin*>& platform_node_list) {
+  if (platform_node_list.empty())
+    return nullptr;
+
+  SAFEARRAY* uia_array =
+      SafeArrayCreateVector(VT_UNKNOWN, 0, platform_node_list.size());
+  LONG i = 0;
+
+  for (AXPlatformNodeWin* platform_node : platform_node_list) {
+    // All incoming ids should already be validated to have a valid relation
+    // targets so that this function does not need to re-check before allocating
+    // the SAFEARRAY.
+    DCHECK(IsValidUiaRelationTarget(platform_node));
+    SafeArrayPutElement(uia_array, &i,
+                        static_cast<IRawElementProviderSimple*>(platform_node));
+    ++i;
+  }
+
+  return uia_array;
+}
+
+SAFEARRAY* AXPlatformNodeWin::CreateUIAControllerForArray() {
+  std::vector<int32_t> relation_id_list =
+      GetIntListAttribute(ax::mojom::IntListAttribute::kControlsIds);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(relation_id_list);
+
+  if (GetActivePopupAxUniqueId() != base::nullopt) {
+    AXPlatformNodeWin* view_popup_node_win = static_cast<AXPlatformNodeWin*>(
+        GetFromUniqueId(GetActivePopupAxUniqueId().value()));
+
+    if (IsValidUiaRelationTarget(view_popup_node_win))
+      platform_node_list.push_back(view_popup_node_win);
+  }
+
+  return CreateUIAElementsSafeArray(platform_node_list);
+}
+
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForRelation(
     const ax::mojom::IntListAttribute& attribute) {
-  std::vector<int32_t> id_list = GetIntListAttribute(attribute);
-  base::EraseIf(id_list, [&](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  SAFEARRAY* propertyvalue = CreateUIAElementsArrayFromIdVector(id_list);
-  return propertyvalue;
+  std::vector<int32_t> relation_id_list = GetIntListAttribute(attribute);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(relation_id_list);
+
+  return CreateUIAElementsSafeArray(platform_node_list);
 }
 
 SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayForReverseRelation(
     const ax::mojom::IntListAttribute& attribute) {
   std::set<AXPlatformNode*> reverse_relations =
       GetDelegate()->GetReverseRelations(attribute);
-  std::vector<int32_t> ax_platform_node_ids;
-  ax_platform_node_ids.reserve(reverse_relations.size());
-  for (AXPlatformNode* ax_platform_node : reverse_relations) {
-    if (IsValidUiaRelationTarget(ax_platform_node)) {
-      ax_platform_node_ids.push_back(
-          static_cast<AXPlatformNodeWin*>(ax_platform_node)->GetData().id);
-    }
-  }
 
-  return CreateUIAElementsArrayFromIdVector(ax_platform_node_ids);
-}
+  std::vector<int32_t> id_list;
+  std::transform(
+      reverse_relations.cbegin(), reverse_relations.cend(),
+      std::back_inserter(id_list), [](AXPlatformNode* platform_node) {
+        return static_cast<AXPlatformNodeWin*>(platform_node)->GetData().id;
+      });
 
-SAFEARRAY* AXPlatformNodeWin::CreateUIAElementsArrayFromIdVector(
-    std::vector<int32_t>& ids) {
-  if (ids.size() == 0)
-    return nullptr;
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(id_list);
 
-  SAFEARRAY* uia_array = SafeArrayCreateVector(VT_UNKNOWN, 0, ids.size());
-
-  LONG i = 0;
-  for (const auto& node_id : ids) {
-    AXPlatformNodeWin* node_win =
-        static_cast<AXPlatformNodeWin*>(GetDelegate()->GetFromNodeID(node_id));
-
-    // The caller should validate that all incoming ids are valid relation
-    // targets so that this function does not need to re-check before allocating
-    // the SAFEARRAY.
-    DCHECK(IsValidUiaRelationTarget(node_win));
-    SafeArrayPutElement(uia_array, &i,
-                        static_cast<IRawElementProviderSimple*>(node_win));
-    ++i;
-  }
-
-  return uia_array;
+  return CreateUIAElementsSafeArray(platform_node_list);
 }
 
 SAFEARRAY* AXPlatformNodeWin::CreateClickablePointArray() {
@@ -2138,10 +2173,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaderItems(SAFEARRAY** result) {
 
   std::vector<int32_t> column_header_ids =
       GetDelegate()->GetColHeaderNodeIds(*column);
-  base::EraseIf(column_header_ids, [this](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(column_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2155,10 +2191,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaderItems(SAFEARRAY** result) {
 
   std::vector<int32_t> row_header_ids =
       GetDelegate()->GetRowHeaderNodeIds(*row);
-  base::EraseIf(row_header_ids, [this](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(row_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2171,10 +2208,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetColumnHeaders(SAFEARRAY** result) {
   UIA_VALIDATE_CALL_1_ARG(result);
 
   std::vector<int32_t> column_header_ids = GetDelegate()->GetColHeaderNodeIds();
-  base::EraseIf(column_header_ids, [this](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(column_header_ids);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(column_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -2183,10 +2221,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetRowHeaders(SAFEARRAY** result) {
   UIA_VALIDATE_CALL_1_ARG(result);
 
   std::vector<int32_t> row_header_ids = GetDelegate()->GetRowHeaderNodeIds();
-  base::EraseIf(row_header_ids, [this](int32_t node_id) {
-    return !IsValidUiaRelationTarget(GetDelegate()->GetFromNodeID(node_id));
-  });
-  *result = CreateUIAElementsArrayFromIdVector(row_header_ids);
+
+  std::vector<AXPlatformNodeWin*> platform_node_list =
+      CreatePlatformNodeVectorFromRelationIdVector(row_header_ids);
+
+  *result = CreateUIAElementsSafeArray(platform_node_list);
   return S_OK;
 }
 
@@ -3735,8 +3774,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
 
     case UIA_ControllerForPropertyId:
       result->vt = VT_ARRAY | VT_UNKNOWN;
-      result->parray = CreateUIAElementsArrayForRelation(
-          ax::mojom::IntListAttribute::kControlsIds);
+      result->parray = CreateUIAControllerForArray();
       break;
 
     case UIA_ControlTypePropertyId:

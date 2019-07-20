@@ -475,6 +475,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     NOTREACHED();
     return;
   }
+  function_ui->set_worker_thread_id(params.worker_thread_id);
   if (IsRequestFromServiceWorker(params)) {
     function_ui->set_service_worker_version_id(
         params.service_worker_version_id);

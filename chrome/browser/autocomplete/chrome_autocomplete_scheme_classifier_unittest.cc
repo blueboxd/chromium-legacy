@@ -35,7 +35,7 @@ TEST_F(ChromeAutocompleteSchemeClassifierTest, NormalSearch) {
   GURL url("pictures of puppies");
   // No url scheme; should default to search.
   EXPECT_EQ(scheme_classifier_->GetInputTypeForScheme(url.scheme()),
-            metrics::OmniboxInputType::INVALID);
+            metrics::OmniboxInputType::EMPTY);
 }
 TEST_F(ChromeAutocompleteSchemeClassifierTest, HttpUrl) {
   GURL url("https://google.com/search?q=puppies");

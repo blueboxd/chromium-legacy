@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
+#include "base/test/bind_test_util.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/core/css/font_face_descriptors.h"
@@ -11,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -21,10 +23,20 @@ PageTestBase::PageTestBase() = default;
 
 PageTestBase::~PageTestBase() = default;
 
+void PageTestBase::EnableCompositing() {
+  DCHECK(!dummy_page_holder_)
+      << "EnableCompositing() must be called before set up";
+  enable_compositing_ = true;
+}
+
 void PageTestBase::SetUp() {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
+  auto setter = base::BindLambdaForTesting([&](Settings& settings) {
+    if (enable_compositing_)
+      settings.SetAcceleratedCompositingEnabled(true);
+  });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), nullptr, nullptr, nullptr, GetTickClock());
+      IntSize(800, 600), nullptr, nullptr, std::move(setter), GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -35,8 +47,12 @@ void PageTestBase::SetUp() {
 
 void PageTestBase::SetUp(IntSize size) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
+  auto setter = base::BindLambdaForTesting([&](Settings& settings) {
+    if (enable_compositing_)
+      settings.SetAcceleratedCompositingEnabled(true);
+  });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      size, nullptr, nullptr, nullptr, GetTickClock());
+      size, nullptr, nullptr, std::move(setter), GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.
   GetDocument().SetCompatibilityMode(Document::kNoQuirksMode);
@@ -50,8 +66,14 @@ void PageTestBase::SetupPageWithClients(
     LocalFrameClient* local_frame_client,
     FrameSettingOverrideFunction setting_overrider) {
   DCHECK(!dummy_page_holder_) << "Page should be set up only once";
+  auto setter = base::BindLambdaForTesting([&](Settings& settings) {
+    if (setting_overrider)
+      setting_overrider(settings);
+    if (enable_compositing_)
+      settings.SetAcceleratedCompositingEnabled(true);
+  });
   dummy_page_holder_ = std::make_unique<DummyPageHolder>(
-      IntSize(800, 600), clients, local_frame_client, setting_overrider,
+      IntSize(800, 600), clients, local_frame_client, std::move(setter),
       GetTickClock());
 
   // Use no-quirks (ake "strict") mode by default.

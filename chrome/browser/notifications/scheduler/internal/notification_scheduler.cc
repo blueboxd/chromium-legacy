@@ -21,6 +21,7 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
@@ -223,6 +224,7 @@ class NotificationSchedulerImpl : public NotificationScheduler,
       std::unique_ptr<NotificationData> updated_notification_data) {
     // Show the notification in UI.
     auto system_data = std::make_unique<DisplayAgent::SystemData>();
+    system_data->type = entry->type;
     system_data->guid = entry->guid;
     context_->display_agent()->ShowNotification(
         std::move(updated_notification_data), std::move(system_data));
@@ -265,17 +267,52 @@ class NotificationSchedulerImpl : public NotificationScheduler,
         std::move(notifications), std::move(client_states), task_start_time_);
   }
 
-  void OnClick(const std::string& notification_id) override {
-    context_->impression_tracker()->OnClick(notification_id);
+  void OnClick(SchedulerClientType type, const std::string& guid) override {
+    context_->impression_tracker()->OnClick(type, guid);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
+                       weak_ptr_factory_.GetWeakPtr(), UserActionType::kClick,
+                       type, base::nullopt));
   }
 
-  void OnActionClick(const std::string& notification_id,
+  void OnActionClick(SchedulerClientType type,
+                     const std::string& guid,
                      ActionButtonType button_type) override {
-    context_->impression_tracker()->OnActionClick(notification_id, button_type);
+    context_->impression_tracker()->OnActionClick(type, guid, button_type);
+
+    ButtonClickInfo button_info;
+    // TODO(xingliu): Plumb the button id from platform.
+    button_info.button_id = std::string();
+    button_info.type = button_type;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       UserActionType::kButtonClick, type,
+                       std::move(button_info)));
   }
 
-  void OnDismiss(const std::string& notification_id) override {
-    context_->impression_tracker()->OnDismiss(notification_id);
+  void OnDismiss(SchedulerClientType type, const std::string& guid) override {
+    context_->impression_tracker()->OnDismiss(type, guid);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NotificationSchedulerImpl::NotifyClientAfterUserAction,
+                       weak_ptr_factory_.GetWeakPtr(), UserActionType::kDismiss,
+                       type, base::nullopt));
+  }
+
+  void NotifyClientAfterUserAction(
+      UserActionType action_type,
+      SchedulerClientType client_type,
+      base::Optional<ButtonClickInfo> button_info) {
+    auto* client = context_->client_registrar()->GetClient(client_type);
+    if (!client)
+      return;
+
+    client->OnUserAction(action_type, std::move(button_info));
   }
 
   std::unique_ptr<NotificationSchedulerContext> context_;

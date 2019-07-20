@@ -637,4 +637,50 @@ TEST_F(APISignatureTest, ValidateResponse) {
   }
 }
 
+// Tests signature parsing when promise-based responses are supported.
+TEST_F(APISignatureTest, PromisesSupport) {
+  v8::HandleScope handle_scope(isolate());
+
+  {
+    // Test a signature with a required callback.
+    SpecVector required_callback_specs;
+    required_callback_specs.push_back(
+        ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback").Build());
+    auto required_callback_signature =
+        std::make_unique<APISignature>(std::move(required_callback_specs));
+    // By default, promises are not supported, and passing in no arguments
+    // should fail.
+    ExpectFailure(*required_callback_signature, "[]",
+                  api_errors::NoMatchingSignature());
+    // If we allow promises, parsing the arguments should succeed (with a
+    // promise-based response type).
+    required_callback_signature->set_promise_support(
+        binding::PromiseSupport::kAllowed);
+    ExpectPass(*required_callback_signature, "[]", "[]",
+               binding::AsyncResponseType::kPromise);
+  }
+
+  {
+    // Next, try an optional callback.
+    // Test a signature with a required callback.
+    SpecVector required_callback_specs;
+    required_callback_specs.push_back(
+        ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
+            .MakeOptional()
+            .Build());
+    auto required_callback_signature =
+        std::make_unique<APISignature>(std::move(required_callback_specs));
+    // Even if promises aren't supported, parsing should succeed, because the
+    // callback is optional.
+    ExpectPass(*required_callback_signature, "[]", "[]",
+               binding::AsyncResponseType::kNone);
+    // If we allow promises, parsing the arguments should succeed, with a
+    // promise-based response type.
+    required_callback_signature->set_promise_support(
+        binding::PromiseSupport::kAllowed);
+    ExpectPass(*required_callback_signature, "[]", "[]",
+               binding::AsyncResponseType::kPromise);
+  }
+}
+
 }  // namespace extensions

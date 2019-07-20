@@ -22,7 +22,7 @@ enum class SharingDeviceCapability { kNone = 0, kTelephony = 1 << 0 };
 class SharingDeviceInfo {
  public:
   SharingDeviceInfo(const std::string& guid,
-                    const std::string& human_readable_name,
+                    const base::string16& human_readable_name,
                     sync_pb::SyncEnums::DeviceType device_type,
                     base::Time last_online_timestamp,
                     int capabilities);
@@ -33,7 +33,7 @@ class SharingDeviceInfo {
   const std::string& guid() const;
 
   // A human readable name of the device.
-  const std::string& human_readable_name() const;
+  const base::string16& human_readable_name() const;
 
   // Type of the device whether it is a phone, tablet or desktop.
   sync_pb::SyncEnums::DeviceType device_type() const;
@@ -48,7 +48,7 @@ class SharingDeviceInfo {
  private:
   const std::string guid_;
 
-  const std::string human_readable_name_;
+  const base::string16 human_readable_name_;
 
   const sync_pb::SyncEnums::DeviceType device_type_;
 

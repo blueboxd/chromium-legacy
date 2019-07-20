@@ -16,41 +16,49 @@ namespace optimization_guide {
 
 namespace {
 
-void RecordProcessHintsComponentResult(ProcessHintsComponentResult result) {
-  UMA_HISTOGRAM_ENUMERATION(kProcessHintsComponentResultHistogramString,
-                            static_cast<int>(result),
-                            static_cast<int>(ProcessHintsComponentResult::MAX));
+const char kProcessHintsComponentResultHistogramString[] =
+    "OptimizationGuide.ProcessHintsResult";
+
+void MaybePopulateProcessHintsComponentResult(
+    ProcessHintsComponentResult result,
+    ProcessHintsComponentResult* out_result) {
+  if (out_result)
+    *out_result = result;
 }
 
 }  // namespace
 
-const char kProcessHintsComponentResultHistogramString[] =
-    "OptimizationGuide.ProcessHintsResult";
+void RecordProcessHintsComponentResult(ProcessHintsComponentResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kProcessHintsComponentResultHistogramString,
+                            result);
+}
 
 std::unique_ptr<proto::Configuration> ProcessHintsComponent(
-    const HintsComponentInfo& component_info) {
+    const HintsComponentInfo& component_info,
+    ProcessHintsComponentResult* out_result) {
   if (!component_info.version.IsValid() || component_info.path.empty()) {
-    RecordProcessHintsComponentResult(
-        ProcessHintsComponentResult::FAILED_INVALID_PARAMETERS);
+    MaybePopulateProcessHintsComponentResult(
+        ProcessHintsComponentResult::kFailedInvalidParameters, out_result);
     return nullptr;
   }
 
   std::string binary_pb;
   if (!base::ReadFileToString(component_info.path, &binary_pb)) {
-    RecordProcessHintsComponentResult(
-        ProcessHintsComponentResult::FAILED_READING_FILE);
+    MaybePopulateProcessHintsComponentResult(
+        ProcessHintsComponentResult::kFailedReadingFile, out_result);
     return nullptr;
   }
 
   std::unique_ptr<proto::Configuration> proto_configuration =
       std::make_unique<proto::Configuration>();
   if (!proto_configuration->ParseFromString(binary_pb)) {
-    RecordProcessHintsComponentResult(
-        ProcessHintsComponentResult::FAILED_INVALID_CONFIGURATION);
+    MaybePopulateProcessHintsComponentResult(
+        ProcessHintsComponentResult::kFailedInvalidConfiguration, out_result);
     return nullptr;
   }
 
-  RecordProcessHintsComponentResult(ProcessHintsComponentResult::SUCCESS);
+  MaybePopulateProcessHintsComponentResult(
+      ProcessHintsComponentResult::kSuccess, out_result);
   return proto_configuration;
 }
 

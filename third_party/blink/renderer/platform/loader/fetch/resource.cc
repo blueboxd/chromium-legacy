@@ -908,7 +908,7 @@ void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
     while (ResourceClient* client = walker3.Next())
       client_names.push_back("(finished) " + client->DebugName());
     std::sort(client_names.begin(), client_names.end(),
-              WTF::CodePointCompareLessThan);
+              WTF::CodeUnitCompareLessThan);
 
     StringBuilder builder;
     for (wtf_size_t i = 0;

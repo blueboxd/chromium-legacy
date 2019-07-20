@@ -84,8 +84,8 @@ PaintPropertyTreeBuilderTest::PaintPropertiesForElement(const char* name) {
 }
 
 void PaintPropertyTreeBuilderTest::SetUp() {
-  RenderingTest::SetUp();
   EnableCompositing();
+  RenderingTest::SetUp();
 }
 
 #define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \

@@ -57,7 +57,53 @@ class EventHandlerTest : public PageTestBase {
   ShadowRoot* SetShadowContent(const char* shadow_content, const char* host);
 };
 
-class EventHandlerSimTest : public SimTest {};
+class EventHandlerSimTest : public SimTest {
+ public:
+  void InitializeMousePositionAndActivateView(float x, float y) {
+    WebMouseEvent mouse_move_event(WebMouseEvent::kMouseMove,
+                                   WebFloatPoint(x, y), WebFloatPoint(x, y),
+                                   WebPointerProperties::Button::kNoButton, 0,
+                                   WebInputEvent::Modifiers::kNoModifiers,
+                                   WebInputEvent::GetStaticTimeStampForTests());
+    mouse_move_event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
+        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+
+    WebView().MainFrameWidget()->SetFocus(true);
+    WebView().SetIsActive(true);
+  }
+
+  void InjectScrollFromGestureEvents(cc::ElementIdType element_id,
+                                     float delta_x,
+                                     float delta_y) {
+    WebGestureEvent gesture_scroll_begin{
+        WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+        WebInputEvent::GetStaticTimeStampForTests()};
+    gesture_scroll_begin.SetFrameScale(1);
+    gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
+    gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
+    gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
+        element_id;
+    WebView().MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(gesture_scroll_begin));
+
+    WebGestureEvent gesture_scroll_update{
+        WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        WebInputEvent::GetStaticTimeStampForTests()};
+    gesture_scroll_update.SetFrameScale(1);
+    gesture_scroll_update.data.scroll_update.delta_x = delta_x;
+    gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
+    WebView().MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(gesture_scroll_update));
+
+    WebGestureEvent gesture_scroll_end{
+        WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+        WebInputEvent::GetStaticTimeStampForTests()};
+    gesture_scroll_end.SetFrameScale(1);
+    WebView().MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(gesture_scroll_end));
+  }
+};
 
 class TapEventBuilder : public WebGestureEvent {
  public:
@@ -1634,25 +1680,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
   Compositor().BeginFrame();
 
   // Set mouse position and active web view.
-  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown, WebFloatPoint(1, 1),
-                                 WebFloatPoint(1, 1),
-                                 WebPointerProperties::Button::kLeft, 1,
-                                 WebInputEvent::Modifiers::kLeftButtonDown,
-                                 WebInputEvent::GetStaticTimeStampForTests());
-  mouse_down_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
-      mouse_down_event);
-
-  WebMouseEvent mouse_up_event(
-      WebInputEvent::kMouseUp, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
-      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests());
-  mouse_up_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
-      mouse_up_event);
-
-  WebView().MainFrameWidget()->SetFocus(true);
-  WebView().SetIsActive(true);
+  InitializeMousePositionAndActivateView(1, 1);
 
   WebElement element1 = GetDocument().getElementById("line1");
   WebElement element2 = GetDocument().getElementById("line2");
@@ -1720,25 +1748,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
   Compositor().BeginFrame();
 
   // Set mouse position and active web view.
-  WebMouseEvent mouse_down_event(WebMouseEvent::kMouseDown, WebFloatPoint(1, 1),
-                                 WebFloatPoint(1, 1),
-                                 WebPointerProperties::Button::kLeft, 1,
-                                 WebInputEvent::Modifiers::kLeftButtonDown,
-                                 WebInputEvent::GetStaticTimeStampForTests());
-  mouse_down_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
-      mouse_down_event);
-
-  WebMouseEvent mouse_up_event(
-      WebInputEvent::kMouseUp, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
-      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests());
-  mouse_up_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
-      mouse_up_event);
-
-  WebView().MainFrameWidget()->SetFocus(true);
-  WebView().SetIsActive(true);
+  InitializeMousePositionAndActivateView(1, 1);
 
   WebElement element1 = GetDocument().getElementById("line1");
   WebElement element2 = GetDocument().getElementById("line2");
@@ -1747,28 +1757,13 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
   EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
 
-  // Send scroll gesture events which will set
-  // |hover_needs_update_at_scroll_end_| to be true in ScrollManager.
-  WebGestureEvent scroll_begin_event(
-      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchpad);
-  WebGestureEvent scroll_update_event(
-      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchpad);
-  scroll_update_event.data.scroll_update.delta_y = -500;
-  WebGestureEvent scroll_end_event(WebInputEvent::kGestureScrollEnd,
-                                   WebInputEvent::kNoModifiers,
-                                   WebInputEvent::GetStaticTimeStampForTests(),
-                                   blink::WebGestureDevice::kTouchpad);
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_begin_event));
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_update_event));
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_end_event));
+  // Send scroll gesture events which will cause scroll happen in main thread
+  // and mark hover state dirty in ScrollManager.
   LocalFrameView* frame_view = GetDocument().View();
+  constexpr float delta_y = 500;
+  InjectScrollFromGestureEvents(
+      frame_view->LayoutViewport()->GetCompositorElementId().GetInternalValue(),
+      0, delta_y);
   ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().Height());
   EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
   EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
@@ -1833,60 +1828,17 @@ TEST_F(EventHandlerSimTest,
       local_child_frame_view->GetScrollableArea();
 
   // Set mouse position and active web view.
-  WebMouseEvent mouse_down_event(
-      WebMouseEvent::kMouseDown, WebFloatPoint(100, 100),
-      WebFloatPoint(100, 100), WebPointerProperties::Button::kLeft, 1,
-      WebInputEvent::Modifiers::kLeftButtonDown,
-      WebInputEvent::GetStaticTimeStampForTests());
-  mouse_down_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(
-      mouse_down_event);
-
-  WebMouseEvent mouse_up_event(
-      WebInputEvent::kMouseUp, WebFloatPoint(100, 100), WebFloatPoint(100, 100),
-      WebPointerProperties::Button::kLeft, 1, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests());
-  mouse_up_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(
-      mouse_up_event);
-
-  WebView().MainFrameWidget()->SetFocus(true);
-  WebView().SetIsActive(true);
+  InitializeMousePositionAndActivateView(100, 100);
 
   Element* element = iframe_doc->getElementById("hoverarea");
   EXPECT_TRUE(element->IsHovered());
 
-  // Send scroll gesture events which will set
-  // |hover_needs_update_at_scroll_end_| to be true in ScrollManager.
+  // Send scroll gesture events which will cause scroll happen in main thread
+  // and mark hover state dirty in ScrollManager.
   constexpr float delta_y = 1000;
-  WebGestureEvent gesture_scroll_begin{
-      WebInputEvent::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests()};
-  gesture_scroll_begin.SetFrameScale(1);
-  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0;
-  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -delta_y;
-  gesture_scroll_begin.data.scroll_begin.scrollable_area_element_id =
-      iframe_scrollable_area->GetCompositorElementId().GetInternalValue();
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(gesture_scroll_begin));
-
-  WebGestureEvent gesture_scroll_update{
-      WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests()};
-  gesture_scroll_update.SetFrameScale(1);
-  gesture_scroll_update.data.scroll_update.delta_x = 0;
-  gesture_scroll_update.data.scroll_update.delta_y = -delta_y;
-
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(gesture_scroll_update));
-
-  WebGestureEvent gesture_scroll_end{
-      WebInputEvent::kGestureScrollEnd, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests()};
-  gesture_scroll_end.SetFrameScale(1);
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(gesture_scroll_end));
-
+  InjectScrollFromGestureEvents(
+      iframe_scrollable_area->GetCompositorElementId().GetInternalValue(), 0,
+      delta_y);
   LocalFrameView* frame_view = GetDocument().View();
   ASSERT_EQ(0, frame_view->LayoutViewport()->GetScrollOffset().Height());
   ASSERT_EQ(1000, iframe_scrollable_area->ScrollOffsetInt().Height());
@@ -1923,17 +1875,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
   Compositor().BeginFrame();
 
   // Set mouse position and active web view.
-  WebMouseEvent mouse_move_event(
-      WebMouseEvent::kMouseMove, WebFloatPoint(100, 100),
-      WebFloatPoint(100, 100), WebPointerProperties::Button::kNoButton, 0,
-      WebInputEvent::Modifiers::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests());
-  mouse_move_event.SetFrameScale(1);
-  GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-      mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
-
-  WebView().MainFrameWidget()->SetFocus(true);
-  WebView().SetIsActive(true);
+  InitializeMousePositionAndActivateView(100, 100);
 
   Element* element = GetDocument().getElementById("hoverarea");
   EXPECT_TRUE(element->IsHovered());
@@ -1967,6 +1909,89 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
   // Hover state is updated after the begin frame.
   Compositor().BeginFrame();
   EXPECT_FALSE(element->IsHovered());
+}
+
+// Test that the hover is only updated at the next begin frame after the main
+// thread scroll snap animation finishes.
+TEST_F(EventHandlerSimTest,
+       TestUpdateHoverAfterMainThreadScrollSnapAtBeginFrame) {
+  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      div {
+        position: absolute;
+      }
+      #scroller {
+        width: 500px;
+        height: 500px;
+        overflow: scroll;
+        scroll-snap-type: both mandatory;
+        border: solid black 5px;
+      }
+      .target:hover {
+        background-color: red;
+      }
+
+      .target {
+        width: 200px;
+        height: 800px;
+        scroll-snap-align: start;
+        background-color: blue;
+      }
+    </style>
+    <body>
+      <div id="scroller">
+        <div class="target" id="target1" style="left: 0px; top: 0px;"></div>
+        <div class="target" id="target2" style="left: 80px; top: 400px;"></div>
+      </div>
+    </body>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Set mouse position and active web view.
+  InitializeMousePositionAndActivateView(150, 150);
+
+  Element* const scroller = GetDocument().getElementById("scroller");
+  Element* target1 = GetDocument().getElementById("target1");
+  Element* target2 = GetDocument().getElementById("target2");
+  EXPECT_TRUE(target1->IsHovered());
+  EXPECT_FALSE(target2->IsHovered());
+
+  // Send scroll gesture events which will cause scroll happen in main thread
+  // and the snap animation will happen after gesture scroll end. The hover
+  // state will be marked dirty after the snap animation finishes.
+  ScrollableArea* scrollable_area =
+      scroller->GetLayoutBox()->GetScrollableArea();
+  constexpr float delta_y = 300;
+  InjectScrollFromGestureEvents(
+      scrollable_area->GetCompositorElementId().GetInternalValue(), 0, delta_y);
+  ASSERT_EQ(300, scrollable_area->GetScrollOffset().Height());
+  EXPECT_TRUE(target1->IsHovered());
+  EXPECT_FALSE(target2->IsHovered());
+
+  // Gesture scroll end is received and scroll snap animation starts, but it is
+  // not finished.
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+  EXPECT_TRUE(target1->IsHovered());
+  EXPECT_FALSE(target2->IsHovered());
+
+  // The programmatic scroll animation finishes and the hover state is set to
+  // dirty.
+  Compositor().BeginFrame(1);
+  ASSERT_EQ(400, scrollable_area->GetScrollOffset().Height());
+  EXPECT_TRUE(target1->IsHovered());
+  EXPECT_FALSE(target2->IsHovered());
+
+  // The hover effect on targets is updated after the next begin frame.
+  Compositor().BeginFrame();
+  ASSERT_EQ(400, scrollable_area->GetScrollOffset().Height());
+  EXPECT_FALSE(target1->IsHovered());
+  EXPECT_TRUE(target2->IsHovered());
 }
 
 TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {

@@ -29,10 +29,6 @@
 namespace device {
 
 // static
-const char WinWebAuthnApiAuthenticator::kAuthenticatorId[] =
-    "WinWebAuthnApiAuthenticator";
-
-// static
 bool WinWebAuthnApiAuthenticator::
     IsUserVerifyingPlatformAuthenticatorAvailable() {
   BOOL result;
@@ -42,18 +38,10 @@ bool WinWebAuthnApiAuthenticator::
          result == TRUE;
 }
 
-// static
-bool WinWebAuthnApiAuthenticator::ShowsResidentCredentialPrivacyNotice() {
-  // TODO: Once Windows shows a resident credential privacy notice in their UI,
-  // this should check for the respective API version.
-  return false;
-}
-
 WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(HWND current_window)
     : FidoAuthenticator(),
       current_window_(current_window),
-      win_api_(WinWebAuthnApi::GetDefault()),
-      weak_factory_(this) {
+      win_api_(WinWebAuthnApi::GetDefault()) {
   CHECK(win_api_->IsAvailable());
   CoCreateGuid(&cancellation_id_);
 }
@@ -165,7 +153,7 @@ void WinWebAuthnApiAuthenticator::Cancel() {
 }
 
 std::string WinWebAuthnApiAuthenticator::GetId() const {
-  return kAuthenticatorId;
+  return "WinWebAuthnApiAuthenticator";
 }
 
 base::string16 WinWebAuthnApiAuthenticator::GetDisplayName() const {
@@ -209,7 +197,11 @@ base::WeakPtr<FidoAuthenticator> WinWebAuthnApiAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() {
+bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() const {
+  return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
+}
+
+bool WinWebAuthnApiAuthenticator::ShowsPrivacyNotice() const {
   return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
 }
 

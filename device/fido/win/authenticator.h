@@ -27,16 +27,9 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
     : public FidoAuthenticator {
  public:
-  // The return value of |GetId|.
-  static const char kAuthenticatorId[];
-
   // This method is safe to call without checking
   // WinWebAuthnApi::IsAvailable().
   static bool IsUserVerifyingPlatformAuthenticatorAvailable();
-
-  // ShowsResidentCredentialPrivacyNotice returns true if the Windows native UI
-  // will show a privacy notice when creating a resident credential.
-  static bool ShowsResidentCredentialPrivacyNotice();
 
   // Instantiates an authenticator that uses the default WinWebAuthnApi.
   //
@@ -45,7 +38,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   WinWebAuthnApiAuthenticator(HWND current_window);
   ~WinWebAuthnApiAuthenticator() override;
 
-  // FidoAuthenticator
+  // SupportsCredProtectExtension returns whether the native API supports the
+  // credProtect CTAP extension.
+  bool SupportsCredProtectExtension() const;
+
+  // ShowsPrivacyNotice returns true if the Windows native UI will show a
+  // privacy notice dialog before a MakeCredential request that might create
+  // a resident key or that requests attestation.
+  bool ShowsPrivacyNotice() const;
+
+ private:
+  // FidoAuthenticator:
   void InitializeAuthenticator(base::OnceClosure callback) override;
   void MakeCredential(CtapMakeCredentialRequest request,
                       MakeCredentialCallback callback) override;
@@ -63,9 +66,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   bool IsWinNativeApiAuthenticator() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
-  bool SupportsCredProtectExtension();
-
- private:
   void MakeCredentialDone(
       MakeCredentialCallback callback,
       std::pair<CtapDeviceResponseCode,
@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   // Verifies callbacks from |win_api_| are posted back onto the originating
   // sequence.
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<WinWebAuthnApiAuthenticator> weak_factory_;
+  base::WeakPtrFactory<WinWebAuthnApiAuthenticator> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WinWebAuthnApiAuthenticator);
 };
 

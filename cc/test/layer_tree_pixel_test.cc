@@ -199,7 +199,6 @@ void LayerTreePixelTest::EndTest() {
 }
 
 void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
-  settings->layer_transforms_should_scale_layer_contents = true;
   settings->gpu_rasterization_forced = use_vulkan();
 }
 

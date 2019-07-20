@@ -200,8 +200,8 @@ void BrowserProcessSubThread::IOThreadCleanUp() {
       // Record time spent for the method call.
       base::TimeDelta network_wait_time = base::TimeTicks::Now() - start_time;
       UMA_HISTOGRAM_TIMES("NetworkService.ShutdownTime", network_wait_time);
-      LOG(ERROR) << "Waited " << network_wait_time.InMilliseconds()
-                 << " ms for network service";
+      DVLOG(1) << "Waited " << network_wait_time.InMilliseconds()
+               << " ms for network service";
     }
   }
 

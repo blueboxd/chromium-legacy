@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 
 #include "base/optional.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -67,17 +68,24 @@
 namespace blink {
 
 PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
-    : layout_view_(layout_view),
-      pending_update_type_(kCompositingUpdateNone),
-      has_accelerated_compositing_(true),
-      compositing_(false),
-      root_should_always_composite_dirty_(true),
-      root_layer_attachment_(kRootLayerUnattached) {
+    : layout_view_(layout_view) {
   UpdateAcceleratedCompositingSettings();
 }
 
 PaintLayerCompositor::~PaintLayerCompositor() {
   DCHECK_EQ(root_layer_attachment_, kRootLayerUnattached);
+}
+
+void PaintLayerCompositor::CleanUp() {
+  if (InCompositingMode())
+    DetachRootLayer();
+}
+
+void PaintLayerCompositor::DidLayout() {
+  // FIXME: Technically we only need to do this when the LocalFrameView's
+  // isScrollable method would return a different value.
+  root_should_always_composite_dirty_ = true;
+  EnableCompositingModeIfNeeded();
 }
 
 bool PaintLayerCompositor::InCompositingMode() const {
@@ -98,9 +106,9 @@ void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
   compositing_ = enable;
 
   if (compositing_)
-    EnsureRootLayer();
+    AttachRootLayer();
   else
-    DestroyRootLayer();
+    DetachRootLayer();
 
   // Schedule an update in the parent frame so the <iframe>'s layer in the owner
   // document matches the compositing state here.
@@ -127,14 +135,19 @@ void PaintLayerCompositor::EnableCompositingModeIfNeeded() {
 }
 
 bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
+  // If compositing is disabled for the WebView, then nothing composites.
   if (!has_accelerated_compositing_)
     return false;
-  // Should not composite if not attached to a frame view.
+  // Local roots composite always, when compositing is enabled globally.
+  if (layout_view_.GetFrame()->IsLocalRoot())
+    return true;
+  // Some non-local roots of embedded content do not have a LocalFrameView
+  // so they are not visible and should not get compositor layers.
   if (!layout_view_.GetFrameView())
     return false;
-  return layout_view_.GetFrame()->IsLocalRoot() ||
-         CompositingReasonFinder::RequiresCompositingForScrollableFrame(
-             layout_view_);
+  // Non-local root frames will composite only if needed for scrolling.
+  return CompositingReasonFinder::RequiresCompositingForScrollableFrame(
+      layout_view_);
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
@@ -229,9 +242,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
 
   ScriptForbiddenScope forbid_script;
 
-  // FIXME: enableCompositingModeIfNeeded can trigger a
+  // FIXME: EnableCompositingModeIfNeeded() can trigger a
   // CompositingUpdateRebuildTree, which asserts that it's not
-  // InCompositingUpdate.
+  // InCompositingUpdate().
   EnableCompositingModeIfNeeded();
 
 #if DCHECK_IS_ON()
@@ -304,6 +317,13 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
 #endif
 }
 
+#if DCHECK_IS_ON()
+void PaintLayerCompositor::AssertNoUnresolvedDirtyBits() {
+  DCHECK_EQ(pending_update_type_, kCompositingUpdateNone);
+  DCHECK(!root_should_always_composite_dirty_);
+}
+#endif
+
 void PaintLayerCompositor::SetNeedsCompositingUpdate(
     CompositingUpdateType update_type) {
   DCHECK_NE(update_type, kCompositingUpdateNone);
@@ -316,22 +336,6 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
 
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
 }
-
-void PaintLayerCompositor::DidLayout() {
-  // FIXME: Technically we only need to do this when the LocalFrameView's
-  // isScrollable method would return a different value.
-  root_should_always_composite_dirty_ = true;
-  EnableCompositingModeIfNeeded();
-}
-
-#if DCHECK_IS_ON()
-
-void PaintLayerCompositor::AssertNoUnresolvedDirtyBits() {
-  DCHECK_EQ(pending_update_type_, kCompositingUpdateNone);
-  DCHECK(!root_should_always_composite_dirty_);
-}
-
-#endif
 
 GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer() {
   LayoutVideo* video =
@@ -460,6 +464,9 @@ void PaintLayerCompositor::UpdateIfNeeded(
         std::min(DocumentLifecycle::kCompositingClean, target_state));
     return;
   }
+
+  if (IsMainFrame())
+    GetPage()->GetVisualViewport().CreateLayerTree();
 
   PaintLayer* update_root = RootLayer();
 
@@ -654,7 +661,7 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
     PaintLayerCompositor* inner_compositor = FrameContentsCompositor(
         ToLayoutEmbeddedContent(layer->GetLayoutObject()));
     if (inner_compositor && inner_compositor->StaleInCompositingMode())
-      inner_compositor->EnsureRootLayer();
+      inner_compositor->AttachRootLayer();
   }
 
   layer->ClearClipRects(kPaintingClipRects);
@@ -771,25 +778,6 @@ GraphicsLayer* PaintLayerCompositor::ScrollLayer() const {
   return nullptr;
 }
 
-void PaintLayerCompositor::SetIsInWindow(bool is_in_window) {
-  if (!StaleInCompositingMode())
-    return;
-
-  if (is_in_window) {
-    if (root_layer_attachment_ != kRootLayerUnattached)
-      return;
-
-    AttachCompositorTimeline();
-    AttachRootLayer();
-  } else {
-    if (root_layer_attachment_ == kRootLayerUnattached)
-      return;
-
-    DetachRootLayer();
-    DetachCompositorTimeline();
-  }
-}
-
 void PaintLayerCompositor::UpdatePotentialCompositingReasonsFromStyle(
     PaintLayer& layer) {
   auto reasons = CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
@@ -869,44 +857,35 @@ void PaintLayerCompositor::UpdateTrackingRasterInvalidations() {
     UpdateTrackingRasterInvalidationsRecursive(root_layer);
 }
 
-void PaintLayerCompositor::EnsureRootLayer() {
+void PaintLayerCompositor::AttachRootLayer() {
   if (root_layer_attachment_ != kRootLayerUnattached)
     return;
 
-  if (IsMainFrame())
-    GetVisualViewport().CreateLayerTree();
-
-  AttachCompositorTimeline();
-  AttachRootLayer();
-}
-
-void PaintLayerCompositor::DestroyRootLayer() {
-  DetachRootLayer();
-}
-
-void PaintLayerCompositor::AttachRootLayer() {
   // With CompositeAfterPaint, PaintArtifactCompositor is responsible for the
   // root layer.
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
+  // Local roots are attached to the ChromeClient later. Otherwise, we can
+  // attach the layer into the existing compositor layer tree.
   if (layout_view_.GetFrame()->IsLocalRoot()) {
     root_layer_attachment_ = kRootLayerPendingAttachViaChromeClient;
-  } else {
-    HTMLFrameOwnerElement* owner_element =
-        layout_view_.GetDocument().LocalOwner();
-    DCHECK(owner_element);
-    // The layer will get hooked up via
-    // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
-    // frame's layoutObject in the parent document.
-    owner_element->SetNeedsCompositingUpdate();
-    if (owner_element->GetLayoutObject()) {
-      ToLayoutBoxModelObject(owner_element->GetLayoutObject())
-          ->Layer()
-          ->SetNeedsCompositingInputsUpdate();
-    }
-    root_layer_attachment_ = kRootLayerAttachedViaEnclosingFrame;
+    return;
   }
+
+  HTMLFrameOwnerElement* owner_element =
+      layout_view_.GetDocument().LocalOwner();
+  DCHECK(owner_element);
+  // The layer will get hooked up via
+  // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
+  // frame's layoutObject in the parent document.
+  owner_element->SetNeedsCompositingUpdate();
+  if (owner_element->GetLayoutObject()) {
+    ToLayoutBoxModelObject(owner_element->GetLayoutObject())
+        ->Layer()
+        ->SetNeedsCompositingInputsUpdate();
+  }
+  root_layer_attachment_ = kRootLayerAttachedViaEnclosingFrame;
 }
 
 void PaintLayerCompositor::DetachRootLayer() {
@@ -925,10 +904,8 @@ void PaintLayerCompositor::DetachRootLayer() {
     }
     case kRootLayerAttachedViaChromeClient: {
       LocalFrame& frame = layout_view_.GetFrameView()->GetFrame();
-      Page* page = frame.GetPage();
-      if (!page)
-        return;
-      page->GetChromeClient().AttachRootGraphicsLayer(nullptr, &frame);
+      ChromeClient& chrome_client = frame.GetPage()->GetChromeClient();
+      chrome_client.AttachRootGraphicsLayer(nullptr, &frame);
       break;
     }
     case kRootLayerPendingAttachViaChromeClient:
@@ -937,34 +914,6 @@ void PaintLayerCompositor::DetachRootLayer() {
   }
 
   root_layer_attachment_ = kRootLayerUnattached;
-}
-
-void PaintLayerCompositor::AttachCompositorTimeline() {
-  LocalFrame& frame = layout_view_.GetFrameView()->GetFrame();
-  Page* page = frame.GetPage();
-  if (!page || !frame.GetDocument())
-    return;
-
-  CompositorAnimationTimeline* compositor_timeline =
-      frame.GetDocument()->Timeline().CompositorTimeline();
-  if (compositor_timeline) {
-    page->GetChromeClient().AttachCompositorAnimationTimeline(
-        compositor_timeline, &frame);
-  }
-}
-
-void PaintLayerCompositor::DetachCompositorTimeline() {
-  LocalFrame& frame = layout_view_.GetFrameView()->GetFrame();
-  Page* page = frame.GetPage();
-  if (!page || !frame.GetDocument())
-    return;
-
-  CompositorAnimationTimeline* compositor_timeline =
-      frame.GetDocument()->Timeline().CompositorTimeline();
-  if (compositor_timeline) {
-    page->GetChromeClient().DetachCompositorAnimationTimeline(
-        compositor_timeline, &frame);
-  }
 }
 
 ScrollingCoordinator* PaintLayerCompositor::GetScrollingCoordinator() const {

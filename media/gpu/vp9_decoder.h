@@ -138,6 +138,8 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   // Current frame header to be used in decoding the next picture.
   std::unique_ptr<Vp9FrameHeader> curr_frame_hdr_;
+  // Current frame size that is necessary to decode |curr_frame_hdr_|.
+  gfx::Size curr_frame_size_;
 
   // Color space provided by the container.
   const VideoColorSpace container_color_space_;

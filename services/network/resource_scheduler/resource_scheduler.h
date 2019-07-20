@@ -189,6 +189,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // resource scheduling via protocol handlers.
   const bool enabled_;
 
+  // Duration after which the timer to dispatch queued requests should fire.
+  const base::TimeDelta queued_requests_dispatch_periodicity_;
+
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
 
   // The TaskRunner to post tasks on. Can be overridden for tests.

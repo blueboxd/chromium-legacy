@@ -135,7 +135,6 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
 
         Bitmap selectedIcon = splashImage;
         boolean selectedIconGenerated = false;
-        // TODO(crbug.com/977173): assign selectedIconAdaptive to correct value
         boolean selectedIconAdaptive = false;
         if (selectedIcon == null) {
             selectedIcon = mWebappInfo.icon();
@@ -191,7 +190,7 @@ public class WebappSplashDelegate implements SplashDelegate, NativeInitObserver 
         splashView.setBackgroundColor(backgroundColor);
 
         Bitmap splashBitmap = null;
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+        try (StrictModeContext smc = StrictModeContext.allowDiskReads()) {
             splashBitmap = FileUtils.queryBitmapFromContentProvider(appContext,
                     Uri.parse(WebApkCommonUtils.generateSplashContentProviderUri(
                             mWebappInfo.webApkPackageName())));

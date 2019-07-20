@@ -24,6 +24,8 @@ enum class SchedulerTaskTime {
 };
 
 // The type of a list of clients using the notification scheduler system.
+// GENERATED_JAVA_ENUM_PACKAGE: (
+//   org.chromium.chrome.browser.notifications.scheduler)
 enum class SchedulerClientType {
   // Test only values.
   kTest1 = -1,

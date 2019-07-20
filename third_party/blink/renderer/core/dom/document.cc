@@ -2918,8 +2918,20 @@ void Document::LayoutUpdated() {
 
   // Plugins can run script inside layout which can detach the page.
   // TODO(dcheng): Does it make sense to do any of this work if detached?
-  if (GetFrame() && GetFrame()->IsMainFrame())
-    GetFrame()->GetPage()->GetChromeClient().MainFrameLayoutUpdated();
+  if (GetFrame()) {
+    if (GetFrame()->IsMainFrame())
+      GetFrame()->GetPage()->GetChromeClient().MainFrameLayoutUpdated();
+
+    // We do attach here, during lifecycle update, because until then we
+    // don't have a good place that has access to its local root's FrameWidget.
+    // TODO(dcheng): If we create FrameWidget before Frame then we could move
+    // this to Document::Initialize().
+    if (Platform::Current()->IsThreadedAnimationEnabled() &&
+        GetSettings()->GetAcceleratedCompositingEnabled()) {
+      GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(
+          Timeline().CompositorTimeline(), GetFrame());
+    }
+  }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
 
@@ -3076,10 +3088,7 @@ void Document::Initialize() {
   layout_view_ = new LayoutView(this);
   SetLayoutObject(layout_view_);
 
-  layout_view_->SetIsInWindow(true);
   layout_view_->SetStyle(StyleResolver::StyleForViewport(*this));
-  layout_view_->Compositor()->SetNeedsCompositingUpdate(
-      kCompositingUpdateAfterCompositingInputChange);
 
   AttachContext context;
   AttachLayoutTree(context);
@@ -3099,15 +3108,6 @@ void Document::Initialize() {
   // attached to a frame. Otherwise ContextLifecycleObserver::contextDestroyed
   // wouldn't be fired.
   network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
-
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    CompositorAnimationTimeline* animation_timeline =
-        Timeline().CompositorTimeline();
-    if (animation_timeline) {
-      GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(
-          animation_timeline, frame_.Get());
-    }
-  }
 }
 
 void Document::Shutdown() {
@@ -3168,15 +3168,7 @@ void Document::Shutdown() {
 
   markers_->PrepareForDestruction();
 
-  if (GetPage()) {
-    GetPage()->DocumentDetached(this);
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      if (auto* compositor_timeline = Timeline().CompositorTimeline()) {
-        GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(
-            compositor_timeline, frame_.Get());
-      }
-    }
-  }
+  GetPage()->DocumentDetached(this);
 
   probe::DocumentDetached(this);
 
@@ -3193,8 +3185,13 @@ void Document::Shutdown() {
   CancelPendingJavaScriptUrls();
   http_refresh_scheduler_->Cancel();
 
-  if (layout_view_)
-    layout_view_->SetIsInWindow(false);
+  if (Platform::Current()->IsThreadedAnimationEnabled() &&
+      GetSettings()->GetAcceleratedCompositingEnabled()) {
+    GetPage()->GetChromeClient().DetachCompositorAnimationTimeline(
+        Timeline().CompositorTimeline(), GetFrame());
+  }
+
+  layout_view_->CleanUpCompositor();
 
   if (RegistrationContext())
     RegistrationContext()->DocumentWasDetached();
@@ -7529,6 +7526,11 @@ Locale& Document::GetCachedLocale(const AtomicString& locale) {
 }
 
 AnimationClock& Document::GetAnimationClock() {
+  DCHECK(GetPage());
+  return GetPage()->Animator().Clock();
+}
+
+const AnimationClock& Document::GetAnimationClock() const {
   DCHECK(GetPage());
   return GetPage()->Animator().Clock();
 }

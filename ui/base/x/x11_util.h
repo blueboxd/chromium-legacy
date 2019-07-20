@@ -30,7 +30,6 @@ typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef unsigned long Cursor;
 
 namespace gfx {
-class Canvas;
 class Insets;
 class Point;
 class Rect;
@@ -250,17 +249,6 @@ void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate);
 COMPONENT_EXPORT(UI_BASE_X)
 bool GetXWindowStack(XID window, std::vector<XID>* windows);
 
-// Copies |source_bounds| from |drawable| to |canvas| at offset |dest_offset|.
-// |source_bounds| is in physical pixels, while |dest_offset| is relative to
-// the canvas's scale. Note that this function is slow since it uses
-// XGetImage() to copy the data from the X server to this process before
-// copying it to |canvas|.
-COMPONENT_EXPORT(UI_BASE_X)
-bool CopyAreaToCanvas(XID drawable,
-                      gfx::Rect source_bounds,
-                      gfx::Point dest_offset,
-                      gfx::Canvas* canvas);
-
 enum WindowManagerName {
   WM_OTHER,    // We were able to obtain the WM's name, but there is
                // no corresponding entry in this enum.
@@ -355,10 +343,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XScopedCursor {
   XDisplay* display_;
 
   DISALLOW_COPY_AND_ASSIGN(XScopedCursor);
-};
-
-struct COMPONENT_EXPORT(UI_BASE_X) XImageDeleter {
-  void operator()(XImage* image) const;
 };
 
 namespace test {

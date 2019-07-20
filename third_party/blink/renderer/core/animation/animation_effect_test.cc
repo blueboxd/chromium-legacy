@@ -130,42 +130,42 @@ TEST(AnimationAnimationEffectTest, Sanity) {
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->ActiveDuration());
+  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(0, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->ActiveDuration());
+  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(0.5, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(2);
 
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->ActiveDuration());
+  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(3);
 
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->ActiveDuration());
+  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 }
 
@@ -245,12 +245,12 @@ TEST(AnimationAnimationEffectTest, ZeroIteration) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_EQ(0, animation_node->ActiveDuration());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
-  EXPECT_EQ(0, animation_node->ActiveDuration());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(0, animation_node->CurrentIteration());
   EXPECT_EQ(0, animation_node->Progress());
 }
@@ -267,7 +267,7 @@ TEST(AnimationAnimationEffectTest, InfiniteIteration) {
   EXPECT_FALSE(animation_node->Progress());
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation_node->ActiveDuration());
+            animation_node->SpecifiedTiming().ActiveDuration());
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_EQ(0, animation_node->CurrentIteration());
@@ -368,22 +368,22 @@ TEST(AnimationAnimationEffectTest, ZeroDurationSanity) {
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(0, animation_node->ActiveDuration());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(0, animation_node->ActiveDuration());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 }
 
@@ -474,12 +474,12 @@ TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_EQ(0, animation_node->ActiveDuration());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
-  EXPECT_EQ(0, animation_node->ActiveDuration());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->CurrentIteration());
   EXPECT_EQ(1, animation_node->Progress());
@@ -573,8 +573,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationSanity) {
   animation_node->UpdateInheritedTime(0);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation_node->ActiveDuration());
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+            animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -584,8 +584,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationSanity) {
   animation_node->UpdateInheritedTime(1);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation_node->ActiveDuration());
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+            animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -602,8 +602,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationZeroIterations) {
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(0, animation_node->ActiveDuration());
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -612,8 +612,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationZeroIterations) {
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -630,8 +630,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations) {
   animation_node->UpdateInheritedTime(0);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation_node->ActiveDuration());
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+            animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -641,8 +641,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations) {
   animation_node->UpdateInheritedTime(1);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            animation_node->ActiveDuration());
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+            animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -657,7 +657,7 @@ TEST(AnimationAnimationEffectTest, EndTime) {
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(4);
   timing.iteration_count = 2;
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
-  EXPECT_EQ(11, animation_node->EndTimeInternal());
+  EXPECT_EQ(11, animation_node->SpecifiedTiming().EndTimeInternal());
 }
 
 TEST(AnimationAnimationEffectTest, Events) {
@@ -709,13 +709,13 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange) {
 
   // Item ends before iteration finishes.
   animation_node->UpdateInheritedTime(3.4);
-  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_EQ(3.4, animation_node->TakeLocalTime());
   EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
 
   // Item has finished.
   animation_node->UpdateInheritedTime(3.5);
-  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_EQ(3.5, animation_node->TakeLocalTime());
   EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
 }

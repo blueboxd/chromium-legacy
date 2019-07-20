@@ -486,7 +486,8 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 // http://crbug.com/982998
-#if defined(OS_WIN)
+// Test fails on Mac due to https://crbug.com/985925.
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_AccessibilityEventsExpandedChange \
   DISABLED_AccessibilityEventsExpandedChange
 #else

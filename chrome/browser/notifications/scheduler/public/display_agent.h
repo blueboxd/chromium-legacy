@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_DISPLAY_AGENT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/public/notification_data.h"
@@ -19,6 +20,7 @@ class DisplayAgent {
   // Contains data used used by the notification scheduling system internally to
   // build the notification.
   struct SystemData {
+    SchedulerClientType type;
     std::string guid;
   };
 

@@ -74,7 +74,6 @@ class CC_EXPORT LayerTreeHostCommon {
                             const gfx::Vector2dF& elastic_overscroll,
                             const ElementId elastic_overscroll_element_id,
                             int max_texture_size,
-                            bool can_adjust_raster_scales,
                             RenderSurfaceList* render_surface_list,
                             PropertyTrees* property_trees,
                             TransformNode* page_scale_transform_node);
@@ -90,7 +89,6 @@ class CC_EXPORT LayerTreeHostCommon {
     gfx::Vector2dF elastic_overscroll;
     const ElementId elastic_overscroll_element_id;
     int max_texture_size;
-    bool can_adjust_raster_scales;
     RenderSurfaceList* render_surface_list;
     PropertyTrees* property_trees;
     TransformNode* page_scale_transform_node;

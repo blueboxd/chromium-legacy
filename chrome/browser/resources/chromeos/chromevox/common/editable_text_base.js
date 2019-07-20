@@ -681,6 +681,8 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChangedHelper = function(
     utterance = deleted + ', deleted';
   } else if (deletedLen == 1) {
     utterance = deleted;
+    // Single-deleted characters should also use PERSONALITY_DELETED.
+    opt_personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
 
   if (autocompleteSuffix && utterance) {

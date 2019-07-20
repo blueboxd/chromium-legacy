@@ -16228,7 +16228,8 @@
         },
       },
       'id': 572,
-      'supported_on': ['chrome_os:77-'],
+      'supported_on': ['chrome_os:78-'],
+      'future': True,
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -16250,7 +16251,7 @@
 
       When this policy is set to correct value, devices will try to query specified print servers for available printers using IPP protocol.
 
-      If this policy is unset or set to incorrect value, no server printers are visible by users.
+      If this policy is unset or set to incorrect value, no server printers are visible to users.
 
       Currently, the number of print servers is limited to 16. Only the first 16 print servers from the list will be queried.
       ''',

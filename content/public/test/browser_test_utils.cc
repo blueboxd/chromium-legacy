@@ -113,6 +113,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -126,6 +127,14 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/latency/latency_info.h"
 #include "ui/resources/grit/webui_resources.h"
+
+#if defined(OS_WIN)
+#include <uiautomation.h>
+#include <wrl/client.h>
+#include "base/win/atl.h"
+#include "base/win/scoped_safearray.h"
+#include "base/win/scoped_variant.h"
+#endif
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -2000,6 +2009,64 @@ BrowserAccessibility* FindAccessibilityNodeInSubtree(
   }
   return nullptr;
 }
+
+#if defined(OS_WIN)
+template <typename T>
+Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
+    BrowserAccessibility* browser_accessibility) {
+  Microsoft::WRL::ComPtr<T> result;
+  EXPECT_HRESULT_SUCCEEDED(
+      browser_accessibility->GetNativeViewAccessible()->QueryInterface(
+          __uuidof(T), &result));
+  return result;
+}
+
+void UiaGetPropertyValueVtArrayVtUnknownValidate(
+    PROPERTYID property_id,
+    BrowserAccessibility* target_browser_accessibility,
+    const std::vector<std::string>& expected_names) {
+  ASSERT_NE(nullptr, target_browser_accessibility);
+
+  base::win::ScopedVariant result_variant;
+  Microsoft::WRL::ComPtr<IRawElementProviderSimple> node_provider =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(
+          target_browser_accessibility);
+
+  node_provider->GetPropertyValue(property_id, result_variant.Receive());
+  ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, result_variant.type());
+  ASSERT_EQ(1u, SafeArrayGetDim(V_ARRAY(result_variant.ptr())));
+
+  LONG lower_bound, upper_bound, size;
+  ASSERT_HRESULT_SUCCEEDED(
+      SafeArrayGetLBound(V_ARRAY(result_variant.ptr()), 1, &lower_bound));
+  ASSERT_HRESULT_SUCCEEDED(
+      SafeArrayGetUBound(V_ARRAY(result_variant.ptr()), 1, &upper_bound));
+  size = upper_bound - lower_bound + 1;
+  ASSERT_EQ(static_cast<LONG>(expected_names.size()), size);
+
+  std::vector<std::string> names;
+  for (LONG i = 0; i < size; ++i) {
+    CComPtr<IUnknown> unknown_element = nullptr;
+    ASSERT_HRESULT_SUCCEEDED(SafeArrayGetElement(V_ARRAY(result_variant.ptr()),
+                                                 &i, &unknown_element));
+    ASSERT_NE(nullptr, unknown_element);
+
+    CComPtr<IRawElementProviderSimple> raw_element_provider_simple = nullptr;
+    ASSERT_HRESULT_SUCCEEDED(
+        unknown_element->QueryInterface(&raw_element_provider_simple));
+    ASSERT_NE(nullptr, raw_element_provider_simple);
+
+    base::win::ScopedVariant name;
+    ASSERT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPropertyValue(
+        UIA_NamePropertyId, name.Receive()));
+    ASSERT_EQ(VT_BSTR, name.type());
+    names.push_back(base::UTF16ToUTF8(
+        base::string16(V_BSTR(name.ptr()), SysStringLen(V_BSTR(name.ptr())))));
+  }
+
+  ASSERT_THAT(names, testing::UnorderedElementsAreArray(expected_names));
+}
+#endif
 
 bool IsWebContentsBrowserPluginFocused(content::WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =

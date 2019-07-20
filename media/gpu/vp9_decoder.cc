@@ -7,11 +7,34 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "media/base/limits.h"
+#include "media/base/media_switches.h"
 #include "media/gpu/vp9_decoder.h"
 
 namespace media {
+
+namespace {
+std::vector<uint32_t> GetSpatialLayerFrameSize(
+    const DecoderBuffer& decoder_buffer) {
+  const uint32_t* cue_data =
+      reinterpret_cast<const uint32_t*>(decoder_buffer.side_data());
+  if (!cue_data)
+    return {};
+  if (!base::FeatureList::IsEnabled(media::kVp9kSVCHWDecoding)) {
+    DLOG(ERROR) << "Vp9Parser doesn't support parsing SVC stream";
+    return {};
+  }
+
+  size_t num_of_layers = decoder_buffer.side_data_size() / sizeof(uint32_t);
+  if (num_of_layers > 3u) {
+    DLOG(WARNING) << "The maximum number of spatial layers in VP9 is three";
+    return {};
+  }
+  return std::vector<uint32_t>(cue_data, cue_data + num_of_layers);
+}
+}  // namespace
 
 VP9Decoder::VP9Accelerator::VP9Accelerator() {}
 
@@ -38,9 +61,11 @@ void VP9Decoder::SetStream(int32_t id, const DecoderBuffer& decoder_buffer) {
            << " size: " << size;
   stream_id_ = id;
   if (decrypt_config) {
-    parser_.SetStream(ptr, size, decrypt_config->Clone());
+    parser_.SetStream(ptr, size, GetSpatialLayerFrameSize(decoder_buffer),
+                      decrypt_config->Clone());
   } else {
-    parser_.SetStream(ptr, size, nullptr);
+    parser_.SetStream(ptr, size, GetSpatialLayerFrameSize(decoder_buffer),
+                      nullptr);
   }
 }
 
@@ -66,12 +91,14 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     // Read a new frame header if one is not awaiting decoding already.
     std::unique_ptr<DecryptConfig> decrypt_config;
     if (!curr_frame_hdr_) {
+      gfx::Size allocate_size;
       std::unique_ptr<Vp9FrameHeader> hdr(new Vp9FrameHeader());
       Vp9Parser::Result res =
-          parser_.ParseNextFrame(hdr.get(), &decrypt_config);
+          parser_.ParseNextFrame(hdr.get(), &allocate_size, &decrypt_config);
       switch (res) {
         case Vp9Parser::kOk:
           curr_frame_hdr_ = std::move(hdr);
+          curr_frame_size_ = allocate_size;
           break;
 
         case Vp9Parser::kEOStream:
@@ -134,8 +161,7 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
       continue;
     }
 
-    gfx::Size new_pic_size(curr_frame_hdr_->frame_width,
-                           curr_frame_hdr_->frame_height);
+    gfx::Size new_pic_size = curr_frame_size_;
     gfx::Rect new_render_rect(curr_frame_hdr_->render_width,
                               curr_frame_hdr_->render_height);
     // For safety, check the validity of render size or leave it as (0, 0).

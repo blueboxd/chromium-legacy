@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -49,8 +50,6 @@ class WebRequestProxyingWebSocket
       int process_id,
       int render_frame_id,
       content::BrowserContext* browser_context,
-      content::ResourceContext* resource_context,
-      InfoMap* info_map,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       WebRequestAPI::ProxySet* proxies);
   ~WebRequestProxyingWebSocket() override;
@@ -91,8 +90,7 @@ class WebRequestProxyingWebSocket
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       const url::Origin& origin,
       content::BrowserContext* browser_context,
-      content::ResourceContext* resource_context,
-      InfoMap* info_map);
+      WebRequestAPI::ProxySet* proxies);
 
  private:
   void OnBeforeRequestComplete(int error_code);
@@ -112,7 +110,6 @@ class WebRequestProxyingWebSocket
 
   WebSocketFactory factory_;
   content::BrowserContext* const browser_context_;
-  InfoMap* const info_map_;
   network::mojom::WebSocketHandshakeClientPtr forwarding_handshake_client_;
   mojo::Binding<network::mojom::WebSocketHandshakeClient>
       binding_as_handshake_client_;
@@ -137,6 +134,10 @@ class WebRequestProxyingWebSocket
 
   // Owns |this|.
   WebRequestAPI::ProxySet* const proxies_;
+
+  // Notifies the proxy that the browser context has been shutdown.
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_;
 
   base::WeakPtrFactory<WebRequestProxyingWebSocket> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebRequestProxyingWebSocket);

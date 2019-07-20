@@ -84,3 +84,9 @@
 -WebRtcGetUserMediaBrowserTest.*
 -WithOutOfBlinkCors/CrossSiteDocumentBlockingTest.BlockImages/0
 -WithoutOutOfBlinkCors/CrossSiteDocumentBlockingTest.BlockImages/0
+
+# crbug.com/985387: vulkan_content_browsertests fail on Android FYI SkiaRenderer
+# Vulkan (Pixel 2). These tests broke in a consistent way and need investigation
+-MSE_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+-MSE_ExternalClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+-File/MediaTest.VideoBearSilentMp4/0

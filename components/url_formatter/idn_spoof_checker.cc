@@ -309,10 +309,16 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
     // regex is OR'ed with the | operator.
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
-            // Disallow the katakana no (U+30ce), so (U+30bd), zo (U+30be), or
-            // n (U+30f3), as they may be mistaken for slashes when they're
-            // surrounded by non-Japanese scripts (i.e. scripts other than
-            // Katakana, Hiragana or Han). If {no, so, zo, n} next to a
+            // Disallow the following as they may be mistaken for slashes when
+            // they're surrounded by non-Japanese scripts (i.e. scripts other
+            // than Katakana, Hiragana or Han):
+            // "ノ" (Katakana no, U+30ce), "ソ" (Katakana so, U+30bd),
+            // "ゾ" (Katakana zo, U+30be), "ン" (Katakana n, U+30f3),
+            // "丶" (CJK unified ideograph, U+4E36),
+            // "乀" (CJK unified ideograph, U+4E40),
+            // "乁" (CJK unified ideograph, U+4E41),
+            // "丿" (CJK unified ideograph, U+4E3F).
+            // If {no, so, zo, n} next to a
             // non-Japanese script on either side is disallowed, legitimate
             // cases like '{vitamin in Katakana}b6' are blocked. Note that
             // trying to block those characters when used alone as a label is
@@ -322,7 +328,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
             // string. See http://bugs.icu-project.org/trac/ticket/12823 .
             // TODO(jshin): adjust the pattern once the above ICU bug is fixed.
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
-            R"([\u30ce\u30f3\u30bd\u30be])"
+            R"([\u30ce\u30f3\u30bd\u30be\u4e36\u4e40\u4e41\u4e3f])"
             R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}]|)"
 
             // Disallow U+30FD (Katakana iteration mark) and U+30FE (Katakana

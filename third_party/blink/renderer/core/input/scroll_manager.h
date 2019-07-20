@@ -140,7 +140,7 @@ class CORE_EXPORT ScrollManager
   WebGestureEvent SynthesizeGestureScrollBegin(
       const WebGestureEvent& update_event);
 
-  void SnapAtGestureScrollEnd();
+  bool SnapAtGestureScrollEnd();
 
   void NotifyScrollPhaseBeginForCustomizedScroll(const ScrollState&);
   void NotifyScrollPhaseEndForCustomizedScroll();

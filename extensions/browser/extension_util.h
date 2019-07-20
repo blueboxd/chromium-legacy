@@ -35,6 +35,11 @@ bool CanBeIncognitoEnabled(const Extension* extension);
 bool IsIncognitoEnabled(const std::string& extension_id,
                         content::BrowserContext* context);
 
+// Returns true if |extension| can see events and data from another sub-profile
+// (incognito to original profile, or vice versa).
+bool CanCrossIncognito(const extensions::Extension* extension,
+                       content::BrowserContext* context);
+
 // Returns the site of the |extension_id|, given the associated |context|.
 // Suitable for use with BrowserContext::GetStoragePartitionForSite().
 GURL GetSiteForExtensionId(const std::string& extension_id,

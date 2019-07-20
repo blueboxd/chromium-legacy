@@ -47,9 +47,10 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   bool ProcessGestureEvent(const ui::GestureEvent& event);
 
   // These return the actual offset (sometimes reduced by the clamping).
-  // |animating| indicates whether animation is needed for scrolling.
-  int ScrollByXOffset(int x_offset, bool animating);
-  int ScrollByYOffset(int y_offset, bool animating);
+  // |animating| indicates whether animation is needed for scrolling. |x_offset|
+  // or |y_offset| has to be float. Otherwise the slow gesture drag is neglected
+  int ScrollByXOffset(float x_offset, bool animating);
+  int ScrollByYOffset(float y_offset, bool animating);
 
   // views::BubbleDialogDelegateView:
   gfx::Rect GetBubbleBounds() override;
@@ -59,7 +60,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   View* left_arrow() { return left_arrow_; }
   View* right_arrow() { return right_arrow_; }
   LayoutStrategy layout_strategy() const { return layout_strategy_; }
-  gfx::Vector2d scroll_offset() const { return scroll_offset_; }
+  gfx::Vector2dF scroll_offset() const { return scroll_offset_; }
 
   // ShelfBubble:
   bool ShouldCloseOnPressDown() override;
@@ -85,7 +86,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
 
   // Updates the overflow bubble view's layout strategy after scrolling by the
   // distance of |scroll|. Returns the adapted scroll offset.
-  int CalculateLayoutStrategyAfterScroll(int scroll);
+  float CalculateLayoutStrategyAfterScroll(float scroll);
 
   // Ensures that the width of |bubble_bounds| (if it is not horizontally
   // aligned, adjust |bubble_bounds|'s height) is the multiple of the sum of
@@ -94,7 +95,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   void AdjustToEnsureIconsFullyVisible(gfx::Rect* bubble_bounds) const;
 
   // Creates the animation for scrolling shelf by |scroll_distance|.
-  void StartShelfScrollAnimation(int scroll_distance);
+  void StartShelfScrollAnimation(float scroll_distance);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -120,7 +121,7 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   Shelf* shelf_;
   ShelfView* shelf_view_;
 
-  gfx::Vector2d scroll_offset_;
+  gfx::Vector2dF scroll_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleView);
 };

@@ -115,6 +115,42 @@ Polymer({
       type: Object,
       value: null,
     },
+
+    /**
+     * Controls label on the primary action button.
+     * @private
+     */
+    primaryActionButtonLabel_: {
+      type: String,
+      value: null,
+    },
+
+    /**
+     * Controls availability of the primary action button.
+     * @private
+     */
+    primaryActionButtonEnabled_: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
+     * Controls label on the secondary action button.
+     * @private
+     */
+    secondaryActionButtonLabel_: {
+      type: String,
+      value: null,
+    },
+
+    /**
+     * Controls availability of the secondary action button.
+     * @private
+     */
+    secondaryActionButtonEnabled_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   /**
@@ -222,7 +258,6 @@ Polymer({
   /** @override */
   ready: function() {
     this.authenticator_ = new cr.login.Authenticator(this.getSigninFrame_());
-    this.authenticator_.addEventListener('ready', this.onAuthReady_.bind(this));
 
     const that = this;
     const $that = this.$;
@@ -260,10 +295,6 @@ Polymer({
               'menuItemClicked', frameFilter(that.onMenuItemClicked_));
         });
 
-    this.authenticator_.addEventListener('showView', (e) => {
-      // Redirect to onShowView_() with dropping the |e| argument.
-      this.onShowView_();
-    });
     this.authenticator_.confirmPasswordCallback =
         this.onAuthConfirmPassword_.bind(this);
     this.authenticator_.noPasswordCallback = this.onAuthNoPassword_.bind(this);
@@ -274,17 +305,31 @@ Polymer({
     this.authenticator_.samlApiUsedCallback = this.samlApiUsed_.bind(this);
     this.authenticator_.getIsSamlUserPasswordlessCallback =
         this.getIsSamlUserPasswordless_.bind(this);
-    this.authenticator_.addEventListener(
-        'authDomainChange', this.onAuthDomainChange_.bind(this));
-    this.authenticator_.addEventListener(
-        'authFlowChange', this.onAuthFlowChange_.bind(this));
-    this.authenticator_.addEventListener(
-        'videoEnabledChange', this.onVideoEnabledChange_.bind(this));
 
-    this.authenticator_.addEventListener(
-        'loadAbort', this.onLoadAbortMessage_.bind(this));
-    this.authenticator_.addEventListener(
-        'identifierEntered', this.onIdentifierEnteredMessage_.bind(this));
+    /**
+     * Event listeners for the events triggered by the authenticator.
+     */
+    const authenticatorEventListeners = {
+      'authDomainChange': this.onAuthDomainChange_,
+      'authFlowChange': this.onAuthFlowChange_,
+      'identifierEntered': this.onIdentifierEnteredMessage_,
+      'loadAbort': this.onLoadAbortMessage_,
+      'ready': this.onAuthReady_,
+      'setPrimaryActionEnabled': this.onSetPrimaryActionEnabled_,
+      'setPrimaryActionLabel': this.onSetPrimaryActionLabel_,
+      'setSecondaryActionEnabled': this.onSetSecondaryActionEnabled_,
+      'setSecondaryActionLabel': this.onSetSecondaryActionLabel_,
+      'setAllActionsEnabled': this.onSetAllActionsEnabled_,
+      'showView': (e) => {
+        // Redirect to onShowView_() with dropping the |e| argument.
+        this.onShowView_();
+      },
+      'videoEnabledChange': this.onVideoEnabledChange_,
+    };
+    for (eventName in authenticatorEventListeners) {
+      this.authenticator_.addEventListener(
+          eventName, authenticatorEventListeners[eventName].bind(this));
+    }
 
     this.$['signin-back-button'].addEventListener(
         'click', this.onBackButtonClicked_.bind(this));
@@ -355,6 +400,20 @@ Polymer({
     let showGuestInOobe = !this.isClosable_() && this.isAtTheBeginning_();
     // TODO(rsorokin): Rename message string to reflect the meaning.
     chrome.send('showGuestInOobe', [showGuestInOobe]);
+  },
+
+  /**
+   * Handles clicks on "PrimaryAction" button.
+   */
+  onPrimaryActionButtonClicked_: function() {
+    this.authenticator_.sendMessageToWebview('primaryActionHit');
+  },
+
+  /**
+   * Handles clicks on "SecondaryAction" button.
+   */
+  onSecondaryActionButtonClicked_: function() {
+    this.authenticator_.sendMessageToWebview('secondaryActionHit');
   },
 
   /**
@@ -756,6 +815,7 @@ Polymer({
         !(data.enterpriseManagedDevice || data.hasDeviceOwner);
     params.isFirstUser = !(data.enterpriseManagedDevice || data.hasDeviceOwner);
     params.obfuscatedOwnerId = data.obfuscatedOwnerId;
+    params.enableGaiaActionButtons = data.enableGaiaActionButtons;
 
     this.authenticatorParams_ = params;
 
@@ -946,6 +1006,46 @@ Polymer({
     this.lastBackMessageValue_ = !!e.detail;
     this.updateGuestButtonVisibility_();
   },
+  /**
+   * Invoked when the auth host emits 'setPrimaryActionEnabled'  event
+   * @private
+   */
+  onSetPrimaryActionEnabled_: function(e) {
+    this.primaryActionButtonEnabled_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setSecondaryActionEnabled'  event
+   * @private
+   */
+  onSetSecondaryActionEnabled_: function(e) {
+    this.secondaryActionButtonEnabled_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setPrimaryActionLabel' event
+   * @private
+   */
+  onSetPrimaryActionLabel_: function(e) {
+    this.primaryActionButtonLabel_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setSecondaryActionLabel' event
+   * @private
+   */
+  onSetSecondaryActionLabel_: function(e) {
+    this.secondaryActionButtonLabel_ = e.detail;
+  },
+
+  /**
+   * Invoked when the auth host emits 'setAllActionsEnabled' event
+   * @private
+   */
+  onSetAllActionsEnabled_: function(e) {
+    this.onSetPrimaryActionEnabled_(e);
+    this.onSetSecondaryActionEnabled_(e);
+  },
 
   /**
    * Invoked when the authenticator emits 'showView' event or when corresponding
@@ -1113,6 +1213,9 @@ Polymer({
     // the loading screen is shown.
     this.$['signin-back-button'].hidden = true;
     this.$['signin-frame-dialog'].setAttribute('hide-shadow', true);
+    // Also hide the primary and secondary action buttons
+    this.primaryActionButtonLabel_ = null;
+    this.secondaryActionButtonLabel_ = null;
 
     // Clear any error messages that were shown before login.
     Oobe.clearErrors();

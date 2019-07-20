@@ -70,6 +70,8 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
       mojom::InputMethodManagerInstancePtr input_method_manager_ptr) override;
   void OnIntentHelperInstanceReady(
       mojom::IntentHelperInstancePtr intent_helper_ptr) override;
+  void OnKeymasterInstanceReady(
+      mojom::KeymasterInstancePtr keymaster_ptr) override;
   void OnKioskInstanceReady(mojom::KioskInstancePtr kiosk_ptr) override;
   void OnLockScreenInstanceReady(
       mojom::LockScreenInstancePtr lock_screen_ptr) override;

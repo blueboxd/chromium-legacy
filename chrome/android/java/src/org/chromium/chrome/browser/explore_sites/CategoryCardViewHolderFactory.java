@@ -15,23 +15,6 @@ import org.chromium.ui.modelutil.RecyclerViewAdapter;
 /** Factory to create CategoryCardViewHolder objects. */
 public class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHolderFactory<
         CategoryCardViewHolderFactory.CategoryCardViewHolder> {
-    private int mTileViewResource;
-
-    public CategoryCardViewHolderFactory() {
-        final int exploreSitesDenseVariation = ExploreSitesBridge.getDenseVariation();
-        // Set the tile view to use based on the condensed variation.
-        if (ExploreSitesBridge.isDense(exploreSitesDenseVariation)) {
-            if (exploreSitesDenseVariation == DenseVariation.DENSE_TITLE_BOTTOM) {
-                mTileViewResource = R.layout.explore_sites_dense_tile_bottom_view;
-            } else if (exploreSitesDenseVariation == DenseVariation.DENSE_TITLE_RIGHT) {
-                mTileViewResource = R.layout.explore_sites_dense_tile_right_view;
-            } else {
-                mTileViewResource = R.layout.explore_sites_tile_view;
-            }
-        } else {
-            mTileViewResource = R.layout.explore_sites_tile_view;
-        }
-    }
 
     /** View holder for the recycler view. */
     public static class CategoryCardViewHolder extends RecyclerView.ViewHolder {
@@ -50,7 +33,7 @@ public class CategoryCardViewHolderFactory implements RecyclerViewAdapter.ViewHo
      * cards.
      */
     protected int getTileViewResource() {
-        return mTileViewResource;
+        return R.layout.explore_sites_tile_view;
     }
 
     @Override

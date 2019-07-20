@@ -13,6 +13,7 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -27,11 +28,8 @@
 
   <dom-module id="internet-config-dialog">
     <template>
-      <style include="cr-shared-style network-shared iron-flex">
-        :host {
-          @apply --cr-page-host;
-        }
-
+      <style include="cr-page-host-style cr-shared-style network-shared
+          iron-flex">
         cr-dialog::part(dialog) {
           border-radius: 0;
           height: 100%;

@@ -118,6 +118,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_PERIODIC_BACKGROUND_SYNC, nullptr},
     {CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN, nullptr},
     {CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM, nullptr},
+    {CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, nullptr},
 };
 static_assert(base::size(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

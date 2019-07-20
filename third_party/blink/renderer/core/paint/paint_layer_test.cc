@@ -26,8 +26,8 @@ class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
 };
 

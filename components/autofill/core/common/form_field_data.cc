@@ -207,6 +207,7 @@ bool FormFieldData::IsTextInputElement() const {
 
 bool FormFieldData::operator==(const FormFieldData& field) const {
   return SameFieldAs(field) && unique_renderer_id == field.unique_renderer_id &&
+         form_control_ax_id == field.form_control_ax_id &&
          is_autofilled == field.is_autofilled &&
          check_status == field.check_status &&
          option_values == field.option_values &&

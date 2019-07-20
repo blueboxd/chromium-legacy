@@ -355,29 +355,11 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     base::Optional<HitTestRegionList> hit_test_region_list,
     uint64_t submit_time,
     mojom::CompositorFrameSink::SubmitCompositorFrameSyncCallback callback) {
-  TRACE_EVENT1("viz", "CompositorFrameSinkSupport::MaybeSubmitCompositorFrame",
-               "FrameSinkId", frame_sink_id_.ToString());
-
-  TRACE_EVENT_WITH_FLOW1(
+  TRACE_EVENT_WITH_FLOW2(
       "viz,benchmark", "Graphics.Pipeline",
       TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),
       TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
-      "ReceiveCompositorFrame");
-
-  TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-                        "SubmitCompositorFrame", local_surface_id.hash());
-
-  bool tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-                                     &tracing_enabled);
-  if (tracing_enabled) {
-    base::TimeDelta elapsed = base::TimeTicks::Now().since_origin() -
-                              base::TimeDelta::FromMicroseconds(submit_time);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-                         "SubmitCompositorFrame::TimeElapsed",
-                         TRACE_EVENT_SCOPE_THREAD,
-                         "elapsed time:", elapsed.InMicroseconds());
-  }
+      "ReceiveCompositorFrame", "FrameSinkId", frame_sink_id_.ToString());
 
   DCHECK(local_surface_id.is_valid());
   DCHECK(!frame.render_pass_list.empty());

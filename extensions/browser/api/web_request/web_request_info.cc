@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
@@ -159,7 +160,6 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
     int render_frame_id,
     std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
     int32_t routing_id,
-    content::ResourceContext* resource_context,
     const network::ResourceRequest& request,
     bool is_download,
     bool is_async)
@@ -174,8 +174,7 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
       initiator(request.request_initiator),
       type(static_cast<content::ResourceType>(request.resource_type)),
       is_async(is_async),
-      extra_request_headers(request.headers),
-      resource_context(resource_context) {
+      extra_request_headers(request.headers) {
   if (url.SchemeIsWSOrWSS())
     web_request_type = WebRequestResourceType::WEB_SOCKET;
   else if (is_download)
@@ -213,18 +212,9 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
       web_view_embedder_process_id = web_view_info.embedder_process_id;
     }
 
-    // For subresource loads we attempt to resolve the FrameData immediately
-    // anyway using cached information.
-    ExtensionApiFrameIdMap::FrameData data;
-    bool was_cached = ExtensionApiFrameIdMap::Get()->GetCachedFrameDataOnIO(
-        render_process_id, frame_id, &data);
-    // TODO(crbug.com/843762): Investigate when |was_cached| can be false. It
-    // seems we are not tracking all WebContents or that the corresponding
-    // render frame was destroyed. Track where this can occur, this should help
-    // in minimizing IO->UI->IO thread that the web request API performs to
-    // fetch the frame data.
-    if (was_cached)
-      frame_data = data;
+    // For subresource loads we attempt to resolve the FrameData immediately.
+    frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(
+        content::RenderFrameHost::FromID(render_process_id, frame_id));
   }
 }
 
@@ -247,8 +237,7 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       is_web_view(params.is_web_view),
       web_view_instance_id(params.web_view_instance_id),
       web_view_rules_registry_id(params.web_view_rules_registry_id),
-      web_view_embedder_process_id(params.web_view_embedder_process_id),
-      resource_context(params.resource_context) {}
+      web_view_embedder_process_id(params.web_view_embedder_process_id) {}
 
 WebRequestInfo::~WebRequestInfo() = default;
 

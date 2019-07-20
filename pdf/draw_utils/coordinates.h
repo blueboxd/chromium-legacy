@@ -62,6 +62,15 @@ pp::Rect GetScreenRect(const pp::Rect& rect,
                        const pp::Point& position,
                        double zoom);
 
+// Given |rect|, |inset_sizes|, |doc_width|, and |bottom_separator|  all in the
+// same coordinate space, return |rect| and its surrounding border areas and
+// |bottom_separator|. This includes the sides if the page is narrower than the
+// document.
+pp::Rect GetSurroundingRect(const pp::Rect& rect,
+                            const PageInsetSizes& inset_sizes,
+                            int doc_width,
+                            int bottom_separator);
+
 // Given |rect_size|, create a pp::Rect where the top-right corner lies at
 // |position|, and then inset it with the corresponding values of |page_insets|,
 // i.e. inset on left side with |page_insets.left|.

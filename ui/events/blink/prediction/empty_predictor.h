@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_BLINK_PREDICTION_EMPTY_PREDICTOR_H_
 #define UI_EVENTS_BLINK_PREDICTION_EMPTY_PREDICTOR_H_
 
+#include "base/optional.h"
 #include "ui/events/blink/prediction/input_predictor.h"
 
 namespace ui {
@@ -26,13 +27,12 @@ class EmptyPredictor : public InputPredictor {
   bool HasPrediction() const override;
 
   // Returns the last_input_ for testing.
-  bool GeneratePrediction(base::TimeTicks frame_time,
-                          bool is_resampling,
+  bool GeneratePrediction(base::TimeTicks predict_time,
                           InputData* result) const override;
 
  private:
   // store the last_input_ point for testing
-  InputData last_input_;
+  base::Optional<InputData> last_input_;
 
   DISALLOW_COPY_AND_ASSIGN(EmptyPredictor);
 };

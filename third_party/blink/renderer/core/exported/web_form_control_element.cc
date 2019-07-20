@@ -248,6 +248,10 @@ unsigned WebFormControlElement::UniqueRendererFormControlId() const {
   return ConstUnwrap<HTMLFormControlElement>()->UniqueRendererFormControlId();
 }
 
+int32_t WebFormControlElement::GetAxId() const {
+  return ConstUnwrap<HTMLFormControlElement>()->GetAxId();
+}
+
 WebFormControlElement::WebFormControlElement(HTMLFormControlElement* elem)
     : WebElement(elem) {}
 

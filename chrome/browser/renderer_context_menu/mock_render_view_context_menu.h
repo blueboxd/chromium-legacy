@@ -89,6 +89,11 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Returns the writable profile used in this test.
   PrefService* GetPrefs();
 
+  // Sets a WebContents to be returned by GetWebContents().
+  void set_web_contents(content::WebContents* web_contents) {
+    web_contents_ = web_contents;
+  }
+
  private:
   // Helper function to append items in sub menu from |model|.
   void AppendSubMenuItems(ui::MenuModel* model);
@@ -104,6 +109,10 @@ class MockRenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   // Either |original_profile_| or its incognito profile.
   Profile* profile_;
+
+  // The WebContents returned by GetWebContents(). This is owned by our owner
+  // and the owner is responsible for its lifetime.
+  content::WebContents* web_contents_ = nullptr;
 
   // A list of menu items added.
   std::vector<MockMenuItem> items_;

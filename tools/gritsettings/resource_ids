@@ -447,7 +447,7 @@
     "messages": [27350],
   },
   "ui/views/resources/views_resources.grd": {
-    "structures": [27580],
+    "structures": [27600],
   },
   "ui/webui/resources/webui_resources.grd": {
     "includes": [27880],

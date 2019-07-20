@@ -4,17 +4,12 @@
 
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 
-#include "chrome/browser/sharing/fcm_constants.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
-
-namespace {
-// Time to live for ACK messages.
-const int kAckTimeToLiveMinutes = 30;
-}  // namespace
 
 SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
                                      SharingFCMSender* sharing_fcm_sender)
@@ -108,8 +103,7 @@ void SharingFCMHandler::SendAckMessage(const std::string& original_sender_guid,
   ack_message.mutable_ack_message()->set_original_message_id(
       original_message_id);
   sharing_fcm_sender_->SendMessageToDevice(
-      original_sender_guid, base::TimeDelta::FromMinutes(kAckTimeToLiveMinutes),
-      std::move(ack_message),
+      original_sender_guid, kAckTimeToLive, std::move(ack_message),
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), original_message_id));
 }

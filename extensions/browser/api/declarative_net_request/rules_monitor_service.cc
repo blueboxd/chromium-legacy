@@ -21,15 +21,13 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/warning_set.h"
@@ -48,70 +46,6 @@ namespace dnr_api = api::declarative_net_request;
 static base::LazyInstance<
     BrowserContextKeyedAPIFactory<RulesMonitorService>>::Leaky g_factory =
     LAZY_INSTANCE_INITIALIZER;
-
-void LoadRulesetOnIOThread(ExtensionId extension_id,
-                           std::unique_ptr<CompositeMatcher> matcher,
-                           URLPatternSet allowed_pages,
-                           InfoMap* info_map,
-                           void* browser_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(info_map);
-
-  RulesetManager* manager = info_map->GetRulesetManager();
-  bool increment_extra_headers = !manager->HasAnyExtraHeadersMatcher() &&
-                                 matcher->HasAnyExtraHeadersMatcher();
-  manager->AddRuleset(extension_id, std::move(matcher),
-                      std::move(allowed_pages));
-
-  if (increment_extra_headers) {
-    ExtensionWebRequestEventRouter::GetInstance()
-        ->IncrementExtraHeadersListenerCount(browser_context);
-  }
-}
-
-void UnloadRulesetOnIOThread(ExtensionId extension_id,
-                             InfoMap* info_map,
-                             void* browser_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(info_map);
-
-  RulesetManager* manager = info_map->GetRulesetManager();
-  bool had_extra_headers_matcher = manager->HasAnyExtraHeadersMatcher();
-  info_map->GetRulesetManager()->RemoveRuleset(extension_id);
-
-  if (had_extra_headers_matcher && !manager->HasAnyExtraHeadersMatcher()) {
-    ExtensionWebRequestEventRouter::GetInstance()
-        ->DecrementExtraHeadersListenerCount(browser_context);
-  }
-}
-
-void UpdateRulesetMatcherOnIOThread(
-    ExtensionId extension_id,
-    std::unique_ptr<RulesetMatcher> ruleset_matcher,
-    InfoMap* info_map,
-    void* browser_context) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(info_map);
-
-  RulesetManager* manager = info_map->GetRulesetManager();
-  bool had_extra_headers_matcher = manager->HasAnyExtraHeadersMatcher();
-
-  CompositeMatcher* matcher =
-      info_map->GetRulesetManager()->GetMatcherForExtension(extension_id);
-  DCHECK(matcher);
-  matcher->AddOrUpdateRuleset(std::move(ruleset_matcher));
-
-  bool has_extra_headers_matcher = manager->HasAnyExtraHeadersMatcher();
-  if (had_extra_headers_matcher == has_extra_headers_matcher)
-    return;
-  if (has_extra_headers_matcher) {
-    ExtensionWebRequestEventRouter::GetInstance()
-        ->IncrementExtraHeadersListenerCount(browser_context);
-  } else {
-    ExtensionWebRequestEventRouter::GetInstance()
-        ->DecrementExtraHeadersListenerCount(browser_context);
-  }
-}
 
 }  // namespace
 
@@ -171,6 +105,13 @@ RulesMonitorService::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
+// static
+RulesMonitorService* RulesMonitorService::Get(
+    content::BrowserContext* browser_context) {
+  return BrowserContextKeyedAPIFactory<RulesMonitorService>::Get(
+      browser_context);
+}
+
 bool RulesMonitorService::HasAnyRegisteredRulesets() const {
   return !extensions_with_rulesets_.empty();
 }
@@ -206,11 +147,11 @@ RulesMonitorService::RulesMonitorService(
     content::BrowserContext* browser_context)
     : registry_observer_(this),
       file_sequence_bridge_(std::make_unique<FileSequenceBridge>()),
-      info_map_(ExtensionSystem::Get(browser_context)->info_map()),
       prefs_(ExtensionPrefs::Get(browser_context)),
       extension_registry_(ExtensionRegistry::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),
-      context_(browser_context) {
+      context_(browser_context),
+      ruleset_manager_(browser_context) {
   registry_observer_.Add(extension_registry_);
 }
 
@@ -219,7 +160,7 @@ RulesMonitorService::~RulesMonitorService() = default;
 /* Description of thread hops for various scenarios:
 
    On ruleset load success:
-      - UI -> File -> UI -> IO.
+      - UI -> File -> UI.
       - The File sequence might reindex the ruleset while parsing JSON OOP.
 
    On ruleset load failure:
@@ -227,12 +168,11 @@ RulesMonitorService::~RulesMonitorService() = default;
       - The File sequence might reindex the ruleset while parsing JSON OOP.
 
    On ruleset unload:
-      - UI -> IO.
+      - UI.
 
    On dynamic rules update.
-                            |-> IPC to extension
-      - UI -> File -> UI -> |
-                            |-> IO
+
+      - UI -> File -> UI -> IPC to extension
 */
 
 void RulesMonitorService::OnExtensionLoaded(
@@ -286,11 +226,7 @@ void RulesMonitorService::OnExtensionUnloaded(
 
   DCHECK(IsAPIAvailable());
 
-  base::OnceClosure unload_ruleset_on_io_task =
-      base::BindOnce(&UnloadRulesetOnIOThread, extension->id(),
-                     base::RetainedRef(info_map_), context_);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(unload_ruleset_on_io_task));
+  UnloadRuleset(extension->id());
 }
 
 void RulesMonitorService::OnExtensionUninstalled(
@@ -369,14 +305,9 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
     return;
 
   extensions_with_rulesets_.insert(load_data.extension_id);
-
-  base::OnceClosure load_ruleset_on_io =
-      base::BindOnce(&LoadRulesetOnIOThread, load_data.extension_id,
-                     std::make_unique<CompositeMatcher>(std::move(matchers)),
-                     prefs_->GetDNRAllowedPages(load_data.extension_id),
-                     base::RetainedRef(info_map_), context_);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(load_ruleset_on_io));
+  LoadRuleset(load_data.extension_id,
+              std::make_unique<CompositeMatcher>(std::move(matchers)),
+              prefs_->GetDNRAllowedPages(load_data.extension_id));
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(
@@ -414,12 +345,56 @@ void RulesMonitorService::OnDynamicRulesUpdated(
     return;
   }
 
-  // Update the dynamic ruleset on the IO thread.
-  base::OnceClosure update_ruleset_on_io = base::BindOnce(
-      &UpdateRulesetMatcherOnIOThread, load_data.extension_id,
-      dynamic_ruleset.TakeMatcher(), base::RetainedRef(info_map_), context_);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(update_ruleset_on_io));
+  // Update the dynamic ruleset.
+  UpdateRuleset(load_data.extension_id, dynamic_ruleset.TakeMatcher());
+}
+
+void RulesMonitorService::UnloadRuleset(const ExtensionId& extension_id) {
+  bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
+  ruleset_manager_.RemoveRuleset(extension_id);
+
+  if (had_extra_headers_matcher &&
+      !ruleset_manager_.HasAnyExtraHeadersMatcher()) {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->DecrementExtraHeadersListenerCount(context_);
+  }
+}
+
+void RulesMonitorService::LoadRuleset(const ExtensionId& extension_id,
+                                      std::unique_ptr<CompositeMatcher> matcher,
+                                      URLPatternSet allowed_pages) {
+  bool increment_extra_headers =
+      !ruleset_manager_.HasAnyExtraHeadersMatcher() &&
+      matcher->HasAnyExtraHeadersMatcher();
+  ruleset_manager_.AddRuleset(extension_id, std::move(matcher),
+                              prefs_->GetDNRAllowedPages(extension_id));
+
+  if (increment_extra_headers) {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->IncrementExtraHeadersListenerCount(context_);
+  }
+}
+
+void RulesMonitorService::UpdateRuleset(
+    const ExtensionId& extension_id,
+    std::unique_ptr<RulesetMatcher> ruleset_matcher) {
+  bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
+
+  CompositeMatcher* matcher =
+      ruleset_manager_.GetMatcherForExtension(extension_id);
+  DCHECK(matcher);
+  matcher->AddOrUpdateRuleset(std::move(ruleset_matcher));
+
+  bool has_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
+  if (had_extra_headers_matcher == has_extra_headers_matcher)
+    return;
+  if (has_extra_headers_matcher) {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->IncrementExtraHeadersListenerCount(context_);
+  } else {
+    ExtensionWebRequestEventRouter::GetInstance()
+        ->DecrementExtraHeadersListenerCount(context_);
+  }
 }
 
 }  // namespace declarative_net_request
@@ -430,8 +405,8 @@ void BrowserContextKeyedAPIFactory<
     DeclareFactoryDependencies() {
   DependsOn(ExtensionRegistryFactory::GetInstance());
   DependsOn(ExtensionPrefsFactory::GetInstance());
-  DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(WarningServiceFactory::GetInstance());
+  DependsOn(PermissionHelper::GetFactoryInstance());
 }
 
 }  // namespace extensions

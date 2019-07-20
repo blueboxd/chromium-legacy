@@ -42,6 +42,7 @@ blink_core_sources("exported") {
     "web_language_detection_details.cc",
     "web_local_frame_client.cc",
     "web_memory_statistics.cc",
+    "web_message_port_converter.cc",
     "web_meta_element.cc",
     "web_navigation_params.cc",
     "web_node.cc",

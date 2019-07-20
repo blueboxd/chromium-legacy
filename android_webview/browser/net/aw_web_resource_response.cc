@@ -22,7 +22,7 @@ namespace android_webview {
 
 AwWebResourceResponse::AwWebResourceResponse(
     const base::android::JavaRef<jobject>& obj)
-    : java_object_(obj) {}
+    : java_object_(obj), input_stream_transferred_(false) {}
 
 AwWebResourceResponse::~AwWebResourceResponse() {}
 
@@ -33,7 +33,18 @@ bool AwWebResourceResponse::HasInputStream(JNIEnv* env) const {
 }
 
 std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
-    JNIEnv* env) const {
+    JNIEnv* env) {
+  // Only allow to call GetInputStream once per object, because this method
+  // transfers ownership of the stream and once the unique_ptr<InputStream>
+  // is deleted it also closes the original java input stream. This
+  // side-effect can result in unexpected behavior, e.g. trying to read
+  // from a closed stream.
+  DCHECK(!input_stream_transferred_);
+
+  if (input_stream_transferred_)
+    return std::unique_ptr<InputStream>();
+
+  input_stream_transferred_ = true;
   ScopedJavaLocalRef<jobject> jstream =
       Java_AwWebResourceResponse_getData(env, java_object_);
   if (jstream.is_null())

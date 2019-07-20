@@ -27,6 +27,9 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
 
   AXPositionInstance Clone() const override;
 
+  bool IsInLineBreak() const override;
+  bool IsInTextObject() const override;
+  bool IsInWhiteSpace() const override;
   base::string16 GetText() const override;
 
   static void SetTreeForTesting(AXTree* tree) { tree_ = tree; }
@@ -41,7 +44,10 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
   base::stack<AXNode*> GetAncestorAnchors() const override;
   void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
   AXNode* GetNodeInTree(AXTreeID tree_id, int32_t node_id) const override;
-  bool IsInWhiteSpace() const override;
+
+  bool IsInLineBreakingObject() const override;
+  ax::mojom::Role GetRole() const override;
+  AXNodeTextStyles GetTextStyles() const override;
   std::vector<int32_t> GetWordStartOffsets() const override;
   std::vector<int32_t> GetWordEndOffsets() const override;
   int32_t GetNextOnLineID(int32_t node_id) const override;

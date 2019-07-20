@@ -205,7 +205,7 @@ void CSSStyleDeclaration::NamedPropertyEnumerator(Vector<String>& names,
         property_names.push_back(property_class->GetJSPropertyName());
     }
     std::sort(property_names.begin(), property_names.end(),
-              WTF::CodePointCompareLessThan);
+              WTF::CodeUnitCompareLessThan);
   }
   names = property_names;
 }

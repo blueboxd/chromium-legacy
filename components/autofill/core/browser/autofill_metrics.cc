@@ -1416,20 +1416,6 @@ void AutofillMetrics::LogStoredCreditCardMetrics(
         "Autofill.StoredCreditCardDisusedCount.Server.Unmasked",
         num_disused_unmasked_cards);
   }
-
-  // Legacy histogram names.
-  // Validated by:
-  //     AutofillMetricsTest.StoredLocalCreditCardCount
-  //     AutofillMetricsTest.StoredServerCreditCardCount_Masked
-  //     AutofillMetricsTest.StoredServerCreditCardCount_Unmasked
-  // TODO(crbug/762131): Delete these in 2018/Q2 once enough UMA history is
-  // established for the new names.
-  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredLocalCreditCardCount",
-                          num_local_cards);
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Masked",
-                            num_masked_cards);
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredServerCreditCardCount.Unmasked",
-                            num_unmasked_cards);
 }
 
 // static

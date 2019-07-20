@@ -411,10 +411,12 @@ class VP9ConfigChangeDetector : public ConfigChangeDetector {
   // Detects stream configuration changes.
   // Returns false on failure.
   bool DetectConfig(const uint8_t* stream, unsigned int size) override {
-    parser_.SetStream(stream, size, nullptr);
+    parser_.SetStream(stream, size, {} /* spatial_layer_frame_size */, nullptr);
     Vp9FrameHeader fhdr;
+    gfx::Size allocate_size;
     std::unique_ptr<DecryptConfig> null_config;
-    while (parser_.ParseNextFrame(&fhdr, &null_config) == Vp9Parser::kOk) {
+    while (parser_.ParseNextFrame(&fhdr, &allocate_size, &null_config) ==
+           Vp9Parser::kOk) {
       visible_rect_ = gfx::Rect(fhdr.render_width, fhdr.render_height);
       color_space_ = fhdr.GetColorSpace();
 

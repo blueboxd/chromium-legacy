@@ -34,6 +34,10 @@ function stylesheetFactory() {
         :host(:not([open])) {
           display: none;
         }
+
+        .default-closebutton {
+          user-select: none;
+        }
       `);
       // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over bottom: / right:
       // when implemented https://bugs.chromium.org/p/chromium/issues/detail?id=538475
@@ -64,8 +68,7 @@ export class StdToastElement extends HTMLElement {
 
     this.#closeButtonElement = document.createElement('button');
     this.#closeButtonElement.setAttribute('part', 'closebutton');
-    this.#closeButtonElement.setAttribute('aria-label', 'close');
-    this.#closeButtonElement.textContent = '×';
+    setDefaultCloseButton(this.#closeButtonElement);
     this.#shadow.appendChild(this.#closeButtonElement);
 
     this.#closeButtonElement.addEventListener('click', () => {
@@ -154,11 +157,9 @@ export class StdToastElement extends HTMLElement {
       case 'closebutton':
         if (newValue !== null) {
           if (newValue === '') {
-            this.#closeButtonElement.textContent = '×';
-            this.#closeButtonElement.setAttribute('aria-label', 'close');
+            setDefaultCloseButton(this.#closeButtonElement);
           } else {
-            this.#closeButtonElement.textContent = newValue;
-            this.#closeButtonElement.removeAttribute('aria-label');
+            replaceDefaultCloseButton(this.#closeButtonElement, newValue);
           }
         }
         // if newValue === null we do nothing, since CSS will hide the button
@@ -211,4 +212,16 @@ function isElement(value) {
   } catch {
     return false;
   }
+}
+
+function setDefaultCloseButton(closeButton) {
+  closeButton.setAttribute('aria-label', 'close');
+  closeButton.setAttribute('class', 'default-closebutton');
+  closeButton.textContent = '×';
+}
+
+function replaceDefaultCloseButton(closeButton, value) {
+  closeButton.textContent = value;
+  closeButton.removeAttribute('aria-label');
+  closeButton.removeAttribute('class');
 }

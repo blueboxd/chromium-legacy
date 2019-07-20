@@ -547,7 +547,7 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
     return false;
 
   // Check if ZeroSuggest is allowed in an empty state.
-  if (input_type == metrics::OmniboxInputType::INVALID &&
+  if (input_type == metrics::OmniboxInputType::EMPTY &&
       !(page_class == metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
         (IsNTPPage(page_class) &&
          base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)))) {
@@ -563,7 +563,7 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   // is running, these types of schemes aren't eligible to be sent to the
   // server to ask for suggestions (and thus in practice we won't display zero
   // suggest for them).
-  if (input_type != metrics::OmniboxInputType::INVALID &&
+  if (input_type != metrics::OmniboxInputType::EMPTY &&
       !(page_url.is_valid() &&
         ((page_url.scheme() == url::kHttpScheme) ||
          (page_url.scheme() == url::kHttpsScheme) ||

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/sharing/sharing_device_registration_result.h"
 
 namespace {
 
@@ -39,6 +40,18 @@ void LogSharingMessageReceived(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
   base::UmaHistogramEnumeration("Sharing.MessageReceivedType",
                                 PayloadCaseToMessageType(payload_case));
+}
+
+void LogSharingRegistrationResult(SharingDeviceRegistrationResult result) {
+  base::UmaHistogramEnumeration("Sharing.DeviceRegistrationResult", result);
+}
+
+void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result) {
+  base::UmaHistogramEnumeration("Sharing.DeviceUnregistrationResult", result);
+}
+
+void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result) {
+  base::UmaHistogramEnumeration("Sharing.VapidKeyCreationResult", result);
 }
 
 void LogClickToCallDevicesToShow(int count) {

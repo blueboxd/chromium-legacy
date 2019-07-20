@@ -391,7 +391,6 @@ TEST(LayerImplTest, PerspectiveTransformHasReasonableScale) {
   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink =
       FakeLayerTreeFrameSink::Create3d();
   LayerTreeSettings settings;
-  settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &task_graph_runner);
   auto owned_layer = LayerImpl::Create(host_impl.active_tree(), 1);

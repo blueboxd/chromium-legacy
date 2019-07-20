@@ -30,10 +30,11 @@ class SnapCoordinatorTest : public testing::Test,
  protected:
   SnapCoordinatorTest() : UseMockScrollbarSettings() {}
   void SetUp() override {
-    page_holder_ = std::make_unique<DummyPageHolder>();
+    page_holder_ = std::make_unique<DummyPageHolder>(
+        IntSize(), nullptr, nullptr, base::BindOnce([](Settings& settings) {
+          settings.SetAcceleratedCompositingEnabled(true);
+        }));
 
-    page_holder_->GetPage().GetSettings().SetAcceleratedCompositingEnabled(
-        true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
 

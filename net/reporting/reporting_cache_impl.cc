@@ -266,9 +266,10 @@ void ReportingCacheImpl::OnParsedHeader(
   base::Time now = clock().Now();
   new_client.last_used = now;
 
+  std::map<ReportingEndpointGroupKey, std::set<GURL>> endpoints_per_group;
+
   for (const auto& parsed_endpoint_group : parsed_header) {
     new_client.endpoint_group_names.insert(parsed_endpoint_group.name);
-    new_client.endpoint_count += parsed_endpoint_group.endpoints.size();
 
     // Creates an endpoint group and sets its |last_used| to |now|.
     CachedReportingEndpointGroup new_group(new_client.origin,
@@ -277,6 +278,7 @@ void ReportingCacheImpl::OnParsedHeader(
     std::set<GURL> new_endpoints;
     for (const auto& parsed_endpoint_info : parsed_endpoint_group.endpoints) {
       new_endpoints.insert(parsed_endpoint_info.url);
+      endpoints_per_group[new_group.group_key].insert(parsed_endpoint_info.url);
       ReportingEndpoint new_endpoint(origin, parsed_endpoint_group.name,
                                      std::move(parsed_endpoint_info));
       AddOrUpdateEndpoint(std::move(new_endpoint));
@@ -287,6 +289,14 @@ void ReportingCacheImpl::OnParsedHeader(
     RemoveEndpointsInGroupOtherThan(new_group.group_key, new_endpoints);
 
     AddOrUpdateEndpointGroup(std::move(new_group));
+  }
+
+  // Compute the total endpoint count for this origin. We can't just count the
+  // number of endpoints per group because there may be duplicate endpoint URLs,
+  // which we ignore. See http://crbug.com/983000 for discussion.
+  // TODO(crbug.com/983000): Allow duplicate endpoint URLs.
+  for (const auto& group_key_and_endpoint_set : endpoints_per_group) {
+    new_client.endpoint_count += group_key_and_endpoint_set.second.size();
   }
 
   // Remove endpoint groups that may have been configured for an existing client

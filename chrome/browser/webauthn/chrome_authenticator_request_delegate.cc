@@ -34,6 +34,10 @@
 #include "device/fido/mac/credential_metadata.h"
 #endif
 
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#endif
+
 namespace {
 
 // Returns true iff |relying_party_id| is listed in the
@@ -196,6 +200,7 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitIndividualAttestation(
 
 void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
+    const device::FidoAuthenticator* authenticator,
     base::OnceCallback<void(bool)> callback) {
 #if defined(OS_ANDROID)
   // Android is expected to use platform APIs for webauthn which will take care
@@ -216,6 +221,17 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     std::move(callback).Run(false);
     return;
   }
+
+#if defined(OS_WIN)
+  if (authenticator->IsWinNativeApiAuthenticator() &&
+      static_cast<const device::WinWebAuthnApiAuthenticator*>(authenticator)
+          ->ShowsPrivacyNotice()) {
+    // The OS' native API includes an attestation prompt.
+    std::move(callback).Run(true);
+    return;
+  }
+
+#endif  // defined(OS_WIN)
 
   weak_dialog_model_->RequestAttestationPermission(std::move(callback));
 #endif

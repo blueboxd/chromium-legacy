@@ -99,9 +99,9 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     mock_service_ = service.get();
 
     controller_ = std::make_unique<Controller>(
-        web_contents(), &fake_client_, thread_bundle()->GetMockTickClock());
-    controller_->SetWebControllerAndServiceForTest(std::move(web_controller),
-                                                   std::move(service));
+        web_contents(), &fake_client_, thread_bundle()->GetMockTickClock(),
+        std::move(service));
+    controller_->SetWebControllerForTest(std::move(web_controller));
 
     // Fetching scripts succeeds for all URLs, but return nothing.
     ON_CALL(*mock_service_, OnGetScriptsForUrl(_, _, _))

@@ -997,6 +997,13 @@ class CORE_EXPORT LocalFrameView final
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
 
+  // If set, this indicates that the rendering throttling status for the local
+  // root frame has changed. In this scenario, if we have become unthrottled,
+  // this is a no-op since we run paint anyway. However, if we have become
+  // throttled, this will force the lifecycle to reach the paint phase so that
+  // it can clear the painted output.
+  bool need_paint_phase_after_throttling_ = false;
+
 #if DCHECK_IS_ON()
   bool is_updating_descendant_dependent_flags_;
 #endif

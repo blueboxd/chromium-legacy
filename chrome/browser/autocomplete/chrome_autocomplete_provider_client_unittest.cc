@@ -33,7 +33,7 @@ class TestSchemeClassifier : public AutocompleteSchemeClassifier {
 
 metrics::OmniboxInputType TestSchemeClassifier::GetInputTypeForScheme(
     const std::string& scheme) const {
-  return scheme.empty() ? metrics::OmniboxInputType::INVALID
+  return scheme.empty() ? metrics::OmniboxInputType::EMPTY
                         : metrics::OmniboxInputType::URL;
 }
 

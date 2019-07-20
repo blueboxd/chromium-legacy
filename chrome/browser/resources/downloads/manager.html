@@ -7,6 +7,7 @@
 <link rel="import" href="search_service.html">
 <link rel="import" href="toolbar.html">
 <link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
@@ -21,7 +22,7 @@
 
 <dom-module id="downloads-manager">
   <template>
-    <style include="cr-shared-style cr-hidden-style">
+    <style include="cr-page-host-style cr-shared-style cr-hidden-style">
       :host {
         display: flex;
         flex: 1 0;
@@ -29,8 +30,6 @@
         height: 100%;
         overflow: hidden;
         z-index: 0;
-
-        @apply --cr-page-host;
       }
 
       @media (prefers-color-scheme: dark) {

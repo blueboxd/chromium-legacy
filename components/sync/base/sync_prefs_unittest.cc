@@ -7,14 +7,17 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/pref_names.h"
+#include "components/sync/base/user_demographics.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 namespace syncer {
 
@@ -129,6 +132,35 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
   EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
+}
+
+TEST_F(SyncPrefsTest, ReadAndClearDemographicPreferences) {
+  // Verify demographic prefs are not available when there is nothing set.
+  ASSERT_FALSE(sync_prefs_->GetUserDemographics().has_value());
+
+  int expected_birth_year = 1983;
+  metrics::UserDemographicsProto_Gender expected_gender =
+      metrics::UserDemographicsProto::GENDER_FEMALE;
+
+  // Set demographic prefs directly from the pref service interface because
+  // demographic prefs will only be set on the server-side. The SyncPrefs
+  // interface cannot set demographic prefs.
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear,
+                           expected_birth_year);
+  pref_service_.SetInteger(prefs::kSyncDemographicsGender,
+                           static_cast<int>(expected_gender));
+
+  // Verify that demographic prefs can be read.
+  base::Optional<UserDemographics> demographics =
+      sync_prefs_->GetUserDemographics();
+  ASSERT_TRUE(demographics.has_value());
+  EXPECT_EQ(expected_birth_year, demographics->birth_year);
+  EXPECT_EQ(expected_gender, demographics->gender);
+
+  sync_prefs_->ClearPreferences();
+
+  // Verify that demographic prefs are cleared.
+  EXPECT_FALSE(sync_prefs_->GetUserDemographics().has_value());
 }
 
 TEST_F(SyncPrefsTest, Basic) {

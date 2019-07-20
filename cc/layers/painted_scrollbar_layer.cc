@@ -148,18 +148,14 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
 }
 
 void PaintedScrollbarLayer::UpdateInternalContentScale() {
-  float scale = layer_tree_host()->device_scale_factor();
-  if (layer_tree_host()
-          ->GetSettings()
-          .layer_transforms_should_scale_layer_contents) {
-    gfx::Transform transform;
-    transform = draw_property_utils::ScreenSpaceTransform(
-        this, layer_tree_host()->property_trees()->transform_tree);
+  gfx::Transform transform;
+  transform = draw_property_utils::ScreenSpaceTransform(
+      this, layer_tree_host()->property_trees()->transform_tree);
 
-    gfx::Vector2dF transform_scales =
-        MathUtil::ComputeTransform2dScaleComponents(transform, scale);
-    scale = std::max(transform_scales.x(), transform_scales.y());
-  }
+  gfx::Vector2dF transform_scales = MathUtil::ComputeTransform2dScaleComponents(
+      transform, layer_tree_host()->device_scale_factor());
+  float scale = std::max(transform_scales.x(), transform_scales.y());
+
   bool changed = false;
   changed |= UpdateProperty(scale, &internal_contents_scale_);
   changed |=

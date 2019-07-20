@@ -67,9 +67,7 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
     : delegate_(delegate),
       dependencies_(std::move(dependencies)),
       gpu_init_(std::move(gpu_init)),
-      gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      binding_(this),
-      associated_binding_(this) {
+      gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(gpu_init_);
 
   // TODO(crbug.com/609317): Remove this when Mus Window Server and GPU are
@@ -115,8 +113,8 @@ VizMainImpl::~VizMainImpl() {
   // compositor first, before destroying the gpu service. However, before the
   // compositor is destroyed, close the binding, so that the gpu service doesn't
   // need to process commands from the host as it is shutting down.
-  binding_.Close();
-  associated_binding_.Close();
+  receiver_.reset();
+  associated_receiver_.reset();
 
   // If the VizCompositorThread was started then this will block until the
   // thread has been shutdown. All RootCompositorFrameSinks must be destroyed
@@ -132,12 +130,13 @@ void VizMainImpl::SetLogMessagesForHost(LogMessages log_messages) {
   log_messages_ = std::move(log_messages);
 }
 
-void VizMainImpl::Bind(mojom::VizMainRequest request) {
-  binding_.Bind(std::move(request));
+void VizMainImpl::Bind(mojo::PendingReceiver<mojom::VizMain> pending_receiver) {
+  receiver_.Bind(std::move(pending_receiver));
 }
 
-void VizMainImpl::BindAssociated(mojom::VizMainAssociatedRequest request) {
-  associated_binding_.Bind(std::move(request));
+void VizMainImpl::BindAssociated(
+    mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver) {
+  associated_receiver_.Bind(std::move(pending_receiver));
 }
 
 #if defined(USE_OZONE)
@@ -152,13 +151,15 @@ void VizMainImpl::BindInterface(const std::string& interface_name,
 #endif
 
 void VizMainImpl::CreateGpuService(
-    mojom::GpuServiceRequest request,
-    mojom::GpuHostPtr gpu_host,
+    mojo::PendingReceiver<mojom::GpuService> pending_receiver,
+    mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
         discardable_memory_manager,
     mojo::ScopedSharedBufferHandle activity_flags,
     gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
+
+  mojo::Remote<mojom::GpuHost> gpu_host(std::move(pending_gpu_host));
 
   // If GL is disabled then don't try to collect GPUInfo, we're not using GPU.
   if (gl::GetGLImplementation() != gl::kGLImplementationDisabled)
@@ -193,9 +194,9 @@ void VizMainImpl::CreateGpuService(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           subpixel_rendering));
 
-  gpu_service_->Bind(std::move(request));
+  gpu_service_->Bind(std::move(pending_receiver));
   gpu_service_->InitializeWithHost(
-      std::move(gpu_host),
+      gpu_host.Unbind(),
       gpu::GpuProcessActivityFlags(std::move(activity_flags)),
       gpu_init_->TakeDefaultOffscreenSurface(),
       dependencies_.sync_point_manager, dependencies_.shared_image_manager,
@@ -280,8 +281,8 @@ void VizMainImpl::ExitProcess() {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
-  binding_.Close();
-  associated_binding_.Close();
+  receiver_.reset();
+  associated_receiver_.reset();
 
   if (viz_compositor_thread_runner_) {
     // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor

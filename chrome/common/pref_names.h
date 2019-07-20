@@ -957,6 +957,10 @@ extern const char kSharingVapidKey[];
 extern const char kSharingSyncedDevices[];
 extern const char kSharingFCMRegistration[];
 
+#if !defined(OS_ANDROID)
+extern const char kHatsSurveyMetadata[];
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

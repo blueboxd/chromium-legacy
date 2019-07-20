@@ -192,6 +192,7 @@ class FrameSerializerTest : public testing::Test,
     return skip_urls_.Contains(url);
   }
 
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   frame_test_helpers::WebViewHelper helper_;
   std::string folder_;
   KURL base_url_;
@@ -199,7 +200,6 @@ class FrameSerializerTest : public testing::Test,
   HashMap<String, String> rewrite_urls_;
   Vector<String> skip_urls_;
   String rewrite_folder_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 TEST_F(FrameSerializerTest, HTMLElements) {

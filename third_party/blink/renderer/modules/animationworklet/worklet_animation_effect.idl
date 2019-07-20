@@ -9,5 +9,6 @@
     RuntimeEnabled=AnimationWorklet
 ] interface WorkletAnimationEffect {
   EffectTiming getTiming();
+  ComputedEffectTiming getComputedTiming();
   attribute double? localTime;
 };

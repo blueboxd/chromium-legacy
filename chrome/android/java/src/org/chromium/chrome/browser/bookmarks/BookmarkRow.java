@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -246,5 +247,10 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     void setDragHandleOnTouchListener(OnTouchListener l) {
         mDragHandle.setOnTouchListener(l);
+    }
+
+    @VisibleForTesting
+    String getTitle() {
+        return String.valueOf(mTitleView.getText());
     }
 }

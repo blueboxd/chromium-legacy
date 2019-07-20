@@ -17,6 +17,7 @@ class Bus;
 namespace chromeos {
 
 class ArcAppfuseProviderClient;
+class ArcKeymasterClient;
 class ArcMidisClient;
 class ArcObbMounterClient;
 class ArcOemCryptoClient;
@@ -55,6 +56,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusClientsBrowser {
   friend class DBusThreadManagerSetter;
 
   std::unique_ptr<ArcAppfuseProviderClient> arc_appfuse_provider_client_;
+  std::unique_ptr<ArcKeymasterClient> arc_keymaster_client_;
   std::unique_ptr<ArcMidisClient> arc_midis_client_;
   std::unique_ptr<ArcObbMounterClient> arc_obb_mounter_client_;
   std::unique_ptr<ArcOemCryptoClient> arc_oemcrypto_client_;

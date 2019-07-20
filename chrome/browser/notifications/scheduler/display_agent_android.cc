@@ -33,8 +33,10 @@ notifications::UserActionHandler* GetUserActionHandler(
 void JNI_DisplayAgent_OnContentClick(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_profile,
+    jint j_client_type,
     const base::android::JavaParamRef<jstring>& j_guid) {
   GetUserActionHandler(j_profile)->OnClick(
+      static_cast<notifications::SchedulerClientType>(j_client_type),
       ConvertJavaStringToUTF8(env, j_guid));
 }
 
@@ -42,8 +44,10 @@ void JNI_DisplayAgent_OnContentClick(
 void JNI_DisplayAgent_OnDismiss(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_profile,
+    jint j_client_type,
     const base::android::JavaParamRef<jstring>& j_guid) {
   GetUserActionHandler(j_profile)->OnDismiss(
+      static_cast<notifications::SchedulerClientType>(j_client_type),
       ConvertJavaStringToUTF8(env, j_guid));
 }
 
@@ -51,9 +55,11 @@ void JNI_DisplayAgent_OnDismiss(
 void JNI_DisplayAgent_OnActionButton(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_profile,
+    jint j_client_type,
     const base::android::JavaParamRef<jstring>& j_guid,
     jint type) {
   GetUserActionHandler(j_profile)->OnActionClick(
+      static_cast<notifications::SchedulerClientType>(j_client_type),
       ConvertJavaStringToUTF8(env, j_guid),
       static_cast<notifications::ActionButtonType>(type));
 }
@@ -74,8 +80,7 @@ void DisplayAgentAndroid::ShowNotification(
   // Wrap button info. Retrieving class name in run time must be guarded with
   // test.
   auto java_notification_data = Java_DisplayAgent_buildNotificationData(
-      env, ConvertUTF8ToJavaString(env, notification_data->id),
-      ConvertUTF16ToJavaString(env, notification_data->title),
+      env, ConvertUTF16ToJavaString(env, notification_data->title),
       ConvertUTF16ToJavaString(env, notification_data->message),
       nullptr /*icon*/);
 
@@ -87,7 +92,8 @@ void DisplayAgentAndroid::ShowNotification(
   }
 
   auto java_system_data = Java_DisplayAgent_buildSystemData(
-      env, ConvertUTF8ToJavaString(env, system_data->guid));
+      env, static_cast<int>(system_data->type),
+      ConvertUTF8ToJavaString(env, system_data->guid));
 
   ShowNotificationInternal(env, java_notification_data, java_system_data);
 }

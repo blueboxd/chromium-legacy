@@ -912,6 +912,10 @@
       status: "stable",
     },
     {
+      name: "MediaSessionSeeking",
+      status: "experimental",
+    },
+    {
       name: "MediaSourceExperimental",
       status: "experimental",
     },

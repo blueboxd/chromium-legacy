@@ -17,15 +17,9 @@ namespace {
 
 class LayerTreeHostMirrorPixelTest
     : public LayerTreePixelTest,
-      public ::testing::WithParamInterface<
-          ::testing::tuple<LayerTreeTest::RendererType, bool>> {
+      public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
-  RendererType renderer_type() { return std::get<0>(GetParam()); }
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents =
-        std::get<1>(GetParam());
-  }
+  RendererType renderer_type() { return GetParam(); }
 };
 
 const LayerTreeTest::RendererType kRendererTypes[] = {
@@ -37,11 +31,9 @@ const LayerTreeTest::RendererType kRendererTypes[] = {
 #endif
 };
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    LayerTreeHostMirrorPixelTest,
-    ::testing::Combine(::testing::ValuesIn(kRendererTypes),
-                       /*layer_transforms_scale_content=*/testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         LayerTreeHostMirrorPixelTest,
+                         ::testing::ValuesIn(kRendererTypes));
 
 // Verifies that a mirror layer with a scale mirrors another layer correctly.
 TEST_P(LayerTreeHostMirrorPixelTest, MirrorLayer) {

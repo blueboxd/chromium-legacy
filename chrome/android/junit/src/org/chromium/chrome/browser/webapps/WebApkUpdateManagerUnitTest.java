@@ -128,15 +128,14 @@ public class WebApkUpdateManagerUnitTest {
         @Override
         public void storeWebApkUpdateRequestToFile(String updateRequestPath, String startUrl,
                 String scope, String name, String shortName, String primaryIconUrl,
-                Bitmap primaryIcon, boolean isPrimaryIconMaskable, String badgeIconUrl,
-                Bitmap badgeIcon, String[] iconUrls, String[] iconHashes,
-                @WebDisplayMode int displayMode, int orientation, long themeColor,
-                long backgroundColor, String shareTargetAction, String shareTargetParamTitle,
-                String shareTargetParamText, String shareTargetParamUrl,
-                boolean shareTargetParamIsMethodPost, boolean shareTargetParamIsEncTypeMultipart,
-                String[] shareTargetParamFileNames, Object[] shareTargetParamAccepts,
-                String manifestUrl, String webApkPackage, int webApkVersion,
-                boolean isManifestStale, @WebApkUpdateReason int updateReason,
+                Bitmap primaryIcon, String badgeIconUrl, Bitmap badgeIcon, String[] iconUrls,
+                String[] iconHashes, @WebDisplayMode int displayMode, int orientation,
+                long themeColor, long backgroundColor, String shareTargetAction,
+                String shareTargetParamTitle, String shareTargetParamText,
+                String shareTargetParamUrl, boolean shareTargetParamIsMethodPost,
+                boolean shareTargetParamIsEncTypeMultipart, String[] shareTargetParamFileNames,
+                Object[] shareTargetParamAccepts, String manifestUrl, String webApkPackage,
+                int webApkVersion, boolean isManifestStale, @WebApkUpdateReason int updateReason,
                 Callback<Boolean> callback) {}
 
         @Override
@@ -364,9 +363,9 @@ public class WebApkUpdateManagerUnitTest {
                 new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor,
-                manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
-                kPackageName, -1, WEB_MANIFEST_URL, manifestData.startUrl,
-                WebApkInfo.WebApkDistributor.BROWSER, manifestData.iconUrlToMurmur2HashMap,
+                manifestData.defaultBackgroundColor, kPackageName, -1, WEB_MANIFEST_URL,
+                manifestData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
+                manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null, null,
                         manifestData.shareTargetMethod != null

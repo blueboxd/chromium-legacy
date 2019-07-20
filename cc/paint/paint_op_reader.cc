@@ -618,6 +618,18 @@ void PaintOpReader::Read(SkColorType* color_type) {
   *color_type = static_cast<SkColorType>(raw_color_type);
 }
 
+void PaintOpReader::Read(SkYUVColorSpace* yuv_color_space) {
+  uint32_t raw_yuv_color_space = kIdentity_SkYUVColorSpace;
+  ReadSimple(&raw_yuv_color_space);
+
+  if (raw_yuv_color_space > kLastEnum_SkYUVColorSpace) {
+    SetInvalid();
+    return;
+  }
+
+  *yuv_color_space = static_cast<SkYUVColorSpace>(raw_yuv_color_space);
+}
+
 void PaintOpReader::AlignMemory(size_t alignment) {
   // Due to the math below, alignment must be a power of two.
   DCHECK_GT(alignment, 0u);

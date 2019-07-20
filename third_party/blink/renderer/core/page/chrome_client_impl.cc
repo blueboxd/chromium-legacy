@@ -782,28 +782,27 @@ void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
 void ChromeClientImpl::AttachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
-  if (!Platform::Current()->IsThreadedAnimationEnabled())
-    return;
+  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-  if (WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget()) {
-    widget->AnimationHost()->AddAnimationTimeline(
-        compositor_timeline->GetAnimationTimeline());
-  }
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  // TODO(crbug.com/912193): This is called while a frame is attached so widget
+  // is never null, right?
+  CHECK(widget);
+  widget->AnimationHost()->AddAnimationTimeline(
+      compositor_timeline->GetAnimationTimeline());
 }
 
 void ChromeClientImpl::DetachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
-  if (!Platform::Current()->IsThreadedAnimationEnabled())
-    return;
+  DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-  // This method can be called when the frame is being detached, after the
-  // widget is destroyed.
-  // TODO(dcheng): This should be called before the widget is gone...
-  if (WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget()) {
-    widget->AnimationHost()->RemoveAnimationTimeline(
-        compositor_timeline->GetAnimationTimeline());
-  }
+  WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
+  // TODO(crbug.com/912193): This should not be called after Document::Shutdown,
+  // so widget is never null, right?
+  CHECK(widget);
+  widget->AnimationHost()->RemoveAnimationTimeline(
+      compositor_timeline->GetAnimationTimeline());
 }
 
 void ChromeClientImpl::EnterFullscreen(LocalFrame& frame,

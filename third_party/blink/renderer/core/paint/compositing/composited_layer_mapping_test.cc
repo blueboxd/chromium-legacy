@@ -51,8 +51,8 @@ class CompositedLayerMappingTest : public RenderingTest {
 
  private:
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
 };
 

@@ -63,7 +63,9 @@ const PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedWebUsbAskForUrls, CONTENT_SETTINGS_TYPE_USB_GUARD,
          CONTENT_SETTING_ASK},
         {prefs::kManagedWebUsbBlockedForUrls, CONTENT_SETTINGS_TYPE_USB_GUARD,
-         CONTENT_SETTING_BLOCK}};
+         CONTENT_SETTING_BLOCK},
+        {prefs::kManagedLegacyCookieAccessAllowedForDomains,
+         CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS, CONTENT_SETTING_ALLOW}};
 
 }  // namespace
 
@@ -98,7 +100,8 @@ const PolicyProvider::PrefsForManagedDefaultMapEntry
          prefs::kManagedDefaultWebBluetoothGuardSetting},
         {CONTENT_SETTINGS_TYPE_USB_GUARD,
          prefs::kManagedDefaultWebUsbGuardSetting},
-};
+        {CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
+         prefs::kManagedDefaultLegacyCookieAccessSetting}};
 
 // static
 void PolicyProvider::RegisterProfilePrefs(
@@ -120,6 +123,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kManagedWebUsbAllowDevicesForUrls);
   registry->RegisterListPref(prefs::kManagedWebUsbAskForUrls);
   registry->RegisterListPref(prefs::kManagedWebUsbBlockedForUrls);
+  registry->RegisterListPref(
+      prefs::kManagedLegacyCookieAccessAllowedForDomains);
   // Preferences for default content setting policies. If a policy is not set of
   // the corresponding preferences below is set to CONTENT_SETTING_DEFAULT.
   registry->RegisterIntegerPref(prefs::kManagedDefaultAdsSetting,
@@ -143,6 +148,8 @@ void PolicyProvider::RegisterProfilePrefs(
   registry->RegisterIntegerPref(prefs::kManagedDefaultWebBluetoothGuardSetting,
                                 CONTENT_SETTING_DEFAULT);
   registry->RegisterIntegerPref(prefs::kManagedDefaultWebUsbGuardSetting,
+                                CONTENT_SETTING_DEFAULT);
+  registry->RegisterIntegerPref(prefs::kManagedDefaultLegacyCookieAccessSetting,
                                 CONTENT_SETTING_DEFAULT);
 }
 
@@ -173,6 +180,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedPopupsBlockedForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedWebUsbAskForUrls, callback);
   pref_change_registrar_.Add(prefs::kManagedWebUsbBlockedForUrls, callback);
+  pref_change_registrar_.Add(prefs::kManagedLegacyCookieAccessAllowedForDomains,
+                             callback);
   // The following preferences are only used to indicate if a default content
   // setting is managed and to hold the managed default setting value. If the
   // value for any of the following preferences is set then the corresponding
@@ -195,6 +204,8 @@ PolicyProvider::PolicyProvider(PrefService* prefs) : prefs_(prefs) {
   pref_change_registrar_.Add(prefs::kManagedDefaultWebBluetoothGuardSetting,
                              callback);
   pref_change_registrar_.Add(prefs::kManagedDefaultWebUsbGuardSetting,
+                             callback);
+  pref_change_registrar_.Add(prefs::kManagedDefaultLegacyCookieAccessSetting,
                              callback);
 }
 
@@ -467,7 +478,8 @@ void PolicyProvider::OnPreferenceChanged(const std::string& name) {
       name == prefs::kManagedPluginsAllowedForUrls ||
       name == prefs::kManagedPluginsBlockedForUrls ||
       name == prefs::kManagedPopupsAllowedForUrls ||
-      name == prefs::kManagedPopupsBlockedForUrls) {
+      name == prefs::kManagedPopupsBlockedForUrls ||
+      name == prefs::kManagedLegacyCookieAccessAllowedForDomains) {
     ReadManagedContentSettings(true);
     ReadManagedDefaultSettings();
   }

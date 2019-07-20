@@ -72,6 +72,12 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
     // into which the writable-and-executable data are stored.
     CHILD_RENDERER,
 
+    // Starts a child process with the macOS entitlement that allows unsigned
+    // executable memory.
+    // TODO(https://crbug.com/985816): Change this to use MAP_JIT and the
+    // allow-jit entitlement instead.
+    CHILD_GPU,
+
     // Starts a child process with the macOS entitlement that ignores the
     // library validation code signing enforcement. Library validation mandates
     // that all executable pages be backed by a code signature that either 1)

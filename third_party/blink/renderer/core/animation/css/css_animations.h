@@ -205,7 +205,7 @@ class CSSAnimations final {
     AnimationEventDelegate(Element* animation_target, const AtomicString& name)
         : animation_target_(animation_target),
           name_(name),
-          previous_phase_(AnimationEffect::kPhaseNone),
+          previous_phase_(Timing::kPhaseNone),
           previous_iteration_(NullValue()) {}
     bool RequiresIterationEvents(const AnimationEffect&) override;
     void OnEventCondition(const AnimationEffect&) override;
@@ -221,7 +221,7 @@ class CSSAnimations final {
                        double elapsed_time);
     Member<Element> animation_target_;
     const AtomicString name_;
-    AnimationEffect::Phase previous_phase_;
+    Timing::Phase previous_phase_;
     double previous_iteration_;
   };
 
@@ -231,7 +231,7 @@ class CSSAnimations final {
                             const PropertyHandle& property)
         : transition_target_(transition_target),
           property_(property),
-          previous_phase_(AnimationEffect::kPhaseNone) {}
+          previous_phase_(Timing::kPhaseNone) {}
     bool RequiresIterationEvents(const AnimationEffect&) override {
       return false;
     }
@@ -248,7 +248,7 @@ class CSSAnimations final {
 
     Member<Element> transition_target_;
     PropertyHandle property_;
-    AnimationEffect::Phase previous_phase_;
+    Timing::Phase previous_phase_;
   };
 
   DISALLOW_COPY_AND_ASSIGN(CSSAnimations);

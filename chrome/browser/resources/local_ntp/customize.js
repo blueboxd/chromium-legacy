@@ -1861,6 +1861,11 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   };
   richerPicker.onkeydown = function(event) {
     richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
+
+    if (event.keyCode === customize.KEYCODES.ESC ||
+        event.keyCode === customize.KEYCODES.BACKSPACE) {
+      customize.richerPicker_cancelCustomization();
+    }
   };
 
   const richerPickerOpenBackgrounds = function() {

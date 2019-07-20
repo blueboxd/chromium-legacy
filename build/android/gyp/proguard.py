@@ -7,6 +7,7 @@
 import cStringIO
 import optparse
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -80,6 +81,10 @@ def _ParseOptions(args):
   parser.add_option(
       '--repackage-classes',
       help='Unique package name given to an asynchronously proguarded module')
+  parser.add_option(
+      '--disable-outlining',
+      action='store_true',
+      help='Disable the outlining optimization provided by R8.')
 
   options, _ = parser.parse_args(args)
 
@@ -212,18 +217,30 @@ def main(args):
       f.close()
       print_stdout = '-whyareyoukeeping' in merged_configs
 
+      def run_r8(cmd):
+        stderr_filter = None
+        env = os.environ.copy()
+        if options.disable_outlining:
+          stderr_filter = lambda l: re.sub(r'.*_JAVA_OPTIONS.*\n?', '', l)
+          env['_JAVA_OPTIONS'] = '-Dcom.android.tools.r8.disableOutlining=1'
+        build_utils.CheckOutput(
+            cmd,
+            env=env,
+            print_stdout=print_stdout,
+            stderr_filter=stderr_filter)
+
       if options.output_path.endswith('.dex'):
         with build_utils.TempDir() as tmp_dex_dir:
           cmd, temp_config_string = _CreateR8Command(
               options, tmp_mapping_path, tmp_dex_dir, tmp_proguard_config_path,
               libraries)
-          build_utils.CheckOutput(cmd, print_stdout=print_stdout)
+          run_r8(cmd)
           _MoveTempDexFile(tmp_dex_dir, options.output_path)
       else:
         cmd, temp_config_string = _CreateR8Command(
             options, tmp_mapping_path, options.output_path,
             tmp_proguard_config_path, libraries)
-        build_utils.CheckOutput(cmd, print_stdout=print_stdout)
+        run_r8(cmd)
 
       # Copy output files to correct locations.
       with build_utils.AtomicOutput(options.mapping_output) as mapping:

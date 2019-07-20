@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "chrome/browser/sharing/fcm_constants.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_driver.h"

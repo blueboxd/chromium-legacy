@@ -45,6 +45,15 @@ declare_args() {
 # iOS toolchains.
 _verify_sdk = is_chrome_branded && is_official_build && target_os != "ios"
 
+# The path to the hermetic install of Xcode. Only relevant when
+# use_system_xcode = false.
+if (!use_system_xcode) {
+  _hermetic_xcode_path =
+      rebase_path("//build/${target_os}_files/xcode_binaries",
+                  "",
+                  root_build_dir)
+}
+
 find_sdk_args = [
   "--print_sdk_path",
   "--print_bin_path",
@@ -52,7 +61,7 @@ find_sdk_args = [
 if (!use_system_xcode) {
   find_sdk_args += [
     "--developer_dir",
-    hermetic_xcode_path,
+    _hermetic_xcode_path,
   ]
 }
 if (_verify_sdk) {
@@ -86,7 +95,7 @@ sdk_info_args = []
 if (!use_system_xcode) {
   sdk_info_args += [
     "--developer_dir",
-    hermetic_xcode_path,
+    _hermetic_xcode_path,
   ]
 }
 sdk_info_args += [ mac_sdk_name ]

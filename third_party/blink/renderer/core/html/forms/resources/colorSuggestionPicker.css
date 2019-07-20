@@ -31,7 +31,7 @@ body {
     overflow: hidden;
 }
 
-#main {
+.color-suggestion-picker-main {
     background-color: white;
     border: solid 1px #8899aa;
     box-shadow: inset 2px 2px 2px white,

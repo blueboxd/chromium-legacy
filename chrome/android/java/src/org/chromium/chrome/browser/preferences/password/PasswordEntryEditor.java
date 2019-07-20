@@ -19,6 +19,7 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getActivity().setTitle(R.string.password_entry_viewer_edit_stored_password_action_title);
         return inflater.inflate(R.layout.password_entry_editor, container, false);
     }
 

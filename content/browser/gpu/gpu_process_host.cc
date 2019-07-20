@@ -70,6 +70,7 @@
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -852,10 +853,11 @@ bool GpuProcessHost::Init() {
     return false;
   }
 
-  viz::mojom::VizMainAssociatedPtr viz_main_ptr;
+  mojo::PendingAssociatedRemote<viz::mojom::VizMain> viz_main_pending_remote;
   process_->child_channel()
       ->GetAssociatedInterfaceSupport()
-      ->GetRemoteAssociatedInterface(&viz_main_ptr);
+      ->GetRemoteAssociatedInterface(
+          viz_main_pending_remote.InitWithNewEndpointAndPassReceiver());
   viz::GpuHostImpl::InitParams params;
   params.restart_id = host_id_;
   params.in_process = in_process_;
@@ -868,7 +870,8 @@ bool GpuProcessHost::Init() {
   params.main_thread_task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
-      this, std::make_unique<viz::VizMainWrapper>(std::move(viz_main_ptr)),
+      this,
+      std::make_unique<viz::VizMainWrapper>(std::move(viz_main_pending_remote)),
       std::move(params));
 
 #if defined(USE_VIZ_DEVTOOLS)
@@ -1083,6 +1086,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
 #if defined(OS_LINUX)
   int child_flags = gpu_launcher.empty() ? ChildProcessHost::CHILD_ALLOW_SELF
                                          : ChildProcessHost::CHILD_NORMAL;
+#elif defined(OS_MACOSX)
+  int child_flags = ChildProcessHost::CHILD_GPU;
 #else
   int child_flags = ChildProcessHost::CHILD_NORMAL;
 #endif

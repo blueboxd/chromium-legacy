@@ -489,14 +489,27 @@ class GpuImageDecodeCacheTest
     return static_cast<ServiceImageTransferCacheEntry*>(entry)->image();
   }
 
-  void CompareAllPlanesToMippedVersions(GpuImageDecodeCache* cache,
-                                        const DrawImage& draw_image,
-                                        bool should_have_mips) {
+  void CompareAllPlanesToMippedVersions(
+      GpuImageDecodeCache* cache,
+      const DrawImage& draw_image,
+      const base::Optional<uint32_t> transfer_cache_id,
+      bool should_have_mips) {
     for (size_t i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
       // TODO(crbug.com/910276): Skip alpha plane until supported in cache.
       if (i != SkYUVAIndex::kA_Index) {
-        auto original_uploaded_plane =
-            cache->GetUploadedPlaneForTesting(draw_image, i);
+        sk_sp<SkImage> original_uploaded_plane;
+        if (use_transfer_cache_) {
+          DCHECK(transfer_cache_id.has_value());
+          const uint32_t id = transfer_cache_id.value();
+          auto* image_entry =
+              transfer_cache_helper_.GetEntryAs<ServiceImageTransferCacheEntry>(
+                  id);
+          original_uploaded_plane = image_entry->GetPlaneImage(i);
+        } else {
+          original_uploaded_plane =
+              cache->GetUploadedPlaneForTesting(draw_image, i);
+        }
+
         ASSERT_TRUE(original_uploaded_plane);
         auto plane_with_mips = original_uploaded_plane->makeTextureImage(
             context_provider()->GrContext(), nullptr /* color space */,
@@ -510,11 +523,22 @@ class GpuImageDecodeCacheTest
   void VerifyUploadedPlaneSizes(
       GpuImageDecodeCache* cache,
       const DrawImage& draw_image,
+      const base::Optional<uint32_t> transfer_cache_id,
       const SkISize plane_sizes[SkYUVASizeInfo::kMaxCount]) {
     for (size_t i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
       // TODO(crbug.com/910276): Skip alpha plane until supported in cache.
       if (i != SkYUVAIndex::kA_Index) {
-        auto uploaded_plane = cache->GetUploadedPlaneForTesting(draw_image, i);
+        sk_sp<SkImage> uploaded_plane;
+        if (use_transfer_cache_) {
+          DCHECK(transfer_cache_id.has_value());
+          const uint32_t id = transfer_cache_id.value();
+          auto* image_entry =
+              transfer_cache_helper_.GetEntryAs<ServiceImageTransferCacheEntry>(
+                  id);
+          uploaded_plane = image_entry->GetPlaneImage(i);
+        } else {
+          uploaded_plane = cache->GetUploadedPlaneForTesting(draw_image, i);
+        }
         ASSERT_TRUE(uploaded_plane);
         EXPECT_EQ(plane_sizes[i], uploaded_plane->dimensions());
       }
@@ -2179,9 +2203,11 @@ TEST_P(GpuImageDecodeCacheTest,
     EXPECT_EQ(image.width(), service_image->width());
     EXPECT_EQ(image.height(), service_image->height());
 
-    // Color space should be logically equal to the original color space.
-    EXPECT_TRUE(SkColorSpace::Equals(service_image->colorSpace(),
-                                     target_color_space.get()));
+    if (!do_yuv_decode_) {
+      // Color space should be logically equal to the original color space.
+      EXPECT_TRUE(SkColorSpace::Equals(service_image->colorSpace(),
+                                       target_color_space.get()));
+    }
   } else {
     // Ensure that the HW uploaded image had color space conversion applied.
     EXPECT_TRUE(SkColorSpace::Equals(decoded_draw_image.image()->colorSpace(),
@@ -2445,23 +2471,23 @@ TEST_P(GpuImageDecodeCacheTest, BasicMips) {
     // Must hold context lock before calling GetDecodedImageForDraw /
     // DrawWithImageFinished.
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    // Pull out transfer cache ID from the DecodedDrawImage while it still has
+    // it attached.
+    DecodedDrawImage serialized_decoded_draw_image =
+        cache->GetDecodedImageForDraw(draw_image);
+    const base::Optional<uint32_t> transfer_cache_entry_id =
+        serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
-        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+        EnsureImageBacked(std::move(serialized_decoded_draw_image));
     EXPECT_TRUE(decoded_draw_image.image());
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     if (do_yuv_decode_) {
-      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
-      // must separately request mips for each plane and compare to the original
-      // uploaded planes.
-      CompareAllPlanesToMippedVersions(cache.get(), draw_image,
-                                       should_have_mips);
-      EXPECT_TRUE(
-          SkColorSpace::Equals(cache->SupportsColorSpaceConversion()
-                                   ? color_space.ToSkColorSpace().get()
-                                   : nullptr,
-                               decoded_draw_image.image()->colorSpace()));
-
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus,
+      // we must separately request mips for each plane and compare to the
+      // original uploaded planes.
+      CompareAllPlanesToMippedVersions(
+          cache.get(), draw_image, transfer_cache_entry_id, should_have_mips);
     } else {
       sk_sp<SkImage> image_with_mips =
           decoded_draw_image.image()->makeTextureImage(
@@ -2513,17 +2539,24 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     // Must hold context lock before calling GetDecodedImageForDraw /
     // DrawWithImageFinished.
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    // Pull out transfer cache ID from the DecodedDrawImage while it still has
+    // it attached.
+    DecodedDrawImage serialized_decoded_draw_image =
+        cache->GetDecodedImageForDraw(draw_image);
+    const base::Optional<uint32_t> transfer_cache_entry_id =
+        serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
-        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+        EnsureImageBacked(std::move(serialized_decoded_draw_image));
     EXPECT_TRUE(decoded_draw_image.image());
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     // No mips should be generated.
     if (do_yuv_decode_) {
-      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
-      // must separately request mips for each plane and compare to the original
-      // uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus,
+      // we must separately request mips for each plane and compare to the
+      // original uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       transfer_cache_entry_id,
                                        false /* should_have_mips */);
     } else {
       sk_sp<SkImage> image_with_mips =
@@ -2553,24 +2586,26 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedSubsequentDraw) {
     // Must hold context lock before calling GetDecodedImageForDraw /
     // DrawWithImageFinished.
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    // Pull out transfer cache ID from the DecodedDrawImage while it still has
+    // it attached.
+    DecodedDrawImage serialized_decoded_draw_image =
+        cache->GetDecodedImageForDraw(draw_image);
+    const base::Optional<uint32_t> transfer_cache_entry_id =
+        serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
-        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+        EnsureImageBacked(std::move(serialized_decoded_draw_image));
 
     EXPECT_TRUE(decoded_draw_image.image());
     EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     // Mips should be generated
     if (do_yuv_decode_) {
-      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
-      // must separately request mips for each plane and compare to the original
-      // uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus,
+      // we must separately request mips for each plane and compare to the
+      // original uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       transfer_cache_entry_id,
                                        true /* should_have_mips */);
-      EXPECT_TRUE(
-          SkColorSpace::Equals(cache->SupportsColorSpaceConversion()
-                                   ? DefaultColorSpace().ToSkColorSpace().get()
-                                   : nullptr,
-                               decoded_draw_image.image()->colorSpace()));
     } else {
       sk_sp<SkImage> image_with_mips =
           decoded_draw_image.image()->makeTextureImage(
@@ -2606,17 +2641,24 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
     // Must hold context lock before calling GetDecodedImageForDraw /
     // DrawWithImageFinished.
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    // Pull out transfer cache ID from the DecodedDrawImage while it still has
+    // it attached.
+    DecodedDrawImage serialized_decoded_draw_image =
+        cache->GetDecodedImageForDraw(draw_image);
+    const base::Optional<uint32_t> transfer_cache_entry_id =
+        serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
-        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+        EnsureImageBacked(std::move(serialized_decoded_draw_image));
     ASSERT_TRUE(decoded_draw_image.image());
     ASSERT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     // No mips should be generated.
     if (do_yuv_decode_) {
-      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
-      // must separately request mips for each plane and compare to the original
-      // uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus,
+      // we must separately request mips for each plane and compare to the
+      // original uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       transfer_cache_entry_id,
                                        false /* should_have_mips */);
     } else {
       sk_sp<SkImage> image_with_mips =
@@ -2639,24 +2681,26 @@ TEST_P(GpuImageDecodeCacheTest, MipsAddedWhileOriginalInUse) {
     // Must hold context lock before calling GetDecodedImageForDraw /
     // DrawWithImageFinished.
     viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+    // Pull out transfer cache ID from the DecodedDrawImage while it still has
+    // it attached.
+    DecodedDrawImage serialized_decoded_draw_image =
+        cache->GetDecodedImageForDraw(draw_image);
+    const base::Optional<uint32_t> transfer_cache_entry_id =
+        serialized_decoded_draw_image.transfer_cache_entry_id();
     DecodedDrawImage decoded_draw_image =
-        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+        EnsureImageBacked(std::move(serialized_decoded_draw_image));
 
     ASSERT_TRUE(decoded_draw_image.image());
     ASSERT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
     // Mips should be generated.
     if (do_yuv_decode_) {
-      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus, we
-      // must separately request mips for each plane and compare to the original
-      // uploaded planes.
+      // Skia will flatten a YUV SkImage upon calling makeTextureImage. Thus,
+      // we must separately request mips for each plane and compare to the
+      // original uploaded planes.
       CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                       transfer_cache_entry_id,
                                        true /* should_have_mips */);
-      EXPECT_TRUE(
-          SkColorSpace::Equals(cache->SupportsColorSpaceConversion()
-                                   ? DefaultColorSpace().ToSkColorSpace().get()
-                                   : nullptr,
-                               decoded_draw_image.image()->colorSpace()));
     } else {
       sk_sp<SkImage> image_with_mips =
           decoded_draw_image.image()->makeTextureImage(
@@ -2732,8 +2776,14 @@ TEST_P(GpuImageDecodeCacheTest,
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  // Pull out transfer cache ID from the DecodedDrawImage while it still has
+  // it attached.
+  DecodedDrawImage serialized_decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  const base::Optional<uint32_t> transfer_cache_entry_id =
+      serialized_decoded_draw_image.transfer_cache_entry_id();
   DecodedDrawImage decoded_draw_image =
-      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+      EnsureImageBacked(std::move(serialized_decoded_draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
@@ -2741,9 +2791,11 @@ TEST_P(GpuImageDecodeCacheTest,
   // must separately request mips for each plane and compare to the original
   // uploaded planes.
   CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                   transfer_cache_entry_id,
                                    true /* should_have_mips */);
   SkYUVASizeInfo yuv_size_info = GetYUV420SizeInfo(GetNormalImageSize());
-  VerifyUploadedPlaneSizes(cache.get(), draw_image, yuv_size_info.fSizes);
+  VerifyUploadedPlaneSizes(cache.get(), draw_image, transfer_cache_entry_id,
+                           yuv_size_info.fSizes);
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->UnrefImage(draw_image);
@@ -2780,8 +2832,14 @@ TEST_P(GpuImageDecodeCacheTest, ScaledYUVDecodeScaledDrawCorrectlyMipsPlanes) {
   // Must hold context lock before calling GetDecodedImageForDraw /
   // DrawWithImageFinished.
   viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  // Pull out transfer cache ID from the DecodedDrawImage while it still has
+  // it attached.
+  DecodedDrawImage serialized_decoded_draw_image =
+      cache->GetDecodedImageForDraw(draw_image);
+  const base::Optional<uint32_t> transfer_cache_entry_id =
+      serialized_decoded_draw_image.transfer_cache_entry_id();
   DecodedDrawImage decoded_draw_image =
-      EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+      EnsureImageBacked(std::move(serialized_decoded_draw_image));
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
 
@@ -2789,6 +2847,7 @@ TEST_P(GpuImageDecodeCacheTest, ScaledYUVDecodeScaledDrawCorrectlyMipsPlanes) {
   // must separately request mips for each plane and compare to the original
   // uploaded planes.
   CompareAllPlanesToMippedVersions(cache.get(), draw_image,
+                                   transfer_cache_entry_id,
                                    true /* should_have_mips */);
 
   // Because we intend to draw this image at 0.45 x 0.45 scale, we will upload
@@ -2803,7 +2862,8 @@ TEST_P(GpuImageDecodeCacheTest, ScaledYUVDecodeScaledDrawCorrectlyMipsPlanes) {
       mipped_plane_sizes[SkYUVAIndex::kY_Index];
   mipped_plane_sizes[SkYUVAIndex::kV_Index] =
       mipped_plane_sizes[SkYUVAIndex::kY_Index];
-  VerifyUploadedPlaneSizes(cache.get(), draw_image, mipped_plane_sizes);
+  VerifyUploadedPlaneSizes(cache.get(), draw_image, transfer_cache_entry_id,
+                           mipped_plane_sizes);
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
   cache->UnrefImage(draw_image);
@@ -2862,7 +2922,7 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(
         testing::ValuesIn(test_color_types),
         testing::ValuesIn(true_array) /* use_transfer_cache */,
-        testing::ValuesIn(false_array) /* do_yuv_decode */,
+        testing::Bool() /* do_yuv_decode */,
         testing::ValuesIn(false_array) /* advertise_accelerated_decoding */));
 
 class GpuImageDecodeCacheWithAcceleratedDecodesTest
@@ -2879,11 +2939,6 @@ class GpuImageDecodeCacheWithAcceleratedDecodesTest
     if (do_yuv_decode_) {
       generator =
           sk_make_sp<FakePaintImageGenerator>(info, GetYUV420SizeInfo(size));
-
-      // TODO(crbug.com/968125): even though the paint image can be decoded to
-      // YUV, the cache won't follow that path because it's not yet supported in
-      // OOPR. Remove this expectation when it is.
-      generator->SetExpectFallbackToRGB();
     } else {
       generator = sk_make_sp<FakePaintImageGenerator>(info);
     }

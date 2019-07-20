@@ -17,8 +17,8 @@ namespace blink {
 class LayoutShiftTrackerTest : public RenderingTest {
  protected:
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
   LocalFrameView& GetFrameView() { return *GetFrame().View(); }
   LayoutShiftTracker& GetLayoutShiftTracker() {

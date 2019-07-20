@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
+#include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
@@ -108,6 +109,11 @@ dbus::Bus* DBusThreadManager::GetSystemBus() {
 
 ArcAppfuseProviderClient* DBusThreadManager::GetArcAppfuseProviderClient() {
   return clients_browser_ ? clients_browser_->arc_appfuse_provider_client_.get()
+                          : nullptr;
+}
+
+ArcKeymasterClient* DBusThreadManager::GetArcKeymasterClient() {
+  return clients_browser_ ? clients_browser_->arc_keymaster_client_.get()
                           : nullptr;
 }
 

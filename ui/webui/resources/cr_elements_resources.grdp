@@ -379,9 +379,13 @@
              file="cr_elements/hidden_style_css.html"
              type="chrome_html"
              compress="gzip" />
-  <structure name="IDR_CR_ELEMENTS_CR_CR_ICONS_CSS_HTML"
+  <structure name="IDR_CR_ELEMENTS_CR_ICONS_CSS_HTML"
              file="cr_elements/cr_icons_css.html"
              flattenhtml="true"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_PAGE_HOST_STYLE_CSS_HTML"
+             file="cr_elements/cr_page_host_style_css.html"
              type="chrome_html"
              compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_MD_SELECT_CSS_HTML"

@@ -259,10 +259,10 @@ bool ImageTransportSurfaceOverlayMacBase<BaseClass>::ScheduleOverlayPlane(
     return false;
   }
   const ui::CARendererLayerParams overlay_as_calayer_params(
-      false,        // is_clipped
-      gfx::Rect(),  // clip_rect
-      0,            // clip_rect_corner_radius
-      0,            // sorting_context_id
+      false,          // is_clipped
+      gfx::Rect(),    // clip_rect
+      gfx::RRectF(),  // rounded_corner_bounds
+      0,              // sorting_context_id
       gfx::Transform(), image,
       crop_rect,            // contents_rect
       pixel_frame_rect,     // rect

@@ -656,7 +656,10 @@ crbug.com/983642 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-alpha.html [
 crbug.com/983642 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]
 crbug.com/983642 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Slow ]
 crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
+crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]
+crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Slow ]
 crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Slow ]
+crbug.com/983642 [ Win7 ] virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Slow ]
 
 # These tests work fine but are slow in all Debug builds and for some
 # reason Win7 is timing out occasionally crbug.com/985231.

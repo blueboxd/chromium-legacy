@@ -53,7 +53,7 @@ class X11ScreenOzone : public PlatformScreen, public PlatformEventDispatcher {
   void FetchDisplayList();
   gfx::Point GetCursorLocation() const;
 
-  X11WindowManagerOzone* window_manager_;
+  X11WindowManagerOzone* const window_manager_;
   display::DisplayList display_list_;
 
   base::ObserverList<display::DisplayObserver> observers_;

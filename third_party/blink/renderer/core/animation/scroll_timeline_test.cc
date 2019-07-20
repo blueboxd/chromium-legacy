@@ -13,11 +13,15 @@
 
 namespace blink {
 
-using ScrollTimelineTest = RenderingTest;
+class ScrollTimelineTest : public RenderingTest {
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+};
 
 TEST_F(ScrollTimelineTest,
        AttachingAndDetachingAnimationCausesCompositingUpdate) {
-  EnableCompositing();
 
   SetBodyInnerHTML(R"HTML(
     <style>#scroller { overflow: scroll; width: 100px; height: 100px; }</style>

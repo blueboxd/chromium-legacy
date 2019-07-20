@@ -13,6 +13,7 @@ aggregate_vector_icons("components_vector_icons") {
     "bluetooth_connected.icon",
     "bluetooth_scanning.icon",
     "business.icon",
+    "call.icon",
     "check_circle.icon",
     "close.icon",
     "close_rounded.icon",

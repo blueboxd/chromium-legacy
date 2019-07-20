@@ -6,7 +6,7 @@
 #define CONTENT_TEST_FAKE_LEVELDB_DATABASE_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {

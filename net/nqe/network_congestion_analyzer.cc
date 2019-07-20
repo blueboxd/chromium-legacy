@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <math.h>
 #include <algorithm>
 
 #include <net/nqe/network_congestion_analyzer.h>
@@ -9,6 +10,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
@@ -25,6 +27,41 @@ static constexpr int64_t kHighQueueingDelayMsec = 5000;
 // interval is required so that a new measurement period could start.
 static constexpr int64_t kMinEmptyQueueObservingTimeMsec = 1500;
 
+// The min and max values for the peak queueing delay level.
+static constexpr size_t kQueueingDelayLevelMinVal = 1;
+static constexpr size_t kQueueingDelayLevelMaxVal = 10;
+
+// The array of thresholds for bucketizing a peak queueing delay sample.
+constexpr base::TimeDelta kQueueingDelayBucketThresholds[] = {
+    base::TimeDelta::FromMilliseconds(0),
+    base::TimeDelta::FromMilliseconds(30),
+    base::TimeDelta::FromMilliseconds(60),
+    base::TimeDelta::FromMilliseconds(120),
+    base::TimeDelta::FromMilliseconds(250),
+    base::TimeDelta::FromMilliseconds(500),
+    base::TimeDelta::FromMilliseconds(1000),
+    base::TimeDelta::FromMilliseconds(2000),
+    base::TimeDelta::FromMilliseconds(4000),
+    base::TimeDelta::FromMilliseconds(8000)};
+
+// The array of thresholds for determining whether a queueing delay sample is
+// low under different effective connection types (ECTs). Based on the initial
+// measurement, the queueing delay shows different distributions under different
+// ECTs. For example, a 300-msec queueing delay is low in a 2G connection, and
+// indicates the network queue is empty. However, the delay is the 90th
+// percentile value on a 4G connection, and indicates many packets are in the
+// network queue. These thresholds are the 33rd percentile values from these
+// delay distributions. A default value (400 msec) is used when the ECT is
+// UNKNOWN or OFFLINE.
+constexpr base::TimeDelta
+    kLowQueueingDelayThresholds[EFFECTIVE_CONNECTION_TYPE_LAST] = {
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(40),
+        base::TimeDelta::FromMilliseconds(15)};
+
 }  // namespace
 
 namespace nqe {
@@ -32,12 +69,17 @@ namespace nqe {
 namespace internal {
 
 NetworkCongestionAnalyzer::NetworkCongestionAnalyzer(
+    NetworkQualityEstimator* network_quality_estimator,
     const base::TickClock* tick_clock)
-    : tick_clock_(tick_clock),
+    : network_quality_estimator_(network_quality_estimator),
+      tick_clock_(tick_clock),
       recent_active_hosts_count_(0u),
       count_inflight_requests_for_peak_queueing_delay_(0u),
       peak_count_inflight_requests_measurement_period_(0u) {
   DCHECK(tick_clock_);
+  DCHECK(network_quality_estimator_);
+  DCHECK_EQ(kQueueingDelayLevelMaxVal,
+            base::size(kQueueingDelayBucketThresholds));
 }
 
 NetworkCongestionAnalyzer::~NetworkCongestionAnalyzer() {
@@ -159,6 +201,36 @@ void NetworkCongestionAnalyzer::ComputeRecentQueueingDelay(
   }
 }
 
+size_t NetworkCongestionAnalyzer::ComputePeakQueueingDelayLevel(
+    const base::TimeDelta& peak_queueing_delay) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_LE(base::TimeDelta(), peak_queueing_delay);
+
+  // The range of queueing delay buckets includes all non-negative values. Thus,
+  // the non-negative peak queueing delay must be found in one of these buckets.
+  size_t level = kQueueingDelayLevelMaxVal;
+  while (level > kQueueingDelayLevelMinVal) {
+    // Stops searching if the peak queueing delay falls in the current bucket.
+    if (peak_queueing_delay >= kQueueingDelayBucketThresholds[level - 1])
+      break;
+
+    --level;
+  }
+  // The queueing delay level is from 1 (LOWEST) to 10 (HIGHEST).
+  DCHECK_LE(kQueueingDelayLevelMinVal, level);
+  DCHECK_GE(kQueueingDelayLevelMaxVal, level);
+  return level;
+}
+
+bool NetworkCongestionAnalyzer::IsQueueingDelayLow(
+    const base::TimeDelta& delay) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  net::EffectiveConnectionType current_ect =
+      network_quality_estimator_->GetEffectiveConnectionType();
+  return delay <= kLowQueueingDelayThresholds[current_ect];
+}
+
 bool NetworkCongestionAnalyzer::ShouldStartNewMeasurement(
     const base::TimeDelta& delay,
     size_t count_inflight_requests) {
@@ -166,8 +238,7 @@ bool NetworkCongestionAnalyzer::ShouldStartNewMeasurement(
 
   // The queue is not empty if either the queueing delay is high or the number
   // of in-flight requests is high.
-  if (delay > base::TimeDelta::FromMilliseconds(500) ||
-      count_inflight_requests >= 3) {
+  if (!IsQueueingDelayLow(delay) || count_inflight_requests >= 3) {
     observing_empty_queue_timestamp_ = base::nullopt;
     return false;
   }
@@ -213,6 +284,23 @@ void NetworkCongestionAnalyzer::UpdatePeakDelayMapping(
         base::TimeDelta::FromMilliseconds(kHighQueueingDelayMsec)) {
       count_inflight_requests_causing_high_delay_ =
           count_inflight_requests_for_peak_queueing_delay_;
+    }
+
+    size_t peak_queueing_delay_level =
+        ComputePeakQueueingDelayLevel(peak_queueing_delay_);
+    DCHECK_GE(kQueueingDelayLevelMaxVal, peak_queueing_delay_level);
+
+    if (peak_queueing_delay_level >= kQueueingDelayLevelMinVal &&
+        peak_queueing_delay_level <= kQueueingDelayLevelMaxVal &&
+        peak_count_inflight_requests_measurement_period_ >= 3) {
+      // Records the count of in-flight requests causing the peak queueing delay
+      // within the current measurement period. These samples are bucketized
+      // into 10 peak queueing delay levels.
+      base::UmaHistogramCounts100(
+          "NQE.CongestionAnalyzer.CountInflightRequestsForPeakQueueingDelay."
+          "Level" +
+              base::NumberToString(peak_queueing_delay_level),
+          count_inflight_requests_for_peak_queueing_delay_);
     }
 
     // Resets the tracked data for the new measurement period.

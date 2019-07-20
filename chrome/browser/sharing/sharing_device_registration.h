@@ -27,28 +27,15 @@ class LocalDeviceInfoProvider;
 }
 
 class SharingSyncPreference;
-
 class VapidKeyManager;
+enum class SharingDeviceRegistrationResult;
 
 // Responsible for registering and unregistering device with
 // SharingSyncPreference.
 class SharingDeviceRegistration {
  public:
-  // Result of device registration with Sharing.
-  enum class Result {
-    // Operation is successful.
-    SUCCESS = 0,
-    // Failed with Sync not ready.
-    SYNC_SERVICE_ERROR = 1,
-    // Failed with encryption related error.
-    ENCRYPTION_ERROR = 2,
-    // Failed with transient error.
-    FCM_TRANSIENT_ERROR = 3,
-    // Failed with fatal error.
-    FCM_FATAL_ERROR = 4,
-  };
-
-  using RegistrationCallback = base::OnceCallback<void(Result)>;
+  using RegistrationCallback =
+      base::OnceCallback<void(SharingDeviceRegistrationResult)>;
 
   SharingDeviceRegistration(
       SharingSyncPreference* prefs,

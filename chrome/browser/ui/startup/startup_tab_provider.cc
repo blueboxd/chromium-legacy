@@ -78,20 +78,10 @@ StartupTabs StartupTabProviderImpl::GetWelcomeBackTabs(
   StartupTabs tabs;
   if (!process_startup || !browser_creator)
     return tabs;
-  switch (browser_creator->welcome_back_page()) {
-    case StartupBrowserCreator::WelcomeBackPage::kNone:
-      break;
-#if defined(OS_WIN)
-    case StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10:
-      // TODO(hcarmona): delete kWelcomeWin10.
-      FALLTHROUGH;
-#endif  // defined(OS_WIN)
-    case StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard:
-      if (CanShowWelcome(profile->IsSyncAllowed(), profile->IsSupervised(),
-                         signin_util::IsForceSigninEnabled())) {
-        tabs.emplace_back(GetWelcomePageUrl(false), false);
-      }
-      break;
+  if (browser_creator->welcome_back_page() &&
+      CanShowWelcome(profile->IsSyncAllowed(), profile->IsSupervised(),
+                     signin_util::IsForceSigninEnabled())) {
+    tabs.emplace_back(GetWelcomePageUrl(false), false);
   }
   return tabs;
 }

@@ -316,11 +316,11 @@ ManifestParser::ParseIconPurpose(const JSONObject* icon) {
     if (keyword.IsEmpty())
       continue;
 
-    if (!CodePointCompareIgnoringASCIICase(keyword, "any")) {
+    if (!CodeUnitCompareIgnoringASCIICase(keyword, "any")) {
       purposes.push_back(mojom::blink::ManifestImageResource::Purpose::ANY);
-    } else if (!CodePointCompareIgnoringASCIICase(keyword, "badge")) {
+    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "badge")) {
       purposes.push_back(mojom::blink::ManifestImageResource::Purpose::BADGE);
-    } else if (!CodePointCompareIgnoringASCIICase(keyword, "maskable")) {
+    } else if (!CodeUnitCompareIgnoringASCIICase(keyword, "maskable")) {
       purposes.push_back(
           mojom::blink::ManifestImageResource::Purpose::MASKABLE);
     } else {

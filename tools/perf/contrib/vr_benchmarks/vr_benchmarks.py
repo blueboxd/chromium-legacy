@@ -205,7 +205,7 @@ class _BaseBrowsingBenchmark(_BaseVRBenchmark):
 
   SUPPORTED_PLATFORMS = [story.expectations.ALL_ANDROID]
 
-  def CreateTimelineBasedMeasurementOptions(self):
+  def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter()
     for category in self.COMMON_TRACE_CATEGORIES:
       category_filter.AddFilter(category)

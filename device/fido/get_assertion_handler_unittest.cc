@@ -45,7 +45,7 @@ constexpr uint8_t kBogusCredentialId[] = {0x01, 0x02, 0x03, 0x04};
 using TestGetAssertionRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
     base::Optional<std::vector<AuthenticatorGetAssertionResponse>>,
-    base::Optional<FidoTransportProtocol>>;
+    const FidoAuthenticator*>;
 
 }  // namespace
 
@@ -900,10 +900,10 @@ TEST(GetAssertionRequestHandlerWinTest, TestWinUsbDiscovery) {
 
     ASSERT_FALSE(cb.was_called());
     EXPECT_EQ(handler->AuthenticatorsForTesting().size(), 1u);
-    // Crudely distinguish authenticator type by FidoAuthenticator::GetId.
-    EXPECT_EQ(
-        enable_api ? WinWebAuthnApiAuthenticator::kAuthenticatorId : "hid:guid",
-        handler->AuthenticatorsForTesting().begin()->second->GetId());
+    EXPECT_EQ(handler->AuthenticatorsForTesting()
+                  .begin()
+                  ->second->IsWinNativeApiAuthenticator(),
+              enable_api);
   }
 }
 

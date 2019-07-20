@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-#include "components/services/leveldb/leveldb_struct_traits.h"
+#include "components/services/leveldb/leveldb_mojom_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"

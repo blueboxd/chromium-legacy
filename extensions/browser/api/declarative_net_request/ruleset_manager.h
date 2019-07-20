@@ -20,8 +20,13 @@
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
-class InfoMap;
+class ExtensionPrefs;
+class PermissionHelper;
 struct WebRequestInfo;
 
 namespace declarative_net_request {
@@ -64,7 +69,7 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(Action);
   };
 
-  explicit RulesetManager(const InfoMap* info_map);
+  explicit RulesetManager(content::BrowserContext* browser_context);
   ~RulesetManager();
 
   // An observer used for testing purposes.
@@ -172,8 +177,12 @@ class RulesetManager {
   // small.
   base::flat_set<ExtensionRulesetData> rulesets_;
 
-  // Non-owning pointer to InfoMap. Owns us.
-  const InfoMap* const info_map_;
+  // Non-owning pointer to BrowserContext.
+  content::BrowserContext* const browser_context_;
+
+  // Guaranteed to be valid through-out the lifetime of this instance.
+  ExtensionPrefs* const prefs_;
+  PermissionHelper* const permission_helper_;
 
   // Non-owning pointer to TestObserver.
   TestObserver* test_observer_ = nullptr;

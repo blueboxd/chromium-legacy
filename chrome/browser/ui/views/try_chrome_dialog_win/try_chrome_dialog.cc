@@ -122,7 +122,9 @@ constexpr ExperimentVariations kExperiments[] = {
      TryChromeDialog::OPEN_CHROME_DEFAULT},
     {IDS_WIN10_TOAST_RECOMMENDATION, 0,
      ExperimentVariations::CloseStyle::kCloseX,
-     TryChromeDialog::OPEN_CHROME_WELCOME_WIN10},
+     // Was formerly OPEN_CHROME_WELCOME_WIN10 but that UI is deprecated,
+     // so now kExperiments[3] == kExperiments[4].
+     TryChromeDialog::OPEN_CHROME_WELCOME},
     {IDS_WIN10_TOAST_RECOMMENDATION, 0,
      ExperimentVariations::CloseStyle::kCloseX,
      TryChromeDialog::OPEN_CHROME_WELCOME},

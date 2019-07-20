@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"

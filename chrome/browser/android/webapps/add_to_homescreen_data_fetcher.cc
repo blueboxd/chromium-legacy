@@ -46,9 +46,8 @@ GURL GetShortcutUrl(content::WebContents* web_contents) {
 }
 
 bool DoesAndroidSupportMaskableIcons() {
-  // TODO(crbug.com/977173): re-enable maskable icon support once server support
-  // is ready.
-  return false;
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_OREO;
 }
 
 InstallableParams ParamsToPerformManifestAndIconFetch() {

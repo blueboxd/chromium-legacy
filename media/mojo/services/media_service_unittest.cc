@@ -266,8 +266,7 @@ class MediaServiceTest : public testing::Test {
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
         .WillOnce(QuitLoop(&run_loop));
     renderer_->Initialize(
-        std::move(client_ptr_info), std::move(streams), base::nullopt,
-        base::nullopt, /* allow_credentials */ false,
+        std::move(client_ptr_info), std::move(streams), nullptr,
         base::BindOnce(&MediaServiceTest::OnRendererInitialized,
                        base::Unretained(this)));
     run_loop.Run();

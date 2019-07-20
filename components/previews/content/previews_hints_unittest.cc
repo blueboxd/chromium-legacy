@@ -19,6 +19,7 @@
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hint_update_data.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/host_filter.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/hints.pb.h"
@@ -125,6 +126,8 @@ class PreviewsHintsTest
   }
 
   PreviewsHints* previews_hints() { return previews_hints_.get(); }
+
+  optimization_guide::HintCache* hint_cache() { return hint_cache_.get(); }
 
   bool HasLitePageRedirectBlacklist() {
     return previews_hints_->lite_page_redirect_blacklist_.get() != nullptr;
@@ -878,8 +881,11 @@ TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
   {
     base::HistogramTester histogram_tester;
     ParseConfig(config);
-    histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                        1 /* kProcessedPreviewsHints */, 1);
+    histogram_tester.ExpectUniqueSample(
+        "OptimizationGuide.ProcessHintsResult",
+        static_cast<int>(
+            optimization_guide::ProcessHintsComponentResult::kSuccess),
+        1);
   }
 
   // Test the second time parsing the config. This will be treated by the cache
@@ -887,10 +893,30 @@ TEST_F(PreviewsHintsTest, ParseDuplicateConfigs) {
   {
     base::HistogramTester histogram_tester;
     ParseConfig(config);
-    histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                       3 /* kSkippedProcessingPreviewsHints */,
-                                       1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.ProcessHintsResult",
+        static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                             kSkippedProcessingHints),
+        1);
   }
+}
+
+TEST_F(PreviewsHintsTest, ComponentInfoDidNotProduceConfig) {
+  base::HistogramTester histogram_tester;
+
+  optimization_guide::HintsComponentInfo info(base::Version("1.0"),
+                                              base::FilePath());
+  std::unique_ptr<PreviewsHints> previews_hints =
+      PreviewsHints::CreateFromHintsComponent(
+          info,
+          hint_cache()->MaybeCreateUpdateDataForComponentHints(info.version));
+
+  EXPECT_EQ(nullptr, previews_hints);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                           kFailedInvalidParameters),
+      1);
 }
 
 }  // namespace previews

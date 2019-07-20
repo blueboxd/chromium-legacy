@@ -11,7 +11,7 @@
 
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"

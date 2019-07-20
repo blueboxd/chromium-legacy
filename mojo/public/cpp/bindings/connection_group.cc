@@ -14,7 +14,7 @@ ConnectionGroup::Ref::Ref(const Ref& other) {
   *this = other;
 }
 
-ConnectionGroup::Ref::Ref(Ref&& other) {
+ConnectionGroup::Ref::Ref(Ref&& other) noexcept {
   *this = std::move(other);
 }
 
@@ -30,7 +30,7 @@ ConnectionGroup::Ref& ConnectionGroup::Ref::operator=(const Ref& other) {
   return *this;
 }
 
-ConnectionGroup::Ref& ConnectionGroup::Ref::operator=(Ref&& other) {
+ConnectionGroup::Ref& ConnectionGroup::Ref::operator=(Ref&& other) noexcept {
   reset();
   type_ = other.type_;
   group_.swap(other.group_);

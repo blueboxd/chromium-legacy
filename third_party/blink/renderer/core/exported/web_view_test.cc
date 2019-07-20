@@ -510,10 +510,15 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
       mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
   web_frame_client.Bind(frame);
 
-  // We inform the WebView when it has a local main frame attached once the
-  // WebFrame it fully set up and the WebWidgetClient is initialized (which is
-  // the case by this point).
-  web_view->DidAttachLocalMainFrame(&web_widget_client);
+  {
+    // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
+    // the appropriate pointers!
+    web_view->MainFrameWidget()->SetLayerTreeView(
+        web_widget_client.layer_tree_view(),
+        web_widget_client.animation_host());
+    blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
+    web_view->DidAttachLocalMainFrame(&web_widget_client);
+  }
 
   // The color should be passed to the compositor.
   cc::LayerTreeHost* host = web_widget_client.layer_tree_host();

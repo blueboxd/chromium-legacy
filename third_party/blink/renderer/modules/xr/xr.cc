@@ -138,8 +138,12 @@ XRSession::SessionMode XR::PendingSupportsSessionQuery::mode() const {
 XR::PendingRequestSessionQuery::PendingRequestSessionQuery(
     int64_t ukm_source_id,
     ScriptPromiseResolver* resolver,
-    XRSession::SessionMode session_mode)
-    : resolver_(resolver), mode_(session_mode), ukm_source_id_(ukm_source_id) {}
+    XRSession::SessionMode session_mode,
+    XRSessionInit* session_init)
+    : resolver_(resolver),
+      mode_(session_mode),
+      session_init_(session_init),
+      ukm_source_id_(ukm_source_id) {}
 
 void XR::PendingRequestSessionQuery::Resolve(XRSession* session) {
   ReportRequestSessionResult(SessionRequestStatus::kSuccess);
@@ -160,12 +164,17 @@ XRSession::SessionMode XR::PendingRequestSessionQuery::mode() const {
   return mode_;
 }
 
+const XRSessionInit* XR::PendingRequestSessionQuery::SessionInit() const {
+  return session_init_;
+}
+
 ScriptState* XR::PendingRequestSessionQuery::GetScriptState() const {
   return resolver_->GetScriptState();
 }
 
 void XR::PendingRequestSessionQuery::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
+  visitor->Trace(session_init_);
 }
 
 void XR::PendingRequestSessionQuery::ReportRequestSessionResult(
@@ -330,7 +339,8 @@ void XR::DispatchSupportsSession(PendingSupportsSessionQuery* query) {
 }
 
 ScriptPromise XR::requestSession(ScriptState* script_state,
-                                 const String& mode) {
+                                 const String& mode,
+                                 XRSessionInit* session_init) {
   // TODO(https://crbug.com/968622): Make sure we don't forget to call
   // metrics-related methods when the promise gets resolved/rejected.
 
@@ -354,8 +364,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
 
   PendingRequestSessionQuery* query =
-      MakeGarbageCollected<PendingRequestSessionQuery>(GetSourceId(), resolver,
-                                                       session_mode);
+      MakeGarbageCollected<PendingRequestSessionQuery>(
+          GetSourceId(), resolver, session_mode, session_init);
 
   if (session_mode == XRSession::kModeImmersiveAR &&
       !AreArRuntimeFeaturesEnabled(doc)) {

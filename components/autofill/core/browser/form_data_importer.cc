@@ -144,7 +144,7 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
   // migration in this case, as local cards could go either way.
   if (local_card_migration_manager_ &&
       local_card_migration_manager_->ShouldOfferLocalCardMigration(
-          imported_credit_card_record_type_)) {
+          imported_credit_card.get(), imported_credit_card_record_type_)) {
     local_card_migration_manager_->AttemptToOfferLocalCardMigration(
         /*is_from_settings_page=*/false);
     return;

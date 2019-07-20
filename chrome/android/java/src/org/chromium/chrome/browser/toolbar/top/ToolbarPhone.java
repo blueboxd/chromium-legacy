@@ -2587,7 +2587,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      */
     private boolean isMenuButtonPresent() {
         final ImageButton menuButton = getMenuButton();
-        if (menuButton != null) return false;
+        if (menuButton == null) return false;
         return menuButton.isShown();
     }
 

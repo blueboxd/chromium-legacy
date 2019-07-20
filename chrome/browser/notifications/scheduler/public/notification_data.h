@@ -44,11 +44,6 @@ struct NotificationData {
   bool operator==(const NotificationData& other) const;
   ~NotificationData();
 
-  // The unique identifier of the notification. This is not used as the key for
-  // the database entry, but the id of other notification struct plumbed to
-  // the scheduler system.
-  std::string id;
-
   // The title of the notification.
   base::string16 title;
 

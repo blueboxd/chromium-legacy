@@ -360,6 +360,9 @@ class BrowserView : public BrowserWindow,
   bool IsTabStripEditable() const override;
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
+  ClickToCallDialog* ShowClickToCallDialog(
+      content::WebContents* contents,
+      ClickToCallSharingDialogController* controller) override;
   void ShowUpdateChromeDialog() override;
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,

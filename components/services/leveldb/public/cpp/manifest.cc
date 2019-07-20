@@ -5,7 +5,7 @@
 #include "components/services/leveldb/public/cpp/manifest.h"
 
 #include "base/no_destructor.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace leveldb {

@@ -22,10 +22,6 @@ class HostFactory;
 }
 }
 
-namespace extensions {
-class ExtensionSystem;
-}
-
 // Encapsulates the dependencies of NaCl code on chrome/, to avoid a direct
 // dependency on chrome/.
 class NaClBrowserDelegate {
@@ -67,11 +63,10 @@ class NaClBrowserDelegate {
   // |use_blocking_api| to true, so calling blocking file API is allowed
   // otherwise non blocking API will be used (which only handles a subset of the
   // urls checking only the url scheme against kExtensionScheme).
-  virtual bool MapUrlToLocalFilePath(
-      const GURL& url,
-      bool use_blocking_api,
-      extensions::ExtensionSystem* extension_system,
-      base::FilePath* file_path) = 0;
+  virtual bool MapUrlToLocalFilePath(const GURL& url,
+                                     bool use_blocking_api,
+                                     const base::FilePath& profile_directory,
+                                     base::FilePath* file_path) = 0;
   // Set match patterns which will be checked before enabling debug stub.
   virtual void SetDebugPatterns(const std::string& debug_patterns) = 0;
 
@@ -79,13 +74,8 @@ class NaClBrowserDelegate {
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) = 0;
 
   // Returns whether Non-SFI mode is allowed for a given manifest URL.
-  virtual bool IsNonSfiModeAllowed(
-      extensions::ExtensionSystem* extension_system,
-      const GURL& manifest_url) = 0;
-  // Returns a pointer to the extension system. Must be called on the UI thread,
-  // but the resulting pointer can be used on the IO thread.
-  virtual extensions::ExtensionSystem* GetExtensionSystem(
-      const base::FilePath& profile_directory) = 0;
+  virtual bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
+                                   const GURL& manifest_url) = 0;
 };
 
 #endif  // COMPONENTS_NACL_BROWSER_NACL_BROWSER_DELEGATE_H_

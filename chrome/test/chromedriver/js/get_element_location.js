@@ -23,7 +23,9 @@ function inView(element) {
   var elementPoint = getInViewPoint(rectangles[0]);
   if (elementPoint[0] <= 0 || elementPoint[1] <= 0 ||
       elementPoint[0] >= window.innerWidth ||
-      elementPoint[1] >= window.innerHeight) {
+      elementPoint[1] >= window.innerHeight ||
+      !document.elementsFromPoint(elementPoint[0], elementPoint[1])
+                .includes(element)) {
     return false;
   }
 

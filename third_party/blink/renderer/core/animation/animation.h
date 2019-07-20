@@ -434,7 +434,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   bool effect_suppressed_;
 
-  FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTest,
+  FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTestCompositeAfterPaint,
                            NoCompositeWithoutCompositedElementId);
 };
 

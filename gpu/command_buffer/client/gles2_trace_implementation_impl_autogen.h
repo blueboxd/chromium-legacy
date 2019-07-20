@@ -2265,13 +2265,13 @@ void GLES2TraceImplementation::ScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
-    GLfloat clip_rect_corner_radius,
+    const GLfloat* rounded_corner_bounds,
     GLint sorting_context_id,
     const GLfloat* transform) {
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "GLES2Trace::ScheduleCALayerSharedStateCHROMIUM");
   gl_->ScheduleCALayerSharedStateCHROMIUM(opacity, is_clipped, clip_rect,
-                                          clip_rect_corner_radius,
+                                          rounded_corner_bounds,
                                           sorting_context_id, transform);
 }
 

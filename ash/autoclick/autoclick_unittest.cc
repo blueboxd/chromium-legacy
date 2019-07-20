@@ -20,7 +20,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -124,16 +123,6 @@ class AutoclickTest : public AshTestBase {
   void TearDown() override {
     Shell::Get()->RemovePreTargetHandler(&mouse_event_capturer_);
     AshTestBase::TearDown();
-  }
-
-  void EnableExperimentalAutoclickFlag(bool enable) {
-    if (enable) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kEnableExperimentalAccessibilityAutoclick);
-    } else {
-      base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-          switches::kEnableExperimentalAccessibilityAutoclick);
-    }
   }
 
   void MoveMouseWithFlagsTo(int x, int y, ui::EventFlags flags) {
@@ -629,7 +618,6 @@ TEST_F(AutoclickTest, AutoclickDragAndDropEvents) {
 
 TEST_F(AutoclickTest, AutoclickScrollEvents) {
   UpdateDisplay("800x600");
-  EnableExperimentalAutoclickFlag(true);
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->SetAutoclickEventType(AutoclickEventType::kScroll);
   std::vector<ui::MouseEvent> events;
@@ -697,8 +685,6 @@ TEST_F(AutoclickTest, AutoclickScrollEvents) {
   EXPECT_EQ(gfx::Point(200, 200), wheel_events[0].location());
   EXPECT_LT(wheel_events[0].x_offset(), 0);
   ClearMouseEvents();
-
-  EnableExperimentalAutoclickFlag(false);
 }
 
 TEST_F(AutoclickTest, AutoclickRevertsToLeftClick) {
@@ -1215,7 +1201,6 @@ TEST_F(AutoclickTest, DoesNotHideBubbleWhenOverInactiveFullscreenWindow) {
 }
 
 TEST_F(AutoclickTest, ScrollClosesWhenHoveredOverScrollButton) {
-  EnableExperimentalAutoclickFlag(true);
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
   GetAutoclickController()->SetAutoclickEventType(
       AutoclickEventType::kLeftClick);
@@ -1238,13 +1223,10 @@ TEST_F(AutoclickTest, ScrollClosesWhenHoveredOverScrollButton) {
   EXPECT_EQ(AutoclickEventType::kLeftClick,
             Shell::Get()->accessibility_controller()->GetAutoclickEventType());
   EXPECT_FALSE(GetAutoclickScrollView());
-
-  EnableExperimentalAutoclickFlag(false);
 }
 
 TEST_F(AutoclickTest, ScrollOccursWhenHoveredOverScrollButtons) {
   UpdateDisplay("800x600");
-  EnableExperimentalAutoclickFlag(true);
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   // Enable scroll.
@@ -1304,13 +1286,10 @@ TEST_F(AutoclickTest, ScrollOccursWhenHoveredOverScrollButtons) {
     EXPECT_EQ(0u, events.size());
     ClearMouseEvents();
   }
-
-  EnableExperimentalAutoclickFlag(false);
 }
 
 TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
   UpdateDisplay("800x600");
-  EnableExperimentalAutoclickFlag(true);
   GetAutoclickController()->SetEnabled(true, false /* do not show dialog */);
 
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
@@ -1367,8 +1346,6 @@ TEST_F(AutoclickTest, ScrollMenuBubblePostioning) {
   Shell::Get()->accessibility_controller()->SetAutoclickMenuPosition(
       AutoclickMenuPosition::kBottomRight);
   EXPECT_EQ(GetAutoclickScrollView()->GetBoundsInScreen(), scroll_bounds);
-
-  EnableExperimentalAutoclickFlag(false);
 }
 
 }  // namespace ash

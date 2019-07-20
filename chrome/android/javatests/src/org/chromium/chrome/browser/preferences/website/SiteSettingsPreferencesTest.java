@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.v7.preference.Preference;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
@@ -405,15 +407,18 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testPopupsBlocked() throws Exception {
         setEnablePopups(false);
-        int activitiesCount = ApplicationStatus.getRunningActivities().size();
 
         // Test that the popup doesn't open.
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // Popups open in a new activity in touchless mode.
-            Assert.assertEquals(ApplicationStatus.getRunningActivities().size(), activitiesCount);
+            // Popups open in a CustomTabActivity in touchless mode.
+            for (Activity activity : ApplicationStatus.getRunningActivities()) {
+                Assert.assertFalse(
+                        "Popup was not blocked, an instance of CustomTabActivity is running",
+                        activity instanceof CustomTabActivity);
+            }
         } else {
             Assert.assertEquals(1, getTabCount());
         }
@@ -428,16 +433,17 @@ public class SiteSettingsPreferencesTest {
     @Feature({"Preferences"})
     public void testPopupsNotBlocked() throws Exception {
         setEnablePopups(true);
-        int activitiesCount = ApplicationStatus.getRunningActivities().size();
 
         // Test that a popup opens.
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
         if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // Popups open in a new activity in touchless mode.
-            Assert.assertEquals(
-                    1, ApplicationStatus.getRunningActivities().size() - activitiesCount);
+            // Popups open in a CustomTabActivity in touchless mode.
+            for (Activity activity : ApplicationStatus.getRunningActivities()) {
+                if (activity instanceof CustomTabActivity) return;
+            }
+            Assert.fail("Popup was blocked, no instance of CustomTabActivity is running");
         } else {
             Assert.assertEquals(2, getTabCount());
         }

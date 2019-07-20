@@ -35,6 +35,7 @@
 #include "components/version_info/version_info_values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/user_demographics.pb.h"
 
 using testing::_;
 using testing::ByMove;
@@ -805,7 +806,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
 }
 #endif
 
-// Verify that LastSyncedTime.
+// Verify that prefs are cleared on sign-out.
 TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
@@ -815,6 +816,13 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   base::Time last_synced_time = service()->GetLastSyncedTimeForDebugging();
   ASSERT_LT(base::Time::Now() - last_synced_time,
             base::TimeDelta::FromMinutes(1));
+  // Set demographic prefs that are normally fetched from server when syncing.
+  prefs()->SetInteger(prefs::kSyncDemographicsBirthYear, 1983);
+  prefs()->SetInteger(
+      prefs::kSyncDemographicsGender,
+      static_cast<int>(metrics::UserDemographicsProto_Gender_GENDER_FEMALE));
+  SyncPrefs sync_prefs(prefs());
+  ASSERT_TRUE(sync_prefs.GetUserDemographics().has_value());
 
   // Sign out.
   service()->StopAndClear();
@@ -826,6 +834,30 @@ TEST_F(ProfileSyncServiceTest, ClearDataOnSignOut) {
   EXPECT_FALSE(service()->IsSyncFeatureEnabled());
 
   EXPECT_NE(service()->GetLastSyncedTimeForDebugging(), last_synced_time);
+
+  // Check that the demographic prefs are cleared.
+  EXPECT_FALSE(sync_prefs.GetUserDemographics().has_value());
+}
+
+// Verify that demographic prefs are cleared when the service is initializing
+// and account is signed out.
+TEST_F(ProfileSyncServiceTest, ClearDemographicsOnInitializeWhenSignedOut) {
+  // Set demographic prefs that are leftovers from previous sync. We can imagine
+  // that due to some crash, sync service did not clear demographics when
+  // account was signed out.
+  prefs()->SetInteger(prefs::kSyncDemographicsBirthYear, 1983);
+  prefs()->SetInteger(
+      prefs::kSyncDemographicsGender,
+      static_cast<int>(metrics::UserDemographicsProto_Gender_GENDER_FEMALE));
+
+  SyncPrefs sync_prefs(prefs());
+  ASSERT_TRUE(sync_prefs.GetUserDemographics().has_value());
+
+  // Don't sign-in before creating the service.
+  CreateService(ProfileSyncService::AUTO_START);
+  // Initialize when signed out to trigger clearing of demographic prefs.
+  InitializeForNthSync();
+  EXPECT_FALSE(sync_prefs.GetUserDemographics().has_value());
 }
 
 TEST_F(ProfileSyncServiceTest, CancelSyncAfterSignOut) {

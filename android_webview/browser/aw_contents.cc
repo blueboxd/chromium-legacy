@@ -1282,6 +1282,42 @@ jint AwContents::GetEffectivePriority(
   return 0;
 }
 
+JsJavaConfiguratorHost* AwContents::GetJsJavaConfiguratorHost() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!js_java_configurator_host_.get()) {
+    js_java_configurator_host_ =
+        std::make_unique<JsJavaConfiguratorHost>(web_contents_.get());
+  }
+  return js_java_configurator_host_.get();
+}
+
+base::android::ScopedJavaLocalRef<jstring> AwContents::SetJsApiService(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jboolean need_to_inject_js_object,
+    const base::android::JavaParamRef<jstring>& js_object_name,
+    const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules) {
+  return GetJsJavaConfiguratorHost()->SetJsApiService(
+      env, need_to_inject_js_object, js_object_name, allowed_origin_rules);
+}
+
+bool AwContents::IsOriginAllowedForOnPostMessage(url::Origin& origin) {
+  return GetJsJavaConfiguratorHost()->IsOriginAllowedForOnPostMessage(origin);
+}
+
+void AwContents::OnPostMessage(JNIEnv* env,
+                               const base::android::JavaRef<jstring>& message,
+                               const base::android::JavaRef<jstring>& origin,
+                               jboolean is_main_frame,
+                               const base::android::JavaRef<jintArray>& ports) {
+  const ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  // TODO(ctzsm): Implement the replyPort (0 below).
+  Java_AwContents_onPostMessage(env, obj, message, origin, is_main_frame,
+                                /* MOJO_HANDLE_INVALID */ 0, ports);
+}
+
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   browser_view_renderer_.ClearView();

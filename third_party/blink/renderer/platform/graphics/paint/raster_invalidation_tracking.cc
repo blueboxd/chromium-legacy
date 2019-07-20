@@ -69,7 +69,7 @@ static bool CompareRasterInvalidationInfo(const RasterInvalidationInfo& a,
 
   // Then compare clientDebugName, in alphabetic order.
   int name_compare_result =
-      CodePointCompare(a.client_debug_name, b.client_debug_name);
+      CodeUnitCompare(a.client_debug_name, b.client_debug_name);
   if (name_compare_result != 0)
     return name_compare_result < 0;
 

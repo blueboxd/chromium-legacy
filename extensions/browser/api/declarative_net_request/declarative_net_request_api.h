@@ -44,8 +44,6 @@ class DeclarativeNetRequestUpdateAllowedPagesFunction
   bool PreRunValidation(std::string* error) override;
 
  private:
-  void OnAllowedPagesUpdated();
-
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateAllowedPagesFunction);
 };
 

@@ -13,4 +13,6 @@ include_rules = [
 
   "+device/gamepad/android/java",
   "+media/base/android/java",
+
+  "+mojo/public/java",
 ]

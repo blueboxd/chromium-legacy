@@ -553,6 +553,11 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return dispatcher_.get();
   }
 
+  void set_worker_thread_id(int worker_thread_id) {
+    worker_thread_id_ = worker_thread_id;
+  }
+  int worker_thread_id() const { return worker_thread_id_; }
+
   // Returns the web contents associated with the sending |render_frame_host_|.
   // This can be null.
   content::WebContents* GetSenderWebContents();
@@ -593,6 +598,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // The blobs transferred to the renderer process.
   std::vector<std::string> transferred_blob_uuids_;
 
+  int worker_thread_id_ = -1;
+
   DISALLOW_COPY_AND_ASSIGN(UIThreadExtensionFunction);
 };
 
@@ -603,6 +610,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 // requests). Generally, UIThreadExtensionFunction is more appropriate and will
 // be easier to use and interface with the rest of the browser.
 // To use this, specify `"forIOThread": true` in the function's schema.
+// TODO(http://crbug.com/980774): Remove this as it is no longer used. Also
+// remove "forIOThread" support in JSON.
 class IOThreadExtensionFunction : public ExtensionFunction {
  public:
   IOThreadExtensionFunction();

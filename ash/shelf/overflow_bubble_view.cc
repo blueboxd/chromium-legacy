@@ -155,7 +155,7 @@ class OverflowBubbleView::OverflowShelfContainerView : public views::View {
   void Initialize();
 
   // Translate |shelf_view_| by |offset|.
-  void TranslateShelfView(const gfx::Vector2d& offset);
+  void TranslateShelfView(const gfx::Vector2dF& offset);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -205,7 +205,7 @@ const char* OverflowBubbleView::OverflowShelfContainerView::GetClassName()
 }
 
 void OverflowBubbleView::OverflowShelfContainerView::TranslateShelfView(
-    const gfx::Vector2d& offset) {
+    const gfx::Vector2dF& offset) {
   gfx::Transform transform_matrix;
   transform_matrix.Translate(-offset);
   shelf_view_->SetTransform(transform_matrix);
@@ -288,33 +288,30 @@ bool OverflowBubbleView::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return false;
 
-  if (shelf_->IsHorizontalAlignment()) {
-    ScrollByXOffset(static_cast<int>(-event.details().scroll_x()),
-                    /*animate=*/false);
-  } else {
-    ScrollByYOffset(static_cast<int>(-event.details().scroll_y()),
-                    /*animate=*/false);
-  }
+  if (shelf_->IsHorizontalAlignment())
+    ScrollByXOffset(-event.details().scroll_x(), /*animate=*/false);
+  else
+    ScrollByYOffset(-event.details().scroll_y(), /*animate=*/false);
   return true;
 }
 
-int OverflowBubbleView::ScrollByXOffset(int x_offset, bool animating) {
-  const int old_x = scroll_offset_.x();
-  const int x = CalculateLayoutStrategyAfterScroll(x_offset);
+int OverflowBubbleView::ScrollByXOffset(float x_offset, bool animating) {
+  const float old_x = scroll_offset_.x();
+  const float x = CalculateLayoutStrategyAfterScroll(x_offset);
   scroll_offset_.set_x(x);
   Layout();
-  const int diff = x - old_x;
+  const float diff = x - old_x;
   if (animating)
     StartShelfScrollAnimation(diff);
   return diff;
 }
 
-int OverflowBubbleView::ScrollByYOffset(int y_offset, bool animating) {
+int OverflowBubbleView::ScrollByYOffset(float y_offset, bool animating) {
   const int old_y = scroll_offset_.y();
   const int y = CalculateLayoutStrategyAfterScroll(y_offset);
   scroll_offset_.set_y(y);
   Layout();
-  const int diff = y - old_y;
+  const float diff = y - old_y;
   if (animating)
     StartShelfScrollAnimation(diff);
   return diff;
@@ -339,14 +336,15 @@ int OverflowBubbleView::CalculateScrollUpperBound() const {
   return preferred_length - available_length;
 }
 
-int OverflowBubbleView::CalculateLayoutStrategyAfterScroll(int scroll) {
-  const int old_scroll =
+float OverflowBubbleView::CalculateLayoutStrategyAfterScroll(float scroll) {
+  const float old_scroll =
       shelf_->IsHorizontalAlignment() ? scroll_offset_.x() : scroll_offset_.y();
 
-  const int scroll_upper_bound = CalculateScrollUpperBound();
-  scroll = std::min(scroll_upper_bound, std::max(0, old_scroll + scroll));
+  const float scroll_upper_bound =
+      static_cast<float>(CalculateScrollUpperBound());
+  scroll = std::min(scroll_upper_bound, std::max(0.f, old_scroll + scroll));
   if (layout_strategy_ != NOT_SHOW_ARROW_BUTTON) {
-    if (scroll <= 0)
+    if (scroll <= 0.f)
       layout_strategy_ = SHOW_RIGHT_ARROW_BUTTON;
     else if (scroll >= scroll_upper_bound)
       layout_strategy_ = SHOW_LEFT_ARROW_BUTTON;
@@ -376,13 +374,13 @@ void OverflowBubbleView::AdjustToEnsureIconsFullyVisible(
   }
 }
 
-void OverflowBubbleView::StartShelfScrollAnimation(int scroll_distance) {
+void OverflowBubbleView::StartShelfScrollAnimation(float scroll_distance) {
   const gfx::Transform current_transform = shelf_view()->GetTransform();
   gfx::Transform reverse_transform = current_transform;
   if (shelf_->IsHorizontalAlignment())
-    reverse_transform.Translate(gfx::Vector2d(scroll_distance, 0));
+    reverse_transform.Translate(gfx::Vector2dF(scroll_distance, 0));
   else
-    reverse_transform.Translate(gfx::Vector2d(0, scroll_distance));
+    reverse_transform.Translate(gfx::Vector2dF(0, scroll_distance));
   shelf_view()->layer()->SetTransform(reverse_transform);
   ui::ScopedLayerAnimationSettings animation_settings(
       shelf_view()->layer()->GetAnimator());

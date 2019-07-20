@@ -109,19 +109,20 @@ void ImpressionHistoryTrackerImpl::GetImpressionDetail(
   std::move(callback).Run(std::move(detail));
 }
 
-void ImpressionHistoryTrackerImpl::OnClick(const std::string& notification_id) {
-  OnClickInternal(notification_id, true /*update_db*/);
+void ImpressionHistoryTrackerImpl::OnClick(SchedulerClientType type,
+                                           const std::string& guid) {
+  OnClickInternal(guid, true /*update_db*/);
 }
 
-void ImpressionHistoryTrackerImpl::OnActionClick(
-    const std::string& notification_id,
-    ActionButtonType button_type) {
-  OnButtonClickInternal(notification_id, button_type, true /*update_db*/);
+void ImpressionHistoryTrackerImpl::OnActionClick(SchedulerClientType type,
+                                                 const std::string& guid,
+                                                 ActionButtonType button_type) {
+  OnButtonClickInternal(guid, button_type, true /*update_db*/);
 }
 
-void ImpressionHistoryTrackerImpl::OnDismiss(
-    const std::string& notification_id) {
-  OnDismissInternal(notification_id, true /*update_db*/);
+void ImpressionHistoryTrackerImpl::OnDismiss(SchedulerClientType type,
+                                             const std::string& guid) {
+  OnDismissInternal(guid, true /*update_db*/);
 }
 
 void ImpressionHistoryTrackerImpl::OnStoreInitialized(

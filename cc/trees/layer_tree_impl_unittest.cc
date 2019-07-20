@@ -19,17 +19,10 @@
 namespace cc {
 namespace {
 
-class LayerTreeImplTestSettings : public LayerTreeSettings {
- public:
-  LayerTreeImplTestSettings() {
-    layer_transforms_should_scale_layer_contents = true;
-  }
-};
-
 class LayerTreeImplTest : public testing::Test {
  public:
-  LayerTreeImplTest(
-      const LayerTreeSettings& settings = LayerTreeImplTestSettings())
+  explicit LayerTreeImplTest(
+      const LayerTreeSettings& settings = LayerTreeSettings())
       : impl_test_(settings) {}
 
   FakeLayerTreeHostImpl& host_impl() const { return *impl_test_.host_impl(); }
@@ -48,7 +41,6 @@ class LayerTreeImplTest : public testing::Test {
     render_surface_list_impl_.clear();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root_layer, root_layer->bounds(), &render_surface_list_impl_);
-    inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 

@@ -149,6 +149,7 @@ static_library("router") {
         "providers/openscreen/network_service_quic_packet_writer.cc",
         "providers/openscreen/network_service_quic_packet_writer.h",
         "providers/openscreen/platform/logging.cc",
+        "providers/openscreen/platform/time.cc",
       ]
 
       configs +=

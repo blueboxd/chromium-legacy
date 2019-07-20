@@ -33,6 +33,7 @@ if (is_chromeos) {
       "input_method_manager.mojom",
       "intent_common.mojom",
       "intent_helper.mojom",
+      "keymaster.mojom",
       "kiosk.mojom",
       "lock_screen.mojom",
       "media_session.mojom",

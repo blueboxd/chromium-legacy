@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"

@@ -7,7 +7,7 @@ import("//build/config/android/config.gni")
 import("//build/config/android/linker_version_script.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/partitioned_shared_library.gni")
-import("//chrome/android/features/dynamic_feature_modules.gni")
+import("//chrome/android/modules/buildflags.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
 # TODO(cjgrant): Remove these variables once downstream stops using them.
@@ -26,6 +26,10 @@ apk_pak_asset_type = "_apk"
 #      is linked as a partitioned library, and separate feature libs are
 #      generated if specified. Those libraries may later be packaged into
 #      dynamic feature modules or APKs.
+#    module_descs: Optional. Descriptors of modules for which to extract
+#      partitions. Can only be set if |allow_partitions| is true. See
+#      //chrome/android/modules/chrome_feature_modules.gni for the descriptor
+#      format.
 template("chrome_common_shared_library") {
   _is_monochrome = defined(invoker.is_monochrome) && invoker.is_monochrome
   _is_webview = defined(invoker.is_webview) && invoker.is_webview
@@ -38,13 +42,25 @@ template("chrome_common_shared_library") {
   # invoker wants partitions.
   _generate_partitions = defined(invoker.allow_partitions) &&
                          invoker.allow_partitions && use_native_modules
+  if (_generate_partitions) {
+    assert(defined(invoker.module_descs))
+  } else {
+    if (defined(invoker.module_descs)) {
+      not_needed(invoker, [ "module_descs" ])
+    }
+  }
 
   # Create a custom linker script based on JNI and feature module requirements.
   generate_linker_version_script(_linker_script_target) {
     linker_script = _linker_script
     export_java_symbols = _export_java_symbols
     if (_generate_partitions) {
-      export_symbol_whitelist_files = native_feature_module_entrypoint_files
+      export_symbol_whitelist_files = []
+      foreach(_module_desc, invoker.module_descs) {
+        if (defined(_module_desc.native_entrypoints)) {
+          export_symbol_whitelist_files += [ _module_desc.native_entrypoints ]
+        }
+      }
     }
   }
 
@@ -78,8 +94,8 @@ template("chrome_common_shared_library") {
     # Handle VR JNI registration and dependencies.
     if (!_is_webview && enable_vr) {
       if (_export_java_symbols) {
-        # NOTE: While this is file is named *_monochrome.cc, it just contains
-        # an empty vr::RegisterJni() function that returns true.
+        # NOTE: While this file is named *_monochrome.cc, it just contains an
+        # empty vr::RegisterJni() function that returns true.
         sources += [ "../browser/android/vr/register_jni_monochrome.cc" ]
       } else {
         sources += [ "../browser/android/vr/register_jni.cc" ]
@@ -90,8 +106,13 @@ template("chrome_common_shared_library") {
     }
 
     if (_generate_partitions) {
-      partitions = native_feature_modules
-      deps += feature_module_base_lib_deps
+      partitions = []
+      foreach(_module_desc, invoker.module_descs) {
+        if (defined(_module_desc.native_deps)) {
+          partitions += [ _module_desc.name ]
+          deps += _module_desc.native_deps
+        }
+      }
     }
 
     # Compress relocations if needed.

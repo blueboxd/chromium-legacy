@@ -9,6 +9,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace autofill {
@@ -27,6 +28,11 @@ bool TestAutofillDriver::IsIncognito() const {
 
 bool TestAutofillDriver::IsInMainFrame() const {
   return is_in_main_frame_;
+}
+
+ui::AXTreeID TestAutofillDriver::GetAxTreeId() const {
+  NOTIMPLEMENTED() << "See https://crbug.com/985933";
+  return ui::AXTreeIDUnknown();
 }
 
 net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {

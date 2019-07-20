@@ -5,6 +5,7 @@
 #include "components/omnibox/browser/document_provider.h"
 
 #include "base/json/json_reader.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -276,7 +277,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   EXPECT_EQ(matches[1].contents, base::ASCIIToUTF16("Document 2"));
   EXPECT_EQ(matches[1].destination_url,
             GURL("https://documentprovider.tld/doc?id=2"));
-  EXPECT_EQ(matches[1].relevance, 700);  // From study default.
+  EXPECT_EQ(matches[1].relevance, 0);
   EXPECT_TRUE(matches[1].stripped_destination_url.is_empty());
 
   ASSERT_FALSE(provider_->backoff_for_session_);
@@ -688,4 +689,108 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
       "https://www.google.com/url?url=https://drive.google.com/homepage", "");
   CheckDeduper("https://www.google.com/url?url=https://www.youtube.com/view",
                "");
+}
+
+TEST_F(DocumentProviderTest, Scoring) {
+  auto CheckScoring = [this](
+                          const std::map<std::string, std::string> parameters,
+                          const std::string& response_str,
+                          const std::string& input_text,
+                          const std::vector<int> expected_scores) {
+    static int invocation = -1;
+    invocation++;
+
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(omnibox::kDocumentProvider,
+                                                    parameters);
+    base::Optional<base::Value> response = base::JSONReader::Read(response_str);
+    provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
+    ACMatches matches;
+    provider_->ParseDocumentSearchResults(*response, &matches);
+
+    EXPECT_EQ(matches.size(), expected_scores.size())
+        << "invocation " << invocation;
+    for (size_t i = 0; i < matches.size(); i++) {
+      EXPECT_EQ(matches[i].relevance, expected_scores[i])
+          << "Match " << i << " of invocation " << invocation;
+    }
+  };
+
+  // Server scoring should use server scores with possible demotion of ties.
+  CheckScoring(
+      {
+          {"DocumentUseServerScore", "true"},
+          {"DocumentUseClientScore", "false"},
+          {"DocumentCapScorePerRank", "false"},
+          {"DocumentBoostOwned", "false"},
+      },
+      R"({"results": [
+          {"title": "Document 1", "score": 1000, "url": "url"},
+          {"title": "Document 2", "score": 900, "url": "url"},
+          {"title": "Document 3", "score": 900, "url": "url"}
+        ]})",
+      "", {1000, 900, 899});
+
+  // Server scoring with rank caps.
+  CheckScoring(
+      {
+          {"DocumentUseServerScore", "true"},
+          {"DocumentUseClientScore", "false"},
+          {"DocumentCapScorePerRank", "true"},
+          {"DocumentBoostOwned", "false"},
+      },
+      R"({"results": [
+          {"title": "Document 1", "score": 1150, "url": "url"},
+          {"title": "Document 2", "score": 1150, "url": "url"},
+          {"title": "Document 3", "score": 1150, "url": "url"}
+        ]})",
+      "", {1150, 1100, 900});
+
+  // Server scoring with owner boosting.
+  CheckScoring(
+      {
+          {"DocumentUseServerScore", "true"},
+          {"DocumentUseClientScore", "false"},
+          {"DocumentCapScorePerRank", "false"},
+          {"DocumentBoostOwned", "true"},
+      },
+      R"({"results": [
+          {"title": "Document 1", "score": 1150, "url": "url",
+            "metadata": {"owner": {"emailAddresses": [{"emailAddress": ""}]}}},
+          {"title": "Document 2", "score": 1150, "url": "url"},
+          {"title": "Document 3", "score": 1150, "url": "url"}
+        ]})",
+      "", {1150, 950, 949});
+
+  // Client scoring should match each input word at most once.
+  CheckScoring(
+      {
+          {"DocumentUseServerScore", "false"},
+          {"DocumentUseClientScore", "true"},
+          {"DocumentCapScorePerRank", "false"},
+          {"DocumentBoostOwned", "false"},
+      },
+      R"({"results": [
+          {"title": "rainbow", "score": 1000, "url": "url"},
+          {"title": "rain bow", "score": 900, "url": "url"},
+          {"title": "rain bows bow bow", "score": 900, "url": "bow",
+            "snippet": {"snippet": "bow bow"}}
+        ]})",
+      "bow", {0, 540, 540});
+
+  // Client scoring should consider snippet but not URL matches
+  CheckScoring(
+      {
+          {"DocumentUseServerScore", "false"},
+          {"DocumentUseClientScore", "true"},
+          {"DocumentCapScorePerRank", "false"},
+          {"DocumentBoostOwned", "false"},
+      },
+      R"({"results": [
+          {"title": "rainbow", "score": 1000, "url": "url"},
+          {"title": "rainbow", "score": 900, "url": "bow"},
+          {"title": "rainbow", "score": 900, "url": "bow",
+            "snippet": {"snippet": "bow bow"}}
+        ]})",
+      "rain bow", {669, 669, 793});
 }

@@ -118,7 +118,7 @@ void ShortcutsProvider::Start(const AutocompleteInput& input,
   matches_.clear();
 
   if (input.from_omnibox_focus() ||
-      (input.type() == metrics::OmniboxInputType::INVALID) ||
+      (input.type() == metrics::OmniboxInputType::EMPTY) ||
       input.text().empty() || !initialized_)
     return;
 

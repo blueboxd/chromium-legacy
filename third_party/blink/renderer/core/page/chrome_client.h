@@ -342,8 +342,13 @@ class CORE_EXPORT ChromeClient
   virtual void AttachRootLayer(scoped_refptr<cc::Layer>,
                                LocalFrame* local_root) = 0;
 
+  // Set the CompositorAnimationTimeline for a local root. Should later be unset
+  // by a call to DetachCompositorAnimationTimeline().
   virtual void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
+  // Removes the CompositorAnimationTimeline for a local root. The timeline
+  // would have previously been given to AttachCompositorAnimationTimeline() but
+  // it's valid to call this even if the timeline was never attached.
   virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
 

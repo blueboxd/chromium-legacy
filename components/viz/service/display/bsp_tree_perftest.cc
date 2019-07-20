@@ -116,7 +116,6 @@ class BspTreePerfTest : public cc::LayerTreeTest {
         active_tree->OuterViewportScrollLayer(),
         active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
         active_tree->OverscrollElasticityElementId(), max_texture_size,
-        host_impl->settings().layer_transforms_should_scale_layer_contents,
         &update_list, active_tree->property_trees(),
         active_tree->property_trees()->transform_tree.Node(
             active_tree->InnerViewportContainerLayer()

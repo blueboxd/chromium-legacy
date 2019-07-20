@@ -378,10 +378,8 @@ class PLATFORM_EXPORT ResourceFetcher
   const Member<ResourceLoadScheduler> scheduler_;
 
   DocumentResourceMap cached_resources_map_;
-  HeapHashSet<WeakMember<Resource>> document_resources_;
 
-  // |image_resources_| is the subset of all image resources in
-  // |document_resources_|.
+  // |image_resources_| is the subset of all image resources for the document.
   HeapHashSet<WeakMember<Resource>> image_resources_;
 
   // |not_loaded_image_resources_| is a subset of |image_resources_| where

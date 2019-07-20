@@ -100,8 +100,8 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
   Persistent<DocumentTimeline> timeline_;
 
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
     linear_timing_function_ = LinearTimingFunction::Shared();
     cubic_ease_timing_function_ = CubicBezierTimingFunction::Preset(
         CubicBezierTimingFunction::EaseType::EASE);

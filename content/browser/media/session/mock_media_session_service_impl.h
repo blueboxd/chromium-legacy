@@ -18,8 +18,9 @@ class MockMediaSessionClient : public blink::mojom::MediaSessionClient {
 
   blink::mojom::MediaSessionClientPtr CreateInterfacePtrAndBind();
 
-  MOCK_METHOD1(DidReceiveAction,
-               void(media_session::mojom::MediaSessionAction action));
+  MOCK_METHOD2(DidReceiveAction,
+               void(media_session::mojom::MediaSessionAction action,
+                    blink::mojom::MediaSessionActionDetailsPtr details));
 
  private:
   mojo::Binding<blink::mojom::MediaSessionClient> binding_{this};

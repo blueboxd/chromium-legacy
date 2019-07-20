@@ -131,16 +131,6 @@ void SetIsIncognitoEnabled(const std::string& extension_id,
   }
 }
 
-bool CanCrossIncognito(const Extension* extension,
-                       content::BrowserContext* context) {
-  // We allow the extension to see events and data from another profile iff it
-  // uses "spanning" behavior and it has incognito access. "split" mode
-  // extensions only see events for a matching profile.
-  CHECK(extension);
-  return IsIncognitoEnabled(extension->id(), context) &&
-         !IncognitoInfo::IsSplitMode(extension);
-}
-
 bool CanLoadInIncognito(const Extension* extension,
                         content::BrowserContext* context) {
   CHECK(extension);

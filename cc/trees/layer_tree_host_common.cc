@@ -81,7 +81,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     const gfx::Vector2dF& elastic_overscroll,
     const ElementId elastic_overscroll_element_id,
     int max_texture_size,
-    bool can_adjust_raster_scales,
     RenderSurfaceList* render_surface_list,
     PropertyTrees* property_trees,
     TransformNode* page_scale_transform_node)
@@ -96,7 +95,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       elastic_overscroll(elastic_overscroll),
       elastic_overscroll_element_id(elastic_overscroll_element_id),
       max_texture_size(max_texture_size),
-      can_adjust_raster_scales(can_adjust_raster_scales),
       render_surface_list(render_surface_list),
       property_trees(property_trees),
       page_scale_transform_node(page_scale_transform_node) {}
@@ -118,7 +116,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               gfx::Vector2dF(),
                               ElementId(),
                               std::numeric_limits<int>::max() / 2,
-                              false,
                               render_surface_list,
                               GetPropertyTrees(root_layer),
                               nullptr) {
@@ -540,8 +537,7 @@ void CalculateDrawPropertiesInternal(
           gfx::Rect(inputs->device_viewport_size), inputs->device_transform,
           inputs->property_trees);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
-          inputs->root_layer, inputs->property_trees,
-          inputs->can_adjust_raster_scales);
+          inputs->root_layer, inputs->property_trees);
 
       // Property trees are normally constructed on the main thread and
       // passed to compositor thread. Source to parent updates on them are not
@@ -608,8 +604,7 @@ void CalculateDrawPropertiesInternal(
           inputs->device_scale_factor, page_scale_factor_for_root,
           inputs->device_transform);
       draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
-          inputs->root_layer, inputs->property_trees,
-          inputs->can_adjust_raster_scales);
+          inputs->root_layer, inputs->property_trees);
       break;
     }
   }

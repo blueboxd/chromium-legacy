@@ -671,10 +671,6 @@ TEST_P(LayerTreeHostCopyRequestTestClippedOut, Test) {
 class LayerTreeHostCopyRequestTestScaledLayer
     : public LayerTreeHostCopyRequestTest {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     root_ = Layer::Create();
     root_->SetBounds(gfx::Size(20, 20));

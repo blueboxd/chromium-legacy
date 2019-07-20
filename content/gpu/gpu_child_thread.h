@@ -32,7 +32,7 @@
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
 #include "media/base/android_overlay_mojo_factory.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/viz/privileged/interfaces/viz_main.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -64,7 +64,8 @@ class GpuChildThread : public ChildThreadImpl,
                  const ChildThreadImpl::Options& options,
                  std::unique_ptr<gpu::GpuInit> gpu_init);
 
-  void CreateVizMainService(viz::mojom::VizMainAssociatedRequest request);
+  void CreateVizMainService(
+      mojo::PendingAssociatedReceiver<viz::mojom::VizMain> pending_receiver);
 
   bool in_process_gpu() const;
 

@@ -1723,6 +1723,44 @@ TEST_F(BackgroundSyncManagerTest, SoonestWakeupDeltaAppliesBrowserWakeupLimit) {
   Unregister(sync_options_1_);
 }
 
+TEST_F(BackgroundSyncManagerTest, StaggeredPeriodicSyncRegistrations) {
+  base::TimeDelta twelve_hours = base::TimeDelta::FromHours(12);
+  SetPeriodicSyncEventsMinIntervalAndRestartManager(twelve_hours);
+  InitPeriodicSyncEventTest();
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
+
+  // Register a periodic sync.
+  base::TimeDelta thirteen_hours = base::TimeDelta::FromHours(13);
+  sync_options_1_.min_interval = thirteen_hours.InMilliseconds();
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+
+  EXPECT_EQ(GetSoonestWakeupDelta(
+                blink::mojom::BackgroundSyncType::PERIODIC,
+                /* last_browser_wakeup_for_periodic_sync= */ base::Time()),
+            thirteen_hours);
+
+  // Advance the clock by an hour. Add another registration.
+  base::TimeDelta one_hour = base::TimeDelta::FromHours(1);
+  test_clock_.Advance(one_hour);
+  sync_options_2_.min_interval = thirteen_hours.InMilliseconds();
+  EXPECT_EQ(GetSoonestWakeupDelta(
+                blink::mojom::BackgroundSyncType::PERIODIC,
+                /* last_browser_wakeup_for_periodic_sync= */ base::Time()),
+            twelve_hours);
+
+  // Advance the clock by 12 hours, and enable network connectivity, so the
+  // first registration fires. Expect the next wakeup time to be longer than 1
+  // hour, which is the stagger interval between the two registrations.
+  test_clock_.Advance(twelve_hours);
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_GT(GetSoonestWakeupDelta(
+                blink::mojom::BackgroundSyncType::PERIODIC,
+                /* last_browser_wakeup_for_periodic_sync= */ base::Time()),
+            one_hour);
+}
+
 TEST_F(BackgroundSyncManagerTest, OneAttempt) {
   SetMaxSyncAttemptsAndRestartManager(1);
   InitFailedSyncEventTest();

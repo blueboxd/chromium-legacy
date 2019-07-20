@@ -51,10 +51,12 @@ class Controller : public ScriptExecutorDelegate,
                    private content::WebContentsObserver {
  public:
   // |web_contents|, |client| and |tick_clock| must remain valid for the
-  // lifetime of the instance.
+  // lifetime of the instance. Controller will take ownership of |service| if
+  // specified, otherwise will create and own the default service.
   Controller(content::WebContents* web_contents,
              Client* client,
-             const base::TickClock* tick_clock);
+             const base::TickClock* tick_clock,
+             std::unique_ptr<Service> service);
   ~Controller() override;
 
   // Let the controller know it should keep tracking script availability for the
@@ -168,9 +170,7 @@ class Controller : public ScriptExecutorDelegate,
  private:
   friend ControllerTest;
 
-  void SetWebControllerAndServiceForTest(
-      std::unique_ptr<WebController> web_controller,
-      std::unique_ptr<Service> service);
+  void SetWebControllerForTest(std::unique_ptr<WebController> web_controller);
 
   // Called when the committed URL has or might have changed.
   void OnUrlChange();

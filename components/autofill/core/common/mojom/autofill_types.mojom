@@ -120,6 +120,7 @@ struct FormFieldData {
   mojo_base.mojom.String16 aria_description;
   uint32 unique_renderer_id;
   uint32 properties_mask;
+  int32 form_control_ax_id;
 
   uint64 max_length;
   bool is_autofilled;

@@ -2468,7 +2468,7 @@
             ]
         }
     ],
-    "HeapProfilerReporting": [
+    "HeapProfiling": [
         {
             "platforms": [
                 "android",
@@ -4285,6 +4285,21 @@
                     },
                     "enable_features": [
                         "IPH_ReopenTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ReorderBookmarks": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ReorderBookmarks",
+                    "enable_features": [
+                        "ReorderBookmarks"
                     ]
                 }
             ]

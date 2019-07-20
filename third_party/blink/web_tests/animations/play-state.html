@@ -72,10 +72,11 @@
       logPassFail(transform, getComputedStyle(document.getElementById('translate')).transform, 'translate', 'when paused');
       logPassFail(left, getComputedStyle(document.getElementById('left')).left, 'left', 'when paused');
       togglePaused();
-      setTimeout(end, 100);
+      document.addEventListener('animationend', end, false);
     }
 
     function end() {
+      document.removeEventListener('animationend', end, false);
       logPassFail('none', getComputedStyle(document.getElementById('translate')).transform, 'translate', 'at end');
       logPassFail('0px', getComputedStyle(document.getElementById('left')).left, 'left', 'at end');
       if (window.testRunner) {

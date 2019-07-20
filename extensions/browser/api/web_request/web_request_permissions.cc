@@ -12,14 +12,17 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "url/gurl.h"
 
@@ -64,7 +67,7 @@ PermissionsData::PageAccess GetHostAccessForURL(
 }
 
 PermissionsData::PageAccess CanExtensionAccessURLInternal(
-    const extensions::InfoMap* extension_info_map,
+    extensions::PermissionHelper* permission_helper,
     const std::string& extension_id,
     const GURL& url,
     int tab_id,
@@ -72,12 +75,9 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
     WebRequestPermissions::HostPermissionsCheck host_permissions_check,
     const base::Optional<url::Origin>& initiator,
     const base::Optional<content::ResourceType>& resource_type) {
-  // extension_info_map can be NULL in testing.
-  if (!extension_info_map)
-    return PermissionsData::PageAccess::kAllowed;
-
   const extensions::Extension* extension =
-      extension_info_map->extensions().GetByID(extension_id);
+      permission_helper->extension_registry()->enabled_extensions().GetByID(
+          extension_id);
   if (!extension)
     return PermissionsData::PageAccess::kDenied;
 
@@ -103,7 +103,7 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
 #endif
 
   // Check if this event crosses incognito boundaries when it shouldn't.
-  if (crosses_incognito && !extension_info_map->CanCrossIncognito(extension))
+  if (crosses_incognito && !permission_helper->CanCrossIncognito(extension))
     return PermissionsData::PageAccess::kDenied;
 
   switch (host_permissions_check) {
@@ -236,7 +236,7 @@ bool IsSensitiveGoogleClientUrl(const extensions::WebRequestInfo& request) {
 
 // static
 bool WebRequestPermissions::HideRequest(
-    const extensions::InfoMap* extension_info_map,
+    extensions::PermissionHelper* permission_helper,
     const extensions::WebRequestInfo& request) {
   if (!HasWebRequestScheme(request.url))
     return true;
@@ -268,8 +268,8 @@ bool WebRequestPermissions::HideRequest(
   }
 
   // Hide requests from the Chrome WebStore App.
-  if (!is_request_from_browser && extension_info_map &&
-      extension_info_map->process_map().Contains(extensions::kWebStoreAppId,
+  if (!is_request_from_browser &&
+      permission_helper->process_map()->Contains(extensions::kWebStoreAppId,
                                                  request.render_process_id)) {
     return true;
   }
@@ -305,10 +305,8 @@ bool WebRequestPermissions::HideRequest(
   }
 
   // Allow the extension embedder to hide the request.
-  if (extensions::ExtensionsAPIClient::Get()->ShouldHideBrowserNetworkRequest(
-          request)) {
+  if (permission_helper->ShouldHideBrowserNetworkRequest(request))
     return true;
-  }
 
   // Safebrowsing and Chrome Webstore URLs are always protected, i.e. also
   // for requests from common renderers.
@@ -333,7 +331,7 @@ void WebRequestPermissions::
 
 // static
 PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
-    const extensions::InfoMap* extension_info_map,
+    extensions::PermissionHelper* permission_helper,
     const std::string& extension_id,
     const GURL& url,
     int tab_id,
@@ -342,13 +340,13 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
     const base::Optional<url::Origin>& initiator,
     const base::Optional<content::ResourceType>& resource_type) {
   return CanExtensionAccessURLInternal(
-      extension_info_map, extension_id, url, tab_id, crosses_incognito,
+      permission_helper, extension_id, url, tab_id, crosses_incognito,
       host_permissions_check, initiator, resource_type);
 }
 
 // static
 bool WebRequestPermissions::CanExtensionAccessInitiator(
-    const extensions::InfoMap* extension_info_map,
+    extensions::PermissionHelper* permission_helper,
     const extensions::ExtensionId extension_id,
     const base::Optional<url::Origin>& initiator,
     int tab_id,
@@ -357,7 +355,7 @@ bool WebRequestPermissions::CanExtensionAccessInitiator(
     return true;
 
   return CanExtensionAccessURLInternal(
-             extension_info_map, extension_id, initiator->GetURL(), tab_id,
+             permission_helper, extension_id, initiator->GetURL(), tab_id,
              crosses_incognito,
              WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL,
              base::nullopt /* initiator */,

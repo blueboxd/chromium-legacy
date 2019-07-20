@@ -137,6 +137,10 @@ interface SerialPort {
   // Terminates the BREAK signal. Places the transmission line in a nonbreak
   // state.
   ClearBreak() => (bool success);
+
+  // Closes the connection created by Open(). Once this returns no more data
+  // will be sent or received on |in_stream| or |out_stream|.
+  Close() => ();
 };
 
 interface SerialPortClient {

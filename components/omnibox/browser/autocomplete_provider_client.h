@@ -120,6 +120,8 @@ class AutocompleteProviderClient {
   // Determines whether sync is enabled.
   virtual bool IsSyncActive() const = 0;
 
+  virtual std::string ProfileUserName() const;
+
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.
   virtual void Classify(

@@ -98,8 +98,9 @@ class ExtensionsAPIClient {
                                         const std::string& header_name) const;
 
   // Returns true if the given |request| should be hidden from extensions. This
-  // should be invoked on the IO thread.
+  // should be invoked on the UI thread.
   virtual bool ShouldHideBrowserNetworkRequest(
+      content::BrowserContext* context,
       const WebRequestInfo& request) const;
 
   // Notifies that an extension failed to act on a network request because the
@@ -192,6 +193,10 @@ class ExtensionsAPIClient {
 #endif
 
   virtual AutomationInternalApiDelegate* GetAutomationInternalApiDelegate();
+
+  // Gets keyed service factories that are used in the other methods on this
+  // class.
+  virtual std::vector<KeyedServiceBaseFactory*> GetFactoryDependencies();
 
   // NOTE: If this interface gains too many methods (perhaps more than 20) it
   // should be split into one interface per API.

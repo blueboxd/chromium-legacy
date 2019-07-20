@@ -122,11 +122,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
 
   void SetChildFrameHTML(const String&);
 
-  // Both enables compositing and runs the document lifecycle.
-  void EnableCompositing() {
-    // This Page is not actually being shown by a compositor, but we act like it
-    // will in order to test behaviour.
-    GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
+  void RunDocumentLifecycle() {
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
     UpdateAllLifecyclePhasesForTest();

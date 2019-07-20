@@ -96,7 +96,7 @@ class ScrollPredictorTest : public testing::Test {
     return scroll_predictor_->predictor_->GeneratePrediction(
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
-        false /* is_resampling */, result);
+        result);
   }
 
   gfx::PointF GetLastAccumulatedDelta() {

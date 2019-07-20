@@ -34,10 +34,9 @@ class ContentIndexProviderImpl
   void Shutdown() override;
 
   // ContentIndexProvider implementation.
-  void OnContentAdded(
-      content::ContentIndexEntry entry,
-      base::WeakPtr<content::ContentIndexProvider::Client> client) override;
+  void OnContentAdded(content::ContentIndexEntry entry) override;
   void OnContentDeleted(int64_t service_worker_registration_id,
+                        const url::Origin& origin,
                         const std::string& description_id) override;
 
   // OfflineContentProvider implementation.
@@ -63,9 +62,7 @@ class ContentIndexProviderImpl
   void RemoveObserver(Observer* observer) override;
 
  private:
-  // All the information the OfflineContentProvider needs to know about the
-  // ContentIndexEntry.
-  struct EntryData;
+  friend class ContentIndexProviderImplTest;
 
   void DidGetIcon(const offline_items_collection::ContentId& id,
                   VisualsCallback callback,
@@ -73,7 +70,7 @@ class ContentIndexProviderImpl
 
   Profile* profile_;
   offline_items_collection::OfflineContentAggregator* aggregator_;
-  std::map<std::string, EntryData> entries_;
+  std::map<std::string, offline_items_collection::OfflineItem> entries_;
   base::ObserverList<Observer>::Unchecked observers_;
   base::WeakPtrFactory<ContentIndexProviderImpl> weak_ptr_factory_;
 

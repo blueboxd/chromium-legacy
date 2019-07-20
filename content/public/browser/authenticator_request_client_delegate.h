@@ -83,14 +83,16 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       const std::string& relying_party_id);
 
   // Invokes |callback| with |true| if the given relying party ID is permitted
-  // to receive attestation certificates from a device. Otherwise invokes
-  // |callback| with |false|.
+  // to receive attestation certificates from the provided FidoAuthenticator.
+  // Otherwise invokes |callback| with |false|.
   //
   // Since these certificates may uniquely identify the authenticator, the
   // embedder may choose to show a permissions prompt to the user, and only
   // invoke |callback| afterwards. This may hairpin |callback|.
-  virtual void ShouldReturnAttestation(const std::string& relying_party_id,
-                                       base::OnceCallback<void(bool)> callback);
+  virtual void ShouldReturnAttestation(
+      const std::string& relying_party_id,
+      const device::FidoAuthenticator* authenticator,
+      base::OnceCallback<void(bool)> callback);
 
   // SupportsResidentKeys returns true if this implementation of
   // |AuthenticatorRequestClientDelegate| supports resident keys. If false then

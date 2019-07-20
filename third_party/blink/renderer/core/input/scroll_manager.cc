@@ -652,6 +652,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "ScrollManager::handleGestureScrollEnd");
   Node* node = scroll_gesture_handling_node_;
+  bool snap_at_gesture_scroll_end = false;
 
   if (node && node->GetLayoutObject()) {
     // If the GSE is for a scrollable area that has an in-progress animation,
@@ -688,7 +689,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
     ScrollState* scroll_state =
         ScrollState::Create(std::move(scroll_state_data));
     CustomizedScroll(*scroll_state);
-    SnapAtGestureScrollEnd();
+    snap_at_gesture_scroll_end = SnapAtGestureScrollEnd();
     NotifyScrollPhaseEndForCustomizedScroll();
 
     if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
@@ -709,8 +710,13 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
 
   ClearGestureScrollState();
 
-  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled())
+  // If we are performing a snap at the scrollend gesture, we should update
+  // hover state dirty at the end of the programmatic scroll animation caused
+  // by the snap, and we should avoid marking the hover state dirty here.
+  if (!snap_at_gesture_scroll_end &&
+      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
     frame_->LocalFrameRoot().GetEventHandler().MarkHoverStateDirty();
+  }
 
   return WebInputEventResult::kNotHandled;
 }
@@ -721,19 +727,19 @@ LayoutBox* ScrollManager::LayoutBoxForSnapping() const {
   return previous_gesture_scrolled_node_->GetLayoutBox();
 }
 
-void ScrollManager::SnapAtGestureScrollEnd() {
+bool ScrollManager::SnapAtGestureScrollEnd() {
   if (!previous_gesture_scrolled_node_ ||
       (!did_scroll_x_for_scroll_gesture_ && !did_scroll_y_for_scroll_gesture_))
-    return;
+    return false;
   SnapCoordinator* snap_coordinator =
       frame_->GetDocument()->GetSnapCoordinator();
   LayoutBox* layout_box = LayoutBoxForSnapping();
   if (!snap_coordinator || !layout_box)
-    return;
+    return false;
 
-  snap_coordinator->SnapAtCurrentPosition(*layout_box,
-                                          did_scroll_x_for_scroll_gesture_,
-                                          did_scroll_y_for_scroll_gesture_);
+  return snap_coordinator->SnapAtCurrentPosition(
+      *layout_box, did_scroll_x_for_scroll_gesture_,
+      did_scroll_y_for_scroll_gesture_);
 }
 
 bool ScrollManager::GetSnapFlingInfo(

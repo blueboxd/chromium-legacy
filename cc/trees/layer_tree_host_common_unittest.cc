@@ -168,7 +168,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     inputs.page_scale_layer = page_scale_layer;
     inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
     inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
-    inputs.can_adjust_raster_scales = true;
     if (page_scale_layer) {
       PropertyTrees* property_trees =
           root_layer->layer_tree_impl()->property_trees();
@@ -236,7 +235,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
       LayerImpl* root_layer) {
     DCHECK(root_layer->layer_tree_impl());
-    bool can_adjust_raster_scales = true;
 
     const LayerImpl* page_scale_layer = nullptr;
     LayerImpl* inner_viewport_scroll_layer =
@@ -262,8 +260,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         outer_viewport_scroll_layer, overscroll_elasticity_element_id,
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
-    draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
-        root_layer, property_trees, can_adjust_raster_scales);
+    draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(root_layer,
+                                                              property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(
         root_layer->layer_tree_impl(), property_trees,
         update_layer_impl_list_.get());
@@ -280,7 +278,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     DCHECK(!root_layer->bounds().IsEmpty());
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root_layer, device_viewport_size, render_surface_list_impl_.get());
-    inputs.can_adjust_raster_scales = false;
 
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
@@ -323,18 +320,11 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 class LayerTreeHostCommonTest : public LayerTreeHostCommonTestBase,
                                 public testing::Test {};
 
-class LayerTreeSettingsScaleContent : public VerifyTreeCalcsLayerTreeSettings {
- public:
-  LayerTreeSettingsScaleContent() {
-    layer_transforms_should_scale_layer_contents = true;
-  }
-};
-
 class LayerTreeHostCommonScalingTest : public LayerTreeHostCommonTestBase,
                                        public testing::Test {
  public:
   LayerTreeHostCommonScalingTest()
-      : LayerTreeHostCommonTestBase(LayerTreeSettingsScaleContent()) {}
+      : LayerTreeHostCommonTestBase(VerifyTreeCalcsLayerTreeSettings()) {}
 };
 
 class LayerTreeHostCommonDrawRectsTest : public LayerTreeHostCommonTest {
@@ -1401,7 +1391,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, root->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // Since the layer is transparent, render_surface1->GetRenderSurface() should
@@ -1437,7 +1426,6 @@ TEST_F(LayerTreeHostCommonTest,
     RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root, root->bounds(), &render_surface_list);
-    inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     EXPECT_EQ(2U, render_surface_list.size());
   }
@@ -1461,7 +1449,6 @@ TEST_F(LayerTreeHostCommonTest,
     RenderSurfaceList render_surface_list;
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
         root, root->bounds(), &render_surface_list);
-    inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
@@ -1496,7 +1483,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, root->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   ASSERT_TRUE(GetRenderSurface(parent));
@@ -4436,7 +4422,6 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and two layers. The child
@@ -4451,7 +4436,6 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   RenderSurfaceList render_surface_list2;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs2(
       root_layer, root_layer->bounds(), &render_surface_list2);
-  inputs2.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs2);
 
   LayerImpl* child_ptr = root_layer->layer_tree_impl()->LayerById(2);
@@ -4468,7 +4452,6 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   RenderSurfaceList render_surface_list3;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs3(
       root_layer, root_layer->bounds(), &render_surface_list3);
-  inputs3.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs3);
 
   child_ptr = root_layer->layer_tree_impl()->LayerById(2);
@@ -4754,7 +4737,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and two layers. The grand child has
@@ -4798,7 +4780,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have one render surface and one layer. The child has
@@ -4894,7 +4875,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   auto& effect_tree =
@@ -5002,7 +4982,6 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   root_layer->layer_tree_impl()->SetRootLayerForTesting(std::move(root));
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have two render surface, as the others are clipped out.
@@ -7303,7 +7282,6 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
-  settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &task_graph_runner);
   std::unique_ptr<AnimationScaleFactorTrackingLayerImpl> grand_parent =
@@ -7790,7 +7768,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
-  settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &task_graph_runner);
 
@@ -7864,7 +7841,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
       root_layer, device_viewport_size, &render_surface_list);
 
   inputs.page_scale_factor = page_scale_factor;
-  inputs.can_adjust_raster_scales = true;
   inputs.page_scale_layer = root_layer;
   inputs.page_scale_transform_node = inputs.property_trees->transform_tree.Node(
       inputs.page_scale_layer->transform_tree_index());
@@ -7886,7 +7862,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
 
   device_scale_factor = 4.0f;
   inputs.device_scale_factor = device_scale_factor;
-  inputs.can_adjust_raster_scales = true;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
@@ -7906,7 +7881,6 @@ TEST_F(LayerTreeHostCommonTest, AnimationScales) {
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
   LayerTreeSettings settings = host()->GetSettings();
-  settings.layer_transforms_should_scale_layer_contents = true;
   FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
                                   &task_graph_runner);
 
@@ -7972,56 +7946,6 @@ TEST_F(LayerTreeHostCommonTest, AnimationScales) {
       child2_layer->transform_tree_index(), 100.f, 100.f);
   EXPECT_FLOAT_EQ(100.f, GetMaximumAnimationScale(child2_layer));
   EXPECT_FLOAT_EQ(100.f, GetStartingAnimationScale(child2_layer));
-}
-
-TEST_F(LayerTreeHostCommonTest,
-       AnimationScaleWhenLayerTransformShouldNotScaleLayerBounds) {
-  // Returns empty scale if layer_transforms_should_scale_layer_contents is
-  // false.
-  FakeImplTaskRunnerProvider task_runner_provider;
-  TestTaskGraphRunner task_graph_runner;
-  LayerTreeSettings settings = host()->GetSettings();
-  settings.layer_transforms_should_scale_layer_contents = false;
-  FakeLayerTreeHostImpl host_impl(settings, &task_runner_provider,
-                                  &task_graph_runner);
-
-  std::unique_ptr<LayerImpl> root =
-      LayerImpl::Create(host_impl.active_tree(), 1);
-  LayerImpl* root_layer = root.get();
-  std::unique_ptr<LayerImpl> child =
-      LayerImpl::Create(host_impl.active_tree(), 2);
-  LayerImpl* child_layer = child.get();
-
-  root->test_properties()->AddChild(std::move(child));
-  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
-
-  host_impl.active_tree()->SetElementIdsForTesting();
-
-  gfx::Transform scale_transform_child;
-  scale_transform_child.Scale(4, 5);
-
-  root_layer->SetBounds(gfx::Size(1, 1));
-  child_layer->test_properties()->transform = scale_transform_child;
-  child_layer->SetBounds(gfx::Size(1, 1));
-
-  TransformOperations scale;
-  scale.AppendScale(5.f, 8.f, 3.f);
-
-  scoped_refptr<AnimationTimeline> timeline =
-      AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
-  host_impl.animation_host()->AddAnimationTimeline(timeline);
-
-  AddAnimatedTransformToElementWithAnimation(
-      child_layer->element_id(), timeline, 1.0, TransformOperations(), scale);
-
-  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root_layer);
-
-  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(kNotScaled, GetMaximumAnimationScale(child_layer));
-
-  EXPECT_FLOAT_EQ(kNotScaled, GetStartingAnimationScale(root_layer));
-  EXPECT_FLOAT_EQ(kNotScaled, GetStartingAnimationScale(child_layer));
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInChildRenderSurface) {
@@ -10143,40 +10067,7 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   EXPECT_EQ(scroll_root1.id, grand_child12->scroll_tree_index());
 }
 
-TEST_F(LayerTreeHostCommonTest, CanAdjustRasterScaleTest) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* render_surface = AddChild<LayerImpl>(root);
-  LayerImpl* child = AddChild<LayerImpl>(render_surface);
-
-  root->SetBounds(gfx::Size(50, 50));
-
-  render_surface->SetBounds(gfx::Size(10, 10));
-  render_surface->test_properties()->force_render_surface = true;
-  gfx::Transform transform;
-  transform.Scale(5.f, 5.f);
-  render_surface->test_properties()->transform = transform;
-
-  child->SetDrawsContent(true);
-  child->SetMasksToBounds(true);
-  child->SetBounds(gfx::Size(10, 10));
-
-  ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(root);
-
-  // Check surface draw properties.
-  EXPECT_EQ(gfx::Rect(10, 10),
-            GetRenderSurface(render_surface)->content_rect());
-  EXPECT_EQ(transform, GetRenderSurface(render_surface)->draw_transform());
-  EXPECT_EQ(gfx::RectF(50.0f, 50.0f),
-            GetRenderSurface(render_surface)->DrawableContentRect());
-
-  // Check child layer draw properties.
-  EXPECT_EQ(gfx::Rect(10, 10), child->visible_layer_rect());
-  EXPECT_EQ(gfx::Transform(), child->DrawTransform());
-  EXPECT_EQ(gfx::Rect(10, 10), child->clip_rect());
-  EXPECT_EQ(gfx::Rect(10, 10), child->drawable_content_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest, SurfaceContentsScaleChangeWithCopyRequestTest) {
+TEST_F(LayerTreeHostCommonTest, CopyRequestScalingTest) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* scale_layer = AddChild<LayerImpl>(root);
   LayerImpl* copy_layer = AddChild<LayerImpl>(scale_layer);
@@ -10203,7 +10094,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceContentsScaleChangeWithCopyRequestTest) {
   test_layer->SetMasksToBounds(true);
   test_layer->SetBounds(gfx::Size(20, 20));
 
-  ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(root);
+  ExecuteCalculateDrawProperties(root);
 
   // Check surface with copy request draw properties.
   EXPECT_EQ(gfx::Rect(50, 50), GetRenderSurface(copy_layer)->content_rect());
@@ -10219,19 +10110,7 @@ TEST_F(LayerTreeHostCommonTest, SurfaceContentsScaleChangeWithCopyRequestTest) {
 
   // Clear the copy request and call UpdateSurfaceContentsScale.
   host_impl()->active_tree()->property_trees()->effect_tree.ClearCopyRequests();
-  ExecuteCalculateDrawPropertiesWithoutAdjustingRasterScales(root);
-
-  // Check surface draw properties without copy request.
-  EXPECT_EQ(gfx::Rect(10, 10), GetRenderSurface(copy_layer)->content_rect());
-  EXPECT_EQ(transform, GetRenderSurface(copy_layer)->draw_transform());
-  EXPECT_EQ(gfx::RectF(50.0f, 50.0f),
-            GetRenderSurface(copy_layer)->DrawableContentRect());
-
-  // Check test layer draw properties without copy request.
-  EXPECT_EQ(gfx::Rect(10, 10), test_layer->visible_layer_rect());
-  EXPECT_EQ(gfx::Transform(), test_layer->DrawTransform());
-  EXPECT_EQ(gfx::Rect(10, 10), test_layer->clip_rect());
-  EXPECT_EQ(gfx::Rect(10, 10), test_layer->drawable_content_rect());
+  ExecuteCalculateDrawProperties(root);
 }
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCacheRenderSurface) {
@@ -10316,7 +10195,6 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCacheRenderSurface) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root_layer, root_layer->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   // We should have four render surfaces, one for the root, one for the grand
@@ -10541,7 +10419,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTrilinearFiltering) {
   RenderSurfaceList render_surface_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, root->bounds(), &render_surface_list);
-  inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   ASSERT_TRUE(GetRenderSurface(parent));

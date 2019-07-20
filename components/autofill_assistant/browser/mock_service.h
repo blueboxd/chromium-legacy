@@ -9,12 +9,14 @@
 #include <string>
 #include <vector>
 
-#include "components/autofill_assistant/browser/service.h"
+#include "components/autofill_assistant/browser/service_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
 
-class MockService : public Service {
+// TODO(crbug.com/806868): inherit from |Service| instead, and properly mock
+// methods as necessary.
+class MockService : public ServiceImpl {
  public:
   MockService();
   ~MockService() override;

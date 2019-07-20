@@ -276,18 +276,19 @@ void GpuServiceImpl::UpdateGPUInfo() {
 }
 
 void GpuServiceImpl::InitializeWithHost(
-    mojom::GpuHostPtr gpu_host,
+    mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
     gpu::GpuProcessActivityFlags activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     gpu::SyncPointManager* sync_point_manager,
     gpu::SharedImageManager* shared_image_manager,
     base::WaitableEvent* shutdown_event) {
   DCHECK(main_runner_->BelongsToCurrentThread());
+
+  mojo::Remote<mojom::GpuHost> gpu_host(std::move(pending_gpu_host));
   gpu_host->DidInitialize(gpu_info_, gpu_feature_info_,
                           gpu_info_for_hardware_gpu_,
                           gpu_feature_info_for_hardware_gpu_, gpu_extra_info_);
-  gpu_host_ =
-      mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
+  gpu_host_ = mojo::SharedRemote<mojom::GpuHost>(gpu_host.Unbind(), io_runner_);
   if (!in_host_process()) {
     // The global callback is reset from the dtor. So Unretained() here is safe.
     // Note that the callback can be called from any thread. Consequently, the
@@ -354,7 +355,7 @@ void GpuServiceImpl::Bind(mojom::GpuServiceRequest request) {
 
 void GpuServiceImpl::DisableGpuCompositing() {
   // Can be called from any thread.
-  (*gpu_host_)->DisableGpuCompositing();
+  gpu_host_->DisableGpuCompositing();
 }
 
 scoped_refptr<gpu::SharedContextState> GpuServiceImpl::GetContextState() {
@@ -375,7 +376,7 @@ void GpuServiceImpl::RecordLogMessage(int severity,
   // This can be run from any thread.
   std::string header = str.substr(0, message_start);
   std::string message = str.substr(message_start);
-  (*gpu_host_)->RecordLogMessage(severity, header, message);
+  gpu_host_->RecordLogMessage(severity, header, message);
 }
 
 #if defined(OS_CHROMEOS)
@@ -626,37 +627,37 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 
 void GpuServiceImpl::DidCreateContextSuccessfully() {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidCreateContextSuccessfully();
+  gpu_host_->DidCreateContextSuccessfully();
 }
 
 void GpuServiceImpl::DidCreateOffscreenContext(const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidCreateOffscreenContext(active_url);
+  gpu_host_->DidCreateOffscreenContext(active_url);
 }
 
 void GpuServiceImpl::DidDestroyChannel(int client_id) {
   DCHECK(main_runner_->BelongsToCurrentThread());
   media_gpu_channel_manager_->RemoveChannel(client_id);
-  (*gpu_host_)->DidDestroyChannel(client_id);
+  gpu_host_->DidDestroyChannel(client_id);
 }
 
 void GpuServiceImpl::DidDestroyOffscreenContext(const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidDestroyOffscreenContext(active_url);
+  gpu_host_->DidDestroyOffscreenContext(active_url);
 }
 
 void GpuServiceImpl::DidLoseContext(bool offscreen,
                                     gpu::error::ContextLostReason reason,
                                     const GURL& active_url) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->DidLoseContext(offscreen, reason, active_url);
+  gpu_host_->DidLoseContext(offscreen, reason, active_url);
 }
 
 void GpuServiceImpl::StoreShaderToDisk(int client_id,
                                        const std::string& key,
                                        const std::string& shader) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  (*gpu_host_)->StoreShaderToDisk(client_id, key, shader);
+  gpu_host_->StoreShaderToDisk(client_id, key, shader);
 }
 
 void GpuServiceImpl::MaybeExitOnContextLost() {
@@ -671,7 +672,7 @@ bool GpuServiceImpl::IsExiting() const {
 void GpuServiceImpl::SendCreatedChildWindow(gpu::SurfaceHandle parent_window,
                                             gpu::SurfaceHandle child_window) {
   // This can be called from main or display compositor thread.
-  (*gpu_host_)->SetChildSurface(parent_window, child_window);
+  gpu_host_->SetChildSurface(parent_window, child_window);
 }
 #endif
 

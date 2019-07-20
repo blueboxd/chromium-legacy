@@ -939,6 +939,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
     ASSERT_TRUE(converted_image);
     SkPixmap converted_pixmap;
     converted_image->peekPixels(&converted_pixmap);
+    ASSERT_TRUE(converted_pixmap.addr());
 
     // Manual color convert for testing
     sk_sp<SkColorSpace> color_space =
@@ -1157,6 +1158,7 @@ class CanvasRenderingContext2DTestWithTestingPlatform
   }
 
   void SetUp() override {
+    EnableCompositing();
     CanvasRenderingContext2DTest::SetUp();
     GetDocument().View()->UpdateLayout();
   }
@@ -1169,9 +1171,6 @@ class CanvasRenderingContext2DTestWithTestingPlatform
 // In these cases, the element should request a compositing update.
 TEST_F(CanvasRenderingContext2DTestWithTestingPlatform,
        ElementRequestsCompositingUpdateOnHibernateAndWakeUp) {
-  // This Page is not actually being shown by a compositor, but we act like it
-  // will in order to test behaviour.
-  GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =

@@ -938,13 +938,13 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor"
+          "--disable-features=VizDisplayCompositor"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "viz_browser_tests",
+        "name": "non_viz_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -1162,6 +1162,26 @@
       },
       {
         "args": [
+          "--disable-features=VizDisplayCompositor"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "non_viz_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 10
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
@@ -1177,26 +1197,6 @@
               "os": "Ubuntu-16.04"
             }
           ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -1217,13 +1217,13 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor"
+          "--disable-features=VizDisplayCompositor"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "viz_content_unittests",
+        "name": "non_viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2426,13 +2426,13 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor"
+          "--disable-features=VizDisplayCompositor"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "viz_browser_tests",
+        "name": "non_viz_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -2650,6 +2650,26 @@
       },
       {
         "args": [
+          "--disable-features=VizDisplayCompositor"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "non_viz_content_browsertests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04"
+            }
+          ],
+          "shards": 10
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "args": [
           "--disable-perfetto",
           "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
         ],
@@ -2665,26 +2685,6 @@
               "os": "Ubuntu-16.04"
             }
           ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "viz_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "shards": 10
         },
         "test": "content_browsertests"
       },
@@ -2705,13 +2705,13 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor"
+          "--disable-features=VizDisplayCompositor"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "viz_content_unittests",
+        "name": "non_viz_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

@@ -15,6 +15,7 @@
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
@@ -22,9 +23,10 @@
 #include "extensions/browser/api/declarative_webrequest/request_stage.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "net/http/http_response_headers.h"
@@ -72,11 +74,7 @@ std::unique_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
 
 }  // namespace
 
-class WebRequestActionWithThreadsTest : public testing::Test {
- public:
-  WebRequestActionWithThreadsTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-
+class WebRequestActionWithThreadsTest : public ExtensionServiceTestBase {
  protected:
   void SetUp() override;
 
@@ -94,19 +92,15 @@ class WebRequestActionWithThreadsTest : public testing::Test {
   // executable for http://clients1.google.com.
   void CheckActionNeedsAllUrls(const char* action, RequestStage stage);
 
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-
- protected:
   // An extension with *.com host permissions and the DWR permission.
   scoped_refptr<Extension> extension_;
   // An extension with host permissions for all URLs and the DWR permission.
   scoped_refptr<Extension> extension_all_urls_;
-  scoped_refptr<InfoMap> extension_info_map_;
 };
 
 void WebRequestActionWithThreadsTest::SetUp() {
-  testing::Test::SetUp();
+  ExtensionServiceTestBase::SetUp();
+  InitializeEmptyExtensionService();
 
   std::string error;
   extension_ = LoadManifestUnchecked("permissions",
@@ -124,17 +118,8 @@ void WebRequestActionWithThreadsTest::SetUp() {
                             "ext_id_2",
                             &error);
   ASSERT_TRUE(extension_all_urls_.get()) << error;
-  extension_info_map_ = new InfoMap;
-  ASSERT_TRUE(extension_info_map_.get());
-  extension_info_map_->AddExtension(
-      extension_.get(),
-      base::Time::Now(),
-      false /*incognito_enabled*/,
-      false /*notifications_disabled*/);
-  extension_info_map_->AddExtension(extension_all_urls_.get(),
-                                    base::Time::Now(),
-                                    false /*incognito_enabled*/,
-                                    false /*notifications_disabled*/);
+  ExtensionRegistry::Get(browser_context())->AddEnabled(extension_);
+  ExtensionRegistry::Get(browser_context())->AddEnabled(extension_all_urls_);
 }
 
 bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
@@ -153,10 +138,9 @@ bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(
   WebRequestInfo request_info(std::move(request_params));
   WebRequestData request_data(&request_info, stage, headers.get());
   std::set<std::string> ignored_tags;
-  WebRequestAction::ApplyInfo apply_info = { extension_info_map_.get(),
-                                             request_data,
-                                             false /*crosses_incognito*/,
-                                             &deltas, &ignored_tags };
+  WebRequestAction::ApplyInfo apply_info = {
+      PermissionHelper::Get(browser_context()), request_data,
+      false /*crosses_incognito*/, &deltas, &ignored_tags};
   action_set->Apply(extension_id, base::Time(), &apply_info);
   return (1u == deltas.size() || !ignored_tags.empty());
 }

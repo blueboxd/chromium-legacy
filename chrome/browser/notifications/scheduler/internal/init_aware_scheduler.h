@@ -41,10 +41,11 @@ class InitAwareNotificationScheduler : public NotificationScheduler {
   void OnStartTask(SchedulerTaskTime task_time,
                    TaskFinishedCallback callback) override;
   void OnStopTask(SchedulerTaskTime task_time) override;
-  void OnClick(const std::string& notification_id) override;
-  void OnActionClick(const std::string& notification_id,
+  void OnClick(SchedulerClientType type, const std::string& guid) override;
+  void OnActionClick(SchedulerClientType type,
+                     const std::string& guid,
                      ActionButtonType button_type) override;
-  void OnDismiss(const std::string& notification_id) override;
+  void OnDismiss(SchedulerClientType type, const std::string& guid) override;
 
   // Called after initialization is done.
   void OnInitialized(InitCallback init_callback, bool success);

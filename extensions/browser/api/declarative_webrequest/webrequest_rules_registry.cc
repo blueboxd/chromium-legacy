@@ -17,6 +17,8 @@
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -44,13 +46,10 @@ WebRequestRulesRegistry::WebRequestRulesRegistry(
     int rules_registry_id)
     : RulesRegistry(browser_context,
                     declarative_webrequest_constants::kOnRequest,
-                    content::BrowserThread::IO,
+                    content::BrowserThread::UI,
                     cache_delegate,
                     rules_registry_id),
-      browser_context_(browser_context) {
-  if (browser_context_)
-    extension_info_map_ = ExtensionSystem::Get(browser_context_)->info_map();
-}
+      browser_context_(browser_context) {}
 
 std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
     const WebRequestData& request_data_without_ids) const {
@@ -78,7 +77,7 @@ std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
 }
 
 std::list<extension_web_request_api_helpers::EventResponseDelta>
-WebRequestRulesRegistry::CreateDeltas(const InfoMap* extension_info_map,
+WebRequestRulesRegistry::CreateDeltas(PermissionHelper* permission_helper,
                                       const WebRequestData& request_data,
                                       bool crosses_incognito) {
   if (webrequest_rules_.empty())
@@ -135,10 +134,9 @@ WebRequestRulesRegistry::CreateDeltas(const InfoMap* extension_info_map,
 
     std::list<extension_web_request_api_helpers::EventResponseDelta>
         rule_result;
-    WebRequestAction::ApplyInfo apply_info = {
-      extension_info_map, request_data, crosses_incognito, &rule_result,
-      &ignore_tags[extension_id]
-    };
+    WebRequestAction::ApplyInfo apply_info = {permission_helper, request_data,
+                                              crosses_incognito, &rule_result,
+                                              &ignore_tags[extension_id]};
     rule->Apply(&apply_info);
     result.splice(result.begin(), std::move(rule_result));
 
@@ -159,8 +157,9 @@ std::string WebRequestRulesRegistry::AddRulesImpl(
   std::string error;
   RulesVector new_webrequest_rules;
   new_webrequest_rules.reserve(rules.size());
-  const Extension* extension =
-      extension_info_map_->extensions().GetByID(extension_id);
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
   RulesMap& registered_rules = webrequest_rules_[extension_id];
 
   for (auto* rule : rules) {
@@ -292,7 +291,7 @@ WebRequestRulesRegistry::~WebRequestRulesRegistry() {}
 
 base::Time WebRequestRulesRegistry::GetExtensionInstallationTime(
     const std::string& extension_id) const {
-  return extension_info_map_->GetInstallTime(extension_id);
+  return ExtensionPrefs::Get(browser_context_)->GetInstallTime(extension_id);
 }
 
 void WebRequestRulesRegistry::ClearCacheOnNavigation() {

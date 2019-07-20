@@ -19,6 +19,7 @@
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/aw_url_loader_throttle_provider.h"
 #include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
+#include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -162,6 +163,7 @@ void AwContentRendererClient::RenderFrameCreated(
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<AwPrintRenderFrameHelperDelegate>());
   new AwRenderFrameExt(render_frame);
+  new JsJavaConfigurator(render_frame);
 
   // TODO(jam): when the frame tree moves into content and parent() works at
   // RenderFrame construction, simplify this by just checking parent().

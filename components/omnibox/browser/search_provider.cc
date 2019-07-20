@@ -241,7 +241,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
   // do anything useful for on-focus inputs or empty inputs.  Exit early.
   if (!base::FeatureList::IsEnabled(omnibox::kSearchProviderWarmUpOnFocus) &&
       (input.from_omnibox_focus() ||
-       input.type() == metrics::OmniboxInputType::INVALID)) {
+       input.type() == metrics::OmniboxInputType::EMPTY)) {
     Stop(true, false);
     return;
   }

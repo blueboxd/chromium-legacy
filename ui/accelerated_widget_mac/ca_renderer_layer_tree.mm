@@ -331,12 +331,12 @@ CARendererLayerTree::RootLayer::~RootLayer() {
 CARendererLayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
     bool is_clipped,
     gfx::Rect clip_rect,
-    float clip_rect_corner_radius,
+    gfx::RRectF rounded_corner_bounds_arg,
     unsigned sorting_context_id,
     bool is_singleton_sorting_context)
     : is_clipped(is_clipped),
       clip_rect(clip_rect),
-      clip_rect_corner_radius(clip_rect_corner_radius),
+      rounded_corner_bounds(rounded_corner_bounds_arg),
       sorting_context_id(sorting_context_id),
       is_singleton_sorting_context(is_singleton_sorting_context) {}
 
@@ -345,19 +345,22 @@ CARendererLayerTree::ClipAndSortingLayer::ClipAndSortingLayer(
     : transform_layers(std::move(layer.transform_layers)),
       is_clipped(layer.is_clipped),
       clip_rect(layer.clip_rect),
-      clip_rect_corner_radius(layer.clip_rect_corner_radius),
+      rounded_corner_bounds(layer.rounded_corner_bounds),
       sorting_context_id(layer.sorting_context_id),
       is_singleton_sorting_context(layer.is_singleton_sorting_context),
-      ca_layer(layer.ca_layer) {
+      clipping_ca_layer(layer.clipping_ca_layer),
+      rounded_corner_ca_layer(layer.rounded_corner_ca_layer) {
   // Ensure that the ca_layer be reset, so that when the destructor is called,
   // the layer hierarchy is unaffected.
   // TODO(ccameron): Add a move constructor for scoped_nsobject to do this
   // automatically.
-  layer.ca_layer.reset();
+  layer.clipping_ca_layer.reset();
+  layer.rounded_corner_ca_layer.reset();
 }
 
 CARendererLayerTree::ClipAndSortingLayer::~ClipAndSortingLayer() {
-  [ca_layer removeFromSuperlayer];
+  [clipping_ca_layer removeFromSuperlayer];
+  [rounded_corner_ca_layer removeFromSuperlayer];
 }
 
 CARendererLayerTree::TransformLayer::TransformLayer(
@@ -510,8 +513,7 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
         current_layer.sorting_context_id == params.sorting_context_id &&
         (current_layer.is_clipped != params.is_clipped ||
          current_layer.clip_rect != params.clip_rect ||
-         current_layer.clip_rect_corner_radius !=
-             params.clip_rect_corner_radius)) {
+         current_layer.rounded_corner_bounds != params.rounded_corner_bounds)) {
       DLOG(ERROR) << "CALayer changed clip inside non-zero sorting context.";
       return false;
     }
@@ -519,15 +521,14 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
         !current_layer.is_singleton_sorting_context &&
         current_layer.is_clipped == params.is_clipped &&
         current_layer.clip_rect == params.clip_rect &&
-        current_layer.clip_rect_corner_radius ==
-            params.clip_rect_corner_radius &&
+        current_layer.rounded_corner_bounds == params.rounded_corner_bounds &&
         current_layer.sorting_context_id == params.sorting_context_id) {
       needs_new_clip_and_sorting_layer = false;
     }
   }
   if (needs_new_clip_and_sorting_layer) {
     clip_and_sorting_layers.push_back(ClipAndSortingLayer(
-        params.is_clipped, params.clip_rect, params.clip_rect_corner_radius,
+        params.is_clipped, params.clip_rect, params.rounded_corner_bounds,
         params.sorting_context_id, is_singleton_sorting_context));
   }
   clip_and_sorting_layers.back().AddContentLayer(tree, params);
@@ -624,52 +625,82 @@ void CARendererLayerTree::ClipAndSortingLayer::CommitToCA(
     float scale_factor) {
   bool update_is_clipped = true;
   bool update_clip_rect = true;
-  bool update_corner_radius = true;
   if (old_layer) {
-    DCHECK(old_layer->ca_layer);
-    std::swap(ca_layer, old_layer->ca_layer);
+    DCHECK(old_layer->clipping_ca_layer);
+    DCHECK(old_layer->rounded_corner_ca_layer);
+    std::swap(clipping_ca_layer, old_layer->clipping_ca_layer);
+    std::swap(rounded_corner_ca_layer, old_layer->rounded_corner_ca_layer);
     update_is_clipped = old_layer->is_clipped != is_clipped;
     update_clip_rect = update_is_clipped || old_layer->clip_rect != clip_rect;
-    update_corner_radius =
-        update_is_clipped ||
-        old_layer->clip_rect_corner_radius != clip_rect_corner_radius;
   } else {
-    ca_layer.reset([[CALayer alloc] init]);
-    [ca_layer setAnchorPoint:CGPointZero];
-    [superlayer addSublayer:ca_layer];
+    clipping_ca_layer.reset([[CALayer alloc] init]);
+    [clipping_ca_layer setAnchorPoint:CGPointZero];
+    [superlayer addSublayer:clipping_ca_layer];
+    rounded_corner_ca_layer.reset([[CALayer alloc] init]);
+    [rounded_corner_ca_layer setAnchorPoint:CGPointZero];
+    [clipping_ca_layer addSublayer:rounded_corner_ca_layer];
   }
-  if ([ca_layer superlayer] != superlayer) {
+
+  if (!rounded_corner_bounds.IsEmpty()) {
+    if (!old_layer ||
+        old_layer->rounded_corner_bounds != rounded_corner_bounds) {
+      gfx::RectF dip_rounded_corner_bounds =
+          gfx::RectF(rounded_corner_bounds.rect());
+      dip_rounded_corner_bounds.Scale(1 / scale_factor);
+
+      [rounded_corner_ca_layer setMasksToBounds:true];
+
+      [rounded_corner_ca_layer
+          setPosition:CGPointMake(dip_rounded_corner_bounds.x(),
+                                  dip_rounded_corner_bounds.y())];
+      [rounded_corner_ca_layer
+          setBounds:CGRectMake(0, 0, dip_rounded_corner_bounds.width(),
+                               dip_rounded_corner_bounds.height())];
+      [rounded_corner_ca_layer
+          setSublayerTransform:CATransform3DMakeTranslation(
+                                   -dip_rounded_corner_bounds.x(),
+                                   -dip_rounded_corner_bounds.y(), 0)];
+
+      [rounded_corner_ca_layer
+          setCornerRadius:rounded_corner_bounds.GetSimpleRadius()];
+    }
+  } else {
+    [rounded_corner_ca_layer setMasksToBounds:false];
+    [rounded_corner_ca_layer setPosition:CGPointZero];
+    [rounded_corner_ca_layer setBounds:CGRectZero];
+    [rounded_corner_ca_layer setSublayerTransform:CATransform3DIdentity];
+    [rounded_corner_ca_layer setCornerRadius:0];
+  }
+  if ([clipping_ca_layer superlayer] != superlayer) {
     DLOG(ERROR) << "CARendererLayerTree root layer not attached to tree.";
   }
 
   if (update_is_clipped)
-    [ca_layer setMasksToBounds:is_clipped];
+    [clipping_ca_layer setMasksToBounds:is_clipped];
 
   if (update_clip_rect) {
     if (is_clipped) {
       gfx::RectF dip_clip_rect = gfx::RectF(clip_rect);
       dip_clip_rect.Scale(1 / scale_factor);
-      [ca_layer setPosition:CGPointMake(dip_clip_rect.x(), dip_clip_rect.y())];
-      [ca_layer setBounds:CGRectMake(0, 0, dip_clip_rect.width(),
-                                     dip_clip_rect.height())];
-      [ca_layer
+      [clipping_ca_layer
+          setPosition:CGPointMake(dip_clip_rect.x(), dip_clip_rect.y())];
+      [clipping_ca_layer setBounds:CGRectMake(0, 0, dip_clip_rect.width(),
+                                              dip_clip_rect.height())];
+      [clipping_ca_layer
           setSublayerTransform:CATransform3DMakeTranslation(
                                    -dip_clip_rect.x(), -dip_clip_rect.y(), 0)];
     } else {
-      [ca_layer setPosition:CGPointZero];
-      [ca_layer setBounds:CGRectZero];
-      [ca_layer setSublayerTransform:CATransform3DIdentity];
+      [clipping_ca_layer setPosition:CGPointZero];
+      [clipping_ca_layer setBounds:CGRectZero];
+      [clipping_ca_layer setSublayerTransform:CATransform3DIdentity];
     }
   }
-
-  if (update_corner_radius)
-    [ca_layer setCornerRadius:clip_rect_corner_radius];
 
   for (size_t i = 0; i < transform_layers.size(); ++i) {
     TransformLayer* old_transform_layer = nullptr;
     if (old_layer && i < old_layer->transform_layers.size())
       old_transform_layer = &old_layer->transform_layers[i];
-    transform_layers[i].CommitToCA(ca_layer.get(), old_transform_layer,
+    transform_layers[i].CommitToCA(rounded_corner_ca_layer, old_transform_layer,
                                    scale_factor);
   }
 }

@@ -15,7 +15,7 @@
  * @param {string=} opt_message A message to show on failure.
  * @return {T} A non-null |condition|.
  */
-function assert(condition, opt_message) {
+/* #export */ function assert(condition, opt_message) {
   if (!condition) {
     let message = 'Assertion failed';
     if (opt_message) {
@@ -56,7 +56,7 @@ function assert(condition, opt_message) {
  *
  * @param {string=} opt_message A message to show when this is hit.
  */
-function assertNotReached(opt_message) {
+/* #export */ function assertNotReached(opt_message) {
   assert(false, opt_message || 'Unreachable code hit');
 }
 
@@ -67,7 +67,7 @@ function assertNotReached(opt_message) {
  * @return {T}
  * @template T
  */
-function assertInstanceof(value, type, opt_message) {
+/* #export */ function assertInstanceof(value, type, opt_message) {
   // We don't use assert immediately here so that we avoid constructing an error
   // message if we don't have to.
   if (!(value instanceof type)) {

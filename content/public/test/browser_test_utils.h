@@ -69,6 +69,17 @@ class EmbeddedTestServer;
 using test_server::EmbeddedTestServer;
 }
 
+#if defined(OS_WIN)
+namespace Microsoft {
+namespace WRL {
+template <typename>
+class ComPtr;
+}  // namespace WRL
+}  // namespace Microsoft
+
+typedef int PROPERTYID;
+#endif
+
 // A collections of functions designed for use with content_browsertests and
 // browser_tests.
 // TO BE CLEAR: any function here must work against both binaries. If it only
@@ -887,6 +898,22 @@ BrowserAccessibility* FindAccessibilityNode(
 BrowserAccessibility* FindAccessibilityNodeInSubtree(
     BrowserAccessibility* node,
     const FindAccessibilityNodeCriteria& criteria);
+
+#if defined(OS_WIN)
+// Retrieve the specified interface from an accessibility node.
+template <typename T>
+Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
+    BrowserAccessibility* browser_accessibility);
+
+// Call GetPropertyValue with the given UIA property id with variant type
+// VT_ARRAY | VT_UNKNOWN  on the target browser accessibility node to retrieve
+// an array of automation elements, then validate the name property of the
+// automation elements with the expected names.
+void UiaGetPropertyValueVtArrayVtUnknownValidate(
+    PROPERTYID property_id,
+    BrowserAccessibility* target_browser_accessibility,
+    const std::vector<std::string>& expected_names);
+#endif
 
 // Find out if the BrowserPlugin for a guest WebContents is focused. Returns
 // false if the WebContents isn't a guest with a BrowserPlugin.

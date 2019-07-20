@@ -15,12 +15,15 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality.h"
 #include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/observation_buffer.h"
 #include "net/nqe/throughput_analyzer.h"
 
 namespace net {
+
+class NetworkQualityEstimator;
 
 namespace nqe {
 
@@ -31,7 +34,8 @@ namespace internal {
 // recent downlink throughput.
 class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
  public:
-  explicit NetworkCongestionAnalyzer(const base::TickClock* tick_clock);
+  NetworkCongestionAnalyzer(NetworkQualityEstimator* network_quality_estimator,
+                            const base::TickClock* tick_clock);
   ~NetworkCongestionAnalyzer();
 
   // Returns the number of hosts that are involved in the last attempt of
@@ -77,11 +81,26 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
+                           TestStartingNewMeasurementPeriod);
+  FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
                            TestUpdatePeakDelayMapping);
+  FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
+                           TestDetectLowQueueingDelay);
+  FRIEND_TEST_ALL_PREFIXES(NetworkCongestionAnalyzerTest,
+                           TestComputeQueueingDelayLevel);
 
-  base::Optional<size_t> count_inflight_requests_causing_high_delay() const {
-    return count_inflight_requests_causing_high_delay_;
-  }
+  // Returns the bucketized value of the peak queueing delay (a.k.a. peak
+  // queueing delay level). |peak_queueing_delay| is peak queueing delay
+  // observation within the current measurement period. The peak queueing delay
+  // level is from 1 to 10. A higher value means a higher peak queueing delay.
+  size_t ComputePeakQueueingDelayLevel(
+      const base::TimeDelta& peak_queueing_delay) const;
+
+  // Returns true if |delay| is less than the low queueing delay threshold
+  // corresponding to the current effective connection type (ECT). The threshold
+  // is the 33rd percentile value of the peak queueing delay samples. Compares
+  // |delay| with the default threshold if the ECT is UNKNOWN or OFFLINE.
+  bool IsQueueingDelayLow(const base::TimeDelta& delay) const;
 
   // Returns true if a new measurement period should start. A new measurement
   // period should start when the observed queueing delay is small and there are
@@ -107,6 +126,13 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   base::Optional<int32_t> recent_downlink_throughput_kbps() const {
     return recent_downlink_throughput_kbps_;
   }
+
+  base::Optional<size_t> count_inflight_requests_causing_high_delay() const {
+    return count_inflight_requests_causing_high_delay_;
+  }
+
+  // Guaranteed to be non-null during the duration of |this|.
+  NetworkQualityEstimator* network_quality_estimator_;
 
   // Guaranteed to be non-null during the lifetime of |this|.
   const base::TickClock* tick_clock_;

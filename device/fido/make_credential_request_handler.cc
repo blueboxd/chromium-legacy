@@ -295,7 +295,7 @@ void MakeCredentialRequestHandler::AuthenticatorRemoved(
       state_ = State::kFinished;
       std::move(completion_callback_)
           .Run(FidoReturnCode::kAuthenticatorRemovedDuringPINEntry,
-               base::nullopt, base::nullopt);
+               base::nullopt, nullptr);
     }
   }
 }
@@ -411,8 +411,7 @@ void MakeCredentialRequestHandler::HandleInapplicableAuthenticator(
   const FidoReturnCode capability_error = IsCandidateAuthenticatorPostTouch(
       request_, authenticator, authenticator_selection_criteria_, observer());
   DCHECK_NE(capability_error, FidoReturnCode::kSuccess);
-  std::move(completion_callback_)
-      .Run(capability_error, base::nullopt, base::nullopt);
+  std::move(completion_callback_).Run(capability_error, base::nullopt, nullptr);
 }
 
 void MakeCredentialRequestHandler::OnHavePIN(std::string pin) {
@@ -448,13 +447,13 @@ void MakeCredentialRequestHandler::OnRetriesResponse(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
   if (response->retries == 0) {
     state_ = State::kFinished;
     std::move(completion_callback_)
-        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, base::nullopt);
+        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, nullptr);
     return;
   }
   state_ = State::kWaitingForPIN;
@@ -476,7 +475,7 @@ void MakeCredentialRequestHandler::OnHaveEphemeralKey(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
 
@@ -507,7 +506,7 @@ void MakeCredentialRequestHandler::OnHaveSetPIN(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
 
@@ -548,7 +547,7 @@ void MakeCredentialRequestHandler::OnHavePINToken(
         ret = FidoReturnCode::kAuthenticatorResponseInvalid;
         break;
     }
-    std::move(completion_callback_).Run(ret, base::nullopt, base::nullopt);
+    std::move(completion_callback_).Run(ret, base::nullopt, nullptr);
     return;
   }
 

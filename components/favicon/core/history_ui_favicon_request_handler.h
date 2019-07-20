@@ -38,8 +38,6 @@ enum class FaviconRequestPlatform {
 // only be used by the UIs listed in the HistoryUiFaviconRequestOrigin enum.
 // Requests must be made by page url, as opposed to icon url.
 // TODO(victorvianna): Use a more natural order for the parameters in the API.
-// TODO(victorvianna): Remove |icon_url_for_uma| when we have access to the
-// FaviconUrlMapper.
 // TODO(victorvianna): Rename |request_origin| to |origin_for_uma| in the API.
 class HistoryUiFaviconRequestHandler : public KeyedService {
  public:

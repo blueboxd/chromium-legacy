@@ -30,6 +30,7 @@ var testSerial = function() {
   var receiveBufferUint8View = new Uint8Array(receiveBuffer);
   var bytesToReceive = bufferLength;
   var has_read_error = false;
+  var expectDisconnect = false;
 
   var operation = 0;
   var doNextOperation = function() {
@@ -43,8 +44,7 @@ var testSerial = function() {
       case 2:
         var bitrate = 57600;
         console.log(
-            'Connecting to serial device ' + serialPort + ' at ' + bitrate +
-            ' bps.');
+            `Connecting to serial device ${serialPort} at ${bitrate} bps.`);
         serial.connect(serialPort, {bitrate: bitrate}, onConnect);
         break;
       case 3:
@@ -72,9 +72,29 @@ var testSerial = function() {
         serial.send(connectionId, sendBuffer, onSend);
         break;
       case 8:
+        expectDisconnect = true;
         serial.disconnect(connectionId, onDisconnect);
         break;
       case 9:
+        // Wait for both onDisconnect() and onReceiveError().
+        break;
+      case 10:
+        serial.getConnections(onGetConnectionsEmpty);
+        break;
+      case 11:
+        var bitrate = 115200;
+        console.log(
+            `Reconnecting to serial device ${serialPort} at ${bitrate} bps.`);
+        serial.connect(serialPort, {bitrate: bitrate}, onConnect);
+        break;
+      case 12:
+        expectDisconnect = true;
+        serial.disconnect(connectionId, onDisconnect);
+        break;
+      case 13:
+        // Wait for both onDisconnect() and onReceiveError().
+        break;
+      case 14:
         serial.getConnections(onGetConnectionsEmpty);
         break;
       default:
@@ -131,11 +151,16 @@ var testSerial = function() {
   var onReceiveError = function(errorInfo) {
     chrome.test.assertEq(connectionId, errorInfo.connectionId,
                          "Unmatch connectionId for ReceiveError");
+    if (expectDisconnect && errorInfo.error === "disconnected") {
+      expectDisconnect = false;
+      doNextOperation();
+      return;
+    }
     has_read_error = true;
     if (errorInfo.error == "parity_error") {
       serial.getInfo(connectionId, onGetInfoToReconnect);
     } else {
-      chrome.test.fail('Failed to receive serial data');
+      chrome.test.fail('Failed to receive serial data: ' + errorInfo.error);
     }
   };
 

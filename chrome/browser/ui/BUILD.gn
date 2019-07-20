@@ -1336,6 +1336,7 @@ jumbo_split_static_library("ui") {
       "zoom/chrome_zoom_level_prefs.h",
     ]
     deps += [
+      "//base/util/values:values_util",
       "//chrome/app/vector_icons",
       "//chrome/browser:theme_properties",
       "//chrome/browser/media/router",

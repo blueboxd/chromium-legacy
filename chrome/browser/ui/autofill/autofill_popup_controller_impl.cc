@@ -15,16 +15,22 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/accessibility/ax_active_popup.h"
+#include "ui/accessibility/ax_tree_id.h"
+#include "ui/accessibility/ax_tree_manager_map.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/views/accessibility/view_accessibility.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/autofill/manual_filling_controller_impl.h"
@@ -130,6 +136,11 @@ void AutofillPopupControllerImpl::Show(
                                    !suggestions.empty());
 #endif
     view_->Show();
+
+    // We only fire the event when a new popup shows. We do not fire the
+    // event when suggestions changed.
+    FireControlsChangedEvent(true);
+
     if (autoselect_first_suggestion)
       SetSelectedLine(0);
   } else {
@@ -578,10 +589,45 @@ void AutofillPopupControllerImpl::HideViewAndDie() {
                                  /*has_suggestions=*/false);
 #endif
 
-  if (view_)
+  if (view_) {
+    // We need to fire the event while view is not deleted yet.
+    FireControlsChangedEvent(false);
     view_->Hide();
+  }
 
   delete this;
+}
+
+void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {
+  if (!accessibility_state_utils::IsScreenReaderEnabled())
+    return;
+  DCHECK(view_);
+
+  // Retrieve the ax tree id associated with the current web contents.
+  ui::AXTreeID tree_id = delegate_->GetAutofillDriver()->GetAxTreeId();
+  ui::AXTreeManager* ax_tree_manager =
+      ui::AXTreeManagerMap::GetInstance().GetManager(tree_id);
+
+  // Retrieve the ax node id associated with the current web contents' element
+  // that has a controller relation to the current autofill popup.
+  int32_t node_id = static_cast<AutofillExternalDelegate*>(delegate_.get())
+                        ->GetWebContentsPopupControllerAxId();
+
+  // We can only raise controls changed accessibility event when we have a valid
+  // ax tree and an ax node associated with the ax tree for the popup
+  // controller, and a valid ax unique id for the popup controllee.
+  if (!ax_tree_manager || !ax_tree_manager->GetDelegate(tree_id, node_id) ||
+      !view_->GetAxUniqueId())
+    return;
+
+  if (is_show)
+    ui::SetActivePopupAxUniqueId(view_->GetAxUniqueId());
+  else
+    ui::ClearActivePopupAxUniqueId();
+
+  ax_tree_manager->GetDelegate(tree_id, node_id)
+      ->GetFromNodeID(node_id)
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kControlsChanged);
 }
 
 }  // namespace autofill

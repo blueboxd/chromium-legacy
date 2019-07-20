@@ -79,7 +79,6 @@
 #include "media/mojo/buildflags.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "services/network/public/cpp/features.h"
 #include "services/service_manager/embedder/descriptors.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -216,10 +215,9 @@ void StartExternalMojoBrokerService(
 CastContentBrowserClient::CastContentBrowserClient(
     CastFeatureListCreator* cast_feature_list_creator)
     : cast_browser_main_parts_(nullptr),
+      cast_network_contexts_(std::make_unique<CastNetworkContexts>()),
       url_request_context_factory_(new URLRequestContextFactory()),
       cast_feature_list_creator_(cast_feature_list_creator) {
-  cast_network_contexts_ =
-      std::make_unique<CastNetworkContexts>(url_request_context_factory_.get());
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession,
     features::kNetworkServiceInProcess,
@@ -250,7 +248,6 @@ CastContentBrowserClient::~CastContentBrowserClient() {
 std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
-    net::URLRequestContextGetter* request_context_getter,
     media::VideoPlaneController* video_plane_controller,
     CastWindowManager* window_manager) {
   return std::make_unique<CastServiceSimple>(browser_context, pref_service,
@@ -1043,9 +1040,6 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
 
 void CastContentBrowserClient::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Need to set up global NetworkService state before anything else uses it.
   cast_network_contexts_->OnNetworkServiceCreated(network_service);
 }
@@ -1055,11 +1049,6 @@ CastContentBrowserClient::CreateNetworkContext(
     content::BrowserContext* context,
     bool in_memory,
     const base::FilePath& relative_partition_path) {
-  // StoragePartition will wrap the URLRequestContext it owns with a
-  // NetworkContext pipe if network service is disabled.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return nullptr;
-
   return cast_network_contexts_->CreateNetworkContext(context, in_memory,
                                                       relative_partition_path);
 }

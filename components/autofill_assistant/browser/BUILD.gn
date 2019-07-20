@@ -130,8 +130,9 @@ jumbo_static_library("browser") {
     "selector.h",
     "self_delete_full_card_requester.cc",
     "self_delete_full_card_requester.h",
-    "service.cc",
     "service.h",
+    "service_impl.cc",
+    "service_impl.h",
     "state.h",
     "string_conversions_util.cc",
     "string_conversions_util.h",
@@ -207,5 +208,21 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/re2",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "java_service.cc",
+    "java_service.h",
+  ]
+
+  deps = [
+    ":browser",
+    ":proto",
+    "//base",
+    "//chrome/android/features/autofill_assistant:test_support_jni_headers",
+    "//url:url",
   ]
 }

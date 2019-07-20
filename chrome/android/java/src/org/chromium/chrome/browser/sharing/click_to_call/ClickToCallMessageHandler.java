@@ -81,7 +81,7 @@ public class ClickToCallMessageHandler {
                         .setGroup(NotificationConstants.GROUP_CLICK_TO_CALL)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])
-                        .setSmallIcon(R.drawable.ic_chrome)
+                        .setSmallIcon(R.drawable.ic_phone_googblue_36dp)
                         .setAutoCancel(true)
                         .setDefaults(Notification.DEFAULT_ALL);
         ChromeNotification notification = builder.buildChromeNotification();

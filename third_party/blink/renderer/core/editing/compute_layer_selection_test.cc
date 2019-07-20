@@ -22,10 +22,8 @@ namespace blink {
 class ComputeLayerSelectionTest : public EditingTestBase {
  public:
   void SetUp() override {
+    EnableCompositing();
     EditingTestBase::SetUp();
-    // This Page is not actually being shown by a compositor, but we act like it
-    // will in order to test behaviour.
-    GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
     LoadAhem();

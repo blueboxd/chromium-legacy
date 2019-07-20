@@ -205,8 +205,6 @@ Compositor::Compositor(
           features::kCompositorThreadedScrollbarScrolling)) {
     settings.compositor_threaded_scrollbar_scrolling = true;
   }
-  settings.layer_transforms_should_scale_layer_contents = true;
-
   animation_host_ = cc::AnimationHost::CreateMainInstance();
 
   cc::LayerTreeHost::InitParams params;

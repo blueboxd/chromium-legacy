@@ -76,6 +76,10 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                         State state,
                         const gfx::Rect& rect,
                         const SliderExtraParams& slider) const override;
+  void PaintMenuList(cc::PaintCanvas* canvas,
+                     State state,
+                     const gfx::Rect& rect,
+                     const MenuListExtraParams& menu_list) const override;
   gfx::Size GetPartSize(Part part,
                         State state,
                         const ExtraParams& extra) const override;

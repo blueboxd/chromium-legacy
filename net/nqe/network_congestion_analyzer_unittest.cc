@@ -11,7 +11,9 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "net/nqe/network_quality.h"
+#include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/nqe/observation_buffer.h"
+#include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -19,6 +21,8 @@ namespace net {
 namespace nqe {
 
 namespace internal {
+
+using NetworkCongestionAnalyzerTest = TestWithScopedTaskEnvironment;
 
 namespace {
 
@@ -28,13 +32,22 @@ constexpr float kEpsilon = 0.001f;
 // net/nqe/network_congestion_analyzer.cc.
 constexpr int64_t kHighQueueingDelayMsec = 5000;
 constexpr int64_t kMinEmptyQueueObservingTimeMsec = 1500;
+constexpr base::TimeDelta
+    kLowQueueingDelayThresholds[EFFECTIVE_CONNECTION_TYPE_LAST] = {
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(400),
+        base::TimeDelta::FromMilliseconds(40),
+        base::TimeDelta::FromMilliseconds(15)};
 
-// Verify that the network queueing delay is computed correctly based on RTT
+// Verifies that the network queueing delay is computed correctly based on RTT
 // and downlink throughput observations.
-TEST(NetworkCongestionAnalyzerTest, TestComputingQueueingDelay) {
+TEST_F(NetworkCongestionAnalyzerTest, TestComputingQueueingDelay) {
+  TestNetworkQualityEstimator network_quality_estimator;
   base::SimpleTestTickClock tick_clock;
 
-  NetworkCongestionAnalyzer analyzer(&tick_clock);
+  NetworkCongestionAnalyzer analyzer(&network_quality_estimator, &tick_clock);
   std::map<uint64_t, CanonicalStats> recent_rtt_stats;
   std::map<uint64_t, CanonicalStats> historical_rtt_stats;
   int32_t downlink_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
@@ -84,34 +97,50 @@ TEST(NetworkCongestionAnalyzerTest, TestComputingQueueingDelay) {
 
 }  // namespace
 
-// Verify that the peak queueing delay is correctly mapped to the count of
-// in-flight requests that are responsible for that delay.
-TEST(NetworkCongestionAnalyzerTest, TestUpdatePeakDelayMapping) {
+// Verifies that a measurement period starts correctly when an empty queue
+// observation shows up. An empty queue observation is made when the queueing
+// delay is low and the number of in-flight requests is also low.
+TEST_F(NetworkCongestionAnalyzerTest, TestStartingNewMeasurementPeriod) {
+  TestNetworkQualityEstimator network_quality_estimator;
   base::SimpleTestTickClock tick_clock;
 
-  NetworkCongestionAnalyzer analyzer(&tick_clock);
-  EXPECT_EQ(base::nullopt,
-            analyzer.count_inflight_requests_causing_high_delay());
+  network_quality_estimator.set_effective_connection_type(
+      EFFECTIVE_CONNECTION_TYPE_2G);
+  NetworkCongestionAnalyzer analyzer(&network_quality_estimator, &tick_clock);
+  base::TimeDelta low_queueing_delay_sample =
+      kLowQueueingDelayThresholds[EFFECTIVE_CONNECTION_TYPE_2G];
 
-  // Checks that a measurement period starts correctly when an empty queue
-  // observation shows up.
-  EXPECT_FALSE(analyzer.ShouldStartNewMeasurement(
-      base::TimeDelta::FromMilliseconds(500), 2));
-  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(
-      base::TimeDelta::FromMilliseconds(500), 0));
+  // Checks that a new measurement period starts immediately if the queueing
+  // delay is low and the number of in-flight requests are equal or less than 1.
+  EXPECT_FALSE(
+      analyzer.ShouldStartNewMeasurement(low_queueing_delay_sample, 2));
+  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(low_queueing_delay_sample, 1));
+  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(low_queueing_delay_sample, 0));
 
   // Checks that a new measurement period starts after waiting for a sufficient
-  // time interval when the number of in-flight requests is relatively low (=2).
-  EXPECT_FALSE(analyzer.ShouldStartNewMeasurement(
-      base::TimeDelta::FromMilliseconds(500), 2));
+  // time interval when the number of in-flight requests is 2.
+  EXPECT_FALSE(
+      analyzer.ShouldStartNewMeasurement(low_queueing_delay_sample, 2));
   tick_clock.Advance(
       base::TimeDelta::FromMilliseconds(kMinEmptyQueueObservingTimeMsec / 2));
-  EXPECT_FALSE(analyzer.ShouldStartNewMeasurement(
-      base::TimeDelta::FromMilliseconds(500), 2));
+  EXPECT_FALSE(
+      analyzer.ShouldStartNewMeasurement(low_queueing_delay_sample, 2));
   tick_clock.Advance(
       base::TimeDelta::FromMilliseconds(kMinEmptyQueueObservingTimeMsec / 2));
-  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(
-      base::TimeDelta::FromMilliseconds(500), 2));
+  EXPECT_TRUE(analyzer.ShouldStartNewMeasurement(low_queueing_delay_sample, 2));
+}
+
+// Verifies that the peak queueing delay is correctly mapped to the count of
+// in-flight requests that are responsible for that delay.
+TEST_F(NetworkCongestionAnalyzerTest, TestUpdatePeakDelayMapping) {
+  TestNetworkQualityEstimator network_quality_estimator;
+  base::SimpleTestTickClock tick_clock;
+
+  network_quality_estimator.set_effective_connection_type(
+      EFFECTIVE_CONNECTION_TYPE_2G);
+  NetworkCongestionAnalyzer analyzer(&network_quality_estimator, &tick_clock);
+  EXPECT_EQ(base::nullopt,
+            analyzer.count_inflight_requests_causing_high_delay());
 
   // Checks that the count of in-flight requests for peak queueing delay is
   // correctly recorded.
@@ -158,6 +187,64 @@ TEST(NetworkCongestionAnalyzerTest, TestUpdatePeakDelayMapping) {
   }
   EXPECT_EQ(expected_count_requests_2,
             analyzer.count_inflight_requests_causing_high_delay().value_or(0));
+}
+
+// Verifies that the network congestion analyzer can correctly determine whether
+// a queueing delay sample is low or not under different effective connection
+// types (ECTs).
+TEST_F(NetworkCongestionAnalyzerTest, TestDetectLowQueueingDelay) {
+  TestNetworkQualityEstimator network_quality_estimator;
+  base::SimpleTestTickClock tick_clock;
+  NetworkCongestionAnalyzer analyzer(&network_quality_estimator, &tick_clock);
+
+  // Checks that computations are done correctly under all different ECTs.
+  for (int i = 0; i != net::EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+    auto type = static_cast<net::EffectiveConnectionType>(i);
+    network_quality_estimator.set_effective_connection_type(type);
+    base::TimeDelta low_queueing_delay = kLowQueueingDelayThresholds[type];
+
+    EXPECT_TRUE(analyzer.IsQueueingDelayLow(low_queueing_delay));
+    EXPECT_FALSE(analyzer.IsQueueingDelayLow(
+        low_queueing_delay + base::TimeDelta::FromMilliseconds(1)));
+  }
+}
+
+// Verifies that the network congestion analyzer can correctly bucketize the
+// peak queueing delay samples, and map the peak queueing delay samples to their
+// corresponding queueing delay levels from Level1 to Level10.
+TEST_F(NetworkCongestionAnalyzerTest, TestComputeQueueingDelayLevel) {
+  TestNetworkQualityEstimator network_quality_estimator;
+  base::SimpleTestTickClock tick_clock;
+  NetworkCongestionAnalyzer analyzer(&network_quality_estimator, &tick_clock);
+
+  std::vector<std::pair<base::TimeDelta, size_t>> queueing_delay_level_samples =
+      {std::make_pair(base::TimeDelta::FromMilliseconds(0), 1),
+       std::make_pair(base::TimeDelta::FromMilliseconds(25), 1),
+       std::make_pair(base::TimeDelta::FromMilliseconds(35), 2),
+       std::make_pair(base::TimeDelta::FromMilliseconds(55), 2),
+       std::make_pair(base::TimeDelta::FromMilliseconds(65), 3),
+       std::make_pair(base::TimeDelta::FromMilliseconds(115), 3),
+       std::make_pair(base::TimeDelta::FromMilliseconds(125), 4),
+       std::make_pair(base::TimeDelta::FromMilliseconds(245), 4),
+       std::make_pair(base::TimeDelta::FromMilliseconds(255), 5),
+       std::make_pair(base::TimeDelta::FromMilliseconds(495), 5),
+       std::make_pair(base::TimeDelta::FromMilliseconds(505), 6),
+       std::make_pair(base::TimeDelta::FromMilliseconds(995), 6),
+       std::make_pair(base::TimeDelta::FromMilliseconds(1005), 7),
+       std::make_pair(base::TimeDelta::FromMilliseconds(1995), 7),
+       std::make_pair(base::TimeDelta::FromMilliseconds(2005), 8),
+       std::make_pair(base::TimeDelta::FromMilliseconds(3995), 8),
+       std::make_pair(base::TimeDelta::FromMilliseconds(4005), 9),
+       std::make_pair(base::TimeDelta::FromMilliseconds(7995), 9),
+       std::make_pair(base::TimeDelta::FromMilliseconds(8005), 10),
+       std::make_pair(base::TimeDelta::FromMilliseconds(20000), 10)};
+
+  // Checks that all queueing delay samples are correctly mapped to
+  // their corresponding levels.
+  for (const auto& sample : queueing_delay_level_samples) {
+    EXPECT_EQ(sample.second,
+              analyzer.ComputePeakQueueingDelayLevel(sample.first));
+  }
 }
 
 }  // namespace internal

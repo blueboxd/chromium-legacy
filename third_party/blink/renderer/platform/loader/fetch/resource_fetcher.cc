@@ -1117,9 +1117,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     }
   }
 
-  // TODO(crbug.com/985459): Remove document_resources_.
-  document_resources_.insert(resource);
-
   if (resource->GetType() == ResourceType::kImage) {
     image_resources_.insert(resource);
     not_loaded_image_resources_.insert(resource);
@@ -2185,7 +2182,6 @@ void ResourceFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(loaders_);
   visitor->Trace(non_blocking_loaders_);
   visitor->Trace(cached_resources_map_);
-  visitor->Trace(document_resources_);
   visitor->Trace(image_resources_);
   visitor->Trace(not_loaded_image_resources_);
   visitor->Trace(preloads_);

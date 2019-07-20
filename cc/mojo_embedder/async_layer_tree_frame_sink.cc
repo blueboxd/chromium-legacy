@@ -173,8 +173,6 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
-  TRACE_EVENT1("cc,benchmark", "AsyncLayerTreeFrameSink::SubmitCompositorFrame",
-               "source_frame_number_", source_frame_number_);
 
   // It's possible to request an immediate composite from cc which will bypass
   // BeginFrame. In that case, we cannot collect full graphics pipeline data.
@@ -201,12 +199,6 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
                 frame.size_in_pixels().width());
     }
   }
-
-  TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-                          "SubmitCompositorFrame", local_surface_id_.hash());
-  bool tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-                                     &tracing_enabled);
 
   base::Optional<viz::HitTestRegionList> hit_test_region_list;
   if (hit_test_data_provider_)
@@ -271,9 +263,7 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
                          "SubmitHitTestData");
 
   compositor_frame_sink_ptr_->SubmitCompositorFrame(
-      local_surface_id_, std::move(frame), std::move(hit_test_region_list),
-      tracing_enabled ? base::TimeTicks::Now().since_origin().InMicroseconds()
-                      : 0);
+      local_surface_id_, std::move(frame), std::move(hit_test_region_list), 0);
 }
 
 void AsyncLayerTreeFrameSink::DidNotProduceFrame(

@@ -101,12 +101,16 @@ TestStoragePartition::GetGeneratedCodeCacheContext() {
 
 PlatformNotificationContext*
 TestStoragePartition::GetPlatformNotificationContext() {
-  return nullptr;
+  return platform_notification_context_;
 }
 
 DevToolsBackgroundServicesContext*
 TestStoragePartition::GetDevToolsBackgroundServicesContext() {
-  return nullptr;
+  return devtools_background_services_context_;
+}
+
+ContentIndexContext* TestStoragePartition::GetContentIndexContext() {
+  return content_index_context_;
 }
 
 #if !defined(OS_ANDROID)

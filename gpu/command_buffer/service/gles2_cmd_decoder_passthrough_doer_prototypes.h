@@ -900,7 +900,7 @@ error::Error DoScheduleCALayerSharedStateCHROMIUM(
     GLfloat opacity,
     GLboolean is_clipped,
     const GLfloat* clip_rect,
-    GLfloat clip_rect_corner_radius,
+    const GLfloat* rounded_corner_bounds,
     GLint sorting_context_id,
     const GLfloat* transform);
 error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,

@@ -38,10 +38,10 @@ import sys
 # xcode_binaries, see InstallXcodeBinaries. https://crbug.com/984746
 MAC_TOOLCHAIN_VERSION = '9E501'
 
-# This contains binaries from Xcode 9.3.1, along with the 10.13 SDK.
-# To build this package, see comments in build/xcode_binaries.yaml
+# This contains binaries from Xcode 10.12.1, along with the 10.13 and 10.14
+# SDKs. To build this package, see comments in build/xcode_binaries.yaml
 MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
-MAC_BINARIES_TAG = 'oXeIQqw4E0pXIStoixHwKg_1TJZTJGhfhmn2fq8LPOAC'
+MAC_BINARIES_TAG = '4SpEve_8bN_DmTH0QdxMQoCTsrAe5QK04uoMEnNHAvQC'
 
 # The toolchain will not be downloaded if the minimum OS version is not met.
 # 17 is the major version number for macOS 10.13.
@@ -195,7 +195,8 @@ def InstallXcodeBinaries():
     return
 
   # Otherwise manually accept the license. This will prompt for sudo.
-  print('Accepting new Xcode license.')
+  print('Accepting new Xcode license. Requires sudo.')
+  sys.stdout.flush()
   args = ['sudo', 'defaults', 'write', current_license_path,
           'IDEXcodeVersionForAgreedToGMLicense', cipd_xcode_version]
   subprocess.call(args)

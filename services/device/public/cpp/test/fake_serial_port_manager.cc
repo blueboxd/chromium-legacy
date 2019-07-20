@@ -70,6 +70,8 @@ class FakeSerialPort : public mojom::SerialPort {
 
   void ClearBreak(ClearBreakCallback callback) override { NOTREACHED(); }
 
+  void Close(CloseCallback callback) override { std::move(callback).Run(); }
+
  private:
   mojo::Binding<mojom::SerialPort> binding_;
   mojom::SerialPortConnectionWatcherPtr watcher_;

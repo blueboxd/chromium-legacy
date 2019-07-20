@@ -10,10 +10,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/top_shortcut_button.h"
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -173,6 +171,9 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
           new AutoclickMenuButton(this,
                                   kAutoclickDragIcon,
                                   IDS_ASH_AUTOCLICK_OPTION_DRAG_AND_DROP)),
+      scroll_button_(new AutoclickMenuButton(this,
+                                             kAutoclickScrollIcon,
+                                             IDS_ASH_AUTOCLICK_OPTION_SCROLL)),
       pause_button_(
           new AutoclickMenuButton(this,
                                   kAutoclickPauseIcon,
@@ -183,13 +184,6 @@ AutoclickMenuView::AutoclickMenuView(AutoclickEventType type,
                                   IDS_ASH_AUTOCLICK_OPTION_CHANGE_POSITION,
                                   kPanelPositionButtonSize,
                                   false /* no highlight */)) {
-  // TODO(katie): Initialize scroll above once it launches, target in M77.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAccessibilityAutoclick)) {
-    scroll_button_ = new AutoclickMenuButton(this, kAutoclickScrollIcon,
-                                             IDS_ASH_AUTOCLICK_OPTION_SCROLL);
-  }
-
   // Set view IDs for testing.
   left_click_button_->SetId(ButtonId::kLeftClick);
   right_click_button_->SetId(ButtonId::kRightClick);

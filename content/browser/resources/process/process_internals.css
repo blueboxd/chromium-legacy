@@ -84,3 +84,7 @@ body {
 .tree-label {
   user-select: text;
 }
+
+#isolated-origins-container {
+  margin-top: 15px;
+}

@@ -616,7 +616,6 @@ source_set("unit_tests") {
     "error_map_unittest.cc",
     "event_listener_map_unittest.cc",
     "event_router_unittest.cc",
-    "extension_api_frame_id_map_unittest.cc",
     "extension_creator_filter_unittest.cc",
     "extension_creator_unittest.cc",
     "extension_event_histogram_value_unittest.cc",

@@ -23,7 +23,7 @@ Vector<String> AuthenticatorAttestationResponse::getTransports() const {
   for (auto transport : transports_) {
     ret.emplace_back(mojo::ConvertTo<String>(transport));
   }
-  std::sort(ret.begin(), ret.end(), WTF::CodePointCompareLessThan);
+  std::sort(ret.begin(), ret.end(), WTF::CodeUnitCompareLessThan);
   return ret;
 }
 

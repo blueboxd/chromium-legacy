@@ -169,7 +169,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       transport_rtt_observation_count_last_ect_computation_(0),
       new_rtt_observations_since_last_ect_computation_(0),
       new_throughput_observations_since_last_ect_computation_(0),
-      network_congestion_analyzer_(tick_clock_),
+      network_congestion_analyzer_(this, tick_clock_),
       effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cached_estimate_applied_(false),
       net_log_(NetLogWithSource::Make(

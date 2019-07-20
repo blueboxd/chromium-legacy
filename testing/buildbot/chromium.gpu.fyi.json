@@ -4799,6 +4799,32 @@
       },
       {
         "args": [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.mobile",
+          "--browser=android-chromium"
+        ],
+        "experiment_percentage": 100,
+        "isolate_name": "rendering_representative_perf_tests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "rendering_representative_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "screenshot_sync",
           "--show-stdout",
           "--browser=android-chromium",
@@ -17793,7 +17819,10 @@
         }
       },
       {
-        "args": [],
+        "args": [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop"
+        ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
@@ -19390,7 +19419,10 @@
         }
       },
       {
-        "args": [],
+        "args": [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop"
+        ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
@@ -26608,7 +26640,10 @@
         }
       },
       {
-        "args": [],
+        "args": [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop"
+        ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {
@@ -28847,7 +28882,10 @@
         }
       },
       {
-        "args": [],
+        "args": [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop"
+        ],
         "experiment_percentage": 100,
         "isolate_name": "rendering_representative_perf_tests",
         "merge": {

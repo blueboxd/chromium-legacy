@@ -23,7 +23,6 @@ enum GPUTextureDimension {
 enum GPUTextureFormat {
     /* Normal 8 bit formats */
     "r8unorm",
-    "r8unorm-srgb",
     "r8snorm",
     "r8uint",
     "r8sint",
@@ -34,12 +33,9 @@ enum GPUTextureFormat {
     "r16sint",
     "r16float",
     "rg8unorm",
-    "rg8unorm-srgb",
     "rg8snorm",
     "rg8uint",
     "rg8sint",
-    /* Packed 16 bit formats */
-    "b5g6r5unorm",
     /* Normal 32 bit formats */
     "r32uint",
     "r32sint",
@@ -74,5 +70,6 @@ enum GPUTextureFormat {
     "rgba32float",
     /* Depth / Stencil formats */
     "depth32float",
-    "depth32float-stencil8",
+    "depth24plus",
+    "depth24plus-stencil8"
 };

@@ -9,7 +9,7 @@
 #include "base/base64.h"
 #include "base/callback_list.h"
 #include "base/guid.h"
-#include "chrome/browser/sharing/fcm_constants.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"

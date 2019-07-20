@@ -189,20 +189,6 @@ class AXPosition {
     return GetNodeInTree(tree_id_, anchor_id_);
   }
 
-  AXNodeType* GetAnchorWithStyles() const {
-    // Check either the current node or its parent for text styles
-    AXPositionInstance current_node = Clone();
-    AXNodeType* anchor = current_node->GetAnchor();
-
-    if (!current_node->IsNullPosition() &&
-        anchor->data().GetTextStyles().IsUnset()) {
-      current_node = current_node->CreateParentPosition();
-      anchor = current_node->GetAnchor();
-    }
-
-    return anchor;
-  }
-
   AXPositionKind kind() const { return kind_; }
   int child_index() const { return child_index_; }
   int text_offset() const { return text_offset_; }
@@ -430,16 +416,14 @@ class AXPosition {
   }
 
   bool AtStartOfDocument() const {
-    if (IsNullPosition() || !GetAnchor())
+    if (IsNullPosition())
       return false;
-
-    return ui::IsDocument(GetAnchor()->data().role) && AtStartOfAnchor();
+    return IsDocument(GetRole()) && AtStartOfAnchor();
   }
 
   bool AtEndOfDocument() const {
-    if (IsNullPosition() || !GetAnchor())
+    if (IsNullPosition())
       return false;
-
     return CreateNextAnchorPosition()->IsNullPosition() && AtEndOfAnchor();
   }
 
@@ -673,10 +657,8 @@ class AXPosition {
                                : std::move(current_endpoint);
     }
 
-    AXNodeTextStyles initial_styles =
-        GetAnchorWithStyles()->data().GetTextStyles();
-    if (current_endpoint->GetAnchorWithStyles()->data().GetTextStyles() !=
-        initial_styles) {
+    AXNodeTextStyles initial_styles = GetTextStyles();
+    if (current_endpoint->GetTextStyles() != initial_styles) {
       // Initial node is at a format boundary. If it's a text position that's
       // not at the start or end of the current anchor, move to the start or
       // end, depending on direction.
@@ -696,9 +678,8 @@ class AXPosition {
 
       // If we were already at a boundary but moving cross-boundary, use the
       // formats beyond the initial boundary for comparison.
+      initial_styles = current_endpoint->GetTextStyles();
       initial_endpoint = current_endpoint->Clone();
-      initial_styles =
-          current_endpoint->GetAnchorWithStyles()->data().GetTextStyles();
     }
 
     auto next_endpoint = current_endpoint->Clone();
@@ -708,14 +689,11 @@ class AXPosition {
       else
         next_endpoint = next_endpoint->CreatePreviousTextAnchorPosition();
 
-      if (next_endpoint->IsNullPosition())
+      if (next_endpoint->IsNullPosition() ||
+          next_endpoint->GetTextStyles() != initial_styles)
         break;
 
-      if (next_endpoint->GetAnchorWithStyles()->data().GetTextStyles() ==
-          initial_styles)
-        current_endpoint = next_endpoint->Clone();
-      else
-        break;
+      current_endpoint = next_endpoint->Clone();
     } while (true);
 
     // Moving forwards should leave the position at the end of an anchor.
@@ -738,7 +716,7 @@ class AXPosition {
 
     AXPositionInstance iterator = Clone();
     while (!iterator->IsNullPosition()) {
-      if (ui::IsDocument(iterator->GetAnchor()->data().role) &&
+      if (IsDocument(iterator->GetRole()) &&
           iterator->CreateParentPosition()->IsNullPosition()) {
         return iterator->CreatePositionAtStartOfAnchor();
       }
@@ -753,7 +731,7 @@ class AXPosition {
 
     AXPositionInstance iterator = Clone();
     while (!iterator->IsNullPosition()) {
-      if (ui::IsDocument(iterator->GetAnchor()->data().role) &&
+      if (IsDocument(iterator->GetRole()) &&
           iterator->CreateParentPosition()->IsNullPosition()) {
         AXPositionInstance tree_position = iterator->AsTreePosition();
         DCHECK(tree_position);
@@ -1807,6 +1785,18 @@ class AXPosition {
 
   // Abstract methods.
 
+  // Determines if the anchor containing this position is a <br> or a text
+  // object whose parent's anchor is an enclosing <br>.
+  virtual bool IsInLineBreak() const = 0;
+
+  // Determines if the anchor containing this position is a text object.
+  virtual bool IsInTextObject() const = 0;
+
+  // Determines if the text representation of this position's anchor contains
+  // only whitespace characters; <br> objects span a single '\n' character, so
+  // positions inside line breaks are also considered "in whitespace".
+  virtual bool IsInWhiteSpace() const = 0;
+
   // Returns the text that is present inside the anchor node, where the
   // representation of text found in descendant nodes depends on the platform.
   // For example some platforms may include descendant text while while other
@@ -1881,11 +1871,18 @@ class AXPosition {
   virtual void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const = 0;
   virtual AXNodeType* GetNodeInTree(AXTreeID tree_id,
                                     int32_t node_id) const = 0;
+
   // Returns the length of text that this anchor node takes up in its parent.
   // On some platforms, embedded objects are represented in their parent with a
   // single embedded object character.
   virtual int MaxTextOffsetInParent() const { return MaxTextOffset(); }
-  virtual bool IsInWhiteSpace() const = 0;
+
+  // Determines if the anchor containing this position produces a hard line
+  // break in the text representation, e.g. a block level element or a <br>.
+  virtual bool IsInLineBreakingObject() const = 0;
+
+  virtual ax::mojom::Role GetRole() const = 0;
+  virtual AXNodeTextStyles GetTextStyles() const = 0;
   virtual std::vector<int32_t> GetWordStartOffsets() const = 0;
   virtual std::vector<int32_t> GetWordEndOffsets() const = 0;
   virtual int32_t GetNextOnLineID(int32_t node_id) const = 0;
@@ -2077,10 +2074,8 @@ class AXPosition {
     if (move_from.IsNullPosition() || move_to.IsNullPosition())
       return true;
 
-    const bool move_from_break = move_from.GetAnchor()->data().GetBoolAttribute(
-        ax::mojom::BoolAttribute::kIsLineBreakingObject);
-    const bool move_to_break = move_to.GetAnchor()->data().GetBoolAttribute(
-        ax::mojom::BoolAttribute::kIsLineBreakingObject);
+    const bool move_from_break = move_from.IsInLineBreakingObject();
+    const bool move_to_break = move_to.IsInLineBreakingObject();
 
     bool potential_paragraph_boundary = false;
     switch (move_type) {

@@ -130,6 +130,8 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
     return unique_renderer_form_control_id_;
   }
 
+  int32_t GetAxId() const;
+
  protected:
   HTMLFormControlElement(const QualifiedName& tag_name, Document&);
 

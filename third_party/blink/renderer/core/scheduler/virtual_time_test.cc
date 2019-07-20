@@ -51,10 +51,11 @@ class VirtualTimeTest : public SimTest {
   }
 
   void TearDown() override {
-    // The SimTest destructor calls runPendingTasks. This is a problem because
+    // SimTest::TearDown() calls RunPendingTasks. This is a problem because
     // if there are any repeating tasks, advancing virtual time will cause the
     // runloop to busy loop. Disabling virtual time here fixes that.
     WebView().Scheduler()->DisableVirtualTimeForTesting();
+    SimTest::TearDown();
   }
 
   void StopVirtualTimeAndExitRunLoop() {

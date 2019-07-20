@@ -5,6 +5,7 @@
     ],
     "services": [
       "chromium.cast.ApplicationConfigManager",
+      "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.logger.LogSink",

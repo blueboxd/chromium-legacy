@@ -10,7 +10,14 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/web_contents_tester.h"
+#include "device/fido/test_callback_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "device/fido/win/authenticator.h"
+#include "device/fido/win/fake_webauthn_api.h"
+#include "third_party/microsoft_webauthn/webauthn.h"
+#endif
 
 class ChromeAuthenticatorRequestDelegateTest
     : public ChromeRenderViewHostTestHarness {};
@@ -108,3 +115,25 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 }
 #endif
 
+#if defined(OS_WIN)
+TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
+  // Test that ShouldReturnAttestation() returns with true if |authenticator|
+  // is the Windows native WebAuthn API with WEBAUTHN_API_VERSION_2 or higher,
+  // where Windows prompts for attestation in its own native UI.
+  //
+  // Ideally, this would also test the inverse case, i.e. that with
+  // WEBAUTHN_API_VERSION_1 Chrome's own attestation prompt is shown. However,
+  // there seems to be no good way to test AuthenticatorRequestDialogModel UI.
+  ::device::ScopedFakeWinWebAuthnApi win_webauthn_api;
+  win_webauthn_api.set_version(WEBAUTHN_API_VERSION_2);
+  ::device::WinWebAuthnApiAuthenticator authenticator(
+      /*current_window=*/nullptr);
+
+  ::device::test::ValueCallbackReceiver<bool> cb;
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+  delegate.ShouldReturnAttestation(kRelyingPartyID, &authenticator,
+                                   cb.callback());
+  cb.WaitForCallback();
+  EXPECT_EQ(cb.value(), true);
+}
+#endif  // defined(OS_WIN)

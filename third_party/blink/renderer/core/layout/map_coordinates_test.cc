@@ -15,6 +15,13 @@ class MapCoordinatesTest : public RenderingTest {
  public:
   MapCoordinatesTest()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+
+  void SetUp() override {
+    // This is required to test 3d transforms.
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+
   PhysicalOffset MapLocalToAncestor(const LayoutObject*,
                                     const LayoutBoxModelObject* ancestor,
                                     PhysicalOffset,
@@ -1621,8 +1628,6 @@ TEST_F(MapCoordinatesTest, LocalToAncestorTransform) {
 }
 
 TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
-  // This is required to test 3d transforms.
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div style='position: absolute; left: 0; top: 0;'>
       <div style='transform: rotateY(45deg); transform-style: preserve-3d;'>
@@ -1668,8 +1673,6 @@ TEST_F(MapCoordinatesTest, LocalToAbsoluteTransformFlattens) {
 }
 
 TEST_F(MapCoordinatesTest, Transform3DWithOffset) {
-  // This is required to test 3d transforms.
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0; }

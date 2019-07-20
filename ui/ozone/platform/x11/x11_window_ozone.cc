@@ -227,6 +227,18 @@ gfx::Rect X11WindowOzone::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+bool X11WindowOzone::IsVisible() const {
+  return x11_window_->IsVisible();
+}
+
+gfx::Rect X11WindowOzone::GetOutterBounds() const {
+  return x11_window_->GetOutterBounds();
+}
+
+::Region X11WindowOzone::GetShape() const {
+  return x11_window_->shape();
+}
+
 void X11WindowOzone::PrepareForShutdown() {
   DCHECK(X11EventSourceLibevent::GetInstance());
   X11EventSourceLibevent::GetInstance()->RemoveXEventDispatcher(this);

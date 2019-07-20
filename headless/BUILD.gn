@@ -357,8 +357,6 @@ jumbo_component("headless_non_renderer") {
     "lib/browser/headless_quota_permission_context.h",
     "lib/browser/headless_request_context_manager.cc",
     "lib/browser/headless_request_context_manager.h",
-    "lib/browser/headless_resource_dispatcher_host_delegate.cc",
-    "lib/browser/headless_resource_dispatcher_host_delegate.h",
     "lib/browser/headless_shell_application_mac.h",
     "lib/browser/headless_shell_application_mac.mm",
     "lib/browser/headless_window_tree_host.h",

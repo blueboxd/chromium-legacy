@@ -85,6 +85,8 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
 
     if (flags == CHILD_RENDERER) {
       child_base_name += kMacHelperSuffix_renderer;
+    } else if (flags == CHILD_GPU) {
+      child_base_name += kMacHelperSuffix_gpu;
     } else if (flags == CHILD_PLUGIN) {
       child_base_name += kMacHelperSuffix_plugin;
     } else {

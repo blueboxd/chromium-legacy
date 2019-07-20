@@ -21,9 +21,10 @@ enum MediaSessionAction {
   "seekforward",
   "skipad",
   "stop",
+  "seekto"
 };
 
-callback MediaSessionActionHandler = void ();
+callback MediaSessionActionHandler = void ([RuntimeEnabled=MediaSessionSeeking] MediaSessionActionDetails details);
 
 [
     Exposed=Window,

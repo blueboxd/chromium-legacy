@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/mac/io_surface.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 @class AVSampleBufferDisplayLayer;
@@ -107,7 +108,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   struct ClipAndSortingLayer {
     ClipAndSortingLayer(bool is_clipped,
                         gfx::Rect clip_rect,
-                        float clip_rect_corner_radius,
+                        gfx::RRectF rounded_corner_bounds,
                         unsigned sorting_context_id,
                         bool is_singleton_sorting_context);
     ClipAndSortingLayer(ClipAndSortingLayer&& layer);
@@ -124,10 +125,11 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     std::vector<TransformLayer> transform_layers;
     bool is_clipped = false;
     gfx::Rect clip_rect;
-    float clip_rect_corner_radius = 0;
+    gfx::RRectF rounded_corner_bounds;
     unsigned sorting_context_id = 0;
     bool is_singleton_sorting_context = false;
-    base::scoped_nsobject<CALayer> ca_layer;
+    base::scoped_nsobject<CALayer> clipping_ca_layer;
+    base::scoped_nsobject<CALayer> rounded_corner_ca_layer;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ClipAndSortingLayer);

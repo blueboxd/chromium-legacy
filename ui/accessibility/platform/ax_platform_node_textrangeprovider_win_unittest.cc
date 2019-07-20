@@ -396,6 +396,10 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
     return update;
   }
 
+  const base::string16 tree_for_move_full_text =
+      L"First line of text\n\nStandalone line\n"
+      L"bold text\nParagraph 1\nParagraph 2";
+
   ui::AXTreeUpdate BuildAXTreeForMove() {
     ui::AXNodeData group1_data;
     group1_data.id = 2;
@@ -1066,9 +1070,8 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ComPtr<ITextRangeProvider> text_range_provider;
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
-  EXPECT_UIA_TEXTRANGE_EQ(
-      text_range_provider,
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider,
+                          /*expected_text*/ tree_for_move_full_text.data());
 
   // Start endpoint is already on a paragraph's start boundary.
   int count;
@@ -1079,7 +1082,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"First line of text");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"First line of text\n");
 
   // Moving the start by two lines will create a degenerate range positioned
   // at the next paragraph (skipping the newline)
@@ -1105,7 +1108,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_count*/ 1);
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Paragraph));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"bold text\n");
 
   // Create a degenerate range at the end of the document, then expand by
   // paragraph
@@ -1347,12 +1350,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // Moving by 0 should have no effect.
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Character,
-      /*count*/ 0,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character, /*count*/ 0,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
 
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
@@ -1361,11 +1361,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
                   /*expected_count*/ 1);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
                   /*count*/ 18,
-                  /*expected_text*/ L"S",
+                  /*expected_text*/ L"\nS",
                   /*expected_count*/ 18);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
                   /*count*/ 16,
-                  /*expected_text*/ L"b",
+                  /*expected_text*/ L"\nb",
                   /*expected_count*/ 16);
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Character,
                   /*count*/ 60,
@@ -1569,12 +1569,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveWord) {
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // Moving by 0 should have no effect.
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Word,
-      /*count*/ 0,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word, /*count*/ 0,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
 
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Word,
@@ -1666,12 +1663,9 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderMoveLine) {
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // Moving by 0 should have no effect.
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Line,
-      /*count*/ 0,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line, /*count*/ 0,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
 
   // Move forward.
   EXPECT_UIA_MOVE(text_range_provider, TextUnit_Line,
@@ -1748,17 +1742,14 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // Moving by 0 should have no effect.
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Paragraph,
-      /*count*/ 0,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Paragraph, /*count*/ 0,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
 
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
       /*count*/ -4,
-      /*expected_text*/ L"First line of text\n",
+      /*expected_text*/ L"First line of text\n\n",
       /*expected_count*/ -4);
 
   // Move forward.
@@ -1883,37 +1874,22 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   GetTextRangeProviderFromTextNode(text_range_provider, root_node);
 
   // Moving by 0 should have no effect.
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Document,
-      /*count*/ 0,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Document, /*count*/ 0,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
 
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Document,
-      /*count*/ -1,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ -1);
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Document,
-      /*count*/ 2,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Page,
-      /*count*/ 1,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
-  EXPECT_UIA_MOVE(
-      text_range_provider, TextUnit_Page,
-      /*count*/ -1,
-      /*expected_text*/
-      L"First line of text\nStandalone line\nbold textParagraph 1Paragraph 2",
-      /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Document, /*count*/ -1,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ -1);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Document, /*count*/ 2,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page, /*count*/ 1,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
+  EXPECT_UIA_MOVE(text_range_provider, TextUnit_Page, /*count*/ -1,
+                  /*expected_text*/ tree_for_move_full_text.data(),
+                  /*expected_count*/ 0);
 
   // Degenerate range moves.
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(

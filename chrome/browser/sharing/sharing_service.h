@@ -38,6 +38,7 @@ class SharingFCMSender;
 class SharingMessageHandler;
 class SharingSyncPreference;
 class VapidKeyManager;
+enum class SharingDeviceRegistrationResult;
 
 // Class to manage lifecycle of sharing feature, and provide APIs to send
 // sharing messages to other devices.
@@ -102,8 +103,8 @@ class SharingService : public KeyedService,
 
   void RegisterDevice();
   void UnregisterDevice();
-  void OnDeviceRegistered(SharingDeviceRegistration::Result result);
-  void OnDeviceUnregistered(SharingDeviceRegistration::Result result);
+  void OnDeviceRegistered(SharingDeviceRegistrationResult result);
+  void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
   void OnMessageSent(SendMessageCallback callback,
                      base::Optional<std::string> message_id);
   void InvokeSendMessageCallback(const std::string& message_id, bool result);

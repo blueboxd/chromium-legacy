@@ -10,13 +10,11 @@ import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
-import(
-    "//chrome/android/features/autofill_assistant/autofill_assistant_module_tmpl.gni")
 import("//chrome/android/features/tab_ui/buildflags.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
-import("//chrome/android/features/tab_ui/tab_ui_module_tmpl.gni")
 import("//chrome/android/features/vr/public_vr_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
+import("//chrome/android/modules/chrome_feature_module_tmpl.gni")
 import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
@@ -32,16 +30,6 @@ import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
 import("trichrome.gni")
-
-if (enable_arcore) {
-  import("//chrome/android/features/ar/ar_module_tmpl.gni")
-}
-if (enable_vr) {
-  import("//chrome/android/features/vr/vr_module_tmpl.gni")
-}
-if (dfmify_dev_ui) {
-  import("//chrome/android/features/dev_ui/dev_ui_module_tmpl.gni")
-}
 
 chrome_public_manifest_package = "org.chromium.chrome"
 chrome_public_test_manifest_package = "org.chromium.chrome.tests"
@@ -138,6 +126,16 @@ if (enable_vr) {
     deps = [
       ":chrome_app_java_resources",
     ]
+  }
+}
+
+if (enable_feed_in_chrome) {
+  android_resources("chrome_feed_java_resources") {
+    resource_dirs = [ "//chrome/android/feed/core/java/res" ]
+    deps = [
+      ":chrome_app_java_resources",
+    ]
+    custom_package = "org.chromium.chrome.feed"
   }
 }
 
@@ -458,6 +456,9 @@ android_library("chrome_java") {
     deps += [ ":chrome_vr_java_resources" ]
   }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
+  if (enable_feed_in_chrome) {
+    deps += [ ":chrome_feed_java_resources" ]
+  }
   if (notouch_build) {
     deps += [ ":chrome_touchless_java_resources" ]
   }
@@ -1172,6 +1173,7 @@ chrome_common_shared_library("libchrome") {
   }
 
   allow_partitions = true
+  module_descs = chrome_modern_module_descs
 }
 
 chrome_common_shared_library("libchromefortest") {
@@ -1186,6 +1188,7 @@ chrome_common_shared_library("libchromefortest") {
     "//base/test:test_support",
     "//chrome:chrome_android_core",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
+    "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",
@@ -1433,6 +1436,7 @@ template("libmonochrome_apk_or_bundle_tmpl") {
 
     is_monochrome = true
     allow_partitions = true
+    module_descs = monochrome_module_descs
   }
 }
 
@@ -1480,6 +1484,7 @@ java_group("chrome_public_base_module_java_for_test") {
   deps = [
     ":browser_java_test_support",
     ":chrome_public_base_module_java",
+    "//chrome/android/features/autofill_assistant:autofill_assistant_java_test_support",
     "//chrome/browser/android/metrics:ukm_utils_java",
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -2109,22 +2114,28 @@ if (defined(expected_static_initializer_count)) {
   }
 }
 
-# Feature modules that go into Chrome Android application bundles.
-# Note that Monochrome feature modules are instantiated in the Monochrome
-# bundle target template.
-if (enable_vr) {
-  vr_module_tmpl("vr_public_bundle_module") {
+# Feature modules that go into Chrome Modern application bundles.
+# Note that Mono- and Trichrome feature modules are instantiated in the
+# Mono- and Trichrome bundle target template.
+_chrome_modern_extra_modules = []
+foreach(_module_desc, chrome_modern_module_descs) {
+  chrome_feature_module(
+      "chrome_modern_public_bundle_${_module_desc.name}_bundle_module") {
     manifest_package = chrome_public_manifest_package
-    module_name = "VrPublic"
+    module_name_suffix = "ChromeModernPublic"
     base_module_target = ":chrome_modern_public_base_bundle_module"
+    uncompress_shared_libraries = chromium_linker_supported
+    is_monochrome_or_trichrome = false
+    is_64_bit_browser = android_64bit_target_cpu
+    include_32_bit_webview = false
     version_code = chrome_modern_version_code
     version_name = chrome_version_name
-    uncompress_shared_libraries = chromium_linker_supported
-    native_switches = {
-      is_64_bit_browser = android_64bit_target_cpu
-      include_32_bit_webview = false
-    }
+    module_desc = _module_desc
+    min_sdk_version = 21
   }
+  _module_desc.module_target =
+      ":chrome_modern_public_bundle_${_module_desc.name}_bundle_module"
+  _chrome_modern_extra_modules += [ _module_desc ]
 }
 
 android_app_bundle("chrome_modern_public_bundle") {
@@ -2137,14 +2148,7 @@ android_app_bundle("chrome_modern_public_bundle") {
   enable_language_splits = true
   compress_shared_libraries = true
   min_sdk_version = 21
-  if (enable_vr) {
-    extra_modules = [
-      {
-        name = "vr"
-        module_target = ":vr_public_bundle_module"
-      },
-    ]
-  }
+  extra_modules = _chrome_modern_extra_modules
 }
 
 if (is_official_build) {
@@ -2169,15 +2173,11 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   _base_module_target_name = "${invoker.target_name}__base_bundle_module"
   _is_trichrome =
       defined(invoker.use_trichrome_library) && invoker.use_trichrome_library
+
   if (_is_trichrome) {
     _bundle_name = "TrichromeChrome${invoker.bundle_suffix}"
     _min_sdk_version = 28
-  } else {
-    _bundle_name = "MonochromePublic${invoker.bundle_suffix}"
-    _min_sdk_version = 24
-  }
-
-  if (_is_trichrome) {
+    _module_descs = trichrome_module_descs
     if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
       if (build_apk_secondary_abi && invoker.include_32_bit_webview) {
         _version_code = trichrome_64_32_version_code
@@ -2188,6 +2188,9 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       _version_code = trichrome_version_code
     }
   } else {
+    _bundle_name = "MonochromePublic${invoker.bundle_suffix}"
+    _min_sdk_version = 24
+    _module_descs = monochrome_module_descs
     if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
       if (build_apk_secondary_abi && invoker.include_32_bit_webview) {
         _version_code = monochrome_64_32_version_code
@@ -2224,67 +2227,26 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     }
   }
 
-  if (enable_arcore || enable_vr) {
-    _native_switches = {
+  _extra_modules = []
+  foreach(_module_desc, _module_descs) {
+    chrome_feature_module("${target_name}_${_module_desc.name}_bundle_module") {
+      manifest_package = chrome_public_manifest_package
+      module_name_suffix = _bundle_name
+      base_module_target = ":$_base_module_target_name"
+      uncompress_shared_libraries = true
+      is_monochrome_or_trichrome = true
       is_64_bit_browser =
           defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser
       include_32_bit_webview = defined(invoker.include_32_bit_webview) &&
                                invoker.include_32_bit_webview
-    }
-  }
-
-  if (enable_arcore) {
-    ar_module_tmpl("${target_name}__ar_bundle_module") {
-      manifest_package = chrome_public_manifest_package
-      module_name = "Ar" + _bundle_name
-      base_module_target = ":$_base_module_target_name"
-      native_switches = _native_switches
       version_code = _version_code
       version_name = _version_name
+      module_desc = _module_desc
+      min_sdk_version = _min_sdk_version
     }
-  }
-
-  if (enable_vr) {
-    vr_module_tmpl("${target_name}__vr_bundle_module") {
-      manifest_package = chrome_public_manifest_package
-      module_name = "Vr" + _bundle_name
-      base_module_target = ":$_base_module_target_name"
-      native_switches = _native_switches
-      is_monochrome_or_trichrome = true
-      uncompress_shared_libraries = true
-      version_code = _version_code
-      version_name = _version_name
-    }
-  }
-
-  tab_ui_module_tmpl("${target_name}__tab_ui_bundle_module") {
-    manifest_package = chrome_public_manifest_package
-    module_name = "TabUi" + _bundle_name
-    base_module_target = ":$_base_module_target_name"
-    uncompress_shared_libraries = true
-    version_code = _version_code
-    version_name = _version_name
-  }
-
-  autofill_assistant_module_tmpl(
-      "${target_name}__autofill_assistant_bundle_module") {
-    manifest_package = chrome_public_manifest_package
-    module_name = "AutofillAssistant" + _bundle_name
-    base_module_target = ":$_base_module_target_name"
-    uncompress_shared_libraries = true
-    version_code = _version_code
-    version_name = _version_name
-  }
-
-  if (dfmify_dev_ui) {
-    dev_ui_module_tmpl("${target_name}__dev_ui_bundle_module") {
-      manifest_package = chrome_public_manifest_package
-      module_name = "DevUi" + _bundle_name
-      base_module_target = ":$_base_module_target_name"
-      uncompress_shared_libraries = true
-      version_code = _version_code
-      version_name = _version_name
-    }
+    _module_desc.module_target =
+        ":${target_name}_${_module_desc.name}_bundle_module"
+    _extra_modules += [ _module_desc ]
   }
 
   android_app_bundle(target_name) {
@@ -2308,50 +2270,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
       static_library_provider = ":trichrome_library_for_bundle_apk"
     }
 
-    extra_modules = []
-    if (enable_arcore) {
-      extra_modules += [
-        {
-          name = "ar"
-          module_target = ":${target_name}__ar_bundle_module"
-          proguard_async = async_ar
-        },
-      ]
-    }
-    if (enable_vr) {
-      extra_modules += [
-        {
-          name = "vr"
-          module_target = ":${target_name}__vr_bundle_module"
-          proguard_async = async_vr
-        },
-      ]
-    }
-    if (!disable_autofill_assistant_dfm) {
-      extra_modules += [
-        {
-          name = "autofill_assistant"
-          module_target = ":${target_name}__autofill_assistant_bundle_module"
-        },
-      ]
-    }
-    if (!disable_tab_ui_dfm) {
-      extra_modules += [
-        {
-          name = "tab_ui"
-          module_target = ":${target_name}__tab_ui_bundle_module"
-          proguard_async = async_tab_ui
-        },
-      ]
-    }
-    if (dfmify_dev_ui) {
-      extra_modules += [
-        {
-          name = "dev_ui"
-          module_target = ":${target_name}__dev_ui_bundle_module"
-        },
-      ]
-    }
+    extra_modules = _extra_modules
   }
 }
 

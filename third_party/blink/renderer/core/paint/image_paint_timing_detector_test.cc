@@ -45,16 +45,18 @@ class ImagePaintTimingDetectorTest
 
   void SetUp() override {
     web_view_helper_.Initialize();
+
+    // Enable compositing on the page before running the document lifecycle.
+    web_view_helper_.GetWebView()
+        ->GetPage()
+        ->GetSettings()
+        .SetAcceleratedCompositingEnabled(true);
+
     WebLocalFrameImpl& frame_impl = *web_view_helper_.LocalMainFrame();
     frame_impl.ViewImpl()->MainFrameWidget()->Resize(WebSize(640, 480));
 
     frame_test_helpers::LoadFrame(
         web_view_helper_.GetWebView()->MainFrameImpl(), "about:blank");
-    // Enable compositing on the page.
-    web_view_helper_.GetWebView()
-        ->GetPage()
-        ->GetSettings()
-        .SetAcceleratedCompositingEnabled(true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
   }

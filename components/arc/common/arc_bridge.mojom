@@ -24,6 +24,7 @@ import "components/arc/common/file_system.mojom";
 import "components/arc/common/ime.mojom";
 import "components/arc/common/input_method_manager.mojom";
 import "components/arc/common/intent_helper.mojom";
+import "components/arc/common/keymaster.mojom";
 import "components/arc/common/kiosk.mojom";
 import "components/arc/common/lock_screen.mojom";
 import "components/arc/common/media_session.mojom";
@@ -54,9 +55,9 @@ import "components/arc/common/volume_mounter.mojom";
 import "components/arc/common/wake_lock.mojom";
 import "components/arc/common/wallpaper.mojom";
 
-// Next MinVersion: 47
+// Next MinVersion: 48
 // Deprecated method IDs: 101, 105
-// Next method ID: 152
+// Next method ID: 153
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -130,6 +131,9 @@ interface ArcBridgeHost {
   // Notifies Chrome that the IntentHelperInstance interface is ready.
   [MinVersion=4] OnIntentHelperInstanceReady@111(
       IntentHelperInstance instance_ptr);
+
+  // Notifies Chrome that the KeymasterInstance interface is ready.
+  [MinVersion=47] OnKeymasterInstanceReady@152(KeymasterInstance instance_ptr);
 
   // Notifies Chrome that the KioskInstance interface is ready.
   [MinVersion=20] OnKioskInstanceReady@126(KioskInstance instance_ptr);

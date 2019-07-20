@@ -33,11 +33,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) ConnectionGroup
    public:
     Ref();
     Ref(const Ref&);
-    Ref(Ref&&);
+    Ref(Ref&&) noexcept;
     ~Ref();
 
     Ref& operator=(const Ref&);
-    Ref& operator=(Ref&&);
+    Ref& operator=(Ref&&) noexcept;
 
     explicit operator bool() const { return group_ != nullptr; }
     void reset();

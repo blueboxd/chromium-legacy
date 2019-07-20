@@ -73,6 +73,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryImpl.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantServiceInjector.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/BottomSheetUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/EditDistance.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/FeedbackContext.java",
@@ -149,11 +150,35 @@ generate_jni("jni_headers") {
   ]
 }
 
+generate_jni("test_support_jni_headers") {
+  sources = [
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTestService.java",
+  ]
+}
+
+android_library("autofill_assistant_java_test_support") {
+  testonly = true
+
+  java_files = [
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantService.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTestScript.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTestService.java",
+  ]
+
+  deps = [
+    ":java",
+    ":test_support_jni_headers",
+    "//components/autofill_assistant/browser:proto_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
+  ]
+}
+
 android_library("test_java") {
   testonly = true
 
   java_files = [
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionsCarouselUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantAutostartTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDetailsUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantHeaderUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
@@ -167,17 +192,21 @@ android_library("test_java") {
   ]
 
   deps = [
+    ":autofill_assistant_java_test_support",
     ":java",
+    ":test_support_jni_headers",
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
     "//chrome/lib/image_fetcher/public/android:java",
+    "//components/autofill_assistant/browser:proto_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:com_android_support_design_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/espresso:espresso_all_java",
     "//third_party/hamcrest:hamcrest_java",

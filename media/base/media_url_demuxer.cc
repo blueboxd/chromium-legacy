@@ -13,8 +13,9 @@ MediaUrlDemuxer::MediaUrlDemuxer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const GURL& media_url,
     const GURL& site_for_cookies,
-    bool allow_credentials)
-    : params_{media_url, site_for_cookies, allow_credentials},
+    bool allow_credentials,
+    bool is_hls)
+    : params_{media_url, site_for_cookies, allow_credentials, is_hls},
       task_runner_(task_runner) {}
 
 MediaUrlDemuxer::~MediaUrlDemuxer() = default;

@@ -37,7 +37,6 @@
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/browser/cast_memory_pressure_monitor.h"
-#include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
@@ -67,7 +66,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -359,9 +357,6 @@ CastBrowserMainParts::CastBrowserMainParts(
       parameters_(parameters),
       cast_content_browser_client_(cast_content_browser_client),
       url_request_context_factory_(url_request_context_factory),
-      net_log_(!base::FeatureList::IsEnabled(network::features::kNetworkService)
-                   ? new CastNetLog()
-                   : nullptr),
       media_caps_(new media::MediaCapsImpl()) {
   DCHECK(cast_content_browser_client);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -509,8 +504,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
                      base::Unretained(this)));
 #endif  // defined(OS_ANDROID)
 
-  cast_browser_process_->SetNetLog(net_log_.get());
-  url_request_context_factory_->InitializeOnUIThread(net_log_.get());
+  url_request_context_factory_->InitializeOnUIThread(nullptr);
 
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
       base::CreateSingleThreadTaskRunnerWithTraits(
@@ -518,7 +512,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       url_request_context_factory_->GetSystemGetter()));
 
   cast_browser_process_->SetBrowserContext(
-      std::make_unique<CastBrowserContext>(url_request_context_factory_));
+      std::make_unique<CastBrowserContext>());
   cast_browser_process_->SetMetricsServiceClient(
       std::make_unique<metrics::CastMetricsServiceClient>(
           cast_browser_process_->browser_client(),
@@ -564,7 +558,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       cast_browser_process_->browser_client()->CreateCastService(
           cast_browser_process_->browser_context(),
           cast_browser_process_->pref_service(),
-          url_request_context_factory_->GetSystemGetter(),
           video_plane_controller_.get(), window_manager_.get()));
   cast_browser_process_->cast_service()->Initialize();
 

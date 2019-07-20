@@ -110,6 +110,9 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // state.
   virtual bool ClearBreak() = 0;
 
+  // Initiates an asynchronous close of the port.
+  void Close(base::OnceClosure callback);
+
  protected:
   explicit SerialIoHandler(
       const base::FilePath& port,
@@ -212,8 +215,6 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
 
   // Finalizes an Open operation (continued from StartOpen) on the IO thread.
   void FinishOpen(base::File file);
-
-  void Close();
 
   // Continues a Close operation on the FILE thread.
   static void DoClose(base::File port);

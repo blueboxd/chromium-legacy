@@ -66,8 +66,8 @@ class LocalFrameViewTest : public RenderingTest {
   }
 
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
 
   AnimationMockChromeClient& GetAnimationMockChromeClient() const {

@@ -10,7 +10,12 @@
 namespace autofill_assistant {
 
 MockService::MockService()
-    : Service("api_key", GURL("http://fake"), nullptr, nullptr, "en_US", "") {}
+    : ServiceImpl("api_key",
+                  GURL("http://fake"),
+                  nullptr,
+                  nullptr,
+                  "en_US",
+                  "") {}
 MockService::~MockService() {}
 
 }  // namespace autofill_assistant

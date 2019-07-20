@@ -60,6 +60,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   bool IsPersonalizedUrlDataCollectionActive() const override;
   bool IsAuthenticated() const override;
   bool IsSyncActive() const override;
+  std::string ProfileUserName() const override;
   void Classify(
       const base::string16& text,
       bool prefer_keyword,

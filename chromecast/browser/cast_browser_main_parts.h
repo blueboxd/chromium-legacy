@@ -27,10 +27,6 @@ class ExtensionsClient;
 class ExtensionsBrowserClient;
 }  // namespace extensions
 
-namespace net {
-class NetLog;
-}
-
 #if defined(USE_AURA)
 namespace views {
 class ViewsDelegate;
@@ -94,7 +90,6 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   // Caches a pointer of the CastContentBrowserClient.
   CastContentBrowserClient* const cast_content_browser_client_ = nullptr;
   URLRequestContextFactory* const url_request_context_factory_;
-  std::unique_ptr<net::NetLog> net_log_;
   std::unique_ptr<media::VideoPlaneController> video_plane_controller_;
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
 

@@ -35,6 +35,7 @@ bool AuthenticatorRequestClientDelegate::ShouldPermitIndividualAttestation(
 
 void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
+    const device::FidoAuthenticator* authenticator,
     base::OnceCallback<void(bool)> callback) {
   std::move(callback).Run(true);
 }

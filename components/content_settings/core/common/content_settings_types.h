@@ -159,6 +159,14 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_WAKE_LOCK_SCREEN,
   CONTENT_SETTINGS_TYPE_WAKE_LOCK_SYSTEM,
 
+  // Legacy SameSite cookie behavior. This disables SameSiteByDefaultCookies
+  // and CookiesWithoutSameSiteMustBeSecure, and forces the legacy behavior
+  // where cookies that don't specify SameSite are treated as SameSite=None and
+  // SameSite=None cookies are not required to be Secure.
+  // This will also be used to revert to legacy behavior when future changes
+  // in cookie handling are introduced.
+  CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/notifications/scheduler/internal/webui_client.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace notifications {
@@ -24,7 +26,6 @@ void WebUIClient::OnSchedulerInitialized(bool success,
 }
 
 void WebUIClient::OnUserAction(UserActionType action_type,
-                               const std::string& notification_id,
                                base::Optional<ButtonClickInfo> button_info) {
   NOTIMPLEMENTED();
 }

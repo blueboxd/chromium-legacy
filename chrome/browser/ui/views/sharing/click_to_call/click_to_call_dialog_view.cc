@@ -9,19 +9,20 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
-#include "base/logging.h"
-
 namespace {
-// Global instance of the bubble view.
-ClickToCallDialogView* g_bubble_ = nullptr;
 
 // Icon sizes in DIP.
 constexpr int kPrimaryIconSize = 16;
@@ -55,64 +56,88 @@ std::unique_ptr<views::ImageView> CreateDeviceIcon(
 
 }  // namespace
 
-// static
-ClickToCallDialogView* ClickToCallDialogView::GetBubbleView() {
-  return g_bubble_;
-}
-
-// static
-void ClickToCallDialogView::Show(
-    content::WebContents* web_contents,
-    std::unique_ptr<ClickToCallSharingDialogController> controller) {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (g_bubble_ || !browser)
-    return;
-
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  views::View* anchor_view =
-      browser_view->toolbar_button_provider()->GetAnchorView();
-  PageActionIconView* icon =
-      browser_view->toolbar_button_provider()
-          ->GetOmniboxPageActionIconContainerView()
-          ->GetPageActionIconView(PageActionIconType::kClickToCall);
-
-  g_bubble_ = new ClickToCallDialogView(anchor_view, icon, web_contents,
-                                        std::move(controller));
-  views::BubbleDialogDelegateView::CreateBubble(g_bubble_)->Show();
-
-  icon->Update();
-  DCHECK(icon->GetVisible());
-}
-
 ClickToCallDialogView::ClickToCallDialogView(
     views::View* anchor_view,
-    PageActionIconView* icon_view,
     content::WebContents* web_contents,
-    std::unique_ptr<ClickToCallSharingDialogController> controller)
+    ClickToCallSharingDialogController* controller)
     : LocationBarBubbleDelegateView(anchor_view, gfx::Point(), web_contents),
-      icon_view_(icon_view),
-      controller_(std::move(controller)),
+      controller_(controller),
       devices_(controller_->GetSyncedDevices()),
-      apps_(controller_->GetApps()) {}
+      apps_(controller_->GetApps()),
+      send_failed_(controller->send_failed()) {}
 
 ClickToCallDialogView::~ClickToCallDialogView() = default;
+
+void ClickToCallDialogView::Hide() {
+  CloseBubble();
+}
 
 int ClickToCallDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-void ClickToCallDialogView::Init() {
-  auto* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      gfx::Insets(provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
-                  0,
-                  provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                  0));
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+std::unique_ptr<views::View> ClickToCallDialogView::CreateFootnoteView() {
+  if (!devices_.empty() || apps_.empty() || send_failed_)
+    return nullptr;
 
-  PopulateDialogView();
+  auto view = std::make_unique<views::View>();
+  view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES),
+      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  view->AddChildView(std::move(label));
+
+  auto link = std::make_unique<views::Link>(l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SYNC_HELP_TEXT));
+  link->set_listener(this);
+  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  view->AddChildView(std::move(link));
+
+  return view;
+}
+
+void ClickToCallDialogView::LinkClicked(views::Link* source, int event_flags) {
+  controller_->OnHelpTextClicked();
+}
+
+void ClickToCallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                   const gfx::Range& range,
+                                                   int event_flags) {
+  controller_->OnHelpTextClicked();
+}
+
+void ClickToCallDialogView::Init() {
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+  dialog_buttons_.clear();
+
+  auto* provider = ChromeLayoutProvider::Get();
+  if (send_failed_) {
+    set_margins(
+        provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+    InitErrorView();
+  } else if (devices_.empty() && apps_.empty()) {
+    set_margins(
+        provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+    InitEmptyView();
+  } else {
+    set_margins(
+        gfx::Insets(provider->GetDistanceMetric(
+                        views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
+                    0,
+                    provider->GetDistanceMetric(
+                        views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
+                    0));
+    InitListView();
+  }
+
+  // TODO(yasmo): See if GetWidget can be not null:
+  if (GetWidget())
+    SizeToContents();
 }
 
 void ClickToCallDialogView::ButtonPressed(views::Button* sender,
@@ -124,7 +149,7 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
 
   if (index < devices_.size()) {
     LogClickToCallSelectedDeviceIndex(kSharingClickToCallUiDialog, index);
-    controller_->OnDeviceChosen(devices_[index], base::DoNothing());
+    controller_->OnDeviceChosen(devices_[index]);
     CloseBubble();
     return;
   }
@@ -138,24 +163,17 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
   }
 }
 
-void ClickToCallDialogView::PopulateDialogView() {
-  dialog_buttons_.clear();
+void ClickToCallDialogView::InitListView() {
   int tag = 0;
-  views::View* dialog_view = new views::View();
-  dialog_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-  AddChildView(dialog_view);
   // Devices:
   LogClickToCallDevicesToShow(devices_.size());
   for (const auto& device : devices_) {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device.device_type()),
-        base::UTF8ToUTF16(device.human_readable_name()),
-        base::string16() /* Subtitle */);
+        device.human_readable_name(), /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
-    dialog_buttons_.push_back(
-        dialog_view->AddChildView(std::move(dialog_button)));
+    dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
   }
 
   // Apps:
@@ -163,16 +181,41 @@ void ClickToCallDialogView::PopulateDialogView() {
   for (const auto& app : apps_) {
     auto dialog_button =
         std::make_unique<HoverButton>(this, CreateIconView(app.icon), app.name,
-                                      base::string16() /* Subtitle */);
+                                      /* subtitle= */ base::string16());
     dialog_button->SetEnabled(true);
     dialog_button->set_tag(tag++);
-    dialog_buttons_.push_back(
-        dialog_view->AddChildView(std::move(dialog_button)));
+    dialog_buttons_.push_back(AddChildView(std::move(dialog_button)));
   }
+}
 
-  // TODO(yasmo): See if GetWidget can be not null:
-  if (GetWidget())
-    SizeToContents();
+void ClickToCallDialogView::InitEmptyView() {
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES),
+      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(std::move(label));
+
+  auto link = std::make_unique<views::Link>(l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SYNC_HELP_TEXT));
+  link->set_listener(this);
+  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(std::move(link));
+}
+
+void ClickToCallDialogView::InitErrorView() {
+  const base::string16 link = l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
+  size_t offset;
+  const base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE, link, &offset);
+  auto label = std::make_unique<views::StyledLabel>(text, this);
+
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
+
+  AddChildView(std::move(label));
 }
 
 gfx::Size ClickToCallDialogView::CalculatePreferredSize() const {
@@ -186,11 +229,17 @@ bool ClickToCallDialogView::ShouldShowCloseButton() const {
 }
 
 base::string16 ClickToCallDialogView::GetWindowTitle() const {
-  return controller_->GetTitle();
+  if (send_failed_) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND);
+  } else if (apps_.empty() && devices_.empty()) {
+    return l10n_util::GetStringUTF16(
+        IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_NO_DEVICES);
+  } else {
+    return controller_->GetTitle();
+  }
 }
 
 void ClickToCallDialogView::WindowClosing() {
-  DCHECK_EQ(g_bubble_, this);
-  g_bubble_ = nullptr;
-  icon_view_->Update();
+  controller_->OnDialogClosed();
 }

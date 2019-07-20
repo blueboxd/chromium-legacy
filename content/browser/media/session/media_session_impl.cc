@@ -1093,7 +1093,7 @@ void MediaSessionImpl::DidReceiveAction(
   if (!routed_service_)
     return;
 
-  routed_service_->GetClient()->DidReceiveAction(action);
+  routed_service_->GetClient()->DidReceiveAction(action, nullptr /* details */);
 }
 
 bool MediaSessionImpl::IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh) {

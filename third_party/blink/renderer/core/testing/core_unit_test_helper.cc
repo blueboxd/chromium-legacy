@@ -78,6 +78,8 @@ void RenderingTest::SetUp() {
 
   // This ensures that the minimal DOM tree gets attached
   // correctly for tests that don't call setBodyInnerHTML.
+  GetDocument().View()->SetParentVisible(true);
+  GetDocument().View()->SetSelfVisible(true);
   UpdateAllLifecyclePhasesForTest();
 
   // Allow ASSERT_DEATH and EXPECT_DEATH for multiple threads.

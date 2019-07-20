@@ -82,6 +82,10 @@ bool ContentAutofillDriver::IsInMainFrame() const {
   return render_frame_host_->GetParent() == nullptr;
 }
 
+ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
+  return render_frame_host_->GetAXTreeID();
+}
+
 net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
   return content::BrowserContext::GetDefaultStoragePartition(
       render_frame_host_->GetSiteInstance()->GetBrowserContext())->

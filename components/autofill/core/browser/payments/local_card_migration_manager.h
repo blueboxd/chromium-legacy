@@ -86,8 +86,13 @@ class LocalCardMigrationManager {
   virtual ~LocalCardMigrationManager();
 
   // Returns true if all of the conditions for allowing local credit card
-  // migration are satisfied. Initializes the local card list for upload.
-  bool ShouldOfferLocalCardMigration(int imported_credit_card_record_type);
+  // migration are satisfied. Initializes the local card list for upload. Stores
+  // a local copy of |imported_credit_card| and
+  // |imported_credit_card_record_type| locally for later check whether the
+  // imported card is supported. |imported_credit_card| might be null if a user
+  // used server card.
+  bool ShouldOfferLocalCardMigration(const CreditCard* imported_credit_card,
+                                     int imported_credit_card_record_type);
 
   // Called from FormDataImporter or settings page when all migration
   // requirements are met. Fetches legal documents and triggers the
@@ -169,9 +174,6 @@ class LocalCardMigrationManager {
   friend class LocalCardMigrationBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrateWhenHasSupportedLocalCard);
-  FRIEND_TEST_ALL_PREFIXES(
-      LocalCardMigrationManagerTest,
-      MigrateCreditCard_MigrationAbortWhenNoSupportedCards);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
                            MigrateCreditCard_MigrationPermanentFailure);
   FRIEND_TEST_ALL_PREFIXES(LocalCardMigrationManagerTest,
@@ -216,6 +218,12 @@ class LocalCardMigrationManager {
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;
+
+  // The imported credit card number from the form submission.
+  base::Optional<base::string16> imported_credit_card_number_;
+
+  // The imported credit card record type from the form submission.
+  int imported_credit_card_record_type_;
 
   // Collected information about a pending migration request.
   payments::PaymentsClient::MigrationRequestDetails migration_request_;

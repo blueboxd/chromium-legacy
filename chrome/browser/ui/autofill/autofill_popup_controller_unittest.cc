@@ -85,6 +85,7 @@ class MockAutofillPopupView : public AutofillPopupView {
                void(base::Optional<int> previous_row_selection,
                     base::Optional<int> current_row_selection));
   MOCK_METHOD0(OnSuggestionsChanged, void());
+  MOCK_METHOD0(GetAxUniqueId, base::Optional<int32_t>());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillPopupView);

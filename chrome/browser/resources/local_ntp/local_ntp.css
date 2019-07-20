@@ -735,26 +735,32 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   width: 192px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .menu-option {
+    color: rgb(var(--GG200-rgb));
+  }
+}
+
 html[dir=rtl] .menu-option {
   border-radius: 16px 0 0 16px;
 }
 
 .menu-option:hover,
 .menu-option:focus {
-  background-color: rgba(var(--GB900-rgb), .1);
+  background-color: rgba(var(--GG900-rgb), .1);
 }
 
 @media (prefers-color-scheme: dark) {
   .menu-option:hover,
   .menu-option:focus {
-    background-color: rgba(var(--GB200-rgb), .03);
+    background-color: rgba(var(--GG500-rgb), .12);
   }
 }
 
 .menu-option:active,
 .menu-option.selected {
   background-color: rgb(232, 240, 254);
-  color: rgb(var(--GB600-rgb));
+  color: rgb(var(--GB700-rgb));
 }
 
 @media (prefers-color-scheme: dark) {

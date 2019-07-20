@@ -79,6 +79,10 @@ public final class FeedConfiguration {
     /** Default value for how long spinners must be shown for. */
     public static final long SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT = 500;
 
+    private static final String STORAGE_MISS_THRESHOLD = "storage_miss_threshold";
+    /** Default number of items that can be missing from a call to FeedStore before failing. */
+    public static final long STORAGE_MISS_THRESHOLD_DEFAULT = 4;
+
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */
     public static final boolean TRIGGER_IMMEDIATE_PAGINATION_DEFAULT = false;
@@ -215,6 +219,14 @@ public final class FeedConfiguration {
                 (int) SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT);
     }
 
+    /** @return The number of items that can be missing from a call to FeedStore before failing. */
+    @VisibleForTesting
+    static long getStorageMissThreshold() {
+        return (long) ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, STORAGE_MISS_THRESHOLD,
+                (int) STORAGE_MISS_THRESHOLD_DEFAULT);
+    }
+
     /**
      * @return Whether UI initially shows "More" button upon reaching the end of known content,
      *         when server could potentially have more content.
@@ -290,6 +302,7 @@ public final class FeedConfiguration {
                 .put(ConfigKey.SPINNER_DELAY_MS, FeedConfiguration.getSpinnerDelayMs())
                 .put(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS,
                         FeedConfiguration.getSpinnerMinimumShowTimeMs())
+                .put(ConfigKey.STORAGE_MISS_THRESHOLD, FeedConfiguration.getStorageMissThreshold())
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
                 .put(ConfigKey.UNDOABLE_ACTIONS_ENABLED,

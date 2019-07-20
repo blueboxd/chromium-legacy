@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/public_session_permission_helper.h"

@@ -19,6 +19,7 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
@@ -36,11 +37,8 @@
 
 <dom-module id="internet-detail-dialog">
   <template>
-    <style include="cr-shared-style network-shared iron-flex">
-      :host {
-        @apply --cr-page-host;
-      }
-
+    <style include="cr-page-host-style cr-shared-style network-shared
+        iron-flex">
       cr-policy-network-indicator {
         margin-inline-end: 10px;
       }

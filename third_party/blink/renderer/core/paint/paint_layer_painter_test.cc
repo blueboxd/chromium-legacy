@@ -44,12 +44,6 @@ class PaintLayerPainterTest : public PaintControllerPaintTest {
         ->GraphicsLayerBacking(&GetLayoutView())
         ->GetPaintController();
   }
-
- private:
-  void SetUp() override {
-    PaintControllerPaintTest::SetUp();
-    EnableCompositing();
-  }
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(PaintLayerPainterTest);

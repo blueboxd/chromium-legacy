@@ -96,6 +96,10 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // values or settings.
   void Reset();
 
+  // Returns the ax node id associated with the current web contents' element
+  // who has a controller relation to the current autofill popup.
+  int32_t GetWebContentsPopupControllerAxId() const;
+
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
 

@@ -102,6 +102,10 @@ class HTMLParserScriptRunner final
     return !!reentry_permit_->ScriptNestingLevel();
   }
 
+  // Records metrics related to the parsing phase. To be called when parsing
+  // is preparing to stop but before |ExecuteScriptsWaitingForParsing|.
+  void RecordMetricsAtParseEnd() const;
+
   void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "HTMLParserScriptRunner";

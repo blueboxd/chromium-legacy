@@ -3388,6 +3388,8 @@ test("unit_tests") {
     "//crypto:platform",
     "//crypto:test_support",
     "//device/bluetooth:mocks",
+    "//device/fido",
+    "//device/fido:test_support",
     "//extensions/buildflags",
     "//google_apis",
     "//gpu:test_support",
@@ -3641,6 +3643,7 @@ test("unit_tests") {
       "../browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_impl_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win_unittest.cc",
+      "../browser/safe_browsing/chrome_cleaner/chrome_prompt_channel_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.cc",
       "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h",
       "../browser/safe_browsing/chrome_cleaner/srt_delete_extension_win_unittest.cc",
@@ -5027,6 +5030,11 @@ test("unit_tests") {
   if (enable_openscreen) {
     include_dirs = [ "//third_party/openscreen/src" ]
 
+    deps += [
+      "//third_party/openscreen/src/platform:platform_unittests",
+      "//third_party/openscreen/src/platform:test",
+    ]
+
     sources += [
       "../browser/media/router/providers/openscreen/discovery/open_screen_listener_unittest.cc",
       "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc",
@@ -5298,6 +5306,10 @@ if (!is_android) {
       "base/window_contents_as_string_win.h",
       "ppapi/ppapi_interactive_browsertest.cc",
     ]
+
+    if (is_win && use_aura) {
+      sources += [ "../browser/ui/views/autofill/autofill_accessibility_win_browsertest.cc" ]
+    }
 
     configs += [ "//build/config:precompiled_headers" ]
     if (is_linux && !is_component_build) {
@@ -6332,7 +6344,7 @@ if (is_chromeos) {
   }
 }
 
-if (is_mac || is_win) {
+if (is_mac || is_win || is_android) {
   group("rendering_representative_perf_tests") {
     testonly = true
     deps = [

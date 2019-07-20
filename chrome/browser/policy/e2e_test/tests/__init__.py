@@ -10,6 +10,7 @@ from popups_allowed.popups_allowed import *
 from url_blacklist.url_blacklist import *
 from url_whitelist.url_whitelist import *
 from extension_blacklist.extension_blacklist import *
+from extension_forcelist.extension_forcelist import *
 from extension_whitelist.extension_whitelist import *
 from bookmarkbar_enabled.bookmarkbar_enabled import *
 # TODO(mbinette): Fix TranslateEnabledTest on LUCI bots.

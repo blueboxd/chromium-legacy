@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
+#include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -585,6 +586,9 @@ class CC_EXPORT GpuImageDecodeCache
   bool CanFitInWorkingSet(size_t size) const;
   bool ExceedsPreferredCount() const;
 
+  void InsertTransferCacheEntry(
+      const ClientImageTransferCacheEntry& image_entry,
+      ImageData* image_data);
   void DecodeImageIfNecessary(const DrawImage& draw_image,
                               ImageData* image_data,
                               TaskType task_type);

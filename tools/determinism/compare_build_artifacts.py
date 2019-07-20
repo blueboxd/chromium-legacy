@@ -24,9 +24,8 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_files_to_compare(build_dir, recursive=False):
   """Get the list of files to compare."""
-  # TODO(maruel): Add '.pdb'.
   allowed = frozenset(
-      ('', '.apk', '.app', '.dll', '.dylib', '.exe', '.nexe', '.so'))
+      ('', '.apk', '.app', '.dll', '.dylib', '.exe', '.nexe', '.pdb', '.so'))
 
   # .bin is for the V8 snapshot files natives_blob.bin, snapshot_blob.bin
   non_x_ok_exts = frozenset(('.apk', '.bin', '.isolated', '.zip'))
@@ -38,7 +37,7 @@ def get_files_to_compare(build_dir, recursive=False):
     ext = os.path.splitext(f)[1]
     if ext in non_x_ok_exts:
       return True
-    return ext in allowed and os.access(f, os.X_OK)
+    return ext in allowed and (ext != '' or os.access(f, os.X_OK))
 
   ret_files = set()
   for root, dirs, files in os.walk(build_dir):

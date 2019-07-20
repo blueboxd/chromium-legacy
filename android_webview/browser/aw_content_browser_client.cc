@@ -28,6 +28,7 @@
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
+#include "android_webview/browser/js_java_interaction/js_api_handler_factory.h"
 #include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
@@ -39,6 +40,7 @@
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
+#include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
@@ -103,6 +105,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -769,6 +772,13 @@ bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
     content_capture::ContentCaptureReceiverManager::BindContentCaptureReceiver(
         mojo::PendingAssociatedReceiver<
             content_capture::mojom::ContentCaptureReceiver>(std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == mojom::JsApiHandler::Name_) {
+    JsApiHandlerFactory::BindJsApiHandler(
+        mojo::PendingAssociatedReceiver<mojom::JsApiHandler>(
+            std::move(*handle)),
         render_frame_host);
     return true;
   }

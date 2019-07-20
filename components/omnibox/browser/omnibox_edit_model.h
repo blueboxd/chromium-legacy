@@ -189,8 +189,11 @@ class OmniboxEditModel {
       const base::string16& text,
       base::TimeTicks match_selection_timestamp = base::TimeTicks());
 
-  // Returns true if |text| classifies as a Search rather than a URL.
-  bool ClassifiesAsSearch(const base::string16& text) const;
+  // Sets |match| and |alternate_nav_url| based on classifying |text|.
+  // |alternate_nav_url| may be nullptr.
+  void ClassifyString(const base::string16& text,
+                      AutocompleteMatch* match,
+                      GURL* alternate_nav_url) const;
 
   // Asks the browser to load the popup's currently selected item, using the
   // supplied disposition.  This may close the popup.
@@ -439,12 +442,6 @@ class OmniboxEditModel {
   // Checks if a given character is a valid space character for accepting
   // keyword.
   static bool IsSpaceCharForAcceptingKeyword(wchar_t c);
-
-  // Sets |match| and |alternate_nav_url| based on classifying |text|.
-  // |alternate_nav_url| may be NULL.
-  void ClassifyString(const base::string16& text,
-                      AutocompleteMatch* match,
-                      GURL* alternate_nav_url) const;
 
   // Sets the state of user_input_in_progress_. Returns whether said state
   // changed, so that the caller can evoke NotifyObserversInputInProgress().

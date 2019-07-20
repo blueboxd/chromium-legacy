@@ -106,6 +106,10 @@ const base::Feature kFsNosymfollow{"FsNosymfollow",
 const base::Feature kGesturePropertiesDBusService{
     "GesturePropertiesDBusService", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable primary/secondary action buttons on Gaia login screen.
+const base::Feature kGaiaActionButtons{"GaiaActionButtons",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable or disable Unified Input Logic for FST decocder in the IME extension
 // on Chrome OS.
 const base::Feature kImeInputLogicFst{"ImeInputLogicFst",

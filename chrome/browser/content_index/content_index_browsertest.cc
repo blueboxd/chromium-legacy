@@ -31,7 +31,8 @@ namespace {
 
 std::string GetDescriptionIdFromOfflineItemKey(const std::string& id) {
   std::string description_id;
-  bool result = re2::RE2::FullMatch(id, re2::RE2("\\d+-(.*)"), &description_id);
+  bool result =
+      re2::RE2::FullMatch(id, re2::RE2("\\d+#[^#]+#(.*)"), &description_id);
   EXPECT_TRUE(result);
   return description_id;
 }

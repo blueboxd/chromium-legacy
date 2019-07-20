@@ -51,10 +51,12 @@ TEST_F(ChromeExtensionsAPIClientTest, ShouldHideBrowserNetworkRequest) {
   // Requests made by the browser with chrome://newtab as its initiator should
   // not be visible to extensions.
   EXPECT_TRUE(client.ShouldHideBrowserNetworkRequest(
+      nullptr /* context */,
       WebRequestInfo(create_params(content::ResourceType::kScript))));
 
   // Main frame requests should always be visible to extensions.
   EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(
+      nullptr /* context */,
       WebRequestInfo(create_params(content::ResourceType::kMainFrame))));
 
   // Similar requests made by the renderer should be visible to extensions.
@@ -62,7 +64,7 @@ TEST_F(ChromeExtensionsAPIClientTest, ShouldHideBrowserNetworkRequest) {
       create_params(content::ResourceType::kScript);
   params.render_process_id = 2;
   EXPECT_FALSE(client.ShouldHideBrowserNetworkRequest(
-      WebRequestInfo(std::move(params))));
+      nullptr /* context */, WebRequestInfo(std::move(params))));
 }
 
 }  // namespace extensions

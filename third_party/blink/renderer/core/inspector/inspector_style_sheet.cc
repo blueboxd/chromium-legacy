@@ -670,7 +670,7 @@ String CanonicalCSSText(CSSRule* rule) {
     property_names.push_back(style->item(i));
 
   std::sort(property_names.begin(), property_names.end(),
-            WTF::CodePointCompareLessThan);
+            WTF::CodeUnitCompareLessThan);
 
   StringBuilder builder;
   builder.Append(style_rule->selectorText());

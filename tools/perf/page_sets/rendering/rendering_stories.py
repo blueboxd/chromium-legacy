@@ -63,8 +63,7 @@ class RenderingStorySet(story.StorySet):
           story_tags.IMAGE_DECODING in story_class.TAGS and
           story_tags.GPU_RASTERIZATION in story_class.TAGS):
         required_args += ['--force-gpu-rasterization',
-                          '--enable-gpu-rasterization',
-                          '--disable-oop-rasterization']
+                          '--enable-gpu-rasterization']
         # Run RGB decoding with GPU rasterization (to be most comparable to YUV)
         self.AddStory(story_class(
             page_set=self,

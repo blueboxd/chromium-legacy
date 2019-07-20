@@ -331,8 +331,10 @@ void ThemePainterDefault::SetupMenuListArrow(
     extra_params.menu_list.arrow_size = arrow_size;
   } else {
     // TODO(tkent): This should be 7.0 to match scroll bar buttons.
-    float arrow_size = 6.0 * arrow_scale_factor;
-    // Put the 6px arrow at the center of paddingForArrow area.
+    float arrow_size =
+        (RuntimeEnabledFeatures::FormControlsRefreshEnabled() ? 12.0 : 6.0) *
+        arrow_scale_factor;
+    // Put the arrow at the center of paddingForArrow area.
     // |arrowX| is the left position for Aura theme engine.
     extra_params.menu_list.arrow_x =
         (style.Direction() == TextDirection::kRtl)

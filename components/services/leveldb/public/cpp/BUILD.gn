@@ -12,7 +12,7 @@ static_library("cpp") {
 
   deps = [
     "//base",
-    "//components/services/leveldb/public/interfaces",
+    "//components/services/leveldb/public/mojom",
     "//services/service_manager/public/cpp",
     "//third_party/leveldatabase",
   ]
@@ -26,7 +26,7 @@ source_set("manifest") {
 
   deps = [
     "//base",
-    "//components/services/leveldb/public/interfaces",
+    "//components/services/leveldb/public/mojom",
     "//services/service_manager/public/cpp",
   ]
 }

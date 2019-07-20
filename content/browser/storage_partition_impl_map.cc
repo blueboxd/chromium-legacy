@@ -584,7 +584,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ContentIndexContext::InitializeOnIOThread,
+        base::BindOnce(&ContentIndexContextImpl::InitializeOnIOThread,
                        partition->GetContentIndexContext()));
 
     // We do not call InitializeURLRequestContext() for media contexts because,

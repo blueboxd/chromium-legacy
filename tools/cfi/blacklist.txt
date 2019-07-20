@@ -185,6 +185,9 @@ fun:*GrGLFunction*
 # Call to libcurl.so from the symupload utility
 src:*third_party/breakpad/breakpad/src/common/linux/http_upload.cc
 
+# Indirect call to Xlib.
+fun:*XImageDeleter*
+
 # The follow entries are speculatively disabled. They're included in the
 # chromium build and include calls to dynamically resolved symbols; however,
 # they do not trigger cfi-icall failures in unit tests or normal chrome usage.

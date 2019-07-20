@@ -202,10 +202,6 @@ class CALayerOverlayProcessor {
     // but requires APIs not supported on all macOS versions.
     if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty()) {
       DCHECK(quad->shared_quad_state->is_clipped);
-      if (quad->shared_quad_state->rounded_corner_bounds.rect() !=
-          gfx::RectF(quad->shared_quad_state->clip_rect)) {
-        return CA_LAYER_FAILED_QUAD_ROUNDED_CORNER_CLIP_MISMATCH;
-      }
       if (quad->shared_quad_state->rounded_corner_bounds.GetType() >
           gfx::RRectF::Type::kSingle) {
         return CA_LAYER_FAILED_QUAD_ROUNDED_CORNER_NOT_UNIFORM;
@@ -233,8 +229,8 @@ class CALayerOverlayProcessor {
           quad->shared_quad_state->is_clipped;
       most_recent_overlay_shared_state_->clip_rect =
           gfx::RectF(quad->shared_quad_state->clip_rect);
-      most_recent_overlay_shared_state_->clip_rect_corner_radius =
-          quad->shared_quad_state->rounded_corner_bounds.GetSimpleRadius();
+      most_recent_overlay_shared_state_->rounded_corner_bounds =
+          quad->shared_quad_state->rounded_corner_bounds;
 
       most_recent_overlay_shared_state_->opacity =
           quad->shared_quad_state->opacity;

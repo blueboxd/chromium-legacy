@@ -104,6 +104,11 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
                                 controller_->IsRTL());
 }
 
+base::Optional<int32_t> AutofillPopupViewAndroid::GetAxUniqueId() {
+  NOTIMPLEMENTED() << "See https://crbug.com/985927";
+  return base::nullopt;
+}
+
 void AutofillPopupViewAndroid::SuggestionSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

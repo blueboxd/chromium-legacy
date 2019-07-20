@@ -672,14 +672,6 @@ void AccessibilityManager::OnAutoclickChanged() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilityAutoclickEnabled);
 
-  // The Autoclick extension work is behind a flag. Don't load the extension
-  // if the flag is not set.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityAutoclick)) {
-    return;
-  }
-
   if (enabled)
     autoclick_extension_loader_->SetProfile(
         profile_, base::Closure() /* done_callback */);

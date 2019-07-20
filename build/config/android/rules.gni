@@ -2130,6 +2130,7 @@ if (enable_java_templates) {
   #   locale_config_java_packages: Optional list of java packages. If given, a
   #     LocaleConfig.java file will be generated for each package, and will
   #     contain the list of compressed and uncompressed locale pak files.
+  #   disable_r8_outlining: Turn off outlining during the proguard step.
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.final_apk_path) || defined(invoker.name))
@@ -2883,6 +2884,7 @@ if (enable_java_templates) {
       dex(_final_dex_target_name) {
         forward_variables_from(invoker,
                                [
+                                 "disable_r8_outlining",
                                  "min_sdk_version",
                                  "dexlayout_profile",
                                ])
@@ -3322,6 +3324,7 @@ if (enable_java_templates) {
                                "data_deps",
                                "deps",
                                "dexlayout_profile",
+                               "disable_r8_outlining",
                                "dist_ijar_path",
                                "dont_load_shared_libraries",
                                "enable_chromium_linker_tests",

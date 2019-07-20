@@ -18,6 +18,8 @@ include_rules = [
   "+content/public/common",
   "+content/public/renderer",
 
+  "+gin",
+
   "+media/base",
 
   "+printing",

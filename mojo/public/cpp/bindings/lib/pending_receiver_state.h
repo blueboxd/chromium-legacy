@@ -19,11 +19,11 @@ struct COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) PendingReceiverState {
   PendingReceiverState();
   explicit PendingReceiverState(ScopedMessagePipeHandle pipe);
   PendingReceiverState(const PendingReceiverState&) = delete;
-  PendingReceiverState(PendingReceiverState&&);
+  PendingReceiverState(PendingReceiverState&&) noexcept;
   ~PendingReceiverState();
 
   PendingReceiverState& operator=(const PendingReceiverState&) = delete;
-  PendingReceiverState& operator=(PendingReceiverState&&);
+  PendingReceiverState& operator=(PendingReceiverState&&) noexcept;
 
   void reset();
 

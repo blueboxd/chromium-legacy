@@ -197,7 +197,6 @@ ActionButtonType FromActionButtonType(proto::ActionButtonType proto_type) {
 // Converts NotificationData to proto buffer type.
 void NotificationDataToProto(NotificationData* notification_data,
                              proto::NotificationData* proto) {
-  proto->set_id(notification_data->id);
   proto->set_title(base::UTF16ToUTF8(notification_data->title));
   proto->set_message(base::UTF16ToUTF8(notification_data->message));
   for (const auto& pair : notification_data->custom_data) {
@@ -217,7 +216,6 @@ void NotificationDataToProto(NotificationData* notification_data,
 // Converts NotificationData from proto buffer type.
 void NotificationDataFromProto(proto::NotificationData* proto,
                                NotificationData* notification_data) {
-  notification_data->id = proto->id();
   notification_data->title = base::UTF8ToUTF16(proto->title());
   notification_data->message = base::UTF8ToUTF16(proto->message());
   for (int i = 0; i < proto->custom_data_size(); ++i) {

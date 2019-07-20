@@ -2384,7 +2384,6 @@ crbug.com/108417 external/wpt/html/rendering/non-replaced-elements/tables/table-
 crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure ]
 crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure ]
 crbug.com/692560 external/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
-crbug.com/627706 external/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
 
 crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
 
@@ -3234,6 +3233,7 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-fraktur-001.tentative.html [ Failure ]
@@ -4656,8 +4656,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-00
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Skip ]
 
-crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
-
 crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
 
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
@@ -4893,7 +4891,6 @@ crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeou
 crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
-crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
 crbug.com/798572 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-iframe-messagechannel-success.html [ Failure Timeout ]
 
 crbug.com/874302 external/wpt/wasm/serialization/module/broadcastchannel-success-and-failure.html [ Timeout ]
@@ -5886,6 +5883,11 @@ crbug.com/924954 http/tests/images/feature-policy-image-policies-with-border-rad
 # which is still in flux.
 crbug.com/924670 external/wpt/webxr/webxr-supported-by-feature-policy.html [ Failure ]
 
+# Chrome does not check for unknown required features and doesn't enforce
+# that apps need to ask for non-default reference spaces before using them.
+crbug.com/985095 external/wpt/webxr/xrDevice_requestSession_requiredFeatures_unknown.https.html [ Failure ]
+crbug.com/985095 external/wpt/webxr/xrSession_requestReferenceSpace_features.https.html [ Failure ]
+
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_callback_calls.https.html [ Timeout ]
 crbug.com/961015 [ Mac ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Timeout ]
 
@@ -6297,3 +6299,8 @@ crbug.com/982149 [ Win7 ] virtual/omt-worker-fetch/external/wpt/referrer-policy/
 # Sheriff 2019-07-18
 crbug.com/985232 [ Win7 ] external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
 crbug.com/985232 [ Win7 ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
+
+# Sheriff 2019-07-19
+crbug.com/985811 [ Win7 ] http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Pass Timeout ]
+crbug.com/985869 [ Linux Win7 ] http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
+crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]

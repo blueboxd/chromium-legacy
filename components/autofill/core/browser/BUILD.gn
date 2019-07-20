@@ -484,6 +484,7 @@ jumbo_static_library("test_support") {
     "//testing/gtest",
     "//third_party/libaddressinput:test_support",
     "//third_party/libaddressinput:util",
+    "//ui/accessibility",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]

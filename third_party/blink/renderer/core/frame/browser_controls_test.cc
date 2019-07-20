@@ -147,9 +147,9 @@ class BrowserControlsTest : public testing::Test {
   }
 
  private:
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   std::string base_url_;
   frame_test_helpers::WebViewHelper helper_;
-  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
 };
 
 class BrowserControlsSimTest : public SimTest {

@@ -10,8 +10,11 @@
  * handled by a C++ templatizer.
  */
 
+// #import {parseHtmlSubset} from './parse_html_subset.m.js';
+// #import {loadTimeData} from './load_time_data.m.js';
+
 /** @polymerBehavior */
-const I18nBehavior = {
+/* #export */ const I18nBehavior = {
   properties: {
     /**
      * The language the UI is presented in. Used to signal dynamic language

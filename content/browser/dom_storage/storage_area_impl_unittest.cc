@@ -15,7 +15,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/barrier_builder.h"

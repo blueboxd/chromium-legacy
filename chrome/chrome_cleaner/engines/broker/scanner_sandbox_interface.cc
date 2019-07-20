@@ -30,44 +30,12 @@
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/win_utils.h"
 
-// Redefine NT_ERROR and STATUS_INVALID_INFO_CLASS here. Can't use the system
-// header <ntdef.h> as it conflicts with sandbox/win/src/nt_internals.h.
-#define NT_ERROR(Status) ((((ULONG)(Status)) >> 30) == 3)
-
-#define STATUS_INVALID_INFO_CLASS ((NTSTATUS)0xC0000003L)
-
 namespace chrome_cleaner_sandbox {
 
 namespace {
 
 using chrome_cleaner::SandboxErrorCode;
 using KnownFolder = chrome_cleaner::mojom::KnownFolder;
-
-// For the structure documentation, see
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa813741(v=vs.85).aspx
-// Can't use the system header <Winternl.h> as it conflicts with
-// sandbox/win/src/nt_internals.h.
-typedef struct _RTL_USER_PROCESS_PARAMETERS {
-  BYTE Reserved1[16];
-  PVOID Reserved2[10];
-  UNICODE_STRING ImagePathName;
-  UNICODE_STRING CommandLine;
-} RTL_USER_PROCESS_PARAMETERS, *PRTL_USER_PROCESS_PARAMETERS;
-
-// Partial definition from
-// https://msdn.microsoft.com/en-us/library/windows/desktop/aa813706(v=vs.85).aspx
-// Cannot use the definition from sandbox/win/src/nt_internals.h as it doesn't
-// contain ProcessParameters field.
-// TODO(veranika): Fix the definition from nt_internals.h and use it instead of
-// this custom one.
-typedef struct _PEB {
-  BYTE Reserved1[2];
-  BYTE BeingDebugged;
-  BYTE Reserved2[1];
-  PVOID Reserved3[2];
-  PVOID Ldr;
-  PRTL_USER_PROCESS_PARAMETERS ProcessParameters;
-} PEB, *PPEB;
 
 bool SandboxKnownFolderIdToPathServiceKey(KnownFolder folder_id,
                                           int* path_service_key) {

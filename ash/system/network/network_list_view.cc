@@ -503,10 +503,9 @@ int NetworkListView::UpdateNetworkSectionHeader(
     *separator_view = nullptr;
   }
 
-  bool default_toggle_enabled = !IsSecondaryUser();
   // Mobile updates its toggle state independently.
   if (!NetworkTypeMatchesType(type, NetworkType::kMobile))
-    view->SetToggleState(default_toggle_enabled, enabled /* is_on */);
+    view->SetToggleState(true /* toggle_enabled */, enabled /* is_on */);
   PlaceViewAtIndex(view, child_index++);
   return child_index;
 }

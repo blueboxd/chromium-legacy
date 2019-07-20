@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/service_worker_database.h"
-#include "content/browser/service_worker/service_worker_installed_script_reader.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -210,10 +209,6 @@ class ServiceWorkerMetrics {
   static void RecordStartInstalledWorkerStatus(
       blink::ServiceWorkerStatusCode status,
       EventType purpose);
-
-  // Records the result of sending installed scripts to the renderer.
-  static void RecordInstalledScriptsSenderStatus(
-      ServiceWorkerInstalledScriptReader::FinishedReason reason);
 
   // Records the time taken to successfully start a worker. |is_installed|
   // indicates whether the version has been installed.

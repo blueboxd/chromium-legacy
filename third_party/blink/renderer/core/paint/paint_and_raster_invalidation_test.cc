@@ -795,7 +795,6 @@ TEST_P(PaintAndRasterInvalidationTest,
 }
 
 TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0 }</style>
     <div style='height: 4000px'></div>
@@ -845,7 +844,6 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
 }
 
 TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <svg style='position: absolute; top: 100px; left: 100px'>
       <mask id='mask'>

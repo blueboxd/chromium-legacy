@@ -14,9 +14,6 @@ cr.define('omnibox_output', function() {
    */
   let ResultsDetails;
 
-  /** @typedef {Array<{key: string, value: string}>} */
-  let KeyValuePair;
-
   /** @param {!Element} element*/
   function clearChildren(element) {
     while (element.firstChild) {
@@ -868,7 +865,7 @@ cr.define('omnibox_output', function() {
     /** @private @override */
     render_() {
       clearChildren(this.pre_);
-      this.tuples_.forEach(({key, value}) => {
+      this.value.forEach(({key, value}) => {
         this.pre_.appendChild(
             OutputJsonProperty.renderJsonWord(key + ': ', ['key']));
         this.pre_.appendChild(
@@ -879,21 +876,13 @@ cr.define('omnibox_output', function() {
 
     /** @override @return {string} */
     get text() {
-      return this.tuples_.reduce(
+      return this.value.reduce(
           (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
-    }
-
-    /** @private @return {!KeyValuePair} */
-    get tuples_() {
-      return [
-        .../** @type {!KeyValuePair} */ (this.value),
-        {key: 'document_type', value: this.values_[1]}
-      ];
     }
 
     /** @private @return {string} */
     createDownloadLink_() {
-      const obj = this.tuples_.reduce((obj, {key, value}) => {
+      const obj = this.value.reduce((obj, {key, value}) => {
         obj[key] = value;
         return obj;
       }, {});
@@ -1130,7 +1119,7 @@ cr.define('omnibox_output', function() {
     new Column(
         ['Additional Info'], '', 'additionalInfo', false,
         'Additional Info\nProvider-specific information about the result.',
-        ['additionalInfo', 'documentType'], OutputAdditionalInfoProperty)
+        ['additionalInfo'], OutputAdditionalInfoProperty)
   ];
 
   /** @type {!Column} */

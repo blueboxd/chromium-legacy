@@ -139,8 +139,11 @@ class ReportingHeaderParserTest : public ReportingTestBase,
   const GURL kUrl2_ = GURL("https://origin2.test/path");
   const url::Origin kOrigin2_ =
       url::Origin::Create(GURL("https://origin2.test/"));
+  const GURL kUrlEtld_ = GURL("https://co.uk/foo.html/");
+  const url::Origin kOriginEtld_ = url::Origin::Create(kUrlEtld_);
   const GURL kEndpoint_ = GURL("https://endpoint.test/");
   const GURL kEndpoint2_ = GURL("https://endpoint2.test/");
+  const GURL kEndpoint3_ = GURL("https://endpoint3.test/");
   const std::string kGroup_ = "group";
   const std::string kGroup2_ = "group2";
   const std::string kType_ = "type";
@@ -357,6 +360,34 @@ TEST_P(ReportingHeaderParserTest, IncludeSubdomainsFalse) {
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
+}
+
+TEST_P(ReportingHeaderParserTest, IncludeSubdomainsEtldRejected) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
+
+  std::string header = ConstructHeaderGroupString(
+      MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::INCLUDE));
+  ParseHeader(kUrlEtld_, header);
+
+  EXPECT_EQ(0u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_FALSE(EndpointGroupExistsInCache(kOriginEtld_, kGroup_,
+                                          OriginSubdomains::INCLUDE));
+  EXPECT_EQ(0u, cache()->GetEndpointCount());
+  EXPECT_FALSE(EndpointExistsInCache(kOriginEtld_, kGroup_, kEndpoint_));
+}
+
+TEST_P(ReportingHeaderParserTest, NonIncludeSubdomainsEtldAccepted) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
+
+  std::string header = ConstructHeaderGroupString(
+      MakeEndpointGroup(kGroup_, endpoints, OriginSubdomains::EXCLUDE));
+  ParseHeader(kUrlEtld_, header);
+
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_TRUE(EndpointGroupExistsInCache(kOriginEtld_, kGroup_,
+                                         OriginSubdomains::EXCLUDE));
+  EXPECT_EQ(1u, cache()->GetEndpointCount());
+  EXPECT_TRUE(EndpointExistsInCache(kOriginEtld_, kGroup_, kEndpoint_));
 }
 
 TEST_P(ReportingHeaderParserTest, IncludeSubdomainsNotBoolean) {
@@ -761,6 +792,70 @@ TEST_P(ReportingHeaderParserTest,
     EXPECT_THAT(mock_store()->GetAllCommands(),
                 testing::IsSupersetOf(expected_commands));
   }
+}
+
+TEST_P(ReportingHeaderParserTest,
+       HeaderErroneouslyContainsGroupsWithRedundantEndpoints) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_},
+                                                            {kEndpoint_}};
+  std::string header =
+      ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints));
+  ParseHeader(kUrl_, header);
+
+  // We should dedupe the identical endpoint URLs.
+  EXPECT_EQ(1u, cache()->GetEndpointCount());
+  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
+
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+
+  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+}
+
+TEST_P(ReportingHeaderParserTest,
+       HeaderErroneouslyContainsMultipleGroupsOfSameNameAndEndpoints) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints = {{kEndpoint_}};
+  std::string header =
+      ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints)) + ", " +
+      ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints));
+  ParseHeader(kUrl_, header);
+
+  // We should dedupe the identical endpoint URLs, even when they're in
+  // different headers.
+  EXPECT_EQ(1u, cache()->GetEndpointCount());
+  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
+
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+
+  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
+}
+
+TEST_P(ReportingHeaderParserTest,
+       HeaderErroneouslyContainsGroupsOfSameNameAndOverlappingEndpoints) {
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint_},
+                                                             {kEndpoint2_}};
+  std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint_},
+                                                             {kEndpoint3_}};
+  std::string header =
+      ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints1)) +
+      ", " + ConstructHeaderGroupString(MakeEndpointGroup(kGroup_, endpoints2));
+  ParseHeader(kUrl_, header);
+
+  // We should dedupe the identical endpoint URLs, even when they're in
+  // different headers.
+  EXPECT_EQ(3u, cache()->GetEndpointCount());
+  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint_));
+  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint2_));
+  ASSERT_TRUE(FindEndpointInCache(kOrigin_, kGroup_, kEndpoint3_));
+
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOrigin_, kGroup_, OriginSubdomains::DEFAULT));
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+
+  EXPECT_TRUE(OriginClientExistsInCache(kOrigin_));
 }
 
 TEST_P(ReportingHeaderParserTest, OverwriteOldHeader) {

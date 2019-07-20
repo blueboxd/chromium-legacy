@@ -41,6 +41,8 @@ namespace {
 const char kCachePrefKeyPrefix[] = "previews.prober.cache";
 
 const char kSuccessHistogram[] = "Previews.Prober.DidSucceed";
+const char kAttemptsBeforeSuccessHistogram[] =
+    "Previews.Prober.NumAttemptsBeforeSuccess";
 const char kHttpRespCodeHistogram[] = "Previews.Prober.ResponseCode";
 const char kNetErrorHistogram[] = "Previews.Prober.NetError";
 
@@ -509,6 +511,14 @@ void PreviewsProber::ProcessProbeSuccess() {
   DCHECK(!timeout_timer_ || !timeout_timer_->IsRunning());
   DCHECK(!url_loader_);
   DCHECK(is_active_);
+
+  base::LinearHistogram::FactoryGet(
+      AppendNameToHistogram(kAttemptsBeforeSuccessHistogram), 1 /* minimum */,
+      25 /* maximum */, 25 /* bucket_count */,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      // |successive_retry_count_| is zero when the first attempt is successful.
+      // Increase by one for more intuitive metrics.
+      ->Add(successive_retry_count_ + 1);
 
   RecordProbeResult(true);
   ResetState();

@@ -30,6 +30,7 @@
 #include "components/arc/common/ime.mojom.h"
 #include "components/arc/common/input_method_manager.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/common/keymaster.mojom.h"
 #include "components/arc/common/kiosk.mojom.h"
 #include "components/arc/common/lock_screen.mojom.h"
 #include "components/arc/common/media_session.mojom.h"
@@ -189,6 +190,11 @@ void ArcBridgeHostImpl::OnIntentHelperInstanceReady(
     mojom::IntentHelperInstancePtr intent_helper_ptr) {
   OnInstanceReady(arc_bridge_service_->intent_helper(),
                   std::move(intent_helper_ptr));
+}
+
+void ArcBridgeHostImpl::OnKeymasterInstanceReady(
+    mojom::KeymasterInstancePtr keymaster_ptr) {
+  OnInstanceReady(arc_bridge_service_->keymaster(), std::move(keymaster_ptr));
 }
 
 void ArcBridgeHostImpl::OnKioskInstanceReady(

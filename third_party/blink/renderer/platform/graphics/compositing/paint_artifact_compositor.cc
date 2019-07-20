@@ -882,7 +882,6 @@ void PaintArtifactCompositor::Update(
     const Settings& settings) {
   DCHECK(NeedsUpdate());
   DCHECK(root_layer_);
-
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
   cc::LayerTreeHost* host = root_layer_->layer_tree_host();

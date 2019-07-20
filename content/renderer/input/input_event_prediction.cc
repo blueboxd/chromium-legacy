@@ -70,6 +70,7 @@ void InputEventPrediction::HandleEvents(
       base::TimeTicks predict_time =
           coalesced_event.CoalescedEvent(coalesced_size - 1).TimeStamp() +
           kPredictionInterval;
+
       for (uint32_t i = 0; i < kPredictEventCount; i++) {
         if (!AddPredictedEvent(predict_time, coalesced_event))
           break;
@@ -114,21 +115,26 @@ void InputEventPrediction::UpdatePrediction(const WebInputEvent& event) {
 
 void InputEventPrediction::ApplyResampling(base::TimeTicks frame_time,
                                            WebInputEvent* event) {
+  // When resampling, we don't want to predict too far away because the
+  // result will likely be inaccurate in that case. We then cut off the
+  // prediction to the maximum available for the current mouse predictor
+  base::TimeDelta prediction_delta = std::min(
+      frame_time - event->TimeStamp(), mouse_predictor_->MaxResampleTime());
+  base::TimeTicks predict_time = event->TimeStamp() + prediction_delta;
+
   if (event->GetType() == WebInputEvent::kTouchMove) {
     WebTouchEvent* touch_event = static_cast<WebTouchEvent*>(event);
     for (unsigned i = 0; i < touch_event->touches_length; ++i) {
-      if (GetPointerPrediction(frame_time, &touch_event->touches[i],
-                               true /*is_resampling*/))
-        event->SetTimeStamp(frame_time);
+      if (GetPointerPrediction(predict_time, &touch_event->touches[i]))
+        event->SetTimeStamp(predict_time);
     }
   } else if (event->GetType() == WebInputEvent::kMouseMove) {
-    if (GetPointerPrediction(frame_time, static_cast<WebMouseEvent*>(event),
-                             true /*is_resampling*/))
-      event->SetTimeStamp(frame_time);
+    if (GetPointerPrediction(predict_time, static_cast<WebMouseEvent*>(event)))
+      event->SetTimeStamp(predict_time);
   } else if (event->GetType() == WebInputEvent::kPointerMove) {
-    if (GetPointerPrediction(frame_time, static_cast<WebPointerEvent*>(event),
-                             true /*is_resampling*/))
-      event->SetTimeStamp(frame_time);
+    if (GetPointerPrediction(predict_time,
+                             static_cast<WebPointerEvent*>(event)))
+      event->SetTimeStamp(predict_time);
   }
 }
 
@@ -198,13 +204,11 @@ void InputEventPrediction::UpdateSinglePointer(
 }
 
 bool InputEventPrediction::GetPointerPrediction(base::TimeTicks predict_time,
-                                                WebPointerProperties* event,
-                                                bool is_resampling) {
+                                                WebPointerProperties* event) {
   ui::InputPredictor::InputData predict_result;
   if (event->pointer_type == WebPointerProperties::PointerType::kMouse) {
     if (mouse_predictor_->HasPrediction() &&
-        mouse_predictor_->GeneratePrediction(predict_time, is_resampling,
-                                             &predict_result)) {
+        mouse_predictor_->GeneratePrediction(predict_time, &predict_result)) {
       event->SetPositionInWidget(predict_result.pos);
       return true;
     }
@@ -215,8 +219,7 @@ bool InputEventPrediction::GetPointerPrediction(base::TimeTicks predict_time,
     auto predictor = pointer_id_predictor_map_.find(event->id);
     if (predictor != pointer_id_predictor_map_.end() &&
         predictor->second->HasPrediction() &&
-        predictor->second->GeneratePrediction(predict_time, is_resampling,
-                                              &predict_result)) {
+        predictor->second->GeneratePrediction(predict_time, &predict_result)) {
       event->SetPositionInWidget(predict_result.pos);
       return true;
     }
@@ -255,7 +258,6 @@ void InputEventPrediction::ComputeAccuracy(const WebInputEvent& event) const {
         if (predictor != pointer_id_predictor_map_.end() &&
             predictor->second->HasPrediction() &&
             predictor->second->GeneratePrediction(event.TimeStamp(),
-                                                  false /* is_resampling */,
                                                   &predict_result)) {
           float distance =
               (predict_result.pos -
@@ -270,8 +272,8 @@ void InputEventPrediction::ComputeAccuracy(const WebInputEvent& event) const {
   } else if (event.GetType() == WebInputEvent::kMouseMove) {
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
     if (mouse_predictor_->HasPrediction() &&
-        mouse_predictor_->GeneratePrediction(
-            event.TimeStamp(), false /* is_resampling */, &predict_result)) {
+        mouse_predictor_->GeneratePrediction(event.TimeStamp(),
+                                             &predict_result)) {
       float distance =
           (predict_result.pos - gfx::PointF(mouse_event.PositionInWidget()))
               .Length();

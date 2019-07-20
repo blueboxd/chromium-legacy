@@ -2,7 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Classes are created via reflection, so may not be renamed.
--keepnames class * implements org.chromium.components.background_task_scheduler.BackgroundTask {
+# Classes are created via reflection and persisted across app updates, so their
+# class names must not be obfuscated.
+-keepnames class ** implements org.chromium.components.background_task_scheduler.BackgroundTask {}
+
+# Also need to keep their default constructors.
+-keepclassmembers class ** implements org.chromium.components.background_task_scheduler.BackgroundTask {
+  public <init>();
+}
+
+# TODO(agrieve): Delete this rule once r8 is fixed to not discard
+# GCMBackgroundTask.<init>() with only the above rules.
+# https://issuetracker.google.com/issues/137890409
+-keep class ** implements org.chromium.components.background_task_scheduler.BackgroundTask {
   public <init>();
 }

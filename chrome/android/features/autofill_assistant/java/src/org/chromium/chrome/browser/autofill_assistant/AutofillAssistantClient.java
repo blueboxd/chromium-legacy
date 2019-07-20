@@ -78,7 +78,8 @@ class AutofillAssistantClient {
         checkNativeClientIsAliveOrThrow();
         nativeStart(mNativeClientAndroid, initialUrl, experimentIds,
                 parameters.keySet().toArray(new String[parameters.size()]),
-                parameters.values().toArray(new String[parameters.size()]), overlayCoordinator);
+                parameters.values().toArray(new String[parameters.size()]), overlayCoordinator,
+                AutofillAssistantServiceInjector.getServiceToInject());
         chooseAccountAsync(parameters.get(PARAMETER_USER_EMAIL), intentExtras);
     }
 
@@ -242,7 +243,7 @@ class AutofillAssistantClient {
     private static native AutofillAssistantClient nativeFromWebContents(WebContents webContents);
     private native void nativeStart(long nativeClientAndroid, String initialUrl,
             String experimentIds, String[] parameterNames, String[] parameterValues,
-            @Nullable AssistantOverlayCoordinator overlayCoordinator);
+            @Nullable AssistantOverlayCoordinator overlayCoordinator, long nativeService);
     private native void nativeOnAccessToken(
             long nativeClientAndroid, boolean success, String accessToken);
     private native String nativeGetPrimaryAccountName(long nativeClientAndroid);

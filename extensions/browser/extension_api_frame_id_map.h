@@ -25,6 +25,8 @@ class WebContents;
 
 namespace extensions {
 
+// TODO(http://crbug.com/980774): Investigate if this class and
+// ExtensionApiFrameIdMap are still needed.
 class ExtensionApiFrameIdMapHelper {
  public:
   virtual void PopulateTabData(content::RenderFrameHost* rfh,
@@ -50,12 +52,9 @@ class ExtensionApiFrameIdMapHelper {
 //
 // Unless stated otherwise, the methods can only be called on the UI thread.
 //
-// The non-static methods of this class use an internal cache. This cache is
-// used to minimize IO->UI->IO round-trips of GetFrameIdOnIO. If the cost of
-// attaching FrameTreeNode IDs to requests is negligible (crbug.com/524228),
-// then we can remove all key caching and remove the cache from this class.
-// TODO(robwu): Keep an eye on crbug.com/524228 and act upon the outcome.
-// TODO(devlin): Also keep an eye on FrameIOData to see if that could help.
+// The non-static methods of this class use an internal cache.
+// TODO(http://crbug.com/980774): This cache may not be necessary now that this
+// is not accessed on IO.
 class ExtensionApiFrameIdMap {
  public:
   // The data for a RenderFrame. Every RenderFrameIdKey maps to a FrameData.
@@ -123,21 +122,6 @@ class ExtensionApiFrameIdMap {
   static content::RenderFrameHost* GetRenderFrameHostById(
       content::WebContents* web_contents,
       int frame_id);
-
-  // Runs |callback| with a result that is equivalent to calling GetFrameData()
-  // on the UI thread. Thread hopping is minimized if possible. Callbacks for
-  // the same |render_process_id| and |frame_routing_id| are guaranteed to be
-  // run in order. The order of other callbacks is undefined.
-  void GetFrameDataOnIO(int render_process_id,
-                        int frame_routing_id,
-                        const FrameDataCallback& callback);
-
-  // Attempts to populate |frame_data_out| with the FrameData for the specified
-  // frame, but only does so if the data is already cached. Returns true if
-  // cached frame data was found.
-  bool GetCachedFrameDataOnIO(int render_process_id,
-                              int frame_routing_id,
-                              FrameData* frame_data_out);
 
   // Retrieves the FrameData for a given |rfh|. The map may be updated with the
   // result if the map did not contain the FrameData before the lookup.
@@ -215,13 +199,7 @@ class ExtensionApiFrameIdMap {
   virtual FrameData KeyToValue(const RenderFrameIdKey& key) const;
 
   // Looks up the data for the given |key| and adds it to the |frame_data_map_|.
-  // |is_from_io| indicates whether the lookup originated from the IO thread.
-  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key, bool is_from_io);
-
-  // Called as soon as the frame data is found for the given |key|, and runs all
-  // queued callbacks with |cached_frame_data|.
-  void ReceivedFrameDataOnIO(const RenderFrameIdKey& key,
-                             const FrameData& cached_frame_data);
+  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key);
 
   // Implementation of CacheFrameData(RenderFrameHost), separated for testing.
   void CacheFrameData(const RenderFrameIdKey& key);
@@ -231,17 +209,9 @@ class ExtensionApiFrameIdMap {
 
   std::unique_ptr<ExtensionApiFrameIdMapHelper> helper_;
 
-  // Queued callbacks for use on the IO thread.
-  FrameDataCallbacksMap callbacks_map_;
-
-  // This map is only modified on the UI thread and is used to minimize the
-  // number of thread hops on the IO thread.
+  // This map holds a mapping of render frame key to FrameData.
+  // TODO(http://crbug.com/980774): Investigate if this is still needed.
   FrameDataMap frame_data_map_;
-
-  // This lock protects |frame_data_map_| from being concurrently written on the
-  // UI thread and read on the IO thread. Acquire during a read on the IO thread
-  // and during a write on the UI thread.
-  base::Lock frame_data_map_lock_;
 
   // The set of pending main frame navigations for which ReadyToCommitNavigation
   // has been fired. Only used on the UI thread. This is needed to clear state

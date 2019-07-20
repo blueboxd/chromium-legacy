@@ -39,6 +39,8 @@ jumbo_component("accessibility") {
     "ax_action_data.h",
     "ax_action_handler.cc",
     "ax_action_handler.h",
+    "ax_active_popup.cc",
+    "ax_active_popup.h",
     "ax_clipping_behavior.h",
     "ax_coordinate_system.h",
     "ax_enum_util.cc",

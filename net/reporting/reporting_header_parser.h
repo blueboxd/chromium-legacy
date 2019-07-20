@@ -51,6 +51,7 @@ class NET_EXPORT ReportingHeaderParser {
     PARSED = 7,
     REMOVED_TTL_ZERO = 8,
     REMOVED_EMPTY = 9,
+    DISCARDED_INCLUDE_SUBDOMAINS_NOT_ALLOWED = 10,
     MAX
   };
 

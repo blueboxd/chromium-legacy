@@ -35,6 +35,9 @@ class X11WindowOzone : public PlatformWindow,
   ~X11WindowOzone() override;
 
   gfx::AcceleratedWidget widget() const { return widget_; }
+  bool IsVisible() const;
+  gfx::Rect GetOutterBounds() const;
+  ::Region GetShape() const;
 
   // Called by |window_manager_| once capture is set to another X11WindowOzone.
   void OnLostCapture();

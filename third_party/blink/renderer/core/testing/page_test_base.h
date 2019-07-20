@@ -25,8 +25,12 @@ class PageTestBase : public testing::Test {
   PageTestBase();
   ~PageTestBase() override;
 
+  void EnableCompositing();
+
   void SetUp() override;
   void TearDown() override;
+
+  using FrameSettingOverrideFunction = void (*)(Settings&);
 
   void SetUp(IntSize);
   void SetupPageWithClients(Page::PageClients* = nullptr,
@@ -85,6 +89,7 @@ class PageTestBase : public testing::Test {
       ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>>
       platform_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  bool enable_compositing_ = false;
 };
 
 }  // namespace blink

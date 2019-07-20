@@ -30,10 +30,6 @@ class LayerTreeHostScrollbarsPixelTest
 
   RendererType renderer_type() { return GetParam(); }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     SetInitialDeviceScaleFactor(device_scale_factor_);
     LayerTreePixelTest::SetupTree();

@@ -53,9 +53,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService : public mojom::Renderer,
   void Initialize(
       mojom::RendererClientAssociatedPtrInfo client,
       base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
-      const base::Optional<GURL>& media_url,
-      const base::Optional<GURL>& site_for_cookies,
-      bool allow_credentials,
+      mojom::MediaUrlParamsPtr media_url_params,
       InitializeCallback callback) final;
   void Flush(FlushCallback callback) final;
   void StartPlayingFrom(base::TimeDelta time_delta) final;

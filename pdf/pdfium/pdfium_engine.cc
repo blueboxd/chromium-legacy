@@ -83,6 +83,9 @@ constexpr int32_t kPageShadowBottom = 7;
 constexpr int32_t kPageShadowLeft = 5;
 constexpr int32_t kPageShadowRight = 5;
 
+constexpr draw_utils::PageInsetSizes kSingleViewInsets{
+    kPageShadowLeft, kPageShadowTop, kPageShadowRight, kPageShadowBottom};
+
 constexpr int32_t kPageSeparatorThickness = 4;
 constexpr int32_t kHighlightColorR = 153;
 constexpr int32_t kHighlightColorG = 193;
@@ -2927,12 +2930,9 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
       progressive_paints_[progressive_index].rect();
   FPDF_BITMAP bitmap = progressive_paints_[progressive_index].bitmap();
 
-  constexpr draw_utils::PageInsetSizes kInsetSizes{
-      kPageShadowLeft, kPageShadowTop, kPageShadowRight, kPageShadowBottom};
-
   pp::Rect page_rect = pages_[page_index]->rect();
   if (page_rect.x() > 0) {
-    pp::Rect left = draw_utils::GetLeftFillRect(page_rect, kInsetSizes,
+    pp::Rect left = draw_utils::GetLeftFillRect(page_rect, kSingleViewInsets,
                                                 kPageSeparatorThickness);
     left = GetScreenRect(left).Intersect(dirty_in_screen);
 
@@ -2942,7 +2942,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   }
 
   if (page_rect.right() < document_size_.width()) {
-    pp::Rect right = draw_utils::GetRightFillRect(page_rect, kInsetSizes,
+    pp::Rect right = draw_utils::GetRightFillRect(page_rect, kSingleViewInsets,
                                                   document_size_.width(),
                                                   kPageSeparatorThickness);
     right = GetScreenRect(right).Intersect(dirty_in_screen);
@@ -2953,7 +2953,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   }
 
   // Paint separator.
-  pp::Rect bottom = draw_utils::GetBottomFillRect(page_rect, kInsetSizes,
+  pp::Rect bottom = draw_utils::GetBottomFillRect(page_rect, kSingleViewInsets,
                                                   kPageSeparatorThickness);
   bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
 
@@ -3110,14 +3110,10 @@ pp::Rect PDFiumEngine::GetVisibleRect() const {
 }
 
 pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
-  // Since we use this rect for creating the PDFium bitmap, also include other
-  // areas around the page that we might need to update such as the page
-  // separator and the sides if the page is narrower than the document.
-  return GetScreenRect(
-      pp::Rect(0, pages_[page_index]->rect().y() - kPageShadowTop,
-               document_size_.width(),
-               pages_[page_index]->rect().height() + kPageShadowTop +
-                   kPageShadowBottom + kPageSeparatorThickness));
+  const pp::Rect& page_rect = pages_[page_index]->rect();
+  return GetScreenRect(draw_utils::GetSurroundingRect(
+      page_rect, kSingleViewInsets, document_size_.width(),
+      kPageSeparatorThickness));
 }
 
 pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {

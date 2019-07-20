@@ -36,8 +36,8 @@ class PaintControllerPaintTestBase : public RenderingTest {
   }
 
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
 
   bool PaintWithoutCommit(

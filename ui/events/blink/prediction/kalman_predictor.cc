@@ -60,32 +60,21 @@ bool KalmanPredictor::HasPrediction() const {
 }
 
 bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                         bool is_resampling,
                                          InputData* result) const {
+  if (!HasPrediction())
+    return false;
+
+  float pred_dt = (predict_time - last_point_.time_stamp).InMillisecondsF();
+
   std::vector<InputData> pred_points;
-
-  base::TimeDelta dt = predict_time - last_point_.time_stamp;
-  // Kalman filter is not very good when predicting backwards. Besides,
-  // predicting backwards means increasing latency. Thus disable prediction when
-  // dt < 0.
-  if (!HasPrediction() || dt < base::TimeDelta())
-    return false;
-
-  // For resampling, we don't want to predict too far away because the result
-  // will likely be inaccurate in that case. But it may be useful for predicted
-  // points.
-  if (is_resampling && dt > kMaxResampleTime)
-    return false;
-
   gfx::Vector2dF position(last_point_.pos.x(), last_point_.pos.y());
   // gfx::Vector2dF position = PredictPosition();
   gfx::Vector2dF velocity = PredictVelocity();
   gfx::Vector2dF acceleration = PredictAcceleration();
 
-  float dt_ms = dt.InMillisecondsF();
   position +=
-      ScaleVector2d(velocity, kVelocityInfluence * dt_ms) +
-      ScaleVector2d(acceleration, kAccelerationInfluence * dt_ms * dt_ms);
+      ScaleVector2d(velocity, kVelocityInfluence * pred_dt) +
+      ScaleVector2d(acceleration, kAccelerationInfluence * pred_dt * pred_dt);
 
   result->pos.set_x(position.x());
   result->pos.set_y(position.y());

@@ -128,13 +128,54 @@ int BrowserAccessibilityPosition::MaxTextOffsetInParent() const {
 #endif
 }
 
+bool BrowserAccessibilityPosition::IsInLineBreak() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreakObject();
+}
+
+bool BrowserAccessibilityPosition::IsInTextObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsTextOnlyObject();
+}
+
 bool BrowserAccessibilityPosition::IsInWhiteSpace() const {
   if (IsNullPosition())
     return false;
-
   DCHECK(GetAnchor());
   return GetAnchor()->IsLineBreakObject() ||
          base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
+}
+
+bool BrowserAccessibilityPosition::IsInLineBreakingObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->GetBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject);
+}
+
+ax::mojom::Role BrowserAccessibilityPosition::GetRole() const {
+  if (IsNullPosition())
+    return ax::mojom::Role::kNone;
+  DCHECK(GetAnchor());
+  return GetAnchor()->GetRole();
+}
+
+ui::AXNodeTextStyles BrowserAccessibilityPosition::GetTextStyles() const {
+  // Check either the current anchor or its parent for text styles.
+  ui::AXNodeTextStyles current_anchor_text_styles =
+      !IsNullPosition() ? GetAnchor()->GetData().GetTextStyles()
+                        : ui::AXNodeTextStyles();
+  if (current_anchor_text_styles.IsUnset()) {
+    AXPositionInstance parent = CreateParentPosition();
+    if (!parent->IsNullPosition())
+      return parent->GetAnchor()->GetData().GetTextStyles();
+  }
+  return current_anchor_text_styles;
 }
 
 std::vector<int32_t> BrowserAccessibilityPosition::GetWordStartOffsets() const {

@@ -495,9 +495,6 @@
     'remove_from': [
       # chromium.clang
       'linux-win_cross-rel', # https://crbug.com/762167
-      # https://crbug.com/crashpad/304
-      'Linux TSan Tests',
-      'ToTLinuxTSan',
     ],
   },
   'cronet_sizes': {
@@ -1157,6 +1154,67 @@
       },
     },
   },
+  'non_viz_browser_tests': {
+    'modifications': {
+      # chromium.fyi
+      'linux-chromeos-code-coverage': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'linux-chromeos-google-rel': {
+        # TODO(https://crbug.com/932269): Promote out of experiment when the
+        # tests are green.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
+        ],
+      },
+      'linux-chromeos-oobe-code-coverage': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      # chromium.chromiumos
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      # chromium.memory
+      'Linux ChromiumOS MSan Tests': {
+        # These are very slow on the Chrome OS MSAN trybot for some reason.
+        # crbug.com/865455
+        'swarming': {
+          'shards': 30,
+        },
+      },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 30,
+        },
+      },
+    },
+  },
+  'non_viz_content_browsertests': {
+    'modifications': {
+      # chromium.memory
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        # content_browsertests is slow on ASAN try bot. crbug.com/822461.
+        'swarming': {
+          'shards': 4,
+        }
+      },
+      'Linux ChromiumOS MSan Tests': {
+        # These are very slow on the Chrome OS MSAN trybot for some reason.
+        # crbug.com/865455
+        'swarming': {
+          'shards': 2,
+        },
+      },
+    },
+  },
   'nonperfetto_content_browsertests': {
     'remove_from': [
       'android-asan',
@@ -1575,67 +1633,6 @@
       'Win10 FYI Release (Intel HD 630)',
       'Win10 FYI Exp Release (Intel HD 630)',
     ],
-  },
-  'viz_browser_tests': {
-    'modifications': {
-      # chromium.fyi
-      'linux-chromeos-code-coverage': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'linux-chromeos-google-rel': {
-        # TODO(https://crbug.com/932269): Promote out of experiment when the
-        # tests are green.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.browser_tests.filter',
-        ],
-      },
-      'linux-chromeos-oobe-code-coverage': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      # chromium.chromiumos
-      'linux-chromeos-dbg': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      # chromium.memory
-      'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 30,
-        },
-      },
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        # These are very slow on the ASAN trybot for some reason.
-        # crbug.com/794372
-        'swarming': {
-          'shards': 30,
-        },
-      },
-    },
-  },
-  'viz_content_browsertests': {
-    'modifications': {
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        # content_browsertests is slow on ASAN try bot. crbug.com/822461.
-        'swarming': {
-          'shards': 4,
-        }
-      },
-      'Linux ChromiumOS MSan Tests': {
-        # These are very slow on the Chrome OS MSAN trybot for some reason.
-        # crbug.com/865455
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
   },
   'viz_unittests': {
     'remove_from': [

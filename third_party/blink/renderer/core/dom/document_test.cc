@@ -74,6 +74,7 @@ class DocumentTest : public PageTestBase {
  protected:
   void TearDown() override {
     ThreadState::Current()->CollectAllGarbageForTesting();
+    PageTestBase::TearDown();
   }
 
   void SetHtmlInnerHTML(const char*);

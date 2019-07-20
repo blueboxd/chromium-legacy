@@ -304,6 +304,10 @@ void AutofillExternalDelegate::Reset() {
   manager_->client()->HideAutofillPopup();
 }
 
+int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
+  return query_field_.form_control_ax_id;
+}
+
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

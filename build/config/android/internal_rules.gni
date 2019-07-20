@@ -954,6 +954,11 @@ if (enable_java_templates) {
         "@FileArg($_rebased_build_config:android:sdk_jars)",
       ]
 
+      if (defined(invoker.disable_r8_outlining) &&
+          invoker.disable_r8_outlining) {
+        args += [ "--disable-outlining" ]
+      }
+
       if (defined(invoker.is_static_library) && invoker.is_static_library) {
         args += [
           "--extra-mapping-output-paths",
@@ -1123,6 +1128,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "build_config",
+                                 "disable_r8_outlining",
                                  "deps",
                                  "proguard_expectations_file",
                                  "proguard_jar_path",

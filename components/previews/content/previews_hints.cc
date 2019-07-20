@@ -83,19 +83,6 @@ void DeleteSentinelFile(const base::FilePath& sentinel_path) {
   }
 }
 
-// Enumerates the possible outcomes of processing previews hints. Used in UMA
-// histograms, so the order of enumerators should not be changed.
-//
-// Keep in sync with PreviewsProcessHintsResult in
-// tools/metrics/histograms/enums.xml.
-enum class PreviewsProcessHintsResult {
-  kProcessedNoPreviewsHints = 0,
-  kProcessedPreviewsHints = 1,
-  kFailedFinishProcessing = 2,
-  kSkippedProcessingPreviewsHints = 3,
-  kMaxValue = kSkippedProcessingPreviewsHints
-};
-
 // Enumerates status event of processing optimization filters (such as the
 // lite page redirect blacklist). Used in UMA histograms, so the order of
 // enumerators should not be changed.
@@ -174,10 +161,6 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
   }
 }
 
-void RecordProcessHintsResult(PreviewsProcessHintsResult result) {
-  base::UmaHistogramEnumeration("Previews.ProcessHintsResult", result);
-}
-
 void RecordOptimizationFilterStatus(PreviewsType previews_type,
                                     PreviewsOptimizationFilterStatus status) {
   std::string histogram_name =
@@ -203,16 +186,19 @@ PreviewsHints::~PreviewsHints() {
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     const optimization_guide::HintsComponentInfo& info,
     std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
+  optimization_guide::ProcessHintsComponentResult result;
   std::unique_ptr<optimization_guide::proto::Configuration> config =
-      ProcessHintsComponent(info);
+      ProcessHintsComponent(info, &result);
   if (!config) {
+    RecordProcessHintsComponentResult(result);
     return nullptr;
   }
 
   base::FilePath sentinel_path(info.path.DirName().Append(kSentinelFileName));
   if (!CreateSentinelFile(sentinel_path, info.version)) {
-    RecordProcessHintsResult(
-        PreviewsProcessHintsResult::kFailedFinishProcessing);
+    RecordProcessHintsComponentResult(
+        optimization_guide::ProcessHintsComponentResult::
+            kFailedFinishProcessing);
     return nullptr;
   }
 
@@ -228,8 +214,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
 std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
     std::unique_ptr<optimization_guide::proto::Configuration> config,
     std::unique_ptr<optimization_guide::HintUpdateData> component_update_data) {
-  PreviewsProcessHintsResult process_hints_result =
-      PreviewsProcessHintsResult::kSkippedProcessingPreviewsHints;
+  optimization_guide::ProcessHintsComponentResult process_hints_result =
+      optimization_guide::ProcessHintsComponentResult::kSkippedProcessingHints;
   if (component_update_data) {
     // Process the hints within the configuration. This will move the hints from
     // |config| into |component_update_data|.
@@ -237,8 +223,9 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
                                           component_update_data.get());
     process_hints_result =
         did_process_hints
-            ? PreviewsProcessHintsResult::kProcessedPreviewsHints
-            : PreviewsProcessHintsResult::kProcessedNoPreviewsHints;
+            ? optimization_guide::ProcessHintsComponentResult::kSuccess
+            : optimization_guide::ProcessHintsComponentResult::
+                  kProcessedNoHints;
   }
 
   // Construct the PrevewsHints object with |component_update_data|, which
@@ -251,7 +238,7 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsConfiguration(
   hints->ParseOptimizationFilters(*config);
 
   // Now that processing is complete, record the result.
-  RecordProcessHintsResult(process_hints_result);
+  optimization_guide::RecordProcessHintsComponentResult(process_hints_result);
 
   return hints;
 }

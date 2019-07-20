@@ -7,6 +7,19 @@
 
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
+enum class SharingDeviceRegistrationResult;
+
+// Result of VAPID key creation during Sharing registration.
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingVapidKeyCreationResult" in src/tools/metrics/histograms/enums.xml.
+enum class SharingVapidKeyCreationResult {
+  kSuccess = 0,
+  kGenerateECKeyFailed = 1,
+  kExportPrivateKeyFailed = 2,
+  kMaxValue = kExportPrivateKeyFailed,
+};
+
 // These histogram suffixes must match the ones in SharingClickToCallUi defined
 // in histograms.xml.
 const char kSharingClickToCallUiContextMenu[] = "ContextMenu";
@@ -16,6 +29,18 @@ const char kSharingClickToCallUiDialog[] = "Dialog";
 // is received.
 void LogSharingMessageReceived(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
+
+// Logs the |result| to UMA. This should be called after attempting register
+// Sharing.
+void LogSharingRegistrationResult(SharingDeviceRegistrationResult result);
+
+// Logs the |result| to UMA. This should be called after attempting un-register
+// Sharing.
+void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result);
+
+// Logs the |result| to UMA. This should be called after attempting to create
+// VAPID keys.
+void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result);
 
 // Logs the number of available devices that are about to be shown in a UI for
 // picking a device to start a phone call on.

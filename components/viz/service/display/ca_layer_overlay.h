@@ -12,6 +12,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 
 namespace viz {
@@ -32,7 +33,7 @@ class VIZ_SERVICE_EXPORT CALayerOverlaySharedState
   // |clip_rect_corner_radius| represents the corner radius of the clip rect.
   bool is_clipped = false;
   gfx::RectF clip_rect;
-  float clip_rect_corner_radius = 0;
+  gfx::RRectF rounded_corner_bounds;
   // The opacity property for the CAayer.
   float opacity = 1;
   // The transform to apply to the CALayer.

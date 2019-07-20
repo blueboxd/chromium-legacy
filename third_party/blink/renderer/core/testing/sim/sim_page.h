@@ -13,10 +13,8 @@ namespace blink {
 class Page;
 
 class SimPage final {
-  DISALLOW_NEW();
-
  public:
-  explicit SimPage();
+  SimPage();
   ~SimPage();
 
   void SetPage(Page*);

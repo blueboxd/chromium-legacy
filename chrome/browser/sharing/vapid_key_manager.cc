@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sharing/vapid_key_manager.h"
 
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "crypto/ec_private_key.h"
 
@@ -22,16 +23,22 @@ crypto::ECPrivateKey* VapidKeyManager::GetOrCreateKey() {
   }
 
   vapid_key_ = crypto::ECPrivateKey::Create();
-  if (!vapid_key_)
+  if (!vapid_key_) {
+    LogSharingVapidKeyCreationResult(
+        SharingVapidKeyCreationResult::kGenerateECKeyFailed);
     return nullptr;
+  }
 
   std::vector<uint8_t> key;
   if (!vapid_key_->ExportPrivateKey(&key)) {
     LOG(ERROR) << "Could not export vapid key";
     vapid_key_.reset();
+    LogSharingVapidKeyCreationResult(
+        SharingVapidKeyCreationResult::kExportPrivateKeyFailed);
     return nullptr;
   }
 
   sharing_sync_preference_->SetVapidKey(key);
+  LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult::kSuccess);
   return vapid_key_.get();
 }

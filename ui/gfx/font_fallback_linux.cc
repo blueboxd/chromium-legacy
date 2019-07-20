@@ -11,8 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/mru_cache.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/font.h"
 
@@ -23,9 +25,15 @@ namespace {
 const char kFontFormatTrueType[] = "TrueType";
 const char kFontFormatCFF[] = "CFF";
 
-typedef std::map<std::string, std::vector<Font> > FallbackCache;
-base::LazyInstance<FallbackCache>::Leaky g_fallback_cache =
-    LAZY_INSTANCE_INITIALIZER;
+// The fallback cache is a mapping from a font family name to it's potential
+// fallback fonts.
+using FallbackCache = base::MRUCache<std::string, std::vector<Font>>;
+constexpr int kFallbackCacheSize = 64;
+
+FallbackCache* GetFallbackCacheInstance() {
+  static base::NoDestructor<FallbackCache> fallback_cache(kFallbackCacheSize);
+  return fallback_cache.get();
+}
 
 std::string GetFilenameFromFcPattern(FcPattern* pattern) {
   const char* c_filename = nullptr;
@@ -39,47 +47,156 @@ std::string GetFilenameFromFcPattern(FcPattern* pattern) {
   return std::string(sysroot ? sysroot : "") + c_filename;
 }
 
+bool IsValidFontFromPattern(FcPattern* pattern) {
+  // Ignore any bitmap fonts users may still have installed from last
+  // century.
+  FcBool is_scalable;
+  if (FcPatternGetBool(pattern, FC_SCALABLE, 0, &is_scalable) !=
+          FcResultMatch ||
+      !is_scalable) {
+    return false;
+  }
+
+  // Ignore any fonts FontConfig knows about, but that we don't have
+  // permission to read.
+  std::string filename = GetFilenameFromFcPattern(pattern);
+  if (access(filename.c_str(), R_OK))
+    return false;
+
+  // Take only supported font formats on board.
+  FcChar8* font_format;
+  if (FcPatternGetString(pattern, FC_FONTFORMAT, 0, &font_format) !=
+      FcResultMatch) {
+    return false;
+  }
+
+  if (font_format &&
+      strcmp(reinterpret_cast<char*>(font_format), kFontFormatTrueType) != 0 &&
+      strcmp(reinterpret_cast<char*>(font_format), kFontFormatCFF) != 0) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
+
+bool GetFallbackFont(const Font& font,
+                     const std::string& locale,
+                     base::StringPiece16 text,
+                     Font* result) {
+  struct FcPatternDeleter {
+    void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
+  };
+  using ScopedFcPattern = std::unique_ptr<FcPattern, FcPatternDeleter>;
+
+  TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
+
+  // The text passed must be at least length 1.
+  if (text.empty())
+    return false;
+
+  ScopedFcPattern pattern(FcPatternCreate());
+
+  // Add pattern for family name.
+  std::string font_family = font.GetFontName();
+  FcPatternAddString(pattern.get(), FC_FAMILY,
+                     reinterpret_cast<const FcChar8*>(font_family.c_str()));
+
+  // Prefer scalable font.
+  FcPatternAddBool(pattern.get(), FC_SCALABLE, FcTrue);
+
+  // Add pattern for locale.
+  FcPatternAddString(pattern.get(), FC_LANG,
+                     reinterpret_cast<const FcChar8*>(locale.c_str()));
+
+  // Add pattern for font style.
+  if ((font.GetStyle() & gfx::Font::ITALIC) != 0)
+    FcPatternAddInteger(pattern.get(), FC_SLANT, FC_SLANT_ITALIC);
+
+  // Add pattern for characters.
+  FcCharSet* charset = FcCharSetCreate();
+  size_t offset = 0;
+  while (offset < text.length()) {
+    UChar32 code_point;
+    U16_NEXT(text.data(), offset, text.length(), code_point);
+    FcCharSetAddChar(charset, code_point);
+  }
+  FcPatternAddCharSet(pattern.get(), "charset", charset);
+  FcCharSetDestroy(charset);
+
+  // Match a font fallback.
+  FcConfigSubstitute(nullptr, pattern.get(), FcMatchPattern);
+  FcDefaultSubstitute(pattern.get());
+
+  FcResult fc_result;
+  ScopedFcPattern matched_pattern(
+      FcFontMatch(nullptr, pattern.get(), &fc_result));
+  if (!matched_pattern || !IsValidFontFromPattern(matched_pattern.get()))
+    return false;
+
+  FcChar8* fallback_family = nullptr;
+  FcPatternGetString(matched_pattern.get(), FC_FAMILY, 0, &fallback_family);
+  if (!fallback_family)
+    return false;
+
+  *result =
+      Font(reinterpret_cast<const char*>(fallback_family), font.GetFontSize());
+  return true;
+}
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
   TRACE_EVENT0("fonts", "gfx::GetFallbackFonts");
 
   std::string font_family = font.GetFontName();
-  std::vector<Font>* fallback_fonts =
-      &g_fallback_cache.Get()[font_family];
-  if (!fallback_fonts->empty())
-    return *fallback_fonts;
 
+  // Lookup in the cache for already processed family.
+  FallbackCache* font_cache = GetFallbackCacheInstance();
+  auto cached_fallback_fonts = font_cache->Get(font_family);
+  if (cached_fallback_fonts != font_cache->end()) {
+    // Already in cache.
+    return cached_fallback_fonts->second;
+  }
+
+  // Retrieve the font fallbacks for a given family name.
+  std::vector<Font> fallback_fonts;
   FcPattern* pattern = FcPatternCreate();
+  FcPatternAddString(pattern, FC_FAMILY,
+                     reinterpret_cast<const FcChar8*>(font_family.c_str()));
+
   FcValue family;
   family.type = FcTypeString;
   family.u.s = reinterpret_cast<const FcChar8*>(font_family.c_str());
   FcPatternAdd(pattern, FC_FAMILY, family, FcFalse);
-  if (FcConfigSubstitute(NULL, pattern, FcMatchPattern) == FcTrue) {
+
+  if (FcConfigSubstitute(nullptr, pattern, FcMatchPattern) == FcTrue) {
     FcDefaultSubstitute(pattern);
     FcResult result;
-    FcFontSet* fonts = FcFontSort(NULL, pattern, FcTrue, NULL, &result);
+    FcFontSet* fonts = FcFontSort(nullptr, pattern, FcTrue, nullptr, &result);
     if (fonts) {
+      std::set<std::string> fallback_names;
       for (int i = 0; i < fonts->nfont; ++i) {
-        char* name = NULL;
+        char* name = nullptr;
         FcPatternGetString(fonts->fonts[i], FC_FAMILY, 0,
             reinterpret_cast<FcChar8**>(&name));
+        if (name == nullptr)
+          continue;
+        std::string name_str = name;
+
         // FontConfig returns multiple fonts with the same family name and
         // different configurations. Check to prevent duplicate family names.
-        if (fallback_fonts->empty() ||
-            fallback_fonts->back().GetFontName() != name) {
-          fallback_fonts->push_back(Font(std::string(name), 13));
-        }
+        if (fallback_names.insert(name_str).second)
+          fallback_fonts.push_back(Font(name_str, 13));
       }
       FcFontSetDestroy(fonts);
     }
   }
   FcPatternDestroy(pattern);
 
-  if (fallback_fonts->empty())
-    fallback_fonts->push_back(Font(font_family, 13));
+  // Store the font fallbacks to the cache.
+  font_cache->Put(font_family, fallback_fonts);
 
-  return *fallback_fonts;
+  return fallback_fonts;
 }
 
 namespace {
@@ -211,31 +328,8 @@ class CachedFontSet {
     for (int i = 0; i < font_set_->nfont; ++i) {
       FcPattern* pattern = font_set_->fonts[i];
 
-      // Ignore any bitmap fonts users may still have installed from last
-      // century.
-      FcBool is_scalable;
-      if (FcPatternGetBool(pattern, FC_SCALABLE, 0, &is_scalable) !=
-              FcResultMatch ||
-          !is_scalable)
+      if (!IsValidFontFromPattern(pattern))
         continue;
-
-      // Ignore any fonts FontConfig knows about, but that we don't have
-      // permission to read.
-      std::string filename = GetFilenameFromFcPattern(pattern);
-      if (access(filename.c_str(), R_OK))
-        continue;
-
-      // Take only supported font formats on board.
-      FcChar8* font_format;
-      if (FcPatternGetString(pattern, FC_FONTFORMAT, 0, &font_format) !=
-          FcResultMatch) {
-        continue;
-      }
-      if (font_format &&
-          strcmp(reinterpret_cast<char*>(font_format), kFontFormatTrueType) &&
-          strcmp(reinterpret_cast<char*>(font_format), kFontFormatCFF)) {
-        continue;
-      }
 
       // Make sure this font can tell us what characters it has glyphs for.
       FcCharSet* char_set;

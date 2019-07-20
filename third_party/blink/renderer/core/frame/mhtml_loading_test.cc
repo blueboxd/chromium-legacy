@@ -83,8 +83,8 @@ class MHTMLLoadingTest : public testing::Test {
   Page* GetPage() const { return helper_.GetWebView()->GetPage(); }
 
  private:
-  frame_test_helpers::WebViewHelper helper_;
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
+  frame_test_helpers::WebViewHelper helper_;
 };
 
 // Checks that the domain is set to the actual MHTML file, not the URL it was

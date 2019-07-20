@@ -243,16 +243,19 @@ class ScrollbarsWebWidgetClient
   float device_scale_factor_;
 };
 
-TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
+TEST(ScrollbarsTestWithOwnWebViewHelper, ScrollbarSizeForUseZoomDSF) {
   ScrollbarsWebWidgetClient client;
   client.set_device_scale_factor(1.f);
 
   frame_test_helpers::WebViewHelper web_view_helper;
+  // Needed so visual viewport supplies its own scrollbars. We don't support
+  // this setting changing after initialization, so we must set it through
+  // WebViewHelper.
+  web_view_helper.set_viewport_enabled(true);
+
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, nullptr, &client);
 
-  // Needed so visual viewport supplies its own scrollbars.
-  web_view_impl->GetSettings()->SetViewportEnabled(true);
   web_view_impl->MainFrameWidget()->Resize(IntSize(800, 600));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
@@ -1420,16 +1423,29 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
   mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(base::TimeDelta());
 }
 
-typedef bool TestParamOverlayScrollbar;
 class ScrollbarAppearanceTest
     : public SimTest,
-      public testing::WithParamInterface<TestParamOverlayScrollbar> {
+      public testing::WithParamInterface</*use_real_overlay_scrollbars=*/bool> {
  public:
-  // Use real scrollbars to ensure we're testing the real ScrollbarThemes.
-  ScrollbarAppearanceTest() : mock_scrollbars_(false, GetParam()) {}
+  void SetUp() override {
+    SimTest::SetUp();
+    // Use real scrollbars to ensure we're testing the real ScrollbarThemes.
+    // TODO(bokan): For some reason this has to happen *after* the WebViewImpl
+    // loads and everything or the test fails. But not doing it also fails.
+    // However this changes a runtime feature and should go *before* anything
+    // is set up!! Otherwise blink sees inconsistent values which doesn't happen
+    // in reality.
+    mock_scrollbars_ =
+        std::make_unique<UseMockScrollbarSettings>(false, GetParam());
+  }
+
+  void TearDown() override {
+    mock_scrollbars_.reset();
+    SimTest::TearDown();
+  }
 
  private:
-  UseMockScrollbarSettings mock_scrollbars_;
+  std::unique_ptr<UseMockScrollbarSettings> mock_scrollbars_;
 };
 
 class StubWebThemeEngine : public WebThemeEngine {

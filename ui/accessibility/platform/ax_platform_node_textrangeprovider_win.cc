@@ -243,8 +243,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
 
   std::vector<AXNodeRange> anchors;
   AXNodeRange range(start_->Clone(), end_->Clone());
-  for (AXNodeRange anchor_range : range)
-    anchors.emplace_back(std::move(anchor_range));
+  for (AXNodeRange leaf_text_range : range)
+    anchors.emplace_back(std::move(leaf_text_range));
 
   auto expand_match = [&matched_range_start, &matched_range_end, is_backward](
                           auto& current_start, auto& current_end) {
@@ -363,8 +363,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   base::win::ScopedVariant attribute_value_variant;
   AXNodeRange range(start_->Clone(), end_->Clone());
 
-  for (const AXNodeRange& anchor_range : range) {
-    AXPositionInstanceType* anchor_start = anchor_range.anchor();
+  for (const AXNodeRange& leaf_text_range : range) {
+    AXPositionInstanceType* anchor_start = leaf_text_range.anchor();
     AXPlatformNodeDelegate* delegate = GetDelegate(anchor_start);
     DCHECK(anchor_start && delegate);
 
@@ -784,7 +784,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
 
 base::string16 AXPlatformNodeTextRangeProviderWin::GetString() {
   AXNodeRange range(start_->Clone(), end_->Clone());
-  return range.GetText();
+  return range.GetText(AXTextConcatenationBehavior::kAsInnerText);
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {

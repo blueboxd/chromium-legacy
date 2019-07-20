@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace leveldb {

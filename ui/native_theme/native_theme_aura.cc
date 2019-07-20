@@ -87,6 +87,8 @@ const SkColor kSliderThumbBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
 const SkScalar kSliderThumbBorderWidth = 2.f;
 const SkScalar kSliderThumbBorderHoveredWidth = 4.f;
 
+const SkScalar kMenuListArrowStrokeWidth = 1.f;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -656,6 +658,58 @@ void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(border_width);
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);
+}
+
+void NativeThemeAura::PaintMenuList(
+    cc::PaintCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuListExtraParams& menu_list) const {
+  if (!features::IsFormControlsRefreshEnabled()) {
+    return NativeThemeBase::PaintMenuList(canvas, state, rect, menu_list);
+  }
+
+  // If a border radius is specified paint the background and the border of
+  // the menulist, otherwise let the non-theming code paint the background
+  // and the border of the control. The arrow (menulist button) is always
+  // painted by the theming code.
+  if (!menu_list.has_border_radius) {
+    TextFieldExtraParams text_field = {0};
+    text_field.background_color = menu_list.background_color;
+    PaintTextField(canvas, state, rect, text_field);
+  }
+
+  // Paint the arrow.
+  cc::PaintFlags flags;
+  flags.setColor(menu_list.arrow_color);
+  flags.setAntiAlias(true);
+  flags.setStyle(cc::PaintFlags::kStroke_Style);
+  flags.setStrokeWidth(kMenuListArrowStrokeWidth);
+
+  float arrow_width = menu_list.arrow_size;
+  int arrow_height = arrow_width * 0.6;
+  gfx::Rect arrow(menu_list.arrow_x, menu_list.arrow_y - (arrow_height / 2),
+                  arrow_width, arrow_height);
+  arrow.Intersect(rect);
+
+  if (arrow_width != arrow.width() || arrow_height != arrow.height()) {
+    // The arrow is clipped after being constrained to the paint rect so we need
+    // to recalculate its size.
+    int height_clip = arrow_height - arrow.height();
+    int width_clip = arrow_width - arrow.width();
+    if (height_clip > width_clip) {
+      arrow.set_width(arrow.height() * 1.6);
+    } else {
+      arrow.set_height(arrow.width() * 0.6);
+    }
+    arrow.set_y(menu_list.arrow_y - (arrow.height() / 2));
+  }
+
+  SkPath path;
+  path.moveTo(arrow.x(), arrow.y());
+  path.lineTo(arrow.x() + arrow.width() / 2, arrow.y() + arrow.height());
+  path.lineTo(arrow.x() + arrow.width(), arrow.y());
+  canvas->drawPath(path, flags);
 }
 
 gfx::Size NativeThemeAura::GetPartSize(Part part,

@@ -84,6 +84,11 @@ void AutofillKeyboardAccessoryAdapter::OnSuggestionsChanged() {
   view_->Show();
 }
 
+base::Optional<int32_t> AutofillKeyboardAccessoryAdapter::GetAxUniqueId() {
+  NOTIMPLEMENTED() << "See https://crbug.com/985927";
+  return base::nullopt;
+}
+
 // AutofillPopupController implementation.
 
 void AutofillKeyboardAccessoryAdapter::AcceptSuggestion(int index) {

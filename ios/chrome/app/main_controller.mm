@@ -18,6 +18,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -218,6 +219,9 @@ NSString* const kPurgeSnapshots = @"PurgeSnapshots";
 // Constants for deferring startup Spotlight bookmark indexing.
 NSString* const kStartSpotlightBookmarksIndexing =
     @"StartSpotlightBookmarksIndexing";
+
+// Constants for deferring the enterprise managed device check.
+NSString* const kEnterpriseManagedDeviceCheck = @"EnterpriseManagedDeviceCheck";
 
 // Constants for deferred promo display.
 const NSTimeInterval kDisplayPromoDelay = 0.1;
@@ -1167,9 +1171,8 @@ enum class EnterTabSwitcherSnapshotResult {
                   }];
 }
 
-/**
- Schedule a call to |saveFieldTrialValuesForExtensions| for deferred execution.
- */
+// Schedule a call to |saveFieldTrialValuesForExtensions| for deferred
+// execution.
 - (void)scheduleSaveFieldTrialValuesForExtensions {
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kSaveFieldTrialValues
@@ -1178,11 +1181,9 @@ enum class EnterTabSwitcherSnapshotResult {
                   }];
 }
 
-/**
- Some extensions need the value of field trials but can't get them because
- the field trial infrastruction isn't in extensions. Save the necessary
- values to NSUserDefaults here.
- */
+// Some extensions need the value of field trials but can't get them because the
+// field trial infrastruction isn't in extensions. Save the necessary values to
+// NSUserDefaults here.
 - (void)saveFieldTrialValuesForExtensions {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
 
@@ -1191,16 +1192,14 @@ enum class EnterTabSwitcherSnapshotResult {
   NSNumber* copiedContentBehaviorValue = [NSNumber
       numberWithBool:base::FeatureList::IsEnabled(kCopiedContentBehavior)];
 
-  /**
-   Add other field trial values here if they are needed by extensions.
-   The general format is
-   {
-     name: {
-       value: bool,
-       version: bool
-     }
-   }
-   */
+  // Add other field trial values here if they are needed by extensions.
+  // The general format is
+  // {
+  //   name: {
+  //     value: bool,
+  //     version: bool
+  //   }
+  // }
   NSDictionary* fieldTrialValues = @{
     base::SysUTF8ToNSString(kCopiedContentBehavior.name) : @{
       kFieldTrialValueKey : copiedContentBehaviorValue,
@@ -1208,6 +1207,24 @@ enum class EnterTabSwitcherSnapshotResult {
     }
   };
   [sharedDefaults setObject:fieldTrialValues forKey:fieldTrialValueKey];
+}
+
+// Schedules a call to |logIfEnterpriseManagedDevice| for deferred
+// execution.
+- (void)scheduleEnterpriseManagedDeviceCheck {
+  [[DeferredInitializationRunner sharedInstance]
+      enqueueBlockNamed:kEnterpriseManagedDeviceCheck
+                  block:^{
+                    [self logIfEnterpriseManagedDevice];
+                  }];
+}
+
+- (void)logIfEnterpriseManagedDevice {
+  NSString* managedKey = @"com.apple.configuration.managed";
+  BOOL isManagedDevice = [[NSUserDefaults standardUserDefaults]
+                             dictionaryForKey:managedKey] != nil;
+
+  base::UmaHistogramBoolean("EnterpriseCheck.IsManaged", isManagedDevice);
 }
 
 - (void)startFreeMemoryMonitoring {
@@ -1236,6 +1253,7 @@ enum class EnterTabSwitcherSnapshotResult {
   [self scheduleAppDistributionPings];
   [self initializeMailtoHandling];
   [self scheduleSaveFieldTrialValuesForExtensions];
+  [self scheduleEnterpriseManagedDeviceCheck];
 }
 
 - (void)scheduleTasksRequiringBVCWithBrowserState {

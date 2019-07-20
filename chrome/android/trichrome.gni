@@ -81,6 +81,10 @@ template("trichrome_library_apk_tmpl") {
     } else {
       product_version_resources_dep =
           "//chrome/android:product_version_resources"
+
+      # TODO(crbug.com/956839): Remove this once R8 fixes the class merging
+      # and/or inlining bugs.
+      disable_r8_outlining = true
     }
 
     # TODO(torne): using system_webview_resources just to get a temporary icon

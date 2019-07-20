@@ -158,5 +158,55 @@
       "avg": 108.1556,
       "ci_095": 37.21160235
     }
+  },
+  "android": {
+    "motionmark_html_css_bouncing_blend_circles_25": {
+      "avg": 100.0,
+      "ci_095": 7.0
+    },
+    "yahoo_news_desktop_gpu_raster_2018": {
+      "avg": 66.0,
+      "ci_095": 7.0
+    },
+    "microsoft_performance": {
+      "avg": 77.0,
+      "ci_095": 10.0
+    },
+    "geo_apis": {
+      "avg": 17,
+      "ci_095": 0.5
+    },
+    "kevs_3d": {
+      "avg": 560.0,
+      "ci_095": 60.0
+    },
+    "ie_pirate_mark": {
+      "avg": 64.0,
+      "ci_095": 30.0
+    },
+    "linkedin_mobile_pinch": {
+      "avg": 22.0,
+      "ci_095": 6.0
+    },
+    "text_constant_full_page_raster_10000_pixels_per_second": {
+      "avg": 18.0,
+      "ci_095": 0.7
+    },
+    "canvas_10000_pixels_per_second": {
+      "avg": 18.0,
+      "ci_095": 0.5
+    },
+    "canvas_20000_pixels_per_second": {
+      "avg": 18.0,
+      "ci_095": 0.5
+    },
+    "canvas_40000_pixels_per_second": {
+      "avg": 18.0,
+      "ci_095": 0.6
+    },
+    "canvas_75000_pixels_per_second": {
+      "avg": 18.0,
+      "ci_095": 0.9
+    }
   }
 }

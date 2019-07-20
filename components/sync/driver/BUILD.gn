@@ -103,6 +103,7 @@ jumbo_static_library("driver") {
     "//components/sync/protocol",
     "//components/sync/protocol:util",
     "//net",
+    "//third_party/metrics_proto",
     "//url",
   ]
   deps = [

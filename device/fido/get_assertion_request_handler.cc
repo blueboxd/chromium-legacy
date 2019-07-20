@@ -318,7 +318,7 @@ void GetAssertionRequestHandler::AuthenticatorRemoved(
       state_ = State::kFinished;
       std::move(completion_callback_)
           .Run(FidoReturnCode::kAuthenticatorRemovedDuringPINEntry,
-               base::nullopt, base::nullopt);
+               base::nullopt, nullptr);
     }
   }
 }
@@ -475,7 +475,7 @@ void GetAssertionRequestHandler::HandleInapplicableAuthenticator(
   CancelActiveAuthenticators(authenticator->GetId());
   std::move(completion_callback_)
       .Run(FidoReturnCode::kUserConsentButCredentialNotRecognized,
-           base::nullopt, base::nullopt);
+           base::nullopt, nullptr);
 }
 
 void GetAssertionRequestHandler::OnRetriesResponse(
@@ -487,13 +487,13 @@ void GetAssertionRequestHandler::OnRetriesResponse(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
   if (response->retries == 0) {
     state_ = State::kFinished;
     std::move(completion_callback_)
-        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, base::nullopt);
+        .Run(FidoReturnCode::kHardPINBlock, base::nullopt, nullptr);
     return;
   }
   state_ = State::kWaitingForPIN;
@@ -531,7 +531,7 @@ void GetAssertionRequestHandler::OnHaveEphemeralKey(
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt,
-             base::nullopt);
+             nullptr);
     return;
   }
 
@@ -570,7 +570,7 @@ void GetAssertionRequestHandler::OnHavePINToken(
         ret = FidoReturnCode::kAuthenticatorResponseInvalid;
         break;
     }
-    std::move(completion_callback_).Run(ret, base::nullopt, base::nullopt);
+    std::move(completion_callback_).Run(ret, base::nullopt, nullptr);
     return;
   }
 

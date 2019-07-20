@@ -7,7 +7,6 @@ import os
 from page_sets.system_health import chrome_stories
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
-from page_sets.system_health import browsing_stories
 
 from telemetry import story
 
@@ -32,16 +31,6 @@ class SystemHealthStorySet(story.StorySet):
           case and not story_class.NAME.startswith(case + ':')):
         continue
       self.AddStory(story_class(self, take_memory_measurement))
-
-    # TODO(crbug.com/968125): Stop avoiding OOPR once YUV OOPR is in place.
-    if platform in platforms.DESKTOP:
-      self.AddStory(
-        browsing_stories.GooglePlayStoreDesktopStory(
-          self, take_memory_measurement,
-          extra_browser_args=['--force-gpu-rasterization',
-                              '--enable-gpu-rasterization',
-                              '--disable-oop-rasterization'],
-          name_suffix="_oop_raster_disabled"))
 
 
 class SystemHealthBlankStorySet(story.StorySet):

@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"

@@ -4339,7 +4339,6 @@
     },
 
     'non_android_and_cast_and_chromeos_chromium_gtests': {
-      'crashpad_tests': {},
       'cronet_tests': {},
       'cronet_unittests': {},
       'headless_browsertests': {},
@@ -4391,6 +4390,10 @@
         ],
         'test': 'interactive_ui_tests',
       },
+    },
+
+    'non_linux_chromium_gtests': {
+      'crashpad_tests': {},
     },
 
     # These tests will be run on the main Android waterfall since Android
@@ -4487,10 +4490,26 @@
       },
     },
 
-    'rendering_representative_perf_tests_isolated_scripts': {
+    'rendering_desktop_representative_perf_tests_isolated_scripts': {
       'rendering_representative_perf_tests': {
         'isolate_name': 'rendering_representative_perf_tests',
-        'args': [],
+        'args': [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop",
+        ],
+        'swarming': {},
+        'experiment_percentage': 100,
+      }
+    },
+
+    'rendering_mobile_representative_perf_tests_isolated_scripts': {
+      'rendering_representative_perf_tests': {
+        'isolate_name': 'rendering_representative_perf_tests',
+        'args': [
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.mobile",
+          "--browser=android-chromium"
+        ],
         'swarming': {},
         'experiment_percentage': 100,
       }
@@ -4656,43 +4675,37 @@
     },
 
     'viz_chromeos_fyi_gtests': {
-       'viz_content_unittests': {
-        'args': [
-          '--enable-features=VizDisplayCompositor',
-        ],
-        'test': 'content_unittests',
-       },
-       'viz_interactive_ui_tests': {
+       'non_viz_interactive_ui_tests': {
          'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
          'test': 'interactive_ui_tests',
        },
     },
 
     'viz_chromeos_gtests': {
-      # TODO(jonross): remove once Viz field trials for ChromeOS are enabled.
-      'viz_browser_tests': {
+      # TODO(kylechar): Remove once VizDisplayCompositor is lauched on CrOS.
+      'non_viz_browser_tests': {
         'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
           'shards': 10,
         },
         'test': 'browser_tests',
       },
-      'viz_content_browsertests': {
+      'non_viz_content_browsertests': {
         'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
           'shards': 10,
         },
         'test': 'content_browsertests',
       },
-      'viz_content_unittests': {
+      'non_viz_content_unittests': {
         'args': [
-          '--enable-features=VizDisplayCompositor',
+          '--disable-features=VizDisplayCompositor',
         ],
         'test': 'content_unittests',
       },
@@ -5017,6 +5030,7 @@
       'mac_specific_chromium_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
+      'non_linux_chromium_gtests',
     ],
 
     'chromium_mac_rel_isolated_scripts': [
@@ -5042,6 +5056,7 @@
       'chromium_gtests_for_win_and_linux_only',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
+      'non_linux_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'win_specific_chromium_gtests',
     ],
@@ -5065,9 +5080,14 @@
 
     # BEGIN composition test suites used by the GPU bots
 
-    'gpu_angle_and_representative_perf_fyi_isolated_scripts': [
+    'gpu_angle_and_desktop_representative_perf_fyi_isolated_scripts': [
       'gpu_angle_perf_isolated_scripts',
-      'rendering_representative_perf_tests_isolated_scripts',
+      'rendering_desktop_representative_perf_tests_isolated_scripts',
+    ],
+
+    'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts': [
+      'gpu_angle_perf_isolated_scripts',
+      'rendering_mobile_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_angle_deqp_android_gtests': [
@@ -5132,7 +5152,7 @@
       'gpu_angle_perf_isolated_scripts',
       'gpu_command_buffer_perf_passthrough_isolated_scripts',
       'gpu_command_buffer_perf_validating_isolated_scripts',
-      'rendering_representative_perf_tests_isolated_scripts',
+      'rendering_desktop_representative_perf_tests_isolated_scripts',
     ],
 
     'gpu_angle_fyi_win_optional_isolated_scripts': [

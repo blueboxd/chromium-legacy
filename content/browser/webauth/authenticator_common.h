@@ -144,7 +144,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   void OnRegisterResponse(
       device::FidoReturnCode status_code,
       base::Optional<device::AuthenticatorMakeCredentialResponse> response_data,
-      base::Optional<device::FidoTransportProtocol> transport_used);
+      const device::FidoAuthenticator* authenticator);
 
   // Callback to complete the registration process once a decision about
   // whether or not to return attestation data has been made.
@@ -158,7 +158,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
       device::FidoReturnCode status_code,
       base::Optional<std::vector<device::AuthenticatorGetAssertionResponse>>
           response_data,
-      base::Optional<device::FidoTransportProtocol> transport_used);
+      const device::FidoAuthenticator* authenticator);
 
   // Runs when timer expires and cancels all issued requests to a U2fDevice.
   void OnTimeout();

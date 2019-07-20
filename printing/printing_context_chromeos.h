@@ -42,11 +42,16 @@ class PRINTING_EXPORT PrintingContextChromeos : public PrintingContext {
   Result StreamData(const std::vector<char>& buffer);
 
  private:
+  using ScopedCupsOption = std::unique_ptr<cups_option_t, OptionDeleter>;
+
   // Lazily initializes |printer_|.
   Result InitializeDevice(const std::string& device);
 
   CupsConnection connection_;
   std::unique_ptr<CupsPrinter> printer_;
+  std::vector<ScopedCupsOption> cups_options_;
+  bool send_user_info_;
+  std::string username_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingContextChromeos);
 };

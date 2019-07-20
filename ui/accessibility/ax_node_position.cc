@@ -146,13 +146,54 @@ AXNode* AXNodePosition::GetNodeInTree(AXTreeID tree_id, int32_t node_id) const {
   return nullptr;
 }
 
+bool AXNodePosition::IsInLineBreak() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreak();
+}
+
+bool AXNodePosition::IsInTextObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsText();
+}
+
 bool AXNodePosition::IsInWhiteSpace() const {
   if (IsNullPosition())
     return false;
-
   DCHECK(GetAnchor());
   return GetAnchor()->IsLineBreak() ||
          base::ContainsOnlyChars(GetText(), base::kWhitespaceUTF16);
+}
+
+bool AXNodePosition::IsInLineBreakingObject() const {
+  if (IsNullPosition())
+    return false;
+  DCHECK(GetAnchor());
+  return GetAnchor()->data().GetBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject);
+}
+
+ax::mojom::Role AXNodePosition::GetRole() const {
+  if (IsNullPosition())
+    return ax::mojom::Role::kNone;
+  DCHECK(GetAnchor());
+  return GetAnchor()->data().role;
+}
+
+AXNodeTextStyles AXNodePosition::GetTextStyles() const {
+  // Check either the current anchor or its parent for text styles.
+  AXNodeTextStyles current_anchor_text_styles =
+      !IsNullPosition() ? GetAnchor()->data().GetTextStyles()
+                        : AXNodeTextStyles();
+  if (current_anchor_text_styles.IsUnset()) {
+    AXPositionInstance parent = CreateParentPosition();
+    if (!parent->IsNullPosition())
+      return parent->GetAnchor()->data().GetTextStyles();
+  }
+  return current_anchor_text_styles;
 }
 
 std::vector<int32_t> AXNodePosition::GetWordStartOffsets() const {

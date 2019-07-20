@@ -250,7 +250,7 @@ TEST_F(ImpressionHistoryTrackerTest, ClickNoImpression) {
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
-  tracker()->OnClick(kGuid1);
+  tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
   VerifyClientStates(test_case);
 }
 
@@ -303,9 +303,10 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
 
   // Trigger user action.
   if (GetParam().user_feedback == UserFeedback::kClick)
-    tracker()->OnClick(kGuid1);
+    tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
   else if (GetParam().button_type.has_value())
-    tracker()->OnActionClick(kGuid1, GetParam().button_type.value());
+    tracker()->OnActionClick(SchedulerClientType::kTest1, kGuid1,
+                             GetParam().button_type.value());
 
   VerifyClientStates(test_case);
 }

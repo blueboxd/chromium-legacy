@@ -14582,14 +14582,12 @@ struct ScheduleCALayerSharedStateCHROMIUM {
 
   void Init(GLfloat _opacity,
             GLboolean _is_clipped,
-            GLfloat _clip_rect_corner_radius,
             GLint _sorting_context_id,
             GLuint _shm_id,
             GLuint _shm_offset) {
     SetHeader();
     opacity = _opacity;
     is_clipped = _is_clipped;
-    clip_rect_corner_radius = _clip_rect_corner_radius;
     sorting_context_id = _sorting_context_id;
     shm_id = _shm_id;
     shm_offset = _shm_offset;
@@ -14598,27 +14596,24 @@ struct ScheduleCALayerSharedStateCHROMIUM {
   void* Set(void* cmd,
             GLfloat _opacity,
             GLboolean _is_clipped,
-            GLfloat _clip_rect_corner_radius,
             GLint _sorting_context_id,
             GLuint _shm_id,
             GLuint _shm_offset) {
     static_cast<ValueType*>(cmd)->Init(
-        _opacity, _is_clipped, _clip_rect_corner_radius, _sorting_context_id,
-        _shm_id, _shm_offset);
+        _opacity, _is_clipped, _sorting_context_id, _shm_id, _shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   float opacity;
   uint32_t is_clipped;
-  float clip_rect_corner_radius;
   int32_t sorting_context_id;
   uint32_t shm_id;
   uint32_t shm_offset;
 };
 
-static_assert(sizeof(ScheduleCALayerSharedStateCHROMIUM) == 28,
-              "size of ScheduleCALayerSharedStateCHROMIUM should be 28");
+static_assert(sizeof(ScheduleCALayerSharedStateCHROMIUM) == 24,
+              "size of ScheduleCALayerSharedStateCHROMIUM should be 24");
 static_assert(
     offsetof(ScheduleCALayerSharedStateCHROMIUM, header) == 0,
     "offset of ScheduleCALayerSharedStateCHROMIUM header should be 0");
@@ -14629,19 +14624,15 @@ static_assert(
     offsetof(ScheduleCALayerSharedStateCHROMIUM, is_clipped) == 8,
     "offset of ScheduleCALayerSharedStateCHROMIUM is_clipped should be 8");
 static_assert(offsetof(ScheduleCALayerSharedStateCHROMIUM,
-                       clip_rect_corner_radius) == 12,
-              "offset of ScheduleCALayerSharedStateCHROMIUM "
-              "clip_rect_corner_radius should be 12");
-static_assert(offsetof(ScheduleCALayerSharedStateCHROMIUM,
-                       sorting_context_id) == 16,
+                       sorting_context_id) == 12,
               "offset of ScheduleCALayerSharedStateCHROMIUM sorting_context_id "
-              "should be 16");
+              "should be 12");
 static_assert(
-    offsetof(ScheduleCALayerSharedStateCHROMIUM, shm_id) == 20,
-    "offset of ScheduleCALayerSharedStateCHROMIUM shm_id should be 20");
+    offsetof(ScheduleCALayerSharedStateCHROMIUM, shm_id) == 16,
+    "offset of ScheduleCALayerSharedStateCHROMIUM shm_id should be 16");
 static_assert(
-    offsetof(ScheduleCALayerSharedStateCHROMIUM, shm_offset) == 24,
-    "offset of ScheduleCALayerSharedStateCHROMIUM shm_offset should be 24");
+    offsetof(ScheduleCALayerSharedStateCHROMIUM, shm_offset) == 20,
+    "offset of ScheduleCALayerSharedStateCHROMIUM shm_offset should be 20");
 
 struct ScheduleCALayerCHROMIUM {
   typedef ScheduleCALayerCHROMIUM ValueType;

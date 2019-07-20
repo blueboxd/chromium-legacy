@@ -259,7 +259,7 @@ class Serializer final {
       attributes.push_back(&attribute);
     std::sort(attributes.begin(), attributes.end(),
               [](const Attribute* attribute1, const Attribute* attribute2) {
-                return CodePointCompareLessThan(
+                return CodeUnitCompareLessThan(
                     attribute1->GetName().ToString(),
                     attribute2->GetName().ToString());
               });

@@ -9,7 +9,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="@dimen/explore_sites_dense_title_right_tile_view_width"
     android:layout_height="@dimen/explore_sites_dense_title_right_tile_view_height"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    app:iconCornerRadius="@dimen/explore_sites_dense_icon_corner_radius">
     <!-- The icon background. -->
     <View
         android:id="@+id/tile_view_icon_background"

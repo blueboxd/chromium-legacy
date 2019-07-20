@@ -17,6 +17,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
@@ -27,6 +28,7 @@
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
 #include "base/win/win_util.h"
+#include "base/win/windows_types.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -41,7 +43,21 @@ using chrome_cleaner::ChromePromptRequest;
 using content::BrowserThread;
 using CleanerProcessDelegate = ChromePromptChannel::CleanerProcessDelegate;
 
+constexpr char ChromePromptChannelProtobuf::kErrorHistogramName[] =
+    "SoftwareReporter.Cleaner.ChromePromptChannelError";
+
 namespace {
+
+template <typename ErrorType>
+void WriteStatusErrorCodeToHistogram(
+    ChromePromptChannelProtobuf::ErrorCategory category,
+    ErrorType error_type) {
+  base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+      ChromePromptChannelProtobuf::kErrorHistogramName,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(
+      ChromePromptChannelProtobuf::GetErrorCodeInt(category, error_type));
+}
 
 class CleanerProcessWrapper : public CleanerProcessDelegate {
  public:
@@ -212,13 +228,22 @@ void ServiceChromePromptRequests(
   // Since the field is only 1 byte it's not possible to have a short read.
   static_assert(sizeof(version) == 1,
                 "version field must be readable in 1 byte");
+
   if (!::ReadFile(request_read_handle, &version, sizeof(version), &bytes_read,
                   nullptr)) {
+    WriteStatusErrorCodeToHistogram(
+        ChromePromptChannelProtobuf::ErrorCategory::kReadVersionWinError,
+        logging::GetLastSystemErrorCode());
     PLOG(ERROR) << "Failed to read protocol version";
     return;
   }
+
   CHECK_EQ(bytes_read, sizeof(version));
   if (version != 1) {
+    WriteStatusErrorCodeToHistogram(
+        ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+        ChromePromptChannelProtobuf::CustomErrors::kWrongHandshakeVersion);
+
     LOG(ERROR) << "Cleaner requested unsupported version " << version;
     return;
   }

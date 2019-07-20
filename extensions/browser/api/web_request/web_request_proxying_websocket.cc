@@ -7,13 +7,42 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_util.h"
 
 namespace extensions {
+namespace {
+
+// This shutdown notifier makes sure the proxy is destroyed if an incognito
+// browser context is destroyed. This is needed because WebRequestAPI only
+// clears the proxies when the original browser context is destroyed.
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    static base::NoDestructor<ShutdownNotifierFactory> factory;
+    return factory.get();
+  }
+
+ private:
+  friend class base::NoDestructor<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "WebRequestProxyingWebSocket") {
+    DependsOn(PermissionHelper::GetFactoryInstance());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
+
+}  // namespace
 
 WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
     WebSocketFactory factory,
@@ -23,13 +52,10 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
     int process_id,
     int render_frame_id,
     content::BrowserContext* browser_context,
-    content::ResourceContext* resource_context,
-    InfoMap* info_map,
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     WebRequestAPI::ProxySet* proxies)
     : factory_(std::move(factory)),
       browser_context_(browser_context),
-      info_map_(info_map),
       forwarding_handshake_client_(std::move(handshake_client)),
       binding_as_handshake_client_(this),
       binding_as_auth_handler_(this),
@@ -40,11 +66,18 @@ WebRequestProxyingWebSocket::WebRequestProxyingWebSocket(
                                      render_frame_id,
                                      nullptr,
                                      MSG_ROUTING_NONE,
-                                     resource_context,
                                      request,
                                      false /* is_download */,
                                      true /* is_async */)),
-      proxies_(proxies) {}
+      proxies_(proxies) {
+  // base::Unretained is safe here because the callback will be canceled when
+  // |shutdown_notifier_| is destroyed, and |proxies_| owns this.
+  shutdown_notifier_ =
+      ShutdownNotifierFactory::GetInstance()
+          ->Get(browser_context)
+          ->Subscribe(base::BindRepeating(&WebRequestAPI::ProxySet::RemoveProxy,
+                                          base::Unretained(proxies_), this));
+}
 
 WebRequestProxyingWebSocket::~WebRequestProxyingWebSocket() {
   // This is important to ensure that no outstanding blocking requests continue
@@ -80,7 +113,7 @@ void WebRequestProxyingWebSocket::Start() {
   // WebRequestProxyingURLLoaderFactory).
   bool should_collapse_initiator = false;
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      browser_context_, info_map_, &info_, continuation, &redirect_url_,
+      browser_context_, &info_, continuation, &redirect_url_,
       &should_collapse_initiator);
 
   // It doesn't make sense to collapse WebSocket requests since they won't be
@@ -142,8 +175,8 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
       &WebRequestProxyingWebSocket::OnHeadersReceivedComplete,
       weak_factory_.GetWeakPtr());
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      browser_context_, info_map_, &info_, continuation,
-      response_.headers.get(), &override_headers_, &redirect_url_);
+      browser_context_, &info_, continuation, response_.headers.get(),
+      &override_headers_, &redirect_url_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
     OnError(result);
@@ -167,7 +200,7 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
   DCHECK(!is_done_);
   is_done_ = true;
   ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
-      browser_context_, info_map_, &info_, net::ERR_WS_UPGRADE);
+      browser_context_, &info_, net::ERR_WS_UPGRADE);
 
   forwarding_handshake_client_->OnConnectionEstablished(
       std::move(websocket), selected_protocol, extensions,
@@ -195,8 +228,8 @@ void WebRequestProxyingWebSocket::OnAuthRequired(
       &WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth,
       weak_factory_.GetWeakPtr(), auth_info);
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
-      browser_context_, info_map_, &info_, continuation,
-      response_.headers.get(), &override_headers_, &redirect_url_);
+      browser_context_, &info_, continuation, response_.headers.get(),
+      &override_headers_, &redirect_url_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
     OnError(result);
@@ -251,11 +284,8 @@ void WebRequestProxyingWebSocket::StartProxying(
     scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
     const url::Origin& origin,
     content::BrowserContext* browser_context,
-    content::ResourceContext* resource_context,
-    InfoMap* info_map) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  auto* proxies =
-      WebRequestAPI::ProxySet::GetFromResourceContext(resource_context);
+    WebRequestAPI::ProxySet* proxies) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   network::ResourceRequest request;
   request.url = url;
   request.site_for_cookies = site_for_cookies;
@@ -268,7 +298,7 @@ void WebRequestProxyingWebSocket::StartProxying(
       std::move(factory), request,
       network::mojom::WebSocketHandshakeClientPtr(std::move(handshake_client)),
       has_extra_headers, process_id, render_frame_id, browser_context,
-      resource_context, info_map, std::move(request_id_generator), proxies);
+      std::move(request_id_generator), proxies);
 
   auto* raw_proxy = proxy.get();
   proxies->AddProxy(std::move(proxy));
@@ -289,7 +319,7 @@ void WebRequestProxyingWebSocket::OnBeforeRequestComplete(int error_code) {
 
   int result =
       ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
-          browser_context_, info_map_, &info_, continuation, &request_headers_);
+          browser_context_, &info_, continuation, &request_headers_);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
     OnError(result);
@@ -321,7 +351,7 @@ void WebRequestProxyingWebSocket::OnBeforeSendHeadersComplete(
   }
 
   ExtensionWebRequestEventRouter::GetInstance()->OnSendHeaders(
-      browser_context_, info_map_, &info_, request_headers_);
+      browser_context_, &info_, request_headers_);
 
   if (!binding_as_header_client_)
     ContinueToStartRequest(net::OK);
@@ -384,7 +414,7 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedComplete(int error_code) {
   ResumeIncomingMethodCallProcessing();
   info_.AddResponseInfoFromResourceResponse(response_);
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
-      browser_context_, info_map_, &info_, net::OK);
+      browser_context_, &info_, net::OK);
 }
 
 void WebRequestProxyingWebSocket::OnAuthRequiredComplete(
@@ -420,7 +450,7 @@ void WebRequestProxyingWebSocket::OnHeadersReceivedCompleteForAuth(
       base::BindRepeating(&WebRequestProxyingWebSocket::OnAuthRequiredComplete,
                           weak_factory_.GetWeakPtr());
   auto auth_rv = ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
-      browser_context_, info_map_, &info_, auth_info, std::move(continuation),
+      browser_context_, &info_, auth_info, std::move(continuation),
       &auth_credentials_);
   PauseIncomingMethodCallProcessing();
   if (auth_rv == net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_IO_PENDING)
@@ -447,7 +477,7 @@ void WebRequestProxyingWebSocket::OnError(int error_code) {
   if (!is_done_) {
     is_done_ = true;
     ExtensionWebRequestEventRouter::GetInstance()->OnErrorOccurred(
-        browser_context_, info_map_, &info_, true /* started */, error_code);
+        browser_context_, &info_, true /* started */, error_code);
   }
 
   // Deletes |this|.

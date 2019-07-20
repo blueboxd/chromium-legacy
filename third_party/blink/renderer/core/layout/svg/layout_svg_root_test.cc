@@ -13,7 +13,12 @@
 
 namespace blink {
 
-using LayoutSVGRootTest = RenderingTest;
+class LayoutSVGRootTest : public RenderingTest {
+  void SetUp() override {
+    EnableCompositing();
+    RenderingTest::SetUp();
+  }
+};
 
 TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
   SetBodyInnerHTML(R"HTML(
@@ -43,7 +48,6 @@ TEST_F(LayoutSVGRootTest, VisualRectMappingWithoutViewportClipWithBorder) {
 }
 
 TEST_F(LayoutSVGRootTest, VisualOverflowExpandsLayer) {
-  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <svg id='root' style='width: 100px; will-change: transform; height:
     100px; overflow: visible; position: absolute;'>

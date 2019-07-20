@@ -439,10 +439,6 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     client_.set_bounds(picture_->bounds());
   }
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void BeginTest() override {
     frame_ = 0;
     draws_in_frame_ = 0;
@@ -605,10 +601,6 @@ class LayerTreeHostPictureTestForceRecalculateScales
 
     client_.set_fill_with_nonsolid_color(true);
     client_.set_bounds(size);
-  }
-
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->layer_transforms_should_scale_layer_contents = true;
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

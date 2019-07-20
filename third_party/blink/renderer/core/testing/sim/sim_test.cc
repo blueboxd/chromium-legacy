@@ -18,11 +18,7 @@
 
 namespace blink {
 
-SimTest::SimTest()
-    :  // SimCompositor overrides the LayerTreeViewDelegate to respond to
-       // BeginMainFrame(), which will update and paint the main frame of the
-       // WebViewImpl given to SetWebView().
-      web_widget_client_(&compositor_) {
+SimTest::SimTest() {
   Document::SetThreadedParsingEnabledForTesting(false);
   // Use the mock theme to get more predictable code paths, this also avoids
   // the OS callbacks in ScrollAnimatorMac which can schedule frames
@@ -42,9 +38,6 @@ SimTest::SimTest()
 }
 
 SimTest::~SimTest() {
-  // Pump the message loop to process the load event.
-  test::RunPendingTasks();
-
   Document::SetThreadedParsingEnabledForTesting(true);
   WebTestSupport::SetMockThemeEnabledForTest(false);
   ScrollbarTheme::SetMockScrollbarsEnabled(false);
@@ -55,11 +48,40 @@ SimTest::~SimTest() {
 void SimTest::SetUp() {
   Test::SetUp();
 
-  web_view_helper_.Initialize(&web_frame_client_, &web_view_client_,
-                              &web_widget_client_);
-  compositor_.SetWebView(WebView(), *web_widget_client_.layer_tree_view(),
-                         web_view_client_, web_widget_client_);
-  page_.SetPage(WebView().GetPage());
+  // SimCompositor overrides the LayerTreeViewDelegate to respond to
+  // BeginMainFrame(), which will update and paint the main frame of the
+  // WebViewImpl given to SetWebView().
+  network_ = std::make_unique<SimNetwork>();
+  compositor_ = std::make_unique<SimCompositor>();
+  web_frame_client_ =
+      std::make_unique<frame_test_helpers::TestWebFrameClient>();
+  web_widget_client_ =
+      std::make_unique<frame_test_helpers::TestWebWidgetClient>(
+          compositor_.get());
+  web_view_client_ = std::make_unique<frame_test_helpers::TestWebViewClient>();
+  page_ = std::make_unique<SimPage>();
+  web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
+
+  web_view_helper_->Initialize(web_frame_client_.get(), web_view_client_.get(),
+                               web_widget_client_.get());
+  compositor_->SetWebView(WebView(), *web_widget_client_->layer_tree_view(),
+                          *web_view_client_, *web_widget_client_);
+  page_->SetPage(WebView().GetPage());
+}
+
+void SimTest::TearDown() {
+  // Pump the message loop to process the load event.
+  test::RunPendingTasks();
+
+  // Shut down this stuff before settings change to keep the world
+  // consistent, and before the subclass tears down.
+  web_view_helper_.reset();
+  page_.reset();
+  web_view_client_.reset();
+  web_widget_client_.reset();
+  web_frame_client_.reset();
+  compositor_.reset();
+  network_.reset();
 }
 
 void SimTest::LoadURL(const String& url_string) {
@@ -78,7 +100,7 @@ LocalDOMWindow& SimTest::Window() {
 }
 
 SimPage& SimTest::GetPage() {
-  return page_;
+  return *page_;
 }
 
 Document& SimTest::GetDocument() {
@@ -86,7 +108,7 @@ Document& SimTest::GetDocument() {
 }
 
 WebViewImpl& SimTest::WebView() {
-  return *web_view_helper_.GetWebView();
+  return *web_view_helper_->GetWebView();
 }
 
 WebLocalFrameImpl& SimTest::MainFrame() {
@@ -94,23 +116,23 @@ WebLocalFrameImpl& SimTest::MainFrame() {
 }
 
 frame_test_helpers::TestWebViewClient& SimTest::WebViewClient() {
-  return web_view_client_;
+  return *web_view_client_;
 }
 
 frame_test_helpers::TestWebWidgetClient& SimTest::WebWidgetClient() {
-  return web_widget_client_;
+  return *web_widget_client_;
 }
 
 frame_test_helpers::TestWebFrameClient& SimTest::WebFrameClient() {
-  return web_frame_client_;
+  return *web_frame_client_;
 }
 
 SimCompositor& SimTest::Compositor() {
-  return compositor_;
+  return *compositor_;
 }
 
 Vector<String>& SimTest::ConsoleMessages() {
-  return web_frame_client_.ConsoleMessages();
+  return web_frame_client_->ConsoleMessages();
 }
 
 }  // namespace blink

@@ -505,7 +505,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
       ui::InputPredictor::InputData* result) {
     return input_handler_proxy_.scroll_predictor_->predictor_
         ->GeneratePrediction(WebInputEvent::GetStaticTimeStampForTests(),
-                             false /* is_resampling */, result);
+                             result);
   }
 
  protected:

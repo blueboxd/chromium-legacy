@@ -185,7 +185,6 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   TestNotificationEntryConversion(&entry);
 
   // Test notification data.
-  entry.notification_data.id = kGuid;
   entry.notification_data.title = base::UTF8ToUTF16("title");
   entry.notification_data.message = base::UTF8ToUTF16("message");
   entry.icons_uuid = {"icon_uuid_0", "icon_uuid_1"};

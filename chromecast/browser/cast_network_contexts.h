@@ -35,21 +35,16 @@ class SharedURLLoaderFactory;
 
 namespace chromecast {
 namespace shell {
-class URLRequestContextFactory;
 
 // This class owns the NetworkContext used for the system and for configuring it
 // along with the BrowserContext's NetworkContext.
-// If the network service is disabled, it will create a NetworkContext object
-// that wraps the system URLRequestContext from URLRequestContextFactory.
-// Otherwise it will create and configure its own NetworkContext for the system,
-// and create the BrowserContext's main StoragePartition's NetworkContext.
+// It will create and configure its own NetworkContext for the system, and
+// create the BrowserContext's main StoragePartition's NetworkContext.
 // It lives on the UI thread.
 class CastNetworkContexts : public net::ProxyConfigService::Observer,
                             public network::mojom::ProxyConfigPollerClient {
  public:
-  // |url_request_context_factory| needs to outlive this object.
-  explicit CastNetworkContexts(
-      URLRequestContextFactory* url_request_context_factory);
+  CastNetworkContexts();
   ~CastNetworkContexts() override;
 
   // Returns the System NetworkContext. Does any initialization of the
@@ -84,7 +79,6 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   void OnPrefServiceShutdown();
 
  private:
-  class SystemNetworkContextOwner;
   class URLLoaderFactoryForSystem;
 
   // Returns default set of parameters for configuring the network service.
@@ -109,19 +103,8 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
   // network::mojom::ProxyConfigPollerClient implementation:
   void OnLazyProxyConfigPoll() override;
 
-  // The following members are used when the network service is disabled.
-  URLRequestContextFactory* url_request_context_factory_;
-
   // The system NetworkContext.
   network::mojom::NetworkContextPtr system_network_context_;
-
-  // A helper class that owns the network::NetworkContext that wraps the system
-  // URLRequestContext.
-  std::unique_ptr<SystemNetworkContextOwner,
-                  content::BrowserThread::DeleteOnIOThread>
-      system_network_context_owner_;
-
-  // End of members that are only used if network service is disabled.
 
   // URLLoaderFactory backed by the NetworkContext returned by
   // GetSystemContext(), so consumers don't all need to create their own

@@ -19,9 +19,11 @@
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_permissions.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/api/declarative_net_request/utils.h"
 #include "extensions/common/constants.h"
@@ -224,8 +226,11 @@ RulesetManager::Action::~Action() = default;
 RulesetManager::Action::Action(Action&&) = default;
 RulesetManager::Action& RulesetManager::Action::operator=(Action&&) = default;
 
-RulesetManager::RulesetManager(const InfoMap* info_map) : info_map_(info_map) {
-  DCHECK(info_map_);
+RulesetManager::RulesetManager(content::BrowserContext* browser_context)
+    : browser_context_(browser_context),
+      prefs_(ExtensionPrefs::Get(browser_context)),
+      permission_helper_(PermissionHelper::Get(browser_context)) {
+  DCHECK(browser_context_);
 
   // RulesetManager can be created on any sequence.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -243,7 +248,7 @@ void RulesetManager::AddRuleset(const ExtensionId& extension_id,
 
   bool inserted;
   std::tie(std::ignore, inserted) =
-      rulesets_.emplace(extension_id, info_map_->GetInstallTime(extension_id),
+      rulesets_.emplace(extension_id, prefs_->GetInstallTime(extension_id),
                         std::move(matcher), std::move(allowed_pages));
   DCHECK(inserted) << "AddRuleset called twice in succession for "
                    << extension_id;
@@ -428,7 +433,7 @@ RulesetManager::GetRedirectOrUpgradeAction(
   // redirect url.
   for (const ExtensionRulesetData* ruleset : rulesets) {
     PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
-        info_map_, ruleset->extension_id, request.url, tab_id,
+        permission_helper_, ruleset->extension_id, request.url, tab_id,
         crosses_incognito,
         WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
         request.initiator, request.type);
@@ -511,9 +516,9 @@ RulesetManager::Action RulesetManager::EvaluateRequestInternal(
     // DO_NOT_CHECK_HOST is strictly less restrictive than
     // REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR.
     PageAccess page_access = WebRequestPermissions::CanExtensionAccessURL(
-        info_map_, ruleset.extension_id, request.url, tab_id, crosses_incognito,
-        WebRequestPermissions::DO_NOT_CHECK_HOST, request.initiator,
-        request.type);
+        permission_helper_, ruleset.extension_id, request.url, tab_id,
+        crosses_incognito, WebRequestPermissions::DO_NOT_CHECK_HOST,
+        request.initiator, request.type);
     DCHECK_NE(PageAccess::kWithheld, page_access);
     if (page_access != PageAccess::kAllowed)
       continue;
@@ -549,7 +554,7 @@ bool RulesetManager::ShouldEvaluateRequest(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ensure clients filter out sensitive requests.
-  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
+  DCHECK(!WebRequestPermissions::HideRequest(permission_helper_, request));
 
   if (!IsAPIAvailable()) {
     DCHECK(rulesets_.empty());
@@ -573,7 +578,7 @@ bool RulesetManager::ShouldEvaluateRulesetForRequest(
   // Only extensions enabled in incognito should have access to requests in an
   // incognito context.
   if (is_incognito_context &&
-      !info_map_->IsIncognitoEnabled(ruleset.extension_id)) {
+      !util::IsIncognitoEnabled(ruleset.extension_id, browser_context_)) {
     return false;
   }
 

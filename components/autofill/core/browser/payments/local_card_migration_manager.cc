@@ -50,9 +50,16 @@ LocalCardMigrationManager::LocalCardMigrationManager(
 LocalCardMigrationManager::~LocalCardMigrationManager() {}
 
 bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
+    const CreditCard* imported_credit_card,
     int imported_credit_card_record_type) {
+  // Reset and store the imported credit card info for a later check of whether
+  // the imported card is supported.
+  imported_credit_card_number_.reset();
+  if (imported_credit_card)
+    imported_credit_card_number_ = imported_credit_card->number();
+  imported_credit_card_record_type_ = imported_credit_card_record_type;
   // Must be an existing card. New cards always get Upstream or local save.
-  switch (imported_credit_card_record_type) {
+  switch (imported_credit_card_record_type_) {
     case FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD:
       local_card_migration_origin_ =
           AutofillMetrics::LocalCardMigrationOrigin::UseOfLocalCard;
@@ -79,7 +86,7 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   if (base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationUsesStrikeSystemV2) &&
       GetLocalCardMigrationStrikeDatabase()->IsMaxStrikesLimitReached()) {
-    switch (imported_credit_card_record_type) {
+    switch (imported_credit_card_record_type_) {
       case FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD:
         AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
             AutofillMetrics::SaveTypeMetric::LOCAL);
@@ -106,14 +113,14 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
   // of Upstream if there are other local cards to migrate as well. If the form
   // was submitted with a server card, offer migration if ANY local cards can be
   // migrated.
-  if ((imported_credit_card_record_type ==
+  if ((imported_credit_card_record_type_ ==
            FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
        migratable_credit_cards_.size() > 1) ||
-      (imported_credit_card_record_type ==
+      (imported_credit_card_record_type_ ==
            FormDataImporter::ImportedCreditCardRecordType::SERVER_CARD &&
        !migratable_credit_cards_.empty())) {
     return true;
-  } else if (imported_credit_card_record_type ==
+  } else if (imported_credit_card_record_type_ ==
                  FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
              migratable_credit_cards_.size() == 1) {
     AutofillMetrics::LogLocalCardMigrationDecisionMetric(
@@ -234,6 +241,23 @@ void LocalCardMigrationManager::OnDidGetUploadDetails(
       // Pops up a larger, modal dialog showing the local cards to be uploaded.
       ShowMainMigrationDialog();
     } else {
+      // Check if an imported local card is listed in
+      // |supported_card_bin_ranges|. Abort the migration when the user uses an
+      // unsupported local card.
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillDoNotMigrateUnsupportedLocalCards) &&
+          !supported_card_bin_ranges.empty() &&
+          imported_credit_card_record_type_ ==
+              FormDataImporter::ImportedCreditCardRecordType::LOCAL_CARD &&
+          imported_credit_card_number_.has_value() &&
+          !payments::IsCreditCardNumberSupported(
+              imported_credit_card_number_.value(),
+              supported_card_bin_ranges)) {
+        AutofillMetrics::LogLocalCardMigrationDecisionMetric(
+            AutofillMetrics::LocalCardMigrationDecisionMetric::
+                NOT_OFFERED_USE_UNSUPPORTED_LOCAL_CARD);
+        return;
+      }
       // Filter the migratable credit cards with |supported_card_bin_ranges|.
       FilterOutUnsupportedLocalCards(supported_card_bin_ranges);
       // Abandon the migration if no supported card left.
@@ -426,8 +450,8 @@ void LocalCardMigrationManager::FilterOutUnsupportedLocalCards(
     // |supported_card_bin_ranges|.
     auto card_is_unsupported =
         [&supported_card_bin_ranges](MigratableCreditCard& card) {
-          return !payments::IsCreditCardSupported(card.credit_card(),
-                                                  supported_card_bin_ranges);
+          return !payments::IsCreditCardNumberSupported(
+              card.credit_card().number(), supported_card_bin_ranges);
         };
     base::EraseIf(migratable_credit_cards_, card_is_unsupported);
   }

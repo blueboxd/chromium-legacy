@@ -241,9 +241,6 @@ def main():
       'lib/clang/$V/lib/darwin/libclang_rt.asan_iossim_dynamic.dylib',
       'lib/clang/$V/lib/darwin/libclang_rt.asan_osx_dynamic.dylib',
 
-      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-      'lib/clang/$V/lib/darwin/libclang_rt.fuzzer_no_main_osx.a',
-
       # OS X and iOS builtin libraries (iossim is lipo'd into ios) for the
       # _IsOSVersionAtLeast runtime function.
       'lib/clang/$V/lib/darwin/libclang_rt.ios.a',
@@ -277,9 +274,6 @@ def main():
       'lib/clang/$V/lib/linux/libclang_rt.asan-aarch64-android.so',
       'lib/clang/$V/lib/linux/libclang_rt.asan-arm-android.so',
       'lib/clang/$V/lib/linux/libclang_rt.asan-i686-android.so',
-
-      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-      'lib/clang/$V/lib/linux/libclang_rt.fuzzer_no_main-x86_64.a',
 
       # HWASAN Android runtime.
       'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
@@ -330,9 +324,6 @@ def main():
 
       # AddressSanitizer C++ runtime.
       'lib/clang/$V/lib/windows/clang_rt.asan_cxx-x86_64.lib',
-
-      # Fuzzing instrumentation (-fsanitize=fuzzer-no-link).
-      'lib/clang/$V/lib/windows/clang_rt.fuzzer_no_main-x86_64.lib',
 
       # Thunk for AddressSanitizer needed for static build of a shared lib.
       'lib/clang/$V/lib/windows/clang_rt.asan_dll_thunk-x86_64.lib',

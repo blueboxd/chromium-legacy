@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_export.h"
 
@@ -23,7 +24,7 @@ namespace ui {
 struct GL_EXPORT CARendererLayerParams {
   CARendererLayerParams(bool is_clipped,
                         const gfx::Rect clip_rect,
-                        float clip_rect_corner_radius,
+                        const gfx::RRectF rounded_corner_bounds,
                         unsigned sorting_context_id,
                         const gfx::Transform& transform,
                         gl::GLImage* image,
@@ -38,7 +39,7 @@ struct GL_EXPORT CARendererLayerParams {
 
   bool is_clipped;
   const gfx::Rect clip_rect;
-  float clip_rect_corner_radius;
+  const gfx::RRectF rounded_corner_bounds;
   unsigned sorting_context_id;
   const gfx::Transform transform;
   gl::GLImage* image;

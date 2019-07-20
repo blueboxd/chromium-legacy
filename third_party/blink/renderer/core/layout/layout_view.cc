@@ -96,6 +96,8 @@ LayoutView::LayoutView(Document* document)
     : LayoutBlockFlow(document),
       frame_view_(document->View()),
       layout_state_(nullptr),
+      // TODO(pdr): This should be null if CompositeAfterPaintEnabled() is true.
+      compositor_(std::make_unique<PaintLayerCompositor>(*this)),
       layout_quote_head_(nullptr),
       layout_counter_count_(0),
       hit_test_count_(0),
@@ -802,15 +804,13 @@ bool LayoutView::UsesCompositing() const {
 }
 
 PaintLayerCompositor* LayoutView::Compositor() {
-  if (!compositor_)
-    compositor_ = std::make_unique<PaintLayerCompositor>(*this);
-
+  DCHECK(compositor_);
   return compositor_.get();
 }
 
-void LayoutView::SetIsInWindow(bool is_in_window) {
-  if (compositor_)
-    compositor_->SetIsInWindow(is_in_window);
+void LayoutView::CleanUpCompositor() {
+  DCHECK(compositor_);
+  compositor_->CleanUp();
 }
 
 IntervalArena* LayoutView::GetIntervalArena() {

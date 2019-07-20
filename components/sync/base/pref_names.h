@@ -80,6 +80,9 @@ extern const char kSyncLastRunVersion[];
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];
 
+extern const char kSyncDemographicsBirthYear[];
+extern const char kSyncDemographicsGender[];
+
 }  // namespace prefs
 
 }  // namespace syncer

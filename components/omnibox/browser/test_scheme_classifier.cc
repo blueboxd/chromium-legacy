@@ -30,5 +30,5 @@ metrics::OmniboxInputType TestSchemeClassifier::GetInputTypeForScheme(
   if (net::URLRequest::IsHandledProtocol(scheme))
     return metrics::OmniboxInputType::URL;
 
-  return metrics::OmniboxInputType::INVALID;
+  return metrics::OmniboxInputType::EMPTY;
 }

@@ -87,7 +87,7 @@ AtomicString CreateAccessControlRequestHeadersHeader(
 
   // Sort header names lexicographically.
   std::sort(filtered_headers.begin(), filtered_headers.end(),
-            WTF::CodePointCompareLessThan);
+            WTF::CodeUnitCompareLessThan);
   StringBuilder header_buffer;
   for (const String& header : filtered_headers) {
     if (!header_buffer.IsEmpty())

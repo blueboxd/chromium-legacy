@@ -2286,6 +2286,12 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       return;
   }
 
+  // Now that we have run the lifecycle up to paint, we can reset
+  // |need_paint_phase_after_throttling_| so that the paint phase will
+  // properly see us as being throttled (if that was the only reason we remained
+  // unthrottled), and clear the painted output.
+  need_paint_phase_after_throttling_ = false;
+
   DCHECK_EQ(target_state, DocumentLifecycle::kPaintClean);
   RunPaintLifecyclePhase();
   DCHECK(ShouldThrottleRendering() ||
@@ -4003,6 +4009,12 @@ void LocalFrameView::RenderThrottlingStatusChanged() {
     frame_scheduler->TraceUrlChange(frame_->GetDocument()->Url().GetString());
   }
 
+  // If we have become unthrottled, this is essentially a no-op since we're
+  // going to paint anyway. If we have become throttled, then this will force
+  // one lifecycle update to clear the painted output.
+  if (GetFrame().IsLocalRoot())
+    need_paint_phase_after_throttling_ = true;
+
 #if DCHECK_IS_ON()
   // Make sure we never have an unthrottled frame inside a throttled one.
   LocalFrameView* parent = ParentFrameView();
@@ -4104,8 +4116,10 @@ bool LocalFrameView::ShouldThrottleRendering() const {
   bool throttled_for_global_reasons = CanThrottleRendering() &&
                                       frame_->GetDocument() &&
                                       Lifecycle().ThrottlingAllowed();
-  if (!throttled_for_global_reasons || needs_forced_compositing_update_)
+  if (!throttled_for_global_reasons || needs_forced_compositing_update_ ||
+      need_paint_phase_after_throttling_) {
     return false;
+  }
 
   // Only lifecycle phases up to layout are needed to generate an
   // intersection observation.

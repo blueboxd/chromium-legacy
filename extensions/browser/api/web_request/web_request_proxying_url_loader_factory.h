@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -26,21 +27,12 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
 
-namespace content {
-class ResourceContext;
-}  // namespace content
-
 namespace extensions {
 
 class ExtensionNavigationUIData;
-class InfoMap;
 
 // Owns URLLoaderFactory bindings for WebRequest proxies with the Network
-// Service enabled. This is loosely controlled by the WebRequestAPI on the UI
-// thread, but does all its real work on the IO thread. This is only because
-// it is tightly coupled to ExtensionsWebRequestEventRouter, and that object
-// must stay on the IO thread.
-// TODO(http://crbug.com/824840): Move this to the UI thread.
+// Service enabled.
 class WebRequestProxyingURLLoaderFactory
     : public WebRequestAPI::Proxy,
       public network::mojom::URLLoaderFactory,
@@ -192,13 +184,11 @@ class WebRequestProxyingURLLoaderFactory
   };
 
   WebRequestProxyingURLLoaderFactory(
-      void* browser_context,
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       int render_process_id,
       bool is_download,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-      InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
       network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
@@ -207,17 +197,15 @@ class WebRequestProxyingURLLoaderFactory
   ~WebRequestProxyingURLLoaderFactory() override;
 
   static void StartProxying(
-      void* browser_context,
-      content::ResourceContext* resource_context,
+      content::BrowserContext* browser_context,
       int render_process_id,
       bool is_download,
       scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-      InfoMap* info_map,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      network::mojom::TrustedURLLoaderHeaderClientRequest
-          header_client_request);
+      network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request,
+      WebRequestAPI::ProxySet* proxies);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader_request,
@@ -248,13 +236,11 @@ class WebRequestProxyingURLLoaderFactory
   void RemoveRequest(int32_t network_service_request_id, uint64_t request_id);
   void MaybeRemoveProxy();
 
-  void* const browser_context_;
-  content::ResourceContext* const resource_context_;
+  content::BrowserContext* const browser_context_;
   const int render_process_id_;
   const bool is_download_;
   scoped_refptr<WebRequestAPI::RequestIDGenerator> request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
-  InfoMap* const info_map_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
   mojo::Binding<network::mojom::TrustedURLLoaderHeaderClient>
@@ -269,6 +255,10 @@ class WebRequestProxyingURLLoaderFactory
   // A mapping from the network stack's notion of request ID to our own
   // internally generated request ID for the same request.
   std::map<int32_t, uint64_t> network_request_id_to_web_request_id_;
+
+  // Notifies the proxy that the browser context has been shutdown.
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_;
 
   base::WeakPtrFactory<WebRequestProxyingURLLoaderFactory> weak_factory_{this};
 

@@ -285,7 +285,6 @@ const CGFloat kAnswerRowHeight = 64.0;
   size_t size = self.currentResult.count;
 
   [self.tableView reloadData];
-  [self.tableView beginUpdates];
   for (size_t i = 0; i < kRowCount; i++) {
     OmniboxPopupRow* row = _rows[i];
 
@@ -296,7 +295,6 @@ const CGFloat kAnswerRowHeight = 64.0;
       row.hidden = YES;
     }
   }
-  [self.tableView endUpdates];
 
   if (IsIPadIdiom())
     [self updateContentInsetForKeyboard];

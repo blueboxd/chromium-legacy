@@ -17,12 +17,16 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/url_matcher/url_matcher_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/api/web_request/permission_helper.h"
 #include "extensions/browser/api/web_request/web_request_api_helpers.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,8 +46,8 @@ using url_matcher::URLMatcher;
 namespace extensions {
 
 namespace {
-const char kExtensionId[] = "ext1";
-const char kExtensionId2[] = "ext2";
+const char kExtensionId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char kExtensionId2[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const char kRuleId1[] = "rule1";
 const char kRuleId2[] = "rule2";
 const char kRuleId3[] = "rule3";
@@ -63,14 +67,11 @@ WebRequestInfoInitParams CreateRequestParams(const GURL& url) {
 
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
-  explicit TestWebRequestRulesRegistry(
-      scoped_refptr<InfoMap> extension_info_map)
-      : WebRequestRulesRegistry(NULL /*profile*/,
-                                NULL /* cache_delegate */,
+  explicit TestWebRequestRulesRegistry(content::BrowserContext* context)
+      : WebRequestRulesRegistry(context,
+                                nullptr /* cache_delegate */,
                                 RulesRegistryService::kDefaultRulesRegistryID),
-        num_clear_cache_calls_(0) {
-    SetExtensionInfoMapForTesting(extension_info_map);
-  }
+        num_clear_cache_calls_(0) {}
 
   // Returns how often the in-memory caches of the renderers were instructed
   // to be cleared.
@@ -93,12 +94,6 @@ class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
 
 class WebRequestRulesRegistryTest : public testing::Test {
  public:
-  WebRequestRulesRegistryTest()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-
-  ~WebRequestRulesRegistryTest() override {}
-
   void SetUp() override;
 
   void TearDown() override {
@@ -229,12 +224,12 @@ class WebRequestRulesRegistryTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  TestingProfile profile_;
   // Two extensions with host permissions for all URLs and the DWR permission.
   // Installation times will be so that |extension_| is older than
   // |extension2_|.
   scoped_refptr<Extension> extension_;
   scoped_refptr<Extension> extension2_;
-  scoped_refptr<InfoMap> extension_info_map_;
 };
 
 void WebRequestRulesRegistryTest::SetUp() {
@@ -255,22 +250,20 @@ void WebRequestRulesRegistryTest::SetUp() {
                                       kExtensionId2,
                                       &error);
   ASSERT_TRUE(extension2_.get()) << error;
-  extension_info_map_ = new InfoMap;
-  ASSERT_TRUE(extension_info_map_.get());
-  extension_info_map_->AddExtension(extension_.get(),
-                                    base::Time() + base::TimeDelta::FromDays(1),
-                                    false /*incognito_enabled*/,
-                                    false /*notifications_disabled*/);
-  extension_info_map_->AddExtension(extension2_.get(),
-                                    base::Time() + base::TimeDelta::FromDays(2),
-                                    false /*incognito_enabled*/,
-                                    false /*notifications_disabled*/);
+  CHECK(ExtensionRegistry::Get(&profile_));
+  ExtensionRegistry::Get(&profile_)->AddEnabled(extension_);
+  ExtensionPrefs::Get(&profile_)->OnExtensionInstalled(
+      extension_.get(), Extension::State::ENABLED, syncer::StringOrdinal(), "");
+  ExtensionRegistry::Get(&profile_)->AddEnabled(extension2_);
+  ExtensionPrefs::Get(&profile_)->OnExtensionInstalled(
+      extension2_.get(), Extension::State::ENABLED, syncer::StringOrdinal(),
+      "");
 }
 
 
 TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   std::string error;
 
   {
@@ -311,7 +304,7 @@ TEST_F(WebRequestRulesRegistryTest, AddRulesImpl) {
 
 TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   std::string error;
 
   // Setup RulesRegistry to contain two rules.
@@ -361,7 +354,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveRulesImpl) {
 
 TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   std::string error;
 
   {
@@ -418,7 +411,7 @@ TEST_F(WebRequestRulesRegistryTest, RemoveAllRulesImpl) {
 // Test precedences between extensions.
 TEST_F(WebRequestRulesRegistryTest, Precedences) {
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   std::string error;
 
   {
@@ -438,8 +431,8 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   GURL url("http://www.google.com");
   WebRequestInfo request_info(CreateRequestParams(url));
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
-  EventResponseDeltas deltas =
-      registry->CreateDeltas(NULL, request_data, false);
+  EventResponseDeltas deltas = registry->CreateDeltas(
+      PermissionHelper::Get(&profile_), request_data, false);
 
   // The second extension is installed later and will win for this reason
   // in conflict resolution.
@@ -450,20 +443,17 @@ TEST_F(WebRequestRulesRegistryTest, Precedences) {
   const EventResponseDelta& loser = deltas.back();
 
   EXPECT_EQ(kExtensionId2, winner.extension_id);
-  EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(2),
-            winner.extension_install_time);
   EXPECT_EQ(GURL("http://www.bar.com"), winner.new_url);
+  EXPECT_GT(winner.extension_install_time, loser.extension_install_time);
 
   EXPECT_EQ(kExtensionId, loser.extension_id);
-  EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(1),
-            loser.extension_install_time);
   EXPECT_EQ(GURL("http://www.foo.com"), loser.new_url);
 }
 
 // Test priorities of rules within one extension.
 TEST_F(WebRequestRulesRegistryTest, Priorities) {
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   std::string error;
 
   {
@@ -490,16 +480,14 @@ TEST_F(WebRequestRulesRegistryTest, Priorities) {
   GURL url("http://www.google.com/index.html");
   WebRequestInfo request_info(CreateRequestParams(url));
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
-  EventResponseDeltas deltas =
-      registry->CreateDeltas(nullptr, request_data, false);
+  EventResponseDeltas deltas = registry->CreateDeltas(
+      PermissionHelper::Get(&profile_), request_data, false);
 
   // The redirect by the first extension is ignored due to the ignore rule.
   ASSERT_EQ(1u, deltas.size());
   const EventResponseDelta& effective_rule = *deltas.begin();
 
   EXPECT_EQ(kExtensionId2, effective_rule.extension_id);
-  EXPECT_EQ(base::Time() + base::TimeDelta::FromDays(2),
-            effective_rule.extension_install_time);
   EXPECT_EQ(GURL("http://www.bar.com"), effective_rule.new_url);
 }
 
@@ -558,7 +546,7 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
   ASSERT_TRUE(api::events::Rule::Populate(*value2, &rule2));
 
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   std::string error = registry->AddRulesImpl(kExtensionId, rules);
   EXPECT_EQ("", error);
   EXPECT_FALSE(registry->IsEmpty());
@@ -566,8 +554,8 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
   GURL url("http://www.foo.com/test");
   WebRequestInfo request_info(CreateRequestParams(url));
   WebRequestData request_data(&request_info, ON_BEFORE_REQUEST);
-  EventResponseDeltas deltas =
-      registry->CreateDeltas(NULL, request_data, false);
+  EventResponseDeltas deltas = registry->CreateDeltas(
+      PermissionHelper::Get(&profile_), request_data, false);
 
   // The redirect by the redirect rule is ignored due to the ignore rule.
   std::set<const WebRequestRule*> matches = registry->GetMatches(request_data);
@@ -579,7 +567,7 @@ TEST_F(WebRequestRulesRegistryTest, IgnoreRulesByTag) {
 // GetMatches.
 TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   const std::string kMatchingUrlAttribute(
       "\"url\": { \"pathContains\": \"\" }, \n");
   const std::string kNonMatchingNonUrlAttribute(
@@ -628,7 +616,7 @@ TEST_F(WebRequestRulesRegistryTest, GetMatchesCheckFulfilled) {
 // differ.
 TEST_F(WebRequestRulesRegistryTest, GetMatchesDifferentUrls) {
   scoped_refptr<TestWebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
   const std::string kUrlAttribute(
       "\"url\": { \"hostContains\": \"url\" }, \n");
   const std::string kFirstPartyUrlAttribute(
@@ -814,7 +802,7 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
   ASSERT_TRUE(api::events::Rule::Populate(*value, &rule));
 
   scoped_refptr<WebRequestRulesRegistry> registry(
-      new TestWebRequestRulesRegistry(extension_info_map_));
+      new TestWebRequestRulesRegistry(&profile_));
 
   URLMatcher matcher;
   std::string error = registry->AddRulesImpl(kExtensionId, rules);
@@ -826,14 +814,16 @@ TEST_F(WebRequestRulesRegistryTest, CheckOriginAndPathRegEx) {
   GURL url1("http://bar.com/index.html?foo.com");
   WebRequestInfo request1_info(CreateRequestParams(url1));
   WebRequestData request_data1(&request1_info, ON_BEFORE_REQUEST);
-  deltas = registry->CreateDeltas(NULL, request_data1, false);
+  deltas = registry->CreateDeltas(PermissionHelper::Get(&profile_),
+                                  request_data1, false);
   EXPECT_EQ(0u, deltas.size());
 
   // This is a correct match.
   GURL url2("http://foo.com/index.html");
   WebRequestInfo request2_info(CreateRequestParams(url2));
   WebRequestData request_data2(&request2_info, ON_BEFORE_REQUEST);
-  deltas = registry->CreateDeltas(NULL, request_data2, false);
+  deltas = registry->CreateDeltas(PermissionHelper::Get(&profile_),
+                                  request_data2, false);
   EXPECT_EQ(1u, deltas.size());
 }
 

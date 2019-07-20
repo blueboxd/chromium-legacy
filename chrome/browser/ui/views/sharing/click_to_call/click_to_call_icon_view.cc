@@ -8,19 +8,33 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 #include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop.h"
 
 namespace {
+
 // Height of the loader bar in DIP.
 constexpr float kLoaderHeight = 4.0f;
 // Width of the loader bar in percent of its range.
 constexpr float kLoaderWidth = 0.2f;
+
+ClickToCallSharingDialogController* GetControllerFromWebContents(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+
+  return ClickToCallSharingDialogController::GetOrCreateFromWebContents(
+      web_contents);
+}
+
 }  // namespace
 
 ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
@@ -29,18 +43,40 @@ ClickToCallIconView::ClickToCallIconView(PageActionIconView::Delegate* delegate)
                          delegate) {
   SetVisible(false);
   UpdateLoaderColor();
+  SetUpForInOutAnimation();
 }
 
 ClickToCallIconView::~ClickToCallIconView() = default;
 
 views::BubbleDialogDelegateView* ClickToCallIconView::GetBubble() const {
-  return ClickToCallDialogView::GetBubbleView();
+  auto* controller = GetControllerFromWebContents(GetWebContents());
+  return controller
+             ? static_cast<ClickToCallDialogView*>(controller->GetDialog())
+             : nullptr;
 }
 
 bool ClickToCallIconView::Update() {
+  auto* controller = GetControllerFromWebContents(GetWebContents());
+  if (controller) {
+    if (show_error_ != controller->send_failed()) {
+      show_error_ = controller->send_failed();
+      UpdateIconImage();
+    }
+
+    if (controller->is_loading())
+      StartLoadingAnimation();
+    else
+      StopLoadingAnimation();
+  }
+
   const bool is_bubble_showing = IsBubbleShowing();
-  const bool is_visible = is_bubble_showing || loading_animation_;
+  const bool is_visible =
+      is_bubble_showing || loading_animation_ || label()->GetVisible();
   const bool visibility_changed = GetVisible() != is_visible;
+
+  if (is_bubble_showing || loading_animation_)
+    ResetSlideAnimation(/*show=*/false);
+
   SetVisible(is_visible);
   UpdateInkDrop(is_bubble_showing);
   return visibility_changed;
@@ -59,6 +95,10 @@ void ClickToCallIconView::StartLoadingAnimation() {
 void ClickToCallIconView::StopLoadingAnimation() {
   if (!loading_animation_)
     return;
+
+  if (!show_error_)
+    AnimateIn(IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS);
+
   loading_animation_.reset();
   SchedulePaint();
 }
@@ -102,6 +142,11 @@ void ClickToCallIconView::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
+void ClickToCallIconView::AnimationEnded(const gfx::Animation* animation) {
+  PageActionIconView::AnimationEnded(animation);
+  Update();
+}
+
 void ClickToCallIconView::OnThemeChanged() {
   PageActionIconView::OnThemeChanged();
   UpdateLoaderColor();
@@ -128,8 +173,11 @@ void ClickToCallIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
 const gfx::VectorIcon& ClickToCallIconView::GetVectorIcon() const {
-  // TODO(crbug.com/972059): Should we have our own icon?
-  return kSendTabToSelfIcon;
+  return vector_icons::kCallIcon;
+}
+
+const gfx::VectorIcon& ClickToCallIconView::GetVectorIconBadge() const {
+  return show_error_ ? kBlockedBadgeIcon : gfx::kNoneIcon;
 }
 
 base::string16 ClickToCallIconView::GetTextForTooltipAndAccessibleName() const {

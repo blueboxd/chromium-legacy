@@ -115,12 +115,6 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       icon = &kVrHeadsetIcon;
       break;
-    case TabAlertState::WRITABLE_NATIVE_FILE_SYSTEM_HANDLES:
-      icon = &kSaveOriginalFileIcon;
-      break;
-    case TabAlertState::NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS:
-      icon = &vector_icons::kInsertDriveFileOutlineIcon;
-      break;
     case TabAlertState::NONE:
       return gfx::Image();
   }

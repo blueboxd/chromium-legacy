@@ -29,6 +29,8 @@
 #include "gpu/ipc/service/x_util.h"
 #include "gpu/vulkan/buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -86,7 +88,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void UpdateGPUInfo();
 
   void InitializeWithHost(
-      mojom::GpuHostPtr gpu_host,
+      mojo::PendingRemote<mojom::GpuHost> gpu_host,
       gpu::GpuProcessActivityFlags activity_flags,
       scoped_refptr<gl::GLSurface> default_offscreen_surface,
       gpu::SyncPointManager* sync_point_manager = nullptr,
@@ -298,7 +300,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU process populated on creation.
   gpu::GpuExtraInfo gpu_extra_info_;
 
-  scoped_refptr<mojom::ThreadSafeGpuHostPtr> gpu_host_;
+  mojo::SharedRemote<mojom::GpuHost> gpu_host_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;
 

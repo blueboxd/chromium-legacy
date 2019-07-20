@@ -64,8 +64,8 @@ size_t GetMaxSources() {
       kUkmFeature, "MaxSources", kDefaultMaxSources));
 }
 
-// Gets the maximum number of unreferenced Sources kept after purging sources
-// that were added to the log.
+// Gets the maximum number of Sources we can kept in memory to defer to the next
+// reporting interval at the end of the current reporting cycle.
 size_t GetMaxKeptSources() {
   constexpr size_t kDefaultMaxKeptSources = 100;
   return static_cast<size_t>(base::GetFieldTrialParamByFeatureAsInt(
@@ -258,6 +258,12 @@ void UkmRecorderImpl::Purge() {
   recording_is_continuous_ = false;
 }
 
+void UkmRecorderImpl::MarkSourceForDeletion(SourceId source_id) {
+  if (source_id == kInvalidSourceId)
+    return;
+  recordings_.obsolete_source_ids.insert(source_id);
+}
+
 void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
     const IsWebstoreExtensionCallback& callback) {
   is_webstore_extension_callback_ = callback;
@@ -266,23 +272,35 @@ void UkmRecorderImpl::SetIsWebstoreExtensionCallback(
 void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::set<SourceId> ids_seen;
+  // Set of source ids seen by entries in recordings_.
+  std::set<SourceId> source_ids_seen;
   for (const auto& entry : recordings_.entries) {
     Entry* proto_entry = report->add_entries();
     StoreEntryProto(*entry, proto_entry);
-    ids_seen.insert(entry->source_id);
+    source_ids_seen.insert(entry->source_id);
   }
+  // Number of sources excluded from this report because no entries referred to
+  // them.
+  const int num_sources_unsent =
+      recordings_.sources.size() - source_ids_seen.size();
 
+  // Construct set of whitelisted URLs by merging those carried over from the
+  // previous report cycle and those from sources recorded in this cycle.
   std::unordered_set<std::string> url_whitelist;
   recordings_.carryover_urls_whitelist.swap(url_whitelist);
   AppendWhitelistedUrls(recordings_.sources, &url_whitelist);
 
-  std::vector<std::unique_ptr<UkmSource>> unsent_sources;
-  int unmatched_sources = 0;
+  // Number of sources discarded due to not matching a navigation URL.
+  int num_sources_unmatched = 0;
   std::unordered_map<ukm::SourceIdType, int> serialized_source_type_counts;
-  for (auto& kv : recordings_.sources) {
+
+  for (const auto& kv : recordings_.sources) {
+    // Sources of non-navigation types will not be kept after current report.
+    if (GetSourceIdType(kv.first) != base::UkmSourceId::Type::NAVIGATION_ID) {
+      recordings_.obsolete_source_ids.insert(kv.first);
+    }
     // If the source id is not whitelisted, don't send it unless it has
-    // associated entries and the URL matches a URL of a whitelisted source.
+    // associated entries and the URL matches that of a whitelisted source.
     // Note: If ShouldRestrictToWhitelistedSourceIds() is true, this logic will
     // not be hit as the source would have already been filtered in
     // UpdateSourceURL().
@@ -291,11 +309,12 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
       DCHECK_EQ(1u, kv.second->urls().size());
       if (!url_whitelist.count(kv.second->url().spec())) {
         RecordDroppedSource(DroppedDataReason::NOT_MATCHED);
-        unmatched_sources++;
+        MarkSourceForDeletion(kv.first);
+        num_sources_unmatched++;
         continue;
       }
-      if (!base::Contains(ids_seen, kv.first)) {
-        unsent_sources.push_back(std::move(kv.second));
+      // Omit entryless sources from the report.
+      if (!base::Contains(source_ids_seen, kv.first)) {
         continue;
       }
     }
@@ -353,9 +372,9 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   UMA_HISTOGRAM_COUNTS_100000("UKM.Entries.SerializedCount2",
                               recordings_.entries.size());
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnsentSourcesCount",
-                            unsent_sources.size());
+                            num_sources_unsent);
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.UnmatchedSourcesCount",
-                            unmatched_sources);
+                            num_sources_unmatched);
 
   UMA_HISTOGRAM_COUNTS_1000(
       "UKM.Sources.SerializedCount2.Ukm",
@@ -367,16 +386,23 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
       "UKM.Sources.SerializedCount2.App",
       serialized_source_type_counts[ukm::SourceIdType::APP_ID]);
 
+  // For each matching id in obsolete_source_ids, remove the Source from
+  // recordings_.sources. The remaining sources form the deferred sources for
+  // the next report.
+  for (const SourceId& source_id : recordings_.obsolete_source_ids) {
+    recordings_.sources.erase(source_id);
+  }
+  recordings_.obsolete_source_ids.clear();
+
+  // Populate SourceCounts field on the report then clear the recordings.
   Report::SourceCounts* source_counts_proto = report->mutable_source_counts();
   source_counts_proto->set_observed(recordings_.source_counts.observed);
   source_counts_proto->set_navigation_sources(
       recordings_.source_counts.navigation_sources);
-  source_counts_proto->set_unmatched_sources(unmatched_sources);
-  source_counts_proto->set_deferred_sources(unsent_sources.size());
+  source_counts_proto->set_unmatched_sources(num_sources_unmatched);
   source_counts_proto->set_carryover_sources(
       recordings_.source_counts.carryover_sources);
 
-  recordings_.sources.clear();
   recordings_.source_counts.Reset();
   recordings_.entries.clear();
   recordings_.event_aggregations.clear();
@@ -384,29 +410,36 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
   report->set_is_continuous(recording_is_continuous_);
   recording_is_continuous_ = true;
 
-  // Keep at most |max_kept_sources|, prioritizing most-recent entries (by
-  // creation time).
-  const size_t max_kept_sources = GetMaxKeptSources();
-  if (unsent_sources.size() > max_kept_sources) {
-    std::nth_element(unsent_sources.begin(),
-                     unsent_sources.begin() + max_kept_sources,
-                     unsent_sources.end(),
-                     [](const std::unique_ptr<ukm::UkmSource>& lhs,
-                        const std::unique_ptr<ukm::UkmSource>& rhs) {
-                       return lhs->creation_time() > rhs->creation_time();
-                     });
-    unsent_sources.resize(max_kept_sources);
+  // Defer at most GetMaxKeptSources() sources to the next report,
+  // prioritizing most recently created ones.
+  int pruned_sources_age = PruneOldSources(GetMaxKeptSources());
+  // Record how old the newest truncated source is.
+  source_counts_proto->set_pruned_sources_age_seconds(pruned_sources_age);
+
+  // Set deferred sources count after pruning.
+  source_counts_proto->set_deferred_sources(recordings_.sources.size());
+  // Same value as the deferred source count, for setting the carryover count in
+  // the next reporting cycle.
+  recordings_.source_counts.carryover_sources = recordings_.sources.size();
+
+  // We already matched these deferred sources against the URL whitelist.
+  // Re-whitelist them for the next report.
+  for (const auto& kv : recordings_.sources) {
+    recordings_.carryover_urls_whitelist.insert(kv.second->url().spec());
   }
 
-  for (auto& source : unsent_sources) {
-    // We already matched these sources against the URL whitelist.
-    // Re-whitelist them for the next report.
-    recordings_.carryover_urls_whitelist.insert(source->url().spec());
-    recordings_.sources.emplace(source->id(), std::move(source));
-  }
   UMA_HISTOGRAM_COUNTS_1000("UKM.Sources.KeptSourcesCount",
                             recordings_.sources.size());
-  recordings_.source_counts.carryover_sources = recordings_.sources.size();
+
+  // Record number of sources after pruning that were carried over due to not
+  // having any events in this reporting cycle.
+  int num_sources_entryless = 0;
+  for (const auto& kv : recordings_.sources) {
+    if (!base::Contains(source_ids_seen, kv.first)) {
+      num_sources_entryless++;
+    }
+  }
+  source_counts_proto->set_entryless_sources(num_sources_entryless);
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
@@ -416,6 +449,34 @@ bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedEntries() const {
   return true;
+}
+
+int UkmRecorderImpl::PruneOldSources(size_t max_kept_sources) {
+  if (recordings_.sources.size() <= max_kept_sources)
+    return 0;
+
+  std::vector<std::pair<base::TimeTicks, ukm::SourceId>>
+      timestamp_source_id_pairs;
+  for (const auto& kv : recordings_.sources) {
+    timestamp_source_id_pairs.push_back(
+        std::pair<base::TimeTicks, ukm::SourceId>(kv.second->creation_time(),
+                                                  kv.first));
+  }
+  // Partially sort so that the last |max_kept_sources| elements are the
+  // newest.
+  std::nth_element(timestamp_source_id_pairs.begin(),
+                   timestamp_source_id_pairs.end() - max_kept_sources,
+                   timestamp_source_id_pairs.end());
+
+  for (auto kv = timestamp_source_id_pairs.begin();
+       kv != timestamp_source_id_pairs.end() - max_kept_sources; ++kv) {
+    recordings_.sources.erase(kv->second);
+  }
+
+  base::TimeDelta pruned_sources_age =
+      base::TimeTicks::Now() -
+      (timestamp_source_id_pairs.end() - (max_kept_sources + 1))->first;
+  return pruned_sources_age.InSeconds();
 }
 
 void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
@@ -445,7 +506,7 @@ void UkmRecorderImpl::RecordNavigation(
     const UkmSource::NavigationData& unsanitized_navigation_data) {
   DCHECK(GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID);
   DCHECK(!base::Contains(recordings_.sources, source_id));
-  // TODO(csharrison): Consider changing this behavior so the Source isn't event
+  // TODO(csharrison): Consider changing this behavior so the Source isn't even
   // recorded at all if the final URL in |unsanitized_navigation_data| should
   // not be recorded.
   std::vector<GURL> urls;

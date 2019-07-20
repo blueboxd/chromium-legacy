@@ -263,7 +263,10 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
       owner()->GetDelegate()->CreateTextPositionAt(0)->AsLeafTextPosition();
 
   AXNodePosition::AXPositionInstance end;
-  if (owner()->GetChildCount() == 0) {
+  if (ui::IsDocument(owner()->GetData().role)) {
+    // Fast path for getting the range of the web root.
+    end = start->CreatePositionAtEndOfDocument();
+  } else if (owner()->GetChildCount() == 0) {
     end = owner()
               ->GetDelegate()
               ->CreateTextPositionAt(0)

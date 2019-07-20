@@ -466,6 +466,10 @@ void PaintOpWriter::Write(SkColorType color_type) {
   WriteSimple(static_cast<uint32_t>(color_type));
 }
 
+void PaintOpWriter::Write(SkYUVColorSpace yuv_color_space) {
+  WriteSimple(static_cast<uint32_t>(yuv_color_space));
+}
+
 void PaintOpWriter::WriteData(size_t bytes, const void* input) {
   EnsureBytes(bytes);
   if (!valid_)

@@ -224,6 +224,10 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectBucketCount("Previews.PreviewShown.DeferAllScript",
                                      true, 1);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 1);
+  histogram_tester.ExpectUniqueSample(
+      "Blink.Script.ForceDeferredScripts.Mainframe", 2, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Blink.Script.ForceDeferredScripts.Mainframe.External", 1, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(

@@ -105,6 +105,7 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
+#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_dialog_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1396,6 +1397,17 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
   return bubble;
 }
 
+ClickToCallDialog* BrowserView::ShowClickToCallDialog(
+    content::WebContents* web_contents,
+    ClickToCallSharingDialogController* controller) {
+  auto* dialog_view = new ClickToCallDialogView(
+      toolbar_button_provider()->GetAnchorView(), web_contents, controller);
+
+  views::BubbleDialogDelegateView::CreateBubble(dialog_view)->Show();
+
+  return dialog_view;
+}
+
 send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
     content::WebContents* web_contents,
     send_tab_to_self::SendTabToSelfBubbleController* controller,
@@ -1997,12 +2009,6 @@ base::string16 BrowserView::GetAccessibleTabLabel(bool include_app_name,
           IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT, title);
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       return l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_VR_PRESENTING, title);
-    case TabAlertState::WRITABLE_NATIVE_FILE_SYSTEM_HANDLES:
-      return l10n_util::GetStringFUTF16(
-          IDS_TAB_AX_LABEL_NATIVE_FILE_SYSTEM_WRITABLE_FORMAT, title);
-    case TabAlertState::NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS:
-      return l10n_util::GetStringFUTF16(
-          IDS_TAB_AX_LABEL_NATIVE_FILE_SYSTEM_DIRECTORY_FORMAT, title);
     case TabAlertState::NONE:
       return title;
   }

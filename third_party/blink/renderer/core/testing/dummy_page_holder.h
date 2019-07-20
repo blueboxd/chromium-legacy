@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_DUMMY_PAGE_HOLDER_H_
 
 #include <memory>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -47,8 +49,6 @@ class IntSize;
 class LocalFrame;
 class LocalFrameView;
 class Settings;
-
-typedef void (*FrameSettingOverrideFunction)(Settings&);
 
 // Creates a dummy Page, LocalFrame, and LocalFrameView whose clients are all
 // no-op.
@@ -71,7 +71,8 @@ class DummyPageHolder {
       const IntSize& initial_view_size = IntSize(),
       Page::PageClients* = nullptr,
       LocalFrameClient* = nullptr,
-      FrameSettingOverrideFunction setting_overrider = nullptr,
+      base::OnceCallback<void(Settings&)> setting_overrider =
+          base::NullCallback(),
       const base::TickClock* clock = base::DefaultTickClock::GetInstance());
   ~DummyPageHolder();
 

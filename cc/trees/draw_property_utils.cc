@@ -881,21 +881,10 @@ void UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
 }
 
 void UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
-                                          PropertyTrees* property_trees,
-                                          bool can_adjust_raster_scales) {
-  bool render_surfaces_need_update = false;
-  if (property_trees->can_adjust_raster_scales != can_adjust_raster_scales) {
-    property_trees->can_adjust_raster_scales = can_adjust_raster_scales;
-    property_trees->transform_tree.set_needs_update(true);
-    render_surfaces_need_update = true;
-  }
+                                          PropertyTrees* property_trees) {
   if (property_trees->transform_tree.needs_update()) {
     property_trees->clip_tree.set_needs_update(true);
     property_trees->effect_tree.set_needs_update(true);
-  }
-  if (render_surfaces_need_update) {
-    property_trees->effect_tree.UpdateRenderSurfaces(
-        root_layer->layer_tree_impl());
   }
   UpdateRenderTarget(&property_trees->effect_tree);
 

@@ -585,8 +585,7 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   clipboard->Clear(clipboard_type);
   EXPECT_FALSE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
 
-  // Test command is enabled and the correct label text is returned with a URL
-  // on the clipboard.
+  // Test input that's a valid URL.
   base::string16 expected_text =
 #if defined(OS_MACOSX)
       base::ASCIIToUTF16("Pa&ste and Go to https://test.com");
@@ -600,8 +599,20 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
   EXPECT_EQ(expected_text, returned_text);
 
-  // Test command is enabled and the correct label text is returned with a
-  // search on the clipboard.
+  // Test input that's URL-like. (crbug.com/980002).
+  expected_text =
+#if defined(OS_MACOSX)
+      base::ASCIIToUTF16("Pa&ste and Go to test.com");
+#else
+      base::ASCIIToUTF16("Pa&ste and go to test.com");
+#endif
+  ui::ScopedClipboardWriter(clipboard_type)
+      .WriteText(base::ASCIIToUTF16("test.com"));
+  returned_text = omnibox_view()->GetLabelForCommandId(IDC_PASTE_AND_GO);
+  EXPECT_TRUE(omnibox_view()->IsCommandIdEnabled(IDC_PASTE_AND_GO));
+  EXPECT_EQ(expected_text, returned_text);
+
+  // Test input that's search-like.
   expected_text =
 #if defined(OS_MACOSX)
       base::WideToUTF16(

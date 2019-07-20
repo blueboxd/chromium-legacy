@@ -194,15 +194,6 @@ unsigned int GetMaxCursorSize() {
   return min_dimension > 0 ? min_dimension : 64;
 }
 
-// Custom release function that will be passed to Skia so that it deletes the
-// image when the SkBitmap goes out of scope.
-// |address| is the pointer to the data inside the XImage.
-// |context| is the pointer to the XImage.
-void ReleaseXImage(void* address, void* context) {
-  if (context)
-    XDestroyImage(static_cast<XImage*>(context));
-}
-
 // A process wide singleton cache for custom X cursors.
 class XCustomCursorCache {
  public:
@@ -1108,51 +1099,6 @@ bool GetXWindowStack(Window window, std::vector<XID>* windows) {
   return result;
 }
 
-bool CopyAreaToCanvas(XID drawable,
-                      gfx::Rect source_bounds,
-                      gfx::Point dest_offset,
-                      gfx::Canvas* canvas) {
-  std::unique_ptr<XImage, XImageDeleter> image(XGetImage(
-      gfx::GetXDisplay(), drawable, source_bounds.x(), source_bounds.y(),
-      source_bounds.width(), source_bounds.height(), AllPlanes, ZPixmap));
-  if (!image) {
-    LOG(ERROR) << "XGetImage failed";
-    return false;
-  }
-
-  if (image->bits_per_pixel == 32) {
-    if ((0xff << SK_R32_SHIFT) != image->red_mask ||
-        (0xff << SK_G32_SHIFT) != image->green_mask ||
-        (0xff << SK_B32_SHIFT) != image->blue_mask) {
-      LOG(WARNING) << "XImage and Skia byte orders differ";
-      return false;
-    }
-
-    // Set the alpha channel before copying to the canvas.  Otherwise, areas of
-    // the framebuffer that were cleared by ply-image rather than being obscured
-    // by an image during boot may end up transparent.
-    // TODO(derat|marcheu): Remove this if/when ply-image has been updated to
-    // set the framebuffer's alpha channel regardless of whether the device
-    // claims to support alpha or not.
-    for (int i = 0; i < image->width * image->height * 4; i += 4)
-      image->data[i + 3] = 0xff;
-
-    SkBitmap bitmap;
-    bitmap.installPixels(
-        SkImageInfo::MakeN32Premul(image->width, image->height), image->data,
-        image->bytes_per_line, &ReleaseXImage, image.release());
-    gfx::ImageSkia image_skia;
-    gfx::ImageSkiaRep image_rep(bitmap, canvas->image_scale());
-    image_skia.AddRepresentation(image_rep);
-    canvas->DrawImageInt(image_skia, dest_offset.x(), dest_offset.y());
-  } else {
-    NOTIMPLEMENTED() << "Unsupported bits-per-pixel " << image->bits_per_pixel;
-    return false;
-  }
-
-  return true;
-}
-
 WindowManagerName GuessWindowManager() {
   std::string name;
   if (!GetWindowManagerName(&name))
@@ -1336,11 +1282,6 @@ void XScopedCursor::reset(::Cursor cursor) {
   if (cursor_)
     XFreeCursor(display_, cursor_);
   cursor_ = cursor;
-}
-
-void XImageDeleter::operator()(XImage* image) const {
-  if (image)
-    XDestroyImage(image);
 }
 
 namespace test {

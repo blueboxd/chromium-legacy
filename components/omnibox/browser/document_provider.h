@@ -88,6 +88,7 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsWithIneligibleFlag);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, GenerateLastModifiedString);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, Scoring);
 
   DocumentProvider(AutocompleteProviderClient* client,
                    AutocompleteProviderListener* listener);

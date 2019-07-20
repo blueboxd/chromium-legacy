@@ -13,6 +13,8 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -225,6 +227,66 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
                          ui::LayerAnimationElement::TRANSFORM, duration, tween,
                          preemption_strategy, delay);
   layer->SetTransform(target_transform);
+}
+
+void MaybeRestoreSplitView(bool refresh_snapped_windows) {
+  if (!ShouldAllowSplitView())
+    return;
+
+  // Search for snapped windows to detect if the now active user session, or
+  // desk were in split view. In case multiple windows were snapped to one side,
+  // one window after another, there may be multiple windows in a LEFT_SNAPPED
+  // state or multiple windows in a RIGHT_SNAPPED state. For each of those two
+  // state types that belongs to multiple windows, the relevant window will be
+  // listed first among those windows, and a null check in the loop body below
+  // will filter out the rest of them.
+  // TODO(amusbach): The windows that were in split view may have later been
+  // destroyed or changed to non-snapped states. Then the following for loop
+  // could snap windows that were not in split view. Also, a window may have
+  // become full screen, and if so, then it would be better not to reactivate
+  // split view. See https://crbug.com/944134.
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+
+  if (refresh_snapped_windows) {
+    const MruWindowTracker::WindowList windows =
+        Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
+            kActiveDesk);
+    for (aura::Window* window : windows) {
+      switch (wm::GetWindowState(window)->GetStateType()) {
+        case WindowStateType::kLeftSnapped:
+          if (!split_view_controller->left_window()) {
+            split_view_controller->SnapWindow(window,
+                                              SplitViewController::LEFT);
+          }
+          break;
+
+        case WindowStateType::kRightSnapped:
+          if (!split_view_controller->right_window()) {
+            split_view_controller->SnapWindow(window,
+                                              SplitViewController::RIGHT);
+          }
+          break;
+
+        default:
+          break;
+      }
+
+      if (split_view_controller->state() == SplitViewState::kBothSnapped)
+        break;
+    }
+  }
+
+  // Ensure that overview mode is active if and only if there is a window
+  // snapped to one side but no window snapped to the other side.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  SplitViewState state = split_view_controller->state();
+  if (state == SplitViewState::kLeftSnapped ||
+      state == SplitViewState::kRightSnapped) {
+    overview_controller->StartOverview();
+  } else {
+    overview_controller->EndOverview();
+  }
 }
 
 bool IsClamshellSplitViewModeEnabled() {

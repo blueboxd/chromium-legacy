@@ -25,7 +25,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromecast {
@@ -83,53 +82,9 @@ class CastNetworkContexts::URLLoaderFactoryForSystem
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
 };
 
-// Class to own the NetworkContext wrapping the system URLRequestContext when
-// the network service is disabled.
-//
-// Created on the UI thread, but must be initialized and destroyed on the IO
-// thread.
-class CastNetworkContexts::SystemNetworkContextOwner {
- public:
-  SystemNetworkContextOwner() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  }
-
-  ~SystemNetworkContextOwner() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  }
-
-  void Initialize(network::mojom::NetworkContextRequest network_context_request,
-                  scoped_refptr<net::URLRequestContextGetter> context_getter) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    context_getter_ = std::move(context_getter);
-    network::mojom::NetworkContextParamsPtr network_context_params =
-        network::mojom::NetworkContextParams::New();
-    content::UpdateCorsExemptHeader(network_context_params.get());
-    variations::UpdateCorsExemptHeaderForVariations(
-        network_context_params.get());
-    network_context_ = std::make_unique<network::NetworkContext>(
-        content::GetNetworkServiceImpl(), std::move(network_context_request),
-        context_getter_->GetURLRequestContext(),
-        network_context_params->cors_exempt_header_list);
-  }
-
- private:
-  // Reference to the URLRequestContextGetter for the URLRequestContext used by
-  // NetworkContext. Depending on the embedder's implementation, this may be
-  // needed to keep the URLRequestContext alive until the NetworkContext is
-  // destroyed.
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
-  std::unique_ptr<network::mojom::NetworkContext> network_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextOwner);
-};
-
-CastNetworkContexts::CastNetworkContexts(
-    URLRequestContextFactory* url_request_context_factory)
-    : url_request_context_factory_(url_request_context_factory) {
-  system_shared_url_loader_factory_ =
-      base::MakeRefCounted<URLLoaderFactoryForSystem>(this);
-}
+CastNetworkContexts::CastNetworkContexts()
+    : system_shared_url_loader_factory_(
+          base::MakeRefCounted<URLLoaderFactoryForSystem>(this)) {}
 
 CastNetworkContexts::~CastNetworkContexts() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -139,20 +94,6 @@ CastNetworkContexts::~CastNetworkContexts() {
 
 network::mojom::NetworkContext* CastNetworkContexts::GetSystemContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (!system_network_context_) {
-      system_network_context_owner_.reset(new SystemNetworkContextOwner);
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SystemNetworkContextOwner::Initialize,
-                         base::Unretained(system_network_context_owner_.get()),
-                         MakeRequest(&system_network_context_),
-                         base::WrapRefCounted(
-                             url_request_context_factory_->GetSystemGetter())));
-    }
-    return system_network_context_.get();
-  }
 
   if (!system_network_context_ || system_network_context_.encountered_error()) {
     // This should call into OnNetworkServiceCreated(), which will re-create
@@ -199,7 +140,6 @@ network::mojom::NetworkContextPtr CastNetworkContexts::CreateNetworkContext(
     bool in_memory,
     const base::FilePath& relative_partition_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 
   network::mojom::NetworkContextPtr network_context;
   network::mojom::NetworkContextParamsPtr context_params =
@@ -217,9 +157,6 @@ network::mojom::NetworkContextPtr CastNetworkContexts::CreateNetworkContext(
 
 void CastNetworkContexts::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   // Disable QUIC if instructed by DCS. This remains constant for the lifetime
   // of the process.
   if (!chromecast::IsFeatureEnabled(kEnableQuic))
@@ -233,9 +170,6 @@ void CastNetworkContexts::OnNetworkServiceCreated(
 
 void CastNetworkContexts::OnLocaleUpdate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   auto accept_language = CastHttpUserAgentSettings::AcceptLanguage();
 
   GetSystemContext()->SetAcceptLanguage(accept_language);

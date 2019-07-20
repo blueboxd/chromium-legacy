@@ -11,11 +11,12 @@
 goog.provide('LanguageSwitching');
 
 /**
- * The current output language.
+ * The current output language. Initialize to the language of the browser or
+ * empty string if unavailable.
  * @private {string}
  */
-// TODO(akihiroota): Initialize this to current ChromeVox language.
-LanguageSwitching.currentLanguage_ = '';
+LanguageSwitching.currentLanguage_ =
+    chrome.i18n.getUILanguage().toLowerCase() || '';
 
 /**
  * Confidence threshold to meet before assigning inner-node language.
@@ -52,7 +53,6 @@ LanguageSwitching.assignLanguagesForStringAttribute = function(
         stringAttributeValue || '', LanguageSwitching.currentLanguage_);
     return;
   }
-
   // Split output based on language annotation.
   // Each object in languageAnnotation contains a language, probability,
   // and start/end indices that define a substring.

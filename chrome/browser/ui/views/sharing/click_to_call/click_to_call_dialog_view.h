@@ -8,42 +8,55 @@
 #include <memory>
 #include <vector>
 
+#include "chrome/browser/sharing/click_to_call/click_to_call_dialog.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/link_listener.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
+class Link;
+class StyledLabel;
 class View;
 }  // namespace views
 
+class Browser;
 class HoverButton;
-class PageActionIconView;
 
-class ClickToCallDialogView : public views::ButtonListener,
+class ClickToCallDialogView : public ClickToCallDialog,
+                              public views::ButtonListener,
+                              public views::LinkListener,
+                              public views::StyledLabelListener,
                               public LocationBarBubbleDelegateView {
  public:
-  static ClickToCallDialogView* GetBubbleView();
-  static void Show(
-      content::WebContents* web_contents,
-      std::unique_ptr<ClickToCallSharingDialogController> controller);
-
   // Bubble will be anchored to |anchor_view|.
-  ClickToCallDialogView(
-      views::View* anchor_view,
-      PageActionIconView* icon_view,
-      content::WebContents* web_contents,
-      std::unique_ptr<ClickToCallSharingDialogController> controller);
+  ClickToCallDialogView(views::View* anchor_view,
+                        content::WebContents* web_contents,
+                        ClickToCallSharingDialogController* controller);
 
   ~ClickToCallDialogView() override;
+
+  // ClickToCallDialogView:
+  void Hide() override;
 
   // views::WidgetDelegateView:
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
+  // views::LinkListener:
+  void LinkClicked(views::Link* source, int event_flags) override;
+
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override;
+
   // views::DialogDelegate:
   int GetDialogButtons() const override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -61,15 +74,20 @@ class ClickToCallDialogView : public views::ButtonListener,
   void Init() override;
 
   // Populates the dialog view containing valid devices and apps.
-  void PopulateDialogView();
+  void InitListView();
+  // Populates the dialog view containing no devices or apps.
+  void InitEmptyView();
+  // Populates the dialog view containing error help text.
+  void InitErrorView();
 
-  PageActionIconView* icon_view_;
-  std::unique_ptr<ClickToCallSharingDialogController> controller_;
+  ClickToCallSharingDialogController* controller_ = nullptr;
   // Contains references to device and app buttons in
   // the order they appear.
   std::vector<HoverButton*> dialog_buttons_;
   std::vector<SharingDeviceInfo> devices_;
   std::vector<ClickToCallSharingDialogController::App> apps_;
+  Browser* browser_ = nullptr;
+  bool send_failed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallDialogView);
 };

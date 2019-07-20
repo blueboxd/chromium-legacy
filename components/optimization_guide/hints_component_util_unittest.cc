@@ -45,61 +45,74 @@ class HintsComponentUtilTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HintsComponentUtilTest);
 };
 
-TEST_F(HintsComponentUtilTest, ProcessHintsComponentInvalidVersion) {
+TEST_F(HintsComponentUtilTest, RecordProcessHintsComponentResult) {
   base::HistogramTester histogram_tester;
+  RecordProcessHintsComponentResult(ProcessHintsComponentResult::kSuccess);
+  histogram_tester.ExpectUniqueSample("OptimizationGuide.ProcessHintsResult",
+                                      ProcessHintsComponentResult::kSuccess, 1);
+}
+
+TEST_F(HintsComponentUtilTest, ProcessHintsComponentInvalidVersion) {
+  ProcessHintsComponentResult result;
   std::unique_ptr<proto::Configuration> config = ProcessHintsComponent(
-      HintsComponentInfo(base::Version(""), base::FilePath(kFileName)));
+      HintsComponentInfo(base::Version(""), base::FilePath(kFileName)),
+      &result);
 
   EXPECT_FALSE(config);
-  histogram_tester.ExpectUniqueSample(
-      kProcessHintsComponentResultHistogramString,
-      static_cast<int>(ProcessHintsComponentResult::FAILED_INVALID_PARAMETERS),
-      1);
+  EXPECT_EQ(ProcessHintsComponentResult::kFailedInvalidParameters, result);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessHintsComponentInvalidPath) {
-  base::HistogramTester histogram_tester;
+  ProcessHintsComponentResult result;
   std::unique_ptr<proto::Configuration> config = ProcessHintsComponent(
-      HintsComponentInfo(base::Version("1.0.0.0"), base::FilePath()));
+      HintsComponentInfo(base::Version("1.0.0.0"), base::FilePath()), &result);
 
   EXPECT_FALSE(config);
-  histogram_tester.ExpectUniqueSample(
-      kProcessHintsComponentResultHistogramString,
-      static_cast<int>(ProcessHintsComponentResult::FAILED_INVALID_PARAMETERS),
-      1);
+  EXPECT_EQ(ProcessHintsComponentResult::kFailedInvalidParameters, result);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessHintsComponentInvalidFile) {
-  base::HistogramTester histogram_tester;
+  ProcessHintsComponentResult result;
   std::unique_ptr<proto::Configuration> config = ProcessHintsComponent(
-      HintsComponentInfo(base::Version("1.0.0"), base::FilePath(kFileName)));
+      HintsComponentInfo(base::Version("1.0.0"), base::FilePath(kFileName)),
+      &result);
 
   EXPECT_FALSE(config);
-  histogram_tester.ExpectUniqueSample(
-      kProcessHintsComponentResultHistogramString,
-      static_cast<int>(ProcessHintsComponentResult::FAILED_READING_FILE), 1);
+  EXPECT_EQ(ProcessHintsComponentResult::kFailedReadingFile, result);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessHintsComponentNotAConfigInFile) {
-  base::HistogramTester histogram_tester;
-
   const base::FilePath filePath = temp_dir().Append(kFileName);
   ASSERT_EQ(static_cast<int32_t>(3), base::WriteFile(filePath, "boo", 3));
 
+  ProcessHintsComponentResult result;
   std::unique_ptr<proto::Configuration> config = ProcessHintsComponent(
-      HintsComponentInfo(base::Version("1.0.0"), filePath));
+      HintsComponentInfo(base::Version("1.0.0"), filePath), &result);
 
   EXPECT_FALSE(config);
-  histogram_tester.ExpectUniqueSample(
-      kProcessHintsComponentResultHistogramString,
-      static_cast<int>(
-          ProcessHintsComponentResult::FAILED_INVALID_CONFIGURATION),
-      1);
+  EXPECT_EQ(ProcessHintsComponentResult::kFailedInvalidConfiguration, result);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessHintsComponentSuccess) {
-  base::HistogramTester histogram_tester;
+  const base::FilePath filePath = temp_dir().Append(kFileName);
+  proto::Configuration config;
+  proto::Hint* hint = config.add_hints();
+  hint->set_key("google.com");
+  ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(filePath, config));
 
+  ProcessHintsComponentResult result;
+  std::unique_ptr<proto::Configuration> processed_config =
+      ProcessHintsComponent(
+          HintsComponentInfo(base::Version("1.0.0"), filePath), &result);
+
+  ASSERT_TRUE(processed_config);
+  EXPECT_EQ(1, processed_config->hints_size());
+  EXPECT_EQ("google.com", processed_config->hints()[0].key());
+  EXPECT_EQ(ProcessHintsComponentResult::kSuccess, result);
+}
+
+TEST_F(HintsComponentUtilTest,
+       ProcessHintsComponentSuccessNoResultProvidedDoesntCrash) {
   const base::FilePath filePath = temp_dir().Append(kFileName);
   proto::Configuration config;
   proto::Hint* hint = config.add_hints();
@@ -108,14 +121,11 @@ TEST_F(HintsComponentUtilTest, ProcessHintsComponentSuccess) {
 
   std::unique_ptr<proto::Configuration> processed_config =
       ProcessHintsComponent(
-          HintsComponentInfo(base::Version("1.0.0"), filePath));
+          HintsComponentInfo(base::Version("1.0.0"), filePath), nullptr);
 
   ASSERT_TRUE(processed_config);
   EXPECT_EQ(1, processed_config->hints_size());
   EXPECT_EQ("google.com", processed_config->hints()[0].key());
-  histogram_tester.ExpectUniqueSample(
-      kProcessHintsComponentResultHistogramString,
-      static_cast<int>(ProcessHintsComponentResult::SUCCESS), 1);
 }
 
 }  // namespace optimization_guide

@@ -113,8 +113,13 @@ void ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jstring>& jexperiment_ids,
                           const JavaParamRef<jobjectArray>& parameterNames,
                           const JavaParamRef<jobjectArray>& parameterValues,
-                          const JavaParamRef<jobject>& joverlay_coordinator) {
-  CreateController();
+                          const JavaParamRef<jobject>& joverlay_coordinator,
+                          jlong jservice) {
+  std::unique_ptr<Service> service = nullptr;
+  if (jservice) {
+    service.reset(static_cast<Service*>(reinterpret_cast<void*>(jservice)));
+  }
+  CreateController(std::move(service));
 
   // If an overlay is already shown, then show the rest of the UI.
   if (joverlay_coordinator) {
@@ -201,7 +206,7 @@ void ClientAndroid::AttachUI(
 
   if (!ui_controller_android_->IsAttached()) {
     if (!controller_)
-      CreateController();
+      CreateController(nullptr);
 
     ui_controller_android_->Attach(web_contents_, this, controller_.get());
   }
@@ -295,12 +300,13 @@ void ClientAndroid::InvalidateAccessToken(const std::string& access_token) {
       base::android::ConvertUTF8ToJavaString(env, access_token));
 }
 
-void ClientAndroid::CreateController() {
+void ClientAndroid::CreateController(std::unique_ptr<Service> service) {
   if (controller_) {
     return;
   }
   controller_ = std::make_unique<Controller>(
-      web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance());
+      web_contents_, /* client= */ this, base::DefaultTickClock::GetInstance(),
+      std::move(service));
 }
 
 void ClientAndroid::DestroyController() {

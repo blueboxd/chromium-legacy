@@ -33,6 +33,9 @@ class AutofillPopupView {
   // Refreshes the position and redraws popup when suggestions change.
   virtual void OnSuggestionsChanged() = 0;
 
+  // Return the autofill popup view's ax unique id.
+  virtual base::Optional<int32_t> GetAxUniqueId() = 0;
+
   // Factory function for creating the view.
   static AutofillPopupView* Create(AutofillPopupController* controller);
 

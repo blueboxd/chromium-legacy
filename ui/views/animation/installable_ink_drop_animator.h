@@ -6,10 +6,14 @@
 #define UI_VIEWS_ANIMATION_INSTALLABLE_INK_DROP_ANIMATOR_H_
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/animation/installable_ink_drop_painter.h"
 
@@ -24,6 +28,9 @@ namespace views {
 // InstallableInkDropPainter passed in. The animations are currently minimal.
 class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
  public:
+  // Placeholder duration used for all animations. TODO(crbug.com/933384):
+  // remove this and replace it with separate durations for different
+  // animations.
   static constexpr base::TimeDelta kAnimationDuration =
       base::TimeDelta::FromMilliseconds(500);
 
@@ -32,10 +39,14 @@ class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
   // |views::CompositorAnimationRunner| to be used for more efficient and less
   // janky animations, and it enables easier unit testing.
   explicit InstallableInkDropAnimator(
+      gfx::Size size,
       InstallableInkDropPainter::State* visual_state,
       gfx::AnimationContainer* animation_container,
       base::RepeatingClosure repaint_callback);
   ~InstallableInkDropAnimator() override;
+
+  void SetSize(gfx::Size size);
+  void SetLastEventLocation(gfx::Point last_event_location);
 
   // Set the target state and animate to it.
   void AnimateToState(InkDropState target_state);
@@ -47,8 +58,15 @@ class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
   InkDropState target_state() const { return target_state_; }
 
  private:
+  // Checks that the states of our animations make sense given
+  // |target_state_|. DCHECKs if something is wrong.
+  void VerifyAnimationState() const;
+
   // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  gfx::Size size_;
 
   // The visual state we are controlling.
   InstallableInkDropPainter::State* const visual_state_;
@@ -61,7 +79,10 @@ class VIEWS_EXPORT InstallableInkDropAnimator : public gfx::AnimationDelegate {
   // Used to animate the painter's highlight value in and out.
   gfx::SlideAnimation highlight_animation_;
 
-  base::OneShotTimer transition_delay_timer_;
+  gfx::LinearAnimation flood_fill_animation_;
+  gfx::LinearAnimation fade_out_animation_;
+
+  gfx::Point last_event_location_;
 };
 
 }  // namespace views

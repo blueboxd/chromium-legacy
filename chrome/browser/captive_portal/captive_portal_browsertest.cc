@@ -2670,9 +2670,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Status511) {
 // The second check finds no captive portal. The reloader triggers a reload at
 // the same time SSL error handler tries to show an interstitial. Should result
 // in an SSL interstitial.
-// TODO(crbug.com/981992): Reenable this after de-flaking it.
 IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest,
-                       DISABLED_InterstitialTimerCertErrorAfterSlowLoad) {
+                       InterstitialTimerCertErrorAfterSlowLoad) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
 
   GURL cert_error_url;

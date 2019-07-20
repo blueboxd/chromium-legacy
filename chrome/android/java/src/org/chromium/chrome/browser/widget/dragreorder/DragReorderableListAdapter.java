@@ -14,6 +14,8 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 import java.util.Collections;
@@ -26,11 +28,13 @@ import java.util.List;
  */
 public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     private static final int ANIMATION_DELAY_MS = 100;
+    private static final String TAG = "DragAdapter";
 
     protected final Context mContext;
 
     // keep track of the list and list managers
     protected ItemTouchHelper mItemTouchHelper;
+    private ItemTouchHelper.Callback mTouchHelperCallback;
     protected List<T> mElements;
     protected RecyclerView mRecyclerView;
 
@@ -154,8 +158,8 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
      */
     public void enableDrag() {
         if (mItemTouchHelper == null) {
-            ItemTouchHelper.Callback touchHelperCallBack = new DragTouchCallback();
-            mItemTouchHelper = new ItemTouchHelper(touchHelperCallBack);
+            mTouchHelperCallback = new DragTouchCallback();
+            mItemTouchHelper = new ItemTouchHelper(mTouchHelperCallback);
         }
         mItemTouchHelper.attachToRecyclerView(mRecyclerView);
     }
@@ -218,5 +222,28 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
      */
     protected void setDragStateDelegate(DragStateDelegate delegate) {
         mDragStateDelegate = delegate;
+    }
+
+    /**
+     * Simulate a drag. All items that are involved in the drag must be visible (no scrolling).
+     *
+     * @param start The index of the ViewHolder that you want to drag.
+     * @param end The index this ViewHolder should be dragged to and dropped at.
+     */
+    @VisibleForTesting
+    public void simulateDragForTests(int start, int end) {
+        ViewHolder viewHolder = mRecyclerView.findViewHolderForAdapterPosition(start);
+        mItemTouchHelper.startDrag(viewHolder);
+        int increment = start < end ? 1 : -1;
+        int i = start;
+        while (i != end) {
+            Log.i(TAG, "Moving ViewHolder %s from %d to %d", viewHolder, i, i + increment);
+            i += increment;
+            mTouchHelperCallback.onMove(
+                    mRecyclerView, viewHolder, mRecyclerView.findViewHolderForAdapterPosition(i));
+        }
+        Log.i(TAG, "Letting go of ViewHolder %s", viewHolder);
+        mTouchHelperCallback.onSelectedChanged(viewHolder, ItemTouchHelper.ACTION_STATE_IDLE);
+        mTouchHelperCallback.clearView(mRecyclerView, viewHolder);
     }
 }

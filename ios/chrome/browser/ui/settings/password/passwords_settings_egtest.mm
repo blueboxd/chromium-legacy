@@ -1521,15 +1521,16 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Wait until the alerts are dismissed.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  // On iOS 13+ when building with the iOS 12 SDK, the share sheet is presented
-  // fullscreen, so the export button is removed from the view hierarchy.  Check
-  // that the button is not present.  Otherwise, the export button should remain
-  // visible but be disabled.
+  // On iOS 13+ phone when building with the iOS 12 SDK, the share sheet is
+  // presented fullscreen, so the export button is removed from the view
+  // hierarchy.  Check that either the button is not present, or that it remains
+  // visible but is disabled.
   id<GREYMatcher> exportButtonStatusMatcher =
       grey_accessibilityTrait(UIAccessibilityTraitNotEnabled);
 #if !defined(__IPHONE_13_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_13_0)
   if (base::ios::IsRunningOnIOS13OrLater()) {
-    exportButtonStatusMatcher = grey_nil();
+    exportButtonStatusMatcher =
+        grey_anyOf(grey_nil(), exportButtonStatusMatcher, nil);
   }
 #endif
 

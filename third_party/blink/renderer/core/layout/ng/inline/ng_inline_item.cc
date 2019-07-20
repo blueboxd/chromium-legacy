@@ -199,20 +199,4 @@ void NGInlineItem::Split(Vector<NGInlineItem>& items,
   items[index + 1].start_offset_ = offset;
 }
 
-const NGInlineItem& NGInlineItemsData::FindItemForTextOffset(
-    unsigned offset) const {
-  DCHECK_LT(offset, text_content.length());
-  const NGInlineItem* item =
-      std::lower_bound(items.begin(), items.end(), offset,
-                       [](const NGInlineItem& item, unsigned offset) {
-                         if (item.StartOffset() > offset)
-                           return false;
-                         return item.EndOffset() <= offset;
-                       });
-  DCHECK_NE(item, items.end());
-  DCHECK_LE(item->StartOffset(), offset);
-  DCHECK_LT(offset, item->EndOffset());
-  return *item;
-}
-
 }  // namespace blink

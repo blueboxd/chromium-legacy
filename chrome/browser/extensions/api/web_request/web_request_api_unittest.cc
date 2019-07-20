@@ -165,7 +165,6 @@ class ExtensionWebRequestTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
-  TestIPCSender ipc_sender_;
 };
 
 namespace {
@@ -191,7 +190,6 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   ExtensionWebRequestEventRouter::RequestFilter filter;
   const std::string kEventName(web_request::OnBeforeRequest::kEventName);
   const std::string kSubEventName = kEventName + "/1";
-  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
   EXPECT_EQ(
       0u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
@@ -201,13 +199,11 @@ TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
       filter, 0, 1 /* render_process_id */, 0, extensions::kMainThreadId,
-      blink::mojom::kInvalidServiceWorkerVersionId,
-      ipc_sender_factory.GetWeakPtr());
+      blink::mojom::kInvalidServiceWorkerVersionId);
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
       filter, 0, 2 /* render_process_id */, 0, extensions::kMainThreadId,
-      blink::mojom::kInvalidServiceWorkerVersionId,
-      ipc_sender_factory.GetWeakPtr());
+      blink::mojom::kInvalidServiceWorkerVersionId);
   EXPECT_EQ(
       2u,
       ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(

@@ -1955,6 +1955,9 @@ extern const char kForceUseChromeCameraDescription[];
 extern const char kFsNosymfollowName[];
 extern const char kFsNosymfollowDescription[];
 
+extern const char kGaiaActionButtonsName[];
+extern const char kGaiaActionButtonsDescription[];
+
 extern const char kHideArcMediaNotificationsName[];
 extern const char kHideArcMediaNotificationsDescription[];
 

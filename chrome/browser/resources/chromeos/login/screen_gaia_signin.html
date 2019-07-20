@@ -20,14 +20,25 @@
       </div>
       <div id="gaia-screen-navigation-buttons"
           slot="bottom-buttons" class="relative flex layout horizontal center">
-        <div id="buttons-container" class="fit">
+        <div id="buttons-container" class="flex layout horizontal center">
           <oobe-back-button id="signin-back-button"
               disabled="[[!navigationEnabled_]]"></oobe-back-button>
           <div class="flex">
           </div>
+          <oobe-text-button id="primary-action-button"
+              on-tap="onPrimaryActionButtonClicked_"
+              hidden="[[!primaryActionButtonLabel_]]"
+              disabled="[[!primaryActionButtonEnabled_]]"
+              >[[primaryActionButtonLabel_]]</oobe-text-button>
+          <oobe-text-button id="secondary-action-button"
+              on-tap="onSecondaryActionButtonClicked_"
+              hidden="[[!secondaryActionButtonLabel_]]"
+              disabled="[[!secondaryActionButtonEnabled_]]"
+              >[[secondaryActionButtonLabel_]]</oobe-text-button>
         </div>
         <div id="gaia-screen-buttons-overlay" class="fit"
-            hidden="[[navigationEnabled_]]"></div>
+            hidden="[[navigationEnabled_]]">
+        </div>
       </div>
     </oobe-dialog>
     <offline-gaia id="offline-gaia" class="gaia-dialog"

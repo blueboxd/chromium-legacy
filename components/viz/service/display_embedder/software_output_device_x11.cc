@@ -39,6 +39,10 @@ class ScopedPixmap {
   DISALLOW_COPY_AND_ASSIGN(ScopedPixmap);
 };
 
+struct XImageDeleter {
+  void operator()(XImage* image) const { XDestroyImage(image); }
+};
+
 // Draw |data| over |widget|'s parent-relative background, and write the
 // resulting image to |widget|.  Returns true on success.
 bool CompositeBitmap(XDisplay* display,
@@ -52,7 +56,7 @@ bool CompositeBitmap(XDisplay* display,
                      const void* data) {
   XClearArea(display, widget, x, y, width, height, false);
 
-  std::unique_ptr<XImage, ui::XImageDeleter> bg;
+  std::unique_ptr<XImage, XImageDeleter> bg;
   {
     gfx::X11ErrorTracker ignore_x_errors;
     bg.reset(

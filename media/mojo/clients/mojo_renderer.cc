@@ -102,8 +102,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), std::move(stream_proxies), base::nullopt,
-      base::nullopt, /* allow_credentials */ false,
+      std::move(client_ptr_info), std::move(stream_proxies), nullptr,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 
@@ -121,10 +120,11 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
-  std::vector<mojom::DemuxerStreamPtrInfo> streams;
+  mojom::MediaUrlParamsPtr media_url_params = mojom::MediaUrlParams::New(
+      url_params.media_url, url_params.site_for_cookies,
+      url_params.allow_credentials, url_params.is_hls);
   remote_renderer_->Initialize(
-      std::move(client_ptr_info), std::move(streams), url_params.media_url,
-      url_params.site_for_cookies, url_params.allow_credentials,
+      std::move(client_ptr_info), base::nullopt, std::move(media_url_params),
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
 

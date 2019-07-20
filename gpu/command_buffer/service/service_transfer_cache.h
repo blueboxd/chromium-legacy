@@ -75,7 +75,7 @@ class GPU_GLES2_EXPORT ServiceTransferCache
       std::vector<sk_sp<SkImage>> plane_images,
       size_t buffer_byte_size,
       bool needs_mips,
-      sk_sp<SkColorSpace> target_color_space);
+      sk_sp<SkColorSpace> image_color_space);
 
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);

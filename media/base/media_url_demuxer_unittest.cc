@@ -26,7 +26,7 @@ class MediaUrlDemuxerTest : public testing::Test {
                       bool allow_credentials) {
     demuxer_.reset(new MediaUrlDemuxer(base::ThreadTaskRunnerHandle::Get(),
                                        media_url, first_party,
-                                       allow_credentials));
+                                       allow_credentials, false));
   }
 
   void InitializeTest() {

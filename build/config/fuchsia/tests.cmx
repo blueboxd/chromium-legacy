@@ -13,6 +13,7 @@
     ],
     "services": [
       "fuchsia.device.NameProvider",
+      "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.fonts.Provider",
       "fuchsia.logger.Log",
       "fuchsia.logger.LogSink",

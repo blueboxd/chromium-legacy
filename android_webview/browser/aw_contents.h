@@ -16,6 +16,7 @@
 #include "android_webview/browser/gfx/browser_view_renderer.h"
 #include "android_webview/browser/gfx/browser_view_renderer_client.h"
 #include "android_webview/browser/icon_helper.h"
+#include "android_webview/browser/js_java_interaction/js_java_configurator_host.h"
 #include "android_webview/browser/permission/permission_request_handler_client.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
@@ -101,7 +102,6 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jlong compositor_frame_consumer);
-
   base::android::ScopedJavaLocalRef<jobject> GetRenderProcess(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -212,6 +212,23 @@ class AwContents : public FindHelper::Listener,
 
   jint GetEffectivePriority(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
+
+  JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
+
+  base::android::ScopedJavaLocalRef<jstring> SetJsApiService(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean need_to_inject_js_object,
+      const base::android::JavaParamRef<jstring>& js_object_name,
+      const base::android::JavaParamRef<jobjectArray>& allowed_origins);
+
+  bool IsOriginAllowedForOnPostMessage(url::Origin& origin);
+
+  void OnPostMessage(JNIEnv* env,
+                     const base::android::JavaRef<jstring>& message,
+                     const base::android::JavaRef<jstring>& origin,
+                     jboolean is_main_frame,
+                     const base::android::JavaRef<jintArray>& ports);
 
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
 
@@ -390,6 +407,7 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
+  std::unique_ptr<JsJavaConfiguratorHost> js_java_configurator_host_;
 
   bool view_tree_force_dark_state_ = false;
 

@@ -11,7 +11,7 @@
 #include "components/services/leveldb/public/cpp/manifest.h"
 #include "components/services/leveldb/public/cpp/remote_iterator.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"
 #include "services/service_manager/public/cpp/test/test_service_manager.h"

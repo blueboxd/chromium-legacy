@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/bluetooth_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -22,11 +23,7 @@
 
   <dom-module id="bluetooth-pairing-dialog">
     <template>
-      <style include="cr-shared-style">
-        :host {
-          @apply --cr-page-host;
-        }
-
+      <style include="cr-page-host-style cr-shared-style">
         bluetooth-dialog::part(dialog) {
           border-radius: 0;
           height: 100%;

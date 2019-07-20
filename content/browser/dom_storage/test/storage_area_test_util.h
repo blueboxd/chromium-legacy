@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"

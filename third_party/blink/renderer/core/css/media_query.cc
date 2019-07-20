@@ -70,7 +70,7 @@ String MediaQuery::Serialize() const {
 }
 
 static bool ExpressionCompare(const MediaQueryExp& a, const MediaQueryExp& b) {
-  return CodePointCompare(a.Serialize(), b.Serialize()) < 0;
+  return CodeUnitCompare(a.Serialize(), b.Serialize()) < 0;
 }
 
 std::unique_ptr<MediaQuery> MediaQuery::CreateNotAll() {

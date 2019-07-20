@@ -1114,6 +1114,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void DirtyStackingContextZOrderLists();
 
+  bool NeedsVisualOverflowRecalcForTesting() const {
+    return needs_visual_overflow_recalc_;
+  }
+
  private:
   void SetNeedsCompositingInputsUpdateInternal();
 

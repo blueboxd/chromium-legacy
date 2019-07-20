@@ -14,6 +14,7 @@
 #include "base/containers/span.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkYUVASizeInfo.h"
 
 class GrContext;
 class SkColorSpace;
@@ -34,6 +35,13 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   explicit ClientImageTransferCacheEntry(const SkPixmap* pixmap,
                                          const SkColorSpace* target_color_space,
                                          bool needs_mips);
+  explicit ClientImageTransferCacheEntry(
+      const SkPixmap* y_pixmap,
+      const SkPixmap* u_pixmap,
+      const SkPixmap* v_pixmap,
+      const SkColorSpace* decoded_color_space,
+      SkYUVColorSpace yuv_color_space,
+      bool needs_mips);
   ~ClientImageTransferCacheEntry() final;
 
   uint32_t Id() const final;
@@ -43,14 +51,30 @@ class CC_PAINT_EXPORT ClientImageTransferCacheEntry
   bool Serialize(base::span<uint8_t> data) const final;
 
   static uint32_t GetNextId() { return s_next_id_.GetNext(); }
+  bool IsYuv() const { return !!yuv_pixmaps_; }
 
  private:
+  const bool needs_mips_ = false;
+  const uint32_t num_planes_ = 1;
   uint32_t id_;
-  const SkPixmap* const pixmap_;
-  const SkColorSpace* const target_color_space_;
-  const bool needs_mips_;
   uint32_t size_ = 0;
   static base::AtomicSequenceNumber s_next_id_;
+
+  // RGBX-only members.
+  const SkPixmap* const pixmap_;
+  const SkColorSpace* const
+      target_color_space_;  // Unused for YUV because Skia handles colorspaces
+                            // at raster.
+
+  // YUVA-only members.
+  base::Optional<std::array<const SkPixmap*, SkYUVASizeInfo::kMaxCount>>
+      yuv_pixmaps_;
+  const SkColorSpace* const decoded_color_space_;
+  SkYUVColorSpace yuv_color_space_;
+
+  // DCHECKs that the appropriate data members are set or not set and have
+  // positive size dimensions.
+  void ValidateYUVDataBeforeSerializing() const;
 };
 
 class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
@@ -73,14 +97,14 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   //   |needs_mips| is true.
   // - The conversion from YUV to RGB will be performed assuming a JPEG image.
   // - The colorspace of the resulting RGB image is sRGB. We will convert from
-  //   this to |target_color_space| (if non-null).
+  //   this to |image_color_space| (if non-null) at raster.
   //
   // Returns true if the entry can be built, false otherwise.
   bool BuildFromHardwareDecodedImage(GrContext* context,
                                      std::vector<sk_sp<SkImage>> plane_images,
                                      size_t buffer_byte_size,
                                      bool needs_mips,
-                                     sk_sp<SkColorSpace> target_color_space);
+                                     sk_sp<SkColorSpace> image_color_space);
 
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
@@ -95,15 +119,25 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   // Ensures the cached image has mips.
   void EnsureMips();
 
+  // Used in tests and for registering each texture for memory dumps.
+  const sk_sp<SkImage>& GetPlaneImage(size_t index) const;
+  const std::vector<size_t>& GetPlaneCachedSizes() const {
+    return plane_sizes_;
+  }
+  bool is_yuv() const { return !plane_images_.empty(); }
+  size_t num_planes() const { return is_yuv() ? plane_images_.size() : 1u; }
+
  private:
-  bool MakeSkImage(const SkPixmap& pixmap,
-                   uint32_t width,
-                   uint32_t height,
-                   sk_sp<SkColorSpace> target_color_space);
+  sk_sp<SkImage> MakeSkImage(const SkPixmap& pixmap,
+                             uint32_t width,
+                             uint32_t height,
+                             sk_sp<SkColorSpace> target_color_space);
 
   GrContext* context_ = nullptr;
   std::vector<sk_sp<SkImage>> plane_images_;
+  std::vector<size_t> plane_sizes_;
   sk_sp<SkImage> image_;
+  SkYUVColorSpace yuv_color_space_;
   bool has_mips_ = false;
   size_t size_ = 0;
   bool fits_on_gpu_ = false;

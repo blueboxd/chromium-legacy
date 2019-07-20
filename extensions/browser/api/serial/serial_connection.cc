@@ -545,6 +545,12 @@ void SerialConnection::ClearBreak(ClearBreakCompleteCallback callback) {
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback), false));
 }
 
+void SerialConnection::Close(base::OnceClosure callback) {
+  DCHECK(serial_port_);
+  serial_port_->Close(
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback)));
+}
+
 void SerialConnection::SetTimeoutCallback() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

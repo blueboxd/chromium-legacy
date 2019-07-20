@@ -619,6 +619,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/engagement/SiteEngagementService.java",
   "java/src/org/chromium/chrome/browser/explore_sites/CategoryCardAdapter.java",
   "java/src/org/chromium/chrome/browser/explore_sites/CategoryCardViewHolderFactory.java",
+  "java/src/org/chromium/chrome/browser/explore_sites/CategoryCardViewHolderFactoryDenseTitleRight.java",
+  "java/src/org/chromium/chrome/browser/explore_sites/CategoryCardViewHolderFactoryDenseTitleBottom.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExperimentalExploreSitesCategoryTileView.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExperimentalExploreSitesSection.java",
   "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesBackgroundTask.java",

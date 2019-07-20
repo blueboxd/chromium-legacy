@@ -17,9 +17,8 @@ void InputPredictorTest::ValidatePredictor(
   for (size_t i = 0; i < timestamp_ms.size(); i++) {
     if (predictor_->HasPrediction()) {
       ui::InputPredictor::InputData result;
-      EXPECT_TRUE(
-          predictor_->GeneratePrediction(FromMilliseconds(timestamp_ms[i]),
-                                         false /* is_resampling */, &result));
+      EXPECT_TRUE(predictor_->GeneratePrediction(
+          FromMilliseconds(timestamp_ms[i]), &result));
       EXPECT_NEAR(result.pos.x(), x[i], kEpsilon);
       EXPECT_NEAR(result.pos.y(), y[i], kEpsilon);
     }
@@ -48,8 +47,7 @@ void InputPredictorTest::ValidatePredictor(
     if (predictor_->HasPrediction()) {
       InputPredictor::InputData result;
       EXPECT_TRUE(predictor_->GeneratePrediction(
-          FromMilliseconds(prediction_ts_ms[current_prediction_ts]),
-          false /* is_resampling */, &result));
+          FromMilliseconds(prediction_ts_ms[current_prediction_ts]), &result));
       computed_x.push_back(result.pos.x());
       computed_y.push_back(result.pos.y());
       current_prediction_ts++;

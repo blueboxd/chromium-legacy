@@ -208,6 +208,9 @@ class TestPipelineHelpers(unittest.TestCase):
             mock.call(
                 '$W/App Product.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (Plugin).app'
             ),
+            mock.call(
+                '$W/App Product.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (GPU).app'
+            ),
             mock.call('$W/App Product.app')
         ])
 
@@ -231,10 +234,11 @@ class TestPipelineHelpers(unittest.TestCase):
             mock.call(
                 '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (Plugin).app'
             ),
+            mock.call(
+                '$W/App Product Canary.app/Contents/Frameworks/Product Framework.framework/Helpers/Product Helper (GPU).app'
+            ),
             mock.call('$W/App Product Canary.app')
         ])
-
-        print(staple.mock_calls)
 
     def test_package_and_sign_no_branding(self, **kwargs):
         manager = mock.Mock()

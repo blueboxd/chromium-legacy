@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/sharing/sharing_service.h"
+#include "base/strings/string16.h"
 
 class SharingDeviceInfo;
 
@@ -45,8 +45,7 @@ class SharingDialogController {
   virtual std::vector<App> GetApps() = 0;
 
   // Called when user chooses a synced device to complete the task.
-  virtual void OnDeviceChosen(const SharingDeviceInfo& device,
-                              SharingService::SendMessageCallback callback) = 0;
+  virtual void OnDeviceChosen(const SharingDeviceInfo& device) = 0;
 
   // Called when user chooses a local app to complete the task.
   virtual void OnAppChosen(const App& app) = 0;

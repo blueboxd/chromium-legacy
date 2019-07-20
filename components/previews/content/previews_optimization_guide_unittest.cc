@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
@@ -1215,8 +1216,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithExistingSentinel) {
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_TRUE(base::PathExists(sentinel_path));
-  histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                      2 /* kFailedFinishProcessing */, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                           kFailedFinishProcessing),
+      1);
 
   // Now verify config is processed for different version and sentinel cleared.
   ProcessHints(config, "3.0.0");
@@ -1226,8 +1230,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithExistingSentinel) {
       &ect_threshold));
   EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G, ect_threshold);
   EXPECT_FALSE(base::PathExists(sentinel_path));
-  histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                     1 /* kProcessedPreviewsHints */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          optimization_guide::ProcessHintsComponentResult::kSuccess),
+      1);
 }
 
 TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
@@ -1262,8 +1269,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_FALSE(base::PathExists(sentinel_path));
-  histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                      2 /* kFailedFinishProcessing */, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                           kFailedFinishProcessing),
+      1);
 
   // Now verify config is processed with sentinel cleared.
   ProcessHints(config, "2.0.0");
@@ -1272,8 +1282,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessHintsWithInvalidSentinelFile) {
       &user_data, GURL("https://m.facebook.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
   EXPECT_FALSE(base::PathExists(sentinel_path));
-  histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                     1 /* kProcessedPreviewsHints */, 1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          optimization_guide::ProcessHintsComponentResult::kSuccess),
+      1);
 }
 
 TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
@@ -1314,8 +1327,11 @@ TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                      1 /* kProcessedPreviewsHints */, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          optimization_guide::ProcessHintsComponentResult::kSuccess),
+      1);
 
   // Verify hint config with the same version as the previously processed config
   // is skipped.
@@ -1327,9 +1343,11 @@ TEST_F(PreviewsOptimizationGuideTest, SkipHintProcessingForSameConfigVersion) {
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                     3 /* kSkippedProcessingPreviewsHints */,
-                                     1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                           kSkippedProcessingHints),
+      1);
 }
 
 TEST_F(PreviewsOptimizationGuideTest,
@@ -1371,8 +1389,11 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                      1 /* kProcessedPreviewsHints */, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          optimization_guide::ProcessHintsComponentResult::kSuccess),
+      1);
 
   // Verify hint config with an earlier version than the previously processed
   // one is skipped.
@@ -1384,9 +1405,11 @@ TEST_F(PreviewsOptimizationGuideTest,
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                     3 /* kSkippedProcessingPreviewsHints */,
-                                     1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(optimization_guide::ProcessHintsComponentResult::
+                           kSkippedProcessingHints),
+      1);
 }
 
 TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
@@ -1427,8 +1450,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
   EXPECT_FALSE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  histogram_tester.ExpectUniqueSample("Previews.ProcessHintsResult",
-                                      1 /* kProcessedPreviewsHints */, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          optimization_guide::ProcessHintsComponentResult::kSuccess),
+      1);
 
   // Verify hint config with a newer version then the previously processed one
   // is processed.
@@ -1440,8 +1466,11 @@ TEST_F(PreviewsOptimizationGuideTest, ProcessMultipleNewConfigs) {
   EXPECT_TRUE(MaybeLoadOptimizationHintsAndCheckIsWhitelisted(
       &user_data, GURL("https://m.google.com"), PreviewsType::NOSCRIPT,
       &ect_threshold));
-  histogram_tester.ExpectBucketCount("Previews.ProcessHintsResult",
-                                     1 /* kProcessedPreviewsHints */, 2);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.ProcessHintsResult",
+      static_cast<int>(
+          optimization_guide::ProcessHintsComponentResult::kSuccess),
+      2);
 }
 
 TEST_F(PreviewsOptimizationGuideTest, ProcessHintConfigWithNoKeyFailsDcheck) {

@@ -399,7 +399,7 @@ bool KeywordProvider::ExtractKeywordFromInput(
     const TemplateURLService* template_url_service,
     base::string16* keyword,
     base::string16* remaining_input) {
-  if ((input.type() == metrics::OmniboxInputType::INVALID))
+  if ((input.type() == metrics::OmniboxInputType::EMPTY))
     return false;
 
   DCHECK(template_url_service);

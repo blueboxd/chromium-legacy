@@ -370,8 +370,8 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     if (base::FeatureList::IsEnabled(
             features::kAutofillDoNotUploadSaveUnsupportedCards) &&
         !supported_card_bin_ranges.empty() &&
-        !payments::IsCreditCardSupported(upload_request_.card,
-                                         supported_card_bin_ranges)) {
+        !payments::IsCreditCardNumberSupported(upload_request_.card.number(),
+                                               supported_card_bin_ranges)) {
       // Attempt local card save if card not already saved.
       if (!uploading_local_card_) {
         AttemptToOfferCardLocalSave(from_dynamic_change_form_,

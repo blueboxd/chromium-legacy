@@ -350,7 +350,7 @@ TEST_F(SSLClientSessionCacheTest, LookupExpirationCheck) {
   EXPECT_EQ(1u, cache.size());
 
   // Sessions also are treated as expired if the clock rewinds.
-  clock->Advance(base::TimeDelta::FromSeconds(-1));
+  clock->Advance(base::TimeDelta::FromSeconds(-2));
   EXPECT_EQ(nullptr, cache.Lookup("key").get());
   EXPECT_EQ(0u, cache.size());
 }

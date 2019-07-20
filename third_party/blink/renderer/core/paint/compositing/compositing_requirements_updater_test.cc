@@ -20,8 +20,8 @@ class CompositingRequirementsUpdaterTest : public RenderingTest {
 };
 
 void CompositingRequirementsUpdaterTest::SetUp() {
-  RenderingTest::SetUp();
   EnableCompositing();
+  RenderingTest::SetUp();
 }
 
 TEST_F(CompositingRequirementsUpdaterTest,

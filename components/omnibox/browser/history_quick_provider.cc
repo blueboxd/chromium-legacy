@@ -51,7 +51,7 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
     return;
 
   // Don't bother with INVALID.
-  if ((input.type() == metrics::OmniboxInputType::INVALID))
+  if ((input.type() == metrics::OmniboxInputType::EMPTY))
     return;
 
   autocomplete_input_ = input;

@@ -1,5 +1,5 @@
 diff --git a/src/main/java/com/android/tools/r8/utils/InternalOptions.java b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
-index 2e1a254fd..8a2693e1f 100644
+index 2e1a254fd..d4b2b7e16 100644
 --- a/src/main/java/com/android/tools/r8/utils/InternalOptions.java
 +++ b/src/main/java/com/android/tools/r8/utils/InternalOptions.java
 @@ -161,8 +161,8 @@ public class InternalOptions {
@@ -24,3 +24,12 @@ index 2e1a254fd..8a2693e1f 100644
    public boolean enableClassInlining = true;
    public boolean enableClassStaticizer = true;
    public boolean enableInitializedClassesAnalysis = true;
+@@ -868,7 +866,7 @@ public class InternalOptions {
+     public static final String CLASS_NAME = "com.android.tools.r8.GeneratedOutlineSupport";
+     public static final String METHOD_PREFIX = "outline";
+
+-    public boolean enabled = true;
++    public boolean enabled = System.getProperty("com.android.tools.r8.disableOutlining") == null;
+     public int minSize = 3;
+     public int maxSize = 99;
+     public int threshold = 20;

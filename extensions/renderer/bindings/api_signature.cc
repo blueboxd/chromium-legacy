@@ -35,11 +35,13 @@ class ArgumentParser {
   ArgumentParser(v8::Local<v8::Context> context,
                  const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
                  const std::vector<v8::Local<v8::Value>>& arguments,
-                 const APITypeReferenceMap& type_refs)
+                 const APITypeReferenceMap& type_refs,
+                 binding::PromiseSupport promise_support)
       : context_(context),
         signature_(signature),
         provided_arguments_(arguments),
-        type_refs_(type_refs) {}
+        type_refs_(type_refs),
+        promise_support_(promise_support) {}
 
  protected:
   v8::Isolate* GetIsolate() { return context_->GetIsolate(); }
@@ -59,6 +61,10 @@ class ArgumentParser {
   // with a normalized array of values such that each entry in |result| is
   // positionally correct with the signature. Omitted arguments will be
   // empty v8::Local<v8::Value> handles in the array.
+  // |allow_omitted_final_argument| indicates that the final argument is allowed
+  // to be omitted, even if it is not flagged as optional. This is used to allow
+  // callers to omit the final "callback" argument if promises can be used
+  // instead.
   // Returns true if the arguments were successfully resolved.
   // Note: This only checks arguments against their basic types, not other
   // values (like specific required properties or values).
@@ -66,7 +72,8 @@ class ArgumentParser {
       base::span<const v8::Local<v8::Value>> provided,
       base::span<const std::unique_ptr<ArgumentSpec>> expected,
       std::vector<v8::Local<v8::Value>>* result,
-      size_t index);
+      size_t index,
+      bool allow_omitted_final_argument);
 
   // Attempts to match the next argument to the given |spec|.
   // If the next argument does not match and |spec| is optional, uses a null
@@ -94,6 +101,7 @@ class ArgumentParser {
   const std::vector<std::unique_ptr<ArgumentSpec>>& signature_;
   const std::vector<v8::Local<v8::Value>>& provided_arguments_;
   const APITypeReferenceMap& type_refs_;
+  binding::PromiseSupport promise_support_;
   binding::AsyncResponseType async_type_ = binding::AsyncResponseType::kNone;
   std::string error_;
 
@@ -109,8 +117,13 @@ class V8ArgumentParser : public ArgumentParser {
   V8ArgumentParser(v8::Local<v8::Context> context,
                    const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
                    const std::vector<v8::Local<v8::Value>>& arguments,
-                   const APITypeReferenceMap& type_refs)
-      : ArgumentParser(context, signature, arguments, type_refs) {}
+                   const APITypeReferenceMap& type_refs,
+                   binding::PromiseSupport promise_support)
+      : ArgumentParser(context,
+                       signature,
+                       arguments,
+                       type_refs,
+                       promise_support) {}
 
   APISignature::V8ParseResult ParseArguments(bool signature_has_callback);
 
@@ -140,8 +153,13 @@ class BaseValueArgumentParser : public ArgumentParser {
       v8::Local<v8::Context> context,
       const std::vector<std::unique_ptr<ArgumentSpec>>& signature,
       const std::vector<v8::Local<v8::Value>>& arguments,
-      const APITypeReferenceMap& type_refs)
-      : ArgumentParser(context, signature, arguments, type_refs),
+      const APITypeReferenceMap& type_refs,
+      binding::PromiseSupport promise_support)
+      : ArgumentParser(context,
+                       signature,
+                       arguments,
+                       type_refs,
+                       promise_support),
         list_value_(std::make_unique<base::ListValue>()) {}
 
   APISignature::JSONParseResult ParseArguments(bool signature_has_callback);
@@ -180,9 +198,16 @@ bool ArgumentParser::ParseArgumentsImpl(bool signature_has_callback) {
     return false;
   }
 
+  // We allow the final argument to be omitted if the signature expects a
+  // callback and promise-based APIs are supported. If the caller omits this
+  // callback, the invocation is assumed to expect to a promise.
+  bool allow_omitted_final_argument =
+      signature_has_callback &&
+      promise_support_ == binding::PromiseSupport::kAllowed;
+
   std::vector<v8::Local<v8::Value>> resolved_arguments(signature_.size());
   if (!ResolveArguments(provided_arguments_, signature_, &resolved_arguments,
-                        0u)) {
+                        0u, allow_omitted_final_argument)) {
     error_ = api_errors::NoMatchingSignature();
     return false;
   }
@@ -207,7 +232,8 @@ bool ArgumentParser::ResolveArguments(
     base::span<const v8::Local<v8::Value>> provided,
     base::span<const std::unique_ptr<ArgumentSpec>> expected,
     std::vector<v8::Local<v8::Value>>* result,
-    size_t index) {
+    size_t index,
+    bool allow_omitted_final_argument) {
   // If the provided arguments and expected arguments are both empty, it means
   // we've successfully matched all provided arguments to the expected
   // signature.
@@ -245,8 +271,9 @@ bool ArgumentParser::ResolveArguments(
     // <n> is bounded by the number of expected arguments, which is almost
     // always small. Further, it is only when parameters are optional, which is
     // also not the default.
-    if (can_match && ResolveArguments(provided.subspan(1), expected.subspan(1),
-                                      result, index + 1)) {
+    if (can_match &&
+        ResolveArguments(provided.subspan(1), expected.subspan(1), result,
+                         index + 1, allow_omitted_final_argument)) {
       return true;
     }
   }
@@ -262,11 +289,19 @@ bool ArgumentParser::ResolveArguments(
     // Assume the expected argument was omitted.
     (*result)[index] = v8::Local<v8::Value>();
     // See comments above for recursion notes.
-    if (ResolveArguments(provided, expected.subspan(1), result, index + 1))
+    if (ResolveArguments(provided, expected.subspan(1), result, index + 1,
+                         allow_omitted_final_argument))
       return true;
   }
 
-  // A required argument was not matched.
+  // A required argument was not matched. There is only one case in which this
+  // is allowed: a required callback when Promises are supported instead; if
+  // this is the case, |allow_omitted_final_argument| is true.
+  if (allow_omitted_final_argument && expected.size() == 1) {
+    (*result)[index] = v8::Local<v8::Value>();
+    return true;
+  }
+
   return false;
 }
 
@@ -295,9 +330,17 @@ bool ArgumentParser::ParseArgument(const ArgumentSpec& spec,
 bool ArgumentParser::ParseCallback(const ArgumentSpec& spec,
                                    v8::Local<v8::Value> value) {
   if (value.IsEmpty()) {
-    DCHECK(spec.optional());
-    AddNullCallback();
-    async_type_ = binding::AsyncResponseType::kNone;
+    if (promise_support_ == binding::PromiseSupport::kAllowed) {
+      // If the callback is omitted and promises are supported, assume the
+      // async response type is a promise.
+      async_type_ = binding::AsyncResponseType::kPromise;
+    } else {
+      // Otherwise, we should only get to this point if the callback argument is
+      // optional.
+      DCHECK(spec.optional());
+      AddNullCallback();
+      async_type_ = binding::AsyncResponseType::kNone;
+    }
     return true;
   }
 
@@ -376,7 +419,8 @@ APISignature::V8ParseResult APISignature::ParseArgumentsToV8(
     v8::Local<v8::Context> context,
     const std::vector<v8::Local<v8::Value>>& arguments,
     const APITypeReferenceMap& type_refs) const {
-  return V8ArgumentParser(context, signature_, arguments, type_refs)
+  return V8ArgumentParser(context, signature_, arguments, type_refs,
+                          promise_support_)
       .ParseArguments(has_callback_);
 }
 
@@ -384,13 +428,18 @@ APISignature::JSONParseResult APISignature::ParseArgumentsToJSON(
     v8::Local<v8::Context> context,
     const std::vector<v8::Local<v8::Value>>& arguments,
     const APITypeReferenceMap& type_refs) const {
-  return BaseValueArgumentParser(context, signature_, arguments, type_refs)
+  return BaseValueArgumentParser(context, signature_, arguments, type_refs,
+                                 promise_support_)
       .ParseArguments(has_callback_);
 }
 
 APISignature::JSONParseResult APISignature::ConvertArgumentsIgnoringSchema(
     v8::Local<v8::Context> context,
     const std::vector<v8::Local<v8::Value>>& arguments) const {
+  // We don't currently handle promises in parsing signatures while ignoring
+  // the schema.
+  DCHECK_EQ(binding::PromiseSupport::kDisallowed, promise_support_);
+
   size_t size = arguments.size();
   v8::Local<v8::Function> callback;
   // TODO(devlin): This is what the current bindings do, but it's quite terribly

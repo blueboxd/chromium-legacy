@@ -35,9 +35,6 @@
 
   // Holds all CWVWebViews created with this class. Weak references.
   NSHashTable* _webViews;
-
-  // |YES| if |shutDown| was called.
-  BOOL _wasShutDown;
 }
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
@@ -131,10 +128,6 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
   return self;
 }
 
-- (void)dealloc {
-  DCHECK(_wasShutDown);
-}
-
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 #pragma mark - Autofill
 - (CWVAutofillDataManager*)autofillDataManager {
@@ -200,7 +193,6 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     [webView shutDown];
   }
   _browserState.reset();
-  _wasShutDown = YES;
 }
 
 @end

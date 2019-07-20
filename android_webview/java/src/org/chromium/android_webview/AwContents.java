@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
@@ -96,6 +97,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.device.gamepad.GamepadList;
+import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -393,6 +395,7 @@ public class AwContents implements SmartClipProvider {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
+    private WebMessageListener mWebMessageListener;
 
     private final ObserverList<PopupTouchHandleDrawable> mTouchHandleDrawables =
             new ObserverList<>();
@@ -2443,6 +2446,80 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
+     * Controls if we need to inject a JavaScript object to receive postMessage() call, i.e. the
+     * {@link AwContents#onPostMessage} callback.
+     *
+     * @param listener        The {@link WebMessageListener} to be called when received
+     *                        onPostMessage().
+     * @param jsObjectName    The name for the injected JavaScript object.
+     * @param allowedOrigins  A list of matching rules for the allowed origins.
+     *                        The JavaScript object will be injected when the frame's origin matches
+     *                        any one of the allowed origins. If a wildcard "*" is provided, it will
+     *                        inject JavaScript object to all frames.
+     * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
+     *                                  listener, jsObjectName and allowedOriginRules is {@code
+     *                                  null}.
+     */
+    public void setWebMessageListener(@NonNull WebMessageListener listener,
+            @NonNull String jsObjectName, @NonNull String[] allowedOriginRules) {
+        if (listener == null) {
+            throw new IllegalArgumentException("listener shouldn't be null");
+        }
+
+        if (TextUtils.isEmpty(jsObjectName)) {
+            throw new IllegalArgumentException("jsObjectName shouldn't be null or empty string");
+        }
+
+        for (int i = 0; i < allowedOriginRules.length; ++i) {
+            if (TextUtils.isEmpty(allowedOriginRules[i])) {
+                throw new IllegalArgumentException(
+                        "allowedOriginRules[" + i + "] is null or empty");
+            }
+        }
+
+        mWebMessageListener = listener;
+        final String exceptionMessage = nativeSetJsApiService(mNativeAwContents,
+                /* needToInjectJsObject*/ true, jsObjectName, allowedOriginRules);
+
+        if (!TextUtils.isEmpty(exceptionMessage)) {
+            mWebMessageListener = null;
+            throw new IllegalArgumentException(exceptionMessage);
+        }
+    }
+
+    /**
+     *  Removes the {@link WebMessageListener} sets by {@link setWebMessageListener}. It then won't
+     * inject JavaScript object for navigation since next navigation.
+     */
+    public void removeWebMessageListener() {
+        mWebMessageListener = null;
+        nativeSetJsApiService(
+                mNativeAwContents, /* needToInjectJsObject */ false, "", new String[0]);
+    }
+
+    /**
+     * Receives JavaScript postMessage from renderer side, passes the message to {@link
+     * WebMessageListener}.
+     */
+    @CalledByNative
+    public void onPostMessage(
+            String message, String sourceOrigin, boolean isMainFrame, int replyPort, int[] ports) {
+        if (mWebMessageListener == null) return;
+        MessagePort[] messagePorts = new MessagePort[ports.length];
+        for (int i = 0; i < ports.length; ++i) {
+            messagePorts[i] = convertRawHandleToMessagePort(ports[i]);
+        }
+        MessagePort replyMessagePort = convertRawHandleToMessagePort(replyPort);
+        mWebMessageListener.onPostMessage(this, message, Uri.parse(sourceOrigin), isMainFrame,
+                replyMessagePort, messagePorts);
+    }
+
+    private static MessagePort convertRawHandleToMessagePort(int rawHandle) {
+        return MessagePort.create(
+                CoreImpl.getInstance().acquireNativeHandle(rawHandle).toMessagePipeHandle());
+    }
+
+    /**
      * @see android.webkit.WebView#getScale()
      *
      * Please note that the scale returned is the page scale multiplied by
@@ -3921,4 +3998,6 @@ public class AwContents implements SmartClipProvider {
     private native void nativeResumeLoadingCreatedPopupWebContents(long nativeAwContents);
 
     private native AwRenderProcess nativeGetRenderProcess(long nativeAwContents);
+    private native String nativeSetJsApiService(long nativeAwContents, boolean needToInjectJsObject,
+            String jsObjectName, String[] allowedOrigins);
 }

@@ -65,6 +65,11 @@ class AvSettings {
     FIXED_VOLUME,
   };
 
+  enum class HdmiContentType {
+    NO_DATA_TYPE,
+    GAME_TYPE,
+  };
+
   // Defines the status of platform wake-on-cast feature.
   enum WakeOnCastStatus {
     WAKE_ON_CAST_UNKNOWN,  // Should only been used very rarely when platform
@@ -222,6 +227,14 @@ class AvSettings {
   // Returns true and sets |nits| on success.
   // Not all displays support this function.
   static bool GetDisplayMaxBrightnessNits(float* nits) __attribute__((weak));
+
+  // Set Hdmi content type. Return false if such operation fails. The operation
+  // fails if unexpected errors occur, or if the desired |content_type| is not
+  // supported by Hdmi sink, in which case implementation shall return false
+  // without actually setting the content type.
+  // This function should only be implemented on HDMI platforms.
+  static bool SetHdmiContentType(HdmiContentType content_type)
+      __attribute__((weak));
 
   // Gets the HDMI latency in microseconds.
   // Returns valid values when HDMI is connected.

@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_MEDIA_URL_PARAMS_H_
 #define MEDIA_BASE_MEDIA_URL_PARAMS_H_
 
+#include "media/base/media_export.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -33,6 +34,10 @@ struct MEDIA_EXPORT MediaUrlParams {
   // initiated in MediaResourceGetter::CheckPolicyForCookies() for the given
   // |site_for_cookies|.
   bool allow_credentials;
+
+  // True when MediaPlayerRenderer has been selected because the media has been
+  // detected to be HLS. Used only for metrics.
+  bool is_hls;
 };
 
 }  // namespace media

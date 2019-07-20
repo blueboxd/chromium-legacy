@@ -48,7 +48,7 @@ class URLSearchParamsIterationSource final
 
 bool CompareParams(const std::pair<String, String>& a,
                    const std::pair<String, String>& b) {
-  return WTF::CodePointCompareLessThan(a.first, b.first);
+  return WTF::CodeUnitCompareLessThan(a.first, b.first);
 }
 
 }  // namespace

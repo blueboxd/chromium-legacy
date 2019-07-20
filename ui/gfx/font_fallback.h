@@ -19,9 +19,6 @@ class Font;
 // Given a font, returns the fonts that are suitable for fallback.
 GFX_EXPORT std::vector<Font> GetFallbackFonts(const Font& font);
 
-#if defined(ANDROID) || defined(OS_MACOSX) || defined(OS_WIN) || \
-    defined(OS_FUCHSIA)
-
 // Finds a fallback font to render the specified |text| with respect to an
 // initial |font|. Returns the resulting font via out param |result|. Returns
 // |true| if a fallback font was found.
@@ -29,8 +26,6 @@ bool GFX_EXPORT GetFallbackFont(const Font& font,
                                 const std::string& locale,
                                 base::StringPiece16 text,
                                 Font* result);
-
-#endif  // ANDROID || OS_MACOSX || OS_WIN || OS_FUCHSIA
 
 }  // namespace gfx
 

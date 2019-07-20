@@ -74,6 +74,7 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
       {"../../views/resources/default_200_percent/common/", "images/2x/apps/"},
       {"../../webui/resources/cr_components/", "cr_components/"},
       {"../../webui/resources/cr_elements/", "cr_elements/"},
+      {"@out_folder@/gen/ui/webui/resources/", ""},
   };
 
 #if defined(OS_CHROMEOS)

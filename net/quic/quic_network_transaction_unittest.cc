@@ -642,6 +642,7 @@ class QuicNetworkTransactionTest
   void CreateSession(const quic::ParsedQuicVersionVector& supported_versions) {
     session_params_.enable_quic = true;
     session_params_.quic_params.supported_versions = supported_versions;
+    session_params_.quic_params.max_allowed_push_id = quic::kMaxQuicStreamId;
     session_params_.quic_params.headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency_;
 

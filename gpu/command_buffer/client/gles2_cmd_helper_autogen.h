@@ -2949,15 +2949,13 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
 
 void ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,
                                         GLboolean is_clipped,
-                                        GLfloat clip_rect_corner_radius,
                                         GLint sorting_context_id,
                                         GLuint shm_id,
                                         GLuint shm_offset) {
   gles2::cmds::ScheduleCALayerSharedStateCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleCALayerSharedStateCHROMIUM>();
   if (c) {
-    c->Init(opacity, is_clipped, clip_rect_corner_radius, sorting_context_id,
-            shm_id, shm_offset);
+    c->Init(opacity, is_clipped, sorting_context_id, shm_id, shm_offset);
   }
 }
 

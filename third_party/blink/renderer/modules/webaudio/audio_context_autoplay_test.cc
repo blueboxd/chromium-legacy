@@ -133,9 +133,9 @@ class AudioContextAutoplayTest
   }
 
  private:
+  ScopedTestingPlatformSupport<AudioContextAutoplayTestPlatform> platform_;
   frame_test_helpers::WebViewHelper helper_;
   std::unique_ptr<HistogramTester> histogram_tester_;
-  ScopedTestingPlatformSupport<AudioContextAutoplayTestPlatform> platform_;
 };
 
 // Creates an AudioContext without a gesture inside a x-origin child frame.

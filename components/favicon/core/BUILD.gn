@@ -21,7 +21,6 @@ static_library("core") {
     "favicon_service_impl.h",
     "favicon_url.cc",
     "favicon_url.h",
-    "favicon_url_mapper.h",
     "favicon_util.cc",
     "favicon_util.h",
     "features.cc",

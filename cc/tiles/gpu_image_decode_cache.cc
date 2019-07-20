@@ -20,7 +20,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
-#include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/raster/scoped_grcontext_access.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
@@ -1715,6 +1714,28 @@ bool GpuImageDecodeCache::ExceedsPreferredCount() const {
   return persistent_cache_.size() > items_limit;
 }
 
+void GpuImageDecodeCache::InsertTransferCacheEntry(
+    const ClientImageTransferCacheEntry& image_entry,
+    ImageData* image_data) {
+  DCHECK(image_data);
+  uint32_t size = image_entry.SerializedSize();
+  void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
+  if (data) {
+    bool succeeded = image_entry.Serialize(
+        base::make_span(reinterpret_cast<uint8_t*>(data), size));
+    DCHECK(succeeded);
+    context_->ContextSupport()->UnmapAndCreateTransferCacheEntry(
+        image_entry.UnsafeType(), image_entry.Id());
+    image_data->upload.SetTransferCacheId(image_entry.Id());
+  } else {
+    // Transfer cache entry can fail due to a lost gpu context or failure
+    // to allocate shared memory.  Handle this gracefully.  Mark this
+    // image as "decode failed" so that we do not try to handle it again.
+    // If this was a lost context, we'll recreate this image decode cache.
+    image_data->decode.decode_failure = true;
+  }
+}
+
 void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
                                                  ImageData* image_data,
                                                  TaskType task_type) {
@@ -1943,27 +1964,31 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     }
 
     // Non-hardware-accelerated path.
-    SkPixmap pixmap;
-    if (!image_data->decode.image()->peekPixels(&pixmap))
-      return;
-
-    ClientImageTransferCacheEntry image_entry(&pixmap, color_space.get(),
-                                              image_data->needs_mips);
-    uint32_t size = image_entry.SerializedSize();
-    void* data = context_->ContextSupport()->MapTransferCacheEntry(size);
-    if (data) {
-      bool succeeded = image_entry.Serialize(
-          base::make_span(reinterpret_cast<uint8_t*>(data), size));
-      DCHECK(succeeded);
-      context_->ContextSupport()->UnmapAndCreateTransferCacheEntry(
-          image_entry.UnsafeType(), image_entry.Id());
-      image_data->upload.SetTransferCacheId(image_entry.Id());
+    if (image_data->is_yuv) {
+      SkPixmap y_pixmap;
+      SkPixmap u_pixmap;
+      SkPixmap v_pixmap;
+      if (!image_data->decode.y_image()->peekPixels(&y_pixmap) ||
+          !image_data->decode.u_image()->peekPixels(&u_pixmap) ||
+          !image_data->decode.v_image()->peekPixels(&v_pixmap)) {
+        return;
+      }
+      // WebP documentation says to use Rec 601 for converting to RGB.
+      // TODO(crbug.com/915707): Change QueryYUVA8 to set the colorspace based
+      // on image type.
+      SkYUVColorSpace yuva_color_space =
+          SkYUVColorSpace::kRec601_SkYUVColorSpace;
+      ClientImageTransferCacheEntry image_entry(
+          &y_pixmap, &u_pixmap, &v_pixmap, decoded_target_colorspace.get(),
+          yuva_color_space, image_data->needs_mips);
+      InsertTransferCacheEntry(image_entry, image_data);
     } else {
-      // Transfer cache entry can fail due to a lost gpu context or failure
-      // to allocate shared memory.  Handle this gracefully.  Mark this
-      // image as "decode failed" so that we do not try to handle it again.
-      // If this was a lost context, we'll recreate this image decode cache.
-      image_data->decode.decode_failure = true;
+      SkPixmap pixmap;
+      if (!image_data->decode.image()->peekPixels(&pixmap))
+        return;
+      ClientImageTransferCacheEntry image_entry(&pixmap, color_space.get(),
+                                                image_data->needs_mips);
+      InsertTransferCacheEntry(image_entry, image_data);
     }
 
     return;
@@ -2123,12 +2148,13 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   bool needs_mips = ShouldGenerateMips(draw_image, upload_scale_mip_level);
   SkImageInfo image_info =
       CreateImageInfoForDrawImage(draw_image, upload_scale_mip_level);
-
+  const bool image_larger_than_max_texture =
+      image_info.width() > max_texture_size_ ||
+      image_info.height() > max_texture_size_;
   DecodedDataMode mode;
   if (use_transfer_cache_) {
     mode = DecodedDataMode::kTransferCache;
-  } else if (image_info.width() > max_texture_size_ ||
-             image_info.height() > max_texture_size_) {
+  } else if (image_larger_than_max_texture) {
     // Image too large to upload. Try to use SW fallback.
     mode = DecodedDataMode::kCpu;
   } else {
@@ -2213,7 +2239,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   SkYUVASizeInfo target_yuva_size_info;
   const bool is_yuv = !do_hardware_accelerated_decode &&
                       draw_image.paint_image().IsYuv(&target_yuva_size_info) &&
-                      mode == DecodedDataMode::kGpu;
+                      mode != DecodedDataMode::kCpu &&
+                      !image_larger_than_max_texture;
 
   // TODO(crbug.com/910276): Change after alpha support.
   if (is_yuv) {
@@ -2606,6 +2633,9 @@ sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
   return image_data->decode.ImageForTesting();
 }
 
+// Used for in-process-raster YUV decoding tests, where we often need the
+// SkImages for each underlying plane because asserting or requesting fields for
+// the YUV SkImage may flatten it to RGB or not be possible to request.
 sk_sp<SkImage> GpuImageDecodeCache::GetUploadedPlaneForTesting(
     const DrawImage& draw_image,
     size_t index) {

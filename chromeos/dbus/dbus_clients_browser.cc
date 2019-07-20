@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chromeos/dbus/arc_appfuse_provider_client.h"
+#include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
@@ -18,6 +19,7 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
 #include "chromeos/dbus/fake_arc_appfuse_provider_client.h"
+#include "chromeos/dbus/fake_arc_keymaster_client.h"
 #include "chromeos/dbus/fake_arc_midis_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
 #include "chromeos/dbus/fake_arc_oemcrypto_client.h"
@@ -75,6 +77,8 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
 
   arc_appfuse_provider_client_ =
       CREATE_DBUS_CLIENT(ArcAppfuseProviderClient, use_real_clients);
+  arc_keymaster_client_ =
+      CREATE_DBUS_CLIENT(ArcKeymasterClient, use_real_clients);
   arc_midis_client_ = CREATE_DBUS_CLIENT(ArcMidisClient, use_real_clients);
   arc_obb_mounter_client_ =
       CREATE_DBUS_CLIENT(ArcObbMounterClient, use_real_clients);
@@ -116,6 +120,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
   arc_appfuse_provider_client_->Init(system_bus);
+  arc_keymaster_client_->Init(system_bus);
   arc_midis_client_->Init(system_bus);
   arc_obb_mounter_client_->Init(system_bus);
   arc_oemcrypto_client_->Init(system_bus);

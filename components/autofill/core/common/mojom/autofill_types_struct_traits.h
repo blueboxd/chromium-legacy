@@ -88,6 +88,10 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.properties_mask;
   }
 
+  static int32_t form_control_ax_id(const autofill::FormFieldData& r) {
+    return r.form_control_ax_id;
+  }
+
   static uint64_t max_length(const autofill::FormFieldData& r) {
     return r.max_length;
   }

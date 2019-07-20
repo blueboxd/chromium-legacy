@@ -158,7 +158,7 @@
 #define voidpc Cr_z_voidpc
 #define voidpf Cr_z_voidpf
 #define gz_header_s Cr_z_gz_header_s
-#define internal_state Cr_z_internal_state
+/* #undef internal_state */
 /* #undef z_off64_t */
 
 /* An exported symbol that isn't handled by Z_PREFIX in zconf.h */

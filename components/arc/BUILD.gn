@@ -42,6 +42,8 @@ static_library("arc") {
     "intent_helper/link_handler_model.cc",
     "intent_helper/link_handler_model.h",
     "intent_helper/open_url_delegate.h",
+    "keymaster/arc_keymaster_bridge.cc",
+    "keymaster/arc_keymaster_bridge.h",
     "lock_screen/arc_lock_screen_bridge.cc",
     "lock_screen/arc_lock_screen_bridge.h",
     "metrics/arc_metrics_service.cc",

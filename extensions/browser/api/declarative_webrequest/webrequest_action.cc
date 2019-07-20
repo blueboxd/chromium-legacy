@@ -24,7 +24,6 @@
 #include "extensions/browser/api/web_request/web_request_permissions.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -470,14 +469,14 @@ bool WebRequestAction::Equals(const WebRequestAction* other) const {
 
 bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
                                      const std::string& extension_id) const {
-  const InfoMap* extension_info_map = apply_info->extension_info_map;
+  PermissionHelper* permission_helper = apply_info->permission_helper;
   const WebRequestInfo* request = apply_info->request_data.request;
-  if (WebRequestPermissions::HideRequest(extension_info_map, *request))
+  if (WebRequestPermissions::HideRequest(permission_helper, *request))
     return false;
 
-  // In unit tests we don't have an extension_info_map object here and skip host
+  // In unit tests we don't have a permission_helper object here and skip host
   // permission checks.
-  if (!extension_info_map)
+  if (!permission_helper)
     return true;
 
   // The embedder can always access all hosts from within a <webview>.
@@ -499,7 +498,7 @@ bool WebRequestAction::HasPermission(ApplyInfo* apply_info,
   }
   // TODO(devlin): Pass in the real tab id here.
   return WebRequestPermissions::CanExtensionAccessURL(
-             extension_info_map, extension_id, request->url, -1,
+             permission_helper, extension_id, request->url, -1,
              apply_info->crosses_incognito, permission_check,
              request->initiator,
              request->type) == PermissionsData::PageAccess::kAllowed;

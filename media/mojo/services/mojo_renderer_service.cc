@@ -66,9 +66,7 @@ MojoRendererService::~MojoRendererService() = default;
 void MojoRendererService::Initialize(
     mojom::RendererClientAssociatedPtrInfo client,
     base::Optional<std::vector<mojom::DemuxerStreamPtrInfo>> streams,
-    const base::Optional<GURL>& media_url,
-    const base::Optional<GURL>& site_for_cookies,
-    bool allow_credentials,
+    mojom::MediaUrlParamsPtr media_url_params,
     InitializeCallback callback) {
   DVLOG(1) << __func__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -76,7 +74,7 @@ void MojoRendererService::Initialize(
   client_.Bind(std::move(client));
   state_ = STATE_INITIALIZING;
 
-  if (media_url == base::nullopt) {
+  if (!media_url_params) {
     DCHECK(streams.has_value());
     media_resource_.reset(new MediaResourceShim(
         std::move(*streams), base::Bind(&MojoRendererService::OnStreamReady,
@@ -84,10 +82,11 @@ void MojoRendererService::Initialize(
     return;
   }
 
-  DCHECK(!media_url.value().is_empty());
-  DCHECK(site_for_cookies);
+  DCHECK(!media_url_params->media_url.is_empty());
+  DCHECK(!media_url_params->site_for_cookies.is_empty());
   media_resource_.reset(new MediaUrlDemuxer(
-      nullptr, media_url.value(), site_for_cookies.value(), allow_credentials));
+      nullptr, media_url_params->media_url, media_url_params->site_for_cookies,
+      media_url_params->allow_credentials, media_url_params->is_hls));
   renderer_->Initialize(
       media_resource_.get(), this,
       base::Bind(&MojoRendererService::OnRendererInitializeDone, weak_this_,

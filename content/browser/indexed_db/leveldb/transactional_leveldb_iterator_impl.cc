@@ -21,14 +21,15 @@ static base::StringPiece MakeStringPiece(const leveldb::Slice& s) {
 namespace content {
 
 TransactionalLevelDBIteratorImpl::~TransactionalLevelDBIteratorImpl() {
-  db_->OnIteratorDestroyed(this);
+  if (db_)
+    db_->OnIteratorDestroyed(this);
 }
 
 TransactionalLevelDBIteratorImpl::TransactionalLevelDBIteratorImpl(
     std::unique_ptr<leveldb::Iterator> it,
     TransactionalLevelDBDatabase* db,
     const leveldb::Snapshot* snapshot)
-    : iterator_(std::move(it)), db_(db), snapshot_(snapshot) {}
+    : iterator_(std::move(it)), db_(db->AsWeakPtr()), snapshot_(snapshot) {}
 
 leveldb::Status TransactionalLevelDBIteratorImpl::CheckStatus() {
   DCHECK(!IsDetached());

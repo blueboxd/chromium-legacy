@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -21,7 +22,6 @@ const char kTestAppId[] = "test_app_id";
 const char kTestMessageId[] = "test_message_id";
 const char kOriginalMessageId[] = "test_original_message_id";
 const char kSenderGuid[] = "test_sender_guid";
-const int kAckTimeToLiveMinutes = 30;
 
 class MockSharingMessageHandler : public SharingMessageHandler {
  public:
@@ -118,10 +118,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   EXPECT_CALL(mock_sharing_message_handler_,
               OnMessage(ProtoEquals(sharing_message)));
   EXPECT_CALL(mock_sharing_fcm_sender_,
-              SendMessageToDevice(
-                  Eq(kSenderGuid),
-                  Eq(base::TimeDelta::FromMinutes(kAckTimeToLiveMinutes)),
-                  ProtoEquals(sharing_ack_message), _));
+              SendMessageToDevice(Eq(kSenderGuid), Eq(kAckTimeToLive),
+                                  ProtoEquals(sharing_ack_message), _));
   sharing_fcm_handler_->AddSharingHandler(SharingMessage::kPingMessage,
                                           &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);

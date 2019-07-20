@@ -22,7 +22,9 @@ var expectations = [
 
 var nextExpectation = 0;
 
-function checkExpectation(t, action) {
+function checkExpectation(t, action, e) {
+  assert_equals(e.action, action);
+
   var expectedEvent = expectations[nextExpectation];
   assert_equals(expectedEvent, action);
   if (++nextExpectation >= expectations.length)

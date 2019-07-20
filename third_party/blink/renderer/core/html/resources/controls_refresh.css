@@ -9,17 +9,20 @@
  */
 
 input,
+select,
 textarea {
   background-color: #ffffff;
   border-color: #cecece;
 }
 
 input:hover,
+select:hover,
 textarea:hover {
   border-color: #9d9d9d;
 }
 
 input:disabled,
+select:disabled,
 textarea:disabled {
   background-color: #ffffff;
   border-color: #c5c5c5;

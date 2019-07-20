@@ -91,6 +91,7 @@ jumbo_source_set("filters") {
     "//media/formats",
     "//media/video",
     "//third_party/libyuv",
+    "//ui/gfx/geometry:geometry",
   ]
 
   libs = []

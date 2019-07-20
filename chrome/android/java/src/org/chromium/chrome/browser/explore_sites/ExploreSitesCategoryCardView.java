@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -37,8 +38,6 @@ import java.util.List;
  */
 public class ExploreSitesCategoryCardView extends LinearLayout {
     private static final String TAG = "ExploreSitesCategoryCardView";
-    private static final int MAX_TILE_COUNT = 8;
-    private static final int MAX_ROWS = 2;
 
     private final ExploreSitesSiteViewBinder mSiteViewBinder;
     private TextView mTitleView;
@@ -52,6 +51,10 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
     private ExploreSitesCategory mCategory;
     private int mCategoryCardIndex;
     private int mTileViewLayout;
+    private boolean mIsDense;
+    private int mMaxRows;
+    private int mMaxColumns;
+    private int mMaxTileCount;
 
     public View getTileViewAt(int tilePosition) {
         return mTileView.getChildAt(tilePosition);
@@ -183,7 +186,7 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
 
     public ExploreSitesCategoryCardView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mModelChangeProcessors = new ArrayList<>(MAX_TILE_COUNT);
+        mModelChangeProcessors = new ArrayList<>();
         mSiteViewBinder = new ExploreSitesSiteViewBinder();
     }
 
@@ -192,7 +195,17 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         super.onFinishInflate();
         mTitleView = findViewById(R.id.category_title);
         mTileView = findViewById(R.id.category_sites);
-        mTileView.setMaxColumns(ExploreSitesCategory.MAX_COLUMNS);
+    }
+
+    public void setTileGridParams(int maxRows, int maxColumns, @DenseVariation int denseVariation) {
+        mIsDense = ExploreSitesBridge.isDense(denseVariation);
+        mMaxRows = maxRows;
+        mMaxColumns = maxColumns;
+        mMaxTileCount = mMaxRows * mMaxColumns;
+        mModelChangeProcessors.clear();
+        mModelChangeProcessors = new ArrayList<>(mMaxTileCount);
+
+        mTileView.setMaxColumns(mMaxColumns);
     }
 
     public void setCategory(ExploreSitesCategory category, int categoryCardIndex,
@@ -221,14 +234,9 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
         }
         mModelChangeProcessors.clear();
 
-        // Only show rows that would be fully populated by original list of sites. This is
-        // calculated within the category.
-        mTileView.setMaxRows(Math.min(category.getMaxRows(), MAX_ROWS));
-
-        // Maximum number of sites that can be shown, defined as min of
-        // numSitesToShow and maxRows * maxCols.
-        int tileMax = Math.min(category.getMaxRows() * ExploreSitesCategory.MAX_COLUMNS,
-                category.getNumDisplayed());
+        boolean incompleteAllowed = allowIncompleteRow(category);
+        int tileMax = tilesToDisplay(category, incompleteAllowed);
+        mTileView.setMaxRows(rowsToDisplay(category, incompleteAllowed));
 
         // Remove extra tiles if too many.
         if (mTileView.getChildCount() > tileMax) {
@@ -283,10 +291,59 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
      * @param cardIndex The number card (zero based) of the tile that was picked.
      * @param tileIndex The number of the tile within the card.
      */
-    public static void recordTileIndexClick(int cardIndex, int tileIndex) {
+    public void recordTileIndexClick(int cardIndex, int tileIndex) {
         // TODO(petewil): Should I get the number of sites in this category from the model instead
         // of using MAX_TILE_COUNT?
         RecordHistogram.recordLinearCountHistogram("ExploreSites.SiteTilesClickIndex",
-                cardIndex * MAX_TILE_COUNT + tileIndex, 1, 100, 100);
+                cardIndex * mMaxTileCount + tileIndex, 1, 100, 100);
+    }
+
+    /**
+     * Determine if an incomplete row will be allowed when the view is dense.
+     *
+     * An incomplete row is not allowed regardless of the below constraints if:
+     *  - The view is not dense.
+     *  - There are more sites to display than mMaxTileCount.
+     *  - The last row forms a complete row of sites.
+     *
+     * An incomplete row is allowed if any of the following constraints are satisfied:
+     *  - There are not enough sites to populate the first row.
+     *  - There is more than one site in the last row.
+     *  - There is one site in the last row as a result of the user blacklisting a site.
+     *
+     * @param category The category from which the number of incomplete row will be calculated.
+     */
+    @VisibleForTesting
+    boolean allowIncompleteRow(ExploreSitesCategory category) {
+        if (!mIsDense) return false;
+        // Do not allow incomplete row if category has more sites than mMaxTileCount.
+        if (category.getNumDisplayed() > mMaxTileCount) return false;
+
+        final int numSitesLastRow = category.getNumDisplayed() % mMaxColumns;
+        // Do not allow incomplete row if last row forms a complete row anyway.
+        if (numSitesLastRow == 0) return false;
+
+        // Allow incomplete row if category does not have enough sites to populate first row.
+        if (category.getNumDisplayed() < mMaxColumns) return true;
+
+        return (category.getNumberRemoved() > 0 || numSitesLastRow > 1);
+    }
+
+    @VisibleForTesting
+    int rowsToDisplay(ExploreSitesCategory category, boolean incompleteAllowed) {
+        if (mIsDense) {
+            int displayedRows = category.getNumDisplayed() / mMaxColumns;
+            return Math.min(displayedRows + (incompleteAllowed ? 1 : 0), mMaxRows);
+        } else {
+            return Math.min(category.getMaxRows(mMaxColumns), mMaxRows);
+        }
+    }
+
+    @VisibleForTesting
+    int tilesToDisplay(ExploreSitesCategory category, boolean incompleteAllowed) {
+        return incompleteAllowed ? Math.min(category.getNumDisplayed(), mMaxTileCount)
+                                 : Math.min(Math.min(category.getMaxRows(mMaxColumns) * mMaxColumns,
+                                                    category.getNumDisplayed()),
+                                         mMaxTileCount);
     }
 }

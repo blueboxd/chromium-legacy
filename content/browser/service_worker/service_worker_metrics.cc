@@ -339,13 +339,6 @@ void ServiceWorkerMetrics::RecordStartInstalledWorkerStatus(
   }
 }
 
-void ServiceWorkerMetrics::RecordInstalledScriptsSenderStatus(
-    ServiceWorkerInstalledScriptReader::FinishedReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "ServiceWorker.StartWorker.InstalledScriptsSender.FinishedReason", reason,
-      ServiceWorkerInstalledScriptReader::FinishedReason::kMaxValue);
-}
-
 void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
                                                  bool is_installed,
                                                  StartSituation start_situation,

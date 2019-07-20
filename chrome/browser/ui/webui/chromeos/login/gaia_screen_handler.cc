@@ -55,6 +55,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -205,7 +206,7 @@ user_manager::UserType GetUsertypeFromServicesString(
     const ::login::StringList& services) {
   bool is_child = false;
   const bool support_usm =
-      base::FeatureList::IsEnabled(features::kCrOSEnableUSMUserService);
+      base::FeatureList::IsEnabled(::features::kCrOSEnableUSMUserService);
   using KnownFlags = base::flat_set<std::string>;
   const KnownFlags known_flags =
       support_usm ? KnownFlags({"uca", "usm"}) : KnownFlags({"uca"});
@@ -245,7 +246,11 @@ std::string GetAdErrorMessage(authpolicy::ErrorType error) {
 }
 
 bool ExtractSamlPasswordAttributesEnabled() {
-  return base::FeatureList::IsEnabled(features::kInSessionPasswordChange);
+  return base::FeatureList::IsEnabled(::features::kInSessionPasswordChange);
+}
+
+bool GaiaActionButtonsEnabled() {
+  return base::FeatureList::IsEnabled(chromeos::features::kGaiaActionButtons);
 }
 
 }  // namespace
@@ -478,6 +483,7 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
 
   params.SetBoolean("extractSamlPasswordAttributes",
                     ExtractSamlPasswordAttributesEnabled());
+  params.SetBoolean("enableGaiaActionButtons", GaiaActionButtonsEnabled());
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("login.GaiaSigninScreen.loadAuthExtension", params);
@@ -1043,9 +1049,11 @@ void GaiaScreenHandler::SubmitLoginFormForTest() {
   content::RenderFrameHost* frame =
       signin::GetAuthFrame(web_ui()->GetWebContents(), kAuthIframeParentName);
 
+  // clang-format off
   std::string code =
       "document.getElementById('identifier').value = '" + test_user_ + "';"
       "document.getElementById('nextButton').click();";
+  // clang-format on
 
   frame->ExecuteJavaScriptForTests(base::ASCIIToUTF16(code),
                                    base::NullCallback());

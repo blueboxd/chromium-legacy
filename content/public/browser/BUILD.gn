@@ -113,6 +113,7 @@ jumbo_source_set("browser_sources") {
     "console_message.h",
     "content_browser_client.cc",
     "content_browser_client.h",
+    "content_index_context.h",
     "content_index_provider.cc",
     "content_index_provider.h",
     "cookie_store_factory.h",

@@ -61,8 +61,8 @@ void GPURenderPassEncoder::setViewport(float x,
                                        float height,
                                        float minDepth,
                                        float maxDepth) {
-  // TODO(crbug.com/dawn/53): Implement setViewport in Dawn.
-  NOTIMPLEMENTED();
+  GetProcs().renderPassEncoderSetViewport(GetHandle(), x, y, width, height,
+                                          minDepth, maxDepth);
 }
 
 void GPURenderPassEncoder::setScissorRect(uint32_t x,

@@ -21,14 +21,6 @@ class LayerTreeHostFiltersPixelTest
     : public LayerTreePixelTest,
       public ::testing::WithParamInterface<LayerTreeTest::RendererType> {
  protected:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    LayerTreePixelTest::InitializeSettings(settings);
-    // Required so that device scale is inherited by content scale. True for
-    // most tests, but can be overwritten before RunPixelTest() is called.
-    settings->layer_transforms_should_scale_layer_contents =
-        layer_transforms_should_scale_layer_contents_;
-  }
-
   RendererType renderer_type() { return GetParam(); }
 
   // Text string for graphics backend of the RendererType. Suitable for
@@ -73,8 +65,6 @@ class LayerTreeHostFiltersPixelTest
 
     return background;
   }
-
-  bool layer_transforms_should_scale_layer_contents_ = true;
 };
 
 LayerTreeTest::RendererType const kRendererTypes[] = {
@@ -399,8 +389,6 @@ TEST_P(LayerTreeHostFiltersScaledPixelTest, HiDpi) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
-  layer_transforms_should_scale_layer_contents_ = false;
-
   scoped_refptr<SolidColorLayer> foreground =
       CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorGREEN);
 
@@ -413,8 +401,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, NullFilter) {
 }
 
 TEST_P(LayerTreeHostFiltersPixelTest, CroppedFilter) {
-  layer_transforms_should_scale_layer_contents_ = false;
-
   scoped_refptr<SolidColorLayer> foreground =
       CreateSolidColorLayer(gfx::Rect(0, 0, 200, 200), SK_ColorGREEN);
 

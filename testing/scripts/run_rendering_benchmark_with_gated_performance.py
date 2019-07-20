@@ -27,7 +27,6 @@ import time
 import common
 import run_performance_tests
 
-BENCHMARK = 'rendering.desktop'
 # AVG_ERROR_MARGIN determines how much more the value of frame times can be
 # compared to the recorded value
 AVG_ERROR_MARGIN = 2.0
@@ -52,15 +51,15 @@ class ResultRecorder(object):
       self.fails = output['num_failures_by_type']['FAIL']
     self.tests = self.fails + output['num_failures_by_type']['PASS']
 
-  def add_failure(self, name):
-    self.output['tests'][BENCHMARK][name]['actual'] = 'FAIL'
-    self.output['tests'][BENCHMARK][name]['is_unexpected'] = True
+  def add_failure(self, name, benchmark):
+    self.output['tests'][benchmark][name]['actual'] = 'FAIL'
+    self.output['tests'][benchmark][name]['is_unexpected'] = True
     self._failed_stories.add(name)
     self.fails += 1
 
-  def remove_failure(self, name):
-    self.output['tests'][BENCHMARK][name]['actual'] = 'PASS'
-    self.output['tests'][BENCHMARK][name]['is_unexpected'] = False
+  def remove_failure(self, name, benchmark):
+    self.output['tests'][benchmark][name]['actual'] = 'PASS'
+    self.output['tests'][benchmark][name]['is_unexpected'] = False
     self._failed_stories.remove(name)
     self.fails -= 1
 
@@ -87,16 +86,16 @@ class ResultRecorder(object):
     return (self.output, self.return_code)
 
 def interpret_run_benchmark_results(upper_limit_data,
-    isolated_script_test_output):
+    isolated_script_test_output, benchmark):
   out_dir_path = os.path.dirname(isolated_script_test_output)
-  output_path = os.path.join(out_dir_path, BENCHMARK, 'test_results.json')
+  output_path = os.path.join(out_dir_path, benchmark, 'test_results.json')
   result_recorder = ResultRecorder()
 
   with open(output_path, 'r+') as resultsFile:
     initialOut = json.load(resultsFile)
     result_recorder.set_tests(initialOut)
 
-    results_path = os.path.join(out_dir_path, BENCHMARK, 'perf_results.csv')
+    results_path = os.path.join(out_dir_path, benchmark, 'perf_results.csv')
     marked_stories = set()
 
     with open(results_path) as csv_file:
@@ -116,22 +115,22 @@ def interpret_run_benchmark_results(upper_limit_data,
         upper_limit_ci = upper_limit_data[story_name]['ci_095']
 
         if row['avg'] == '' or row['count'] == 0:
-          print('[  FAILED  ] '+ BENCHMARK + '/' + story_name + ' ' +
+          print('[  FAILED  ] '+ benchmark + '/' + story_name + ' ' +
             row['name'] + ' has no values for ' + row['name'] +
             '. check run_benchmark logs for more information.')
-          result_recorder.add_failure(story_name)
+          result_recorder.add_failure(story_name, benchmark)
         elif (float(row['ci_095']) > upper_limit_ci * CI_ERROR_MARGIN):
-          print('[  FAILED  ] '+ BENCHMARK + '/' + story_name + ' ' +
+          print('[  FAILED  ] '+ benchmark + '/' + story_name + ' ' +
             row['name'] + ' has higher noise' + '(' + str(row['ci_095']) +
             ') compared to upper limit(' + str(upper_limit_ci) + ').')
-          result_recorder.add_failure(story_name)
+          result_recorder.add_failure(story_name, benchmark)
         elif (float(row['avg']) > upper_limit_avg + AVG_ERROR_MARGIN):
-          print('[  FAILED  ] '+ BENCHMARK + '/' + story_name +
+          print('[  FAILED  ] '+ benchmark + '/' + story_name +
             ' higher average ' + row['name'] + '(' + str(row['avg']) +
             ') compared to upper limit(' + str(upper_limit_avg) + ').')
-          result_recorder.add_failure(story_name)
+          result_recorder.add_failure(story_name, benchmark)
         else:
-          print('[       OK ] '+ BENCHMARK + '/' + story_name +
+          print('[       OK ] '+ benchmark + '/' + story_name +
             ' lower average ' + row['name'] + '(' + str(row['avg']) +
             ') compared to upper limit(' + str(upper_limit_avg) + ').')
 
@@ -153,19 +152,28 @@ def replace_arg_values(args, key_value_pairs):
 
 def main():
   overall_return_code = 0
+  options = parse_arguments()
 
-  # Linux does not have it's own specific representatives
-  # and uses the representatives chosen for windows.
-  if sys.platform == 'win32' or sys.platform.startswith('linux'):
-    platform = 'win'
-    story_tag = 'representative_win_desktop'
-  elif sys.platform == 'darwin':
-    platform = 'mac'
-    story_tag = 'representative_mac_desktop'
+  print (options)
+
+  if options.benchmarks == 'rendering.desktop':
+    # Linux does not have it's own specific representatives
+    # and uses the representatives chosen for windows.
+    if sys.platform == 'win32' or sys.platform.startswith('linux'):
+      platform = 'win'
+      story_tag = 'representative_win_desktop'
+    elif sys.platform == 'darwin':
+      platform = 'mac'
+      story_tag = 'representative_mac_desktop'
+    else:
+      return 1
+  elif options.benchmarks == 'rendering.mobile':
+    platform = 'android'
+    story_tag = 'representative_mobile'
   else:
     return 1
 
-  options = parse_arguments()
+  benchmark = options.benchmarks
   args = sys.argv
   re_run_args = sys.argv
   args.extend(['--story-tag-filter', story_tag])
@@ -185,9 +193,9 @@ def main():
     upper_limit_data = json.load(bound_data)
 
   out_dir_path = os.path.dirname(options.isolated_script_test_output)
-  output_path = os.path.join(out_dir_path, BENCHMARK, 'test_results.json')
+  output_path = os.path.join(out_dir_path, benchmark, 'test_results.json')
   result_recorder = interpret_run_benchmark_results(upper_limit_data[platform],
-      options.isolated_script_test_output)
+      options.isolated_script_test_output, benchmark)
 
   with open(output_path, 'r+') as resultsFile:
     if len(result_recorder.failed_stories) > 0:
@@ -215,11 +223,12 @@ def main():
 
       overall_return_code |= run_performance_tests.main(re_run_args)
       re_run_result_recorder = interpret_run_benchmark_results(
-          upper_limit_data[platform], re_run_isolated_script_test_output)
+          upper_limit_data[platform], re_run_isolated_script_test_output,
+          benchmark)
 
       for story_name in result_recorder.failed_stories.copy():
         if story_name not in re_run_result_recorder.failed_stories:
-          result_recorder.remove_failure(story_name)
+          result_recorder.remove_failure(story_name, benchmark)
 
     (
       finalOut,
@@ -236,6 +245,8 @@ def main():
 def parse_arguments():
   parser = argparse.ArgumentParser()
   parser.add_argument('executable', help='The name of the executable to run.')
+  parser.add_argument(
+      '--benchmarks', required=True)
   parser.add_argument(
       '--isolated-script-test-output', required=True)
   parser.add_argument(

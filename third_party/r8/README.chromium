@@ -18,4 +18,8 @@ this modification once the linked bug is fixed.
 Turning off nullable inlining since it caused a performance regression here:
 crbug.com/965189. If R8 ever mitigates this, we can re-enable this.
 
+Turning off outlining because it caused issues when synchronized proguarding
+Trichrome due to illegal dex references (crbug.com/956839). Will only be used
+for android_apk() targets that set `disable_r8_outlining = true`):
+
 Patch is located at //third_party/r8/local_modifications.diff.

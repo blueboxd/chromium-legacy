@@ -61,6 +61,7 @@
 #include "components/arc/disk_quota/arc_disk_quota_bridge.h"
 #include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/keymaster/arc_keymaster_bridge.h"
 #include "components/arc/lock_screen/arc_lock_screen_bridge.h"
 #include "components/arc/media_session/arc_media_session_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
@@ -184,6 +185,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcImeService::GetForBrowserContext(profile);
   ArcInputMethodManagerService::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
+  ArcKeymasterBridge::GetForBrowserContext(profile);
   ArcKioskBridge::GetForBrowserContext(profile);
   ArcLockScreenBridge::GetForBrowserContext(profile);
   ArcMediaSessionBridge::GetForBrowserContext(profile);

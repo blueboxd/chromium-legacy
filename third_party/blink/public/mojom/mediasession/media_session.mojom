@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "services/media_session/public/mojom/media_session.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -17,8 +18,21 @@ enum MediaSessionPlaybackState {
 
 interface MediaSessionClient {
   // Notifies the Blink side that a MediaSessionAction has been fired from the
-  // UI or the platform.
-  DidReceiveAction(media_session.mojom.MediaSessionAction action);
+  // UI or the platform. |details| may contain extra information that will be
+  // exposed to the site.
+  DidReceiveAction(media_session.mojom.MediaSessionAction action,
+                   MediaSessionActionDetails? details);
+};
+
+// MediaSessionSeekToDetails
+// Spec: https://wicg.github.io/mediasession/
+struct MediaSessionSeekToDetails {
+  mojo_base.mojom.TimeDelta seek_time;
+  bool fast_seek;
+};
+
+union MediaSessionActionDetails {
+  MediaSessionSeekToDetails seek_to;
 };
 
 // MediaMetadata

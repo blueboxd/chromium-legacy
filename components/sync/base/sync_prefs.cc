@@ -47,6 +47,9 @@ const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 // kSyncRequested.
 const char kSyncSuppressStart[] = "sync.suppress_start";
 
+// Default value of a demographic pref when it does not exist.
+constexpr int kUserDemographicPrefDefaultValue = -1;
+
 std::vector<std::string> GetObsoleteUserTypePrefs() {
   return {prefs::kSyncAutofillProfile,
           prefs::kSyncAutofillWallet,
@@ -115,6 +118,33 @@ const char* GetPrefNameForType(UserSelectableType type) {
   return nullptr;
 }
 
+// Gets user's birth year from prefs.
+base::Optional<int> GetUserBirthYear(const PrefService& pref_service) {
+  int birth_year = pref_service.GetInteger(prefs::kSyncDemographicsBirthYear);
+
+  // Verify that there is a birth year.
+  if (birth_year == kUserDemographicPrefDefaultValue)
+    return base::nullopt;
+
+  return birth_year;
+}
+
+// Gets user's gender from prefs.
+base::Optional<metrics::UserDemographicsProto_Gender> GetUserGender(
+    const PrefService& pref_service) {
+  int gender_int = pref_service.GetInteger(prefs::kSyncDemographicsGender);
+
+  // Verify gender is not default.
+  if (gender_int == kUserDemographicPrefDefaultValue)
+    return base::nullopt;
+
+  // Verify the gender number is a valid UserDemographicsProto_Gender encoding.
+  if (!metrics::UserDemographicsProto_Gender_IsValid(gender_int))
+    return base::nullopt;
+
+  return metrics::UserDemographicsProto_Gender(gender_int);
+}
+
 }  // namespace
 
 CryptoSyncPrefs::~CryptoSyncPrefs() {}
@@ -179,6 +209,14 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
   registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
 
+  // Demographic prefs.
+  registry->RegisterIntegerPref(
+      prefs::kSyncDemographicsBirthYear, kUserDemographicPrefDefaultValue,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kSyncDemographicsGender, kUserDemographicPrefDefaultValue,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+
   // Obsolete prefs that will be removed after a grace period.
   RegisterObsoleteUserTypePrefs(registry);
   registry->RegisterBooleanPref(kSyncPassphraseEncryptionTransitionInProgress,
@@ -206,6 +244,10 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 
 void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Clear user demographics.
+  pref_service_->ClearPref(prefs::kSyncDemographicsBirthYear);
+  pref_service_->ClearPref(prefs::kSyncDemographicsGender);
 
   ClearDirectoryConsistencyPreferences();
 
@@ -500,6 +542,25 @@ void SyncPrefs::SetLastRunVersion(const std::string& current_version) {
 
 bool SyncPrefs::IsLocalSyncEnabled() const {
   return local_sync_enabled_;
+}
+
+base::Optional<UserDemographics> SyncPrefs::GetUserDemographics() {
+  UserDemographics user_demographics;
+
+  // Get and set birth year.
+  base::Optional<int> birth_year = GetUserBirthYear(*pref_service_);
+  if (!birth_year.has_value())
+    return base::nullopt;
+  user_demographics.birth_year = *birth_year;
+
+  // Get and set gender.
+  base::Optional<metrics::UserDemographicsProto_Gender> gender =
+      GetUserGender(*pref_service_);
+  if (!gender.value())
+    return base::nullopt;
+  user_demographics.gender = *gender;
+
+  return user_demographics;
 }
 
 void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service) {

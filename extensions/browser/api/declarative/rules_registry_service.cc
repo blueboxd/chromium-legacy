@@ -29,15 +29,6 @@ namespace extensions {
 
 namespace {
 
-// Registers |web_request_rules_registry| on the IO thread.
-void RegisterToExtensionWebRequestEventRouterOnIO(
-    content::BrowserContext* browser_context,
-    int rules_registry_id,
-    scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry) {
-  ExtensionWebRequestEventRouter::GetInstance()->RegisterRulesRegistry(
-      browser_context, rules_registry_id, web_request_rules_registry);
-}
-
 void NotifyWithExtensionSafe(
     scoped_refptr<const Extension> extension,
     void (RulesRegistry::*notification_callback)(const Extension*),
@@ -68,18 +59,11 @@ int RulesRegistryService::GetNextRulesRegistryID() {
 }
 
 void RulesRegistryService::Shutdown() {
-  // Release the references to all registries. This would happen soon during
-  // destruction of |*this|, but we need the ExtensionWebRequestEventRouter to
-  // be the last to reference the WebRequestRulesRegistry objects, so that
-  // the posted task below causes their destruction on the IO thread, not on UI
-  // where the destruction of |*this| takes place.
+  // Release the references to all registries, and remove the default registry
+  // from ExtensionWebRequestEventRouter.
   rule_registries_.clear();
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&RegisterToExtensionWebRequestEventRouterOnIO,
-                     browser_context_,
-                     RulesRegistryService::kDefaultRulesRegistryID,
-                     scoped_refptr<WebRequestRulesRegistry>(NULL)));
+  ExtensionWebRequestEventRouter::GetInstance()->RegisterRulesRegistry(
+      browser_context_, RulesRegistryService::kDefaultRulesRegistryID, nullptr);
 }
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<RulesRegistryService>>::
@@ -198,11 +182,8 @@ RulesRegistryService::RegisterWebRequestRulesRegistry(
   web_request_cache_delegate->AddObserver(this);
   cache_delegates_.push_back(std::move(web_request_cache_delegate));
   RegisterRulesRegistry(web_request_rules_registry);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&RegisterToExtensionWebRequestEventRouterOnIO,
-                     browser_context_, rules_registry_id,
-                     web_request_rules_registry));
+  ExtensionWebRequestEventRouter::GetInstance()->RegisterRulesRegistry(
+      browser_context_, rules_registry_id, web_request_rules_registry);
   return web_request_rules_registry;
 }
 

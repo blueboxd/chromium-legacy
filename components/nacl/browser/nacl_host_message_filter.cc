@@ -87,18 +87,6 @@ NaClHostMessageFilter::NaClHostMessageFilter(
 NaClHostMessageFilter::~NaClHostMessageFilter() {
 }
 
-void NaClHostMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  BrowserMessageFilter::OnFilterAdded(channel);
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&NaClHostMessageFilter::SetUpExtensionSystem, this));
-}
-
-void NaClHostMessageFilter::SetUpExtensionSystem() {
-  extension_system_ =
-      nacl::NaClBrowser::GetDelegate()->GetExtensionSystem(profile_directory_);
-}
-
 void NaClHostMessageFilter::OnChannelClosing() {
   pnacl::PnaclHost::GetInstance()->RendererClosing(render_process_id_);
 }
@@ -214,7 +202,8 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
     if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
             gurl,
             true,  // use_blocking_api
-            extension_system_, &file_path_metadata)) {
+            profile_directory_,
+            &file_path_metadata)) {
       continue;
     }
     base::File file = nacl::OpenNaClReadExecImpl(
@@ -270,9 +259,10 @@ void NaClHostMessageFilter::LaunchNaClContinuationOnIOThread(
   // because we're running in the I/O thread. Ideally we'd use the other path,
   // which would cover more cases.
   nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
-      manifest_url, false /* use_blocking_api */, extension_system_,
+      manifest_url,
+      false /* use_blocking_api */,
+      profile_directory_,
       &manifest_path);
-
   host->Launch(this, reply_msg, manifest_path);
 }
 

@@ -41,14 +41,12 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
       content::BrowserPpapiHost* ppapi_host) override;
   bool MapUrlToLocalFilePath(const GURL& url,
                              bool is_blocking,
-                             extensions::ExtensionSystem* extension_system,
+                             const base::FilePath& profile_directory,
                              base::FilePath* file_path) override;
   void SetDebugPatterns(const std::string& debug_patterns) override;
   bool URLMatchesDebugPatterns(const GURL& manifest_url) override;
-  bool IsNonSfiModeAllowed(extensions::ExtensionSystem* extension_system,
+  bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
                            const GURL& manifest_url) override;
-  extensions::ExtensionSystem* GetExtensionSystem(
-      const base::FilePath& profile_directory) override;
 
  private:
   // Creates a NaCl infobar and delegate for the given render process and view
@@ -58,7 +56,7 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::InfoMap> GetExtensionInfoMap(
-      extensions::ExtensionSystem* extension_system);
+      const base::FilePath& profile_directory);
   std::vector<URLPattern> debug_patterns_;
 #endif
 

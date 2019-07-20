@@ -33,6 +33,8 @@
 #endif
 
 class Browser;
+class ClickToCallDialog;
+class ClickToCallSharingDialogController;
 class DownloadShelf;
 class ExclusiveAccessContext;
 class ExtensionsContainer;
@@ -325,6 +327,11 @@ class BrowserWindow : public ui::BaseWindow {
   // TODO(zijiehe): Rename this function into IsToolbarVisible() once other
   // Visible() functions are renamed to Available().
   virtual bool IsToolbarShowing() const = 0;
+
+  // Shows the Click to Call dialog.
+  virtual ClickToCallDialog* ShowClickToCallDialog(
+      content::WebContents* contents,
+      ClickToCallSharingDialogController* controller) = 0;
 
   // Shows the Update Recommended dialog box.
   virtual void ShowUpdateChromeDialog() = 0;

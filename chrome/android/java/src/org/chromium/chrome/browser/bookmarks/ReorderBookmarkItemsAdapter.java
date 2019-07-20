@@ -445,13 +445,15 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     }
 
     @Override
-    protected boolean isActivelyDraggable(ViewHolder viewHolder) {
+    @VisibleForTesting
+    public boolean isActivelyDraggable(ViewHolder viewHolder) {
         return isPassivelyDraggable(viewHolder)
                 && ((BookmarkRow) viewHolder.itemView).isItemSelected();
     }
 
     @Override
-    protected boolean isPassivelyDraggable(ViewHolder viewHolder) {
+    @VisibleForTesting
+    public boolean isPassivelyDraggable(ViewHolder viewHolder) {
         BookmarkItem bItem = getItemByHolder(viewHolder);
         return isOrderable(bItem);
     }

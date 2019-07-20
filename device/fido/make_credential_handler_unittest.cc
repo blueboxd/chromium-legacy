@@ -50,7 +50,7 @@ namespace {
 using TestMakeCredentialRequestCallback = test::StatusAndValuesCallbackReceiver<
     FidoReturnCode,
     base::Optional<AuthenticatorMakeCredentialResponse>,
-    base::Optional<FidoTransportProtocol>>;
+    const FidoAuthenticator*>;
 
 }  // namespace
 

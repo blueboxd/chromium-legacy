@@ -23,6 +23,7 @@ class TestAutofillDriver : public AutofillDriver {
   // AutofillDriver implementation overrides.
   bool IsIncognito() const override;
   bool IsInMainFrame() const override;
+  ui::AXTreeID GetAxTreeId() const override;
   // Returns the value passed in to the last call to |SetURLRequestContext()|
   // or NULL if that method has never been called.
   net::URLRequestContextGetter* GetURLRequestContext() override;

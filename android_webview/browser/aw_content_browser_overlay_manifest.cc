@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/aw_content_browser_overlay_manifest.h"
 
+#include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/no_destructor.h"
 #include "components/autofill/content/common/autofill_driver.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
@@ -29,7 +30,7 @@ const service_manager::Manifest& GetAWContentBrowserOverlayManifest() {
               service_manager::Manifest::InterfaceList<
                   autofill::mojom::AutofillDriver,
                   autofill::mojom::PasswordManagerDriver,
-                  blink::mojom::TextSuggestionHost>())
+                  blink::mojom::TextSuggestionHost, mojom::JsApiHandler>())
           .Build()};
   return *manifest;
 }

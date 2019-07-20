@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -57,9 +56,9 @@
 
 namespace blink {
 
-class AnimationAnimationTest : public RenderingTest {
+class AnimationAnimationTestNoCompositing : public RenderingTest {
  public:
-  AnimationAnimationTest()
+  AnimationAnimationTestNoCompositing()
       : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
 
   void SetUp() override {
@@ -69,10 +68,8 @@ class AnimationAnimationTest : public RenderingTest {
   }
 
   void SetUpWithoutStartingTimeline() {
-    page_holder = std::make_unique<DummyPageHolder>();
-    document = &page_holder->GetDocument();
-    document->GetAnimationClock().ResetTimeForTesting();
-    timeline = document->Timeline();
+    GetDocument().GetAnimationClock().ResetTimeForTesting();
+    timeline = GetDocument().Timeline();
     timeline->ResetForTesting();
     animation = timeline->Play(nullptr);
     animation->setStartTime(0, false);
@@ -113,7 +110,7 @@ class AnimationAnimationTest : public RenderingTest {
     // Get rid of the default animation.
     animation->cancel();
 
-    EnableCompositing();
+    RunDocumentLifecycle();
 
     SetBodyInnerHTML("<div id='target'></div>");
 
@@ -145,8 +142,8 @@ class AnimationAnimationTest : public RenderingTest {
     // animation can be pushed to the compositor.
     UpdateAllLifecyclePhasesForTest();
 
-    document->GetAnimationClock().UpdateTime(base::TimeTicks());
-    document->GetPendingAnimations().Update(nullptr, true);
+    GetDocument().GetAnimationClock().UpdateTime(base::TimeTicks());
+    GetDocument().GetPendingAnimations().Update(nullptr, true);
   }
 
   KeyframeEffectModelBase* MakeEmptyEffectModel() {
@@ -165,24 +162,43 @@ class AnimationAnimationTest : public RenderingTest {
     const PaintArtifactCompositor* paint_artifact_compositor = nullptr;
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      paint_artifact_compositor =
-          document->GetFrame()->View()->GetPaintArtifactCompositorForTesting();
+      paint_artifact_compositor = GetDocument()
+                                      .GetFrame()
+                                      ->View()
+                                      ->GetPaintArtifactCompositorForTesting();
     }
-    document->GetAnimationClock().UpdateTime(
+    GetDocument().GetAnimationClock().UpdateTime(
         base::TimeTicks() + base::TimeDelta::FromSecondsD(time));
-    document->GetPendingAnimations().Update(paint_artifact_compositor, false);
+    GetDocument().GetPendingAnimations().Update(paint_artifact_compositor,
+                                                false);
     // The timeline does not know about our animation, so we have to explicitly
     // call update().
     return animation->Update(kTimingUpdateForAnimationFrame);
   }
 
-  Persistent<Document> document;
   Persistent<DocumentTimeline> timeline;
   Persistent<Animation> animation;
-  std::unique_ptr<DummyPageHolder> page_holder;
 };
 
-TEST_F(AnimationAnimationTest, InitialState) {
+class AnimationAnimationTestCompositing
+    : public AnimationAnimationTestNoCompositing {
+  void SetUp() override {
+    EnableCompositing();
+    AnimationAnimationTestNoCompositing::SetUp();
+  }
+};
+
+class AnimationAnimationTestCompositeAfterPaint
+    : public AnimationAnimationTestNoCompositing {
+  void SetUp() override {
+    EnableCompositing();
+    AnimationAnimationTestNoCompositing::SetUp();
+  }
+
+  ScopedCompositeAfterPaintForTest enable_cap{true};
+};
+
+TEST_F(AnimationAnimationTestNoCompositing, InitialState) {
   SetUpWithoutStartingTimeline();
   animation = timeline->Play(nullptr);
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
@@ -200,20 +216,20 @@ TEST_F(AnimationAnimationTest, InitialState) {
   EXPECT_EQ(0, animation->StartTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated) {
+TEST_F(AnimationAnimationTestNoCompositing, CurrentTimeDoesNotSetOutdated) {
   EXPECT_FALSE(animation->Outdated());
   EXPECT_EQ(0, animation->CurrentTimeInternal());
   EXPECT_FALSE(animation->Outdated());
   // FIXME: We should split simulateFrame into a version that doesn't update
   // the animation and one that does, as most of the tests don't require
   // update() to be called.
-  document->GetAnimationClock().UpdateTime(base::TimeTicks() +
-                                           base::TimeDelta::FromSecondsD(10));
+  GetDocument().GetAnimationClock().UpdateTime(
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(10));
   EXPECT_EQ(10, animation->CurrentTimeInternal());
   EXPECT_FALSE(animation->Outdated());
 }
 
-TEST_F(AnimationAnimationTest, SetCurrentTime) {
+TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTime) {
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   animation->SetCurrentTimeInternal(10);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
@@ -223,7 +239,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTime) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetCurrentTimeNegative) {
+TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeNegative) {
   animation->SetCurrentTimeInternal(-10);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(-10, animation->CurrentTimeInternal());
@@ -239,7 +255,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTimeNegative) {
   EXPECT_EQ(-10, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest,
+TEST_F(AnimationAnimationTestNoCompositing,
        SetCurrentTimeNegativeWithoutSimultaneousPlaybackRateChange) {
   SimulateFrame(20);
   EXPECT_EQ(20, animation->CurrentTimeInternal());
@@ -253,7 +269,7 @@ TEST_F(AnimationAnimationTest,
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd) {
+TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimePastContentEnd) {
   animation->setCurrentTime(50 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(50, animation->CurrentTimeInternal());
@@ -271,7 +287,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTimePastContentEnd) {
   EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetCurrentTimeMax) {
+TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeMax) {
   animation->SetCurrentTimeInternal(std::numeric_limits<double>::max());
   EXPECT_EQ(std::numeric_limits<double>::max(),
             animation->CurrentTimeInternal());
@@ -280,7 +296,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTimeMax) {
             animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetCurrentTimeSetsStartTime) {
+TEST_F(AnimationAnimationTestNoCompositing, SetCurrentTimeSetsStartTime) {
   EXPECT_EQ(0, animation->startTime());
   animation->setCurrentTime(1000, false);
   EXPECT_EQ(-1000, animation->startTime());
@@ -289,7 +305,7 @@ TEST_F(AnimationAnimationTest, SetCurrentTimeSetsStartTime) {
   EXPECT_EQ(2000, animation->currentTime());
 }
 
-TEST_F(AnimationAnimationTest, SetStartTime) {
+TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
   SimulateFrame(20);
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   EXPECT_EQ(0, animation->StartTimeInternal());
@@ -305,7 +321,7 @@ TEST_F(AnimationAnimationTest, SetStartTime) {
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetStartTimeLimitsAnimation) {
+TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
   animation->setStartTime(-50 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
   EXPECT_EQ(30, animation->CurrentTimeInternal());
@@ -317,7 +333,7 @@ TEST_F(AnimationAnimationTest, SetStartTimeLimitsAnimation) {
   EXPECT_TRUE(animation->Limited());
 }
 
-TEST_F(AnimationAnimationTest, SetStartTimeOnLimitedAnimation) {
+TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
   SimulateFrame(30);
   animation->setStartTime(-10 * 1000, false);
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
@@ -329,7 +345,7 @@ TEST_F(AnimationAnimationTest, SetStartTimeOnLimitedAnimation) {
   EXPECT_TRUE(animation->Limited());
 }
 
-TEST_F(AnimationAnimationTest, StartTimePauseFinish) {
+TEST_F(AnimationAnimationTestNoCompositing, StartTimePauseFinish) {
   NonThrowableExceptionState exception_state;
   animation->pause();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
@@ -339,7 +355,7 @@ TEST_F(AnimationAnimationTest, StartTimePauseFinish) {
   EXPECT_EQ(-30000, animation->startTime());
 }
 
-TEST_F(AnimationAnimationTest, FinishWhenPaused) {
+TEST_F(AnimationAnimationTestNoCompositing, FinishWhenPaused) {
   NonThrowableExceptionState exception_state;
   animation->pause();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
@@ -349,7 +365,7 @@ TEST_F(AnimationAnimationTest, FinishWhenPaused) {
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, StartTimeFinishPause) {
+TEST_F(AnimationAnimationTestNoCompositing, StartTimeFinishPause) {
   NonThrowableExceptionState exception_state;
   animation->finish(exception_state);
   EXPECT_EQ(-30 * 1000, animation->startTime());
@@ -357,7 +373,7 @@ TEST_F(AnimationAnimationTest, StartTimeFinishPause) {
   EXPECT_FALSE(animation->startTime());
 }
 
-TEST_F(AnimationAnimationTest, StartTimeWithZeroPlaybackRate) {
+TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
   EXPECT_FALSE(animation->startTime());
@@ -365,7 +381,7 @@ TEST_F(AnimationAnimationTest, StartTimeWithZeroPlaybackRate) {
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, PausePlay) {
+TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
   SimulateFrame(10);
   animation->pause();
   EXPECT_EQ(Animation::kPending, animation->PlayStateInternal());
@@ -383,7 +399,7 @@ TEST_F(AnimationAnimationTest, PausePlay) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, PlayRewindsToStart) {
+TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToStart) {
   animation->SetCurrentTimeInternal(30);
   animation->play();
   EXPECT_EQ(0, animation->CurrentTimeInternal());
@@ -404,7 +420,7 @@ TEST_F(AnimationAnimationTest, PlayRewindsToStart) {
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, PlayRewindsToEnd) {
+TEST_F(AnimationAnimationTestNoCompositing, PlayRewindsToEnd) {
   animation->setPlaybackRate(-1);
   animation->play();
   EXPECT_EQ(30, animation->CurrentTimeInternal());
@@ -425,7 +441,8 @@ TEST_F(AnimationAnimationTest, PlayRewindsToEnd) {
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, PlayWithPlaybackRateZeroDoesNotSeek) {
+TEST_F(AnimationAnimationTestNoCompositing,
+       PlayWithPlaybackRateZeroDoesNotSeek) {
   animation->setPlaybackRate(0);
   animation->play();
   EXPECT_EQ(0, animation->CurrentTimeInternal());
@@ -439,7 +456,7 @@ TEST_F(AnimationAnimationTest, PlayWithPlaybackRateZeroDoesNotSeek) {
   EXPECT_EQ(-10, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest,
+TEST_F(AnimationAnimationTestNoCompositing,
        PlayAfterPauseWithPlaybackRateZeroUpdatesPlayState) {
   animation->pause();
   animation->setPlaybackRate(0);
@@ -449,7 +466,7 @@ TEST_F(AnimationAnimationTest,
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, Reverse) {
+TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
   animation->SetCurrentTimeInternal(10);
   animation->pause();
   animation->reverse();
@@ -462,7 +479,8 @@ TEST_F(AnimationAnimationTest, Reverse) {
   EXPECT_EQ(-1, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero) {
+TEST_F(AnimationAnimationTestNoCompositing,
+       ReverseDoesNothingWithPlaybackRateZero) {
   animation->SetCurrentTimeInternal(10);
   animation->setPlaybackRate(0);
   animation->pause();
@@ -472,20 +490,20 @@ TEST_F(AnimationAnimationTest, ReverseDoesNothingWithPlaybackRateZero) {
   EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, ReverseSeeksToStart) {
+TEST_F(AnimationAnimationTestNoCompositing, ReverseSeeksToStart) {
   animation->SetCurrentTimeInternal(-10);
   animation->setPlaybackRate(-1);
   animation->reverse();
   EXPECT_EQ(0, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, ReverseSeeksToEnd) {
+TEST_F(AnimationAnimationTestNoCompositing, ReverseSeeksToEnd) {
   animation->setCurrentTime(40 * 1000, false);
   animation->reverse();
   EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, ReverseBeyondLimit) {
+TEST_F(AnimationAnimationTestNoCompositing, ReverseBeyondLimit) {
   animation->SetCurrentTimeInternal(40);
   animation->setPlaybackRate(-1);
   animation->reverse();
@@ -498,7 +516,7 @@ TEST_F(AnimationAnimationTest, ReverseBeyondLimit) {
   EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, Finish) {
+TEST_F(AnimationAnimationTestNoCompositing, Finish) {
   NonThrowableExceptionState exception_state;
   animation->finish(exception_state);
   EXPECT_EQ(30, animation->CurrentTimeInternal());
@@ -510,14 +528,14 @@ TEST_F(AnimationAnimationTest, Finish) {
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, FinishAfterEffectEnd) {
+TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
   animation->setCurrentTime(40 * 1000, false);
   animation->finish(exception_state);
   EXPECT_EQ(40, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, FinishBeforeStart) {
+TEST_F(AnimationAnimationTestNoCompositing, FinishBeforeStart) {
   NonThrowableExceptionState exception_state;
   animation->SetCurrentTimeInternal(-10);
   animation->setPlaybackRate(-1);
@@ -525,7 +543,8 @@ TEST_F(AnimationAnimationTest, FinishBeforeStart) {
   EXPECT_EQ(0, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, FinishDoesNothingWithPlaybackRateZero) {
+TEST_F(AnimationAnimationTestNoCompositing,
+       FinishDoesNothingWithPlaybackRateZero) {
   DummyExceptionStateForTesting exception_state;
   animation->SetCurrentTimeInternal(10);
   animation->setPlaybackRate(0);
@@ -534,7 +553,7 @@ TEST_F(AnimationAnimationTest, FinishDoesNothingWithPlaybackRateZero) {
   EXPECT_TRUE(exception_state.HadException());
 }
 
-TEST_F(AnimationAnimationTest, FinishRaisesException) {
+TEST_F(AnimationAnimationTestNoCompositing, FinishRaisesException) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.iteration_count = std::numeric_limits<double>::infinity();
@@ -550,7 +569,7 @@ TEST_F(AnimationAnimationTest, FinishRaisesException) {
             exception_state.CodeAs<DOMExceptionCode>());
 }
 
-TEST_F(AnimationAnimationTest, LimitingAtEffectEnd) {
+TEST_F(AnimationAnimationTestNoCompositing, LimitingAtEffectEnd) {
   SimulateFrame(30);
   EXPECT_EQ(30, animation->CurrentTimeInternal());
   EXPECT_TRUE(animation->Limited());
@@ -559,7 +578,7 @@ TEST_F(AnimationAnimationTest, LimitingAtEffectEnd) {
   EXPECT_FALSE(animation->Paused());
 }
 
-TEST_F(AnimationAnimationTest, LimitingAtStart) {
+TEST_F(AnimationAnimationTestNoCompositing, LimitingAtStart) {
   SimulateFrame(30);
   animation->setPlaybackRate(-2);
   SimulateFrame(30);
@@ -571,14 +590,14 @@ TEST_F(AnimationAnimationTest, LimitingAtStart) {
   EXPECT_FALSE(animation->Paused());
 }
 
-TEST_F(AnimationAnimationTest, LimitingWithNoEffect) {
+TEST_F(AnimationAnimationTestNoCompositing, LimitingWithNoEffect) {
   animation->setEffect(nullptr);
   EXPECT_TRUE(animation->Limited());
   SimulateFrame(30);
   EXPECT_EQ(0, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetPlaybackRate) {
+TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRate) {
   animation->setPlaybackRate(2);
   SimulateFrame(0);
   EXPECT_EQ(2, animation->playbackRate());
@@ -587,7 +606,7 @@ TEST_F(AnimationAnimationTest, SetPlaybackRate) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetPlaybackRateWhilePaused) {
+TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhilePaused) {
   SimulateFrame(10);
   animation->pause();
   animation->setPlaybackRate(2);
@@ -599,7 +618,7 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateWhilePaused) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetPlaybackRateWhileLimited) {
+TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateWhileLimited) {
   SimulateFrame(40);
   EXPECT_EQ(30, animation->CurrentTimeInternal());
   animation->setPlaybackRate(2);
@@ -612,7 +631,7 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateWhileLimited) {
   EXPECT_EQ(10, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetPlaybackRateZero) {
+TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateZero) {
   SimulateFrame(0);
   SimulateFrame(10);
   animation->setPlaybackRate(0);
@@ -624,7 +643,7 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateZero) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
+TEST_F(AnimationAnimationTestNoCompositing, SetPlaybackRateMax) {
   animation->setPlaybackRate(std::numeric_limits<double>::max());
   SimulateFrame(0);
   EXPECT_EQ(std::numeric_limits<double>::max(), animation->playbackRate());
@@ -633,7 +652,7 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
   EXPECT_EQ(30, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, UpdatePlaybackRate) {
+TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRate) {
   animation->updatePlaybackRate(2);
   EXPECT_EQ(1, animation->playbackRate());
 
@@ -645,7 +664,7 @@ TEST_F(AnimationAnimationTest, UpdatePlaybackRate) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhilePaused) {
+TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhilePaused) {
   animation->pause();
 
   // Pending playback rate on pending-paused animation is picked up after async
@@ -665,7 +684,7 @@ TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhilePaused) {
   EXPECT_EQ(3, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileLimited) {
+TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileLimited) {
   NonThrowableExceptionState exception_state;
   animation->finish(exception_state);
   EXPECT_EQ(30, animation->CurrentTimeInternal());
@@ -679,7 +698,7 @@ TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileLimited) {
   EXPECT_EQ(2, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileRunning) {
+TEST_F(AnimationAnimationTestNoCompositing, UpdatePlaybackRateWhileRunning) {
   animation->play();
   SimulateFrame(1);
   animation->updatePlaybackRate(2);
@@ -694,7 +713,7 @@ TEST_F(AnimationAnimationTest, UpdatePlaybackRateWhileRunning) {
   EXPECT_EQ(2, animation->playbackRate());
 }
 
-TEST_F(AnimationAnimationTest, SetEffect) {
+TEST_F(AnimationAnimationTestNoCompositing, SetEffect) {
   animation = timeline->Play(nullptr);
   animation->setStartTime(0, false);
   AnimationEffect* effect1 = MakeAnimation();
@@ -710,7 +729,7 @@ TEST_F(AnimationAnimationTest, SetEffect) {
   EXPECT_EQ(effect2, animation->effect());
 }
 
-TEST_F(AnimationAnimationTest, SetEffectLimitsAnimation) {
+TEST_F(AnimationAnimationTestNoCompositing, SetEffectLimitsAnimation) {
   animation->SetCurrentTimeInternal(20);
   animation->setEffect(MakeAnimation(10));
   EXPECT_EQ(20, animation->CurrentTimeInternal());
@@ -719,7 +738,7 @@ TEST_F(AnimationAnimationTest, SetEffectLimitsAnimation) {
   EXPECT_EQ(20, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, SetEffectUnlimitsAnimation) {
+TEST_F(AnimationAnimationTestNoCompositing, SetEffectUnlimitsAnimation) {
   animation->SetCurrentTimeInternal(40);
   animation->setEffect(MakeAnimation(60));
   EXPECT_FALSE(animation->Limited());
@@ -728,7 +747,7 @@ TEST_F(AnimationAnimationTest, SetEffectUnlimitsAnimation) {
   EXPECT_EQ(50, animation->CurrentTimeInternal());
 }
 
-TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects) {
+TEST_F(AnimationAnimationTestNoCompositing, EmptyAnimationsDontUpdateEffects) {
   animation = timeline->Play(nullptr);
   animation->Update(kTimingUpdateOnDemand);
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
@@ -739,7 +758,7 @@ TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects) {
             animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, AnimationsDisassociateFromEffect) {
+TEST_F(AnimationAnimationTestNoCompositing, AnimationsDisassociateFromEffect) {
   AnimationEffect* animation_node = animation->effect();
   Animation* animation2 = timeline->Play(animation_node);
   EXPECT_EQ(nullptr, animation->effect());
@@ -747,7 +766,7 @@ TEST_F(AnimationAnimationTest, AnimationsDisassociateFromEffect) {
   EXPECT_EQ(nullptr, animation2->effect());
 }
 
-TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
+TEST_F(AnimationAnimationTestNoCompositing, AnimationsReturnTimeToNextEffect) {
   Timing timing;
   timing.start_delay = 1;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
@@ -812,7 +831,7 @@ TEST_F(AnimationAnimationTest, AnimationsReturnTimeToNextEffect) {
   EXPECT_EQ(0.5, animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, TimeToNextEffectWhenPaused) {
+TEST_F(AnimationAnimationTestNoCompositing, TimeToNextEffectWhenPaused) {
   EXPECT_EQ(0, animation->TimeToEffectChange());
   animation->pause();
   animation->Update(kTimingUpdateOnDemand);
@@ -820,7 +839,8 @@ TEST_F(AnimationAnimationTest, TimeToNextEffectWhenPaused) {
             animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, TimeToNextEffectWhenCancelledBeforeStart) {
+TEST_F(AnimationAnimationTestNoCompositing,
+       TimeToNextEffectWhenCancelledBeforeStart) {
   EXPECT_EQ(0, animation->TimeToEffectChange());
   animation->SetCurrentTimeInternal(-8);
   animation->setPlaybackRate(2);
@@ -835,7 +855,7 @@ TEST_F(AnimationAnimationTest, TimeToNextEffectWhenCancelledBeforeStart) {
             animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest,
+TEST_F(AnimationAnimationTestNoCompositing,
        TimeToNextEffectWhenCancelledBeforeStartReverse) {
   EXPECT_EQ(0, animation->TimeToEffectChange());
   animation->SetCurrentTimeInternal(9);
@@ -851,7 +871,8 @@ TEST_F(AnimationAnimationTest,
             animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, TimeToNextEffectSimpleCancelledBeforeStart) {
+TEST_F(AnimationAnimationTestNoCompositing,
+       TimeToNextEffectSimpleCancelledBeforeStart) {
   EXPECT_EQ(0, animation->TimeToEffectChange());
   EXPECT_EQ(Animation::kRunning, animation->PlayStateInternal());
   animation->cancel();
@@ -863,8 +884,8 @@ TEST_F(AnimationAnimationTest, TimeToNextEffectSimpleCancelledBeforeStart) {
             animation->TimeToEffectChange());
 }
 
-TEST_F(AnimationAnimationTest, AttachedAnimations) {
-  Persistent<Element> element = document->CreateElementForBinding("foo");
+TEST_F(AnimationAnimationTestNoCompositing, AttachedAnimations) {
+  Persistent<Element> element = GetDocument().CreateElementForBinding("foo");
 
   Timing timing;
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
@@ -879,13 +900,13 @@ TEST_F(AnimationAnimationTest, AttachedAnimations) {
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 
-TEST_F(AnimationAnimationTest, HasLowerPriority) {
+TEST_F(AnimationAnimationTestNoCompositing, HasLowerPriority) {
   Animation* animation1 = timeline->Play(nullptr);
   Animation* animation2 = timeline->Play(nullptr);
   EXPECT_TRUE(Animation::HasLowerPriority(animation1, animation2));
 }
 
-TEST_F(AnimationAnimationTest, PlayAfterCancel) {
+TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
@@ -900,7 +921,7 @@ TEST_F(AnimationAnimationTest, PlayAfterCancel) {
   EXPECT_EQ(10 * 1000, animation->startTime());
 }
 
-TEST_F(AnimationAnimationTest, PlayBackwardsAfterCancel) {
+TEST_F(AnimationAnimationTestNoCompositing, PlayBackwardsAfterCancel) {
   animation->setPlaybackRate(-1);
   animation->setCurrentTime(15 * 1000, false);
   SimulateFrame(0);
@@ -918,7 +939,7 @@ TEST_F(AnimationAnimationTest, PlayBackwardsAfterCancel) {
   EXPECT_EQ(40 * 1000, animation->startTime());
 }
 
-TEST_F(AnimationAnimationTest, ReverseAfterCancel) {
+TEST_F(AnimationAnimationTestNoCompositing, ReverseAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
@@ -933,7 +954,7 @@ TEST_F(AnimationAnimationTest, ReverseAfterCancel) {
   EXPECT_EQ(40 * 1000, animation->startTime());
 }
 
-TEST_F(AnimationAnimationTest, FinishAfterCancel) {
+TEST_F(AnimationAnimationTestNoCompositing, FinishAfterCancel) {
   NonThrowableExceptionState exception_state;
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
@@ -945,7 +966,7 @@ TEST_F(AnimationAnimationTest, FinishAfterCancel) {
   EXPECT_EQ(Animation::kFinished, animation->PlayStateInternal());
 }
 
-TEST_F(AnimationAnimationTest, PauseAfterCancel) {
+TEST_F(AnimationAnimationTestNoCompositing, PauseAfterCancel) {
   animation->cancel();
   EXPECT_EQ(Animation::kIdle, animation->PlayStateInternal());
   EXPECT_TRUE(std::isnan(animation->currentTime()));
@@ -956,10 +977,8 @@ TEST_F(AnimationAnimationTest, PauseAfterCancel) {
   EXPECT_FALSE(animation->startTime());
 }
 
-TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
-  ScopedCompositeAfterPaintForTest enable_cap(true);
-  EnableCompositing();
-
+TEST_F(AnimationAnimationTestCompositeAfterPaint,
+       NoCompositeWithoutCompositedElementId) {
   SetBodyInnerHTML(
       "<div id='foo' style='position: relative; will-change: "
       "opacity;'>composited</div>"
@@ -998,7 +1017,8 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
 // played and then paused before any start time is set (either blink or
 // compositor side), the pausing must still set compositor pending or the pause
 // won't be synced.
-TEST_F(AnimationAnimationTest, SetCompositorPendingWithUnresolvedStartTimes) {
+TEST_F(AnimationAnimationTestCompositing,
+       SetCompositorPendingWithUnresolvedStartTimes) {
   ResetWithCompositedAnimation();
 
   // At this point, the animation exists on both the compositor and blink side,
@@ -1015,7 +1035,7 @@ TEST_F(AnimationAnimationTest, SetCompositorPendingWithUnresolvedStartTimes) {
   EXPECT_TRUE(animation->CompositorPendingForTesting());
 }
 
-TEST_F(AnimationAnimationTest, PreCommitWithUnresolvedStartTimes) {
+TEST_F(AnimationAnimationTestCompositing, PreCommitWithUnresolvedStartTimes) {
   ResetWithCompositedAnimation();
 
   // At this point, the animation exists on both the compositor and blink side,
@@ -1040,7 +1060,7 @@ int GenerateHistogramValue(CompositorAnimations::FailureReason reason) {
 }
 }  // namespace
 
-TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
+TEST_F(AnimationAnimationTestCompositing, PreCommitRecordsHistograms) {
   const std::string histogram_name =
       "Blink.Animation.CompositedAnimationFailureReason";
 
@@ -1106,7 +1126,7 @@ TEST_F(AnimationAnimationTest, PreCommitRecordsHistograms) {
   }
 }
 
-TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
+TEST_F(AnimationAnimationTestCompositing, SetKeyframesCausesCompositorPending) {
   ResetWithCompositedAnimation();
 
   // At this point, the animation exists on both the compositor and blink side,
@@ -1138,7 +1158,7 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
 
 // Verifies correctness of scroll linked animation current and start times in
 // various animation states.
-TEST_F(AnimationAnimationTest, ScrollLinkedAnimationCreation) {
+TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #scroller { overflow: scroll; width: 100px; height: 100px; }

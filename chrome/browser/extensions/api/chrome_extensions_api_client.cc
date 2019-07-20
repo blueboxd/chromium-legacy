@@ -36,7 +36,8 @@
 #include "chrome/browser/guest_view/web_view/chrome_web_view_permission_helper_delegate.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
 #include "chrome/browser/performance_manager/performance_manager_tab_helper.h"
-#include "chrome/browser/search/instant_io_context.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/common/url_constants.h"
@@ -123,8 +124,9 @@ bool ChromeExtensionsAPIClient::ShouldHideResponseHeader(
 }
 
 bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
+    content::BrowserContext* context,
     const WebRequestInfo& request) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Note: browser initiated non-navigation requests are hidden from extensions.
   // But we do still need to protect some sensitive sub-frame navigation
@@ -150,8 +152,12 @@ bool ChromeExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
            url::Origin::Create(GURL(chrome::kChromeSearchLocalNtpUrl)));
 
   // Hide requests made by the NTP Instant renderer.
-  is_sensitive_request |= InstantIOContext::IsInstantProcess(
-      request.resource_context, request.render_process_id);
+  auto* instant_service =
+      InstantServiceFactory::GetForProfile(static_cast<Profile*>(context));
+  if (instant_service) {
+    is_sensitive_request |=
+        instant_service->IsInstantProcess(request.render_process_id);
+  }
 
   return is_sensitive_request;
 }
@@ -160,62 +166,51 @@ void ChromeExtensionsAPIClient::NotifyWebRequestWithheld(
     int render_process_id,
     int render_frame_id,
     const ExtensionId& extension_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto notify_web_request_withheld_on_ui = [](int render_process_id,
-                                              int render_frame_id,
-                                              const ExtensionId& extension_id) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Track down the ExtensionActionRunner and the extension. Since this is
+  // asynchronous, we could hit a null anywhere along the path.
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!rfh)
+    return;
+  // We don't count subframe blocked actions as yet, since there's no way to
+  // surface this to the user. Ignore these (which is also what we do for
+  // content scripts).
+  if (rfh->GetParent())
+    return;
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  if (!web_contents)
+    return;
+  extensions::ExtensionActionRunner* runner =
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+  if (!runner)
+    return;
 
-    // Track down the ExtensionActionRunner and the extension. Since this is
-    // asynchronous, we could hit a null anywhere along the path.
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-    if (!rfh)
-      return;
-    // We don't count subframe blocked actions as yet, since there's no way to
-    // surface this to the user. Ignore these (which is also what we do for
-    // content scripts).
-    if (rfh->GetParent())
-      return;
-    content::WebContents* web_contents =
-        content::WebContents::FromRenderFrameHost(rfh);
-    if (!web_contents)
-      return;
-    extensions::ExtensionActionRunner* runner =
-        extensions::ExtensionActionRunner::GetForWebContents(web_contents);
-    if (!runner)
-      return;
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())
+          ->enabled_extensions()
+          .GetByID(extension_id);
+  if (!extension)
+    return;
 
-    const extensions::Extension* extension =
-        extensions::ExtensionRegistry::Get(web_contents->GetBrowserContext())
-            ->enabled_extensions()
-            .GetByID(extension_id);
-    if (!extension)
-      return;
+  // If the extension doesn't request access to the tab, return. The user
+  // invoking the extension on a site grants access to the tab's origin if
+  // and only if the extension requested it; without requesting the tab,
+  // clicking on the extension won't grant access to the resource.
+  // https://crbug.com/891586.
+  // TODO(https://157736): We can remove this if extensions require host
+  // permissions to the initiator, since then we'll never get into this type
+  // of circumstance (the request would be blocked, rather than withheld).
+  if (!extension->permissions_data()
+           ->withheld_permissions()
+           .explicit_hosts()
+           .MatchesURL(rfh->GetLastCommittedURL())) {
+    return;
+  }
 
-    // If the extension doesn't request access to the tab, return. The user
-    // invoking the extension on a site grants access to the tab's origin if
-    // and only if the extension requested it; without requesting the tab,
-    // clicking on the extension won't grant access to the resource.
-    // https://crbug.com/891586.
-    // TODO(https://157736): We can remove this if extensions require host
-    // permissions to the initiator, since then we'll never get into this type
-    // of circumstance (the request would be blocked, rather than withheld).
-    if (!extension->permissions_data()
-             ->withheld_permissions()
-             .explicit_hosts()
-             .MatchesURL(rfh->GetLastCommittedURL())) {
-      return;
-    }
-
-    runner->OnWebRequestBlocked(extension);
-  };
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(notify_web_request_withheld_on_ui),
-                     render_process_id, render_frame_id, extension_id));
+  runner->OnWebRequestBlocked(extension);
 }
 
 AppViewGuestDelegate* ChromeExtensionsAPIClient::CreateAppViewGuestDelegate()
@@ -367,6 +362,11 @@ ChromeExtensionsAPIClient::GetAutomationInternalApiDelegate() {
         std::make_unique<ChromeAutomationInternalApiDelegate>();
   }
   return extensions_automation_api_delegate_.get();
+}
+
+std::vector<KeyedServiceBaseFactory*>
+ChromeExtensionsAPIClient::GetFactoryDependencies() {
+  return {InstantServiceFactory::GetInstance()};
 }
 
 }  // namespace extensions

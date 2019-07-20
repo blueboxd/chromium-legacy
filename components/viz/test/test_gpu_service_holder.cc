@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
@@ -181,9 +182,10 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
 #endif
       /*exit_callback=*/base::DoNothing());
 
-  // Use a disconnected mojo pointer, we don't need to receive any messages.
-  mojom::GpuHostPtr gpu_host_proxy;
-  mojo::MakeRequest(&gpu_host_proxy);
+  // Use a disconnected mojo remote for GpuHost, we don't need to receive any
+  // messages.
+  mojo::PendingRemote<mojom::GpuHost> gpu_host_proxy;
+  ignore_result(gpu_host_proxy.InitWithNewPipeAndPassReceiver());
   gpu_service_->InitializeWithHost(
       std::move(gpu_host_proxy), gpu::GpuProcessActivityFlags(),
       gl::init::CreateOffscreenGLSurface(gfx::Size()),

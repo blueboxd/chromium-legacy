@@ -168,13 +168,11 @@ bool NaClBrowserDelegateImpl::URLMatchesDebugPatterns(
 bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
     const GURL& file_url,
     bool use_blocking_api,
-    extensions::ExtensionSystem* extension_system,
+    const base::FilePath& profile_directory,
     base::FilePath* file_path) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!extension_system)
-    return false;
   scoped_refptr<extensions::InfoMap> extension_info_map =
-      GetExtensionInfoMap(extension_system);
+      GetExtensionInfoMap(profile_directory);
   return extension_info_map->MapUrlToLocalFilePath(
       file_url, use_blocking_api, file_path);
 #else
@@ -183,13 +181,11 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
 }
 
 bool NaClBrowserDelegateImpl::IsNonSfiModeAllowed(
-    extensions::ExtensionSystem* extension_system,
+    const base::FilePath& profile_directory,
     const GURL& manifest_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!extension_system)
-    return false;
   const extensions::ExtensionSet* extension_set =
-      &GetExtensionInfoMap(extension_system)->extensions();
+      &GetExtensionInfoMap(profile_directory)->extensions();
   return IsExtensionOrSharedModuleWhitelisted(manifest_url, extension_set,
                                               allowed_nonsfi_origins_);
 #else
@@ -216,24 +212,13 @@ void NaClBrowserDelegateImpl::CreateInfoBarOnUiThread(int render_process_id,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 scoped_refptr<extensions::InfoMap> NaClBrowserDelegateImpl::GetExtensionInfoMap(
-    extensions::ExtensionSystem* extension_system) {
+    const base::FilePath& profile_directory) {
   // Get the profile associated with the renderer.
-  DCHECK(extension_system);
+  Profile* profile = profile_manager_->GetProfileByPath(profile_directory);
+  DCHECK(profile);
   scoped_refptr<extensions::InfoMap> extension_info_map =
-      extension_system->info_map();
+      extensions::ExtensionSystem::Get(profile)->info_map();
   DCHECK(extension_info_map.get());
   return extension_info_map;
 }
 #endif
-
-extensions::ExtensionSystem* NaClBrowserDelegateImpl::GetExtensionSystem(
-    const base::FilePath& profile_directory) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  Profile* profile = profile_manager_->GetProfileByPath(profile_directory);
-  if (!profile)
-    return nullptr;
-  return extensions::ExtensionSystem::Get(profile);
-#else
-  return nullptr;
-#endif
-}

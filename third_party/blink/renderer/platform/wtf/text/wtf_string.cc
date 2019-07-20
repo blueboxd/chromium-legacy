@@ -64,13 +64,13 @@ String::String(const char* characters, size_t length)
     : String(characters, SafeCast<unsigned>(length)) {}
 #endif  // defined(ARCH_CPU_64_BITS)
 
-int CodePointCompare(const String& a, const String& b) {
-  return CodePointCompare(a.Impl(), b.Impl());
+int CodeUnitCompare(const String& a, const String& b) {
+  return CodeUnitCompare(a.Impl(), b.Impl());
 }
 
-int CodePointCompareIgnoringASCIICase(const String& a, const char* b) {
-  return CodePointCompareIgnoringASCIICase(a.Impl(),
-                                           reinterpret_cast<const LChar*>(b));
+int CodeUnitCompareIgnoringASCIICase(const String& a, const char* b) {
+  return CodeUnitCompareIgnoringASCIICase(a.Impl(),
+                                          reinterpret_cast<const LChar*>(b));
 }
 
 UChar32 String::CharacterStartingAt(unsigned i) const {

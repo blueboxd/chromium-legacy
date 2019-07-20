@@ -166,6 +166,11 @@ public class AppWebMessagePort implements MessagePort {
         return ports;
     }
 
+    // Called to create a port from handle.
+    public static AppWebMessagePort create(MessagePipeHandle handle) {
+        return new AppWebMessagePort(handle);
+    }
+
     private MessagePipeHandle passHandle() {
         mTransferred = true;
         MessagePipeHandle handle = mConnector.passHandle();

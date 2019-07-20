@@ -346,12 +346,12 @@ void KeyframeEffect::ApplyEffects() {
   bool changed = false;
   if (sampled_effect_) {
     changed = model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
-                             IterationDuration(),
+                             SpecifiedTiming().IterationDuration(),
                              sampled_effect_->MutableInterpolations());
   } else {
     HeapVector<Member<Interpolation>> interpolations;
     model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
-                   IterationDuration(), interpolations);
+                   SpecifiedTiming().IterationDuration(), interpolations);
     if (!interpolations.IsEmpty()) {
       auto* sampled_effect =
           MakeGarbageCollected<SampledEffect>(this, owner_->SequenceNumber());
@@ -431,19 +431,20 @@ double KeyframeEffect::CalculateTimeToEffectChange(
     double local_time,
     double time_to_next_iteration) const {
   const double start_time = SpecifiedTiming().start_delay;
-  const double end_time_minus_end_delay = start_time + ActiveDuration();
+  const double end_time_minus_end_delay =
+      start_time + SpecifiedTiming().ActiveDuration();
   const double end_time =
       end_time_minus_end_delay + SpecifiedTiming().end_delay;
   const double after_time = std::min(end_time_minus_end_delay, end_time);
 
   switch (GetPhase()) {
-    case kPhaseNone:
+    case Timing::kPhaseNone:
       return std::numeric_limits<double>::infinity();
-    case kPhaseBefore:
+    case Timing::kPhaseBefore:
       DCHECK_GE(start_time, local_time);
       return forwards ? start_time - local_time
                       : std::numeric_limits<double>::infinity();
-    case kPhaseActive:
+    case Timing::kPhaseActive:
       if (forwards) {
         // Need service to apply fill / fire events.
         const double time_to_end = after_time - local_time;
@@ -453,7 +454,7 @@ double KeyframeEffect::CalculateTimeToEffectChange(
         return time_to_end;
       }
       return 0;
-    case kPhaseAfter:
+    case Timing::kPhaseAfter:
       DCHECK_GE(local_time, after_time);
       if (forwards) {
         // If an animation has a positive-valued end delay, we need an

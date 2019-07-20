@@ -376,7 +376,7 @@ void SimpleEntryImpl::Doom() {
 
 void SimpleEntryImpl::Close() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_LT(0, open_count_);
+  CHECK_LT(0, open_count_);
 
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_CLOSE_CALL);
 

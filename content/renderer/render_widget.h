@@ -1175,6 +1175,11 @@ class CONTENT_EXPORT RenderWidget
 
   uint32_t last_capture_sequence_number_ = 0u;
 
+  // State that is saved in OnUpdateRenderThrottlingStatus() before being
+  // propagated to the frame widget.
+  bool is_throttled_ = false;
+  bool subtree_throttled_ = false;
+
   // Used to generate a callback for the reply when making the warmup frame
   // sink, and to cancel that callback if the warmup is aborted.
   base::WeakPtrFactory<RenderWidget> warmup_weak_ptr_factory_{this};

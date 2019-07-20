@@ -44,6 +44,7 @@ bool ExtensionsAPIClient::ShouldHideResponseHeader(
 }
 
 bool ExtensionsAPIClient::ShouldHideBrowserNetworkRequest(
+    content::BrowserContext* context,
     const WebRequestInfo& request) const {
   return false;
 }
@@ -158,6 +159,11 @@ void ExtensionsAPIClient::SaveImageDataToClipboard(
 AutomationInternalApiDelegate*
 ExtensionsAPIClient::GetAutomationInternalApiDelegate() {
   return nullptr;
+}
+
+std::vector<KeyedServiceBaseFactory*>
+ExtensionsAPIClient::GetFactoryDependencies() {
+  return {};
 }
 
 }  // namespace extensions

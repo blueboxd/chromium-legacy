@@ -283,12 +283,12 @@ void AddMisspelledTextAttributes(const AXPlatformRange& ax_range,
                                  NSMutableAttributedString* attributed_string) {
   int anchor_start_offset = 0;
   [attributed_string beginEditing];
-  for (const AXPlatformRange& anchor_range : ax_range) {
-    DCHECK(!anchor_range.IsNull());
-    DCHECK_EQ(anchor_range.anchor()->GetAnchor(),
-              anchor_range.focus()->GetAnchor())
+  for (const AXPlatformRange& leaf_text_range : ax_range) {
+    DCHECK(!leaf_text_range.IsNull());
+    DCHECK_EQ(leaf_text_range.anchor()->GetAnchor(),
+              leaf_text_range.focus()->GetAnchor())
         << "An anchor range should only span a single object.";
-    const BrowserAccessibility* anchor = anchor_range.focus()->GetAnchor();
+    const BrowserAccessibility* anchor = leaf_text_range.focus()->GetAnchor();
     const std::vector<int32_t>& marker_types =
         anchor->GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes);
     const std::vector<int>& marker_starts =
@@ -313,7 +313,7 @@ void AddMisspelledTextAttributes(const AXPlatformRange& ax_range,
                  range:NSMakeRange(misspelling_start, misspelling_length)];
     }
 
-    anchor_start_offset += anchor_range.GetText().length();
+    anchor_start_offset += leaf_text_range.GetText().length();
   }
   [attributed_string endEditing];
 }

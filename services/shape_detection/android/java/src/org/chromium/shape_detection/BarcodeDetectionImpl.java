@@ -143,9 +143,9 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
             case Barcode.EAN_13:
                 return BarcodeFormat.EAN_13;
             case Barcode.EAN_8:
-                return BarcodeFormat.CODE_128;
-            case Barcode.ITF:
                 return BarcodeFormat.EAN_8;
+            case Barcode.ITF:
+                return BarcodeFormat.ITF;
             case Barcode.QR_CODE:
                 return BarcodeFormat.QR_CODE;
             case Barcode.UPC_A:

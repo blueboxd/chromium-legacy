@@ -243,6 +243,7 @@ void Portal::Activate(blink::TransferableMessage data,
     portal_contents_main_frame_view->TakeFallbackContentFrom(
         outer_contents_main_frame_view);
 
+    outer_contents_main_frame_view->CancelActiveTouches();
     outer_contents->GetInputEventRouter()->IgnoreUnackedTouchEvents(
         outer_contents_main_frame_view);
     outer_contents_main_frame_view->Destroy();

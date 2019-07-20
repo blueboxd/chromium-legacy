@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromecast/browser/application_media_info_manager.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_renderer_block_data.h"
 #include "content/public/browser/web_contents.h"
 
@@ -57,6 +58,10 @@ void ApplicationMediaInfoManager::GetCastApplicationMediaInfo(
     GetCastApplicationMediaInfoCallback callback) {
   LOG(INFO) << "GetCastApplicationMediaInfo called with blocked: "
             << renderer_blocked_;
+
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEventWithValue(
+      "Cast.Platform.CastRenderer.MediaReady", renderer_blocked_);
+
   if (renderer_blocked_) {
     DCHECK(!pending_call_);
     pending_call_ = std::move(callback);

@@ -44,6 +44,8 @@ class CONTENT_EXPORT InputEventPrediction {
   friend class InputEventPredictionTest;
   FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest, PredictorType);
   FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest, ResamplingDisabled);
+  FRIEND_TEST_ALL_PREFIXES(InputEventPredictionTest,
+                           NoResampleWhenExceedMaxResampleTime);
 
   // The following functions are for handling multiple TouchPoints in a
   // WebTouchEvent. They should be more neat when WebTouchEvent is elimated.
@@ -69,8 +71,7 @@ class CONTENT_EXPORT InputEventPrediction {
   // and apply predicted result to the event. Return false if no prediction
   // available.
   bool GetPointerPrediction(base::TimeTicks predict_time,
-                            WebPointerProperties* event,
-                            bool is_resampling = false);
+                            WebPointerProperties* event);
 
   // Get single predictor based on event id and type. For mouse, reset the
   // predictor, for other pointer type, remove it from mapping.

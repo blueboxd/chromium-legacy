@@ -60,6 +60,13 @@ void RecordTokenLoadStatus(const TokenLoadStatus& token_load_status) {
                                 token_load_status);
 }
 
+void RecordInitializationTime(
+    const base::TimeTicks& initialization_start_time) {
+  base::UmaHistogramMicrosecondsTimes(
+      "AccountManager.InitializationTime",
+      base::TimeTicks::Now() - initialization_start_time);
+}
+
 }  // namespace
 
 // static
@@ -174,6 +181,7 @@ void AccountManager::Initialize(
     PrefService* pref_service) {
   VLOG(1) << "AccountManager::Initialize";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const base::TimeTicks initialization_start_time = base::TimeTicks::Now();
 
   if (init_state_ != InitializationState::kNotStarted) {
     // |Initialize| has already been called once. To help diagnose possible race
@@ -197,7 +205,7 @@ void AccountManager::Initialize(
       base::BindOnce(&AccountManager::LoadAccountsFromDisk, writer_->path()),
       base::BindOnce(
           &AccountManager::InsertAccountsAndRunInitializationCallbacks,
-          weak_factory_.GetWeakPtr()));
+          weak_factory_.GetWeakPtr(), initialization_start_time));
 }
 
 // static
@@ -249,12 +257,14 @@ AccountManager::AccountMap AccountManager::LoadAccountsFromDisk(
 }
 
 void AccountManager::InsertAccountsAndRunInitializationCallbacks(
+    const base::TimeTicks& initialization_start_time,
     const AccountMap& accounts) {
   VLOG(1) << "AccountManager::RunInitializationCallbacks";
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   accounts_.insert(accounts.begin(), accounts.end());
   init_state_ = InitializationState::kInitialized;
+  RecordInitializationTime(initialization_start_time);
 
   for (auto& cb : initialization_callbacks_) {
     std::move(cb).Run();

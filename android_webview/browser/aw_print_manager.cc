@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_print_manager.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
@@ -21,14 +22,12 @@ namespace {
 int SaveDataToFd(int fd,
                  int page_count,
                  scoped_refptr<base::RefCountedSharedMemoryMapping> data) {
-  base::File file(fd);
-  bool result =
-      file.IsValid() && base::IsValueInRangeForNumericType<int>(data->size());
+  bool result = fd > base::kInvalidFd &&
+                base::IsValueInRangeForNumericType<int>(data->size());
   if (result) {
     int size = data->size();
-    result = file.WriteAtCurrentPos(data->front_as<char>(), size) == size;
+    result = base::WriteFileDescriptor(fd, data->front_as<char>(), size);
   }
-  file.TakePlatformFile();
   return result ? page_count : 0;
 }
 

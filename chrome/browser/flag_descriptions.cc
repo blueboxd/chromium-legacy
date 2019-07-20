@@ -3264,6 +3264,11 @@ const char kFsNosymfollowDescription[] =
     " option, so the chromuimos LSM denies symlink traversal on the"
     " filesystem.";
 
+const char kGaiaActionButtonsName[] =
+    "Enable action buttons on Gaia login screen";
+const char kGaiaActionButtonsDescription[] =
+    "Enable primary/secondary action button on Gaia login screen.";
+
 const char kHideArcMediaNotificationsName[] = "Hide ARC media notifications";
 const char kHideArcMediaNotificationsDescription[] =
     "Hides media notifications for ARC apps. Requires "

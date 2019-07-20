@@ -81,9 +81,9 @@ Impression CreateImpression(const base::Time& create_time,
 std::string DebugString(const NotificationData* data) {
   DCHECK(data);
   std::ostringstream stream;
-  stream << " Notification Data: \n id:" << data->id
-         << " \n title:" << data->title << "\n message:" << data->message;
-  stream << " \n custom data: ";
+  stream << " Notification Data:"
+         << " \n title:" << data->title << "\n message:" << data->message
+         << " \n custom data: ";
   for (const auto& pair : data->custom_data)
     stream << " key:" << pair.first << " , value:" << pair.second;
 

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_id.h"
@@ -24,7 +25,6 @@ class BrowserContext;
 }  // namespace content
 
 namespace extensions {
-class InfoMap;
 class ExtensionPrefs;
 class ExtensionRegistry;
 class WarningService;
@@ -36,6 +36,7 @@ struct Rule;
 }  // namespace api
 
 namespace declarative_net_request {
+class RulesetMatcher;
 enum class DynamicRuleUpdateAction;
 struct LoadRequestData;
 
@@ -46,6 +47,10 @@ struct LoadRequestData;
 class RulesMonitorService : public BrowserContextKeyedAPI,
                             public ExtensionRegistryObserver {
  public:
+  // Returns the instance for |browser_context|. An instance is shared between
+  // an incognito and a regular context.
+  static RulesMonitorService* Get(content::BrowserContext* browser_context);
+
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<RulesMonitorService>*
   GetFactoryInstance();
@@ -65,6 +70,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                           DynamicRuleUpdateAction action,
                           DynamicRuleUpdateUICallback callback);
 
+  RulesetManager* ruleset_manager() { return &ruleset_manager_; }
+
  private:
   class FileSequenceBridge;
 
@@ -79,6 +86,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "RulesMonitorService"; }
   static const bool kServiceIsNULLWhileTesting = true;
+  static const bool kServiceRedirectedInIncognito = true;
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -98,6 +106,13 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                              LoadRequestData load_data,
                              base::Optional<std::string> error);
 
+  void UnloadRuleset(const ExtensionId& extension_id);
+  void LoadRuleset(const ExtensionId& extension_id,
+                   std::unique_ptr<CompositeMatcher> matcher,
+                   URLPatternSet allowed_pages);
+  void UpdateRuleset(const ExtensionId& extension_id,
+                     std::unique_ptr<RulesetMatcher> ruleset_matcher);
+
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_;
 
@@ -107,12 +122,13 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   std::unique_ptr<const FileSequenceBridge> file_sequence_bridge_;
 
   // Guaranteed to be valid through-out the lifetime of this instance.
-  InfoMap* const info_map_;
   ExtensionPrefs* const prefs_;
   ExtensionRegistry* const extension_registry_;
   WarningService* const warning_service_;
 
   content::BrowserContext* const context_;
+
+  declarative_net_request::RulesetManager ruleset_manager_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

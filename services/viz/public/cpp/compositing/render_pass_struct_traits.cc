@@ -5,7 +5,6 @@
 #include "services/viz/public/cpp/compositing/render_pass_struct_traits.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "base/trace_event/trace_event.h"
 #include "ui/gfx/mojo/color_space_mojom_traits.h"
 
 namespace mojo {
@@ -15,8 +14,6 @@ bool StructTraits<viz::mojom::RenderPassDataView,
                   std::unique_ptr<viz::RenderPass>>::
     Read(viz::mojom::RenderPassDataView data,
          std::unique_ptr<viz::RenderPass>* out) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"),
-               "StructTraits::RenderPass::Read");
   *out = viz::RenderPass::Create();
   if (!data.ReadOutputRect(&(*out)->output_rect) ||
       !data.ReadDamageRect(&(*out)->damage_rect) ||

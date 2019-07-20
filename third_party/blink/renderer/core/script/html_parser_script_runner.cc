@@ -648,6 +648,32 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
   }
 }
 
+void HTMLParserScriptRunner::RecordMetricsAtParseEnd() const {
+  // This method is called just before starting execution of force deferred
+  // scripts in order to capture the all force deferred scripts in
+  // |force_deferred_scripts_| before any are popped for execution.
+  if (!force_deferred_scripts_.IsEmpty()) {
+    uint32_t force_deferred_external_script_count = 0;
+    for (const auto& pending_script : force_deferred_scripts_) {
+      if (pending_script->IsExternal())
+        force_deferred_external_script_count++;
+    }
+    if (document_->IsInMainFrame()) {
+      UMA_HISTOGRAM_COUNTS_100("Blink.Script.ForceDeferredScripts.Mainframe",
+                               force_deferred_scripts_.size());
+      UMA_HISTOGRAM_COUNTS_100(
+          "Blink.Script.ForceDeferredScripts.Mainframe.External",
+          force_deferred_external_script_count);
+    } else {
+      UMA_HISTOGRAM_COUNTS_100("Blink.Script.ForceDeferredScripts.Subframe",
+                               force_deferred_scripts_.size());
+      UMA_HISTOGRAM_COUNTS_100(
+          "Blink.Script.ForceDeferredScripts.Subframe.External",
+          force_deferred_external_script_count);
+    }
+  }
+}
+
 void HTMLParserScriptRunner::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(host_);

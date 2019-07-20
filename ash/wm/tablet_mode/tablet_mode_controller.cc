@@ -705,8 +705,11 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     tablet_mode_window_manager_->SetIgnoreWmEventsForExit();
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnding();
-    tablet_mode_window_manager_->Shutdown();
-    tablet_mode_window_manager_.reset();
+    // Make sure that calling `TabletModeController::InTabletMode()` returns
+    // false from now on.
+    std::unique_ptr<TabletModeWindowManager> to_be_removed_tablet_mode_wm =
+        std::move(tablet_mode_window_manager_);
+    to_be_removed_tablet_mode_wm->Shutdown();
     base::RecordAction(base::UserMetricsAction("Touchview_Disabled"));
     RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
     state_ = State::kInClamshellMode;

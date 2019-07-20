@@ -11,12 +11,15 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
@@ -27,49 +30,6 @@
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
-
-namespace {
-// TODO(knollr): Should this be configurable or shared between similar features?
-constexpr base::TimeDelta kDeviceExpiration = base::TimeDelta::FromDays(2);
-
-// Amount of time before a message is considered timeout if no ack is received.
-constexpr base::TimeDelta kSendMessageTimeout =
-    base::TimeDelta::FromSeconds(10);
-
-// Backoff policy for registration retry.
-constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
-    // Number of initial errors (in sequence) to ignore before applying
-    // exponential back-off rules.
-    0,
-
-    // Initial delay.  The interpretation of this value depends on
-    // always_use_initial_delay.  It's either how long we wait between
-    // requests before backoff starts, or how much we delay the first request
-    // after backoff starts.
-    5 * 60 * 1000,
-
-    // Factor by which the waiting time will be multiplied.
-    2.0,
-
-    // Fuzzing percentage. ex: 10% will spread requests randomly
-    // between 90%-100% of the calculated time.
-    0.1,
-
-    // Maximum amount of time we are willing to delay our request, -1
-    // for no maximum.
-    -1,
-
-    // Time to keep an entry from being discarded even when it
-    // has no significant state, -1 to never discard.
-    -1,
-
-    // If true, we always use a delay of initial_delay_ms, even before
-    // we've seen num_errors_to_ignore errors.  Otherwise, initial_delay_ms
-    // is the first delay once we start exponential backoff.
-    false,
-};
-
-}  // namespace
 
 SharingService::SharingService(
     std::unique_ptr<SharingSyncPreference> sync_prefs,
@@ -173,8 +133,9 @@ std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     auto inserted = device_names.insert(device->client_name());
     if (inserted.second) {
       device_candidates.emplace_back(
-          device->guid(), device->client_name(), device->device_type(),
-          device->last_updated_timestamp(), device_capabilities);
+          device->guid(), base::UTF8ToUTF16(device->client_name()),
+          device->device_type(), device->last_updated_timestamp(),
+          device_capabilities);
     }
   }
 
@@ -273,9 +234,9 @@ void SharingService::UnregisterDevice() {
 }
 
 void SharingService::OnDeviceRegistered(
-    SharingDeviceRegistration::Result result) {
+    SharingDeviceRegistrationResult result) {
   switch (result) {
-    case SharingDeviceRegistration::Result::SUCCESS:
+    case SharingDeviceRegistrationResult::kSuccess:
       backoff_entry_.InformOfRequest(true);
       if (state_ == State::REGISTERING) {
         if (IsSyncEnabled()) {
@@ -295,8 +256,8 @@ void SharingService::OnDeviceRegistered(
       // For registration as result of VAPID key change, state_ will be
       // State::ACTIVE, and we don't need to start listeners.
       break;
-    case SharingDeviceRegistration::Result::FCM_TRANSIENT_ERROR:
-    case SharingDeviceRegistration::Result::SYNC_SERVICE_ERROR:
+    case SharingDeviceRegistrationResult::kFcmTransientError:
+    case SharingDeviceRegistrationResult::kSyncServiceError:
       backoff_entry_.InformOfRequest(false);
       // Transient error - try again after a delay.
       LOG(ERROR) << "Device registration failed with transient error";
@@ -307,8 +268,8 @@ void SharingService::OnDeviceRegistered(
                          weak_ptr_factory_.GetWeakPtr()),
           backoff_entry_.GetTimeUntilRelease());
       break;
-    case SharingDeviceRegistration::Result::ENCRYPTION_ERROR:
-    case SharingDeviceRegistration::Result::FCM_FATAL_ERROR:
+    case SharingDeviceRegistrationResult::kEncryptionError:
+    case SharingDeviceRegistrationResult::kFcmFatalError:
       backoff_entry_.InformOfRequest(false);
       // No need to bother retrying in the case of one of fatal errors.
       LOG(ERROR) << "Device registration failed with fatal error";
@@ -317,7 +278,7 @@ void SharingService::OnDeviceRegistered(
 }
 
 void SharingService::OnDeviceUnregistered(
-    SharingDeviceRegistration::Result result) {
+    SharingDeviceRegistrationResult result) {
   if (IsSyncEnabled() &&
       base::FeatureList::IsEnabled(kSharingDeviceRegistration)) {
     // In case sync is enabled during un-registration, register it.
@@ -328,7 +289,7 @@ void SharingService::OnDeviceUnregistered(
   }
 
   // Unregistration failure is ignored, and will be attempted in next restart.
-  if (result != SharingDeviceRegistration::Result::SUCCESS)
+  if (result != SharingDeviceRegistrationResult::kSuccess)
     LOG(ERROR) << "Device unregistration failed";
 }
 

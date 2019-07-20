@@ -33,9 +33,10 @@ class MockNotificationScheduler : public NotificationScheduler {
                     ImpressionDetail::ImpressionDetailCallback callback));
   MOCK_METHOD2(OnStartTask, void(SchedulerTaskTime, TaskFinishedCallback));
   MOCK_METHOD1(OnStopTask, void(SchedulerTaskTime));
-  MOCK_METHOD1(OnClick, void(const std::string&));
-  MOCK_METHOD2(OnActionClick, void(const std::string&, ActionButtonType));
-  MOCK_METHOD1(OnDismiss, void(const std::string&));
+  MOCK_METHOD2(OnClick, void(SchedulerClientType, const std::string&));
+  MOCK_METHOD3(OnActionClick,
+               void(SchedulerClientType, const std::string&, ActionButtonType));
+  MOCK_METHOD2(OnDismiss, void(SchedulerClientType, const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNotificationScheduler);

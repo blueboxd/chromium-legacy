@@ -152,18 +152,20 @@ void ContentIndexDatabase::DidAddEntry(
 
 void ContentIndexDatabase::DeleteEntry(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& entry_id,
     blink::mojom::ContentIndexService::DeleteCallback callback) {
   service_worker_context_->ClearRegistrationUserData(
       service_worker_registration_id, {EntryKey(entry_id), IconKey(entry_id)},
       base::BindOnce(&ContentIndexDatabase::DidDeleteEntry,
                      weak_ptr_factory_io_.GetWeakPtr(),
-                     service_worker_registration_id, entry_id,
+                     service_worker_registration_id, origin, entry_id,
                      std::move(callback)));
 }
 
 void ContentIndexDatabase::DidDeleteEntry(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& entry_id,
     blink::mojom::ContentIndexService::DeleteCallback callback,
     blink::ServiceWorkerStatusCode status) {
@@ -178,7 +180,7 @@ void ContentIndexDatabase::DidDeleteEntry(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&ContentIndexDatabase::NotifyProviderContentDeleted,
                      weak_ptr_factory_ui_.GetWeakPtr(),
-                     service_worker_registration_id, entry_id));
+                     service_worker_registration_id, origin, entry_id));
 }
 
 void ContentIndexDatabase::GetDescriptions(
@@ -329,21 +331,20 @@ void ContentIndexDatabase::NotifyProviderContentAdded(
   if (!provider_)
     return;
 
-  for (auto& entry : entries) {
-    provider_->OnContentAdded(std::move(entry),
-                              weak_ptr_factory_ui_.GetWeakPtr());
-  }
+  for (auto& entry : entries)
+    provider_->OnContentAdded(std::move(entry));
 }
 
 void ContentIndexDatabase::NotifyProviderContentDeleted(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& entry_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!provider_)
     return;
 
-  provider_->OnContentDeleted(service_worker_registration_id, entry_id);
+  provider_->OnContentDeleted(service_worker_registration_id, origin, entry_id);
 }
 
 }  // namespace content

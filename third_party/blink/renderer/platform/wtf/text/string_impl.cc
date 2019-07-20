@@ -1847,10 +1847,10 @@ bool EqualIgnoringNullity(StringImpl* a, StringImpl* b) {
 }
 
 template <typename CharacterType1, typename CharacterType2>
-int CodePointCompareIgnoringASCIICase(wtf_size_t l1,
-                                      wtf_size_t l2,
-                                      const CharacterType1* c1,
-                                      const CharacterType2* c2) {
+int CodeUnitCompareIgnoringASCIICase(wtf_size_t l1,
+                                     wtf_size_t l2,
+                                     const CharacterType1* c1,
+                                     const CharacterType2* c2) {
   const wtf_size_t lmin = l1 < l2 ? l1 : l2;
   wtf_size_t pos = 0;
   while (pos < lmin && ToASCIILower(*c1) == ToASCIILower(*c2)) {
@@ -1868,8 +1868,8 @@ int CodePointCompareIgnoringASCIICase(wtf_size_t l1,
   return (l1 > l2) ? 1 : -1;
 }
 
-int CodePointCompareIgnoringASCIICase(const StringImpl* string1,
-                                      const LChar* string2) {
+int CodeUnitCompareIgnoringASCIICase(const StringImpl* string1,
+                                     const LChar* string2) {
   wtf_size_t length1 = string1 ? string1->length() : 0;
   wtf_size_t length2 = SafeCast<wtf_size_t>(
       string2 ? strlen(reinterpret_cast<const char*>(string2)) : 0);
@@ -1880,11 +1880,12 @@ int CodePointCompareIgnoringASCIICase(const StringImpl* string1,
   if (!string2)
     return length1 > 0 ? 1 : 0;
 
-  if (string1->Is8Bit())
-    return CodePointCompareIgnoringASCIICase(length1, length2,
-                                             string1->Characters8(), string2);
-  return CodePointCompareIgnoringASCIICase(length1, length2,
-                                           string1->Characters16(), string2);
+  if (string1->Is8Bit()) {
+    return CodeUnitCompareIgnoringASCIICase(length1, length2,
+                                            string1->Characters8(), string2);
+  }
+  return CodeUnitCompareIgnoringASCIICase(length1, length2,
+                                          string1->Characters16(), string2);
 }
 
 }  // namespace WTF

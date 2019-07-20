@@ -1574,6 +1574,7 @@ jumbo_component("base") {
     deps += [
       "//third_party/fuchsia-sdk/sdk:async_default",
       "//third_party/fuchsia-sdk/sdk:async_loop_cpp",
+      "//third_party/fuchsia-sdk/sdk:deprecatedtimezone",
       "//third_party/fuchsia-sdk/sdk:fidl",
       "//third_party/fuchsia-sdk/sdk:svc",
       "//third_party/fuchsia-sdk/sdk:sys",

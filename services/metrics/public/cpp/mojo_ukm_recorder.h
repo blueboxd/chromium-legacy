@@ -49,6 +49,7 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
       SourceId source_id,
       const UkmSource::NavigationData& navigation_data) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;
+  void MarkSourceForDeletion(ukm::SourceId source_id) override;
 
   mojom::UkmRecorderInterfacePtr interface_;
 

@@ -694,6 +694,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     std::unique_ptr<QuicServerInfo> server_info,
     const QuicSessionKey& session_key,
     bool require_confirmation,
+    quic::QuicStreamId max_allowed_push_id,
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
     NetworkChangeNotifier::NetworkHandle default_network,
@@ -779,6 +780,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
   DCHECK(!(migrate_session_early_v2_ && go_away_on_path_degrading_));
+
+  quic::QuicSpdyClientSessionBase::set_max_allowed_push_id(max_allowed_push_id);
   default_network_ = default_network;
   auto* socket_raw = socket.get();
   sockets_.push_back(std::move(socket));
@@ -1439,7 +1442,8 @@ void QuicChromiumClientSession::SendRstStream(
   quic::QuicSpdySession::SendRstStream(id, error, bytes_written);
 }
 
-void QuicChromiumClientSession::OnCanCreateNewOutgoingStream() {
+void QuicChromiumClientSession::OnCanCreateNewOutgoingStream(
+    bool unidirectional) {
   if (CanOpenNextOutgoingBidirectionalStream() && !stream_requests_.empty() &&
       crypto_stream_->encryption_established() && !goaway_received() &&
       !going_away_ && connection()->connected()) {

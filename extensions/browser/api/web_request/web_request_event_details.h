@@ -25,7 +25,7 @@ class HttpResponseHeaders;
 
 namespace extensions {
 
-class InfoMap;
+class PermissionHelper;
 struct WebRequestInfo;
 
 // This helper class is used to construct the details for a webRequest event
@@ -115,7 +115,7 @@ class WebRequestEventDetails {
   // This can be called from any thread.
   std::unique_ptr<base::DictionaryValue> GetFilteredDict(
       int extra_info_spec,
-      const InfoMap* extension_info_map,
+      PermissionHelper* permission_helper,
       const ExtensionId& extension_id,
       bool crosses_incognito) const;
 

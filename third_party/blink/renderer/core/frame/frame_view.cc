@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
@@ -32,6 +33,17 @@ bool FrameView::CanThrottleRenderingForPropagation() const {
   Frame& frame = GetFrame();
   LayoutEmbeddedContent* owner = frame.OwnerLayoutObject();
   return !owner && frame.IsCrossOriginSubframe();
+}
+
+bool FrameView::DisplayLockedInParentFrame() {
+  Frame& frame = GetFrame();
+  LayoutEmbeddedContent* owner = frame.OwnerLayoutObject();
+  // We check the inclusive ancestor to determine whether the subtree is locked,
+  // since the contents of the frame are in the subtree of the frame, so they
+  // would be locked if the frame owner is itself locked.
+  return owner && owner->GetNode() &&
+         DisplayLockUtilities::NearestLockedInclusiveAncestor(
+             *owner->GetNode());
 }
 
 void FrameView::UpdateViewportIntersection(unsigned flags,
@@ -78,9 +90,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
          LayoutUnit(kMaxChildFrameScreenRectMovement))) {
       rect_in_parent_ = new_rect_in_parent;
       if (Page* page = GetFrame().GetPage()) {
-        rect_in_parent_stable_since_ =
-            base::TimeTicks() + base::TimeDelta::FromSecondsD(
-                                    page->Animator().Clock().CurrentTime());
+        rect_in_parent_stable_since_ = page->Animator().Clock().CurrentTime();
       } else {
         rect_in_parent_stable_since_ = base::TimeTicks::Now();
       }
@@ -146,7 +156,7 @@ void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                              bool recurse) {
   bool was_throttled = CanThrottleRendering();
   hidden_for_throttling_ = hidden_for_throttling;
-  subtree_throttled_ = subtree_throttled;
+  subtree_throttled_ = subtree_throttled || DisplayLockedInParentFrame();
   bool throttling_did_change = (was_throttled != CanThrottleRendering());
   if (throttling_did_change)
     RenderThrottlingStatusChanged();

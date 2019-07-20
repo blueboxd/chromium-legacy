@@ -1260,8 +1260,9 @@ Output.prototype = {
               speechProps['lang'] = newLanguage;
               // Append outputString to buff.
               this.append_(buff, outputString, options);
-              // Attach associated SpeechProperties.
-              buff[buff.length - 1].setSpan(speechProps, 0, 0);
+              // Attach associated SpeechProperties if the buffer is non-empty.
+              if (buff.length > 0)
+                buff[buff.length - 1].setSpan(speechProps, 0, 0);
             }.bind(this, buff, options);
             // Cut up node name into multiple spans with different languages.
             LanguageSwitching.assignLanguagesForStringAttribute(

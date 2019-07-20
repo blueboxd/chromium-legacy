@@ -1045,9 +1045,10 @@ void VP9Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
   // no simple way to detect this. We'd need to parse the frames and go through
   // partition numbers/sizes. For now assume one frame per buffer.
   Vp9FrameHeader header;
-  parser_.SetStream(stream, size, nullptr);
+  gfx::Size allocate_size;
+  parser_.SetStream(stream, size, {}, nullptr);
   EXPECT_TRUE(Vp9Parser::kInvalidStream !=
-              parser_.ParseNextFrame(&header, nullptr));
+              parser_.ParseNextFrame(&header, &allocate_size, nullptr));
   if (header.IsKeyframe()) {
     seen_keyframe_ = true;
     visible_size_.SetSize(header.render_width, header.render_height);

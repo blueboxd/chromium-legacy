@@ -6,7 +6,7 @@
 #define COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_REMOTE_ITERATOR_H_
 
 #include "base/unguessable_token.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 
 namespace leveldb {

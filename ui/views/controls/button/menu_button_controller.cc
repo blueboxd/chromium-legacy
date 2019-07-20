@@ -77,7 +77,13 @@ MenuButtonController::MenuButtonController(
     Button* button,
     MenuButtonListener* listener,
     std::unique_ptr<ButtonControllerDelegate> delegate)
-    : ButtonController(button, std::move(delegate)), listener_(listener) {}
+    : ButtonController(button, std::move(delegate)), listener_(listener) {
+  // Triggers on button press by default, unless drag-and-drop is enabled, see
+  // MenuButtonController::IsTriggerableEventType.
+  // TODO(cyan): Investigate using PlatformStyle::kMenuNotifyActivationAction.
+  // TODO(cyan): Move NotifyAction into ButtonController.
+  button->set_notify_action(Button::NOTIFY_ON_PRESS);
+}
 
 MenuButtonController::~MenuButtonController() = default;
 
@@ -282,10 +288,10 @@ bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
     // Activate on release if dragging, otherwise activate based on
     // notify_action.
     ui::EventType active_on =
-        delegate()->GetDragOperations(mouse_event->location()) !=
+        delegate()->GetDragOperations(mouse_event->location()) ==
                 ui::DragDropTypes::DRAG_NONE
-            ? ui::ET_MOUSE_RELEASED
-            : NotifyActionToMouseEventType(button()->notify_action());
+            ? NotifyActionToMouseEventType(button()->notify_action())
+            : ui::ET_MOUSE_RELEASED;
     return event.type() == active_on;
   }
   return event.type() == ui::ET_GESTURE_TAP;

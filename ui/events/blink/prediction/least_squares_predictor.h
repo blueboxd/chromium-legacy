@@ -36,7 +36,6 @@ class LeastSquaresPredictor : public InputPredictor {
   // Generate the prediction based on stored points and given time_stamp.
   // Return false if no prediction available.
   bool GeneratePrediction(base::TimeTicks predict_time,
-                          bool is_resampling,
                           InputData* result) const override;
 
  private:

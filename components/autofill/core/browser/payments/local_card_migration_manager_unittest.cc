@@ -1311,10 +1311,10 @@ TEST_F(LocalCardMigrationManagerTest,
   EXPECT_TRUE(local_card_migration_manager_->IntermediatePromptWasShown());
 }
 
-// Use one unsupported local card with more unsupported local cards will not
-// trigger migration.
+// Use one unsupported local card with more supported local cards will not
+// show intermediate prompt.
 TEST_F(LocalCardMigrationManagerTest,
-       MigrateCreditCard_MigrationAbortWhenNoSupportedCards) {
+       MigrateCreditCard_MigrationAbortWhenUseUnsupportedLocalCard) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillDoNotMigrateUnsupportedLocalCards);
 
@@ -1336,21 +1336,21 @@ TEST_F(LocalCardMigrationManagerTest,
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
-  // Set up the supported card bin ranges so that there are no supported cards.
+  // Set up the supported card bin ranges so that the used local card is not
+  // supported but the one left is supported.
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
-      std::make_pair(34, 34), std::make_pair(300, 305)};
+      std::make_pair(300, 305), std::make_pair(555, 555)};
   payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
 
   // Edit the data, and submit.
   EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
                      test::NextYear().c_str(), "123");
   FormSubmitted(credit_card_form);
-  EXPECT_TRUE(local_card_migration_manager_->migratable_credit_cards_.empty());
   EXPECT_FALSE(local_card_migration_manager_->IntermediatePromptWasShown());
 }
 
 // Use one supported local card with more unsupported local cards available
-// will trigger migration with the only supported local card.
+// will show intermediate prompt with the only supported local card.
 TEST_F(LocalCardMigrationManagerTest,
        MigrateCreditCard_MigrateWhenHasSupportedLocalCard) {
   scoped_feature_list_.InitAndEnableFeature(
@@ -1369,10 +1369,10 @@ TEST_F(LocalCardMigrationManagerTest,
   AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
                      test::NextYear().c_str(), "1", "guid2");
 
-  // Set up the supported card bin ranges so that there is only one supported
-  // card.
+  // Set up the supported card bin ranges so that the used local card is the
+  // only supported card.
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
-      std::make_pair(411, 412), std::make_pair(300, 305)};
+      std::make_pair(300, 305), std::make_pair(411, 412)};
   payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
 
   // Set up our credit card form data.
@@ -1393,6 +1393,90 @@ TEST_F(LocalCardMigrationManagerTest,
                 .number(),
             base::ASCIIToUTF16("4111111111111111"));
   EXPECT_TRUE(local_card_migration_manager_->IntermediatePromptWasShown());
+}
+
+// Use one unsupported server card with more supported local cards available
+// will still show intermediate prompt.
+TEST_F(
+    LocalCardMigrationManagerTest,
+    MigrateCreditCard_MigrateWhenUseUnsupportedServerCardWithSupportedLocalCard) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotMigrateUnsupportedLocalCards);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+  // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
+  // we will enter below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          test::NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+  // Add one valid local credit card, so it will trigger migration
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+
+  // Set up the supported card bin ranges so that the used server card is
+  // unsupported but the one left is supported.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(300, 305), std::make_pair(555, 555)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+
+  EXPECT_TRUE(local_card_migration_manager_->IntermediatePromptWasShown());
+}
+
+// Use one supported server card with more unsupported local cards will not show
+// intermediate prompt.
+TEST_F(
+    LocalCardMigrationManagerTest,
+    MigrateCreditCard_MigrateAbortWhenUseSupportedServerCardWithUnsupportedLocalCard) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotMigrateUnsupportedLocalCards);
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+  // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
+  // we will enter below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          test::NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+  // Add one valid local credit card, so it will trigger migration
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+
+  // Set up the supported card bin ranges so that the used server card is
+  // supported while the one left is unsupported.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(300, 305), std::make_pair(411, 411)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+
+  EXPECT_FALSE(local_card_migration_manager_->IntermediatePromptWasShown());
 }
 
 // All migration requirements are met but GetUploadDetails rpc fails. Verified
@@ -1511,11 +1595,11 @@ TEST_F(LocalCardMigrationManagerTest,
                             NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
 }
 
-// Use one unsupported local card with more unsupported local cards will not
-// trigger migration. Verify the migration decision metric is logged as no
-// supported cards.
+// Use one unsupported local card with more supported local cards will not
+// show intermediate prompt. Verify the migration decision metric is logged as
+// use unsupported local card.
 TEST_F(LocalCardMigrationManagerTest,
-       LogMigrationDecisionMetric_NoSupportedCards) {
+       LogMigrationDecisionMetric_UseUnsupportedLocalCard) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillDoNotMigrateUnsupportedLocalCards);
 
@@ -1538,10 +1622,103 @@ TEST_F(LocalCardMigrationManagerTest,
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
   FormsSeen(std::vector<FormData>(1, credit_card_form));
 
-  // Set up the supported card bin ranges so that there are no supported cards.
+  // Set up the supported card bin ranges so that the used local card is not
+  // supported but the one left is supported.
   std::vector<std::pair<int, int>> supported_card_bin_ranges{
-      std::make_pair(34, 34), std::make_pair(300, 305)};
+      std::make_pair(300, 305), std::make_pair(555, 555)};
   payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+
+  ExpectUniqueLocalCardMigrationDecision(
+      histogram_tester, AutofillMetrics::LocalCardMigrationDecisionMetric::
+                            NOT_OFFERED_USE_UNSUPPORTED_LOCAL_CARD);
+}
+
+// Use one supported server card with more unsupported local cards will not show
+// intermediate prompt. Verify the migration decision metric is logged as no
+// supported cards.
+TEST_F(LocalCardMigrationManagerTest,
+       LogMigrationDecisionMetric_NoSupportedCardsForSupportedServerCard) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotMigrateUnsupportedLocalCards);
+
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+  // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
+  // we will enter below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          test::NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+  // Add one valid local credit card, so it will trigger migration
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+
+  // Set up the supported card bin ranges so that the used server card is
+  // supported while the one left is unsupported.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(300, 305), std::make_pair(411, 411)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  base::HistogramTester histogram_tester;
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+
+  ExpectUniqueLocalCardMigrationDecision(
+      histogram_tester, AutofillMetrics::LocalCardMigrationDecisionMetric::
+                            NOT_OFFERED_NO_SUPPORTED_CARDS);
+}
+
+// Use one unsupported server card with more unsupported local cards will not
+// show intermediate prompt. Verify the migration decision metric is logged as
+// no supported cards.
+TEST_F(LocalCardMigrationManagerTest,
+       LogMigrationDecisionMetric_NoSupportedCardsForUnsupportedServerCard) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillDoNotMigrateUnsupportedLocalCards);
+
+  // Set the billing_customer_number to designate existence of a Payments
+  // account.
+  personal_data_.SetPaymentsCustomerData(
+      std::make_unique<PaymentsCustomerData>(/*customer_id=*/"123456"));
+
+  // Add a masked server credit card whose |TypeAndLastFourDigits| matches what
+  // we will enter below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11",
+                          test::NextYear().c_str(), "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+  // Add one valid local credit card, so it will trigger migration
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+
+  // Set up the supported card bin ranges so that the used server card and local
+  // cards are all unsupported.
+  std::vector<std::pair<int, int>> supported_card_bin_ranges{
+      std::make_pair(300, 305), std::make_pair(400, 400)};
+  payments_client_->SetSupportedBINRanges(supported_card_bin_ranges);
+
+  base::HistogramTester histogram_tester;
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
 
   // Edit the data, and submit.
   EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",

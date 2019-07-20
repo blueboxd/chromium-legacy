@@ -82,8 +82,6 @@ class WebApkUpdateDataFetcher : public content::WebContentsObserver {
   // Downloaded data for |web_manifest_url_|.
   ShortcutInfo info_;
   SkBitmap primary_icon_;
-  bool is_primary_icon_maskable_;
-
   SkBitmap badge_icon_;
 
   base::WeakPtrFactory<WebApkUpdateDataFetcher> weak_ptr_factory_;

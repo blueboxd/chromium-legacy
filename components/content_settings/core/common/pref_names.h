@@ -32,6 +32,7 @@ extern const char kManagedDefaultNotificationsSetting[];
 extern const char kManagedDefaultMediaStreamSetting[];
 extern const char kManagedDefaultWebBluetoothGuardSetting[];
 extern const char kManagedDefaultWebUsbGuardSetting[];
+extern const char kManagedDefaultLegacyCookieAccessSetting[];
 
 extern const char kManagedCookiesAllowedForUrls[];
 extern const char kManagedCookiesBlockedForUrls[];
@@ -50,6 +51,7 @@ extern const char kManagedAutoSelectCertificateForUrls[];
 extern const char kManagedWebUsbAllowDevicesForUrls[];
 extern const char kManagedWebUsbAskForUrls[];
 extern const char kManagedWebUsbBlockedForUrls[];
+extern const char kManagedLegacyCookieAccessAllowedForDomains[];
 
 }  // namespace prefs
 

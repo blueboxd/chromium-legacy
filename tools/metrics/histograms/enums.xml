@@ -9606,6 +9606,7 @@ Called by update_net_error_codes.py.-->
   <int value="52" label="HID permission data"/>
   <int value="54" label="Screen wake lock"/>
   <int value="55" label="System wake lock"/>
+  <int value="56" label="Legacy cookie access"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -24068,6 +24069,11 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="FAILED_TO_CREATE_LEAF"/>
   <int value="11" label="UNHANDLED_TOKEN"/>
   <int value="12" label="TASK_QUEUE_STARVATION"/>
+  <int value="13" label="CONTENT_STORAGE_MISSING_ITEM"/>
+  <int value="14" label="ITEM_NOT_PARSED"/>
+  <int value="15" label="STORAGE_MISS_BEYOND_THRESHOLD"/>
+  <int value="16" label="CONTENT_MUTATION_FAILED"/>
+  <int value="17" label="ROOT_NOT_BOUND_TO_FEATURE"/>
 </enum>
 
 <enum name="FeedRequestReason">
@@ -35635,6 +35641,7 @@ from previous Chrome versions.
   <int value="693012666" label="QuickUnlockPin:disabled"/>
   <int value="694985670" label="OmniboxUIExperimentNarrowDropdown:disabled"/>
   <int value="695385040" label="enable-external-drive-rename"/>
+  <int value="696261973" label="GaiaActionButtons:enabled"/>
   <int value="696600628" label="VibrateRequiresUserGesture:disabled"/>
   <int value="698273842" label="SyncSendTabToSelf:enabled"/>
   <int value="698809951" label="WebRtcHWVP8Encoding:enabled"/>
@@ -35947,6 +35954,7 @@ from previous Chrome versions.
   <int value="1173244409" label="AutofillUseMobileLabelDisambiguation:enabled"/>
   <int value="1174088940" label="enable-wasm"/>
   <int value="1177120582" label="InstallableInkDrop:disabled"/>
+  <int value="1177628103" label="GaiaActionButtons:disabled"/>
   <int value="1178215520" label="CrostiniWebUIInstaller:disabled"/>
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
@@ -40725,6 +40733,7 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="Removed (max-age = 0)"/>
   <int value="13" label="Set (max-age &gt; 0)"/>
   <int value="14" label="Discarded: missing remote endpoint"/>
+  <int value="15" label="Discarded: include_subdomains not allowed"/>
 </enum>
 
 <enum name="NetNetworkErrorLoggingRequestOutcome">
@@ -40780,6 +40789,7 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Parsed"/>
   <int value="8" label="Removed: TTL zero"/>
   <int value="9" label="Removed: empty"/>
+  <int value="10" label="Discarded: include_subdomains not allowed"/>
 </enum>
 
 <enum name="NetReportingHeaderEndpointOutcome">
@@ -44123,10 +44133,32 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OptimizationGuideProcessHintsResult">
-  <int value="0" label="Success"/>
-  <int value="1" label="FailedInvalidParameters"/>
-  <int value="2" label="FailedReadingFile"/>
-  <int value="3" label="FailedInvalidConfiguration"/>
+  <int value="0" label="Success">
+    Hints were processed and at least one supported hint was stored.
+  </int>
+  <int value="1" label="Failed with invalid parameters">
+    Component was sent for processing but there was either no component file to
+    read or the version was invalid.
+  </int>
+  <int value="2" label="Failed reading component file">
+    Component file was received but there was an error reading the file
+    containing the hints.
+  </int>
+  <int value="3" label="Component file contained invalid configuration">
+    Component file was received and read successfully but did not contain a
+    valid configuration.
+  </int>
+  <int value="4" label="Failed processing">
+    Failed to finish processing same version previously so skipping to avoid
+    potential crash loop.
+  </int>
+  <int value="5" label="Skipped hints processing">
+    Skipped processing hints, likely because the hint cache already contains the
+    same version.
+  </int>
+  <int value="6" label="No supported hints found">
+    Hints processed but no supported hints found.
+  </int>
 </enum>
 
 <enum name="OptOutBlacklistReason">
@@ -48054,6 +48086,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PreviewsProcessHintsResult">
+  <obsolete>
+    Merged into OptimizationGuideProcessHintsResult as of 07/2019.
+  </obsolete>
   <int value="0" label="No hints found">
     Previews processed but no Previews hints found.
   </int>
@@ -53006,11 +53041,25 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SharingDeviceRegistrationResult">
+  <int value="0" label="Operation is successful"/>
+  <int value="1" label="Failed with Sync not ready"/>
+  <int value="2" label="Failed with encryption related error"/>
+  <int value="3" label="Failed with FCM transient error"/>
+  <int value="4" label="Failed with FCM fatal error"/>
+</enum>
+
 <enum name="SharingMessageType">
   <int value="0" label="Unknown"/>
   <int value="1" label="Ping"/>
   <int value="2" label="Ack"/>
   <int value="3" label="ClickToCall"/>
+</enum>
+
+<enum name="SharingVapidKeyCreationResult">
+  <int value="0" label="Successful"/>
+  <int value="1" label="EC key creation failed"/>
+  <int value="2" label="Private key export failed"/>
 </enum>
 
 <enum name="ShelfAlignmentValue">
@@ -58622,6 +58671,8 @@ Full version information for the fingerprint enum values:
 
 <enum name="UpdateEngineDownloadErrorCode">
   <int value="0" label="Download Error"/>
+  <int value="97" label="libcurl recovered from unresolved host error"/>
+  <int value="98" label="libcurl unresolved host error"/>
   <int value="99" label="libcurl HTTP request internal error"/>
   <int value="100" label="Input Malformed (Internal Error)"/>
   <int value="101" label="Unknown HTTP Status (not 200-599)"/>
@@ -60597,6 +60648,12 @@ Full version information for the fingerprint enum values:
   <int value="3" label="kOtherFailure"/>
 </enum>
 
+<enum name="WebApkDistributor">
+  <int value="0" label="Browser"/>
+  <int value="1" label="Device Policy"/>
+  <int value="2" label="Other"/>
+</enum>
+
 <enum name="WebApkGooglePlayInstallResult">
   <int value="0" label="Success"/>
   <int value="1" label="Install delegate unavailable"/>
@@ -60679,6 +60736,12 @@ Full version information for the fingerprint enum values:
   <int value="0" label="Enough space to install."/>
   <int value="1" label="Enough space to install after freeing up cache."/>
   <int value="2" label="Not enough space to install."/>
+</enum>
+
+<enum name="WebApkLifetimeLaunchCount">
+  <int value="0" label="Never launched."/>
+  <int value="1" label="Launched once."/>
+  <int value="2" label="Launched multiple times."/>
 </enum>
 
 <enum name="WebApkOpenResult">

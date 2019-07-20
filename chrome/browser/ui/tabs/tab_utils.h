@@ -32,8 +32,6 @@ enum class TabAlertState {
   PIP_PLAYING,          // Tab contains a video in Picture-in-Picture mode.
   DESKTOP_CAPTURING,    // Desktop contents being recorded, consumed by tab.
   VR_PRESENTING_IN_HEADSET,  // VR content is being presented in a headset.
-  WRITABLE_NATIVE_FILE_SYSTEM_HANDLES,  // Tab can write to files on disk.
-  NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS,  // Tab can read/monitor directories.
 };
 
 enum class TabMutedReason {

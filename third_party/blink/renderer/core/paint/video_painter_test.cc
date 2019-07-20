@@ -67,8 +67,8 @@ class VideoPainterTestForCAP : private ScopedCompositeAfterPaintForTest,
             MakeGarbageCollected<VideoStubLocalFrameClient>()) {}
 
   void SetUp() override {
-    PaintControllerPaintTestBase::SetUp();
     EnableCompositing();
+    PaintControllerPaintTestBase::SetUp();
     GetDocument().SetURL(KURL(NullURL(), "https://example.com/"));
   }
 

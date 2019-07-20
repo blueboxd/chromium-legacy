@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/animation/timing.h"
+
+#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
 #include "third_party/blink/renderer/core/animation/effect_timing.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 
 namespace blink {
 
@@ -52,6 +55,35 @@ String Timing::PlaybackDirectionString(PlaybackDirection playback_direction) {
   return "normal";
 }
 
+Timing::FillMode Timing::ResolvedFillMode(bool is_keyframe_effect) const {
+  if (fill_mode != Timing::FillMode::AUTO)
+    return fill_mode;
+
+  // https://drafts.csswg.org/web-animations/#the-effecttiming-dictionaries
+  if (is_keyframe_effect)
+    return Timing::FillMode::NONE;
+  return Timing::FillMode::BOTH;
+}
+
+AnimationTimeDelta Timing::IterationDuration() const {
+  AnimationTimeDelta result = iteration_duration.value_or(AnimationTimeDelta());
+  DCHECK_GE(result, AnimationTimeDelta());
+  return result;
+}
+
+double Timing::ActiveDuration() const {
+  const double result =
+      MultiplyZeroAlwaysGivesZero(IterationDuration(), iteration_count);
+  DCHECK_GE(result, 0);
+  return result;
+}
+
+double Timing::EndTimeInternal() const {
+  // Per the spec, the end time has a lower bound of 0.0:
+  // https://drafts.csswg.org/web-animations-1/#end-time
+  return std::max(start_delay + ActiveDuration() + end_delay, 0.0);
+}
+
 EffectTiming* Timing::ConvertToEffectTiming() const {
   EffectTiming* effect_timing = EffectTiming::Create();
 
@@ -71,6 +103,50 @@ EffectTiming* Timing::ConvertToEffectTiming() const {
   effect_timing->setEasing(timing_function->ToString());
 
   return effect_timing;
+}
+
+ComputedEffectTiming* Timing::getComputedTiming(
+    const Timing::CalculatedTiming& calculated_timing,
+    bool is_keyframe_effect) const {
+  ComputedEffectTiming* computed_timing = ComputedEffectTiming::Create();
+
+  // ComputedEffectTiming members.
+  computed_timing->setEndTime(EndTimeInternal() * 1000);
+  computed_timing->setActiveDuration(ActiveDuration() * 1000);
+
+  if (IsNull(calculated_timing.local_time)) {
+    computed_timing->setLocalTimeToNull();
+  } else {
+    computed_timing->setLocalTime(calculated_timing.local_time * 1000);
+  }
+
+  if (calculated_timing.is_in_effect) {
+    computed_timing->setProgress(calculated_timing.progress.value());
+    computed_timing->setCurrentIteration(calculated_timing.current_iteration);
+  } else {
+    computed_timing->setProgressToNull();
+    computed_timing->setCurrentIterationToNull();
+  }
+
+  // For the EffectTiming members, getComputedTiming is equivalent to getTiming
+  // except that the fill and duration must be resolved.
+  //
+  // https://drafts.csswg.org/web-animations-1/#dom-animationeffect-getcomputedtiming
+  computed_timing->setDelay(start_delay * 1000);
+  computed_timing->setEndDelay(end_delay * 1000);
+  computed_timing->setFill(
+      Timing::FillModeString(ResolvedFillMode(is_keyframe_effect)));
+  computed_timing->setIterationStart(iteration_start);
+  computed_timing->setIterations(iteration_count);
+
+  UnrestrictedDoubleOrString duration;
+  duration.SetUnrestrictedDouble(IterationDuration().InMillisecondsF());
+  computed_timing->setDuration(duration);
+
+  computed_timing->setDirection(Timing::PlaybackDirectionString(direction));
+  computed_timing->setEasing(timing_function->ToString());
+
+  return computed_timing;
 }
 
 }  // namespace blink

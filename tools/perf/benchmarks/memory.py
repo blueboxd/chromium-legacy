@@ -46,25 +46,17 @@ def SetExtraBrowserOptionsForMemoryMeasurement(options):
   options.flush_os_page_caches_on_start = True
 
 
-class _MemoryInfra(perf_benchmark.PerfBenchmark):
-  """Base class for new-generation memory benchmarks based on memory-infra.
-
-  This benchmark records data using memory-infra (https://goo.gl/8tGc6O), which
-  is part of chrome tracing, and extracts it using timeline-based measurements.
-  """
+@benchmark.Info(emails=['erikchen@chromium.org'])
+class MemoryBenchmarkDesktop(perf_benchmark.PerfBenchmark):
+  """Measure memory usage on synthetic sites."""
+  options = {'pageset_repeat': 5}
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     return CreateCoreTimelineBasedMemoryMeasurementOptions()
 
   def SetExtraBrowserOptions(self, options):
     SetExtraBrowserOptionsForMemoryMeasurement(options)
-
-
-@benchmark.Info(emails=['erikchen@chromium.org'])
-class MemoryBenchmarkDesktop(_MemoryInfra):
-  """Measure memory usage on synthetic sites."""
-  options = {'pageset_repeat': 5}
-  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   def CreateStorySet(self, options):
     story_set = page_sets.TrivialSitesStorySet(wait_in_seconds=0,

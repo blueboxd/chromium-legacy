@@ -143,6 +143,9 @@ class SerialConnection : public ApiResource,
   // Returns result success or not via |callback|.
   void ClearBreak(ClearBreakCompleteCallback callback);
 
+  // Initiates an asynchronous close of the device.
+  void Close(base::OnceClosure callback);
+
   static const BrowserThread::ID kThreadId = BrowserThread::IO;
 
  private:

@@ -721,8 +721,6 @@ SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
     case TabAlertState::SERIAL_CONNECTED:
     case TabAlertState::NONE:
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
-    case TabAlertState::WRITABLE_NATIVE_FILE_SYSTEM_HANDLES:
-    case TabAlertState::NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS:
       return button_color_;
     default:
       NOTREACHED();
@@ -860,14 +858,6 @@ base::string16 Tab::GetTooltipText(const base::string16& title,
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
       result.append(
           l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING));
-      break;
-    case TabAlertState::WRITABLE_NATIVE_FILE_SYSTEM_HANDLES:
-      result.append(l10n_util::GetStringUTF16(
-          IDS_TOOLTIP_TAB_ALERT_STATE_NATIVE_FILE_SYSTEM_WRITABLE));
-      break;
-    case TabAlertState::NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS:
-      result.append(l10n_util::GetStringUTF16(
-          IDS_TOOLTIP_TAB_ALERT_STATE_NATIVE_FILE_SYSTEM_DIRECTORY));
       break;
     case TabAlertState::NONE:
       NOTREACHED();

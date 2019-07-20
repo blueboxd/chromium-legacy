@@ -1165,15 +1165,30 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   SAFEARRAY* CreateUIAElementsArrayForRelation(
       const ax::mojom::IntListAttribute& attribute);
 
+  // Return an array of automation elements based on the attribute
+  // IntList::kControlsIds for web content and IntAttribute::kViewPopupId. These
+  // two attributes denote the controllees, web content elements and view popup
+  // element respectively.
+  // The function will skip over any ids that cannot be resolved.
+  SAFEARRAY* CreateUIAControllerForArray();
+
   // Return an unordered array of automation elements which reference this node
   // for the given attribute.
   SAFEARRAY* CreateUIAElementsArrayForReverseRelation(
       const ax::mojom::IntListAttribute& attribute);
 
-  // Return an array of automation elements given a vector of |AXNode| ids.
-  // The caller should validate that all of the given ids are valid relation
-  // targets.
-  SAFEARRAY* CreateUIAElementsArrayFromIdVector(std::vector<int32_t>& ids);
+  // Return a vector of AXPlatformNodeWin referenced by the ids in function
+  // argument. The function will skip over any ids that cannot be resolved as
+  // valid relation target.
+  std::vector<AXPlatformNodeWin*> CreatePlatformNodeVectorFromRelationIdVector(
+      std::vector<int32_t>& relation_id_list);
+
+  // Create a safearray of automation elements from a vector of
+  // AXPlatformNodeWin.
+  // The caller should validate that all of the given ax platform nodes are
+  // valid relation targets.
+  SAFEARRAY* CreateUIAElementsSafeArray(
+      std::vector<AXPlatformNodeWin*>& platform_node_list);
 
   // Return an array that contains the center x, y coordinates of the
   // clickable point.

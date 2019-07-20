@@ -2586,6 +2586,10 @@ void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) {
                                    window->GetDisplayWithWindowColorSpace());
 }
 
+void RenderWidgetHostViewAndroid::CancelActiveTouches() {
+  ResetGestureDetection();
+}
+
 void RenderWidgetHostViewAndroid::WasEvicted() {
   // Eviction can occur when the CompositorFrameSink has changed. This can
   // occur either from a lost connection, as well as from the initial conneciton

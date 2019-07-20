@@ -102,7 +102,7 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
     const AutocompleteInput& input) {
   // Only accept asynchronous request.
   if (!input.want_asynchronous_matches() ||
-      input.type() == metrics::OmniboxInputType::INVALID)
+      input.type() == metrics::OmniboxInputType::EMPTY)
     return false;
 
   // Make sure search suggest is enabled and user is not in incognito.

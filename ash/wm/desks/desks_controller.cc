@@ -14,6 +14,8 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/logging.h"
@@ -148,8 +150,8 @@ void DesksController::RemoveDesk(const Desk* desk) {
 
   DCHECK(!desks_.empty());
 
-  const bool in_overview =
-      Shell::Get()->overview_controller()->InOverviewSession();
+  auto* overview_controller = Shell::Get()->overview_controller();
+  const bool in_overview = overview_controller->InOverviewSession();
   const std::vector<aura::Window*> removed_desk_windows =
       removed_desk->windows();
 
@@ -160,7 +162,8 @@ void DesksController::RemoveDesk(const Desk* desk) {
   // - Move windows in removed desk (if any) to the currently active desk.
   // - If the active desk is the one being removed, activate the desk to its
   //   left, if no desk to the left, activate one on the right.
-  if (removed_desk.get() != active_desk_) {
+  const bool will_switch_desks = (removed_desk.get() == active_desk_);
+  if (!will_switch_desks) {
     // We will refresh the mini_views of the active desk only once at the end.
     auto active_desk_mini_view_pauser =
         active_desk_->GetScopedNotifyContentChangedDisabler();
@@ -190,6 +193,13 @@ void DesksController::RemoveDesk(const Desk* desk) {
     auto target_desk_mini_view_pauser =
         target_desk->GetScopedNotifyContentChangedDisabler();
 
+    // Exit split view if active, before activating the new desk. We will
+    // restore the split view state of the newly activated desk at the end.
+    SplitViewController* split_view_controller =
+        Shell::Get()->split_view_controller();
+    split_view_controller->EndSplitView(
+        SplitViewController::EndReason::kDesksChange);
+
     // The removed desk is the active desk, so temporarily remove its windows
     // from the overview grid which will result in removing the
     // "OverviewModeLabel" widgets created by overview mode for these windows.
@@ -204,6 +214,9 @@ void DesksController::RemoveDesk(const Desk* desk) {
     removed_desk->MoveWindowsToDesk(target_desk);
     ActivateDeskInternal(target_desk,
                          /*update_window_activation=*/!in_overview);
+
+    // Desk activation should not change overview mode state.
+    DCHECK_EQ(in_overview, overview_controller->InOverviewSession());
 
     // Now that the windows from the removed and target desks merged, add them
     // all without animation to the grid in the order of their MRU.
@@ -228,6 +241,11 @@ void DesksController::RemoveDesk(const Desk* desk) {
   // to update it manually.
   if (in_overview)
     removed_desk->UpdateDeskBackdrops();
+
+  // Restoring split view may start or end overview mode, therefore do this at
+  // the end to avoid getting into a bad state.
+  if (will_switch_desks)
+    MaybeRestoreSplitView(/*refresh_snapped_windows=*/true);
 
   DCHECK_LE(available_container_ids_.size(), desks_util::kMaxNumberOfDesks);
 }
@@ -321,15 +339,15 @@ void DesksController::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
 
+  // The order here matters. Overview must end before ending split view before
+  // switching desks. That's because we don't want TabletModeWindowManager
+  // maximizing all windows because we cleared the snapped ones in
+  // split_view_controller first. See:
+  // `TabletModeWindowManager::OnOverviewModeEndingAnimationComplete()`.
+  // See also test coverage for this case in:
+  // `TabletModeDesksTest.SnappedStateRetainedOnSwitchingDesksFromOverview`.
   const bool in_overview =
       Shell::Get()->overview_controller()->InOverviewSession();
-
-  ActivateDeskInternal(ending_desk, /*update_window_activation=*/true);
-
-  // Activating a desk should not change the overview mode state.
-  DCHECK_EQ(in_overview,
-            Shell::Get()->overview_controller()->InOverviewSession());
-
   if (in_overview) {
     // Exit overview mode immediately without any animations before taking the
     // ending desk screenshot. This makes sure that the ending desk
@@ -337,6 +355,14 @@ void DesksController::OnStartingDeskScreenshotTaken(const Desk* ending_desk) {
     Shell::Get()->overview_controller()->EndOverview(
         OverviewSession::EnterExitOverviewType::kImmediateExit);
   }
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  split_view_controller->EndSplitView(
+      SplitViewController::EndReason::kDesksChange);
+
+  ActivateDeskInternal(ending_desk, /*update_window_activation=*/true);
+
+  MaybeRestoreSplitView(/*refresh_snapped_windows=*/true);
 
   for (auto* root : roots)
     root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);

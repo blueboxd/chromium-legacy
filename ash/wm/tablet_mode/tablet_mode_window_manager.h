@@ -114,15 +114,18 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // |window| is not yet tracked, returns the current state type of |window|.
   WindowStateType GetDesktopWindowStateType(aura::Window* window) const;
 
-  // Maximize all windows, except that snapped windows shall carry over to split
-  // view as determined by GetSnapPositions().
+  // Maximizes all windows, except that snapped windows shall carry over to
+  // split view as determined by GetCarryOverWindowsInSplitView().
   void ArrangeWindowsForTabletMode();
 
-  // Revert all windows to how they were arranged before tablet mode.
+  // Reverts all windows to how they were arranged before tablet mode.
   // |windows_in_splitview| contains the windows that were in splitview before
-  // entering clamshell mode.
+  // entering clamshell mode, and if clamshell split view is enabled, these
+  // windows will be carried over to clamshell split view. |was_in_overview|
+  // indicates whether overview is active before entering clamshell mode.
   void ArrangeWindowsForClamshellMode(
-      base::flat_map<aura::Window*, WindowStateType> windows_in_splitview);
+      base::flat_map<aura::Window*, WindowStateType> windows_in_splitview,
+      bool was_in_overview);
 
   // If the given window should be handled by us, this function will add it to
   // the list of known windows (remembering the initial show state).
@@ -133,10 +136,13 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                    bool snap = false,
                    bool animate_bounds_on_attach = true);
 
-  // Remove a window from our tracking list. If the window is going to be
-  // destroyed, do not restore its old previous window state object as it will
-  // send unnecessary window state change event.
-  void ForgetWindow(aura::Window* window, bool destroyed);
+  // Removes a window from our tracking list. |was_in_overview| used when
+  // |destroyed| is false to help handle leaving tablet mode. If the window is
+  // going to be destroyed, do not restore its old previous window state object
+  // as it will send unnecessary window state change event.
+  void ForgetWindow(aura::Window* window,
+                    bool destroyed,
+                    bool was_in_overview = false);
 
   // Returns true when the given window should be modified in any way by us.
   bool ShouldHandleWindow(aura::Window* window);

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <map>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -122,12 +123,157 @@ bool ResponseContainsBackoffSignal(const base::DictionaryValue* root_dict) {
 
   // 503/UNAVAILABLE: Uninteresting set of results, or another server request to
   // backoff.
-  if (code == 503 && status == "UNAVAILABLE" &&
-      message == kErrorMessageRetryLater) {
+  return code == 503 && status == "UNAVAILABLE" &&
+         message == kErrorMessageRetryLater;
+}
+
+struct FieldMatches {
+  double weight;
+  String16Vector words;
+  size_t count;
+
+  FieldMatches(double weight, const std::string* string)
+      : weight(weight),
+        words(string ? String16VectorFromString16(
+                           base::UTF8ToUTF16(string->c_str()),
+                           false,
+                           nullptr)
+                     : String16Vector()),
+        count(0) {}
+
+  FieldMatches(double weight, std::vector<const std::string*> strings)
+      : weight(weight),
+        words(std::accumulate(
+            strings.begin(),
+            strings.end(),
+            String16Vector(),
+            [](String16Vector words, const std::string* string) {
+              if (string) {
+                const auto string_words = String16VectorFromString16(
+                    base::UTF8ToUTF16(string->c_str()), false, nullptr);
+                words.insert(words.end(), string_words.begin(),
+                             string_words.end());
+              }
+              return words;
+            })),
+        count(0) {}
+
+  // Increments |count| and returns true if |words| includes a word equal to or
+  // prefixed by |word|.
+  bool Includes(const base::string16& word) {
+    if (std::none_of(words.begin(), words.end(), [word](base::string16 w) {
+          return base::StartsWith(w, word,
+                                  base::CompareCase::INSENSITIVE_ASCII);
+        }))
+      return false;
+    count += word.size();
     return true;
   }
 
-  return false;
+  // Decreases linearly with respect to |count| for small values, begins at 1,
+  // and asymptotically approaches 0.
+  double InvScore() { return std::pow(1 - weight, count); }
+};
+
+// Extracts a list of strings from a DictionaryValue containing a list of
+// objects containing a string field.
+std::vector<const std::string*> ExtractResultList(
+    const base::DictionaryValue* result,
+    const base::StringPiece& list_path,
+    const base::StringPiece& field_path) {
+  const base::Value* values = result->FindListPath(list_path);
+  if (!values)
+    return {};
+
+  const base::Value::ListStorage& list = values->GetList();
+  std::vector<const std::string*> extracted(list.size());
+  std::transform(list.begin(), list.end(), extracted.begin(),
+                 [field_path](const auto& value) {
+                   return value.FindStringKey(field_path);
+                 });
+  return extracted;
+}
+
+// Alias for GetFieldTrialParamByFeatureAsDouble for readability.
+double FieldWeight(const std::string& param_name, double default_weight) {
+  return base::GetFieldTrialParamByFeatureAsDouble(omnibox::kDocumentProvider,
+                                                   param_name, default_weight);
+}
+
+int CalculateScore(const base::string16& input,
+                   const base::DictionaryValue* result) {
+  // Suggestions scored lower than |raw_score_cutoff| will be discarded.
+  double raw_score_cutoff = base::GetFieldTrialParamByFeatureAsDouble(
+      omnibox::kDocumentProvider, "RawDocScoreCutoff", .25);
+  // Final score will be between |min_score| and |max_score|, not accounting for
+  // |raw_score_cutoff|.
+  int min_score = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "MinDocScore", 0);
+  int max_score = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "MaxDocScore", 1400);
+
+  std::vector<FieldMatches> field_matches_vec = {
+      {FieldWeight("TitleWeight", .15), result->FindStringKey("title")},
+      {FieldWeight("OwnerNamesWeight", .15),
+       ExtractResultList(result, "metadata.owner.personNames", "displayName")},
+      {FieldWeight("OwnerEmailsWeight", .15),
+       ExtractResultList(result, "metadata.owner.emailAddresses",
+                         "emailAddress")},
+      {FieldWeight("SnippetWeight", .06),
+       result->FindStringPath("snippet.snippet")},
+      {FieldWeight("UrlWeight", 0), result->FindStringKey("url")},
+      {FieldWeight("MimeWeight", 0),
+       result->FindStringPath("metadata.mimeType")},
+  };
+  std::stable_sort(field_matches_vec.begin(), field_matches_vec.end(),
+                   [](const FieldMatches& a, const FieldMatches& b) {
+                     return a.weight > b.weight;
+                   });
+
+  String16Vector input_words =
+      String16VectorFromString16(input, false, nullptr);
+  for (const auto& word : input_words) {
+    (void)std::find_if(
+        field_matches_vec.begin(), field_matches_vec.end(),
+        [word](auto& field_matches) { return field_matches.Includes(word); });
+  }
+
+  // |score| is computed by subtracting the product of each field's inverse
+  // score from 1; |score| begins at 0 and asymptotically approaches 1.
+  // Summing each field's score would grossly favor short multi-field matches
+  // over long single-field matches due to each fields score increasing faster
+  // for small values.
+  double score =
+      1 -
+      std::accumulate(field_matches_vec.begin(), field_matches_vec.end(), 1.0,
+                      [](double inv_score_product, FieldMatches field_matches) {
+                        return inv_score_product * field_matches.InvScore();
+                      });
+
+  if (score > 1)
+    score = 1;
+  if (score < raw_score_cutoff)
+    score = 0;
+
+  return static_cast<int>(min_score + score * (max_score - min_score));
+}
+
+int BoostOwned(const int score,
+               const std::string& owner,
+               const base::DictionaryValue* result) {
+  int promotion = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "OwnedDocPromotion", 0);
+  int demotion = base::GetFieldTrialParamByFeatureAsInt(
+      omnibox::kDocumentProvider, "UnownedDocDemotion", 200);
+
+  std::vector<const std::string*> owner_emails = ExtractResultList(
+      result, "metadata.owner.emailAddresses", "emailAddress");
+
+  bool owned = std::any_of(
+      owner_emails.begin(), owner_emails.end(),
+      [owner](const std::string* email) { return owner == *email; });
+
+  return std::max(score + (owned ? promotion : -demotion), 0);
 }
 
 }  // namespace
@@ -421,17 +567,30 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   size_t num_results = results_list->GetSize();
   UMA_HISTOGRAM_COUNTS_1M("Omnibox.DocumentSuggest.ResultCount", num_results);
 
-  // Create a synthetic score, for when there's no signal from the API.
-  // For now, allow setting of each of three scores from Finch.
-  int score0 = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kDocumentProvider, "DocumentScoreResult1", 1100);
-  int score1 = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kDocumentProvider, "DocumentScoreResult2", 700);
-  int score2 = base::GetFieldTrialParamByFeatureAsInt(
-      omnibox::kDocumentProvider, "DocumentScoreResult3", 300);
   // During development/quality iteration we may wish to defeat server scores.
-  bool use_server_scores = base::GetFieldTrialParamByFeatureAsBool(
+  // If both |use_server_score| and |use_client_score| are true, the min of the
+  // two scores will be used.
+  // If both are false, the server score will be used.
+  bool use_client_score = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kDocumentProvider, "DocumentUseClientScore", false);
+  bool use_server_score = base::GetFieldTrialParamByFeatureAsBool(
       omnibox::kDocumentProvider, "DocumentUseServerScore", true);
+
+  // Cap scores for each suggestion.
+  bool cap_score_per_rank = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kDocumentProvider, "DocumentCapScorePerRank", false);
+  std::vector<int> score_caps = {
+      base::GetFieldTrialParamByFeatureAsInt(omnibox::kDocumentProvider,
+                                             "DocumentCapScoreRank1", 1200),
+      base::GetFieldTrialParamByFeatureAsInt(omnibox::kDocumentProvider,
+                                             "DocumentCapScoreRank2", 1100),
+      base::GetFieldTrialParamByFeatureAsInt(omnibox::kDocumentProvider,
+                                             "DocumentCapScoreRank3", 900),
+  };
+
+  // Promotes owned documents and/or demotes unowned documents.
+  bool boost_owned = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kDocumentProvider, "DocumentBoostOwned", false);
 
   // Some users may be in a counterfactual study arm in which we perform all
   // necessary work but do not forward the autocomplete matches.
@@ -441,9 +600,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
   // Clear the previous results now that new results are available.
   matches->clear();
   // Ensure server's suggestions are added with monotonically decreasing scores.
-  // When previous_score is >= 0, it enforces a maximum score for subsequent
-  // results.
-  int previous_score = -1;
+  int previous_score = INT_MAX;
   for (size_t i = 0; i < num_results; i++) {
     if (matches->size() >= provider_max_matches_) {
       break;
@@ -459,30 +616,34 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     if (title.empty() || url.empty()) {
       continue;
     }
-    int relevance = 0;
-    switch (matches->size()) {
-      case 0:
-        relevance = score0;
-        break;
-      case 1:
-        relevance = score1;
-        break;
-      case 2:
-        relevance = score2;
-        break;
-      default:
-        break;
+
+    // Both client and server scores are calculated regardless of usage in order
+    // to log them with |AutocompleteMatch::RecordAdditionalInfo| below.
+    int client_score = CalculateScore(input_.text(), result);
+    int server_score = 0;
+    result->GetInteger("score", &server_score);
+    int score = 0;
+    if (use_client_score && use_server_score)
+      score = std::min(client_score, server_score);
+    else
+      score = use_client_score ? client_score : server_score;
+
+    if (cap_score_per_rank) {
+      int score_cap = i < score_caps.size() ? score_caps[i] : score_caps.back();
+      score = std::min(score, score_cap);
     }
-    int server_score;
-    if (use_server_scores && result->GetInteger("score", &server_score)) {
-      if (previous_score >= 0 && server_score >= previous_score) {
-        server_score = previous_score - 1;
-      }
-      relevance = server_score;
-      previous_score = relevance;
-    }
-    relevance = std::max(relevance, 0);
-    AutocompleteMatch match(this, relevance, false,
+
+    if (boost_owned)
+      score = BoostOwned(score, client_->ProfileUserName(), result);
+
+    // Decrement scores if necessary to ensure suggestion order is preserved.
+    // Don't decrement client scores which don't necessarily rank suggestions
+    // the same as the server.
+    if (!use_client_score && score >= previous_score)
+      score = std::max(previous_score - 1, 0);
+    previous_score = score;
+
+    AutocompleteMatch match(this, score, false,
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
     // Use full URL for displayed text and navigation. Use "originalUrl" for
     // deduping if present.
@@ -503,6 +664,9 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     if (result->GetDictionary("metadata", &metadata)) {
       if (metadata->GetString("mimeType", &mimetype)) {
         match.document_type = GetIconForMIMEType(mimetype);
+        match.RecordAdditionalInfo(
+            "document type",
+            AutocompleteMatch::DocumentTypeString(match.document_type));
       }
       std::string update_time;
       metadata->GetString("updateTime", &update_time);
@@ -518,6 +682,11 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
           &match.description_class, 0, ACMatchClassification::DIM);
     }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
+    match.RecordAdditionalInfo("client score", client_score);
+    match.RecordAdditionalInfo("server score", server_score);
+    const std::string* snippet = result->FindStringPath("snippet.snippet");
+    if (snippet)
+      match.RecordAdditionalInfo("snippet", *snippet);
     if (!in_counterfactual_group) {
       matches->push_back(match);
     }

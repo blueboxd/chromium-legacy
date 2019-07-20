@@ -138,6 +138,10 @@ void SerialPortImpl::ClearBreak(ClearBreakCallback callback) {
   std::move(callback).Run(io_handler_->ClearBreak());
 }
 
+void SerialPortImpl::Close(CloseCallback callback) {
+  io_handler_->Close(std::move(callback));
+}
+
 void SerialPortImpl::OnOpenCompleted(OpenCallback callback, bool success) {
   if (success) {
     in_stream_watcher_.Watch(

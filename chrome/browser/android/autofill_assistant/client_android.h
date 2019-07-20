@@ -44,7 +44,8 @@ class ClientAndroid : public Client,
              const base::android::JavaParamRef<jstring>& jexperiment_ids,
              const base::android::JavaParamRef<jobjectArray>& parameterNames,
              const base::android::JavaParamRef<jobjectArray>& parameterValues,
-             const base::android::JavaParamRef<jobject>& joverlay_coordinator);
+             const base::android::JavaParamRef<jobject>& joverlay_coordinator,
+             jlong jservice);
   void DestroyUI(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& jcaller);
   void TransferUITo(
@@ -82,7 +83,7 @@ class ClientAndroid : public Client,
   friend class content::WebContentsUserData<ClientAndroid>;
 
   explicit ClientAndroid(content::WebContents* web_contents);
-  void CreateController();
+  void CreateController(std::unique_ptr<Service> service);
   void DestroyController();
   void AttachUI(
       const base::android::JavaParamRef<jobject>& joverlay_coordinator);

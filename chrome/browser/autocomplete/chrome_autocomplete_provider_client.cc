@@ -298,6 +298,10 @@ bool ChromeAutocompleteProviderClient::IsSyncActive() const {
   return sync && sync->IsSyncFeatureActive();
 }
 
+std::string ChromeAutocompleteProviderClient::ProfileUserName() const {
+  return profile_->GetProfileUserName();
+}
+
 void ChromeAutocompleteProviderClient::Classify(
     const base::string16& text,
     bool prefer_keyword,

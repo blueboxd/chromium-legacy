@@ -308,8 +308,8 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
 
     std::sort(responses_.begin(), responses_.end(),
               [](const RequestResponse& a, const RequestResponse& b) {
-                return WTF::CodePointCompareLessThan(a.request_url,
-                                                     b.request_url);
+                return WTF::CodeUnitCompareLessThan(a.request_url,
+                                                    b.request_url);
               });
     size_t returned_entries_count = responses_.size();
     if (params_.skip_count > 0)

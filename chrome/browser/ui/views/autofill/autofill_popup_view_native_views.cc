@@ -880,6 +880,11 @@ void AutofillPopupViewNativeViews::OnSuggestionsChanged() {
   DoUpdateBoundsAndRedrawPopup();
 }
 
+base::Optional<int32_t> AutofillPopupViewNativeViews::GetAxUniqueId() {
+  return base::Optional<int32_t>(
+      AutofillPopupBaseView::GetViewAccessibility().GetUniqueId());
+}
+
 void AutofillPopupViewNativeViews::CreateChildViews() {
   RemoveAllChildViews(true /* delete_children */);
   rows_.clear();

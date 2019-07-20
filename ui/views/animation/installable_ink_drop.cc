@@ -37,7 +37,8 @@ InstallableInkDrop::InstallableInkDrop(View* view)
       event_handler_(view_, this),
       painter_(&visual_state_),
       animation_container_(base::MakeRefCounted<gfx::AnimationContainer>()),
-      animator_(&visual_state_,
+      animator_(layer_->size(),
+                &visual_state_,
                 animation_container_.get(),
                 base::Bind(&InstallableInkDrop::SchedulePaint,
                            base::Unretained(this))) {
@@ -83,6 +84,7 @@ InstallableInkDrop::~InstallableInkDrop() {
 void InstallableInkDrop::HostSizeChanged(const gfx::Size& new_size) {
   layer_->SetBounds(gfx::Rect(new_size) + layer_->bounds().OffsetFromOrigin());
   layer_->SchedulePaint(gfx::Rect(layer_->size()));
+  animator_.SetSize(layer_->size());
 }
 
 InkDropState InstallableInkDrop::GetTargetInkDropState() const {
@@ -90,6 +92,11 @@ InkDropState InstallableInkDrop::GetTargetInkDropState() const {
 }
 
 void InstallableInkDrop::AnimateToState(InkDropState ink_drop_state) {
+  const gfx::Point ripple_center =
+      event_handler_.GetLastRippleTriggeringEvent()
+          ? event_handler_.GetLastRippleTriggeringEvent()->location()
+          : view_->GetMirroredRect(view_->GetLocalBounds()).CenterPoint();
+  animator_.SetLastEventLocation(ripple_center);
   animator_.AnimateToState(ink_drop_state);
 }
 

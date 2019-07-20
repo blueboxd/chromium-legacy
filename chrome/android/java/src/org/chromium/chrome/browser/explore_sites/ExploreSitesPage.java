@@ -53,6 +53,14 @@ public class ExploreSitesPage extends BasicNativePage {
     private static final int INITIAL_SCROLL_POSITION_PERSONALIZED = 0;
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY =
             "ExploreSitesPageScrollPosition";
+    // Constants that dictate sizes of rows and columns
+    private static final int MAX_COLUMNS_DENSE_TITLE_BOTTOM = 5;
+    private static final int MAX_COLUMNS_DENSE_TITLE_RIGHT = 3;
+    private static final int MAX_COLUMNS_ORIGINAL = 4;
+
+    private static final int MAX_ROWS_DENSE_TITLE_BOTTOM = 2;
+    private static final int MAX_ROWS_DENSE_TITLE_RIGHT = 3;
+    private static final int MAX_ROWS_ORIGINAL = 2;
 
     static final PropertyModel.WritableIntPropertyKey STATUS_KEY =
             new PropertyModel.WritableIntPropertyKey();
@@ -61,6 +69,12 @@ public class ExploreSitesPage extends BasicNativePage {
     static final PropertyModel
             .ReadableObjectPropertyKey<ListModel<ExploreSitesCategory>> CATEGORY_LIST_KEY =
             new PropertyModel.ReadableObjectPropertyKey<>();
+    static final PropertyModel.ReadableIntPropertyKey DENSE_VARIATION_KEY =
+            new PropertyModel.ReadableIntPropertyKey();
+    static final PropertyModel.ReadableIntPropertyKey MAX_COLUMNS_KEY =
+            new PropertyModel.ReadableIntPropertyKey();
+    static final PropertyModel.ReadableIntPropertyKey MAX_ROWS_KEY =
+            new PropertyModel.ReadableIntPropertyKey();
     private static final int UNKNOWN_NAV_CATEGORY = -1;
 
     @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR})
@@ -86,7 +100,9 @@ public class ExploreSitesPage extends BasicNativePage {
     private boolean mIsLoaded;
     private int mInitialScrollPosition;
     private boolean mScrollUserActionReported;
-
+    @DenseVariation
+    private int mDenseVariation;
+    private int mMaxColumns;
     /**
      * Create a new instance of the explore sites page.
      */
@@ -128,17 +144,39 @@ public class ExploreSitesPage extends BasicNativePage {
                 R.layout.explore_sites_page_layout, null);
         mProfile = mHost.getActiveTab().getProfile();
 
-        mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
+        mDenseVariation = ExploreSitesBridge.getDenseVariation();
+        int maxRows;
+        switch (mDenseVariation) {
+            case DenseVariation.DENSE_TITLE_BOTTOM:
+                maxRows = MAX_ROWS_DENSE_TITLE_BOTTOM;
+                mMaxColumns = MAX_COLUMNS_DENSE_TITLE_BOTTOM;
+                break;
+            case DenseVariation.DENSE_TITLE_RIGHT:
+                maxRows = MAX_ROWS_DENSE_TITLE_RIGHT;
+                mMaxColumns = MAX_COLUMNS_DENSE_TITLE_RIGHT;
+                break;
+            default:
+                maxRows = MAX_ROWS_ORIGINAL;
+                mMaxColumns = MAX_COLUMNS_ORIGINAL;
+        }
+        mModel = new PropertyModel
+                         .Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY,
+                                 MAX_COLUMNS_KEY, MAX_ROWS_KEY, DENSE_VARIATION_KEY)
                          .with(CATEGORY_LIST_KEY, new ListModel<>())
                          .with(STATUS_KEY, CatalogLoadingState.LOADING)
+                         .with(MAX_COLUMNS_KEY, mMaxColumns)
+                         .with(MAX_ROWS_KEY, maxRows)
+                         .with(DENSE_VARIATION_KEY, mDenseVariation)
                          .build();
 
         Context context = mView.getContext();
         mLayoutManager = new StableScrollLayoutManager(context);
+
+        // Set dimensions for iconGenerator
         int iconSizePx;
         int textSizeDimensionResource;
         int iconRadius;
-        boolean isDense = ExploreSitesBridge.isDense(ExploreSitesBridge.getDenseVariation());
+        boolean isDense = ExploreSitesBridge.isDense(mDenseVariation);
         if (isDense) {
             iconSizePx = context.getResources().getDimensionPixelSize(
                     R.dimen.explore_sites_dense_icon_size);
@@ -229,7 +267,7 @@ public class ExploreSitesPage extends BasicNativePage {
 
         // Filter empty categories and categories with fewer sites originally than would fill a row.
         for (ExploreSitesCategory category : categoryList) {
-            if ((category.getNumDisplayed() > 0) && (category.getMaxRows() > 0)) {
+            if ((category.getNumDisplayed() > 0) && (category.getMaxRows(mMaxColumns) > 0)) {
                 categoryListModel.add(category);
             }
         }
@@ -387,6 +425,13 @@ public class ExploreSitesPage extends BasicNativePage {
     }
 
     protected CategoryCardViewHolderFactory createCategoryCardViewHolderFactory() {
-        return new CategoryCardViewHolderFactory();
+        switch (mDenseVariation) {
+            case DenseVariation.DENSE_TITLE_BOTTOM:
+                return new CategoryCardViewHolderFactoryDenseTitleBottom();
+            case DenseVariation.DENSE_TITLE_RIGHT:
+                return new CategoryCardViewHolderFactoryDenseTitleRight();
+            default:
+                return new CategoryCardViewHolderFactory();
+        }
     }
 }

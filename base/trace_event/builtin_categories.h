@@ -154,7 +154,6 @@
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug"))                               \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"))                      \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.display_items"))                 \
-  X(TRACE_DISABLED_BY_DEFAULT("cc.debug.ipc"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.picture"))                       \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"))                     \
   X(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"))              \

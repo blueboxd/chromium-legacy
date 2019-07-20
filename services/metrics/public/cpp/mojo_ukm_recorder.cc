@@ -47,4 +47,8 @@ void MojoUkmRecorder::AddEntry(mojom::UkmEntryPtr entry) {
   interface_->AddEntry(std::move(entry));
 }
 
+void MojoUkmRecorder::MarkSourceForDeletion(ukm::SourceId source_id) {
+  NOTREACHED();
+}
+
 }  // namespace ukm

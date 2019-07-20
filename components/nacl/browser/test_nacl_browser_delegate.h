@@ -34,14 +34,12 @@ class TestNaClBrowserDelegate : public NaClBrowserDelegate {
       content::BrowserPpapiHost* ppapi_host) override;
   bool MapUrlToLocalFilePath(const GURL& url,
                              bool use_blocking_api,
-                             extensions::ExtensionSystem* extension_system,
+                             const base::FilePath& profile_directory,
                              base::FilePath* file_path) override;
   void SetDebugPatterns(const std::string& debug_patterns) override;
   bool URLMatchesDebugPatterns(const GURL& manifest_url) override;
-  bool IsNonSfiModeAllowed(extensions::ExtensionSystem* extension_system,
+  bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
                            const GURL& manifest_url) override;
-  extensions::ExtensionSystem* GetExtensionSystem(
-      const base::FilePath& profile_directory) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNaClBrowserDelegate);

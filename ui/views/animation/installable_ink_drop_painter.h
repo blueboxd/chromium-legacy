@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_ANIMATION_INSTALLABLE_INK_DROP_PAINTER_H_
 #define UI_VIEWS_ANIMATION_INSTALLABLE_INK_DROP_PAINTER_H_
 
+#include "base/optional.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/painter.h"
 
 namespace views {
@@ -15,9 +17,13 @@ namespace views {
 // |gfx::Canvas::ClipPath()| to control the shape.
 class VIEWS_EXPORT InstallableInkDropPainter : public Painter {
  public:
-  struct State {
+  struct VIEWS_EXPORT State {
+    State();
+    ~State();
+
+    gfx::PointF flood_fill_center;
+    float flood_fill_progress = 0.0f;
     float highlighted_ratio = 0.0f;
-    bool activated = false;
   };
 
   // |state| must outlive |this|.

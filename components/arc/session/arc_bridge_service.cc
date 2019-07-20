@@ -26,6 +26,7 @@
 #include "components/arc/common/ime.mojom.h"
 #include "components/arc/common/input_method_manager.mojom.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/common/keymaster.mojom.h"
 #include "components/arc/common/kiosk.mojom.h"
 #include "components/arc/common/lock_screen.mojom.h"
 #include "components/arc/common/media_session.mojom.h"

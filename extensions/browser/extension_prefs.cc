@@ -1658,7 +1658,6 @@ void ExtensionPrefs::RemoveObserver(ExtensionPrefsObserver* observer) {
 
 void ExtensionPrefs::InitPrefStore() {
   TRACE_EVENT0("browser,startup", "ExtensionPrefs::InitPrefStore")
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefStoreTime");
 
   // When this is called, the PrefService is initialized and provides access
   // to the user preferences stored in a JSON file.
@@ -2000,7 +1999,6 @@ void ExtensionPrefs::InitExtensionControlledPrefs(
     const ExtensionsInfo& extensions_info) {
   TRACE_EVENT0("browser,startup",
                "ExtensionPrefs::InitExtensionControlledPrefs")
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitExtensionControlledPrefsTime");
 
   for (const auto& info : extensions_info) {
     const ExtensionId& extension_id = info->extension_id;

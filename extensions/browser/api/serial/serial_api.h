@@ -119,9 +119,11 @@ class SerialDisconnectFunction : public SerialAsyncApiFunction {
 
   // AsyncApiFunction:
   bool Prepare() override;
-  void Work() override;
+  void AsyncWorkStart() override;
 
  private:
+  void OnCloseComplete();
+
   std::unique_ptr<serial::Disconnect::Params> params_;
 };
 

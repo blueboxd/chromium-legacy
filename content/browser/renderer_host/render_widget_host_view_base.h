@@ -435,6 +435,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // synchronization, the default implementation returns true.
   virtual bool CanSynchronizeVisualProperties();
 
+  // Cancels any existing active pointers by dispatching synthetic cancel
+  // events.
+  virtual void CancelActiveTouches() {}
+
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
   // TODO(ekaramad): Most of the IME methods should not stay virtual after IME

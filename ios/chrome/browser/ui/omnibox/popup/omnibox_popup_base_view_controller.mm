@@ -137,6 +137,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
               size.width - strongSelf.view.safeAreaInsets.left -
                   strongSelf.view.safeAreaInsets.right);
           strongSelf.shortcutsViewEdgeConstraint.constant = widthInsets;
+          [strongSelf.shortcutsViewController.collectionView
+                  .collectionViewLayout invalidateLayout];
           [strongSelf.shortcutsCell layoutIfNeeded];
         }
                         completion:nil];
@@ -349,7 +351,9 @@ const CGFloat kTopAndBottomPadding = 8.0;
       // view) may have changed heights. This could happen due to dynamic type
       // changing the height of the collection view. It is also necessary for
       // the first load.
-      [self.shortcutsViewController.collectionView layoutIfNeeded];
+      [self.shortcutsViewController.collectionView
+              .collectionViewLayout invalidateLayout];
+      [self.shortcutsCell.contentView layoutIfNeeded];
       [self.tableView reloadData];
     }
   }

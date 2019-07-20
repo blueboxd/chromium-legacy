@@ -1287,7 +1287,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
         OverscrollElasticityElementId(), max_texture_size(),
-        settings().layer_transforms_should_scale_layer_contents,
         &render_surface_list_, &property_trees_, PageScaleTransformNode());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {

@@ -31,6 +31,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/scroll_node.h"
@@ -1076,6 +1077,10 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
 
     layer_tree_host_->SetRootLayer(layer_tree_root);
 
+    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+        layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+
     scrollbar_layer->SetIsDrawable(true);
     scrollbar_layer->SetBounds(gfx::Size(100, 100));
     layer_tree_root->SetScrollable(gfx::Size(100, 200));
@@ -1133,6 +1138,10 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   layer_tree_root->AddChild(scrollbar_layer);
 
   layer_tree_host_->SetRootLayer(layer_tree_root);
+
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
   scrollbar_layer->SetIsDrawable(true);
   scrollbar_layer->SetBounds(gfx::Size(100, 15));
@@ -1303,6 +1312,11 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
 
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
+    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+        layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+    inputs.device_scale_factor = test_scale;
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+
     layer_tree_host_->SetViewportSizeAndScale(
         layer_tree_host_->device_viewport_size(), test_scale,
         layer_tree_host_->local_surface_id_allocation_from_parent());
@@ -1368,6 +1382,10 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
 
+    LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+        layer_tree_root.get(), layer_tree_host_->device_viewport_size());
+    inputs.device_scale_factor = test_scale;
+    LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
     layer_tree_host_->SetViewportSizeAndScale(
         layer_tree_host_->device_viewport_size(), test_scale,
         layer_tree_host_->local_surface_id_allocation_from_parent());

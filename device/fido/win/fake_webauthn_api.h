@@ -9,7 +9,6 @@
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/win/webauthn_api.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace device {
 

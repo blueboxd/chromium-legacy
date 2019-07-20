@@ -95,10 +95,11 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   void GetImpressionDetail(
       SchedulerClientType type,
       ImpressionDetail::ImpressionDetailCallback callback) override;
-  void OnClick(const std::string& notification_id) override;
-  void OnActionClick(const std::string& notification_id,
+  void OnClick(SchedulerClientType type, const std::string& guid) override;
+  void OnActionClick(SchedulerClientType type,
+                     const std::string& guid,
                      ActionButtonType button_type) override;
-  void OnDismiss(const std::string& notification_id) override;
+  void OnDismiss(SchedulerClientType type, const std::string& guid) override;
 
   // Called after |store_| is initialized.
   void OnStoreInitialized(InitCallback callback,
@@ -161,6 +162,7 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   ClientStates client_states_;
 
   // Notification guid to Impression map.
+  // TODO(xingliu): Remove this.
   std::map<std::string, Impression*> impression_map_;
 
   // The storage that persists data.

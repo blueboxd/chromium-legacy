@@ -48,6 +48,8 @@ public class DisplayAgent {
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_GUID";
     private static final String EXTRA_ACTION_BUTTON_TYPE =
             "org.chromium.chrome.browser.notifications.scheduler.EXTRA_ACTION_BUTTON_TYPE";
+    private static final String EXTRA_SCHEDULER_CLIENT_TYPE =
+            "org.chromium.chrome.browser.notifications.scheduler.EXTRA_SCHEDULER_CLIENT_TYPE ";
 
     /**
      * Contains button info on the notification.
@@ -68,15 +70,13 @@ public class DisplayAgent {
      * Contains all data needed to build Android notification in the UI, specified by the client.
      */
     private static class NotificationData {
-        public final String id;
         public final String title;
         public final String message;
         public final Bitmap icon;
         public ArrayList<Button> buttons;
 
-        private NotificationData(String id, String title, String message, Bitmap icon) {
-            // TODO(xingliu): Populate custom data and client defined id.
-            this.id = id;
+        private NotificationData(String title, String message, Bitmap icon) {
+            // TODO(xingliu): Populate custom data.
             this.title = title;
             this.message = message;
             this.icon = icon;
@@ -90,8 +90,8 @@ public class DisplayAgent {
 
     @CalledByNative
     private static NotificationData buildNotificationData(
-            String id, String title, String message, Bitmap icon) {
-        return new NotificationData(id, title, message, icon);
+            String title, String message, Bitmap icon) {
+        return new NotificationData(title, message, icon);
     }
 
     /**
@@ -99,16 +99,18 @@ public class DisplayAgent {
      * notification.
      */
     private static class SystemData {
+        public @SchedulerClientType int type;
         public final String guid;
 
-        public SystemData(String guid) {
+        public SystemData(@SchedulerClientType int type, String guid) {
+            this.type = type;
             this.guid = guid;
         }
     }
 
     @CalledByNative
-    private static SystemData buildSystemData(String guid) {
-        return new SystemData(guid);
+    private static SystemData buildSystemData(@SchedulerClientType int type, String guid) {
+        return new SystemData(type, guid);
     }
 
     /**
@@ -140,19 +142,23 @@ public class DisplayAgent {
         int intentType = IntentUtils.safeGetIntExtra(
                 intent, EXTRA_INTENT_TYPE, NotificationIntentInterceptor.IntentType.UNKNOWN);
         String guid = IntentUtils.safeGetStringExtra(intent, EXTRA_GUID);
+        @SchedulerClientType
+        int clientType = IntentUtils.safeGetIntExtra(
+                intent, EXTRA_SCHEDULER_CLIENT_TYPE, SchedulerClientType.UNKNOWN);
         switch (intentType) {
             case NotificationIntentInterceptor.IntentType.UNKNOWN:
                 break;
             case NotificationIntentInterceptor.IntentType.CONTENT_INTENT:
-                nativeOnContentClick(Profile.getLastUsedProfile(), guid);
+                nativeOnContentClick(Profile.getLastUsedProfile(), clientType, guid);
                 break;
             case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
-                nativeOnDismiss(Profile.getLastUsedProfile(), guid);
+                nativeOnDismiss(Profile.getLastUsedProfile(), clientType, guid);
                 break;
             case NotificationIntentInterceptor.IntentType.ACTION_INTENT:
                 int actionButtonType = IntentUtils.safeGetIntExtra(
                         intent, EXTRA_ACTION_BUTTON_TYPE, ActionButtonType.UNKNOWN_ACTION);
-                nativeOnActionButton(Profile.getLastUsedProfile(), guid, actionButtonType);
+                nativeOnActionButton(
+                        Profile.getLastUsedProfile(), clientType, guid, actionButtonType);
                 break;
         }
     }
@@ -174,24 +180,25 @@ public class DisplayAgent {
     }
 
     private static Intent buildIntent(Context context,
-            @NotificationIntentInterceptor.IntentType int intentType, String guid) {
+            @NotificationIntentInterceptor.IntentType int intentType, SystemData systemData) {
         Intent intent = new Intent(context, DisplayAgent.Receiver.class);
         intent.putExtra(EXTRA_INTENT_TYPE, intentType);
-        intent.putExtra(EXTRA_GUID, guid);
+        intent.putExtra(EXTRA_SCHEDULER_CLIENT_TYPE, systemData.type);
+        intent.putExtra(EXTRA_GUID, systemData.guid);
         return intent;
     }
 
     @CalledByNative
     private static void showNotification(NotificationData notificationData, SystemData systemData) {
         AndroidNotificationData platformData = toAndroidNotificationData(notificationData);
-        // TODO(xingliu): Plumb platform specific data from native. Support single notification
+        // TODO(xingliu): Plumb platform specific data from native.
         // mode and provide correct notification id. Support buttons.
         Context context = ContextUtils.getApplicationContext();
         ChromeNotificationBuilder builder =
                 NotificationBuilderFactory.createChromeNotificationBuilder(true /* preferCompat */,
                         platformData.channel, null /* remoteAppPackageName */,
                         new NotificationMetadata(platformData.systemNotificationType,
-                                DISPLAY_AGENT_TAG, DISPLAY_AGENT_NOTIFICATION_ID));
+                                DISPLAY_AGENT_TAG, systemData.guid.hashCode()));
         builder.setContentTitle(notificationData.title);
         builder.setContentText(notificationData.message);
 
@@ -200,7 +207,7 @@ public class DisplayAgent {
 
         // Default content click behavior.
         Intent contentIntent = buildIntent(
-                context, NotificationIntentInterceptor.IntentType.CONTENT_INTENT, systemData.guid);
+                context, NotificationIntentInterceptor.IntentType.CONTENT_INTENT, systemData);
         builder.setContentIntent(PendingIntentProvider.getBroadcast(context,
                 getRequestCode(
                         NotificationIntentInterceptor.IntentType.CONTENT_INTENT, systemData.guid),
@@ -208,7 +215,7 @@ public class DisplayAgent {
 
         // Default dismiss behavior.
         Intent dismissIntent = buildIntent(
-                context, NotificationIntentInterceptor.IntentType.DELETE_INTENT, systemData.guid);
+                context, NotificationIntentInterceptor.IntentType.DELETE_INTENT, systemData);
         builder.setDeleteIntent(PendingIntentProvider.getBroadcast(context,
                 getRequestCode(
                         NotificationIntentInterceptor.IntentType.DELETE_INTENT, systemData.guid),
@@ -217,8 +224,8 @@ public class DisplayAgent {
         // Add the buttons.
         for (int i = 0; i < notificationData.buttons.size(); i++) {
             Button button = notificationData.buttons.get(i);
-            Intent actionIntent = buildIntent(context,
-                    NotificationIntentInterceptor.IntentType.ACTION_INTENT, systemData.guid);
+            Intent actionIntent = buildIntent(
+                    context, NotificationIntentInterceptor.IntentType.ACTION_INTENT, systemData);
             actionIntent.putExtra(EXTRA_ACTION_BUTTON_TYPE, button.type);
 
             // TODO(xingliu): Support button icon. See https://crbug.com/983354
@@ -249,8 +256,10 @@ public class DisplayAgent {
 
     private DisplayAgent() {}
 
-    private static native void nativeOnContentClick(Profile profile, String guid);
-    private static native void nativeOnDismiss(Profile profile, String guid);
-    private static native void nativeOnActionButton(
-            Profile profile, String guid, @ActionButtonType int type);
+    private static native void nativeOnContentClick(
+            Profile profile, @SchedulerClientType int type, String guid);
+    private static native void nativeOnDismiss(
+            Profile profile, @SchedulerClientType int type, String guid);
+    private static native void nativeOnActionButton(Profile profile,
+            @SchedulerClientType int clientType, String guid, @ActionButtonType int type);
 }

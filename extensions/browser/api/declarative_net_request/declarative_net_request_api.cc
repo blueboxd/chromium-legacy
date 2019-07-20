@@ -20,8 +20,6 @@
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/url_pattern.h"
@@ -41,8 +39,8 @@ namespace dnr_api = api::declarative_net_request;
 bool HasRegisteredRuleset(content::BrowserContext* context,
                           const ExtensionId& extension_id,
                           std::string* error) {
-  const auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(context);
+  const auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(context);
   DCHECK(rules_monitor_service);
 
   if (rules_monitor_service->HasRegisteredRuleset(extension_id))
@@ -50,16 +48,6 @@ bool HasRegisteredRuleset(content::BrowserContext* context,
 
   *error = "The extension must have a ruleset in order to call this function.";
   return false;
-}
-
-void UpdateAllowPagesOnIOThread(const ExtensionId& extension_id,
-                                URLPatternSet allowed_pages,
-                                InfoMap* info_map) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  DCHECK(info_map);
-
-  info_map->GetRulesetManager()->UpdateAllowedPages(extension_id,
-                                                    std::move(allowed_pages));
 }
 
 }  // namespace
@@ -107,24 +95,13 @@ DeclarativeNetRequestUpdateAllowedPagesFunction::UpdateAllowedPages(
   // Persist |new_set| as part of preferences.
   prefs->SetDNRAllowedPages(extension_id(), new_set.Clone());
 
-  // Update the new allowed set on the IO thread.
-  base::OnceClosure updated_allow_pages_io_task = base::BindOnce(
-      &UpdateAllowPagesOnIOThread, extension_id(), std::move(new_set),
-      base::RetainedRef(ExtensionSystem::Get(browser_context())->info_map()));
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
+  DCHECK(rules_monitor_service);
+  rules_monitor_service->ruleset_manager()->UpdateAllowedPages(
+      extension_id(), std::move(new_set));
 
-  base::OnceClosure updated_allowed_pages_ui_reply = base::BindOnce(
-      &DeclarativeNetRequestUpdateAllowedPagesFunction::OnAllowedPagesUpdated,
-      this);
-  base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                   std::move(updated_allow_pages_io_task),
-                                   std::move(updated_allowed_pages_ui_reply));
-
-  return RespondLater();
-}
-
-void DeclarativeNetRequestUpdateAllowedPagesFunction::OnAllowedPagesUpdated() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  Respond(NoArguments());
+  return RespondNow(NoArguments());
 }
 
 bool DeclarativeNetRequestUpdateAllowedPagesFunction::PreRunValidation(
@@ -200,8 +177,8 @@ ExtensionFunction::ResponseAction
 DeclarativeNetRequestUpdateDynamicRulesFunction::UpdateDynamicRules(
     std::vector<api::declarative_net_request::Rule> rules,
     declarative_net_request::DynamicRuleUpdateAction action) {
-  auto* rules_monitor_service = BrowserContextKeyedAPIFactory<
-      declarative_net_request::RulesMonitorService>::Get(browser_context());
+  auto* rules_monitor_service =
+      declarative_net_request::RulesMonitorService::Get(browser_context());
   DCHECK(rules_monitor_service);
   DCHECK(extension());
 

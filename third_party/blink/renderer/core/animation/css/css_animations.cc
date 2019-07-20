@@ -1136,21 +1136,21 @@ bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
 
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
-  const AnimationEffect::Phase current_phase = animation_node.GetPhase();
+  const Timing::Phase current_phase = animation_node.GetPhase();
   const double current_iteration = animation_node.CurrentIteration();
 
   if (previous_phase_ != current_phase &&
-      (current_phase == AnimationEffect::kPhaseActive ||
-       current_phase == AnimationEffect::kPhaseAfter) &&
-      (previous_phase_ == AnimationEffect::kPhaseNone ||
-       previous_phase_ == AnimationEffect::kPhaseBefore)) {
+      (current_phase == Timing::kPhaseActive ||
+       current_phase == Timing::kPhaseAfter) &&
+      (previous_phase_ == Timing::kPhaseNone ||
+       previous_phase_ == Timing::kPhaseBefore)) {
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
     const double elapsed_time = start_delay < 0 ? -start_delay : 0;
     MaybeDispatch(Document::kAnimationStartListener,
                   event_type_names::kAnimationstart, elapsed_time);
   }
 
-  if (current_phase == AnimationEffect::kPhaseActive &&
+  if (current_phase == Timing::kPhaseActive &&
       previous_phase_ == current_phase &&
       previous_iteration_ != current_iteration) {
     // We fire only a single event for all iterations that terminate
@@ -1165,11 +1165,11 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   elapsed_time.InSecondsF());
   }
 
-  if (current_phase == AnimationEffect::kPhaseAfter &&
-      previous_phase_ != AnimationEffect::kPhaseAfter) {
+  if (current_phase == Timing::kPhaseAfter &&
+      previous_phase_ != Timing::kPhaseAfter) {
     MaybeDispatch(Document::kAnimationEndListener,
                   event_type_names::kAnimationend,
-                  animation_node.ActiveDuration());
+                  animation_node.SpecifiedTiming().ActiveDuration());
   }
 
   previous_phase_ = current_phase;
@@ -1187,12 +1187,12 @@ EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
 
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     const AnimationEffect& animation_node) {
-  const AnimationEffect::Phase current_phase = animation_node.GetPhase();
+  const Timing::Phase current_phase = animation_node.GetPhase();
   if (current_phase == previous_phase_)
     return;
 
   if (GetDocument().HasListenerType(Document::kTransitionRunListener)) {
-    if (previous_phase_ == AnimationEffect::kPhaseNone) {
+    if (previous_phase_ == Timing::kPhaseNone) {
       EnqueueEvent(
           event_type_names::kTransitionrun,
           StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
@@ -1200,16 +1200,16 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionStartListener)) {
-    if ((current_phase == AnimationEffect::kPhaseActive ||
-         current_phase == AnimationEffect::kPhaseAfter) &&
-        (previous_phase_ == AnimationEffect::kPhaseNone ||
-         previous_phase_ == AnimationEffect::kPhaseBefore)) {
+    if ((current_phase == Timing::kPhaseActive ||
+         current_phase == Timing::kPhaseAfter) &&
+        (previous_phase_ == Timing::kPhaseNone ||
+         previous_phase_ == Timing::kPhaseBefore)) {
       EnqueueEvent(
           event_type_names::kTransitionstart,
           StartTimeFromDelay(animation_node.SpecifiedTiming().start_delay));
-    } else if ((current_phase == AnimationEffect::kPhaseActive ||
-                current_phase == AnimationEffect::kPhaseBefore) &&
-               previous_phase_ == AnimationEffect::kPhaseAfter) {
+    } else if ((current_phase == Timing::kPhaseActive ||
+                current_phase == Timing::kPhaseBefore) &&
+               previous_phase_ == Timing::kPhaseAfter) {
       // If the transition is progressing backwards it is considered to have
       // started at the end position.
       EnqueueEvent(
@@ -1219,16 +1219,16 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionEndListener)) {
-    if (current_phase == AnimationEffect::kPhaseAfter &&
-        (previous_phase_ == AnimationEffect::kPhaseActive ||
-         previous_phase_ == AnimationEffect::kPhaseBefore ||
-         previous_phase_ == AnimationEffect::kPhaseNone)) {
+    if (current_phase == Timing::kPhaseAfter &&
+        (previous_phase_ == Timing::kPhaseActive ||
+         previous_phase_ == Timing::kPhaseBefore ||
+         previous_phase_ == Timing::kPhaseNone)) {
       EnqueueEvent(
           event_type_names::kTransitionend,
           animation_node.SpecifiedTiming().iteration_duration->InSecondsF());
-    } else if (current_phase == AnimationEffect::kPhaseBefore &&
-               (previous_phase_ == AnimationEffect::kPhaseActive ||
-                previous_phase_ == AnimationEffect::kPhaseAfter)) {
+    } else if (current_phase == Timing::kPhaseBefore &&
+               (previous_phase_ == Timing::kPhaseActive ||
+                previous_phase_ == Timing::kPhaseAfter)) {
       // If the transition is progressing backwards it is considered to have
       // ended at the start position.
       EnqueueEvent(
@@ -1238,13 +1238,13 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   }
 
   if (GetDocument().HasListenerType(Document::kTransitionCancelListener)) {
-    if (current_phase == AnimationEffect::kPhaseNone) {
+    if (current_phase == Timing::kPhaseNone) {
       // Per the css-transitions-2 spec, transitioncancel is fired with the
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
       double cancel_active_time = CalculateActiveTime(
-          animation_node.ActiveDuration(), Timing::FillMode::BOTH,
-          animation_node.LocalTime(), previous_phase_,
+          animation_node.SpecifiedTiming().ActiveDuration(),
+          Timing::FillMode::BOTH, animation_node.LocalTime(), previous_phase_,
           animation_node.SpecifiedTiming());
       EnqueueEvent(event_type_names::kTransitioncancel, cancel_active_time);
     }

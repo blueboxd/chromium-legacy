@@ -13,7 +13,7 @@
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "components/services/leveldb/public/cpp/manifest.h"
 #include "components/services/leveldb/public/cpp/util.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/cpp/test/test_service.h"

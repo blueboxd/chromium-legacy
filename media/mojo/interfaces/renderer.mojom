@@ -11,15 +11,22 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
+// See media/base/media_url_params.h for descriptions.
+struct MediaUrlParams {
+  url.mojom.Url media_url;
+  url.mojom.Url site_for_cookies;
+  bool allow_credentials;
+  bool is_hls;
+};
+
 interface Renderer {
-  // Initializes the Renderer with either one or more audio / video |streams|,
-  // or a |media_url| executing the callback with whether the initialization
-  // succeeded.
+  // Initializes the Renderer with one or more audio / video |streams|, or a URL
+  // via |media_url_params|. Exactly one of |streams| and |media_urls_params|
+  // should be set.
+  // TODO(sandersd): These should be separate methods or a union type.
   Initialize(associated RendererClient client,
              array<DemuxerStream>? streams,
-             url.mojom.Url? media_url,
-             url.mojom.Url? first_party_for_cookies, bool allow_credentials)
-               => (bool success);
+             MediaUrlParams? media_url_params) => (bool success);
 
   // Discards any buffered data, executing callback when completed.
   // NOTE: If an error occurs, RendererClient::OnError() can be called

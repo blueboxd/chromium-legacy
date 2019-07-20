@@ -39,10 +39,10 @@ namespace {
 using FakeTaskCallback =
     base::OnceCallback<void(CtapDeviceResponseCode status_code,
                             base::Optional<std::vector<uint8_t>>)>;
-using FakeHandlerCallbackReceiver = test::StatusAndValuesCallbackReceiver<
-    FidoReturnCode,
-    base::Optional<std::vector<uint8_t>>,
-    base::Optional<FidoTransportProtocol>>;
+using FakeHandlerCallbackReceiver =
+    test::StatusAndValuesCallbackReceiver<FidoReturnCode,
+                                          base::Optional<std::vector<uint8_t>>,
+                                          const FidoAuthenticator*>;
 
 enum class FakeTaskResponse : uint8_t {
   kSuccess = 0x00,

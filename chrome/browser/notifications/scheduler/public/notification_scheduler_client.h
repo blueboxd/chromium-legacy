@@ -42,7 +42,6 @@ class NotificationSchedulerClient {
 
   // Called when the user interacts with the notification.
   virtual void OnUserAction(UserActionType action_type,
-                            const std::string& notification_id,
                             base::Optional<ButtonClickInfo> button_info) = 0;
 
  private:

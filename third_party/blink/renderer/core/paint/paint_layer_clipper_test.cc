@@ -26,8 +26,8 @@ class PaintLayerClipperTest : public RenderingTest {
   }
 
   void TearDown() override {
-    WebTestSupport::SetMockThemeEnabledForTest(false);
     RenderingTest::TearDown();
+    WebTestSupport::SetMockThemeEnabledForTest(false);
   }
 };
 

@@ -18,6 +18,7 @@
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
+#include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/strings/grit/components_strings.h"
@@ -44,10 +45,14 @@ static const char* const kOverlayColorParameterName = "OVERLAY_COLORS";
 
 Controller::Controller(content::WebContents* web_contents,
                        Client* client,
-                       const base::TickClock* tick_clock)
+                       const base::TickClock* tick_clock,
+                       std::unique_ptr<Service> service)
     : content::WebContentsObserver(web_contents),
       client_(client),
       tick_clock_(tick_clock),
+      service_(service ? std::move(service)
+                       : ServiceImpl::Create(web_contents->GetBrowserContext(),
+                                             client_)),
       navigating_to_new_document_(web_contents->IsWaitingForResponse()),
       weak_ptr_factory_(this) {}
 
@@ -70,9 +75,6 @@ const GURL& Controller::GetDeeplinkURL() {
 }
 
 Service* Controller::GetService() {
-  if (!service_) {
-    service_ = Service::Create(web_contents()->GetBrowserContext(), client_);
-  }
   return service_.get();
 }
 
@@ -427,11 +429,9 @@ void Controller::EnterState(AutofillAssistantState state) {
   }
 }
 
-void Controller::SetWebControllerAndServiceForTest(
-    std::unique_ptr<WebController> web_controller,
-    std::unique_ptr<Service> service) {
+void Controller::SetWebControllerForTest(
+    std::unique_ptr<WebController> web_controller) {
   web_controller_ = std::move(web_controller);
-  service_ = std::move(service);
 }
 
 void Controller::OnUrlChange() {

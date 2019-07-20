@@ -196,17 +196,6 @@ void ParsePartitionParam(const base::DictionaryValue& create_params,
   }
 }
 
-void RemoveWebViewEventListenersOnIOThread(
-    void* profile,
-    int embedder_process_id,
-    int view_instance_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
-      profile,
-      embedder_process_id,
-      view_instance_id);
-}
-
 double ConvertZoomLevelToZoomFactor(double zoom_level) {
   double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
   // Because the conversion from zoom level to zoom factor isn't perfect, the
@@ -242,10 +231,8 @@ void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
   }
 
   // Clean up web request event listeners for the WebView.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&RemoveWebViewEventListenersOnIOThread, browser_context,
-                     embedder_process_id, view_instance_id));
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveWebViewEventListeners(
+      browser_context, embedder_process_id, view_instance_id);
 
   // Clean up content scripts for the WebView.
   auto* csm = WebViewContentScriptManager::Get(browser_context);

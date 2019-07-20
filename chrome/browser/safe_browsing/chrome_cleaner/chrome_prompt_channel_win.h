@@ -83,6 +83,10 @@ class ChromePromptChannel {
   virtual void ConnectToCleaner(
       std::unique_ptr<CleanerProcessDelegate> cleaner_process) = 0;
 
+  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
+    return task_runner_;
+  }
+
  protected:
   base::OnceClosure on_connection_closed_;
   std::unique_ptr<ChromePromptActions> actions_;
@@ -132,6 +136,47 @@ class ChromePromptChannelMojo : public ChromePromptChannel {
 // a pipe.
 class ChromePromptChannelProtobuf : public ChromePromptChannel {
  public:
+  static const char kErrorHistogramName[];
+
+  // Values from this enum will serve as the high bits of the histogram values.
+  // We will be able to use them to separate the errors by category if we ever
+  // need to analyze them.
+  enum class ErrorCategory : uint16_t {
+    kCustomError = 1,
+    kReadVersionWinError = 2,
+    kReadRequestLengthWinError = 3,
+    kReadRequestWinError = 4,
+  };
+
+  // Code that describes the error precisely.
+  enum class CustomErrors : uint16_t {
+    kWrongHandshakeVersion = 1,
+    kRequestLengthShortRead = 2,
+    kRequestShortRead = 3,
+  };
+
+  static int32_t GetErrorCodeInt(ErrorCategory category,
+                                 CustomErrors error_code) {
+    return GetErrorCodeInt(category, static_cast<uint16_t>(error_code));
+  }
+
+  static int32_t GetErrorCodeInt(ErrorCategory category, uint16_t error_code) {
+    // We are storing the bits of the category and error_code in the return type
+    // without caring about the numerical values. Make sure everything fits.
+    using CategoryNumType = std::underlying_type<ErrorCategory>::type;
+    using ErrorCodeType = decltype(error_code);
+    static_assert(std::is_same<CategoryNumType, ErrorCodeType>::value,
+                  "Category and error code types need to be the same.");
+    static_assert(
+        sizeof(int32_t) == sizeof(CategoryNumType) + sizeof(ErrorCodeType),
+        "Values won't fit in return type.");
+
+    int32_t category_and_code = static_cast<CategoryNumType>(category);
+    category_and_code <<= sizeof(category) * CHAR_BIT;
+    category_and_code |= error_code;
+    return category_and_code;
+  }
+
   ChromePromptChannelProtobuf(
       base::OnceClosure on_connection_closed,
       std::unique_ptr<ChromePromptActions> actions,

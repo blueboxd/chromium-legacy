@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.touchless.NoTouchActivity;
@@ -57,6 +58,7 @@ public class TouchlessDialogPresenterTest {
     }
 
     @Test
+    @DisabledTest(message = "crbug.com/984004")
     @SmallTest
     @Feature({"TouchlessModalDialog"})
     public void testItemSelection() throws Exception {
@@ -67,14 +69,16 @@ public class TouchlessDialogPresenterTest {
                 new View.OnClickListener[] {
                         (v) -> item1Callback.notifyCalled(), (v) -> item2Callback.notifyCalled()});
 
+        // Enable 'keyboard mode' by sending a key press event.
+        // Doing so, the first item will be focused when the dialog appears.
+        mUiDevice.pressDPadDown();
         showDialog(mManager, dialog);
         mUiDevice.wait(Until.findObject(By.text("dialog")), TIMEOUT_MS);
 
         UiObject2 firstItem = mUiDevice.findObject(By.text("1")).getParent();
         UiObject2 secondItem = mUiDevice.findObject(By.text("2")).getParent();
 
-        mUiDevice.pressDPadDown();
-        firstItem.wait(Until.focused(true), TIMEOUT_MS);
+        Assert.assertTrue("First item is not selected", firstItem.isFocused());
         Assert.assertFalse("Second item is selected", secondItem.isFocused());
 
         Assert.assertEquals(0, item1Callback.getCallCount());

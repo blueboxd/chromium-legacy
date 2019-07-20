@@ -258,8 +258,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 }
 
 void GpuChildThread::CreateVizMainService(
-    viz::mojom::VizMainAssociatedRequest request) {
-  viz_main_.BindAssociated(std::move(request));
+    mojo::PendingAssociatedReceiver<viz::mojom::VizMain> pending_receiver) {
+  viz_main_.BindAssociated(std::move(pending_receiver));
 }
 
 bool GpuChildThread::in_process_gpu() const {

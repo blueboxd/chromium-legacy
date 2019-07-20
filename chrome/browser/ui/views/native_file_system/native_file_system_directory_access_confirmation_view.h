@@ -51,6 +51,10 @@ class NativeFileSystemDirectoryAccessConfirmationView
   bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
+  // It's really important that this dialog *does not* accept by default /
+  // when a user presses enter without looking as we're looking for explicit
+  // approval to share this directory with the site.
+  views::View* GetInitiallyFocusedView() override;
 
  private:
   NativeFileSystemDirectoryAccessConfirmationView(

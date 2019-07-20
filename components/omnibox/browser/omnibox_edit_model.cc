@@ -572,12 +572,6 @@ void OmniboxEditModel::PasteAndGo(const base::string16& text,
                    match_selection_timestamp);
 }
 
-bool OmniboxEditModel::ClassifiesAsSearch(const base::string16& text) const {
-  AutocompleteMatch match;
-  ClassifyString(text, &match, nullptr);
-  return AutocompleteMatch::IsSearchType(match.type);
-}
-
 void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
                                    base::TimeTicks match_selection_timestamp) {
   // Get the URL and transition type for the selected entry.

@@ -78,18 +78,12 @@ bool LinearPredictor::HasPrediction() const {
 }
 
 bool LinearPredictor::GeneratePrediction(base::TimeTicks predict_time,
-                                         bool is_resampling,
                                          InputData* result) const {
   if (!HasPrediction())
     return false;
 
   float pred_dt =
       (predict_time - events_queue_.back().time_stamp).InMillisecondsF();
-
-  // For resampling, we don't want to predict too far away,
-  // We then take the maximum of prediction time
-  if (is_resampling)
-    pred_dt = std::fmax(pred_dt, kMaxResampleTime.InMillisecondsF());
 
   // Compute the prediction
   // Note : a first order prediction is computed when only 2 events are

@@ -13,8 +13,12 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "components/offline_items_collection/core/update_delta.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_index_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/service_tab_launcher.h"
@@ -30,38 +34,47 @@ using offline_items_collection::LaunchLocation;
 using offline_items_collection::OfflineItem;
 using offline_items_collection::OfflineItemFilter;
 
-struct ContentIndexProviderImpl::EntryData {
-  EntryData() = delete;
-  ~EntryData() = default;
-
-  OfflineItem offline_item;
-  base::WeakPtr<content::ContentIndexProvider::Client> client;
-};
 
 namespace {
 
 constexpr char kProviderNamespace[] = "content_index";
-constexpr char kSWRIdDescriptionSeparator[] = "-";
+constexpr char kEntryKeySeparator[] = "#";
+
+struct EntryKeyComponents {
+  int64_t service_worker_registration_id;
+  url::Origin origin;
+  std::string description_id;
+};
 
 std::string EntryKey(int64_t service_worker_registration_id,
+                     const url::Origin& origin,
                      const std::string& description_id) {
   return base::NumberToString(service_worker_registration_id) +
-         kSWRIdDescriptionSeparator + description_id;
+         kEntryKeySeparator + origin.GetURL().spec() + kEntryKeySeparator +
+         description_id;
 }
 
 std::string EntryKey(const content::ContentIndexEntry& entry) {
-  return EntryKey(entry.service_worker_registration_id, entry.description->id);
+  return EntryKey(entry.service_worker_registration_id,
+                  url::Origin::Create(entry.launch_url.GetOrigin()),
+                  entry.description->id);
 }
 
-std::pair<int64_t, std::string> GetEntryKeyComponents(const std::string& key) {
-  size_t pos = key.find_first_of(kSWRIdDescriptionSeparator);
-  DCHECK_NE(pos, std::string::npos);
+EntryKeyComponents GetEntryKeyComponents(const std::string& key) {
+  size_t pos1 = key.find_first_of(kEntryKeySeparator);
+  DCHECK_NE(pos1, std::string::npos);
+  size_t pos2 = key.find_first_of(kEntryKeySeparator, pos1 + 1);
+  DCHECK_NE(pos2, std::string::npos);
 
   int64_t service_worker_registration_id = -1;
-  base::StringToInt64(base::StringPiece(key.data(), pos),
+  base::StringToInt64(base::StringPiece(key.data(), pos1),
                       &service_worker_registration_id);
 
-  return {service_worker_registration_id, key.substr(pos + 1)};
+  GURL origin(key.substr(pos1 + 1, pos2 - pos1 - 1));
+  DCHECK(origin.is_valid());
+
+  return {service_worker_registration_id, url::Origin::Create(origin),
+          key.substr(pos2 + 1)};
 }
 
 OfflineItemFilter CategoryToFilter(blink::mojom::ContentCategory category) {
@@ -115,12 +128,11 @@ void ContentIndexProviderImpl::Shutdown() {
 }
 
 void ContentIndexProviderImpl::OnContentAdded(
-    content::ContentIndexEntry entry,
-    base::WeakPtr<content::ContentIndexProvider::Client> client) {
+    content::ContentIndexEntry entry) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::string entry_key = EntryKey(entry);
-  EntryData entry_data = {EntryToOfflineItem(entry), std::move(client)};
+  auto offline_item = EntryToOfflineItem(entry);
 
   bool is_update = entries_.erase(entry_key);
 
@@ -128,27 +140,28 @@ void ContentIndexProviderImpl::OnContentAdded(
     offline_items_collection::UpdateDelta delta;
     delta.visuals_changed = true;
     for (auto& observer : observers_)
-      observer.OnItemUpdated(entry_data.offline_item, delta);
+      observer.OnItemUpdated(offline_item, delta);
   } else {
-    OfflineItemList items(1, entry_data.offline_item);
+    OfflineItemList items(1, offline_item);
     for (auto& observer : observers_)
       observer.OnItemsAdded(items);
   }
 
-  entries_.emplace(std::move(entry_key), std::move(entry_data));
+  entries_.emplace(std::move(entry_key), std::move(offline_item));
 }
 
 void ContentIndexProviderImpl::OnContentDeleted(
     int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& description_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  auto did_erase =
-      entries_.erase(EntryKey(service_worker_registration_id, description_id));
+  std::string entry_key =
+      EntryKey(service_worker_registration_id, origin, description_id);
+  auto did_erase = entries_.erase(entry_key);
 
   if (did_erase) {
-    ContentId id(kProviderNamespace,
-                 EntryKey(service_worker_registration_id, description_id));
+    ContentId id(kProviderNamespace, entry_key);
     for (auto& observer : observers_)
       observer.OnItemRemoved(id);
   }
@@ -161,14 +174,14 @@ void ContentIndexProviderImpl::OpenItem(LaunchLocation location,
     return;
 
 #if defined(OS_ANDROID)
-  content::OpenURLParams params(
-      it->second.offline_item.page_url, content::Referrer(),
-      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
-      /* is_renderer_initiated= */ false);
+  content::OpenURLParams params(it->second.page_url, content::Referrer(),
+                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                ui::PAGE_TRANSITION_LINK,
+                                /* is_renderer_initiated= */ false);
   ServiceTabLauncher::GetInstance()->LaunchTab(profile_, params,
                                                base::DoNothing());
 #else
-  NavigateParams nav_params(profile_, it->second.offline_item.page_url,
+  NavigateParams nav_params(profile_, it->second.page_url,
                             ui::PAGE_TRANSITION_LINK);
   Navigate(&nav_params);
 #endif
@@ -198,13 +211,13 @@ void ContentIndexProviderImpl::GetItemById(const ContentId& id,
     return;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), it->second.offline_item));
+      FROM_HERE, base::BindOnce(std::move(callback), it->second));
 }
 
 void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
   OfflineItemList list;
   for (const auto& entry : entries_)
-    list.push_back(entry.second.offline_item);
+    list.push_back(entry.second);
 
   // TODO(crbug.com/973844): Consider fetching these from the DB rather than
   // storing them in memory.
@@ -215,16 +228,19 @@ void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
 void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,
                                                  GetVisualsOptions options,
                                                  VisualsCallback callback) {
-  auto it = entries_.find(id.id);
-  if (it == entries_.end() || !it->second.client) {
+  auto components = GetEntryKeyComponents(id.id);
+
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, components.origin.GetURL(), /* can_create= */ false);
+
+  if (!storage_partition || !storage_partition->GetContentIndexContext()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), id, nullptr));
     return;
   }
 
-  auto components = GetEntryKeyComponents(id.id);
-  it->second.client->GetIcon(
-      components.first, components.second,
+  storage_partition->GetContentIndexContext()->GetIcon(
+      components.service_worker_registration_id, components.description_id,
       base::BindOnce(&ContentIndexProviderImpl::DidGetIcon,
                      weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }

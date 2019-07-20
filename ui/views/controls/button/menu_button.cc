@@ -22,11 +22,6 @@ MenuButton::MenuButton(const base::string16& text,
                                              CreateButtonControllerDelegate());
   menu_button_controller_ = menu_button_controller.get();
   SetButtonController(std::move(menu_button_controller));
-
-  // Triggers on button press by default, unless drag-and-drop is enabled, see
-  // MenuButtonController::IsTriggerableEventType.
-  // TODO(cyan): Investigate using PlatformStyle::kMenuNotifyActivationAction.
-  set_notify_action(Button::NOTIFY_ON_PRESS);
 }
 MenuButton::~MenuButton() = default;
 

@@ -90,8 +90,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     dummy_page_holder_ = std::make_unique<DummyPageHolder>(
         IntSize(), nullptr,
         MakeGarbageCollected<WebMediaStubLocalFrameClient>(
-            std::move(mock_media_player)),
-        nullptr);
+            std::move(mock_media_player)));
 
     if (GetParam() == MediaTestParam::kAudio) {
       media_ = MakeGarbageCollected<HTMLAudioElement>(

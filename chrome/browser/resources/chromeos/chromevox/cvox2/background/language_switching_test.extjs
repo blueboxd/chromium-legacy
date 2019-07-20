@@ -4,11 +4,10 @@
 
 // Include test fixture.
 GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
-
 GEN_INCLUDE(['../../testing/mock_feedback.js']);
 
 /**
- * Test fixture for LanguageSwitching.
+ * Test fixture for ChromeVox LanguageSwitching.
  * @constructor
  * @extends {ChromeVoxE2ETest}
  */
@@ -18,6 +17,42 @@ function ChromeVoxLanguageSwitchingTest() {
 
 ChromeVoxLanguageSwitchingTest.prototype = {
   __proto__: ChromeVoxNextE2ETest.prototype,
+
+  /** @override */
+  testGenCppIncludes: function() {
+    GEN(`
+// The following includes are copy-pasted from chromevox_e2e_test_base.js.
+#include "ash/accessibility/accessibility_delegate.h"
+#include "ash/shell.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/common/extensions/extension_constants.h"
+
+// The following includes are necessary for this test file.
+#include "base/command_line.h"
+#include "ui/accessibility/accessibility_switches.h"
+#include "ui/base/ui_base_switches.h"
+    `);
+  },
+
+  /** @override */
+  testGenPreamble: function() {
+    GEN(`
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+    ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+    ::switches::kEnableExperimentalAccessibilityChromeVoxLanguageSwitching);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(::switches::kLang, "en-US");
+
+  // Copy-pasted from chromevox_e2e_test_base.js.
+  base::Closure load_cb =
+    base::Bind(&chromeos::AccessibilityManager::EnableSpokenFeedback,
+        base::Unretained(chromeos::AccessibilityManager::Get()),
+        true);
+  WaitForExtension(extension_misc::kChromeVoxExtensionId, load_cb);
+    `);
+  },
 
   /** @override */
   setUp: function() {
@@ -47,8 +82,8 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   },
 
   multipleLanguagesDoc: function() {/*!
-    <p lang="en">Hello.</p>
     <p lang="es">Hola.</p>
+    <p lang="en">Hello.</p>
     <p lang="fr">Salut.</p>
     <span lang="it">Ciao amico.</span>
   */},
@@ -66,23 +101,19 @@ ChromeVoxLanguageSwitchingTest.prototype = {
   buttonAndLinkDoc: function() {/*!
     <body lang="es">
       <p>This is a paragraph, spoken in English.</p>
-      <button type="submit">This is a button, spoken in Spanish.</button>
-      <a href="https://www.google.com">This is a link, spoken in Spanish.</a>
+      <button type="submit">This is a button, spoken in English.</button>
+      <a href="https://www.google.com">Este es un enlace.</a>
     </body>
   */},
 
   japaneseAndEnglishDoc: function() {/*!
-    <head>
     <meta charset="utf-8">
     <p>Hello, my name is 太田あきひろ. It's a pleasure to meet you. どうぞよろしくお願いします.</p>
-    </head>
   */},
 
   switchWhenUnlabeledDoc: function() {/*!
-  <head>
   <meta charset="utf-8">
   <p>This text should be read in English. 차에 한하여 중임할 수. Followed by English.</p>
-  </head>
   */},
 
   noSwitchEnglishFrenchDoc: function() {/*!
@@ -128,8 +159,8 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'MultipleLanguagesTest', function() {
   this.runWithLoadedTree(this.multipleLanguagesDoc, function() {
     // Turn on language switching.
     localStorage['languageSwitching'] = 'true';
-    mockFeedback.call(doCmd('jumpToTop')).expectSpeechWithLanguage('en', 'English: Hello.');
-    mockFeedback.call(doCmd('nextLine')).expectSpeechWithLanguage('es', 'español: Hola.');
+    mockFeedback.call(doCmd('jumpToTop')).expectSpeechWithLanguage('es', 'español: Hola.');
+    mockFeedback.call(doCmd('nextLine')).expectSpeechWithLanguage('en', 'English: Hello.');
     mockFeedback.call(doCmd('nextLine')).expectSpeechWithLanguage('fr', 'français: Salut.');
     mockFeedback.call(doCmd('nextLine')).expectSpeechWithLanguage('it', 'italiano: Ciao amico.');
     mockFeedback.replay();
@@ -143,7 +174,9 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'NestedLanguagesTest', function() {
     // We should be able to switch languages when each component is labeled
     // with a language.
     mockFeedback.call(doCmd('jumpToTop'))
-        .expectSpeechWithLanguage('en', 'English: In the morning, I sometimes eat breakfast.');
+        // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
+        // prepend 'English' because language does not switch.
+        .expectSpeechWithLanguage('en', 'In the morning, I sometimes eat breakfast.');
     mockFeedback.call(doCmd('nextLine'))
         .expectSpeechWithLanguage('fr', "français: Dans l'apres-midi, je dejeune.");
     mockFeedback.call(doCmd('nextLine'))
@@ -160,20 +193,23 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'NestedLanguagesTest', function() {
   });
 });
 
-// TODO(akihiroota): Investigate why this test fails on linux-cros-rel.
-TEST_F('ChromeVoxLanguageSwitchingTest', 'DISABLED_ButtonAndLinkTest', function() {
+TEST_F('ChromeVoxLanguageSwitchingTest', 'ButtonAndLinkTest', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.buttonAndLinkDoc, function(root) {
     localStorage['languageSwitching'] = 'true';
     mockFeedback.call(doCmd('jumpToTop'))
       // Inner-node language detection is able to label this as 'en' and
       // overwrite the author-provided language of 'es'.
-      .expectSpeechWithLanguage('en', 'English: This is a paragraph, spoken in English.')
+      // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
+      // prepend 'English' because language does not switch.
+      .expectSpeechWithLanguage('en', 'This is a paragraph, spoken in English.')
       .call(doCmd('nextObject'))
-      .expectSpeechWithLanguage('es', 'español: This is a button, spoken in Spanish.')
+      // Even though this is unlabeled, CLD3 is able to determine, with high
+      // confidence, that this is English text.
+      .expectSpeechWithLanguage('en', 'This is a button, spoken in English.')
       .expectSpeechWithLanguage(undefined, 'Button', 'Press Search+Space to activate.')
       .call(doCmd('nextObject'))
-      .expectSpeechWithLanguage('es', 'This is a link, spoken in Spanish.')
+      .expectSpeechWithLanguage('es', 'español: Este es un enlace.')
       .expectSpeechWithLanguage(undefined, 'Link');
     mockFeedback.replay();
   });
@@ -186,7 +222,9 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'JapaneseAndEnglishUnlabeledTest', func
     // We are able to separate out English and Japanese because they use
     // different scripts.
     mockFeedback.call(doCmd('jumpToTop'))
-      .expectSpeechWithLanguage('en', 'English: Hello, my name is ')
+      // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
+      // prepend 'English' because language does not switch.
+      .expectSpeechWithLanguage('en', 'Hello, my name is ')
       .expectSpeechWithLanguage('ja', '日本語: 太田あきひろ. ')
       // Expect 'en-us' because inner-node language of 'en' doesn't come with
       // high enough probability. We fall back on node-level detected language,
@@ -204,7 +242,9 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'SwitchWhenUnlabeledTest', function() {
     // We are able to separate out English and Korean because they use
     // different scripts.
     mockFeedback.call(doCmd('jumpToTop'))
-      .expectSpeechWithLanguage('en', 'English: This text should be read in English. ')
+      // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
+      // prepend 'English' because language does not switch.
+      .expectSpeechWithLanguage('en', 'This text should be read in English. ')
       .expectSpeechWithLanguage('ko', '한국어: 차에 한하여 중임할 수. ')
       // Expect 'en-us' because inner-node language of 'en' doesn't come with
       // high enough probability. We fall back on node-level detected language,
@@ -220,7 +260,9 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'NoSwitchEnglishFrenchTest', function()
     localStorage['languageSwitching'] = 'true';
     // Unable to separate out English and French when unlabeled.
     mockFeedback.call(doCmd('jumpToTop'))
-      .expectSpeechWithLanguage('en', 'English: This entire object should be read in English, even'
+      // LanguageSwitching.currentLanguage_ is initialized to 'en'. Do not
+      // prepend 'English' because language does not switch.
+      .expectSpeechWithLanguage('en', 'This entire object should be read in English, even'
       + ' the following French passage: salut mon ami! Ca va? Bien, et toi? It\'s hard to'
       + ' differentiate between latin-based languages.');
     mockFeedback.replay();
@@ -273,6 +315,23 @@ TEST_F('ChromeVoxLanguageSwitchingTest', 'AsturianTest', function() {
         .call(doCmd('nextObject'))
         .expectSpeechWithLanguage('ast', 'asturianu: Pretend that this text is Asturian. Testing'
         + ' three-letter language code logic.');
+    mockFeedback.replay();
+  });
+});
+
+TEST_F('ChromeVoxLanguageSwitchingTest', 'LanguageSwitchingOffTest', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.multipleLanguagesDoc, function(root) {
+    localStorage['languageSwitching'] = 'false';
+    // Language should not be set if the language switching feature is off.
+    mockFeedback.call(doCmd('jumpToTop'))
+        .expectSpeechWithLanguage(undefined, 'Hola.')
+        .call(doCmd('nextObject'))
+        .expectSpeechWithLanguage(undefined, 'Hello.')
+        .call(doCmd('nextObject'))
+        .expectSpeechWithLanguage(undefined, 'Salut.')
+        .call(doCmd('nextObject'))
+        .expectSpeechWithLanguage(undefined, 'Ciao amico.')
     mockFeedback.replay();
   });
 });

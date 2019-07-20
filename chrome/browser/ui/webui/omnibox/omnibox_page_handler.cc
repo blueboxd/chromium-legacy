@@ -198,8 +198,6 @@ struct TypeConverter<mojom::AutocompleteMatchPtr, AutocompleteMatch> {
     result->additional_info =
         mojo::ConvertTo<std::vector<mojom::AutocompleteAdditionalInfoPtr>>(
             input.additional_info);
-    result->document_type =
-        AutocompleteMatch::DocumentTypeString(input.document_type);
     return result;
   }
 };

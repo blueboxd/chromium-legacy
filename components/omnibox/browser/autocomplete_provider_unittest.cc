@@ -57,7 +57,7 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
       const std::string& scheme) const override {
     return net::URLRequest::IsHandledProtocol(scheme)
                ? metrics::OmniboxInputType::URL
-               : metrics::OmniboxInputType::INVALID;
+               : metrics::OmniboxInputType::EMPTY;
   }
 
  private:

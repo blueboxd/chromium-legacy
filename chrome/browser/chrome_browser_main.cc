@@ -1484,12 +1484,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       case TryChromeDialog::NOT_NOW:
         return chrome::RESULT_CODE_NORMAL_EXIT_CANCEL;
       case TryChromeDialog::OPEN_CHROME_WELCOME:
-        browser_creator_->set_welcome_back_page(
-            StartupBrowserCreator::WelcomeBackPage::kWelcomeStandard);
-        break;
-      case TryChromeDialog::OPEN_CHROME_WELCOME_WIN10:
-        browser_creator_->set_welcome_back_page(
-            StartupBrowserCreator::WelcomeBackPage::kWelcomeWin10);
+        browser_creator_->set_welcome_back_page(true);
         break;
       case TryChromeDialog::OPEN_CHROME_DEFAULT:
         break;

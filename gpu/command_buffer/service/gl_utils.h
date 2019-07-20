@@ -16,6 +16,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -58,7 +59,7 @@ struct CALayerSharedState {
   float opacity;
   bool is_clipped;
   gfx::Rect clip_rect;
-  float clip_rect_corner_radius;
+  gfx::RRectF rounded_corner_bounds;
   int sorting_context_id;
   gfx::Transform transform;
 };

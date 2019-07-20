@@ -624,13 +624,15 @@ inline NSString* NsStringNilIfEmpty(const String& str) {
 }
 #endif
 
-WTF_EXPORT int CodePointCompare(const String&, const String&);
+// Compare strings using code units, matching Javascript string ordering.  See
+// https://infra.spec.whatwg.org/#code-unit-less-than.
+WTF_EXPORT int CodeUnitCompare(const String&, const String&);
 
-inline bool CodePointCompareLessThan(const String& a, const String& b) {
-  return CodePointCompare(a.Impl(), b.Impl()) < 0;
+inline bool CodeUnitCompareLessThan(const String& a, const String& b) {
+  return CodeUnitCompare(a.Impl(), b.Impl()) < 0;
 }
 
-WTF_EXPORT int CodePointCompareIgnoringASCIICase(const String&, const char*);
+WTF_EXPORT int CodeUnitCompareIgnoringASCIICase(const String&, const char*);
 
 template <bool isSpecialCharacter(UChar)>
 inline bool String::IsAllSpecialCharacters() const {

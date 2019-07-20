@@ -460,11 +460,6 @@ class LayerTreeHostReadbackDeviceScalePixelTest
         green_client_(SK_ColorGREEN, gfx::Size(200, 200)),
         blue_client_(SK_ColorBLUE, gfx::Size(200, 200)) {}
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    // Cause the device scale factor to be inherited by contents scales.
-    settings->layer_transforms_should_scale_layer_contents = true;
-  }
-
   void SetupTree() override {
     SetInitialDeviceScaleFactor(device_scale_factor_);
     LayerTreePixelTest::SetupTree();

@@ -72,7 +72,7 @@ void PopulateTermsPrefixedByHttpOrHttps(
 AutocompleteInput::AutocompleteInput()
     : cursor_position_(base::string16::npos),
       current_page_classification_(metrics::OmniboxEventProto::INVALID_SPEC),
-      type_(metrics::OmniboxInputType::INVALID),
+      type_(metrics::OmniboxInputType::EMPTY),
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
@@ -148,7 +148,7 @@ AutocompleteInput::~AutocompleteInput() {
 // static
 std::string AutocompleteInput::TypeToString(metrics::OmniboxInputType type) {
   switch (type) {
-    case metrics::OmniboxInputType::INVALID:
+    case metrics::OmniboxInputType::EMPTY:
       return "invalid";
     case metrics::OmniboxInputType::UNKNOWN:
       return "unknown";
@@ -174,7 +174,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
     GURL* canonicalized_url) {
   size_t first_non_white = text.find_first_not_of(base::kWhitespaceUTF16, 0);
   if (first_non_white == base::string16::npos)
-    return metrics::OmniboxInputType::INVALID;  // All whitespace.
+    return metrics::OmniboxInputType::EMPTY;  // All whitespace.
 
   // Ask our parsing back-end to help us understand what the user typed.  We
   // use the URLFixerUpper here because we want to be smart about what we
@@ -231,7 +231,7 @@ metrics::OmniboxInputType AutocompleteInput::Parse(
       !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
     metrics::OmniboxInputType type =
         scheme_classifier.GetInputTypeForScheme(parsed_scheme_utf8);
-    if (type != metrics::OmniboxInputType::INVALID)
+    if (type != metrics::OmniboxInputType::EMPTY)
       return type;
 
     // We don't know about this scheme.  It might be that the user typed a
@@ -592,7 +592,7 @@ void AutocompleteInput::Clear() {
   current_url_ = GURL();
   current_title_.clear();
   current_page_classification_ = metrics::OmniboxEventProto::INVALID_SPEC;
-  type_ = metrics::OmniboxInputType::INVALID;
+  type_ = metrics::OmniboxInputType::EMPTY;
   parts_ = url::Parsed();
   scheme_.clear();
   canonicalized_url_ = GURL();

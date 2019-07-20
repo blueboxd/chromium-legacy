@@ -65,6 +65,8 @@ class CORE_EXPORT FrameView : public EmbeddedContentView {
   // lifecycle updates for a frame outside the viewport.
   void UpdateFrameVisibility(bool);
 
+  bool DisplayLockedInParentFrame();
+
  private:
   PhysicalRect rect_in_parent_;
   base::TimeTicks rect_in_parent_stable_since_;

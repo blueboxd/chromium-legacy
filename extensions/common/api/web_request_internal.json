@@ -20,7 +20,6 @@
       {
         "name": "addEventListener",
         "type": "function",
-        "forIOThread" : true,
         "description": "Used internally to implement the special form of addListener for the webRequest events.",
         "parameters": [
           {"type": "function", "name": "callback"},
@@ -46,7 +45,6 @@
       {
         "name": "eventHandled",
         "type": "function",
-        "forIOThread" : true,
         "description": "Used internally to send a response for a blocked event.",
         "parameters": [
           {"type": "string", "name": "eventName"},

@@ -53,7 +53,7 @@ void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
   double iteration = CurrentIteration();
   DCHECK_GE(iteration, 0);
   model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
-                 IterationDuration(), result);
+                 SpecifiedTiming().IterationDuration(), result);
 }
 
 double InertEffect::CalculateTimeToEffectChange(bool, double, double) const {

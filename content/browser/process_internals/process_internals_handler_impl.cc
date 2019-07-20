@@ -18,6 +18,8 @@ namespace content {
 
 namespace {
 
+using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
+
 ::mojom::FrameInfoPtr FrameTreeNodeToFrameInfo(FrameTreeNode* ftn) {
   RenderFrameHost* frame = ftn->current_frame_host();
   auto frame_info = ::mojom::FrameInfo::New();
@@ -50,6 +52,26 @@ namespace {
   return frame_info;
 }
 
+std::string IsolatedOriginSourceToString(IsolatedOriginSource source) {
+  switch (source) {
+    case IsolatedOriginSource::BUILT_IN:
+      return "Built-in";
+    case IsolatedOriginSource::COMMAND_LINE:
+      return "Command line";
+    case IsolatedOriginSource::FIELD_TRIAL:
+      return "Field trial";
+    case IsolatedOriginSource::POLICY:
+      return "Device policy";
+    case IsolatedOriginSource::TEST:
+      return "Test";
+    case IsolatedOriginSource::USER_TRIGGERED:
+      return "User-triggered";
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 }  // namespace
 
 ProcessInternalsHandlerImpl::ProcessInternalsHandlerImpl(
@@ -79,11 +101,46 @@ void ProcessInternalsHandlerImpl::GetIsolationMode(
                                         : base::JoinString(modes, ", "));
 }
 
-void ProcessInternalsHandlerImpl::GetIsolatedOriginsSize(
-    GetIsolatedOriginsSizeCallback callback) {
+void ProcessInternalsHandlerImpl::GetUserTriggeredIsolatedOrigins(
+    GetUserTriggeredIsolatedOriginsCallback callback) {
+  // Retrieve serialized user-triggered isolated origins for the current
+  // profile (i.e., profile from which chrome://process-internals is shown).
+  // Note that this may differ from the list of stored user-triggered isolated
+  // origins if the user clears browsing data.  Clearing browsing data clears
+  // stored isolated origins right away, but the corresponding origins in
+  // ChildProcessSecurityPolicy will stay active until next restart, and hence
+  // they will still be present in this list.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  size_t size = policy->GetIsolatedOrigins().size();
-  std::move(callback).Run(size);
+  std::vector<std::string> serialized_origins;
+  for (const auto& origin : policy->GetIsolatedOrigins(
+           IsolatedOriginSource::USER_TRIGGERED, browser_context_)) {
+    serialized_origins.push_back(origin.Serialize());
+  }
+  std::move(callback).Run(std::move(serialized_origins));
+}
+
+void ProcessInternalsHandlerImpl::GetGloballyIsolatedOrigins(
+    GetGloballyIsolatedOriginsCallback callback) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+
+  std::vector<::mojom::IsolatedOriginInfoPtr> origins;
+
+  // The following global isolated origin sources are safe to show to the user.
+  // Any new sources should only be added here if they are ok to be shown on
+  // chrome://process-internals.
+  for (IsolatedOriginSource source :
+       {IsolatedOriginSource::BUILT_IN, IsolatedOriginSource::COMMAND_LINE,
+        IsolatedOriginSource::FIELD_TRIAL, IsolatedOriginSource::POLICY,
+        IsolatedOriginSource::TEST}) {
+    for (const auto& origin : policy->GetIsolatedOrigins(source)) {
+      auto info = ::mojom::IsolatedOriginInfo::New();
+      info->origin = origin.Serialize();
+      info->source = IsolatedOriginSourceToString(source);
+      origins.push_back(std::move(info));
+    }
+  }
+
+  std::move(callback).Run(std::move(origins));
 }
 
 void ProcessInternalsHandlerImpl::GetAllWebContentsInfo(

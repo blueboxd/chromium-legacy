@@ -37,14 +37,15 @@ void NoopNotificationScheduleService::OnStartTask(
 
 void NoopNotificationScheduleService::OnStopTask(SchedulerTaskTime task_time) {}
 
-void NoopNotificationScheduleService::OnClick(
-    const std::string& notification_id) {}
+void NoopNotificationScheduleService::OnClick(SchedulerClientType type,
+                                              const std::string& guid) {}
 
 void NoopNotificationScheduleService::OnActionClick(
-    const std::string& notification_id,
+    SchedulerClientType type,
+    const std::string& guid,
     ActionButtonType button_type) {}
 
-void NoopNotificationScheduleService::OnDismiss(
-    const std::string& notification_id) {}
+void NoopNotificationScheduleService::OnDismiss(SchedulerClientType type,
+                                                const std::string& guid) {}
 
 }  // namespace notifications

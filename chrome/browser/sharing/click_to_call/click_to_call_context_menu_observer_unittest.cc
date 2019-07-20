@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/renderer_context_menu/mock_render_view_context_menu.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -76,6 +78,9 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
   ~ClickToCallContextMenuObserverTest() override = default;
 
   void SetUp() override {
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        menu_.GetBrowserContext(), nullptr);
+    menu_.set_web_contents(web_contents_.get());
     SharingServiceFactory::GetInstance()->SetTestingFactory(
         menu_.GetBrowserContext(),
         base::BindRepeating([](content::BrowserContext* context)
@@ -100,7 +105,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
     for (int i = 0; i < count; i++) {
       devices.emplace_back(
           base::StrCat({"guid", base::NumberToString(i)}),
-          base::StrCat({"name", base::NumberToString(i)}),
+          base::UTF8ToUTF16(base::StrCat({"name", base::NumberToString(i)})),
           sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(),
           static_cast<int>(SharingDeviceCapability::kTelephony));
     }
@@ -115,6 +120,7 @@ class ClickToCallContextMenuObserverTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   MockRenderViewContextMenu menu_{/* incognito= */ false};
+  std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<ClickToCallContextMenuObserver> observer_;
   SharingMessage sharing_message;
 

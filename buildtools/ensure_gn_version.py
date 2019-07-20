@@ -83,10 +83,12 @@ def main():
     out = ''
 
   if out:
-    current_revision = re.findall(r'\((.*)\)', out)[0]
-    if desired_revision.startswith(current_revision):
-      # We're on the right version, so we're done.
-      return 0
+    current_revision_match = re.findall(r'\((.*)\)', out)
+    if current_revision_match:
+      current_revision = current_revision_match[0]
+      if desired_revision.startswith(current_revision):
+        # We're on the right version, so we're done.
+        return 0
 
   print("`%s` returned '%s', which wasn't what we were expecting."
           % (cmd_str, out.strip()))

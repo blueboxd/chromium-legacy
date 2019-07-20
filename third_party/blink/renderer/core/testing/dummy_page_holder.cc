@@ -59,11 +59,12 @@ class DummyLocalFrameClient : public EmptyLocalFrameClient {
 
 }  // namespace
 
-DummyPageHolder::DummyPageHolder(const IntSize& initial_view_size,
-                                 Page::PageClients* page_clients_argument,
-                                 LocalFrameClient* local_frame_client,
-                                 FrameSettingOverrideFunction setting_overrider,
-                                 const base::TickClock* clock) {
+DummyPageHolder::DummyPageHolder(
+    const IntSize& initial_view_size,
+    Page::PageClients* page_clients_argument,
+    LocalFrameClient* local_frame_client,
+    base::OnceCallback<void(Settings&)> setting_overrider,
+    const base::TickClock* clock) {
   Page::PageClients page_clients;
   if (!page_clients_argument)
     FillWithEmptyClients(page_clients);
@@ -72,7 +73,7 @@ DummyPageHolder::DummyPageHolder(const IntSize& initial_view_size,
   page_ = Page::CreateNonOrdinary(page_clients);
   Settings& settings = page_->GetSettings();
   if (setting_overrider)
-    (*setting_overrider)(settings);
+    std::move(setting_overrider).Run(settings);
 
   local_frame_client_ = local_frame_client;
   if (!local_frame_client_)

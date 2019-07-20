@@ -92,6 +92,11 @@ class METRICS_EXPORT UkmRecorder {
       SourceId source_id,
       const UkmSource::NavigationData& navigation_data) = 0;
 
+  // Marks a source as no longer needed to kept alive in memory. Called by
+  // SourceUrlRecorderWebContentsObserver when a browser tab or its WebContents
+  // are no longer alive. Not to be used through mojo interface.
+  virtual void MarkSourceForDeletion(ukm::SourceId source_id) = 0;
+
   DISALLOW_COPY_AND_ASSIGN(UkmRecorder);
 };
 

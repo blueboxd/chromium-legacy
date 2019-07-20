@@ -122,10 +122,9 @@ TEST_F(KalmanPredictorTest, PredictLinearValueTimeFiltered) {
     if (filtered_predictor->HasPrediction() && predictor_->HasPrediction()) {
       ui::InputPredictor::InputData filtered_result;
       ui::InputPredictor::InputData unfiltered_result;
-      EXPECT_TRUE(filtered_predictor->GeneratePrediction(
-          FromMilliseconds(t[i]), false /* is_resampling */, &filtered_result));
+      EXPECT_TRUE(filtered_predictor->GeneratePrediction(FromMilliseconds(t[i]),
+                                                         &filtered_result));
       EXPECT_TRUE(predictor_->GeneratePrediction(FromMilliseconds(t[i]),
-                                                 false /* is_resampling */,
                                                  &unfiltered_result));
       EXPECT_LT(std::abs(filtered_result.pos.x() - x[i]),
                 std::abs(unfiltered_result.pos.x() - x[i]));

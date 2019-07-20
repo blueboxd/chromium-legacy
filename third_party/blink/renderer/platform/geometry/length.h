@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
@@ -86,7 +87,7 @@ class PLATFORM_EXPORT Length {
 
   Length(double v, Length::Type t, bool q = false)
       : quirk_(q), type_(t), is_float_(true) {
-    float_value_ = static_cast<float>(v);
+    float_value_ = clampTo<float>(v);
   }
 
   explicit Length(scoped_refptr<CalculationValue>);

@@ -62,6 +62,8 @@ public class FeedConfigurationTest {
                 FeedConfiguration.SPINNER_DELAY_MS_DEFAULT, FeedConfiguration.getSpinnerDelayMs());
         Assert.assertEquals(FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,
                 FeedConfiguration.getSpinnerMinimumShowTimeMs());
+        Assert.assertEquals(FeedConfiguration.STORAGE_MISS_THRESHOLD_DEFAULT,
+                FeedConfiguration.getStorageMissThreshold());
         Assert.assertEquals(FeedConfiguration.TRIGGER_IMMEDIATE_PAGINATION_DEFAULT,
                 FeedConfiguration.getTriggerImmediatePagination());
         Assert.assertEquals(FeedConfiguration.UNDOABLE_ACTIONS_ENABLED_DEFAULT,
@@ -209,6 +211,16 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:storage_miss_threshold/444"})
+    public void
+    testStorageMissThreshold() {
+        Assert.assertEquals(444, FeedConfiguration.getStorageMissThreshold());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:spinner_minimum_show_time/444"})
     public void
     testSpinnerMinimumShowTimeMs() {
@@ -298,6 +310,8 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.SPINNER_DELAY_MS, 0l));
         Assert.assertEquals((long) FeedConfiguration.SPINNER_MINIMUM_SHOW_TIME_MS_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.SPINNER_MINIMUM_SHOW_TIME_MS, 0l));
+        Assert.assertEquals((long) FeedConfiguration.STORAGE_MISS_THRESHOLD_DEFAULT,
+                configuration.getValueOrDefault(ConfigKey.STORAGE_MISS_THRESHOLD, 0l));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
         Assert.assertFalse(

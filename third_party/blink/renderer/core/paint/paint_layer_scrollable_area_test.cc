@@ -53,8 +53,8 @@ class PaintLayerScrollableAreaTestBase : public RenderingTest {
 
  private:
   void SetUp() override {
-    RenderingTest::SetUp();
     EnableCompositing();
+    RenderingTest::SetUp();
   }
 
   Persistent<ScrollableAreaMockChromeClient> chrome_client_;

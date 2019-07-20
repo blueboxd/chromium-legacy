@@ -32,32 +32,10 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  AddChildView(native_file_system_ui_helper::CreateOriginLabel(
+  AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
       is_directory ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
                    : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT,
-      origin, CONTEXT_BODY_TEXT_SMALL));
-
-  auto file_label_container = std::make_unique<views::View>();
-  int indent =
-      provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
-  file_label_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(/*vertical=*/0, indent),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
-  auto icon = std::make_unique<views::ImageView>();
-  const gfx::VectorIcon& vector_id =
-      is_directory ? vector_icons::kFolderOpenIcon
-                   : vector_icons::kInsertDriveFileOutlineIcon;
-  const SkColor icon_color = icon->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
-  icon->SetImage(gfx::CreateVectorIcon(vector_id, /*dip_size=*/18, icon_color));
-  file_label_container->AddChildView(std::move(icon));
-  auto file_label = std::make_unique<views::Label>(path.LossyDisplayName(),
-                                                   CONTEXT_BODY_TEXT_SMALL,
-                                                   STYLE_EMPHASIZED_SECONDARY);
-  file_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  file_label_container->AddChildView(std::move(file_label));
-  AddChildView(std::move(file_label_container));
+      origin, path, CONTEXT_BODY_TEXT_SMALL));
 }
 
 NativeFileSystemPermissionView::~NativeFileSystemPermissionView() {
@@ -79,9 +57,13 @@ views::Widget* NativeFileSystemPermissionView::ShowDialog(
 }
 
 base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      is_directory_ ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TITLE
-                    : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TITLE);
+  if (is_directory_) {
+    return l10n_util::GetStringUTF16(
+        IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TITLE);
+  }
+  return l10n_util::GetStringFUTF16(
+      IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TITLE,
+      path_.BaseName().LossyDisplayName());
 }
 
 int NativeFileSystemPermissionView::GetDefaultDialogButton() const {

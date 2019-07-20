@@ -79,40 +79,39 @@ void InitAwareNotificationScheduler::OnStopTask(SchedulerTaskTime task_time) {
                                    weak_ptr_factory_.GetWeakPtr(), task_time));
 }
 
-void InitAwareNotificationScheduler::OnClick(
-    const std::string& notification_id) {
+void InitAwareNotificationScheduler::OnClick(SchedulerClientType type,
+                                             const std::string& guid) {
   if (IsReady()) {
-    impl_->OnClick(std::move(notification_id));
+    impl_->OnClick(type, guid);
     return;
   }
   MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnClick,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(notification_id)));
+                                   weak_ptr_factory_.GetWeakPtr(), type, guid));
 }
 
 void InitAwareNotificationScheduler::OnActionClick(
-    const std::string& notification_id,
+    SchedulerClientType type,
+    const std::string& guid,
     ActionButtonType button_type) {
   if (IsReady()) {
-    impl_->OnActionClick(std::move(notification_id), button_type);
+    impl_->OnActionClick(type, guid, button_type);
     return;
   }
 
-  MaybeCacheClosure(base::BindOnce(
-      &InitAwareNotificationScheduler::OnActionClick,
-      weak_ptr_factory_.GetWeakPtr(), std::move(notification_id), button_type));
+  MaybeCacheClosure(
+      base::BindOnce(&InitAwareNotificationScheduler::OnActionClick,
+                     weak_ptr_factory_.GetWeakPtr(), type, guid, button_type));
 }
 
-void InitAwareNotificationScheduler::OnDismiss(
-    const std::string& notification_id) {
+void InitAwareNotificationScheduler::OnDismiss(SchedulerClientType type,
+                                               const std::string& guid) {
   if (IsReady()) {
-    impl_->OnDismiss(std::move(notification_id));
+    impl_->OnDismiss(type, guid);
     return;
   }
 
   MaybeCacheClosure(base::BindOnce(&InitAwareNotificationScheduler::OnDismiss,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   std::move(notification_id)));
+                                   weak_ptr_factory_.GetWeakPtr(), type, guid));
 }
 
 void InitAwareNotificationScheduler::OnInitialized(InitCallback init_callback,

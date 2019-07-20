@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("../../../tools/js_modulizer.gni")
 
 group("closure_compile") {
   deps = [
@@ -262,4 +263,10 @@ js_library("tree") {
     "../..:cr",
     "../..:util",
   ]
+}
+
+if (!optimize_webui) {
+  js_modulizer("modulize") {
+    input_files = [ "focus_outline_manager.js" ]
+  }
 }

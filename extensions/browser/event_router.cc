@@ -138,22 +138,12 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
                                         int64_t service_worker_version_id,
                                         std::unique_ptr<ListValue> event_args,
                                         const EventFilteringInfo& info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   int event_id = g_extension_event_id.GetNext();
 
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DoDispatchEventToSenderBookkeepingOnUI(
-        browser_context_id, extension_id, event_id, render_process_id,
-        service_worker_version_id, histogram_value, event_name);
-  } else {
-    // This is called from WebRequest API.
-    // TODO(lazyboy): Skip this entirely: http://crbug.com/488747.
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&EventRouter::DoDispatchEventToSenderBookkeepingOnUI,
-                       browser_context_id, extension_id, event_id,
-                       render_process_id, service_worker_version_id,
-                       histogram_value, event_name));
-  }
+  DoDispatchEventToSenderBookkeepingOnUI(
+      browser_context_id, extension_id, event_id, render_process_id,
+      service_worker_version_id, histogram_value, event_name);
 
   DispatchExtensionMessage(ipc_sender, worker_thread_id, browser_context_id,
                            extension_id, event_id, event_name, event_args.get(),

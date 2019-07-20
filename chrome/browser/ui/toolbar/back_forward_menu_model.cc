@@ -426,11 +426,11 @@ int BackForwardMenuModel::MenuIndexToNavEntryIndex(int index) const {
 NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int index) const {
   int controller_index = MenuIndexToNavEntryIndex(index);
   NavigationController& controller = GetWebContents()->GetController();
-  if (controller_index >= 0 && controller_index < controller.GetEntryCount())
-    return controller.GetEntryAtIndex(controller_index);
 
-  NOTREACHED();
-  return nullptr;
+  DCHECK_GE(controller_index, 0);
+  DCHECK_LT(controller_index, controller.GetEntryCount());
+
+  return controller.GetEntryAtIndex(controller_index);
 }
 
 std::string BackForwardMenuModel::BuildActionName(

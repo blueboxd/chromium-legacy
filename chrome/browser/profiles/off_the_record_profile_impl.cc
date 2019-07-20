@@ -117,20 +117,6 @@ namespace {
 // Key names for OTR Profile user data.
 constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void NotifyOTRProfileCreatedOnIOThread(void* original_profile,
-                                       void* otr_profile) {
-  extensions::ExtensionWebRequestEventRouter::GetInstance()
-      ->OnOTRBrowserContextCreated(original_profile, otr_profile);
-}
-
-void NotifyOTRProfileDestroyedOnIOThread(void* original_profile,
-                                         void* otr_profile) {
-  extensions::ExtensionWebRequestEventRouter::GetInstance()
-      ->OnOTRBrowserContextDestroyed(original_profile, otr_profile);
-}
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
 }  // namespace
 
 OffTheRecordProfileImpl::OffTheRecordProfileImpl(Profile* real_profile)
@@ -190,9 +176,8 @@ void OffTheRecordProfileImpl::Init() {
   content::URLDataSource::Add(
       this, std::make_unique<extensions::ExtensionIconSource>(profile_));
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
+  extensions::ExtensionWebRequestEventRouter::GetInstance()
+      ->OnOTRBrowserContextCreated(profile_, this);
 #endif
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
@@ -230,9 +215,8 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   SimpleKeyMap::GetInstance()->Dissociate(this);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NotifyOTRProfileDestroyedOnIOThread, profile_, this));
+  extensions::ExtensionWebRequestEventRouter::GetInstance()
+      ->OnOTRBrowserContextDestroyed(profile_, this);
 #endif
 
   // This must be called before ProfileIOData::ShutdownOnUIThread but after

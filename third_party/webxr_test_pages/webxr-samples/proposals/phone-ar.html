@@ -98,12 +98,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Requests an inline (non-immersive) session with environment integration
         // to get AR via video passthrough.
 
+        // Test the new XRSessionInit dictionary by asking for a nonexistent
+        // optional feature. This should be silently ignored.
+        let options = {optionalFeatures: ['unicorns-and-rainbows']};
+
         // Even though this is a non-immersive session, the fact that it's
         // using environment integration means it must be requested in a user
         // activation event so that appropriate permissions can be granted.
         // This will likely prompt the user to allow camera use, so the promise
         // may remain outstanding for a while.
-        navigator.xr.requestSession('immersive-ar').then((session) => {
+        navigator.xr.requestSession('immersive-ar', options).then((session) => {
             session.mode = 'immersive-ar';
             xrButton.setSession(session);
             onSessionStarted(session);

@@ -472,6 +472,29 @@ class ResourceSchedulerTest : public testing::Test {
     EXPECT_FALSE(last_low->started());
   }
 
+  void ConfigureProactiveThrottlingExperimentFor2G(
+      double http_rtt_multiplier_for_proactive_throttling) {
+    std::map<net::EffectiveConnectionType,
+             ResourceSchedulerParamsManager::ParamsForNetworkQuality>
+        params_for_network_quality_container;
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_2g;
+
+    params_2g.http_rtt_multiplier_for_proactive_throttling =
+        http_rtt_multiplier_for_proactive_throttling;
+
+    params_for_network_quality_container[net::EFFECTIVE_CONNECTION_TYPE_2G] =
+        params_2g;
+
+    resource_scheduler_params_manager_.Reset(
+        params_for_network_quality_container);
+
+    network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+        net::EFFECTIVE_CONNECTION_TYPE_2G);
+    base::RunLoop().RunUntilIdle();
+
+    InitializeScheduler();
+  }
+
   ResourceScheduler* scheduler() { return scheduler_.get(); }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -2156,6 +2179,183 @@ TEST_F(ResourceSchedulerTest, NonDelayableToNonDelayableMetrics) {
       histogram_tester_2,
       "ResourceScheduler.NonDelayableLastStartOrEndToNonDelayableStart",
       high2_end_to_high3_start.InMilliseconds());
+}
+
+// Verify that when the proactive throttling is enabled, then delayable
+// requests are throttled.
+TEST_F(ResourceSchedulerTest, ProactiveThrottlingExperiment) {
+  const struct {
+    std::string test_case;
+    bool enable_http_rtt_multiplier_for_proactive_throttling;
+  } tests[] = {
+      {
+          "Enable proactive throttling",
+          true,
+      },
+      {
+          "Disabled proactive throttling",
+          false,
+      },
+  };
+
+  for (const auto& test : tests) {
+    double http_rtt_multiplier_for_proactive_throttling = 5;
+    base::TimeDelta http_rtt = base::TimeDelta::FromSeconds(1);
+
+    if (test.enable_http_rtt_multiplier_for_proactive_throttling) {
+      ConfigureProactiveThrottlingExperimentFor2G(
+          http_rtt_multiplier_for_proactive_throttling);
+    } else {
+      ConfigureProactiveThrottlingExperimentFor2G(-1);
+    }
+
+    network_quality_estimator_.SetStartTimeNullHttpRtt(http_rtt);
+    base::RunLoop().RunUntilIdle();
+
+    base::TimeDelta threshold_requests_anticipation =
+        http_rtt_multiplier_for_proactive_throttling * http_rtt;
+
+    std::unique_ptr<TestRequest> high_1(
+        NewRequest("http://host/high_1", net::HIGHEST));
+    EXPECT_TRUE(high_1->started());
+    high_1.reset();
+
+    std::unique_ptr<TestRequest> low_1(
+        NewRequest("http://host/low_1", net::LOWEST));
+    EXPECT_NE(test.enable_http_rtt_multiplier_for_proactive_throttling,
+              low_1->started())
+        << " test_case=" << test.test_case;
+
+    // Advancing the clock by a duration less than
+    // |threshold_requests_anticipation| should not cause low priority requests
+    // to start.
+    tick_clock_.Advance(threshold_requests_anticipation -
+                        base::TimeDelta::FromMilliseconds(1));
+    std::unique_ptr<TestRequest> low_2(
+        NewRequest("http://host/low_2", net::LOWEST));
+    EXPECT_NE(test.enable_http_rtt_multiplier_for_proactive_throttling,
+              low_2->started());
+
+    // Advancing the clock by |threshold_requests_anticipation| should cause low
+    // priority requests to start.
+    tick_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+    std::unique_ptr<TestRequest> low_3(
+        NewRequest("http://host/low_3", net::LOWEST));
+    EXPECT_TRUE(low_3->started());
+
+    // Verify that high priority requests are not throttled.
+    std::unique_ptr<TestRequest> high_2(
+        NewRequest("http://host/high_2", net::HIGHEST));
+    EXPECT_TRUE(high_2->started());
+  }
+}
+
+// Verify that when the proactive throttling is enabled, then delayable
+// requests are throttled, and the non-delayable requests are not throttled.
+TEST_F(ResourceSchedulerTest,
+       ProactiveThrottlingDoesNotThrottleHighPriorityRequests) {
+  double http_rtt_multiplier_for_proactive_throttling = 5;
+  ConfigureProactiveThrottlingExperimentFor2G(
+      http_rtt_multiplier_for_proactive_throttling);
+
+  base::TimeDelta http_rtt = base::TimeDelta::FromSeconds(1);
+
+  network_quality_estimator_.SetStartTimeNullHttpRtt(http_rtt);
+  base::RunLoop().RunUntilIdle();
+
+  base::TimeDelta threshold_requests_anticipation =
+      http_rtt_multiplier_for_proactive_throttling * http_rtt;
+
+  std::unique_ptr<TestRequest> high_1(
+      NewRequest("http://host/high_1", net::HIGHEST));
+  EXPECT_TRUE(high_1->started());
+  high_1.reset();
+
+  std::unique_ptr<TestRequest> low_1(
+      NewRequest("http://host/low_1", net::LOWEST));
+  EXPECT_FALSE(low_1->started());
+
+  // Advancing the clock by a duration less than
+  // |threshold_requests_anticipation| should not cause low priority requests
+  // to start.
+  tick_clock_.Advance(threshold_requests_anticipation -
+                      base::TimeDelta::FromMilliseconds(1));
+  std::unique_ptr<TestRequest> low_2(
+      NewRequest("http://host/low_2", net::LOWEST));
+  EXPECT_FALSE(low_2->started());
+
+  // Verify that high priority requests are not throttled.
+  std::unique_ptr<TestRequest> high_2(
+      NewRequest("http://host/high_2", net::HIGHEST));
+  EXPECT_TRUE(high_2->started());
+  high_2.reset();
+
+  // End existing requests.
+  low_1.reset();
+  low_2.reset();
+
+  // Start a new high priority request.
+  std::unique_ptr<TestRequest> high_3(
+      NewRequest("http://host/high_3", net::HIGHEST));
+  EXPECT_TRUE(high_3->started());
+  high_3.reset();
+
+  // Verify that newly arriving delayalbe requests are still throttled.
+  std::unique_ptr<TestRequest> low_3(
+      NewRequest("http://host/low_3", net::LOWEST));
+  EXPECT_FALSE(low_3->started());
+
+  // Current ECT is 2G. If another notification for ECT 2G is received, |low_3|
+  // is not started.
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(low_3->started());
+
+  // Current ECT is 2G. If a notification for ECT 4G is received, |low_3| is
+  // started.
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(low_3->started());
+}
+
+// Verify that when the proactive throttling is enabled, then delayable
+// requests are throttled, and the non-delayable requests are not throttled.
+TEST_F(ResourceSchedulerTest, ProactiveThrottling_UnthrottledOnTimerFired) {
+  double http_rtt_multiplier_for_proactive_throttling = 5;
+  ConfigureProactiveThrottlingExperimentFor2G(
+      http_rtt_multiplier_for_proactive_throttling);
+
+  base::TimeDelta http_rtt = base::TimeDelta::FromSeconds(1);
+
+  network_quality_estimator_.SetStartTimeNullHttpRtt(http_rtt);
+  base::RunLoop().RunUntilIdle();
+
+  base::TimeDelta threshold_requests_anticipation =
+      http_rtt_multiplier_for_proactive_throttling * http_rtt;
+
+  std::unique_ptr<TestRequest> high_1(
+      NewRequest("http://host/high_1", net::HIGHEST));
+  EXPECT_TRUE(high_1->started());
+  high_1.reset();
+
+  std::unique_ptr<TestRequest> low_1(
+      NewRequest("http://host/low_1", net::LOWEST));
+  EXPECT_FALSE(low_1->started());
+
+  // Advancing the clock by a duration less than
+  // |threshold_requests_anticipation| should not cause low priority requests
+  // to start.
+  tick_clock_.Advance(threshold_requests_anticipation +
+                      base::TimeDelta::FromMilliseconds(1));
+
+  // Since the requests have been queued for too long, they should now be
+  // dispatched. Trigger the scheduling of the queued requests by calling
+  // DispatchLongQueuedRequestsForTesting().
+  scheduler()->DispatchLongQueuedRequestsForTesting();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(low_1->started());
 }
 
 }  // unnamed namespace

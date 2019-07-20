@@ -1626,6 +1626,7 @@ class TestAuthenticatorRequestDelegate
 
   void ShouldReturnAttestation(
       const std::string& relying_party_id,
+      const device::FidoAuthenticator* authenticator,
       base::OnceCallback<void(bool)> callback) override {
     std::move(callback).Run(attestation_consent_ ==
                             AttestationConsent::GRANTED);

@@ -14,6 +14,7 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -69,6 +70,11 @@ bool AutofillDriverIOS::IsIncognito() const {
 bool AutofillDriverIOS::IsInMainFrame() const {
   web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
   return web_frame ? web_frame->IsMainFrame() : true;
+}
+
+ui::AXTreeID AutofillDriverIOS::GetAxTreeId() const {
+  NOTIMPLEMENTED() << "See https://crbug.com/985933";
+  return ui::AXTreeIDUnknown();
 }
 
 net::URLRequestContextGetter* AutofillDriverIOS::GetURLRequestContext() {

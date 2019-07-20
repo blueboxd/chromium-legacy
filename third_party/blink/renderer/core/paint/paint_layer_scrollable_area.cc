@@ -1888,12 +1888,6 @@ void PaintLayerScrollableArea::InvalidateStickyConstraintsFor(
   }
 }
 
-bool PaintLayerScrollableArea::HasStickyDescendants() const {
-  if (const PaintLayerScrollableAreaRareData* d = RareData())
-    return !d->sticky_constraints_map_.IsEmpty();
-  return false;
-}
-
 bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
   if (const PaintLayerScrollableAreaRareData* d = RareData()) {
     for (const PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys()) {

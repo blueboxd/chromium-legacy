@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/reporting/reporting_cache.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_delegate.h"
@@ -143,6 +144,15 @@ HeaderEndpointGroupOutcome ProcessEndpointGroup(
   if (dict->HasKey(kIncludeSubdomainsKey) &&
       dict->GetBoolean(kIncludeSubdomainsKey, &subdomains_bool) &&
       subdomains_bool == true) {
+    // Disallow eTLDs from setting include_subdomains endpoint groups.
+    if (registry_controlled_domains::GetRegistryLength(
+            origin.GetURL(),
+            registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
+            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) == 0) {
+      return HeaderEndpointGroupOutcome::
+          DISCARDED_INCLUDE_SUBDOMAINS_NOT_ALLOWED;
+    }
+
     parsed_endpoint_group_out->include_subdomains = OriginSubdomains::INCLUDE;
   }
 

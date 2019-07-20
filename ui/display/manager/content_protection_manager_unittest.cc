@@ -655,7 +655,9 @@ TEST_F(ContentProtectionManagerTest, NoSecurityPollingIfInternalDisplayOnly) {
           base::Unretained(this)));
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(observer.security_changes().empty());
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}}),
+            observer.security_changes());
+  observer.Reset();
 
   // Timer should not be running unless there are external displays.
   EXPECT_FALSE(TriggerDisplaySecurityTimeout());
@@ -668,7 +670,8 @@ TEST_F(ContentProtectionManagerTest, NoSecurityPollingIfInternalDisplayOnly) {
   EXPECT_FALSE(TriggerDisplaySecurityTimeout());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(SecurityChanges(), observer.security_changes());
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}}),
+            observer.security_changes());
 }
 
 }  // namespace test

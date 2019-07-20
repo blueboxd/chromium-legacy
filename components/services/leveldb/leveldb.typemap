@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/services/leveldb/public/interfaces/leveldb.mojom"
+mojom = "//components/services/leveldb/public/mojom/leveldb.mojom"
 public_headers = [ "//third_party/leveldatabase/env_chromium.h" ]
-traits_headers = [ "//components/services/leveldb/leveldb_struct_traits.h" ]
+traits_headers = [ "//components/services/leveldb/leveldb_mojom_traits.h" ]
 sources = [
-  "//components/services/leveldb/leveldb_struct_traits.cc",
+  "//components/services/leveldb/leveldb_mojom_traits.cc",
 ]
 deps = []
 public_deps = [

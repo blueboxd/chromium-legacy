@@ -378,6 +378,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       std::unique_ptr<QuicServerInfo> server_info,
       const QuicSessionKey& session_key,
       bool require_confirmation,
+      quic::QuicStreamId max_allowed_push_id,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
       NetworkChangeNotifier::NetworkHandle default_network,
@@ -488,7 +489,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const quic::CryptoHandshakeMessage& message) override;
   void OnGoAway(const quic::QuicGoAwayFrame& frame) override;
   void OnRstStream(const quic::QuicRstStreamFrame& frame) override;
-  void OnCanCreateNewOutgoingStream() override;
+  void OnCanCreateNewOutgoingStream(bool unidirectional) override;
 
   // QuicClientSessionBase methods:
   void OnConfigNegotiated() override;

@@ -612,8 +612,8 @@ inline bool EqualIgnoringASCIICase(const CharacterTypeA* a,
   return true;
 }
 
-WTF_EXPORT int CodePointCompareIgnoringASCIICase(const StringImpl*,
-                                                 const LChar*);
+WTF_EXPORT int CodeUnitCompareIgnoringASCIICase(const StringImpl*,
+                                                const LChar*);
 
 inline wtf_size_t Find(const LChar* characters,
                        wtf_size_t length,
@@ -757,10 +757,10 @@ bool EqualIgnoringNullity(const Vector<UChar, inlineCapacity>& a,
 }
 
 template <typename CharacterType1, typename CharacterType2>
-static inline int CodePointCompare(wtf_size_t l1,
-                                   wtf_size_t l2,
-                                   const CharacterType1* c1,
-                                   const CharacterType2* c2) {
+static inline int CodeUnitCompare(wtf_size_t l1,
+                                  wtf_size_t l2,
+                                  const CharacterType1* c1,
+                                  const CharacterType2* c2) {
   const wtf_size_t lmin = l1 < l2 ? l1 : l2;
   wtf_size_t pos = 0;
   while (pos < lmin && *c1 == *c2) {
@@ -778,26 +778,26 @@ static inline int CodePointCompare(wtf_size_t l1,
   return (l1 > l2) ? 1 : -1;
 }
 
-static inline int CodePointCompare8(const StringImpl* string1,
-                                    const StringImpl* string2) {
-  return CodePointCompare(string1->length(), string2->length(),
-                          string1->Characters8(), string2->Characters8());
-}
-
-static inline int CodePointCompare16(const StringImpl* string1,
-                                     const StringImpl* string2) {
-  return CodePointCompare(string1->length(), string2->length(),
-                          string1->Characters16(), string2->Characters16());
-}
-
-static inline int CodePointCompare8To16(const StringImpl* string1,
-                                        const StringImpl* string2) {
-  return CodePointCompare(string1->length(), string2->length(),
-                          string1->Characters8(), string2->Characters16());
-}
-
-static inline int CodePointCompare(const StringImpl* string1,
+static inline int CodeUnitCompare8(const StringImpl* string1,
                                    const StringImpl* string2) {
+  return CodeUnitCompare(string1->length(), string2->length(),
+                         string1->Characters8(), string2->Characters8());
+}
+
+static inline int CodeUnitCompare16(const StringImpl* string1,
+                                    const StringImpl* string2) {
+  return CodeUnitCompare(string1->length(), string2->length(),
+                         string1->Characters16(), string2->Characters16());
+}
+
+static inline int CodeUnitCompare8To16(const StringImpl* string1,
+                                       const StringImpl* string2) {
+  return CodeUnitCompare(string1->length(), string2->length(),
+                         string1->Characters8(), string2->Characters16());
+}
+
+static inline int CodeUnitCompare(const StringImpl* string1,
+                                  const StringImpl* string2) {
   if (!string1)
     return (string2 && string2->length()) ? -1 : 0;
 
@@ -808,12 +808,12 @@ static inline int CodePointCompare(const StringImpl* string1,
   bool string2_is_8bit = string2->Is8Bit();
   if (string1_is_8bit) {
     if (string2_is_8bit)
-      return CodePointCompare8(string1, string2);
-    return CodePointCompare8To16(string1, string2);
+      return CodeUnitCompare8(string1, string2);
+    return CodeUnitCompare8To16(string1, string2);
   }
   if (string2_is_8bit)
-    return -CodePointCompare8To16(string2, string1);
-  return CodePointCompare16(string1, string2);
+    return -CodeUnitCompare8To16(string2, string1);
+  return CodeUnitCompare16(string1, string2);
 }
 
 static inline bool IsSpaceOrNewline(UChar c) {

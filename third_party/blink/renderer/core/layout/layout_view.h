@@ -59,7 +59,12 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
  public:
   explicit LayoutView(Document*);
   ~LayoutView() override;
+
   void WillBeDestroyed() override;
+
+  // Called when the Document is shutdown, to have the compositor clean up
+  // during frame detach, while pointers remain valid.
+  void CleanUpCompositor();
 
   // hitTest() will update layout, style and compositing first while
   // hitTestNoLifecycleUpdate() does not.
@@ -184,9 +189,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void SetPageLogicalHeight(LayoutUnit height) {
     page_logical_height_ = height;
   }
-
-  // Notification that this view moved into or out of a native window.
-  void SetIsInWindow(bool);
 
   PaintLayerCompositor* Compositor();
   bool UsesCompositing() const;

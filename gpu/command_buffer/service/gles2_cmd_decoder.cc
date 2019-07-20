@@ -13464,21 +13464,22 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerSharedStateCHROMIUM(
           const volatile gles2::cmds::ScheduleCALayerSharedStateCHROMIUM*>(
           cmd_data);
 
+  // 4 for |clip_rect|, 5 for |rounded_corner_bounds|, 16 for |transform|.
   const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
-                                                         20 * sizeof(GLfloat));
+                                                         25 * sizeof(GLfloat));
   if (!mem) {
     return error::kOutOfBounds;
   }
   gfx::RectF clip_rect(mem[0], mem[1], mem[2], mem[3]);
-  gfx::Transform transform(mem[4], mem[8], mem[12], mem[16],
-                           mem[5], mem[9], mem[13], mem[17],
-                           mem[6], mem[10], mem[14], mem[18],
-                           mem[7], mem[11], mem[15], mem[19]);
+  gfx::RRectF rounded_corner_bounds(mem[4], mem[5], mem[6], mem[7], mem[8]);
+  gfx::Transform transform(mem[9], mem[13], mem[17], mem[21], mem[10], mem[14],
+                           mem[18], mem[22], mem[11], mem[15], mem[19], mem[23],
+                           mem[12], mem[16], mem[20], mem[24]);
   ca_layer_shared_state_.reset(new CALayerSharedState);
   ca_layer_shared_state_->opacity = c.opacity;
   ca_layer_shared_state_->is_clipped = c.is_clipped ? true : false;
   ca_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(clip_rect);
-  ca_layer_shared_state_->clip_rect_corner_radius = c.clip_rect_corner_radius;
+  ca_layer_shared_state_->rounded_corner_bounds = rounded_corner_bounds;
   ca_layer_shared_state_->sorting_context_id = c.sorting_context_id;
   ca_layer_shared_state_->transform = transform;
   return error::kNoError;
@@ -13533,7 +13534,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
 
   ui::CARendererLayerParams params = ui::CARendererLayerParams(
       ca_layer_shared_state_->is_clipped, ca_layer_shared_state_->clip_rect,
-      ca_layer_shared_state_->clip_rect_corner_radius,
+      ca_layer_shared_state_->rounded_corner_bounds,
       ca_layer_shared_state_->sorting_context_id,
       ca_layer_shared_state_->transform, image, contents_rect,
       gfx::ToEnclosingRect(bounds_rect), c.background_color, c.edge_aa_mask,

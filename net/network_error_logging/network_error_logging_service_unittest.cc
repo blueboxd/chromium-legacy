@@ -140,6 +140,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
   const GURL kUrlDifferentPort_ = GURL("https://example.com:4433/path");
   const GURL kUrlSubdomain_ = GURL("https://subdomain.example.com/path");
   const GURL kUrlDifferentHost_ = GURL("https://example2.com/path");
+  const GURL kUrlEtld_ = GURL("https://co.uk/foo.html");
 
   const GURL kInnerUrl_ = GURL("https://example.net/path");
   const GURL kCertUrl_ = GURL("https://example.com/cert_path");
@@ -152,6 +153,7 @@ class NetworkErrorLoggingServiceTest : public ::testing::TestWithParam<bool> {
   const url::Origin kOriginSubdomain_ = url::Origin::Create(kUrlSubdomain_);
   const url::Origin kOriginDifferentHost_ =
       url::Origin::Create(kUrlDifferentHost_);
+  const url::Origin kOriginEtld_ = url::Origin::Create(kUrlEtld_);
 
   const std::string kHeader_ = "{\"report_to\":\"group\",\"max_age\":86400}";
   const std::string kHeaderSuccessFraction0_ =
@@ -235,6 +237,33 @@ TEST_P(NetworkErrorLoggingServiceTest, JsonTooDeep) {
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
 
   EXPECT_TRUE(reports().empty());
+}
+
+TEST_P(NetworkErrorLoggingServiceTest, IncludeSubdomainsEtldRejected) {
+  service()->OnHeader(kOriginEtld_, kServerIP_, kHeaderIncludeSubdomains_);
+
+  // Make the rest of the test run synchronously.
+  FinishLoading(true /* load_success */);
+
+  EXPECT_EQ(0u, PolicyCount());
+
+  service()->OnRequest(MakeRequestDetails(kUrlEtld_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_TRUE(reports().empty());
+}
+
+TEST_P(NetworkErrorLoggingServiceTest, NonIncludeSubdomainsEtldAccepted) {
+  service()->OnHeader(kOriginEtld_, kServerIP_, kHeader_);
+
+  // Make the rest of the test run synchronously.
+  FinishLoading(true /* load_success */);
+
+  EXPECT_EQ(1u, PolicyCount());
+
+  service()->OnRequest(MakeRequestDetails(kUrlEtld_, ERR_CONNECTION_REFUSED));
+
+  EXPECT_EQ(1u, reports().size());
+  EXPECT_EQ(kUrlEtld_, reports()[0].url);
 }
 
 TEST_P(NetworkErrorLoggingServiceTest, SuccessReportQueued) {

@@ -207,7 +207,7 @@ void Animation::Dispose() {
 }
 
 double Animation::EffectEnd() const {
-  return content_ ? content_->EndTimeInternal() : 0;
+  return content_ ? content_->SpecifiedTiming().EndTimeInternal() : 0;
 }
 
 bool Animation::Limited(double current_time) const {
@@ -1263,8 +1263,8 @@ bool Animation::Update(TimingUpdateReason reason) {
     // Special case for end-exclusivity when playing backwards.
     if (inherited_time == 0 && playback_rate_ < 0)
       inherited_time = -1;
-    content_->UpdateInheritedTime(inherited_time, reason);
 
+    content_->UpdateInheritedTime(inherited_time, reason);
     // After updating the animation time if the animation is no longer current
     // blink will no longer composite the element (see
     // CompositingReasonFinder::RequiresCompositingFor*Animation). We cancel any
@@ -1345,7 +1345,7 @@ double Animation::TimeToEffectChange() {
                       : content_->TimeToReverseEffectChange() / -playback_rate_;
 
   return !HasActiveAnimationsOnCompositor() &&
-                 content_->GetPhase() == AnimationEffect::kPhaseActive
+                 content_->GetPhase() == Timing::kPhaseActive
              ? 0
              : result;
 }

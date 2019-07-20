@@ -155,6 +155,11 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // Hides |view_| unless it is null and then deletes |this|.
   void HideViewAndDie();
 
+  // Raise an accessibility event to indicate the controls relation of the
+  // form control of the popup and popup itself has changed based on the popup's
+  // show or hide action.
+  void FireControlsChangedEvent(bool is_show);
+
   friend class AutofillPopupControllerUnitTest;
   void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 

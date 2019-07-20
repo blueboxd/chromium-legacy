@@ -111,7 +111,7 @@ class PDFiumPage {
   const PDFEngine::PageFeatures* GetPageFeatures();
 
   int index() const { return index_; }
-  pp::Rect rect() const { return rect_; }
+  const pp::Rect& rect() const { return rect_; }
   void set_rect(const pp::Rect& r) { rect_ = r; }
   bool available() const { return available_; }
   void set_available(bool available) { available_ = available; }

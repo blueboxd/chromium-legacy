@@ -43,7 +43,6 @@ struct AutocompleteMatch {
   int32 duplicates;
   bool from_previous;
   array<AutocompleteAdditionalInfo> additional_info;
-  string document_type;
 };
 
 struct AutocompleteResultsForProvider {

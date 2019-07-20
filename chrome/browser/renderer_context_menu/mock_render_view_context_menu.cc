@@ -214,7 +214,7 @@ content::BrowserContext* MockRenderViewContextMenu::GetBrowserContext() const {
 }
 
 content::WebContents* MockRenderViewContextMenu::GetWebContents() const {
-  return nullptr;
+  return web_contents_;
 }
 
 void MockRenderViewContextMenu::SetObserver(

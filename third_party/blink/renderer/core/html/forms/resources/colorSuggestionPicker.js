@@ -24,54 +24,30 @@
  * DAMAGE.
  */
 
-var global = {argumentsReceived: false, params: null};
 
-/**
- * @param {Event} event
- */
-function handleMessage(event) {
-  initialize(JSON.parse(event.data));
-  global.argumentsReceived = true;
-}
-
-/**
- * @param {!Object} args
- */
-function initialize(args) {
-  global.params = args;
-  var main = $('main');
-  main.innerHTML = '';
-  var errorString = validateArguments(args);
-  if (errorString) {
-    main.textContent = 'Internal error: ' + errorString;
-    resizeWindow(main.offsetWidth, main.offsetHeight);
-  } else
-    new ColorSuggestionPicker(main, args);
-}
-
-// The DefaultColorPalette is used when the list of values are empty.
-var DefaultColorPalette = [
-  '#000000', '#404040', '#808080', '#c0c0c0', '#ffffff', '#980000', '#ff0000', '#ff9900', '#ffff00', '#00ff00',
-  '#00ffff', '#4a86e8', '#0000ff', '#9900ff', '#ff00ff'
-];
-
-function handleArgumentsTimeout() {
-  if (global.argumentsReceived)
-    return;
-  var args = {values: DefaultColorPalette, otherColorLabel: 'Other...'};
-  initialize(args);
+function initializeColorSuggestionPicker() {
+  new ColorSuggestionPicker(main, global.params);
 }
 
 /**
  * @param {!Object} args
  * @return {?string} An error message, or null if the argument has no errors.
  */
-function validateArguments(args) {
+function validateColorSuggestionPickerArguments(args) {
+  if (!args.shouldShowColorSuggestionPicker)
+    return 'Should not be showing the color suggestion picker.'
   if (!args.values)
     return 'No values.';
   if (!args.otherColorLabel)
     return 'No otherColorLabel.';
   return null;
+}
+
+function handleArgumentsTimeout() {
+  if (global.argumentsReceived)
+    return;
+  var args = {values: DefaultColorPalette, otherColorLabel: 'Other...'};
+  initialize(args);
 }
 
 function ColorSuggestionPicker(element, config) {
@@ -110,7 +86,7 @@ ColorSuggestionPicker.prototype._layout = function() {
   container.style.maxHeight = (SwatchBorderBoxHeight * SwatchesMaxRow) + 'px';
   this._element.appendChild(container);
   var otherButton = createElement('button', 'other-color', this._config.otherColorLabel);
-  otherButton.addEventListener('click', this.chooseOtherColor.bind(this), false);
+  otherButton.addEventListener('click', this._onOtherButtonClick.bind(this), false);
   this._element.appendChild(otherButton);
   this._container = container;
   this._otherButton = otherButton;
@@ -118,6 +94,22 @@ ColorSuggestionPicker.prototype._layout = function() {
   var elementHeight = this._element.offsetHeight;
   resizeWindow(elementWidth, elementHeight);
 };
+
+ColorSuggestionPicker.prototype._onOtherButtonClick = function() {
+  if (global.params.isFormControlsRefreshEnabled) {
+    var main = $('main');
+    main.innerHTML = '';
+    main.classList.remove('color-suggestion-picker-main');
+    main.classList.add('color-picker-main');
+    // Replace document.body with a deep clone to drop all event listeners.
+    var oldBody = document.body;
+    var newBody = oldBody.cloneNode(true);
+    oldBody.parentElement.replaceChild(newBody, oldBody);
+    initializeColorPicker();
+  } else {
+    this.chooseOtherColor();
+  }
+}
 
 ColorSuggestionPicker.prototype.selectColorAtIndex = function(index) {
   index = Math.max(Math.min(this._container.childNodes.length - 1, index), 0);
@@ -176,10 +168,3 @@ ColorSuggestionPicker.prototype._handleSwatchClick = function(event) {
   if (event.target.classList.contains('color-swatch'))
     this.submitValue(event.target.dataset.value);
 };
-
-if (window.dialogArguments) {
-  initialize(dialogArguments);
-} else {
-  window.addEventListener('message', handleMessage, false);
-  window.setTimeout(handleArgumentsTimeout, 1000);
-}

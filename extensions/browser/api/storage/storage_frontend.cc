@@ -12,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_context.h"
@@ -132,7 +131,6 @@ StorageFrontend::StorageFrontend(scoped_refptr<ValueStoreFactory> factory,
 
 void StorageFrontend::Init(scoped_refptr<ValueStoreFactory> factory) {
   TRACE_EVENT0("browser,startup", "StorageFrontend::Init")
-  SCOPED_UMA_HISTOGRAM_TIMER("Extensions.StorageFrontendInitTime");
 
   observers_ = new SettingsObserverList();
   browser_context_observer_.reset(new DefaultObserver(browser_context_));

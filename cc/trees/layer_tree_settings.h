@@ -61,7 +61,7 @@ class CC_EXPORT LayerTreeSettings {
   bool scrollbar_flash_when_mouse_enter = false;
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
   base::TimeDelta scroll_animation_duration_for_testing;
-  bool layer_transforms_should_scale_layer_contents = false;
+  bool timeout_and_draw_when_animation_checkerboards = true;
   bool layers_always_allowed_lcd_text = false;
   float minimum_contents_scale = 0.0625f;
   float low_res_contents_scale_factor = 0.25f;

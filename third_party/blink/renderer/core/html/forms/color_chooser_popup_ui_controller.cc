@@ -65,7 +65,8 @@ void ColorChooserPopupUIController::Trace(Visitor* visitor) {
 }
 
 void ColorChooserPopupUIController::OpenUI() {
-  if (client_->ShouldShowSuggestions())
+  if (client_->ShouldShowSuggestions() ||
+      RuntimeEnabledFeatures::FormControlsRefreshEnabled())
     OpenPopup();
   else
     OpenColorChooser();
@@ -81,6 +82,45 @@ AXObject* ColorChooserPopupUIController::RootAXObject() {
 }
 
 void ColorChooserPopupUIController::WriteDocument(SharedBuffer* data) {
+  if (client_->ShouldShowSuggestions()) {
+    WriteColorSuggestionPickerDocument(data);
+  } else {
+    WriteColorPickerDocument(data);
+  }
+}
+
+void ColorChooserPopupUIController::WriteColorPickerDocument(
+    SharedBuffer* data) {
+  DCHECK(RuntimeEnabledFeatures::FormControlsRefreshEnabled());
+
+  IntRect anchor_rect_in_screen = chrome_client_->ViewportToScreen(
+      client_->ElementRectRelativeToViewport(), frame_->View());
+
+  PagePopupClient::AddString(
+      "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
+  data->Append(Platform::Current()->GetDataResource("color_picker.css"));
+  PagePopupClient::AddString(
+      "</style></head><body>\n"
+      "<div id='main'>Loading...</div><script>\n"
+      "window.dialogArguments = {\n",
+      data);
+  PagePopupClient::AddProperty("selectedColor",
+                               client_->CurrentColor().Serialized(), data);
+  AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
+  AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("shouldShowColorSuggestionPicker", false, data);
+  PagePopupClient::AddString("};\n", data);
+  data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
+  data->Append(Platform::Current()->GetDataResource("color_picker.js"));
+  data->Append(Platform::Current()->GetDataResource("color_picker_common.js"));
+  PagePopupClient::AddString("</script></body>\n", data);
+}
+
+void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
+    SharedBuffer* data) {
+  DCHECK(client_->ShouldShowSuggestions());
+
   Vector<String> suggestion_values;
   for (auto& suggestion : client_->Suggestions())
     suggestion_values.push_back(Color(suggestion->color).Serialized());
@@ -92,20 +132,35 @@ void ColorChooserPopupUIController::WriteDocument(SharedBuffer* data) {
   data->Append(Platform::Current()->GetDataResource("pickerCommon.css"));
   data->Append(
       Platform::Current()->GetDataResource("colorSuggestionPicker.css"));
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(Platform::Current()->GetDataResource("color_picker.css"));
+  }
   PagePopupClient::AddString(
-      "</style></head><body><div id=main>Loading...</div><script>\n"
+      "</style></head><body>\n"
+      "<div id='main'>Loading...</div><script>\n"
       "window.dialogArguments = {\n",
       data);
   PagePopupClient::AddProperty("values", suggestion_values, data);
   PagePopupClient::AddProperty(
       "otherColorLabel",
       GetLocale().QueryString(WebLocalizedString::kOtherColorLabel), data);
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    PagePopupClient::AddProperty("selectedColor",
+                                 client_->CurrentColor().Serialized(), data);
+  }
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
   AddProperty("zoomFactor", ZoomFactor(), data);
+  AddProperty("shouldShowColorSuggestionPicker", true, data);
+  AddProperty("isFormControlsRefreshEnabled",
+              RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   PagePopupClient::AddString("};\n", data);
   data->Append(Platform::Current()->GetDataResource("pickerCommon.js"));
   data->Append(
       Platform::Current()->GetDataResource("colorSuggestionPicker.js"));
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+    data->Append(Platform::Current()->GetDataResource("color_picker.js"));
+  }
+  data->Append(Platform::Current()->GetDataResource("color_picker_common.js"));
   PagePopupClient::AddString("</script></body>\n", data);
 }
 
@@ -120,8 +175,10 @@ void ColorChooserPopupUIController::SetValueAndClosePopup(
   DCHECK(client_);
   if (num_value == kColorPickerPopupActionSetValue)
     SetValue(string_value);
-  if (num_value == kColorPickerPopupActionChooseOtherColor)
+  if (num_value == kColorPickerPopupActionChooseOtherColor) {
+    DCHECK(!RuntimeEnabledFeatures::FormControlsRefreshEnabled());
     OpenColorChooser();
+  }
   CancelPopup();
 }
 

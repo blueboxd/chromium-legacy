@@ -70,6 +70,9 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
     // See crbug.com/950827.
     kPipExpanded,
     kExitTabletMode,
+    // Splitview is being ended due to a change in Virtual Desks, such as
+    // switching desks or removing a desk.
+    kDesksChange,
   };
 
   // The behaviors of split view are very different when in tablet mode and in

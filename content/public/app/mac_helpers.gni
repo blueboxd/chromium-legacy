@@ -35,6 +35,14 @@ content_mac_helpers = [
     " (Renderer)",
   ],
 
+  # A helper with the capability to execute writable memory, needed by
+  # Swiftshader, and used to run renderer processes.
+  [
+    "gpu",
+    ".gpu",
+    " (GPU)",
+  ],
+
   # A helper that does not perform library validation, allowing code not signed
   # by either Apple or the signing identity to be loaded, and that can execute
   # unsigned memory. This is used by binary plugins like Flash.

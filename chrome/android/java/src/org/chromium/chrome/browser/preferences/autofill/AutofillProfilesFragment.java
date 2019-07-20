@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegateCompat;
-import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.widget.prefeditor.EditorObserverForTest;
 
 /**
@@ -31,13 +30,6 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         implements PersonalDataManager.PersonalDataManagerObserver {
     private static EditorObserverForTest sObserverForTest;
     static final String PREF_NEW_PROFILE = "new_profile";
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.blank_preference_fragment_screen);
-        getActivity().setTitle(R.string.autofill_addresses_settings_title);
-    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

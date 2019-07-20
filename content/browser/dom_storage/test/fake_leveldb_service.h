@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
-#include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"

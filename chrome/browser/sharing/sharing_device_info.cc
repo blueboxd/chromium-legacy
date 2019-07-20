@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/sharing_device_info.h"
 
 SharingDeviceInfo::SharingDeviceInfo(const std::string& guid,
-                                     const std::string& human_readable_name,
+                                     const base::string16& human_readable_name,
                                      sync_pb::SyncEnums::DeviceType device_type,
                                      base::Time last_online_timestamp,
                                      int capabilities)
@@ -23,7 +23,7 @@ const std::string& SharingDeviceInfo::guid() const {
   return guid_;
 }
 
-const std::string& SharingDeviceInfo::human_readable_name() const {
+const base::string16& SharingDeviceInfo::human_readable_name() const {
   return human_readable_name_;
 }
 

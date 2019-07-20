@@ -112,11 +112,18 @@ class APISignature {
   // 'someInt', this would return "string someStr, optional integer someInt".
   std::string GetExpectedSignature() const;
 
+  void set_promise_support(binding::PromiseSupport promise_support) {
+    promise_support_ = promise_support;
+  }
+
   bool has_callback() const { return has_callback_; }
 
  private:
   // The list of expected arguments.
   std::vector<std::unique_ptr<ArgumentSpec>> signature_;
+
+  binding::PromiseSupport promise_support_ =
+      binding::PromiseSupport::kDisallowed;
 
   bool has_callback_ = false;
 

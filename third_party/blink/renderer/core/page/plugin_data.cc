@@ -120,12 +120,12 @@ void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
   std::sort(
       plugins_.begin(), plugins_.end(),
       [](const Member<PluginInfo>& lhs, const Member<PluginInfo>& rhs) -> bool {
-        return WTF::CodePointCompareLessThan(lhs->Name(), rhs->Name());
+        return WTF::CodeUnitCompareLessThan(lhs->Name(), rhs->Name());
       });
   std::sort(mimes_.begin(), mimes_.end(),
             [](const Member<MimeClassInfo>& lhs,
                const Member<MimeClassInfo>& rhs) -> bool {
-              return WTF::CodePointCompareLessThan(lhs->Type(), rhs->Type());
+              return WTF::CodeUnitCompareLessThan(lhs->Type(), rhs->Type());
             });
 }
 

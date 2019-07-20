@@ -413,6 +413,7 @@ test("ios_web_view_unittests") {
     "internal/cwv_preview_element_info_unittest.mm",
     "internal/cwv_scroll_view_unittest.mm",
     "internal/cwv_ssl_status_unittest.mm",
+    "internal/cwv_web_view_configuration_unittest.mm",
     "internal/signin/cwv_identity_unittest.mm",
     "internal/sync/cwv_sync_controller_unittest.mm",
     "internal/translate/cwv_translation_controller_unittest.mm",

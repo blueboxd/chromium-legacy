@@ -6177,6 +6177,44 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PWA.Visit" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    PWA usage metrics recorded during a user's interaction with the site.
+  </summary>
+  <metric name="LaunchSource" enum="LaunchFromHomeScreenSource">
+    <summary>
+      Launch source of the WebAPK (tap from homescreen, WebShareTarget,
+      deeplink, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="WebAPKableSiteVisit" enum="Boolean">
+    <summary>
+      Recorded every time a non-installed &quot;WebAPKable&quot; site is
+      visited.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="RendererSchedulerTask">
   <owner>altimin@chromium.org</owner>
   <summary>
@@ -7734,6 +7772,263 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="profile.form_factor"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.Install" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded on Install.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user is installing.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Install" enum="Boolean">
+    <summary>
+      Recorded when this WebAPK is installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.SessionEnd" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded when the WebAPK is backgrounded.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user has installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="SessionDuration">
+    <summary>
+      How long the user spent inside the WebAPK, in milliseconds. This will use
+      exponential bucketing (ie, count in 10s of milliseconds at first, then
+      100s, then seconds, 10s of seconds, minutes, 10 minutes, hours, 10 hours,
+      days, weeks, years.)
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.Uninstall" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded on Uninstall.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user has installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="InstalledDuration">
+    <summary>
+      How long between Install and Uninstall of a particular WebAPK, in seconds.
+      This will use exponential bucketing (ie, count in seconds at first, then
+      10s of seconds, minutes, 10 minutes, hours, 10 hours, days, weeks, years.)
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LifetimeLaunches" enum="WebApkLifetimeLaunchCount">
+    <summary>
+      Records how many times the WebAPK was launched between install and
+      uninstall (in coarse buckets).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Uninstall" enum="Boolean">
+    <summary>
+      Recorded when this WebAPK is uninstalled.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="WebAPK.Visit" singular="True">
+  <owner>yfriedman@chromium.org</owner>
+  <owner>hartmanng@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <summary>
+    WebAPK usage metrics recorded during a user's interaction with the site.
+  </summary>
+  <metric name="AppVersion">
+    <summary>
+      WebAPK app version that the user has installed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Distributor" enum="WebApkDistributor">
+    <summary>
+      Distribution source of the WebAPK (browser, device policy, etc).
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Launch" enum="Boolean">
+    <summary>
+      Recorded every time this WebAPK is launched.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="LaunchSource" enum="LaunchFromHomeScreenSource">
+    <summary>
+      Launch source of the WebAPK.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.Distributor"/>
+        <index fields="profile.country"/>
+        <index fields="profile.form_factor"/>
+        <index fields="profile.system_ram"/>
         <statistics>
           <enumeration/>
         </statistics>

@@ -161,7 +161,7 @@ int IDBKey::Compare(const IDBKey* other) const {
         return result < 0 ? -1 : 1;
       return CompareNumbers(binary_->size(), other->binary_->size());
     case mojom::IDBKeyType::String:
-      return CodePointCompare(string_, other->string_);
+      return CodeUnitCompare(string_, other->string_);
     case mojom::IDBKeyType::Date:
     case mojom::IDBKeyType::Number:
       return CompareNumbers(number_, other->number_);

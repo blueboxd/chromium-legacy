@@ -26,6 +26,8 @@
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+using ::testing::_;
+
 namespace content {
 
 using media_session::mojom::AudioFocusType;
@@ -332,7 +334,7 @@ TEST_F(MediaSessionImplTest, SessionInfo_PlaybackState) {
 TEST_F(MediaSessionImplTest, SuspendUI) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _))
       .Times(0);
 
   StartNewPlayer();
@@ -348,7 +350,7 @@ TEST_F(MediaSessionImplTest, SuspendUI) {
 TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _))
       .Times(0);
 
   StartNewPlayer();
@@ -366,7 +368,7 @@ TEST_F(MediaSessionImplTest, SuspendContent_WithAction) {
 TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause))
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _))
       .Times(0);
 
   StartNewPlayer();
@@ -384,7 +386,7 @@ TEST_F(MediaSessionImplTest, SuspendSystem_WithAction) {
 TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause));
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPause, _));
 
   StartNewPlayer();
   mock_media_session_service().EnableAction(
@@ -399,8 +401,9 @@ TEST_F(MediaSessionImplTest, SuspendUI_WithAction) {
 }
 
 TEST_F(MediaSessionImplTest, ResumeUI) {
-  EXPECT_CALL(mock_media_session_service().mock_client(),
-              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _))
       .Times(0);
 
   StartNewPlayer();
@@ -415,8 +418,9 @@ TEST_F(MediaSessionImplTest, ResumeUI) {
 }
 
 TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
-  EXPECT_CALL(mock_media_session_service().mock_client(),
-              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _))
       .Times(0);
 
   StartNewPlayer();
@@ -433,8 +437,9 @@ TEST_F(MediaSessionImplTest, ResumeContent_WithAction) {
 }
 
 TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
-  EXPECT_CALL(mock_media_session_service().mock_client(),
-              DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay))
+  EXPECT_CALL(
+      mock_media_session_service().mock_client(),
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _))
       .Times(0);
 
   StartNewPlayer();
@@ -453,7 +458,7 @@ TEST_F(MediaSessionImplTest, ResumeSystem_WithAction) {
 TEST_F(MediaSessionImplTest, ResumeUI_WithAction) {
   EXPECT_CALL(
       mock_media_session_service().mock_client(),
-      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay));
+      DidReceiveAction(media_session::mojom::MediaSessionAction::kPlay, _));
 
   StartNewPlayer();
   mock_media_session_service().EnableAction(

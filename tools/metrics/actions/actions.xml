@@ -3996,6 +3996,36 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ChromeColors_ColorApplied">
+  <owner>gayane@chromium.org</owner>
+  <description>Chrome Colors was applied from Colors menu.</description>
+</action>
+
+<action name="ChromeColors_DefaultApplied">
+  <owner>gayane@chromium.org</owner>
+  <description>Default theme was applied from Colors menu.</description>
+</action>
+
+<action name="ChromeColors_MenuCancel">
+  <owner>gayane@chromium.org</owner>
+  <description>Applied changes where canceled from Colors menu.</description>
+</action>
+
+<action name="ChromeColors_MenuDone">
+  <owner>gayane@chromium.org</owner>
+  <description>Applied changes where confirmed from Colors menu.</description>
+</action>
+
+<action name="ChromeColors_TabClosed">
+  <owner>gayane@chromium.org</owner>
+  <description>Tab with open Colors menu was closed.</description>
+</action>
+
+<action name="ChromeColors_ThemeUninstalled">
+  <owner>gayane@chromium.org</owner>
+  <description>Webstore theme uninstalled from Colors menu.</description>
+</action>
+
 <action name="ChromeGeneratedCustomTab.StartedInitially">
   <owner>tedchoc@chromium.org</owner>
   <description>

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_init.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -21,6 +22,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 class XRFrameProvider;
+class XRSessionInit;
 
 class XR final : public EventTargetWithInlineData,
                  public ContextLifecycleObserver,
@@ -41,7 +43,7 @@ class XR final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
   ScriptPromise supportsSession(ScriptState*, const String&);
-  ScriptPromise requestSession(ScriptState*, const String&);
+  ScriptPromise requestSession(ScriptState*, const String&, XRSessionInit*);
 
   XRFrameProvider* frameProvider();
 
@@ -97,7 +99,8 @@ class XR final : public EventTargetWithInlineData,
    public:
     PendingRequestSessionQuery(int64_t ukm_source_id,
                                ScriptPromiseResolver* resolver,
-                               XRSession::SessionMode mode);
+                               XRSession::SessionMode mode,
+                               XRSessionInit*);
     virtual ~PendingRequestSessionQuery() = default;
 
     // Resolves underlying promise with passed in XR session.
@@ -109,6 +112,7 @@ class XR final : public EventTargetWithInlineData,
     void Reject(v8::Local<v8::Value> value);
 
     XRSession::SessionMode mode() const;
+    const XRSessionInit* SessionInit() const;
 
     // Returns underlying resolver's script state.
     ScriptState* GetScriptState() const;
@@ -120,6 +124,7 @@ class XR final : public EventTargetWithInlineData,
 
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
+    Member<XRSessionInit> session_init_;
 
     const int64_t ukm_source_id_;
 

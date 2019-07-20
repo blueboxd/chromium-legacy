@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_INTERNAL_NOOP_NOTIFICATION_SCHEDULE_SERVICE_H_
 
+#include <memory>
+#include <string>
+
 #include "chrome/browser/notifications/scheduler/public/notification_schedule_service.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 
@@ -36,10 +39,11 @@ class NoopNotificationScheduleService
   void OnStopTask(SchedulerTaskTime task_time) override;
 
   // UserActionHandler implementation.
-  void OnClick(const std::string& notification_id) override;
-  void OnActionClick(const std::string& notification_id,
+  void OnClick(SchedulerClientType type, const std::string& guid) override;
+  void OnActionClick(SchedulerClientType type,
+                     const std::string& guid,
                      ActionButtonType button_type) override;
-  void OnDismiss(const std::string& notification_id) override;
+  void OnDismiss(SchedulerClientType type, const std::string& guid) override;
 
   DISALLOW_COPY_AND_ASSIGN(NoopNotificationScheduleService);
 };

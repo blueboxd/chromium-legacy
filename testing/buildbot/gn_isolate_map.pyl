@@ -2275,8 +2275,6 @@
   },
   "rendering_representative_perf_tests": {
     "args": [
-      "../../tools/perf/run_benchmark",
-      "--benchmarks=rendering.desktop",
       "--output-format=csv",
       "--browser=release",
       "--upload-results",

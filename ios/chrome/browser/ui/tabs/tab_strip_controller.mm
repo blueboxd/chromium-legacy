@@ -118,7 +118,7 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
 
 // Returns the background color.
 UIColor* BackgroundColor() {
-  return [UIColor colorWithRed:0.11 green:0.11 blue:0.11 alpha:1.0];
+  return UIColor.blackColor;
 }
 
 }  // namespace

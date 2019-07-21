@@ -252,7 +252,7 @@ void Record(WKWebViewLinkPreviewAction action) {
 
 // Returns the status bar background color.
 UIColor* StatusBarBackgroundColor() {
-  return [UIColor colorWithRed:0.11 green:0.11 blue:0.11 alpha:1.0];
+  return UIColor.blackColor;
 }
 
 // Duration of the toolbar animation.

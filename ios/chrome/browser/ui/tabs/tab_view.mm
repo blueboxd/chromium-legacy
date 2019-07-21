@@ -54,8 +54,6 @@ const CGFloat kTitleRightMargin = 0.0;
 const CGFloat kCloseButtonSize = 24.0;
 const CGFloat kFaviconSize = 16.0;
 
-const int kTabCloseTint = 0x3C4043;
-const int kTabCloseTintIncognito = 0xFFFFFF;
 }
 
 @interface TabView ()<DropAndNavigateDelegate> {
@@ -91,12 +89,6 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
 // Creates the close button, favicon button, and title.
 - (void)createButtonsAndLabel;
 
-// Updates this tab's background image based on the value of |selected|.
-- (void)updateBackgroundImage:(BOOL)selected;
-
-// Updates this tab's close button image based on the current incognito style.
-- (void)updateCloseButtonImages;
-
 // Return the default favicon image based on the current incognito style.
 - (UIImage*)defaultFaviconImage;
 
@@ -121,7 +113,7 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
     // changes.  |isSelected| defaults to NO, so if |selected| is also NO,
     // -updateBackgroundImage needs to be called explicitly.
     [self setSelected:selected];
-    [self updateBackgroundImage:selected];
+    [self updateStyleForSelected:selected];
     if (!emptyView)
       [self createButtonsAndLabel];
 
@@ -143,7 +135,7 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   [super setSelected:selected];
 
   if (selected != wasSelected)
-    [self updateBackgroundImage:selected];
+    [self updateStyleForSelected:selected];
 
   // It would make more sense to set active/inactive on tab_view itself, but
   // tab_view is not an an accessible element, and making it one would add
@@ -187,8 +179,7 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   _titleLabel.textColor =
       incognitoStyle ? [UIColor whiteColor] : [UIColor blackColor];
   [_faviconView setImage:[self defaultFaviconImage]];
-  [self updateCloseButtonImages];
-  [self updateBackgroundImage:[self isSelected]];
+  [self updateStyleForSelected:self.selected];
 }
 
 - (void)startProgressSpinner {
@@ -270,6 +261,10 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
                                                       kTabCloseLeftInset,
                                                       kTabCloseBottomInset,
                                                       kTabCloseRightInset)];
+  [_closeButton
+      setImage:[[UIImage imageNamed:@"grid_cell_close_button"]
+                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+      forState:UIControlStateNormal];
   [_closeButton setAccessibilityLabel:l10n_util::GetNSString(
                                           IDS_IOS_TOOLS_MENU_CLOSE_TAB)];
   [_closeButton addTarget:self
@@ -343,7 +338,9 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   AddSameCenterYConstraint(self, _faviconView, _titleLabel);
 }
 
-- (void)updateBackgroundImage:(BOOL)selected {
+// Updates this tab's style based on the value of |selected| and the current
+// incognito style.
+- (void)updateStyleForSelected:(BOOL)selected {
   NSString* state = (selected ? @"foreground" : @"background");
   NSString* incognito = _incognitoStyle ? @"incognito_" : @"";
   NSString* imageName =
@@ -352,16 +349,16 @@ const int kTabCloseTintIncognito = 0xFFFFFF;
   UIImage* backgroundImage =
       StretchableImageFromUIImage([UIImage imageNamed:imageName], leftInset, 0);
   [_backgroundImageView setImage:backgroundImage];
-}
 
-- (void)updateCloseButtonImages {
-  [_closeButton
-      setImage:[[UIImage imageNamed:@"grid_cell_close_button"]
-                   imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
-      forState:UIControlStateNormal];
-  _closeButton.tintColor = _incognitoStyle
-                               ? UIColorFromRGB(kTabCloseTintIncognito)
-                               : UIColorFromRGB(kTabCloseTint);
+  NSString* colorName;
+  if (selected) {
+    colorName = _incognitoStyle
+                    ? @"tabstrip_active_tab_incognito_close_button_color"
+                    : @"tabstrip_active_tab_close_button_color";
+  } else {
+    colorName = @"tabstrip_inactive_tab_close_button_color";
+  }
+  _closeButton.tintColor = [UIColor colorNamed:colorName];
 }
 
 - (UIImage*)defaultFaviconImage {

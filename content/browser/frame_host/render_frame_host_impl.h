@@ -691,7 +691,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
           subresource_overrides,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       const base::UnguessableToken& devtools_navigation_token);
 
   // Indicates that a navigation failed and that this RenderFrame should display
@@ -1014,7 +1014,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token);

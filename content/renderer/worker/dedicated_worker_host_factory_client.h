@@ -63,7 +63,7 @@ class DedicatedWorkerHostFactoryClient final
   void OnWorkerHostCreated(
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
   void OnScriptLoadStarted(
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

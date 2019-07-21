@@ -80,7 +80,7 @@ ServiceWorkerRequestHandler::CreateForNavigationIO(
   if (!context)
     return nullptr;
 
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   // Initialize the SWProviderHost.
   *out_provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
       context->AsWeakPtr(), request_info.are_ancestors_secure,

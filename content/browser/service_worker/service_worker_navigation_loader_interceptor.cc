@@ -30,7 +30,7 @@ namespace {
 void LoaderCallbackWrapperOnIO(
     ServiceWorkerNavigationHandleCore* handle_core,
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     SingleRequestURLLoaderFactory::RequestHandler handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -93,7 +93,7 @@ void MaybeCreateLoaderOnIO(
     return;
   }
 
-  blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info;
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host;
 
   if (!handle_core->provider_host()) {
@@ -101,7 +101,7 @@ void MaybeCreateLoaderOnIO(
     // Its lifetime is tied to |provider_info| which will be passed to the
     // ServiceWorkerNavigationHandle on the UI thread, and finally passed to the
     // renderer when the navigation commits.
-    provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+    provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
     provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
         context_core->AsWeakPtr(), are_ancestors_secure, frame_tree_node_id,
         &provider_info);
@@ -176,7 +176,7 @@ ServiceWorkerNavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() {
 }
 
 void ServiceWorkerNavigationLoaderInterceptor::LoaderCallbackWrapper(
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     SingleRequestURLLoaderFactory::RequestHandler handler_on_io) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

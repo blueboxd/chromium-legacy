@@ -18,16 +18,19 @@ import "third_party/blink/public/mojom/service_worker/service_worker_registratio
 // and browser.
 const string kNavigation_ServiceWorkerSpec = "navigation:service_worker";
 
-// Sent from the browser process to the renderer. Contains parameters for the
-// WebServiceWorkerNetworkProvider used for starting a web worker (dedicated
-// worker or shared worker).
-struct ServiceWorkerProviderInfoForWorker {
+// Sent from the browser process to the renderer. Contains info needed
+// for a service worker client (window or web worker) to talk with the
+// ServiceWorkerContainerHost in the browser process.
+struct ServiceWorkerProviderInfoForClient {
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;
 };
 
-// Sent from the browser process to the renderer. Contains parameters for the
-// WebServiceWorkerNetworkProvider used for starting a service worker.
+// Sent from the browser process to the renderer. Contains parameters used for
+// starting a service worker.
+//
+// TODO(falken): Merge this with EmbeddedWorkerStartParams, there is no logical
+// grouping between the two.
 struct ServiceWorkerProviderInfoForStartWorker {
   // No methods on |host_ptr_info| are called, but it's needed to keep the host
   // implementation in the browser process alive.
@@ -46,16 +49,6 @@ struct ServiceWorkerProviderInfoForStartWorker {
   CacheStorage? cache_storage;
 
   service_manager.mojom.InterfaceProvider interface_provider;
-};
-
-// Sent from the browser process to the renderer. Contains parameters for the
-// WebServiceWorkerNetworkProvider used for a frame navigation.
-// TODO(leonhsl): This struct has identical members as
-// ServiceWorkerProviderInfoForWorker, we can unify them as a new struct
-// ServiceWorkerProviderInfoForClient.
-struct ServiceWorkerProviderInfoForWindow {
-  associated ServiceWorkerContainerHost host_ptr_info;
-  associated ServiceWorkerContainer& client_request;
 };
 
 // ServiceWorkerWorkerClient represents a service worker client that is a worker

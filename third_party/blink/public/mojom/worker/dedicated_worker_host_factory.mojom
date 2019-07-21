@@ -35,7 +35,7 @@ interface DedicatedWorkerHostFactoryClient {
   OnScriptLoadStarted(
       // The info about the service worker provider in the browser process that
       // provides support for this worker to be a service worker client.
-      ServiceWorkerProviderInfoForWorker service_worker_provider_info,
+      ServiceWorkerProviderInfoForClient service_worker_provider_info,
 
       // Used for passing the main script pre-requested by the browser process
       // and its redirect information.

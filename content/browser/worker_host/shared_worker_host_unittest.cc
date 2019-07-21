@@ -77,7 +77,7 @@ class SharedWorkerHostTest : public testing::Test {
   void StartWorker(SharedWorkerHost* host,
                    blink::mojom::SharedWorkerFactoryPtr factory) {
     auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+        blink::mojom::ServiceWorkerProviderInfoForClient::New();
     ServiceWorkerProviderHost::PreCreateForWebWorker(
         helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
         blink::mojom::ServiceWorkerProviderType::kForSharedWorker,

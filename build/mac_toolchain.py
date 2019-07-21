@@ -50,16 +50,9 @@ MAC_MINIMUM_OS_VERSION = 17
 
 MAC_TOOLCHAIN_INSTALLER = 'mac_toolchain'
 
-# Absolute path to src/ directory.
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Absolute path to a file with gclient solutions.
-GCLIENT_CONFIG = os.path.join(os.path.dirname(REPO_ROOT), '.gclient')
-
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TOOLCHAIN_ROOT = os.path.join(BASE_DIR, 'mac_files')
 TOOLCHAIN_BUILD_DIR = os.path.join(TOOLCHAIN_ROOT, 'Xcode.app')
-STAMP_FILE = os.path.join(TOOLCHAIN_ROOT, 'toolchain_build_revision')
 
 
 def PlatformMeetsHermeticXcodeRequirements():
@@ -228,17 +221,7 @@ def main():
   installer_cmd = os.environ.get('MAC_TOOLCHAIN_INSTALLER',
                                  MAC_TOOLCHAIN_INSTALLER)
 
-  toolchain_root = TOOLCHAIN_ROOT
   xcode_app_path = TOOLCHAIN_BUILD_DIR
-  stamp_file = STAMP_FILE
-
-  # Delete the old "hermetic" installation if detected.
-  # TODO(crbug.com/797051): remove this once the old "hermetic" solution is no
-  # longer in use.
-  if os.path.exists(stamp_file):
-    print(
-        'Detected old hermetic installation at %s. Deleting.' % toolchain_root)
-    shutil.rmtree(toolchain_root)
 
   success = InstallXcode(toolchain_version, installer_cmd, xcode_app_path)
   if not success:

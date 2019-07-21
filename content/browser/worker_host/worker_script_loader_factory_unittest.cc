@@ -53,7 +53,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
 
     // Set up a service worker host for the shared worker.
     service_worker_provider_info_ =
-        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+        blink::mojom::ServiceWorkerProviderInfoForClient::New();
     service_worker_provider_host_ =
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             helper_->context()->AsWeakPtr(), kProcessId,
@@ -84,7 +84,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   std::unique_ptr<FakeNetworkURLLoaderFactory> network_loader_factory_instance_;
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 
-  blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr
       service_worker_provider_info_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
 

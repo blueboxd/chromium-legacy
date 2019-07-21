@@ -47,7 +47,7 @@ struct SubresourceLoaderParams;
 class WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>,
       blink::mojom::WorkerMainScriptLoadParamsPtr,
       blink::mojom::ControllerServiceWorkerInfoPtr,
@@ -103,7 +103,7 @@ class WorkerScriptFetchInitiator {
       CompletionCallback callback);
   static void DidCreateScriptLoaderOnIO(
       CompletionCallback callback,
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,

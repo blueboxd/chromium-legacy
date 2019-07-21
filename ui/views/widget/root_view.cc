@@ -487,7 +487,11 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
         // The mouse_move_handler_ could have been destroyed in the context of
         // the mouse exit event.
         if (!dispatch_details.target_destroyed) {
-          CHECK(mouse_move_handler_);
+          // View was removed by ET_MOUSE_EXITED, or |mouse_move_handler_| was
+          // cleared, perhaps by a nested event handler, so return and wait for
+          // the next mouse move event.
+          if (!mouse_move_handler_)
+            return;
           dispatch_details = NotifyEnterExitOfDescendant(
               event, ui::ET_MOUSE_EXITED, mouse_move_handler_, v);
           if (dispatch_details.dispatcher_destroyed)
@@ -507,7 +511,11 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
             dispatch_details.target_destroyed) {
           return;
         }
-        CHECK(mouse_move_handler_);
+        // View was removed by ET_MOUSE_ENTERED, or |mouse_move_handler_| was
+        // cleared, perhaps by a nested event handler, so return and wait for
+        // the next mouse move event.
+        if (!mouse_move_handler_)
+          return;
         dispatch_details = NotifyEnterExitOfDescendant(
             event, ui::ET_MOUSE_ENTERED, mouse_move_handler_, old_handler);
         if (dispatch_details.dispatcher_destroyed ||
@@ -533,7 +541,11 @@ void RootView::OnMouseMoved(const ui::MouseEvent& event) {
     // The mouse_move_handler_ could have been destroyed in the context of the
     // mouse exit event.
     if (!dispatch_details.target_destroyed) {
-      CHECK(mouse_move_handler_);
+      // View was removed by ET_MOUSE_EXITED, or |mouse_move_handler_| was
+      // cleared, perhaps by a nested event handler, so return and wait for
+      // the next mouse move event.
+      if (!mouse_move_handler_)
+        return;
       dispatch_details = NotifyEnterExitOfDescendant(event, ui::ET_MOUSE_EXITED,
                                                      mouse_move_handler_, v);
       if (dispatch_details.dispatcher_destroyed)

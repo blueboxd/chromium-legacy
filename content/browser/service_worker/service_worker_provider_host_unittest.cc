@@ -487,7 +487,7 @@ class MockServiceWorkerContainer : public blink::mojom::ServiceWorkerContainer {
 
 TEST_F(ServiceWorkerProviderHostTest, Controller) {
   // Create a host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
@@ -523,7 +523,7 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
 
 TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   // Create a host.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
@@ -892,7 +892,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
     const GURL url) {
   {
     auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+        blink::mojom::ServiceWorkerProviderInfoForClient::New();
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
@@ -905,7 +905,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
 
   {
     auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+        blink::mojom::ServiceWorkerProviderInfoForClient::New();
     base::WeakPtr<ServiceWorkerProviderHost> host =
         ServiceWorkerProviderHost::PreCreateNavigationHost(
             helper_->context()->AsWeakPtr(), true,
@@ -940,7 +940,7 @@ TEST_F(ServiceWorkerProviderHostTest,
 
 // Tests the client phase transitions for a navigation.
 TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true,
@@ -966,7 +966,7 @@ TEST_F(ServiceWorkerProviderHostTest, ClientPhaseForWindow) {
 void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
     blink::mojom::ServiceWorkerProviderType provider_type,
     const GURL url) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateForWebWorker(
           context_->AsWeakPtr(), helper_->mock_render_process_id(),

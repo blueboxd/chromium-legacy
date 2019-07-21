@@ -30,7 +30,7 @@ ServiceWorkerNavigationHandleCore::~ServiceWorkerNavigationHandleCore() {
 
 void ServiceWorkerNavigationHandleCore::OnCreatedProviderHost(
     base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(provider_host);
   provider_host_ = std::move(provider_host);

@@ -48,11 +48,11 @@ bool ParseHistoryUiOrigin(const GURL& url,
                           favicon::HistoryUiFaviconRequestOrigin* origin) {
   GURL history_url(chrome::kChromeUIHistoryURL);
   if (url == history_url) {
-    *origin = favicon::HistoryUiFaviconRequestOrigin::HISTORY;
+    *origin = favicon::HistoryUiFaviconRequestOrigin::kHistory;
     return true;
   }
   if (url == history_url.Resolve(chrome::kChromeUIHistorySyncedTabs)) {
-    *origin = favicon::HistoryUiFaviconRequestOrigin::HISTORY_SYNCED_TABS;
+    *origin = favicon::HistoryUiFaviconRequestOrigin::kHistorySyncedTabs;
     return true;
   }
   return false;
@@ -191,7 +191,7 @@ void FaviconSource::StartDataRequest(
                        base::Unretained(this),
                        IconRequest(callback, url, parsed.size_in_dip,
                                    parsed.device_scale_factor)),
-        parsed_history_ui_origin, favicon::FaviconRequestPlatform::kDesktop,
+        favicon::FaviconRequestPlatform::kDesktop, parsed_history_ui_origin,
         /*icon_url_for_uma=*/
         open_tabs ? open_tabs->GetIconUrlForPageUrl(url) : GURL(),
         &cancelable_task_tracker_);

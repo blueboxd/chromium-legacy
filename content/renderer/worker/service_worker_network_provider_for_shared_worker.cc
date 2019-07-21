@@ -19,7 +19,7 @@ namespace content {
 
 std::unique_ptr<ServiceWorkerNetworkProviderForSharedWorker>
 ServiceWorkerNetworkProviderForSharedWorker::Create(
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
     bool is_secure_context,

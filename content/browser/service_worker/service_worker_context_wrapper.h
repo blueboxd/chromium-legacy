@@ -307,7 +307,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   base::WeakPtr<ServiceWorkerProviderHost> PreCreateHostForWorker(
       int process_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after

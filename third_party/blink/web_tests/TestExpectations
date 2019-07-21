@@ -3707,8 +3707,6 @@ crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-102.svg [ Failu
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-002.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-203.svg [ Failure ]
 crbug.com/626703 external/wpt/svg/text/reftests/text-text-anchor-003.svg [ Failure ]
-crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Timeout ]
-crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Timeout ]
 crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_ini_full.html [ Failure ]
 crbug.com/626703 external/wpt/infrastructure/reftest/reftest_fuzzy_1.html [ Failure ]
 crbug.com/626703 external/wpt/screen-orientation/onchange-event.html [ Timeout ]

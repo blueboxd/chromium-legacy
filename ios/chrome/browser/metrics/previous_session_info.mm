@@ -135,8 +135,11 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
     // Load the persisted information.
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    gSharedInstance.availableDeviceStorage =
-        [defaults integerForKey:kPreviousSessionInfoAvailableDeviceStorage];
+    gSharedInstance.availableDeviceStorage = -1;
+    if ([defaults objectForKey:kPreviousSessionInfoAvailableDeviceStorage]) {
+      gSharedInstance.availableDeviceStorage =
+          [defaults integerForKey:kPreviousSessionInfoAvailableDeviceStorage];
+    }
     gSharedInstance.didSeeMemoryWarningShortlyBeforeTerminating =
         [defaults boolForKey:previous_session_info_constants::
                                  kDidSeeMemoryWarningShortlyBeforeTerminating];
@@ -153,10 +156,14 @@ static PreviousSessionInfo* gSharedInstance = nil;
 
     NSString* versionOfOSAtLastRun =
         [defaults stringForKey:kPreviousSessionInfoOSVersion];
-    NSString* currentOSVersion =
-        base::SysUTF8ToNSString(base::SysInfo::OperatingSystemVersion());
-    gSharedInstance.isFirstSessionAfterOSUpgrade =
-        ![versionOfOSAtLastRun isEqualToString:currentOSVersion];
+    if (versionOfOSAtLastRun) {
+      NSString* currentOSVersion =
+          base::SysUTF8ToNSString(base::SysInfo::OperatingSystemVersion());
+      gSharedInstance.isFirstSessionAfterOSUpgrade =
+          ![versionOfOSAtLastRun isEqualToString:currentOSVersion];
+    } else {
+      gSharedInstance.isFirstSessionAfterOSUpgrade = NO;
+    }
     gSharedInstance.OSVersion = versionOfOSAtLastRun;
 
     NSString* lastRanVersion = [defaults stringForKey:kLastRanVersion];

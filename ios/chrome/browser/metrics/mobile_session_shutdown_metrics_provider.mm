@@ -69,8 +69,8 @@ void LogBatteryCharge(float battery_level) {
 
 // Logs the device's |available_storage| as a UTE stability metric.
 void LogAvailableStorage(NSInteger available_storage) {
-  UMA_STABILITY_HISTOGRAM_COUNTS_100("Stability.iOS.UTE.AvailableStorage",
-                                     available_storage);
+  UMA_STABILITY_HISTOGRAM_CUSTOM_COUNTS("Stability.iOS.UTE.AvailableStorage",
+                                        available_storage, 1, 100000, 100);
 }
 
 // Logs the OS version change between |os_version| and the current os version.
@@ -160,10 +160,12 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   if (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged) {
     LogBatteryCharge(session_info.deviceBatteryLevel);
   }
-  LogAvailableStorage(session_info.availableDeviceStorage);
-  std::string previous_os_version_string =
-      base::SysNSStringToUTF8(session_info.OSVersion);
-  LogOSVersionChange(previous_os_version_string);
+  if (session_info.availableDeviceStorage >= 0) {
+    LogAvailableStorage(session_info.availableDeviceStorage);
+  }
+  if (session_info.OSVersion) {
+    LogOSVersionChange(base::SysNSStringToUTF8(session_info.OSVersion));
+  }
   LogLowPowerMode(session_info.deviceWasInLowPowerMode);
   LogDeviceThermalState(session_info.deviceThermalState);
 
@@ -174,10 +176,10 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
       (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged &&
        session_info.deviceBatteryLevel <= kCriticallyLowBatteryLevel) ||
       // - storage is extremely low
-      session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage ||
+      (session_info.availableDeviceStorage >= 0 &&
+       session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
       // - OS version changed
-      base::Version(version_info::GetVersionNumber())
-              .CompareTo(base::Version(previous_os_version_string)) != 0 ||
+      session_info.isFirstSessionAfterOSUpgrade ||
       // - low power mode enabled
       session_info.deviceWasInLowPowerMode ||
       // - device in abnormal thermal state

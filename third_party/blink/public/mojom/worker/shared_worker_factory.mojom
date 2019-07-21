@@ -40,7 +40,7 @@ interface SharedWorkerFactory {
 
       // The info about the service worker provider in the browser process that
       // provides support for this worker to be a service worker client.
-      ServiceWorkerProviderInfoForWorker service_worker_provider_info,
+      ServiceWorkerProviderInfoForClient service_worker_provider_info,
 
       // The ID of the AppCacheHost in the browser process that serves resources
       // for this shared worker. This is not specified when AppCache doesn't

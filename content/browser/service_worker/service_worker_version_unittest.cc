@@ -1269,7 +1269,7 @@ TEST_F(ServiceWorkerVersionTest,
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration_->SetActiveVersion(version_);
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* is_parent_frame_secure */,

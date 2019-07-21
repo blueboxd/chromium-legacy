@@ -113,7 +113,7 @@ void DedicatedWorkerHostFactoryClient::OnWorkerHostCreated(
 }
 
 void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

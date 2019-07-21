@@ -2005,7 +2005,7 @@ void NavigationRequest::CommitNavigation() {
     associated_site_instance_id_.reset();
   }
 
-  blink::mojom::ServiceWorkerProviderInfoForWindowPtr
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr
       service_worker_provider_info;
   if (navigation_handle_->service_worker_handle()) {
     // Notify the service worker navigation handle that navigation commit is

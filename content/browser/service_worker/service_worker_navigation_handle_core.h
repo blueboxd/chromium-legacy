@@ -35,7 +35,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
   // Called when a ServiceWorkerProviderHost was created for the navigation.
   void OnCreatedProviderHost(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
   // Called when the navigation is ready to commit, set the 2 IDs for the
   // pre-created provider host.

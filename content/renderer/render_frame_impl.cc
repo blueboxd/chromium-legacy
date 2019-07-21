@@ -3361,7 +3361,7 @@ void RenderFrameImpl::CommitNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -3391,7 +3391,7 @@ void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -3420,7 +3420,7 @@ void RenderFrameImpl::CommitNavigationInternal(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
@@ -3574,7 +3574,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     std::unique_ptr<DocumentState> document_state,
@@ -7660,7 +7660,7 @@ bool RenderFrameImpl::ShouldThrottleDownload() {
 std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
 RenderFrameImpl::BuildServiceWorkerNetworkProviderForNavigation(
     blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
   // An empty provider will always be created since it is expected in a certain
   // number of places.
   if (!provider_info) {

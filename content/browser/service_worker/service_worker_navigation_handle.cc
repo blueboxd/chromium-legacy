@@ -29,7 +29,7 @@ ServiceWorkerNavigationHandle::~ServiceWorkerNavigationHandle() {
 }
 
 void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(provider_info->host_ptr_info.is_valid() &&
          provider_info->client_request.is_pending());
@@ -40,7 +40,7 @@ void ServiceWorkerNavigationHandle::OnCreatedProviderHost(
 void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
     int render_process_id,
     int render_frame_id,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // We may have failed to pre-create the provider host.
   if (!provider_info_)

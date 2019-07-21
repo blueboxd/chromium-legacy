@@ -1073,7 +1073,7 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
   client->UpdateUrls(in_scope, in_scope);
 
   // Make an in-scope reserved client.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,

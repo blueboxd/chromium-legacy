@@ -16,15 +16,14 @@ class GURL;
 
 namespace favicon {
 
-// The UI origin of an icon request.
-// TODO(victorvianna): Adopt same naming style used in the platform enum.
+// The UI origin of an icon request. Used to do metrics recording per UI.
 enum class HistoryUiFaviconRequestOrigin {
   // History page.
-  HISTORY,
+  kHistory,
   // History synced tabs page (desktop only).
-  HISTORY_SYNCED_TABS,
-  // Recently closed tabs menu.
-  RECENTLY_CLOSED_TABS,
+  kHistorySyncedTabs,
+  // Recent tabs user interface.
+  kRecentTabs,
 };
 
 // Platform making the request.
@@ -37,8 +36,6 @@ enum class FaviconRequestPlatform {
 // them to local storage, sync or Google server accordingly. This service should
 // only be used by the UIs listed in the HistoryUiFaviconRequestOrigin enum.
 // Requests must be made by page url, as opposed to icon url.
-// TODO(victorvianna): Use a more natural order for the parameters in the API.
-// TODO(victorvianna): Rename |request_origin| to |origin_for_uma| in the API.
 class HistoryUiFaviconRequestHandler : public KeyedService {
  public:
   // Requests favicon bitmap at |page_url| of size |desired_size_in_pixel|.
@@ -51,8 +48,8 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback callback,
-      HistoryUiFaviconRequestOrigin request_origin,
       FaviconRequestPlatform request_platform,
+      HistoryUiFaviconRequestOrigin request_origin_for_uma,
       const GURL& icon_url_for_uma,
       base::CancelableTaskTracker* tracker) = 0;
 
@@ -66,7 +63,7 @@ class HistoryUiFaviconRequestHandler : public KeyedService {
   virtual void GetFaviconImageForPageURL(
       const GURL& page_url,
       favicon_base::FaviconImageCallback callback,
-      HistoryUiFaviconRequestOrigin request_origin,
+      HistoryUiFaviconRequestOrigin request_origin_for_uma,
       const GURL& icon_url_for_uma,
       base::CancelableTaskTracker* tracker) = 0;
 };

@@ -285,7 +285,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   }
 
   // Set up for service worker.
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWorker::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
       service_worker_context->PreCreateHostForWorker(process_id, provider_type,
                                                      &provider_info);
@@ -360,7 +360,7 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
 
 void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
     CompletionCallback callback,
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,

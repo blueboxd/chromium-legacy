@@ -35,7 +35,7 @@ class ServiceWorkerNetworkProviderForSharedWorker final
   // - |is_secure_context|: whether this context is secure
   // - |response_override|: the main script response
   static std::unique_ptr<ServiceWorkerNetworkProviderForSharedWorker> Create(
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
       bool is_secure_context,

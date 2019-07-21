@@ -152,7 +152,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
   void DidStartScriptLoad(
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,

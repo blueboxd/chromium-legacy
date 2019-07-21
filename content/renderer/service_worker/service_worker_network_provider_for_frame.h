@@ -31,7 +31,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
   // the loading context, e.g. a frame, provides it.
   static std::unique_ptr<ServiceWorkerNetworkProviderForFrame> Create(
       RenderFrameImpl* frame,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 

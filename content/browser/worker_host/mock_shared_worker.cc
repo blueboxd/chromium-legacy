@@ -104,7 +104,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     blink::mojom::RendererPreferencesPtr renderer_preferences,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr
         service_worker_provider_info,
     const base::Optional<base::UnguessableToken>& appcache_host_id,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

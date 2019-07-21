@@ -46,21 +46,23 @@ class MockHistoryUiFaviconRequestHandler
   MockHistoryUiFaviconRequestHandler() = default;
   ~MockHistoryUiFaviconRequestHandler() override = default;
 
-  MOCK_METHOD7(GetRawFaviconForPageURL,
-               void(const GURL& page_url,
-                    int desired_size_in_pixel,
-                    favicon_base::FaviconRawBitmapCallback callback,
-                    favicon::HistoryUiFaviconRequestOrigin request_origin,
-                    favicon::FaviconRequestPlatform request_platform,
-                    const GURL& icon_url_for_uma,
-                    base::CancelableTaskTracker* tracker));
+  MOCK_METHOD7(
+      GetRawFaviconForPageURL,
+      void(const GURL& page_url,
+           int desired_size_in_pixel,
+           favicon_base::FaviconRawBitmapCallback callback,
+           favicon::FaviconRequestPlatform request_platform,
+           favicon::HistoryUiFaviconRequestOrigin request_origin_for_uma,
+           const GURL& icon_url_for_uma,
+           base::CancelableTaskTracker* tracker));
 
-  MOCK_METHOD5(GetFaviconImageForPageURL,
-               void(const GURL& page_url,
-                    favicon_base::FaviconImageCallback callback,
-                    favicon::HistoryUiFaviconRequestOrigin request_origin,
-                    const GURL& icon_url_for_uma,
-                    base::CancelableTaskTracker* tracker));
+  MOCK_METHOD5(
+      GetFaviconImageForPageURL,
+      void(const GURL& page_url,
+           favicon_base::FaviconImageCallback callback,
+           favicon::HistoryUiFaviconRequestOrigin request_origin_for_uma,
+           const GURL& icon_url_for_uma,
+           base::CancelableTaskTracker* tracker));
 };
 
 class TestFaviconSource : public FaviconSource {

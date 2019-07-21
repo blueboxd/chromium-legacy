@@ -54,7 +54,8 @@ enum class DeviceBatteryState {
 @property(nonatomic, assign, readonly)
     previous_session_info_constants::DeviceBatteryState deviceBatteryState;
 
-// The storage available, in kilobytes, at the end of the previous session.
+// The storage available, in kilobytes, at the end of the previous session or -1
+// if no previous session data is available.
 @property(nonatomic, assign, readonly) NSInteger availableDeviceStorage;
 
 // The thermal state of the device at the end of the previous session.
@@ -79,7 +80,8 @@ enum class DeviceBatteryState {
 // session.
 @property(nonatomic, assign, readonly) BOOL isFirstSessionAfterLanguageChange;
 
-// The OS version during the previous session.
+// The OS version during the previous session or nil if no previous session data
+// is available.
 @property(nonatomic, strong, readonly) NSString* OSVersion;
 
 // The time at which the previous sesion ended. Note that this is only an

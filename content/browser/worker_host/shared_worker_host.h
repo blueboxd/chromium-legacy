@@ -86,7 +86,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // to |controller_service_worker_object_host|.
   void Start(
       blink::mojom::SharedWorkerFactoryPtr factory,
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr
           service_worker_provider_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

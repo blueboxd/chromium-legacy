@@ -1107,7 +1107,7 @@ base::WeakPtr<ServiceWorkerProviderHost>
 ServiceWorkerContextWrapper::PreCreateHostForWorker(
     int process_id,
     blink::mojom::ServiceWorkerProviderType provider_type,
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!context_core_)

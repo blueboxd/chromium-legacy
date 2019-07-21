@@ -120,7 +120,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       bool are_ancestors_secure,
       int frame_tree_node_id,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
@@ -143,7 +143,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
       blink::mojom::ServiceWorkerProviderType provider_type,
-      blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   ~ServiceWorkerProviderHost() override;
 

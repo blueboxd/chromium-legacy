@@ -90,7 +90,7 @@ class MockSharedURLLoaderFactoryInfo final
 class FakeNavigationClient : public mojom::NavigationClient {
  public:
   using ReceivedProviderInfoCallback = base::OnceCallback<void(
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr)>;
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr)>;
 
   FakeNavigationClient(ReceivedProviderInfoCallback on_received_callback)
       : on_received_callback_(std::move(on_received_callback)) {}
@@ -110,7 +110,7 @@ class FakeNavigationClient : public mojom::NavigationClient {
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
@@ -198,20 +198,20 @@ ServiceWorkerRemoteProviderEndpoint::ServiceWorkerRemoteProviderEndpoint(
 ServiceWorkerRemoteProviderEndpoint::~ServiceWorkerRemoteProviderEndpoint() {}
 
 void ServiceWorkerRemoteProviderEndpoint::BindForWindow(
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr info) {
   // We establish a message pipe for connecting |navigation_client_| to a fake
   // navigation client, then simulate sending the navigation commit IPC which
   // carries a service worker provider info over it, then the provider info
   // received there gets its |host_ptr_info| and |client_request| associated
   // with a message pipe so that their users later can make Mojo calls without
   // crash.
-  blink::mojom::ServiceWorkerProviderInfoForWindowPtr received_info;
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr received_info;
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   mojo::MakeStrongBinding(
       std::make_unique<FakeNavigationClient>(base::BindOnce(
           [](base::OnceClosure quit_closure,
-             blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_info,
-             blink::mojom::ServiceWorkerProviderInfoForWindowPtr info) {
+             blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_info,
+             blink::mojom::ServiceWorkerProviderInfoForClientPtr info) {
             *out_info = std::move(info);
             std::move(quit_closure).Run();
           },
@@ -243,7 +243,7 @@ base::WeakPtr<ServiceWorkerProviderHost> CreateProviderHostForWindow(
     bool is_parent_frame_secure,
     base::WeakPtr<ServiceWorkerContextCore> context,
     ServiceWorkerRemoteProviderEndpoint* output_endpoint) {
-  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForWindow::New();
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           context, is_parent_frame_secure,

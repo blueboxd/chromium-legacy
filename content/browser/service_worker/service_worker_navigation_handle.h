@@ -54,7 +54,7 @@ class ServiceWorkerNavigationHandle {
   // Called after a ServiceWorkerProviderHost tied with |provider_info|
   // was pre-created for the navigation.
   void OnCreatedProviderHost(
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
   // Called when the navigation is ready to commit.
   // Provides |render_process_id| and |render_frame_id| to the pre-created
@@ -65,12 +65,12 @@ class ServiceWorkerNavigationHandle {
   void OnBeginNavigationCommit(
       int render_process_id,
       int render_frame_id,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   ServiceWorkerNavigationHandleCore* core() const { return core_; }
 
  private:
-  blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info_;
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info_;
   // TODO(leonhsl): Use std::unique_ptr<ServiceWorkerNavigationHandleCore,
   // BrowserThread::DeleteOnIOThread> instead.
   ServiceWorkerNavigationHandleCore* core_;

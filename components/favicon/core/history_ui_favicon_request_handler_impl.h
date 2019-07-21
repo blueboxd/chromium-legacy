@@ -51,19 +51,21 @@ class HistoryUiFaviconRequestHandlerImpl
 
   ~HistoryUiFaviconRequestHandlerImpl() override;
 
-  void GetRawFaviconForPageURL(const GURL& page_url,
-                               int desired_size_in_pixel,
-                               favicon_base::FaviconRawBitmapCallback callback,
-                               HistoryUiFaviconRequestOrigin request_origin,
-                               FaviconRequestPlatform request_platform,
-                               const GURL& icon_url_for_uma,
-                               base::CancelableTaskTracker* tracker) override;
+  void GetRawFaviconForPageURL(
+      const GURL& page_url,
+      int desired_size_in_pixel,
+      favicon_base::FaviconRawBitmapCallback callback,
+      FaviconRequestPlatform request_platform,
+      HistoryUiFaviconRequestOrigin request_origin_for_uma,
+      const GURL& icon_url_for_uma,
+      base::CancelableTaskTracker* tracker) override;
 
-  void GetFaviconImageForPageURL(const GURL& page_url,
-                                 favicon_base::FaviconImageCallback callback,
-                                 HistoryUiFaviconRequestOrigin request_origin,
-                                 const GURL& icon_url_for_uma,
-                                 base::CancelableTaskTracker* tracker) override;
+  void GetFaviconImageForPageURL(
+      const GURL& page_url,
+      favicon_base::FaviconImageCallback callback,
+      HistoryUiFaviconRequestOrigin request_origin_for_uma,
+      const GURL& icon_url_for_uma,
+      base::CancelableTaskTracker* tracker) override;
 
  private:
   // Called after the first attempt to retrieve the icon bitmap from local
@@ -73,13 +75,13 @@ class HistoryUiFaviconRequestHandlerImpl
   // TODO(https://crbug.com/978775): Stop plumbing can_query_google_server once
   // the feature experiment is no longer being run.
   void OnBitmapLocalDataAvailable(
+      bool can_query_google_server,
       const GURL& page_url,
       int desired_size_in_pixel,
       favicon_base::FaviconRawBitmapCallback response_callback,
-      HistoryUiFaviconRequestOrigin origin,
       FaviconRequestPlatform platform,
+      HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& icon_url_for_uma,
-      bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
 
@@ -88,11 +90,11 @@ class HistoryUiFaviconRequestHandlerImpl
   // retrieve from sync or the Google favicon server depending whether
   // |favicon::kEnableHistoryFaviconsGoogleServerQuery| is enabled.
   void OnImageLocalDataAvailable(
+      bool can_query_google_server,
       const GURL& page_url,
       favicon_base::FaviconImageCallback response_callback,
-      HistoryUiFaviconRequestOrigin origin,
+      HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& icon_url_for_uma,
-      bool can_query_google_server,
       base::CancelableTaskTracker* tracker,
       const favicon_base::FaviconImageResult& image_result);
 
@@ -104,8 +106,8 @@ class HistoryUiFaviconRequestHandlerImpl
       std::unique_ptr<FaviconServerFetcherParams> server_parameters,
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
-      const GURL& icon_url_for_uma,
-      HistoryUiFaviconRequestOrigin origin);
+      HistoryUiFaviconRequestOrigin origin_for_uma,
+      const GURL& icon_url_for_uma);
 
   // Called once the request to the favicon server has finished. If the request
   // succeeded, |local_lookup_callback| is called to effectively retrieve the
@@ -115,7 +117,7 @@ class HistoryUiFaviconRequestHandlerImpl
   void OnGoogleServerDataAvailable(
       base::OnceClosure empty_response_callback,
       base::OnceClosure local_lookup_callback,
-      HistoryUiFaviconRequestOrigin origin,
+      HistoryUiFaviconRequestOrigin origin_for_uma,
       const GURL& group_to_clear,
       favicon_base::GoogleFaviconServerRequestStatus status);
 

@@ -84,7 +84,8 @@ struct EmbeddedWorkerStartParams {
   // Interface for the renderer to send the status updates to the browser.
   associated EmbeddedWorkerInstanceHost instance_host;
 
-  // Information for creating ServiceWorkerProviderContext on the renderer.
+  // Information for talking to the ServiceWorkerContainerHost, and other
+  // params.
   ServiceWorkerProviderInfoForStartWorker provider_info;
 
   // Interface for the renderer to query the content settings in the browser.

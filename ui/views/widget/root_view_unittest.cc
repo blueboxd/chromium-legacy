@@ -356,6 +356,53 @@ class DeleteViewOnEvent : public View {
   DISALLOW_COPY_AND_ASSIGN(DeleteViewOnEvent);
 };
 
+// View class which remove itself when it gets an event of type
+// |remove_event_type|.
+class RemoveViewOnEvent : public View {
+ public:
+  explicit RemoveViewOnEvent(ui::EventType remove_event_type)
+      : remove_event_type_(remove_event_type) {}
+
+  void OnEvent(ui::Event* event) override {
+    if (event->type() == remove_event_type_)
+      parent()->RemoveChildView(this);
+  }
+
+ private:
+  // The event type which causes the view to remove itself.
+  ui::EventType remove_event_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemoveViewOnEvent);
+};
+
+// View class which generates a nested event the first time it gets an event of
+// type |nested_event_type|. This is used to simulate nested event loops which
+// can cause |RootView::mouse_event_handler_| to get reset.
+class NestedEventOnEvent : public View {
+ public:
+  NestedEventOnEvent(ui::EventType nested_event_type, View* root_view)
+      : nested_event_type_(nested_event_type), root_view_(root_view) {}
+
+  void OnEvent(ui::Event* event) override {
+    if (event->type() == nested_event_type_) {
+      ui::MouseEvent exit_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
+                                ui::EventTimeForNow(), ui::EF_NONE,
+                                ui::EF_NONE);
+      // Avoid infinite recursion if |nested_event_type_| == ET_MOUSE_EXITED.
+      nested_event_type_ = ui::ET_UNKNOWN;
+      root_view_->OnMouseExited(exit_event);
+    }
+  }
+
+ private:
+  // The event type which causes the view to generate a nested event.
+  ui::EventType nested_event_type_;
+  // root view of this view; owned by widget.
+  View* root_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(NestedEventOnEvent);
+};
+
 }  // namespace
 
 // Verifies deleting a View in OnMouseExited() doesn't crash.
@@ -378,8 +425,8 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
 
-  // Generate a mouse move event which ensures that the mouse_moved_handler_
-  // member is set in the RootView class.
+  // Generate a mouse move event which ensures that |mouse_moved_handler_|
+  // is set in the RootView class.
   ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(15, 15),
                              gfx::Point(15, 15), ui::EventTimeForNow(), 0,
                              0);
@@ -436,6 +483,154 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
 
   EXPECT_TRUE(view_destroyed);
   EXPECT_TRUE(content->children().empty());
+}
+
+// Verifies removing a View in OnMouseEntered() doesn't crash.
+TEST_F(RootViewTest, RemoveViewOnMouseEnterDispatch) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+  widget.SetBounds(gfx::Rect(10, 10, 500, 500));
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  // |child| gets removed without being deleted, so make it a local
+  // to prevent test memory leak.
+  RemoveViewOnEvent child(ui::ET_MOUSE_ENTERED);
+
+  content->AddChildView(&child);
+
+  // Make |child| smaller than the containing Widget and RootView.
+  child.SetBounds(100, 100, 100, 100);
+
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+
+  // Move the mouse within |widget| but outside of |child|.
+  ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(15, 15),
+                             gfx::Point(15, 15), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMouseMoved(moved_event);
+
+  // Move the mouse within |child|, which should dispatch a mouse enter event to
+  // |child| and remove the view. This should not crash when the mouse enter
+  // handler returns.
+  ui::MouseEvent moved_event2(ui::ET_MOUSE_MOVED, gfx::Point(115, 115),
+                              gfx::Point(115, 115), ui::EventTimeForNow(), 0,
+                              0);
+  root_view->OnMouseMoved(moved_event2);
+
+  EXPECT_TRUE(content->children().empty());
+}
+
+// Verifies clearing the root view's |mouse_move_handler_| in OnMouseExited()
+// doesn't crash.
+TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseExitDispatch) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+  widget.SetBounds(gfx::Rect(10, 10, 500, 500));
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  View* root_view = widget.GetRootView();
+
+  View* child = new NestedEventOnEvent(ui::ET_MOUSE_EXITED, root_view);
+  content->AddChildView(child);
+  root_view->AddChildView(content);
+  // Make |child| smaller than the containing Widget and RootView.
+  child->SetBounds(100, 100, 100, 100);
+
+  // Generate a mouse move event which ensures that |mouse_moved_handler_|
+  // is set to the child view in the RootView class.
+  ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(110, 110),
+                             gfx::Point(110, 110), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMouseMoved(moved_event);
+
+  // Move the mouse outside of |child| which causes a mouse exit event to be
+  // dispatched  to |child|, which will in turn generate a nested event that
+  // clears |mouse_move_handler_|. This should not crash
+  // RootView::OnMouseMoved.
+  ui::MouseEvent move_event2(ui::ET_MOUSE_MOVED, gfx::Point(15, 15),
+                             gfx::Point(15, 15), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMouseMoved(move_event2);
+}
+
+// Verifies clearing the root view's |mouse_move_handler_| in OnMouseExited()
+// doesn't crash, in the case where the root view is targeted, because
+// it's the first enabled view encountered walking up the target tree.
+TEST_F(RootViewTest,
+       ClearMouseMoveHandlerOnMouseExitDispatchWithContentViewDisabled) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+  widget.SetBounds(gfx::Rect(10, 10, 500, 500));
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  View* root_view = widget.GetRootView();
+
+  View* child = new NestedEventOnEvent(ui::ET_MOUSE_EXITED, root_view);
+  content->AddChildView(child);
+
+  // Make |child| smaller than the containing Widget and RootView.
+  child->SetBounds(100, 100, 100, 100);
+
+  // Generate a mouse move event which ensures that the |mouse_moved_handler_|
+  // member is set to the child view in the RootView class.
+  ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(110, 110),
+                             gfx::Point(110, 110), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMouseMoved(moved_event);
+
+  // This will make RootView::OnMouseMoved skip the content view when looking
+  // for a handler for the mouse event, and instead use the root view.
+  content->SetEnabled(false);
+  // Move the mouse outside of |child| which should dispatch a mouse exit event
+  // to |mouse_move_handler_| (currently |child|), which will in turn generate a
+  // nested event that clears |mouse_move_handler_|. This should not crash
+  // RootView::OnMouseMoved.
+  ui::MouseEvent move_event2(ui::ET_MOUSE_MOVED, gfx::Point(200, 200),
+                             gfx::Point(200, 200), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMouseMoved(move_event2);
+}
+
+// Verifies clearing the root view's |mouse_move_handler_| in OnMouseEntered()
+// doesn't crash.
+TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseEnterDispatch) {
+  Widget widget;
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(init_params);
+  widget.SetBounds(gfx::Rect(10, 10, 500, 500));
+
+  View* content = new View;
+  widget.SetContentsView(content);
+
+  View* root_view = widget.GetRootView();
+
+  View* child = new NestedEventOnEvent(ui::ET_MOUSE_ENTERED, root_view);
+  content->AddChildView(child);
+
+  // Make |child| smaller than the containing Widget and RootView.
+  child->SetBounds(100, 100, 100, 100);
+
+  // Move the mouse within |widget| but outside of |child|.
+  ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(15, 15),
+                             gfx::Point(15, 15), ui::EventTimeForNow(), 0, 0);
+  root_view->OnMouseMoved(moved_event);
+
+  // Move the mouse within |child|, which dispatches a mouse enter event to
+  // |child| and resets the root view's |mouse_move_handler_|. This should not
+  // crash when the mouse enter handler generates an ET_MOUSE_ENTERED event.
+  ui::MouseEvent moved_event2(ui::ET_MOUSE_MOVED, gfx::Point(115, 115),
+                              gfx::Point(115, 115), ui::EventTimeForNow(), 0,
+                              0);
+  root_view->OnMouseMoved(moved_event2);
 }
 
 namespace {

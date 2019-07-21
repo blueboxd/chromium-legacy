@@ -565,7 +565,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
@@ -587,7 +587,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
@@ -1266,7 +1266,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       std::unique_ptr<DocumentState> document_state,
@@ -1429,7 +1429,7 @@ class CONTENT_EXPORT RenderFrameImpl
   BuildServiceWorkerNetworkProviderForNavigation(
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info);
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
 
   // These functions avoid duplication between Commit*Navigation and
   // Commit*PerNavigationMojoInterfaceNavigation functions.
@@ -1445,7 +1445,7 @@ class CONTENT_EXPORT RenderFrameImpl
           subresource_overrides,
       blink::mojom::ControllerServiceWorkerInfoPtr
           controller_service_worker_info,
-      blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+      blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,

@@ -70,7 +70,7 @@ class ServiceWorkerRemoteProviderEndpoint {
       ServiceWorkerRemoteProviderEndpoint&& other);
   ~ServiceWorkerRemoteProviderEndpoint();
 
-  void BindForWindow(blink::mojom::ServiceWorkerProviderInfoForWindowPtr info);
+  void BindForWindow(blink::mojom::ServiceWorkerProviderInfoForClientPtr info);
   void BindForServiceWorker(
       blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 

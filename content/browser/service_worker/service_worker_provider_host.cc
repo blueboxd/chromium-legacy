@@ -152,7 +152,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure,
     int frame_tree_node_id,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
   DCHECK(context);
   blink::mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
   (*out_provider_info)->client_request = mojo::MakeRequest(&client_ptr_info);
@@ -191,7 +191,7 @@ ServiceWorkerProviderHost::PreCreateForWebWorker(
     base::WeakPtr<ServiceWorkerContextCore> context,
     int process_id,
     blink::mojom::ServiceWorkerProviderType provider_type,
-    blink::mojom::ServiceWorkerProviderInfoForWorkerPtr* out_provider_info) {
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
   DCHECK((blink::features::IsPlzDedicatedWorkerEnabled() &&
           provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||

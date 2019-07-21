@@ -4780,7 +4780,7 @@ void RenderFrameHostImpl::CommitNavigation(
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     const base::UnguessableToken& devtools_navigation_token) {
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
@@ -7003,7 +7003,7 @@ void RenderFrameHostImpl::SendCommitNavigation(
     base::Optional<std::vector<::content::mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
-    blink::mojom::ServiceWorkerProviderInfoForWindowPtr provider_info,
+    blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {

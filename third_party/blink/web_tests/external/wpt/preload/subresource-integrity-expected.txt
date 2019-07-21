@@ -50,18 +50,18 @@ PASS Same-origin image with correct sha256 hash.
 PASS Same-origin image with correct sha384 hash.
 PASS Same-origin image with correct sha512 hash.
 PASS Same-origin image with empty integrity.
-FAIL Same-origin image with incorrect hash. assert_unreached: Invalid subresource load succeeded. Reached unreachable code
+FAIL Same-origin image with incorrect hash. assert_unreached: Invalid preload load succeeded. Reached unreachable code
 PASS Same-origin image with multiple sha256 hashes, including correct.
 PASS Same-origin image with multiple sha256 hashes, including unknown algorithm.
 PASS Same-origin image with sha256 mismatch, sha512 match
-FAIL Same-origin image with sha256 match, sha512 mismatch assert_unreached: Invalid subresource load succeeded. Reached unreachable code
+FAIL Same-origin image with sha256 match, sha512 mismatch assert_unreached: Invalid preload load succeeded. Reached unreachable code
 PASS <crossorigin='anonymous'> image with correct hash, ACAO: *
-FAIL <crossorigin='anonymous'> image with incorrect hash, ACAO: * assert_unreached: Invalid subresource load succeeded. Reached unreachable code
+FAIL <crossorigin='anonymous'> image with incorrect hash, ACAO: * assert_unreached: Invalid preload load succeeded. Reached unreachable code
 PASS <crossorigin='use-credentials'> image with correct hash, CORS-eligible
-FAIL <crossorigin='use-credentials'> image with incorrect hash CORS-eligible assert_unreached: Invalid subresource load succeeded. Reached unreachable code
+FAIL <crossorigin='use-credentials'> image with incorrect hash CORS-eligible assert_unreached: Invalid preload load succeeded. Reached unreachable code
 PASS <crossorigin='anonymous'> image with CORS-ineligible resource
-FAIL Cross-origin image, not CORS request, with correct hash assert_unreached: Invalid subresource load succeeded. Reached unreachable code
-FAIL Cross-origin image, not CORS request, with hash mismatch assert_unreached: Invalid subresource load succeeded. Reached unreachable code
+FAIL Cross-origin image, not CORS request, with correct hash assert_unreached: Invalid preload load succeeded. Reached unreachable code
+FAIL Cross-origin image, not CORS request, with hash mismatch assert_unreached: Invalid preload load succeeded. Reached unreachable code
 PASS Cross-origin image, empty integrity
 PASS Same-origin image with correct hash, options.
 PASS Same-origin image with unknown algorithm only.

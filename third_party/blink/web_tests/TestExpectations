@@ -6305,3 +6305,4 @@ crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSe
 
 # Sheriff 2019-07-20
 crbug.com/986019 [ Linux Win7 ] animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986018 [ Linux Win7 ] fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]

@@ -156,7 +156,9 @@ FrameSequenceTracker::FrameSequenceTracker(
 
 FrameSequenceTracker::~FrameSequenceTracker() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
-  DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
+  // TODO(sad): Reenable the DCHECK after crbug.com/985847 is resolved.
+  // DCHECK_LE(main_throughput_.frames_produced,
+  //           main_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, impl_throughput_.frames_produced);
   TRACE_EVENT_ASYNC_END1(
       "cc,benchmark", "FrameSequenceTracker", this, "args",
@@ -255,8 +257,9 @@ void FrameSequenceTracker::ReportFramePresented(
   while (!main_frames_.empty() &&
          !viz::FrameTokenGT(main_frames_.front(), frame_token)) {
     if (was_presented && main_frames_.front() == frame_token) {
-      DCHECK_LT(main_throughput_.frames_produced,
-                main_throughput_.frames_expected);
+      // TODO(sad): Reenable the DCHECK after crbug.com/985847 is resolved.
+      // DCHECK_LT(main_throughput_.frames_produced,
+      //           main_throughput_.frames_expected);
       ++main_throughput_.frames_produced;
     }
     main_frames_.pop_front();

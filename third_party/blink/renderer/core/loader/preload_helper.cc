@@ -301,14 +301,29 @@ Resource* PreloadHelper::PreloadIfNeeded(
   }
 
   const String& integrity_attr = params.integrity;
-  if (!integrity_attr.IsEmpty()) {
-    IntegrityMetadataSet metadata_set;
-    SubresourceIntegrity::ParseIntegrityAttribute(
-        integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
-        metadata_set);
-    link_fetch_params.SetIntegrityMetadata(metadata_set);
-    link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
-        integrity_attr);
+  // TODO(crbug.com/981419): Honor the integrity attribute value for all
+  // supported preload destinations, not just the destinations that support SRI
+  // in the first place.
+  if (resource_type == ResourceType::kScript ||
+      resource_type == ResourceType::kCSSStyleSheet) {
+    if (!integrity_attr.IsEmpty()) {
+      IntegrityMetadataSet metadata_set;
+      SubresourceIntegrity::ParseIntegrityAttribute(
+          integrity_attr, SubresourceIntegrityHelper::GetFeatures(&document),
+          metadata_set);
+      link_fetch_params.SetIntegrityMetadata(metadata_set);
+      link_fetch_params.MutableResourceRequest().SetFetchIntegrity(
+          integrity_attr);
+    }
+  } else {
+    if (!integrity_attr.IsEmpty()) {
+      document.AddConsoleMessage(ConsoleMessage::Create(
+          mojom::ConsoleMessageSource::kOther,
+          mojom::ConsoleMessageLevel::kWarning,
+          String("The `integrity` attribute is currently ignored for preload "
+                 "destinations that do not support subresource integrity. See "
+                 "https://crbug.com/981419 for more information")));
+    }
   }
 
   link_fetch_params.SetContentSecurityPolicyNonce(params.nonce);

@@ -135,7 +135,7 @@ TEST_F(CertificateManagerModelTest, DISABLED_ListsCertsFromPlatform) {
 
     EXPECT_EQ(net::CertType::CA_CERT, cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), cert_info->name());
-    EXPECT_FALSE(cert_info->read_only());
+    EXPECT_TRUE(cert_info->can_be_deleted());
     // This platform cert is untrusted because it is self-signed and has no
     // trust bits.
     EXPECT_TRUE(cert_info->untrusted());
@@ -181,7 +181,7 @@ TEST_F(CertificateManagerModelTest, ListsClientCertsFromPlatform) {
 
   EXPECT_EQ(net::CertType::USER_CERT, platform_cert_info->type());
   EXPECT_EQ(base::UTF8ToUTF16("Client Cert A"), platform_cert_info->name());
-  EXPECT_FALSE(platform_cert_info->read_only());
+  EXPECT_TRUE(platform_cert_info->can_be_deleted());
   EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPlatform,
             platform_cert_info->source());
   EXPECT_FALSE(platform_cert_info->web_trust_anchor());
@@ -345,7 +345,7 @@ TEST_F(CertificateManagerModelChromeOSTest, ListsWebTrustedCertsFromPolicy) {
 
   EXPECT_EQ(net::CertType::CA_CERT, cert_info->type());
   EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), cert_info->name());
-  EXPECT_TRUE(cert_info->read_only());
+  EXPECT_FALSE(cert_info->can_be_deleted());
   EXPECT_FALSE(cert_info->untrusted());
   EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPolicy,
             cert_info->source());
@@ -372,7 +372,7 @@ TEST_F(CertificateManagerModelChromeOSTest, ListsNotWebTrustedCertsFromPolicy) {
 
   EXPECT_EQ(net::CertType::CA_CERT, cert_info->type());
   EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), cert_info->name());
-  EXPECT_TRUE(cert_info->read_only());
+  EXPECT_FALSE(cert_info->can_be_deleted());
   EXPECT_FALSE(cert_info->untrusted());
   EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPolicy,
             cert_info->source());
@@ -416,7 +416,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
 
     EXPECT_EQ(net::CertType::CA_CERT, policy_cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), policy_cert_info->name());
-    EXPECT_TRUE(policy_cert_info->read_only());
+    EXPECT_FALSE(policy_cert_info->can_be_deleted());
     EXPECT_FALSE(policy_cert_info->untrusted());
     EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPolicy,
               policy_cert_info->source());
@@ -439,7 +439,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
 
     EXPECT_EQ(net::CertType::CA_CERT, platform_cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), platform_cert_info->name());
-    EXPECT_FALSE(platform_cert_info->read_only());
+    EXPECT_TRUE(platform_cert_info->can_be_deleted());
     EXPECT_TRUE(platform_cert_info->untrusted());
     EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPlatform,
               platform_cert_info->source());
@@ -484,7 +484,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
 
     EXPECT_EQ(net::CertType::CA_CERT, platform_cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), platform_cert_info->name());
-    EXPECT_FALSE(platform_cert_info->read_only());
+    EXPECT_TRUE(platform_cert_info->can_be_deleted());
     EXPECT_TRUE(platform_cert_info->untrusted());
     EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPlatform,
               platform_cert_info->source());
@@ -509,7 +509,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
 
     EXPECT_EQ(net::CertType::CA_CERT, policy_cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("pywebsocket"), policy_cert_info->name());
-    EXPECT_TRUE(policy_cert_info->read_only());
+    EXPECT_FALSE(policy_cert_info->can_be_deleted());
     EXPECT_FALSE(policy_cert_info->untrusted());
     EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPolicy,
               policy_cert_info->source());
@@ -572,7 +572,7 @@ TEST_F(CertificateManagerModelChromeOSTest, ListsExtensionCerts) {
   EXPECT_EQ(net::CertType::USER_CERT, extension_cert_info->type());
   EXPECT_EQ(base::UTF8ToUTF16("Client Cert A (extension provided)"),
             extension_cert_info->name());
-  EXPECT_TRUE(extension_cert_info->read_only());
+  EXPECT_FALSE(extension_cert_info->can_be_deleted());
   EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kExtension,
             extension_cert_info->source());
   EXPECT_FALSE(extension_cert_info->web_trust_anchor());
@@ -609,7 +609,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
 
     EXPECT_EQ(net::CertType::USER_CERT, platform_cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("Client Cert A"), platform_cert_info->name());
-    EXPECT_FALSE(platform_cert_info->read_only());
+    EXPECT_TRUE(platform_cert_info->can_be_deleted());
     EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kPlatform,
               platform_cert_info->source());
     EXPECT_FALSE(platform_cert_info->web_trust_anchor());
@@ -634,7 +634,7 @@ TEST_F(CertificateManagerModelChromeOSTest,
     EXPECT_EQ(net::CertType::USER_CERT, extension_cert_info->type());
     EXPECT_EQ(base::UTF8ToUTF16("Client Cert A (extension provided)"),
               extension_cert_info->name());
-    EXPECT_TRUE(extension_cert_info->read_only());
+    EXPECT_FALSE(extension_cert_info->can_be_deleted());
     EXPECT_EQ(CertificateManagerModel::CertInfo::Source::kExtension,
               extension_cert_info->source());
     EXPECT_FALSE(extension_cert_info->web_trust_anchor());

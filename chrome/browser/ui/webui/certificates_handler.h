@@ -182,12 +182,10 @@ class CertificatesHandler : public content::WebUIMessageHandler,
   bool IsClientCertificateManagementAllowedPolicy(Slot slot) const;
 #endif
 
-  // Returns true if the certificate represented by |cert_info| is read-only
-  // (i.e. can not be deleted). Evaluates the certificate attributes and, on
-  // Chrome OS devices, the enterprise policy
-  // ClientCertificateManagementAllowed.
-  bool IsCertificateReadOnly(
-      const CertificateManagerModel::CertInfo* cert_info);
+  // Returns true if the certificate represented by |cert_info| can be deleted.
+  // Evaluates the certificate attributes and, on Chrome OS devices, the
+  // enterprise policy ClientCertificateManagementAllowed.
+  bool CanDeleteCertificate(const CertificateManagerModel::CertInfo* cert_info);
 
   // The Certificates Manager model
   bool requested_certificate_manager_model_;

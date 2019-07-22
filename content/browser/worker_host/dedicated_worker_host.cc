@@ -39,10 +39,10 @@ namespace {
 // StrongBinding. This lives on the UI thread.
 class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
  public:
-  DedicatedWorkerHost(int process_id,
+  DedicatedWorkerHost(int worker_process_id,
                       int ancestor_render_frame_id,
                       const url::Origin& origin)
-      : process_id_(process_id),
+      : worker_process_id_(worker_process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
         origin_(origin) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -53,8 +53,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
-    if (!process)
+    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
+    if (!worker_process_host)
       return;
 
     // See if the registry that is specific to this worker host wants to handle
@@ -62,8 +62,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     if (registry_.TryBindInterface(interface_name, &interface_pipe))
       return;
 
-    BindWorkerInterface(interface_name, std::move(interface_pipe), process,
-                        origin_);
+    BindWorkerInterface(interface_name, std::move(interface_pipe),
+                        worker_process_host, origin_);
   }
 
   // PlzDedicatedWorker:
@@ -82,13 +82,13 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK(client);
     client_ = std::move(client);
 
-    auto* render_process_host = RenderProcessHost::FromID(process_id_);
-    if (!render_process_host) {
+    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
+    if (!worker_process_host) {
       client_->OnScriptLoadStartFailed();
       return;
     }
     auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
-        render_process_host->GetStoragePartition());
+        worker_process_host->GetStoragePartition());
 
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
     if (script_url.SchemeIsBlob()) {
@@ -106,11 +106,12 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     }
 
     appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
-        storage_partition_impl->GetAppCacheService(), process_id_);
+        storage_partition_impl->GetAppCacheService(), worker_process_id_);
 
     WorkerScriptFetchInitiator::Start(
-        process_id_, script_url, request_initiator_origin, credentials_mode,
-        std::move(outside_fetch_client_settings_object), ResourceType::kWorker,
+        worker_process_id_, script_url, request_initiator_origin,
+        credentials_mode, std::move(outside_fetch_client_settings_object),
+        ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
         appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
         storage_partition_impl,
@@ -169,8 +170,8 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       return;
     }
 
-    auto* render_process_host = RenderProcessHost::FromID(process_id_);
-    if (!render_process_host) {
+    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
+    if (!worker_process_host) {
       client_->OnScriptLoadStartFailed();
       return;
     }
@@ -180,7 +181,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         pending_default_factory;
     CreateNetworkFactory(
         pending_default_factory.InitWithNewPipeAndPassReceiver(),
-        render_process_host);
+        worker_process_host);
     subresource_loader_factories->pending_default_factory() =
         std::move(pending_default_factory);
 
@@ -216,19 +217,21 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request,
-                            RenderProcessHost* process) {
+                            RenderProcessHost* worker_process_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
     // Get the origin of the frame tree's root to use as top-frame origin.
     // TODO(cammie): Change this approach when we support shared workers
     // creating dedicated workers, as there might be no ancestor frame.
-    auto* host =
-        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
-    url::Origin top_frame_origin(
-        host->frame_tree_node()->frame_tree()->root()->current_origin());
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    url::Origin top_frame_origin(ancestor_render_frame_host->frame_tree_node()
+                                     ->frame_tree()
+                                     ->root()
+                                     ->current_origin());
 
-    process->CreateURLLoaderFactory(
+    worker_process_host->CreateURLLoaderFactory(
         origin_, nullptr /* preferences */,
         net::NetworkIsolationKey(top_frame_origin, origin_),
         std::move(no_header_client), std::move(request));
@@ -236,59 +239,72 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
   void CreateWebUsbService(blink::mojom::WebUsbServiceRequest request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auto* host =
-        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
-    GetContentClient()->browser()->CreateWebUsbService(host,
-                                                       std::move(request));
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    // TODO(nhiroki): Check if |ancestor_render_frame_host| is valid.
+    GetContentClient()->browser()->CreateWebUsbService(
+        ancestor_render_frame_host, std::move(request));
   }
 
   void CreateWebSocketConnector(
       blink::mojom::WebSocketConnectorRequest request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    network::mojom::AuthenticationHandlerPtr auth_handler;
-    auto* frame =
-        RenderFrameHost::FromID(process_id_, ancestor_render_frame_id_);
-    if (!frame) {
-      // In some cases |frame| can be null. In such cases the worker will
-      // soon be terminated too, so let's abort the connection.
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    if (!ancestor_render_frame_host) {
+      // In some cases |ancestor_render_frame_host| can be null. In such cases
+      // the worker will soon be terminated too, so let's abort the connection.
       request.ResetWithReason(network::mojom::WebSocket::kInsufficientResources,
                               "The parent frame has already been gone.");
       return;
     }
     mojo::MakeStrongBinding(
         std::make_unique<WebSocketConnectorImpl>(
-            process_id_, ancestor_render_frame_id_, origin_),
+            worker_process_id_, ancestor_render_frame_id_, origin_),
         std::move(request));
   }
 
   void CreateDedicatedWorker(
       blink::mojom::DedicatedWorkerHostFactoryRequest request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    CreateDedicatedWorkerHostFactory(process_id_, ancestor_render_frame_id_,
-                                     origin_, std::move(request));
+    CreateDedicatedWorkerHostFactory(worker_process_id_,
+                                     ancestor_render_frame_id_, origin_,
+                                     std::move(request));
   }
 
   void CreateIdleManager(blink::mojom::IdleManagerRequest request) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    auto* host =
-        RenderFrameHostImpl::FromID(process_id_, ancestor_render_frame_id_);
-    if (!host->IsFeatureEnabled(
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    // TODO(nhiroki): Check if |ancestor_render_frame_host| is valid.
+    if (!ancestor_render_frame_host->IsFeatureEnabled(
             blink::mojom::FeaturePolicyFeature::kIdleDetection)) {
       mojo::ReportBadMessage("Feature policy blocks access to IdleDetection.");
       return;
     }
     static_cast<StoragePartitionImpl*>(
-        host->GetProcess()->GetStoragePartition())
+        ancestor_render_frame_host->GetProcess()->GetStoragePartition())
         ->GetIdleManager()
         ->CreateService(std::move(request));
   }
 
-  const int process_id_;
-  // ancestor_render_frame_id_ is the id of the frame that owns this worker,
-  // either directly, or (in the case of nested workers) indirectly via a tree
-  // of dedicated workers.
+  // May return a nullptr.
+  RenderFrameHostImpl* GetAncestorRenderFrameHost() {
+    // Use |worker_process_id_| as the ancestor render frame's process ID as the
+    // frame surely lives in the same process for dedicated workers.
+    const int ancestor_render_frame_process_id = worker_process_id_;
+    return RenderFrameHostImpl::FromID(ancestor_render_frame_process_id,
+                                       ancestor_render_frame_id_);
+  }
+
+  // The ID of the render process host that hosts this worker.
+  const int worker_process_id_;
+
+  // The ID of the frame that owns this worker, either directly, or (in the case
+  // of nested workers) indirectly via a tree of dedicated workers.
   const int ancestor_render_frame_id_;
+
   const url::Origin origin_;
 
   // This is kept alive during the lifetime of the dedicated worker, since it's
@@ -311,10 +327,10 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 class DedicatedWorkerHostFactoryImpl
     : public blink::mojom::DedicatedWorkerHostFactory {
  public:
-  DedicatedWorkerHostFactoryImpl(int process_id,
+  DedicatedWorkerHostFactoryImpl(int creator_process_id,
                                  int ancestor_render_frame_id,
                                  const url::Origin& parent_context_origin)
-      : process_id_(process_id),
+      : creator_process_id_(creator_process_id),
         ancestor_render_frame_id_(ancestor_render_frame_id),
         parent_context_origin_(parent_context_origin) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -334,11 +350,12 @@ class DedicatedWorkerHostFactoryImpl
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
-    mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerHost>(
-                                process_id_, ancestor_render_frame_id_, origin),
-                            FilterRendererExposedInterfaces(
-                                blink::mojom::kNavigation_DedicatedWorkerSpec,
-                                process_id_, std::move(request)));
+    mojo::MakeStrongBinding(
+        std::make_unique<DedicatedWorkerHost>(
+            creator_process_id_, ancestor_render_frame_id_, origin),
+        FilterRendererExposedInterfaces(
+            blink::mojom::kNavigation_DedicatedWorkerSpec, creator_process_id_,
+            std::move(request)));
   }
 
   // PlzDedicatedWorker:
@@ -356,18 +373,22 @@ class DedicatedWorkerHostFactoryImpl
       return;
     }
 
+    // Create a worker host that will start a new dedicated worker in the
+    // renderer process whose ID is |creator_process_id_|.
+    //
     // TODO(crbug.com/729021): Once |parent_context_origin_| no longer races
     // with the request for |DedicatedWorkerHostFactory|, enforce that
     // the worker's origin either matches the origin of the creating context
     // (Document or DedicatedWorkerGlobalScope), or is unique.
-    auto host = std::make_unique<DedicatedWorkerHost>(
-        process_id_, ancestor_render_frame_id_, request_initiator_origin);
+    auto host = std::make_unique<DedicatedWorkerHost>(creator_process_id_,
+                                                      ancestor_render_frame_id_,
+                                                      request_initiator_origin);
     auto* host_raw = host.get();
     service_manager::mojom::InterfaceProviderPtr interface_provider;
     mojo::MakeStrongBinding(
         std::move(host),
         FilterRendererExposedInterfaces(
-            blink::mojom::kNavigation_DedicatedWorkerSpec, process_id_,
+            blink::mojom::kNavigation_DedicatedWorkerSpec, creator_process_id_,
             mojo::MakeRequest(&interface_provider)));
     client->OnWorkerHostCreated(std::move(interface_provider));
     host_raw->StartScriptLoad(script_url, request_initiator_origin,
@@ -377,7 +398,7 @@ class DedicatedWorkerHostFactoryImpl
   }
 
  private:
-  const int process_id_;
+  const int creator_process_id_;
   const int ancestor_render_frame_id_;
   const url::Origin parent_context_origin_;
 
@@ -387,14 +408,15 @@ class DedicatedWorkerHostFactoryImpl
 }  // namespace
 
 void CreateDedicatedWorkerHostFactory(
-    int process_id,
+    int creator_process_id,
     int ancestor_render_frame_id,
     const url::Origin& origin,
     blink::mojom::DedicatedWorkerHostFactoryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  mojo::MakeStrongBinding(std::make_unique<DedicatedWorkerHostFactoryImpl>(
-                              process_id, ancestor_render_frame_id, origin),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<DedicatedWorkerHostFactoryImpl>(
+          creator_process_id, ancestor_render_frame_id, origin),
+      std::move(request));
 }
 
 }  // namespace content

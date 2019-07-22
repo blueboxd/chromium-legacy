@@ -224,6 +224,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
               const std::string& filesystem,
               const std::string& label,
               VoidDBusMethodCallback callback) override {
+    format_start_time_[device_path] = base::TimeTicks::Now();
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kFormat);
     dbus::MessageWriter writer(&method_call);
@@ -481,6 +482,17 @@ class CrosDisksClientImpl : public CrosDisksClient {
       return;
     }
 
+    if (base::Contains(format_start_time_, device_path)) {
+      base::UmaHistogramMediumTimes(
+          "CrosDisksClient.FormatTime",
+          base::TimeTicks::Now() - format_start_time_[device_path]);
+      format_start_time_.erase(device_path);
+    }
+
+    base::UmaHistogramEnumeration("CrosDisksClient.FormatCompletedError",
+                                  static_cast<FormatError>(error_code),
+                                  FORMAT_ERROR_COUNT);
+
     for (auto& observer : observer_list_) {
       observer.OnFormatCompleted(static_cast<FormatError>(error_code),
                                  device_path);
@@ -514,6 +526,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
   dbus::ObjectProxy* proxy_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
+
+  std::unordered_map<std::string, base::TimeTicks> format_start_time_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

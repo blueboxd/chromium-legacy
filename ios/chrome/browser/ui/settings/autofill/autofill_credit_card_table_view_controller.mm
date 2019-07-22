@@ -17,6 +17,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -108,28 +109,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 #pragma mark - UIViewController
 
-- (NSArray<UIBarButtonItem*>*)toolbarItems {
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
-    UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
-        initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-                             target:nil
-                             action:nil];
-    return @[
-      self.deleteButton,
-      flexibleSpace,
-      self.addPaymentMethodButton,
-    ];
-  }
-  return [super toolbarItems];
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
-  [self.deleteButton setEnabled:NO];
+  [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
+               animated:YES];
   [self updateUIForEditState];
   [self loadModel];
 }
@@ -137,9 +124,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
   [super setEditing:editing animated:animated];
   if (editing) {
+    self.deleteButton.enabled = NO;
+    [self showDeleteButton];
     [self setSwitchItemEnabled:NO itemType:ItemTypeAutofillCardSwitch];
   } else {
-    [self.deleteButton setEnabled:NO];
+    [self hideDeleteButton];
     [self setSwitchItemEnabled:YES itemType:ItemTypeAutofillCardSwitch];
   }
 }
@@ -327,7 +316,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // edit mode, selection is handled by the superclass. When not in edit mode
   // selection presents the editing controller for the selected entry.
   if (self.editing) {
-    [self.deleteButton setEnabled:YES];
+    self.deleteButton.enabled = YES;
     return;
   }
 
@@ -354,7 +343,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
 
   if (self.tableView.indexPathsForSelectedRows.count == 0)
-    [self.deleteButton setEnabled:NO];
+    self.deleteButton.enabled = NO;
 }
 
 #pragma mark - UITableViewDataSource
@@ -431,6 +420,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
       }];
 }
 
+// Opens new view controller |AutofillAddCreditCardViewController| for fillig
+// credit card details.
+- (void)handleAddPayment:(id)sender {
+  DCHECK(base::FeatureList::IsEnabled(kSettingsAddPaymentMethod));
+  AutofillAddCreditCardViewController* addCreditCardViewController =
+      [[AutofillAddCreditCardViewController alloc] init];
+
+  UINavigationController* navigationController = [[UINavigationController alloc]
+      initWithRootViewController:addCreditCardViewController];
+
+  [self presentViewController:navigationController animated:YES completion:nil];
+}
+
 #pragma mark PersonalDataManagerObserver
 
 - (void)onPersonalDataChanged {
@@ -465,11 +467,33 @@ typedef NS_ENUM(NSInteger, ItemType) {
                           IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD)
                 style:UIBarButtonItemStylePlain
                target:self
-               action:nil];
-    // TODO(crbug.com/984561): Add action to navigate to the add credit card
-    // details screen here.
+               action:@selector(handleAddPayment:)];
   }
   return _addPaymentMethodButton;
+}
+
+#pragma mark - Private
+
+// Create a flexible space item to be used in the toolbar.
+- (UIBarButtonItem*)flexibleSpace {
+  return [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
+                           target:nil
+                           action:nil];
+}
+
+// Adds delete button to the bottom toolbar.
+- (void)showDeleteButton {
+  NSArray* customToolbarItems =
+      @[ self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton ];
+  [self setToolbarItems:customToolbarItems animated:YES];
+}
+
+// Removes delete button from the bottom toolbar.
+- (void)hideDeleteButton {
+  NSArray* customToolbarItems =
+      @[ [self flexibleSpace], self.addPaymentMethodButton ];
+  [self setToolbarItems:customToolbarItems animated:YES];
 }
 
 @end

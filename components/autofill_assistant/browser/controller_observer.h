@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_OBSERVER_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_OBSERVER_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/observer_list.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -22,14 +23,11 @@
 
 namespace autofill_assistant {
 
-// Controller to control autofill assistant UI.
-//
-// TODO(crbug/925947): Rename this class to Observer and make treat it as a real
-// observer in the Controller.
-class UiController {
+// Observes Controller's state.
+class ControllerObserver : public base::CheckedObserver {
  public:
-  UiController();
-  virtual ~UiController();
+  ControllerObserver();
+  ~ControllerObserver() override;
 
   // Called when the controller has entered a new state.
   virtual void OnStateChanged(AutofillAssistantState new_state);
@@ -105,4 +103,4 @@ class UiController {
   virtual void OnFormChanged(const FormProto* form);
 };
 }  // namespace autofill_assistant
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_UI_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_CONTROLLER_OBSERVER_H_

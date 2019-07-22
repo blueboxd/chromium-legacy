@@ -247,3 +247,33 @@ testcase.formatDialogNameInvalid = async () => {
   // Check that a name without invalid characters succeeds.
   await checkSuccess(appId, 'Nice name', 'vfat');
 };
+
+/**
+ * Tests opening the format dialog from the gear menu.
+ */
+testcase.formatDialogGearMenu = async () => {
+  await sendTestMessage({name: 'mountFakeUsb'});
+  const appId = await setupFormatDialogTest();
+
+  // Focus the directory tree.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#directory-tree']),
+      'focus failed: #directory-tree');
+
+  // Click on the USB's directory tree entry.
+  const treeQuery = `#directory-tree [entry-label="fake-usb"]`;
+  await remoteCall.waitAndClickElement(appId, treeQuery);
+
+  // Click on the gear menu button.
+  await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
+
+  // Click on the format menu item.
+  await remoteCall.waitAndClickElement(
+      appId, '#gear-menu-format:not([disabled]):not([hidden])');
+
+  // Check the format dialog is open and the title is correct
+  const title = await remoteCall.waitForElement(
+      appId, ['files-format-dialog', 'cr-dialog[open] div[slot="title"]']);
+  chrome.test.assertEq('Format fake-usb', title.text.trim());
+};

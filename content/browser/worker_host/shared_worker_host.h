@@ -53,7 +53,7 @@ class CONTENT_EXPORT SharedWorkerHost
  public:
   SharedWorkerHost(SharedWorkerServiceImpl* service,
                    std::unique_ptr<SharedWorkerInstance> instance,
-                   int process_id);
+                   int worker_process_id);
   ~SharedWorkerHost() override;
 
   // Allows overriding the URLLoaderFactory creation for subresources.
@@ -62,7 +62,7 @@ class CONTENT_EXPORT SharedWorkerHost
   // This callback is run on the UI thread.
   using CreateNetworkFactoryCallback = base::RepeatingCallback<void(
       network::mojom::URLLoaderFactoryRequest request,
-      int process_id,
+      int worker_process_id,
       network::mojom::URLLoaderFactoryPtrInfo original_factory)>;
   static void SetNetworkFactoryForTesting(
       const CreateNetworkFactoryCallback& url_loader_factory_callback);
@@ -105,7 +105,7 @@ class CONTENT_EXPORT SharedWorkerHost
   void TerminateWorker();
 
   void AddClient(blink::mojom::SharedWorkerClientPtr client,
-                 int process_id,
+                 int client_process_id,
                  int frame_id,
                  const blink::MessagePortChannel& port);
 
@@ -116,7 +116,7 @@ class CONTENT_EXPORT SharedWorkerHost
       std::unique_ptr<AppCacheNavigationHandle> appcache_handle);
 
   SharedWorkerInstance* instance() { return instance_.get(); }
-  int process_id() const { return process_id_; }
+  int worker_process_id() const { return worker_process_id_; }
   bool IsAvailable() const;
 
   base::WeakPtr<SharedWorkerHost> AsWeakPtr();
@@ -134,15 +134,16 @@ class CONTENT_EXPORT SharedWorkerHost
 
   class ScopedDevToolsHandle;
 
+  // Contains information about a client connecting to this shared worker.
   struct ClientInfo {
     ClientInfo(blink::mojom::SharedWorkerClientPtr client,
                int connection_request_id,
-               int process_id,
+               int client_process_id,
                int frame_id);
     ~ClientInfo();
     blink::mojom::SharedWorkerClientPtr client;
     const int connection_request_id;
-    const int process_id;
+    const int client_process_id;
     const int frame_id;
   };
 
@@ -181,7 +182,7 @@ class CONTENT_EXPORT SharedWorkerHost
   blink::mojom::SharedWorkerRequest worker_request_;
   blink::mojom::SharedWorkerPtr worker_;
 
-  const int process_id_;
+  const int worker_process_id_;
   int next_connection_request_id_;
   std::unique_ptr<ScopedDevToolsHandle> devtools_handle_;
 

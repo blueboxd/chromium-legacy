@@ -57,7 +57,7 @@ class WorkerScriptFetchInitiator {
   // Creates a worker script fetcher and starts it. Must be called on the UI
   // thread. |callback| will be called with the result on the UI thread.
   static void Start(
-      int process_id,
+      int worker_process_id,
       const GURL& script_url,
       const url::Origin& request_initiator,
       network::mojom::CredentialsMode credentials_mode,
@@ -75,7 +75,7 @@ class WorkerScriptFetchInitiator {
  private:
   // Creates a loader factory bundle. Must be called on the UI thread.
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
-      int process_id,
+      int worker_process_id,
       StoragePartitionImpl* storage_partition,
       bool file_support);
 
@@ -86,7 +86,7 @@ class WorkerScriptFetchInitiator {
       BrowserContext* browser_context);
 
   static void CreateScriptLoaderOnIO(
-      int process_id,
+      int worker_process_id,
       std::unique_ptr<network::ResourceRequest> resource_request,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>

@@ -105,9 +105,9 @@ class SharingService : public KeyedService,
   void UnregisterDevice();
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
-  void OnMessageSent(SendMessageCallback callback,
+  void OnMessageSent(const std::string& message_guid,
                      base::Optional<std::string> message_id);
-  void InvokeSendMessageCallback(const std::string& message_id, bool result);
+  void InvokeSendMessageCallback(const std::string& message_guid, bool result);
 
   // Returns true if sync is active and sync preference is enabled.
   bool IsSyncEnabled() const;
@@ -124,7 +124,12 @@ class SharingService : public KeyedService,
   PingMessageHandler ping_message_handler_;
   net::BackoffEntry backoff_entry_;
   State state_;
+
+  // Map of random GUID to SendMessageCallback.
   std::map<std::string, SendMessageCallback> send_message_callbacks_;
+
+  // Map of FCM message_id to random GUID.
+  std::map<std::string, std::string> message_guids_;
 
 #if defined(OS_ANDROID)
   ClickToCallMessageHandler click_to_call_message_handler_;

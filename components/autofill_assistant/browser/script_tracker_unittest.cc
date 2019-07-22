@@ -10,7 +10,6 @@
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/mock_service.h"
-#include "components/autofill_assistant/browser/mock_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
@@ -53,7 +52,6 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
         runnable_scripts_changed_(0),
         tracker_(&delegate_, /* listener=*/this) {
     delegate_.SetService(&mock_service_);
-    delegate_.SetUiController(&mock_ui_controller_);
     delegate_.SetWebController(&mock_web_controller_);
   }
 
@@ -123,7 +121,6 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
   GURL url_;
   NiceMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
-  NiceMock<MockUiController> mock_ui_controller_;
 
   // Number of times NoRunnableScriptsAnymore was called.
   int no_runnable_scripts_anymore_;

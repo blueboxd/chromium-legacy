@@ -32,6 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ANIMATOR_H_
 
 #include <memory>
+#include "base/time/default_tick_clock.h"
+
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
@@ -99,8 +101,9 @@ class CompositorAnimationTimeline;
 
 class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
  public:
-  using TimeFunction = double (*)();
-  ScrollAnimator(ScrollableArea*, TimeFunction);
+  explicit ScrollAnimator(ScrollableArea*,
+                          const base::TickClock* tick_clock =
+                              base::DefaultTickClock::GetInstance());
   ~ScrollAnimator() override;
 
   bool HasRunningAnimation() const override;
@@ -139,8 +142,8 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
                                std::unique_ptr<cc::AnimationCurve>) override;
 
   std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
-  double start_time_;
-  TimeFunction time_function_;
+  const base::TickClock* const tick_clock_;
+  base::TimeTicks start_time_;
 
  private:
   // Returns true if the animation was scheduled successfully. If animation

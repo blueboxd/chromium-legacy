@@ -14,7 +14,6 @@
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/fake_script_executor_delegate.h"
 #include "components/autofill_assistant/browser/mock_service.h"
-#include "components/autofill_assistant/browser/mock_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -51,7 +50,6 @@ class ScriptExecutorTest : public testing::Test,
  public:
   void SetUp() override {
     delegate_.SetService(&mock_service_);
-    delegate_.SetUiController(&mock_ui_controller_);
     delegate_.SetWebController(&mock_web_controller_);
     delegate_.SetCurrentURL(GURL("http://example.com/"));
 
@@ -154,7 +152,6 @@ class ScriptExecutorTest : public testing::Test,
   Script script_;
   StrictMock<MockService> mock_service_;
   NiceMock<MockWebController> mock_web_controller_;
-  NiceMock<MockUiController> mock_ui_controller_;
   std::map<std::string, ScriptStatusProto> scripts_state_;
 
   // An owner for the pointers in |ordered_interrupts_|

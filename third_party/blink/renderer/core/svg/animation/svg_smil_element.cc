@@ -1098,7 +1098,7 @@ bool SVGSMILElement::IsContributing(double elapsed) const {
 // The first part of the processing of the animation,
 // this checks if there are any further calculations needed
 // to continue and makes sure the intervals are correct.
-bool SVGSMILElement::NeedsToProgress(double elapsed, bool seek_to_time) {
+bool SVGSMILElement::NeedsToProgress(double elapsed) {
   // Check we're connected to something.
   DCHECK(time_container_);
   // Check that we have some form of start or are prepared to find it.

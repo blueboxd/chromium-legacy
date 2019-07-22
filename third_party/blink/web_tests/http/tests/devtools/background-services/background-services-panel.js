@@ -11,10 +11,10 @@ function dumpPreviewPanel() {
   const preview = treeElement._view._preview;
 
   let text = '';
-  if (preview.contentElement.getElementsByClassName('empty-view').length)
-    text = preview.contentElement.getElementsByClassName('empty-view')[0].textContent;
+  if (preview.contentElement.getElementsByClassName('background-service-metadata-entry').length)
+    text = preview.contentElement.getElementsByClassName('background-service-metadata-entry')[0].textContent;
   else
-    text = preview.element.getElementsByClassName('background-service-metadata-entry')[0].textContent;
+    text = Array.from(preview.element.getElementsByTagName('p')).map(p => p.textContent).join();
 
   // There's some platform specific shortcuts + the button in the text, just keep the important bits.
   if (text.startsWith('Click the record button'))

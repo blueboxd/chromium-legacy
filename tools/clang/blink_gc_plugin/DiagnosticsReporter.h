@@ -114,7 +114,6 @@ class DiagnosticsReporter {
   unsigned diag_class_requires_finalization_;
   unsigned diag_class_does_not_require_finalization_;
   unsigned diag_finalizer_accesses_finalized_field_;
-  unsigned diag_finalizer_eagerly_finalized_field_;
   unsigned diag_overridden_non_virtual_trace_;
   unsigned diag_missing_trace_dispatch_method_;
   unsigned diag_missing_finalize_dispatch_method_;
@@ -142,7 +141,6 @@ class DiagnosticsReporter {
   unsigned diag_part_object_contains_gc_root_note_;
   unsigned diag_field_contains_gc_root_note_;
   unsigned diag_finalized_field_note_;
-  unsigned diag_eagerly_finalized_field_note_;
   unsigned diag_user_declared_destructor_note_;
   unsigned diag_user_declared_finalizer_note_;
   unsigned diag_base_requires_finalization_note_;

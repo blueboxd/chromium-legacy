@@ -341,6 +341,16 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-ambient-authentication-in-incognito",
+    "owners": ["rhalavati", "chrome-privacy-core@google.com"],
+    "expiry_milestone": 87
+  },
+  {
+    "name": "enable-ambient-authentication-in-guest-session",
+    "owners": ["rhalavati", "chrome-privacy-core@google.com"],
+    "expiry_milestone": 87
+  },
+  {
     "name": "enable-autofill-save-card-show-no-thanks",
     "owners": ["siashah", "jsaul@google.com"],
     "expiry_milestone": 82

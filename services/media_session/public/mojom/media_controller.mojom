@@ -43,7 +43,7 @@ interface MediaController {
   // Adds an observer that will forward events from the active media session.
   // If the active session changes then observers do not need to be readded.
   // Adding the observer will update the observer with the latest state.
-  AddObserver(MediaControllerObserver observer);
+  AddObserver(pending_remote<MediaControllerObserver> observer);
 
   // Skip to the previous track. If there is no previous track then this will be
   // a no-op.

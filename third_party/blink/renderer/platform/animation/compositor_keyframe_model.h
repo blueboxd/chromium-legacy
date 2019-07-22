@@ -59,6 +59,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
 
   double StartTime() const;
   void SetStartTime(double monotonic_time);
+  void SetStartTime(base::TimeTicks);
 
   double TimeOffset() const;
   void SetTimeOffset(double monotonic_time);

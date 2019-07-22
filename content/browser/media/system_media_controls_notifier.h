@@ -92,8 +92,8 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
   media_session::mojom::MediaSessionInfoPtr session_info_ptr_;
 
   // Used to receive updates to the active media controller.
-  mojo::Binding<media_session::mojom::MediaControllerObserver>
-      media_controller_observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      media_controller_observer_receiver_{this};
   mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
       media_controller_image_observer_receiver_{this};
 

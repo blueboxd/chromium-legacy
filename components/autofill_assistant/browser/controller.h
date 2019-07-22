@@ -92,7 +92,6 @@ class Controller : public ScriptExecutorDelegate,
   const GURL& GetCurrentURL() override;
   const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
-  UiController* GetUiController() override;
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
   const TriggerContext* GetTriggerContext() override;
@@ -166,6 +165,8 @@ class Controller : public ScriptExecutorDelegate,
   void SetChoiceSelected(int input_index,
                          int choice_index,
                          bool selected) override;
+  void AddObserver(ControllerObserver* observer) override;
+  void RemoveObserver(const ControllerObserver* observer) override;
 
  private:
   friend ControllerTest;
@@ -253,8 +254,6 @@ class Controller : public ScriptExecutorDelegate,
   ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;
-
-  std::unique_ptr<UiController> noop_ui_controller_;
 
   // Lazily instantiate in GetWebController().
   std::unique_ptr<WebController> web_controller_;
@@ -349,6 +348,8 @@ class Controller : public ScriptExecutorDelegate,
   // actions.
   // Lazily instantiate in script_tracker().
   std::unique_ptr<ScriptTracker> script_tracker_;
+
+  base::ObserverList<ControllerObserver> observers_;
 
   // If true, the controller is supposed to stay up and running in the
   // background even without UI, keeping track of scripts.

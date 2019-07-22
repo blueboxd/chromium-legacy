@@ -51,9 +51,6 @@ const size_t kLogCutoffSize = 50 * 1024 * 1024;  // 50 MiB.
 // there is no actual file on disk.
 constexpr char kPolicyDumpFileLocation[] = "/var/log/policy_dump.json";
 
-// Name used for file containing zip archive of the logs.
-constexpr char kZippedLogsFile[] = "logs.zip";
-
 // The file names of the system logs to upload.
 // Note: do not add anything to this list without checking for PII in the file.
 const char* const kSystemLogFileNames[] = {
@@ -288,6 +285,9 @@ const char* const SystemLogUploader::kFileTypeZippedLogFile = "zipped_log_file";
 // String constant for zipped logs name.
 const char* const SystemLogUploader::kZippedLogsName = "logs";
 
+// Name used for file containing zip archive of the logs.
+const char* const SystemLogUploader::kZippedLogsFileName = "logs.zip";
+
 // String constant signalling that the segment contains a binary file.
 const char* const SystemLogUploader::kContentTypeOctetStream =
     "application/octet-stream";
@@ -439,8 +439,8 @@ void SystemLogUploader::UploadZippedSystemLogs(std::string zipped_system_logs) {
       std::make_pair(kFileTypeHeaderName, kFileTypeZippedLogFile));
   header_fields.insert(std::make_pair(net::HttpRequestHeaders::kContentType,
                                       kContentTypeOctetStream));
-  upload_job_->AddDataSegment(kZippedLogsName, kZippedLogsFile, header_fields,
-                              std::move(data));
+  upload_job_->AddDataSegment(kZippedLogsName, kZippedLogsFileName,
+                              header_fields, std::move(data));
   upload_job_->Start();
 }
 

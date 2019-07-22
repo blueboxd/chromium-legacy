@@ -1107,6 +1107,8 @@ message ChromeUserProfileReport {
   // The name of the loaded profile, which was entered by the user when creating
   // the profile. Empty when in incognito mode.
   optional string name = 9;
+  // A list of extensions requested for installation.
+  repeated ExtensionRequest extension_requests = 10;
 }
 
 // Sign in information of Profile.
@@ -1117,12 +1119,10 @@ message ChromeSignedInUser {
   optional string obfudscated_gaiaid = 2;
 }
 
-// Extension information.
+// Extension request information.
 message ExtensionRequest {
   // ID of the installed app/extension for a Chrome app or extension.
   optional string id = 1;
-  // User generated justification for why the extension should be installed.
-  optional string justification = 2;
 }
 
 // Extension information.
@@ -1340,12 +1340,12 @@ message BrowserReport {
   // Deprecated by ChromeUserProfileInfo and only used by old Chrome browser.
   repeated ChromeUserProfileReport chrome_user_profile_reports = 4;
 
-  // A list of all Profiles that is created in the currently browser instance.
-  // Only activated Profiles is able to upload full details while the idle ones
+  // A list of all Profiles that are created in the current browser instance.
+  // Only activated Profiles are able to upload full details while the idle ones
   // contain id and name only. Please note that some activated Profiles may not
-  // upload full details like idle one due to the limitation of report size.
+  // upload full details due to the limitation of the report size.
   // These details will be uploaded in the following reports.
-  repeated ChromeUserProfileInfo profile_info_list = 6;
+  repeated ChromeUserProfileInfo chrome_user_profile_infos = 6;
 }
 
 // Report Operating system related information.

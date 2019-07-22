@@ -116,17 +116,18 @@
 
 #pragma mark - UIViewController
 
-// Overrides parent class specification.
-- (NSArray<UIBarButtonItem*>*)toolbarItems {
+- (void)viewDidLoad {
+  [super viewDidLoad];
+
   UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  return @[ flexibleSpace, self.clearBrowsingDataBarButton, flexibleSpace ];
-}
+  [self setToolbarItems:@[
+    flexibleSpace, self.clearBrowsingDataBarButton, flexibleSpace
+  ]
+               animated:YES];
 
-- (void)viewDidLoad {
-  [super viewDidLoad];
   if (IsNewClearBrowsingDataUIEnabled()) {
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   }

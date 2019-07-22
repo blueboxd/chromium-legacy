@@ -138,8 +138,6 @@ class CORE_EXPORT PaintTiming final
   void SetFirstImagePaintSwap(base::TimeTicks stamp);
 
   void RegisterNotifySwapTime(PaintEvent);
-  void ReportUserInputHistogram(
-      FirstMeaningfulPaintDetector::HadUserInput had_input);
 
   base::TimeTicks FirstPaintRendered() const { return first_paint_; }
 

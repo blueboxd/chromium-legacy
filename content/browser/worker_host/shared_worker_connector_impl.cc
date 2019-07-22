@@ -20,17 +20,17 @@ namespace content {
 
 // static
 void SharedWorkerConnectorImpl::Create(
-    int process_id,
+    int client_process_id,
     int frame_id,
     blink::mojom::SharedWorkerConnectorRequest request) {
-  mojo::MakeStrongBinding(
-      base::WrapUnique(new SharedWorkerConnectorImpl(process_id, frame_id)),
-      std::move(request));
+  mojo::MakeStrongBinding(base::WrapUnique(new SharedWorkerConnectorImpl(
+                              client_process_id, frame_id)),
+                          std::move(request));
 }
 
-SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int process_id,
+SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int client_process_id,
                                                      int frame_id)
-    : process_id_(process_id), frame_id_(frame_id) {}
+    : client_process_id_(client_process_id), frame_id_(frame_id) {}
 
 void SharedWorkerConnectorImpl::Connect(
     blink::mojom::SharedWorkerInfoPtr info,
@@ -40,7 +40,7 @@ void SharedWorkerConnectorImpl::Connect(
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,
     blink::mojom::BlobURLTokenPtr blob_url_token) {
-  RenderProcessHost* host = RenderProcessHost::FromID(process_id_);
+  RenderProcessHost* host = RenderProcessHost::FromID(client_process_id_);
   // The render process was already terminated.
   if (!host) {
     client->OnScriptLoadFailed();
@@ -59,7 +59,7 @@ void SharedWorkerConnectorImpl::Connect(
   SharedWorkerServiceImpl* service =
       static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
           ->GetSharedWorkerService();
-  service->ConnectToWorker(process_id_, frame_id_, std::move(info),
+  service->ConnectToWorker(client_process_id_, frame_id_, std::move(info),
                            std::move(outside_fetch_client_settings_object),
                            std::move(client), creation_context_type,
                            blink::MessagePortChannel(std::move(message_port)),

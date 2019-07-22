@@ -61,7 +61,8 @@ CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
 
 scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
     AtomicString name,
-    const Options& options) {
+    const Options& options,
+    bool& unit_cycle) {
   if (variables_seen_.Contains(name)) {
     cycle_start_points_.insert(name);
     return nullptr;
@@ -87,7 +88,12 @@ scoped_refptr<CSSVariableData> CSSVariableResolver::ValueForCustomProperty(
   }
 
   if (resolved_data) {
-    if (IsVariableDisallowed(*resolved_data, options, registration))
+    if (IsDisallowedByFontUnitFlags(*resolved_data, options, registration)) {
+      unit_cycle = true;
+      SetInvalidVariable(name, registration);
+      return nullptr;
+    }
+    if (IsDisallowedByAnimationTaintedFlag(*resolved_data, options))
       return nullptr;
   }
 
@@ -198,16 +204,21 @@ CSSVariableResolver::ResolveCustomPropertyIfNeeded(
   return ResolveCustomProperty(name, *variable_data, options, cycle_detected);
 }
 
-bool CSSVariableResolver::IsVariableDisallowed(
+bool CSSVariableResolver::IsDisallowedByFontUnitFlags(
     const CSSVariableData& variable_data,
     const Options& options,
     const PropertyRegistration* registration) {
-  return (options.disallow_animation_tainted &&
-          variable_data.IsAnimationTainted()) ||
-         (registration && options.disallow_registered_font_units &&
+  return (registration && options.disallow_registered_font_units &&
           variable_data.HasFontUnits()) ||
          (registration && options.disallow_registered_root_font_units &&
           variable_data.HasRootFontUnits());
+}
+
+bool CSSVariableResolver::IsDisallowedByAnimationTaintedFlag(
+    const CSSVariableData& variable_data,
+    const Options& options) {
+  return options.disallow_animation_tainted &&
+         variable_data.IsAnimationTainted();
 }
 
 CSSVariableData* CSSVariableResolver::GetVariableData(
@@ -282,9 +293,14 @@ bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
       registry_->MarkReferenced(variable_name);
   }
 
+  bool unit_cycle = false;
   scoped_refptr<CSSVariableData> variable_data =
-      is_env_variable ? ValueForEnvironmentVariable(variable_name)
-                      : ValueForCustomProperty(variable_name, options);
+      is_env_variable
+          ? ValueForEnvironmentVariable(variable_name)
+          : ValueForCustomProperty(variable_name, options, unit_cycle);
+
+  if (unit_cycle)
+    return false;
 
   if (!variable_data) {
     // TODO(alancutter): Append the registered initial custom property value if
@@ -471,14 +487,18 @@ void CSSVariableResolver::ResolveVariableDefinitions() {
 
   int variable_count = 0;
   if (inherited_variables_ && inherited_variables_->NeedsResolution()) {
-    for (auto& variable : inherited_variables_->Data())
-      ValueForCustomProperty(variable.key, options);
+    for (auto& variable : inherited_variables_->Data()) {
+      bool cycle_detected = false;
+      ValueForCustomProperty(variable.key, options, cycle_detected);
+    }
     inherited_variables_->ClearNeedsResolution();
     variable_count += inherited_variables_->Data().size();
   }
   if (non_inherited_variables_ && non_inherited_variables_->NeedsResolution()) {
-    for (auto& variable : non_inherited_variables_->Data())
-      ValueForCustomProperty(variable.key, options);
+    for (auto& variable : non_inherited_variables_->Data()) {
+      bool cycle_detected = false;
+      ValueForCustomProperty(variable.key, options, cycle_detected);
+    }
     non_inherited_variables_->ClearNeedsResolution();
     variable_count += non_inherited_variables_->Data().size();
   }
@@ -490,12 +510,16 @@ void CSSVariableResolver::ComputeRegisteredVariables() {
   Options options;
 
   if (inherited_variables_) {
-    for (auto& variable : inherited_variables_->Values())
-      ValueForCustomProperty(variable.key, options);
+    for (auto& variable : inherited_variables_->Values()) {
+      bool cycle_detected = false;
+      ValueForCustomProperty(variable.key, options, cycle_detected);
+    }
   }
   if (non_inherited_variables_) {
-    for (auto& variable : non_inherited_variables_->Values())
-      ValueForCustomProperty(variable.key, options);
+    for (auto& variable : non_inherited_variables_->Values()) {
+      bool cycle_detected = false;
+      ValueForCustomProperty(variable.key, options, cycle_detected);
+    }
   }
 }
 

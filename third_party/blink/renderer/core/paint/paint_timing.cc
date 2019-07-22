@@ -112,19 +112,6 @@ void PaintTiming::SetFirstMeaningfulPaint(
     first_meaningful_paint_swap_ = swap_stamp;
     NotifyPaintTimingChanged();
   }
-
-  ReportUserInputHistogram(had_input);
-}
-
-void PaintTiming::ReportUserInputHistogram(
-    FirstMeaningfulPaintDetector::HadUserInput had_input) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, had_user_input_histogram,
-                      ("PageLoad.Internal.PaintTiming."
-                       "HadUserInputBeforeFirstMeaningfulPaint",
-                       FirstMeaningfulPaintDetector::kHadUserInputEnumMax));
-
-  if (GetFrame() && GetFrame()->IsMainFrame())
-    had_user_input_histogram.Count(had_input);
 }
 
 void PaintTiming::NotifyPaint(bool is_first_paint,

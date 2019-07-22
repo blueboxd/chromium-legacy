@@ -210,9 +210,8 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       mojo::MakeRequest(&media_controller_ptr_));
 
   // Observe the active media controller for changes.
-  media_session::mojom::MediaControllerObserverPtr media_controller_observer;
-  observer_binding_.Bind(mojo::MakeRequest(&media_controller_observer));
-  media_controller_ptr_->AddObserver(std::move(media_controller_observer));
+  media_controller_ptr_->AddObserver(
+      observer_receiver_.BindNewPipeAndPassRemote());
 
   media_controller_ptr_->ObserveImages(
       media_session::mojom::MediaSessionImageType::kArtwork,

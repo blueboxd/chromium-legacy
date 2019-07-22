@@ -23,8 +23,8 @@ class LayoutObjectCounter;
 class PaintTiming;
 
 // FirstMeaningfulPaintDetector observes layout operations during page load
-// until network stable (0.5 seconds of no network activity), and computes the
-// layout-based First Meaningful Paint.
+// until network stable (no more than 2 network connections active in 0.5
+// seconds), and computes the layout-based First Meaningful Paint.
 // See https://goo.gl/vpaxv6 and http://goo.gl/TEiMi4 for more details.
 class CORE_EXPORT FirstMeaningfulPaintDetector
     : public GarbageCollectedFinalized<FirstMeaningfulPaintDetector> {
@@ -42,7 +42,6 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyPaint();
   void ReportSwapTime(PaintEvent, WebWidgetClient::SwapResult, base::TimeTicks);
   void NotifyFirstContentfulPaint(base::TimeTicks swap_stamp);
-  void OnNetwork0Quiet();
   void OnNetwork2Quiet();
 
   // The caller owns the |clock| which must outlive the paint detector.
@@ -63,7 +62,6 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
 
   Document* GetDocument();
   int ActiveConnections();
-  void ReportHistograms();
   void RegisterNotifySwapTime(PaintEvent);
   void SetFirstMeaningfulPaint(base::TimeTicks swap_stamp);
 
@@ -79,10 +77,8 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   double accumulated_significance_while_having_blank_text_ = 0.0;
   unsigned prev_layout_object_count_ = 0;
   bool seen_first_meaningful_paint_candidate_ = false;
-  bool network0_quiet_reached_ = false;
-  bool network2_quiet_reached_ = false;
-  base::TimeTicks first_meaningful_paint0_quiet_;
-  base::TimeTicks first_meaningful_paint2_quiet_;
+  bool network_quiet_reached_ = false;
+  base::TimeTicks first_meaningful_paint_;
   unsigned outstanding_swap_promise_count_ = 0;
   DeferFirstMeaningfulPaint defer_first_meaningful_paint_ = kDoNotDefer;
   DISALLOW_COPY_AND_ASSIGN(FirstMeaningfulPaintDetector);

@@ -17,6 +17,7 @@
 #include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
+class ControllerObserver;
 
 // UI delegate called for script executions.
 class UiDelegate {
@@ -157,6 +158,12 @@ class UiDelegate {
   virtual void SetChoiceSelected(int input_index,
                                  int choice_index,
                                  bool selected) = 0;
+
+  // Register an observer. Observers get told about changes to the controller.
+  virtual void AddObserver(ControllerObserver* observer) = 0;
+
+  // Remove a previously registered observer.
+  virtual void RemoveObserver(const ControllerObserver* observer) = 0;
 
  protected:
   UiDelegate() = default;

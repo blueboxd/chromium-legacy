@@ -40,7 +40,7 @@ BrowserContext* SharedWorkerDevToolsAgentHost::GetBrowserContext() {
   if (!worker_host_)
     return nullptr;
   RenderProcessHost* rph =
-      RenderProcessHost::FromID(worker_host_->process_id());
+      RenderProcessHost::FromID(worker_host_->worker_process_id());
   return rph ? rph->GetBrowserContext() : nullptr;
 }
 
@@ -127,7 +127,7 @@ void SharedWorkerDevToolsAgentHost::UpdateRendererChannel(bool force) {
                                     mojo::MakeRequest(&agent_ptr));
     GetRendererChannel()->SetRendererAssociated(
         std::move(agent_ptr), std::move(host_request),
-        worker_host_->process_id(), nullptr);
+        worker_host_->worker_process_id(), nullptr);
   } else {
     GetRendererChannel()->SetRendererAssociated(
         nullptr, nullptr, ChildProcessHost::kInvalidUniqueID, nullptr);

@@ -27,7 +27,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/system/string_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/directory_listing.h"
 #include "net/base/io_buffer.h"
@@ -142,7 +143,7 @@ class FileSystemEntryURLLoader
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
   FactoryParams params_;
-  std::unique_ptr<mojo::StringDataPipeProducer> data_producer_;
+  std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   net::HttpByteRange byte_range_;
   FileSystemURL url_;
 
@@ -359,13 +360,13 @@ class FileSystemDirectoryURLLoader : public FileSystemEntryURLLoader {
     client_->OnReceiveResponse(head);
     client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
-    data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
-        std::move(producer_handle));
+    data_producer_ =
+        std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
 
     data_producer_->Write(
-        base::StringPiece(data_),
-        mojo::StringDataPipeProducer::AsyncWritingMode::
-            STRING_STAYS_VALID_UNTIL_COMPLETION,
+        std::make_unique<mojo::StringDataSource>(
+            base::StringPiece(data_), mojo::StringDataSource::AsyncWritingMode::
+                                          STRING_STAYS_VALID_UNTIL_COMPLETION),
         base::BindOnce(&FileSystemDirectoryURLLoader::OnDirectoryWritten,
                        base::Unretained(this)));
   }
@@ -492,8 +493,8 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
     head_.content_length = remaining_bytes_;
     head_.headers = CreateHttpResponseHeaders(200);
 
-    data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
-        std::move(producer_handle));
+    data_producer_ =
+        std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
 
     size_t bytes_to_read = std::min(
         static_cast<int64_t>(kDefaultFileSystemUrlPipeSize), remaining_bytes_);
@@ -553,9 +554,10 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
 
   void WriteFileData(int bytes_read) {
     data_producer_->Write(
-        base::StringPiece(file_data_->data(), bytes_read),
-        mojo::StringDataPipeProducer::AsyncWritingMode::
-            STRING_STAYS_VALID_UNTIL_COMPLETION,
+        std::make_unique<mojo::StringDataSource>(
+            base::StringPiece(file_data_->data(), bytes_read),
+            mojo::StringDataSource::AsyncWritingMode::
+                STRING_STAYS_VALID_UNTIL_COMPLETION),
         base::BindOnce(&FileSystemFileURLLoader::OnFileDataWritten,
                        base::AsWeakPtr(this)));
   }

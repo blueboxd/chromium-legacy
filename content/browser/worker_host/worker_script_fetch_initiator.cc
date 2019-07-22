@@ -52,7 +52,7 @@
 namespace content {
 
 void WorkerScriptFetchInitiator::Start(
-    int process_id,
+    int worker_process_id,
     const GURL& script_url,
     const url::Origin& request_initiator,
     network::mojom::CredentialsMode credentials_mode,
@@ -89,10 +89,10 @@ void WorkerScriptFetchInitiator::Start(
   // subresource loading.
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       factory_bundle_for_browser = CreateFactoryBundle(
-          process_id, storage_partition, constructor_uses_file_url);
+          worker_process_id, storage_partition, constructor_uses_file_url);
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories = CreateFactoryBundle(
-          process_id, storage_partition, constructor_uses_file_url);
+          worker_process_id, storage_partition, constructor_uses_file_url);
 
   // Create a resource request for initiating worker script fetch from the
   // browser process.
@@ -167,8 +167,8 @@ void WorkerScriptFetchInitiator::Start(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &WorkerScriptFetchInitiator::CreateScriptLoaderOnIO, process_id,
-          std::move(resource_request),
+          &WorkerScriptFetchInitiator::CreateScriptLoaderOnIO,
+          worker_process_id, std::move(resource_request),
           storage_partition->url_loader_factory_getter(),
           std::move(factory_bundle_for_browser),
           std::move(subresource_loader_factories), resource_context,
@@ -181,7 +181,7 @@ void WorkerScriptFetchInitiator::Start(
 
 std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
 WorkerScriptFetchInitiator::CreateFactoryBundle(
-    int process_id,
+    int worker_process_id,
     StoragePartitionImpl* storage_partition,
     bool file_support) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -192,7 +192,7 @@ WorkerScriptFetchInitiator::CreateFactoryBundle(
   GetContentClient()
       ->browser()
       ->RegisterNonNetworkSubresourceURLLoaderFactories(
-          process_id, MSG_ROUTING_NONE, &non_network_factories);
+          worker_process_id, MSG_ROUTING_NONE, &non_network_factories);
 
   auto factory_bundle = std::make_unique<blink::URLLoaderFactoryBundleInfo>();
   for (auto& pair : non_network_factories) {
@@ -250,7 +250,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
 }
 
 void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
-    int process_id,
+    int worker_process_id,
     std::unique_ptr<network::ResourceRequest> resource_request,
     scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -287,8 +287,8 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
   // Set up for service worker.
   auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
-      service_worker_context->PreCreateHostForWorker(process_id, provider_type,
-                                                     &provider_info);
+      service_worker_context->PreCreateHostForWorker(
+          worker_process_id, provider_type, &provider_info);
 
   // Create the URL loader factory for WorkerScriptLoaderFactory to use to load
   // the main script.
@@ -350,8 +350,9 @@ void WorkerScriptFetchInitiator::CreateScriptLoaderOnIO(
 
   WorkerScriptFetcher::CreateAndStart(
       std::make_unique<WorkerScriptLoaderFactory>(
-          process_id, std::move(service_worker_host), std::move(appcache_host),
-          resource_context_getter, std::move(url_loader_factory)),
+          worker_process_id, std::move(service_worker_host),
+          std::move(appcache_host), resource_context_getter,
+          std::move(url_loader_factory)),
       std::move(throttles), std::move(resource_request),
       base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO,
                      std::move(callback), std::move(provider_info),

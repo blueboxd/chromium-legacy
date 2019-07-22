@@ -1946,10 +1946,6 @@ class DirectoryTree extends cr.ui.Tree {
       itemIndex++;
       modelIndex++;
     }
-
-    // if (itemIndex !== 0) {
-    //  this.hasChildren = true;
-    //}
   }
 
   /**

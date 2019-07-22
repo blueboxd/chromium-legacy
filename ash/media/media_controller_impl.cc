@@ -244,9 +244,8 @@ void MediaControllerImpl::BindMediaControllerObserver() {
   if (!media_session_controller_ptr_.is_bound())
     return;
 
-  media_session::mojom::MediaControllerObserverPtr observer;
-  media_controller_observer_binding_.Bind(mojo::MakeRequest(&observer));
-  media_session_controller_ptr_->AddObserver(std::move(observer));
+  media_session_controller_ptr_->AddObserver(
+      media_controller_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 bool MediaControllerImpl::ShouldUseMediaSession() {

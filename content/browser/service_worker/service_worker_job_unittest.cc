@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -1409,9 +1410,18 @@ TEST_P(ServiceWorkerUpdateJobTest, RegisterWithDifferentUpdateViaCache) {
 
   EXPECT_TRUE(FindRegistrationForScope(options.scope));
 
+  base::HistogramTester histogram_tester;
   options.update_via_cache = blink::mojom::ServiceWorkerUpdateViaCache::kNone;
   scoped_refptr<ServiceWorkerRegistration> new_registration =
       RunRegisterJob(script_url, options);
+
+  if (IsImportedScriptUpdateCheckEnabled()) {
+    // Update check succeeds but no update is found.
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
+                                       false, 1);
+  }
 
   // Ensure that the registration object is not copied.
   EXPECT_EQ(old_registration, new_registration);
@@ -1440,11 +1450,20 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_NoChange) {
   update_helper_->state_change_log_.clear();
 
   // Run the update job.
+  base::HistogramTester histogram_tester;
   registration->AddListener(update_helper_);
   scoped_refptr<ServiceWorkerVersion> first_version =
       registration->active_version();
   first_version->StartUpdate();
   base::RunLoop().RunUntilIdle();
+
+  if (IsImportedScriptUpdateCheckEnabled()) {
+    // Update check succeeds but no update is found.
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
+                                       false, 1);
+  }
 
   // Verify results.
   ASSERT_TRUE(registration->active_version());
@@ -1485,11 +1504,24 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
         kNoChangeOrigin.Resolve(kScript), kHeaders, kBody,
         /*network_accessed=*/false, net::OK);
   }
-  registration->set_last_update_check(kToday);
-  registration->active_version()->StartUpdate();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kToday, registration->last_update_check());
-  EXPECT_FALSE(update_helper_->update_found_);
+
+  {
+    base::HistogramTester histogram_tester;
+    registration->set_last_update_check(kToday);
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(kToday, registration->last_update_check());
+    EXPECT_FALSE(update_helper_->update_found_);
+
+    if (IsImportedScriptUpdateCheckEnabled()) {
+      // Update check succeeds but no update is found.
+      histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                         blink::ServiceWorkerStatusCode::kOk,
+                                         1);
+      histogram_tester.ExpectBucketCount(
+          "ServiceWorker.UpdateCheck.UpdateFound", false, 1);
+    }
+  }
 
   // Run an update where the script did not change and the network was
   // accessed. The check time should be updated.
@@ -1499,15 +1531,26 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
         kNoChangeOrigin.Resolve(kScript), kHeaders, kBody,
         /*network_accessed=*/true, net::OK);
   }
-  registration->set_last_update_check(kYesterday);
-  registration->active_version()->StartUpdate();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_LT(kYesterday, registration->last_update_check());
-  EXPECT_FALSE(update_helper_->update_found_);
-  registration->RemoveListener(update_helper_);
 
-  registration = update_helper_->SetupInitialRegistration(kNewVersionOrigin);
-  ASSERT_TRUE(registration.get());
+  {
+    base::HistogramTester histogram_tester;
+    registration->set_last_update_check(kYesterday);
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_LT(kYesterday, registration->last_update_check());
+    EXPECT_FALSE(update_helper_->update_found_);
+    registration->RemoveListener(update_helper_);
+    registration = update_helper_->SetupInitialRegistration(kNewVersionOrigin);
+    ASSERT_TRUE(registration.get());
+    if (IsImportedScriptUpdateCheckEnabled()) {
+      // Update check succeeds but no update is found.
+      histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                         blink::ServiceWorkerStatusCode::kOk,
+                                         1);
+      histogram_tester.ExpectBucketCount(
+          "ServiceWorker.UpdateCheck.UpdateFound", false, 1);
+    }
+  }
 
   registration->AddListener(update_helper_);
 
@@ -1518,10 +1561,21 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
         kNewVersionOrigin.Resolve(kScript), kHeaders, kNewBody,
         /*network_accessed=*/true, net::OK);
   }
-  registration->set_last_update_check(kYesterday);
-  registration->active_version()->StartUpdate();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_LT(kYesterday, registration->last_update_check());
+  {
+    base::HistogramTester histogram_tester;
+    registration->set_last_update_check(kYesterday);
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_LT(kYesterday, registration->last_update_check());
+    if (IsImportedScriptUpdateCheckEnabled()) {
+      // Update check succeeds and update is found.
+      histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                         blink::ServiceWorkerStatusCode::kOk,
+                                         1);
+      histogram_tester.ExpectBucketCount(
+          "ServiceWorker.UpdateCheck.UpdateFound", true, 1);
+    }
+  }
 
   // Run an update to a worker that loads successfully but fails to start up
   // (script evaluation failure). The check time should be updated.
@@ -1537,9 +1591,21 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
         kNewVersionOrigin.Resolve(kScript), kHeaders, kBody,
         /*network_accessed=*/true, net::OK);
   }
-  registration->active_version()->StartUpdate();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_LT(kYesterday, registration->last_update_check());
+  {
+    base::HistogramTester histogram_tester;
+    registration->active_version()->StartUpdate();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_LT(kYesterday, registration->last_update_check());
+    if (IsImportedScriptUpdateCheckEnabled()) {
+      // Update check succeeds and update is found even when starting a worker
+      // fails.
+      histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                         blink::ServiceWorkerStatusCode::kOk,
+                                         1);
+      histogram_tester.ExpectBucketCount(
+          "ServiceWorker.UpdateCheck.UpdateFound", true, 1);
+    }
+  }
 }
 
 TEST_P(ServiceWorkerUpdateJobTest, Update_NewVersion) {
@@ -1557,11 +1623,20 @@ TEST_P(ServiceWorkerUpdateJobTest, Update_NewVersion) {
         kNewVersionOrigin.Resolve(kScript), kHeaders, kNewBody,
         /*network_accessed=*/true, net::OK);
   }
+
+  base::HistogramTester histogram_tester;
   registration->AddListener(update_helper_);
   scoped_refptr<ServiceWorkerVersion> first_version =
       registration->active_version();
   first_version->StartUpdate();
   base::RunLoop().RunUntilIdle();
+  if (IsImportedScriptUpdateCheckEnabled()) {
+    // Update check succeeds and update is found.
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
+                                       blink::ServiceWorkerStatusCode::kOk, 1);
+    histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.UpdateFound",
+                                       true, 1);
+  }
 
   // The worker is updated after RequestTermination() is called from the
   // renderer. Until then, the active version stays active.

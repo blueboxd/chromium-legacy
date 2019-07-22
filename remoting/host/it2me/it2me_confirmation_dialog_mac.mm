@@ -171,7 +171,10 @@ It2MeConfirmationDialogFactory::Create() {
 }
 
 - (void)hide {
-  confirmation_alert_.reset();
+  if (confirmation_alert_) {
+    [[confirmation_alert_ window] close];
+    confirmation_alert_.reset();
+  }
 }
 
 - (void)onCancel:(id)sender {

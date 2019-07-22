@@ -30,6 +30,8 @@ default_args = {
   # location when it is removed).
 
   v8_extra_library_files = [
+    # Do *not* add more files to this list. V8 extra libraries is deprecated.
+    # TODO(902633): This list is be removed once streams are ported to C++.
     # Dependencies used by the extra libraries. Putting them here causes them
     # to be executed first during snapshot creation.
     "//third_party/blink/renderer/core/streams/CommonOperations.js",

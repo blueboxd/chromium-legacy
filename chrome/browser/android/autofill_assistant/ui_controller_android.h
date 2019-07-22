@@ -18,19 +18,25 @@
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
 #include "components/autofill_assistant/browser/chip.h"
 #include "components/autofill_assistant/browser/client.h"
+#include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/details.h"
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/overlay_state.h"
-#include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/autofill_assistant/browser/user_action.h"
 
 namespace autofill_assistant {
-// Class implements UiController, Client and starts the Controller.
+
+// Starts and owns the UI elements required to display AA.
+//
+// This class and its UI elements are tied to a ChromeActivity. A
+// UiControllerAndroid can be attached and detached from an AA controller, which
+// is tied to a BrowserContent.
+//
 // TODO(crbug.com/806868): This class should be renamed to
 // AssistantMediator(Android) and listen for state changes to forward those
 // changes to the UI model.
-class UiControllerAndroid : public UiController {
+class UiControllerAndroid : public ControllerObserver {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
       content::WebContents* web_contents,

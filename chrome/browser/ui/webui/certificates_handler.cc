@@ -56,7 +56,7 @@ static const char kCertificatesHandlerNameField[] = "name";
 static const char kCertificatesHandlerObjSignField[] = "objSign";
 static const char kCertificatesHandlerPolicyInstalledField[] = "policy";
 static const char kCertificatesHandlerWebTrustAnchorField[] = "webTrustAnchor";
-static const char kCertificatesHandlerReadonlyField[] = "readonly";
+static const char kCertificatesHandlerCanBeDeletedField[] = "canBeDeleted";
 static const char kCertificatesHandlerSslField[] = "ssl";
 static const char kCertificatesHandlerSubnodesField[] = "subnodes";
 static const char kCertificatesHandlerContainsPolicyCertsField[] =
@@ -1017,8 +1017,8 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
       cert_dict.SetKey(kCertificatesHandlerKeyField, base::Value(id));
       cert_dict.SetKey(kCertificatesHandlerNameField,
                        base::Value(cert_info->name()));
-      cert_dict.SetKey(kCertificatesHandlerReadonlyField,
-                       base::Value(IsCertificateReadOnly(cert_info)));
+      cert_dict.SetKey(kCertificatesHandlerCanBeDeletedField,
+                       base::Value(CanDeleteCertificate(cert_info)));
       cert_dict.SetKey(kCertificatesHandlerUntrustedField,
                        base::Value(cert_info->untrusted()));
       cert_dict.SetKey(
@@ -1146,18 +1146,20 @@ bool CertificatesHandler::IsClientCertificateManagementAllowedPolicy(
 }
 #endif  // defined(OS_CHROMEOS)
 
-bool CertificatesHandler::IsCertificateReadOnly(
+bool CertificatesHandler::CanDeleteCertificate(
     const CertificateManagerModel::CertInfo* cert_info) {
-  if (cert_info->read_only()) {
-    return true;
+  if (!cert_info->can_be_deleted() ||
+      cert_info->source() ==
+          CertificateManagerModel::CertInfo::Source::kPolicy) {
+    return false;
   }
 
 #if defined(OS_CHROMEOS)
   return cert_info->type() == net::CertType::USER_CERT &&
-         !IsClientCertificateManagementAllowedPolicy(
+         IsClientCertificateManagementAllowedPolicy(
              cert_info->device_wide() ? Slot::kSystem : Slot::kUser);
 #else
-  return false;
+  return true;
 #endif
 }
 

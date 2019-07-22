@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/webrtc/webrtc_audio_device_not_impl.h"
 
+#include "build/build_config.h"
+
 namespace content {
 
 WebRtcAudioDeviceNotImpl::WebRtcAudioDeviceNotImpl() = default;

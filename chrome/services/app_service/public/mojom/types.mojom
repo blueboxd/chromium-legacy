@@ -18,6 +18,7 @@ struct App {
   string? name;
   string? short_name;
   string? description;
+  string? version;
   array<string> additional_search_terms;
   IconKey? icon_key;
   mojo_base.mojom.Time? last_launch_time;

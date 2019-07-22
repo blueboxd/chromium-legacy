@@ -38,6 +38,7 @@ class WebAppUiManager;
 enum class SystemAppType {
   SETTINGS,
   DISCOVER,
+  CAMERA,
 };
 
 // The configuration options for a System App.
@@ -63,6 +64,9 @@ class SystemWebAppManager {
 
   static constexpr char kInstallResultHistogramName[] =
       "Webapp.InstallResult.System";
+
+  // Returns whether the given app type is enabled.
+  static bool IsAppEnabled(SystemAppType type);
 
   explicit SystemWebAppManager(Profile* profile);
   virtual ~SystemWebAppManager();

@@ -29,10 +29,6 @@ Service* FakeScriptExecutorDelegate::GetService() {
   return service_;
 }
 
-UiController* FakeScriptExecutorDelegate::GetUiController() {
-  return ui_controller_;
-}
-
 WebController* FakeScriptExecutorDelegate::GetWebController() {
   return web_controller_;
 }

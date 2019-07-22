@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 
+#include "url/gurl.h"
+
 namespace autofill_assistant {
 
 MockActionDelegate::MockActionDelegate() = default;

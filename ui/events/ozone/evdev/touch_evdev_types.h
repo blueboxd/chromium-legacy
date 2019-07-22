@@ -44,6 +44,12 @@ struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
   // Whether the touch was delayed before.
   bool was_delayed = false;
 
+  // Whether the touch is held until end or no longer held.
+  bool held = false;
+
+  // Whether this touch was held before being sent.
+  bool was_held = false;
+
   bool was_touching = false;
   bool touching = false;
   float x = 0;

@@ -35,7 +35,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
-#include "mojo/public/cpp/system/string_data_pipe_producer.h"
+#include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/directory_lister.h"
 #include "net/base/directory_listing.h"
 #include "net/base/filename_util.h"
@@ -236,7 +236,7 @@ class FileURLDirectoryLoader
     lister_ = std::make_unique<net::DirectoryLister>(path_, this);
     lister_->Start();
 
-    data_producer_ = std::make_unique<mojo::StringDataPipeProducer>(
+    data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle));
   }
 
@@ -302,11 +302,12 @@ class FileURLDirectoryLoader
       return;
 
     transfer_in_progress_ = true;
-    data_producer_->Write(pending_data_,
-                          mojo::StringDataPipeProducer::AsyncWritingMode::
-                              STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION,
-                          base::BindOnce(&FileURLDirectoryLoader::OnDataWritten,
-                                         base::Unretained(this)));
+    data_producer_->Write(
+        std::make_unique<mojo::StringDataSource>(
+            pending_data_, mojo::StringDataSource::AsyncWritingMode::
+                               STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
+        base::BindOnce(&FileURLDirectoryLoader::OnDataWritten,
+                       base::Unretained(this)));
     // The producer above will have already copied any parts of |pending_data_|
     // that couldn't be written immediately, so we can wipe it out here to begin
     // accumulating more data.
@@ -355,7 +356,7 @@ class FileURLDirectoryLoader
   mojo::Binding<network::mojom::URLLoader> binding_;
   network::mojom::URLLoaderClientPtr client_;
 
-  std::unique_ptr<mojo::StringDataPipeProducer> data_producer_;
+  std::unique_ptr<mojo::DataPipeProducer> data_producer_;
   std::string pending_data_;
   bool transfer_in_progress_ = false;
 

@@ -46,19 +46,20 @@ uint32_t CacheTag(CacheTagKind kind, const String& encoding) {
 }
 
 // Check previously stored timestamp.
-bool IsResourceHotForCaching(const SingleCachedMetadataHandler* cache_handler,
-                             int hot_hours) {
-  const double hot_seconds = hot_hours * 60 * 60;
+bool IsResourceHotForCaching(const SingleCachedMetadataHandler* cache_handler) {
+  static constexpr base::TimeDelta kHotHours = base::TimeDelta::FromHours(72);
   scoped_refptr<CachedMetadata> cached_metadata =
       cache_handler->GetCachedMetadata(
           V8CodeCache::TagForTimeStamp(cache_handler));
   if (!cached_metadata)
     return false;
-  double time_stamp;
-  const uint32_t size = sizeof(time_stamp);
+  uint64_t time_stamp_ms;
+  const uint32_t size = sizeof(time_stamp_ms);
   DCHECK_EQ(cached_metadata->size(), size);
-  memcpy(&time_stamp, cached_metadata->Data(), size);
-  return (WTF::CurrentTime() - time_stamp) < hot_seconds;
+  memcpy(&time_stamp_ms, cached_metadata->Data(), size);
+  base::TimeTicks time_stamp =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_stamp_ms);
+  return (base::TimeTicks::Now() - time_stamp) < kHotHours;
 }
 
 }  // namespace
@@ -103,7 +104,6 @@ V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
                                size_t source_text_length,
                                ScriptSourceLocationType source_location_type) {
   static const int kMinimalCodeLength = 1024;
-  static const int kHotHours = 72;
   v8::ScriptCompiler::NoCacheReason no_cache_reason;
 
   switch (source_location_type) {
@@ -158,7 +158,7 @@ V8CodeCache::GetCompileOptions(V8CacheOptions cache_options,
   switch (cache_options) {
     case kV8CacheOptionsDefault:
     case kV8CacheOptionsCode:
-      if (!IsResourceHotForCaching(cache_handler, kHotHours)) {
+      if (!IsResourceHotForCaching(cache_handler)) {
         return std::make_tuple(v8::ScriptCompiler::kNoCompileOptions,
                                ProduceCacheOptions::kSetTimeStamp,
                                v8::ScriptCompiler::kNoCacheBecauseCacheTooCold);
@@ -296,11 +296,11 @@ uint32_t V8CodeCache::TagForTimeStamp(
 // Store a timestamp to the cache as hint.
 void V8CodeCache::SetCacheTimeStamp(
     SingleCachedMetadataHandler* cache_handler) {
-  double now = WTF::CurrentTime();
+  uint64_t now_ms = base::TimeTicks::Now().since_origin().InMilliseconds();
   cache_handler->ClearCachedMetadata(CachedMetadataHandler::kCacheLocally);
   cache_handler->SetCachedMetadata(
-      TagForTimeStamp(cache_handler), reinterpret_cast<uint8_t*>(&now),
-      sizeof(now), CachedMetadataHandler::kSendToPlatform);
+      TagForTimeStamp(cache_handler), reinterpret_cast<uint8_t*>(&now_ms),
+      sizeof(now_ms), CachedMetadataHandler::kSendToPlatform);
 }
 
 // static

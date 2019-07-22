@@ -24,6 +24,7 @@
 #include "chromeos/login/auth/saml_password_attributes.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
@@ -76,11 +77,11 @@ constexpr int kMaxPasswordChangeDialogHeight = 640;
 
 // TODO(https://crbug.com/930109): Change these numbers depending on what is
 // shown in the dialog.
-constexpr int kMaxConfirmPasswordChangeDialogWidth = 560;
-constexpr int kMaxConfirmPasswordChangeDialogHeight = 420;
+constexpr int kMaxConfirmPasswordChangeDialogWidth = 520;
+constexpr int kMaxConfirmPasswordChangeDialogHeight = 390;
 
-constexpr int kMaxNotificationDialogWidth = 560;
-constexpr int kMaxNotificationDialogHeight = 320;
+constexpr int kMaxNotificationDialogWidth = 768;
+constexpr int kMaxNotificationDialogHeight = 640;
 
 // Given a desired width and height, returns the same size if it fits on screen,
 // or the closest possible size that will fit on the screen.
@@ -311,7 +312,7 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
 
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"body", IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL},
-      {"button", IDS_PASSWORD_EXPIRY_CHANGE_PASSWORD_BUTTON}};
+      {"button", IDS_OK}};
   AddLocalizedStringsBulk(source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 

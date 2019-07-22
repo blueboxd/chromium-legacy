@@ -2069,6 +2069,12 @@ New Search
       <message name="IDS_IOS_PASTE_AND_GO" desc="Text in the editing menu shown when long-pressing the omnibox. Enables pasting the current contents of the clipboard and searching the text or navigating to the url. [iOS only]">
           Paste and Go
       </message>
+      <message name="IDS_IOS_NAVIGATION_BAR_ADD_BUTTON" desc="Label of the button allowing the user to add a new credit card to the list of their saved credit cards.">
+          Add
+      </message>
+      <message name="IDS_IOS_CREDIT_CARD_SETTINGS_ADD_PAYMENT_METHOD_TITLE" desc="Title of the View Controller in which the user can enter the details for a new credit card to add it to the list of their saved credit cards. [iOS only]">
+          Add Payment Method
+      </message>
     </messages>
   </release>
 </grit>

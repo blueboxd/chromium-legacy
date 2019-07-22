@@ -136,16 +136,6 @@ div.splitter {
   padding: 0 3px;
 }
 
-.tree-item > .ejectable {
-  position: inherit;
-}
-
-.ejectable > span.label {
-  left: 52px;
-  position: absolute;
-  width: calc(100% - 92px);
-}
-
 #directory-tree .tree-row > .button {
   display: flex;
   min-width: 0;
@@ -174,6 +164,16 @@ div.splitter {
   margin: 0 6px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.tree-item > .ejectable {
+  position: inherit;
+}
+
+.ejectable > span.label {
+  left: 48px;
+  position: absolute;
+  width: calc(100% - 48px - 40px);
 }
 
 #directory-tree .tree-row .rename-placeholder {

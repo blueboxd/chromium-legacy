@@ -13,6 +13,7 @@
 
 #include <cmath>
 #include <limits>
+#include <queue>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -203,6 +204,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   // TODO(denniskempin): Use EVIOCGKEY to synchronize key state.
 
   events_.resize(touch_points_);
+  held_events_.resize(touch_points_);
   bool cancelled_state = false;
   if (has_mt_) {
     for (size_t i = 0; i < events_.size(); ++i) {
@@ -554,6 +556,7 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
                            (false_touch_finder_ &&
                             false_touch_finder_->SlotHasNoise(event->slot)))) {
       if (MaybeCancelAllTouches()) {
+        // If all touches were cancelled, break out of this loop.
         break;
       }
     }
@@ -563,25 +566,64 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
     InProgressTouchEvdev* event = &events_[i];
     if (!event->altered)
       continue;
-
-    if (enable_palm_suppression_callback_)
-      enable_palm_suppression_callback_.Run(event->tool_code > 0);
-
     if (false_touch_finder_)
       event->delayed = false_touch_finder_->SlotShouldDelay(event->slot);
 
-    EventType event_type = GetEventTypeForTouch(*event);
-    // The tool type is fixed with the touch pressed event and does not change.
-    if (event_type == ET_TOUCH_PRESSED)
-      event->reported_tool_type = GetEventPointerType(event->tool_code);
-    if (event_type != ET_UNKNOWN)
-      ReportTouchEvent(*event, event_type, timestamp);
+    if (event->held) {
+      // For held events, we update the event state appropriately, and then stop
+      // processing.
+      held_events_[i].push(std::make_pair(*event, timestamp));
+      event->was_cancelled = event->cancelled;
+      event->was_touching = event->touching;
+      event->was_delayed = event->delayed;
+      event->altered = false;
+      event->held = false;
+      // Do nothing here.
+      continue;
+    }
+    if ((event->was_cancelled || event->cancelled) &&
+        !held_events_[i].empty()) {
+      // This event is cancelled, but we also have a queue of events "held" . We
+      // need to clear the queue and update state appropriately.
+      auto first_held_event = held_events_[i].front().first;
+      event->was_touching = first_held_event.was_touching;
+      event->was_cancelled = first_held_event.was_cancelled;
+      event->was_delayed = first_held_event.was_delayed;
 
+      // Quick delete everything in the queue.
+      auto empty_q =
+          std::queue<std::pair<InProgressTouchEvdev, base::TimeTicks>>();
+      held_events_[i].swap(empty_q);
+    }
+
+    while (!held_events_[i].empty()) {
+      auto held_event = held_events_[i].front();
+      held_events_[i].pop();
+      held_event.first.held = false;
+      held_event.first.was_held = true;
+      ProcessTouchEvent(&held_event.first, held_event.second);
+    }
+    ProcessTouchEvent(event, timestamp);
     event->was_cancelled = event->cancelled;
     event->was_touching = event->touching;
     event->was_delayed = event->delayed;
+    event->was_held = event->held;
     event->altered = false;
   }
+}
+
+void TouchEventConverterEvdev::ProcessTouchEvent(InProgressTouchEvdev* event,
+                                                 base::TimeTicks timestamp) {
+  if (enable_palm_suppression_callback_)
+    enable_palm_suppression_callback_.Run(event->tool_code > 0);
+
+  EventType event_type = GetEventTypeForTouch(*event);
+
+  // The tool type is fixed with the touch pressed event and does not change.
+  if (event_type == ET_TOUCH_PRESSED)
+    event->reported_tool_type = GetEventPointerType(event->tool_code);
+  if (event_type != ET_UNKNOWN)
+    ReportTouchEvent(*event, event_type, timestamp);
 }
 
 void TouchEventConverterEvdev::UpdateTrackingId(int slot, int tracking_id) {

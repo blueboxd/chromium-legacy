@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/storage/image_helpers.h"
@@ -77,6 +78,26 @@ blink::mojom::ContentDescriptionPtr DescriptionFromProto(
   result->icon_url = description.icon_url();
   result->launch_url = description.launch_url();
   return result;
+}
+
+base::Optional<ContentIndexEntry> EntryFromSerializedProto(
+    int64_t service_worker_registration_id,
+    const std::string& serialized_proto) {
+  proto::ContentEntry entry_proto;
+  if (!entry_proto.ParseFromString(serialized_proto))
+    return base::nullopt;
+
+  GURL launch_url(entry_proto.launch_url());
+  if (!launch_url.is_valid())
+    return base::nullopt;
+
+  auto description = DescriptionFromProto(entry_proto.description());
+  base::Time registration_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMicroseconds(entry_proto.timestamp()));
+
+  return ContentIndexEntry(service_worker_registration_id,
+                           std::move(description), std::move(launch_url),
+                           registration_time);
 }
 
 }  // namespace
@@ -232,63 +253,7 @@ void ContentIndexDatabase::DidGetDescriptions(
                           std::move(descriptions));
 }
 
-void ContentIndexDatabase::InitializeProviderWithEntries() {
-  service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
-      kEntryPrefix, base::BindOnce(&ContentIndexDatabase::DidGetAllEntries,
-                                   weak_ptr_factory_io_.GetWeakPtr()));
-}
-
-void ContentIndexDatabase::DidGetAllEntries(
-    const std::vector<std::pair<int64_t, std::string>>& user_data,
-    blink::ServiceWorkerStatusCode status) {
-  if (status != blink::ServiceWorkerStatusCode::kOk) {
-    // TODO(crbug.com/973844): Handle or report this error.
-    return;
-  }
-
-  if (user_data.empty())
-    return;
-
-  std::vector<ContentIndexEntry> entries;
-  entries.reserve(user_data.size());
-
-  for (const auto& ud : user_data) {
-    proto::ContentEntry entry_proto;
-    if (!entry_proto.ParseFromString(ud.second)) {
-      // TODO(crbug.com/973844): Handle or report this error.
-      return;
-    }
-
-    int64_t service_worker_registration_id = ud.first;
-    auto description = DescriptionFromProto(entry_proto.description());
-    base::Time registration_time = base::Time::FromDeltaSinceWindowsEpoch(
-        base::TimeDelta::FromMicroseconds(entry_proto.timestamp()));
-
-    entries.emplace_back(service_worker_registration_id, std::move(description),
-                         GURL(entry_proto.launch_url()), registration_time);
-  }
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ContentIndexDatabase::NotifyProviderContentAdded,
-                     weak_ptr_factory_ui_.GetWeakPtr(), std::move(entries)));
-}
-
 void ContentIndexDatabase::GetIcon(
-    int64_t service_worker_registration_id,
-    const std::string& description_id,
-    base::OnceCallback<void(SkBitmap)> icon_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ContentIndexDatabase::GetIconOnIO,
-                     weak_ptr_factory_io_.GetWeakPtr(),
-                     service_worker_registration_id, description_id,
-                     std::move(icon_callback)));
-}
-
-void ContentIndexDatabase::GetIconOnIO(
     int64_t service_worker_registration_id,
     const std::string& description_id,
     base::OnceCallback<void(SkBitmap)> icon_callback) {
@@ -316,6 +281,79 @@ void ContentIndexDatabase::DidGetSerializedIcon(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DeserializeIcon, std::make_unique<std::string>(data[0]),
                      std::move(icon_callback)));
+}
+
+void ContentIndexDatabase::GetAllEntries(
+    ContentIndexContext::GetAllEntriesCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->GetUserDataForAllRegistrationsByKeyPrefix(
+      kEntryPrefix,
+      base::BindOnce(&ContentIndexDatabase::DidGetEntries,
+                     weak_ptr_factory_io_.GetWeakPtr(), std::move(callback)));
+}
+
+void ContentIndexDatabase::DidGetEntries(
+    ContentIndexContext::GetAllEntriesCallback callback,
+    const std::vector<std::pair<int64_t, std::string>>& user_data,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    // TODO(crbug.com/973844): Handle or report this error.
+    std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
+                            /* entries= */ {});
+    return;
+  }
+
+  if (user_data.empty()) {
+    std::move(callback).Run(blink::mojom::ContentIndexError::NONE,
+                            /* entries= */ {});
+    return;
+  }
+
+  std::vector<ContentIndexEntry> entries;
+  entries.reserve(user_data.size());
+
+  for (const auto& ud : user_data) {
+    auto entry = EntryFromSerializedProto(ud.first, ud.second);
+    if (!entry) {
+      // TODO(crbug.com/973844): Handle or report this error.
+      std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR,
+                              /* entries= */ {});
+      return;
+    }
+
+    entries.emplace_back(std::move(*entry));
+  }
+
+  std::move(callback).Run(blink::mojom::ContentIndexError::NONE,
+                          std::move(entries));
+}
+
+void ContentIndexDatabase::GetEntry(
+    int64_t service_worker_registration_id,
+    const std::string& description_id,
+    ContentIndexContext::GetEntryCallback callback) {
+  service_worker_context_->GetRegistrationUserData(
+      service_worker_registration_id, {EntryKey(description_id)},
+      base::BindOnce(&ContentIndexDatabase::DidGetEntry,
+                     weak_ptr_factory_io_.GetWeakPtr(),
+                     service_worker_registration_id, std::move(callback)));
+}
+
+void ContentIndexDatabase::DidGetEntry(
+    int64_t service_worker_registration_id,
+    ContentIndexContext::GetEntryCallback callback,
+    const std::vector<std::string>& data,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    // TODO(crbug.com/973844): Handle or report this error.
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  DCHECK_EQ(data.size(), 1u);
+  std::move(callback).Run(
+      EntryFromSerializedProto(service_worker_registration_id, data.front()));
 }
 
 void ContentIndexDatabase::Shutdown() {

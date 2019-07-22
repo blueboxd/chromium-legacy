@@ -173,8 +173,6 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
     probe::LifecycleEvent(
         local_frame_, loader, "networkIdle",
         network_0_quiet_start_time_.since_origin().InSecondsF());
-    FirstMeaningfulPaintDetector::From(*local_frame_->GetDocument())
-        .OnNetwork0Quiet();
     in_network_0_quiet_period_ = false;
     network_0_quiet_ = base::TimeTicks();
   }

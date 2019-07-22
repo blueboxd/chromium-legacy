@@ -14,7 +14,7 @@
  *   name: string,
  *   policy: boolean,
  *   webTrustAnchor: boolean,
- *   readonly: boolean,
+ *   canBeDeleted: boolean,
  *   untrusted: boolean,
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc

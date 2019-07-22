@@ -14,13 +14,13 @@
 #include "content/renderer/media/stream/audio_service_audio_processor_proxy.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "media/base/audio_capturer_source.h"
-#include "media/webrtc/audio_processor_controls.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_level_calculator.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace media {
 class AudioBus;
+class AudioProcessorControls;
 }
 
 namespace content {

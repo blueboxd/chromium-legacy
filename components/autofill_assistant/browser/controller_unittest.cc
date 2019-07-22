@@ -11,8 +11,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/mock_controller_observer.h"
 #include "components/autofill_assistant/browser/mock_service.h"
-#include "components/autofill_assistant/browser/mock_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_web_controller.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
@@ -55,9 +55,6 @@ namespace {
 
 class FakeClient : public Client {
  public:
-  explicit FakeClient(UiController* ui_controller)
-      : ui_controller_(ui_controller) {}
-
   // Implements Client
   std::string GetApiKey() override { return ""; }
   AccessTokenFetcher* GetAccessTokenFetcher() override { return nullptr; }
@@ -65,16 +62,12 @@ class FakeClient : public Client {
     return nullptr;
   }
   std::string GetServerUrl() override { return ""; }
-  UiController* GetUiController() override { return ui_controller_; }
   std::string GetAccountEmailAddress() override { return ""; }
   std::string GetLocale() override { return ""; }
   std::string GetCountryCode() override { return ""; }
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
   MOCK_METHOD0(AttachUI, void());
   MOCK_METHOD0(DestroyUI, void());
-
- private:
-  UiController* ui_controller_;
 };
 
 }  // namespace
@@ -84,8 +77,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   ControllerTest()
       : RenderViewHostTestHarness(
             base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
-        fake_client_(&mock_ui_controller_) {}
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
   ~ControllerTest() override {}
 
   void SetUp() override {
@@ -114,14 +106,17 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     ON_CALL(*mock_service_, OnGetNextActions(_, _, _, _, _))
         .WillByDefault(RunOnceCallback<4>(true, ""));
 
-    ON_CALL(mock_ui_controller_, OnStateChanged(_))
+    ON_CALL(*mock_web_controller_, OnElementCheck(_, _))
+        .WillByDefault(RunOnceCallback<1>(false));
+
+    ON_CALL(mock_observer_, OnStateChanged(_))
         .WillByDefault(Invoke([this](AutofillAssistantState state) {
           states_.emplace_back(state);
         }));
-
-    ON_CALL(*mock_web_controller_, OnElementCheck(_, _))
-        .WillByDefault(RunOnceCallback<1>(false));
+    controller_->AddObserver(&mock_observer_);
   }
+
+  void TearDown() override { controller_->RemoveObserver(&mock_observer_); }
 
  protected:
   static SupportedScriptProto* AddRunnableScript(
@@ -208,7 +203,7 @@ class ControllerTest : public content::RenderViewHostTestHarness {
   MockService* mock_service_;
   MockWebController* mock_web_controller_;
   NiceMock<FakeClient> fake_client_;
-  NiceMock<MockUiController> mock_ui_controller_;
+  NiceMock<MockControllerObserver> mock_observer_;
 
   std::unique_ptr<Controller> controller_;
 };
@@ -411,7 +406,7 @@ TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
   AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(2)));
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(SizeIs(2)));
   Start("http://a.example.com/path");
 
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
@@ -429,12 +424,11 @@ TEST_F(ControllerTest, ClearUserActionsWhenRunning) {
   {
     testing::InSequence seq;
     // Discover 2 scripts, script1 and script2.
-    EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(2)));
+    EXPECT_CALL(mock_observer_, OnUserActionsChanged(SizeIs(2)));
     // Set of chips is cleared while running script1.
-    EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(0)));
+    EXPECT_CALL(mock_observer_, OnUserActionsChanged(SizeIs(0)));
     // This test doesn't specify what happens after that.
-    EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(_))
-        .Times(AnyNumber());
+    EXPECT_CALL(mock_observer_, OnUserActionsChanged(_)).Times(AnyNumber());
   }
   Start("http://a.example.com/path");
   EXPECT_TRUE(controller_->PerformUserAction(0));
@@ -586,10 +580,9 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   RunOnce(autostart);
   SetRepeatedScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(0u)))
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(SizeIs(0u)))
       .Times(AnyNumber());
-  EXPECT_CALL(mock_ui_controller_, OnUserActionsChanged(SizeIs(Gt(0u))))
-      .Times(0);
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(SizeIs(Gt(0u)))).Times(0);
 
   Start("http://a.example.com/path");
   EXPECT_THAT(controller_->GetUserActions(), SizeIs(0));
@@ -605,22 +598,21 @@ TEST_F(ControllerTest, InitialUrlLoads) {
 
 TEST_F(ControllerTest, ProgressIncreasesAtStart) {
   EXPECT_EQ(0, controller_->GetProgress());
-  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(5));
+  EXPECT_CALL(mock_observer_, OnProgressChanged(5));
   Start();
   EXPECT_EQ(5, controller_->GetProgress());
 }
 
 TEST_F(ControllerTest, SetProgress) {
   Start();
-  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(20));
+  EXPECT_CALL(mock_observer_, OnProgressChanged(20));
   controller_->SetProgress(20);
   EXPECT_EQ(20, controller_->GetProgress());
 }
 
 TEST_F(ControllerTest, IgnoreProgressDecreases) {
   Start();
-  EXPECT_CALL(mock_ui_controller_, OnProgressChanged(Not(15)))
-      .Times(AnyNumber());
+  EXPECT_CALL(mock_observer_, OnProgressChanged(Not(15))).Times(AnyNumber());
   controller_->SetProgress(20);
   controller_->SetProgress(15);
   EXPECT_EQ(20, controller_->GetProgress());
@@ -1225,10 +1217,8 @@ TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction_Tracking) {
   //
   // The tell never_shown which follows the prompt action should never be
   // executed.
-  EXPECT_CALL(mock_ui_controller_, OnStatusMessageChanged(never_shown))
-      .Times(0);
-  EXPECT_CALL(mock_ui_controller_,
-              OnStatusMessageChanged(testing::Not(never_shown)))
+  EXPECT_CALL(mock_observer_, OnStatusMessageChanged(never_shown)).Times(0);
+  EXPECT_CALL(mock_observer_, OnStatusMessageChanged(testing::Not(never_shown)))
       .Times(testing::AnyNumber());
 
   content::NavigationSimulator::NavigateAndCommitFromBrowser(
@@ -1273,10 +1263,8 @@ TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction) {
   //
   // The tell never_shown which follows the prompt action should never be
   // executed.
-  EXPECT_CALL(mock_ui_controller_, OnStatusMessageChanged(never_shown))
-      .Times(0);
-  EXPECT_CALL(mock_ui_controller_,
-              OnStatusMessageChanged(testing::Not(never_shown)))
+  EXPECT_CALL(mock_observer_, OnStatusMessageChanged(never_shown)).Times(0);
+  EXPECT_CALL(mock_observer_, OnStatusMessageChanged(testing::Not(never_shown)))
       .Times(testing::AnyNumber());
 
   EXPECT_CALL(fake_client_, Shutdown(Metrics::DropOutReason::NAVIGATION));

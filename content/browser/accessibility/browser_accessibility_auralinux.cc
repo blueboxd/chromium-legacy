@@ -46,9 +46,8 @@ void BrowserAccessibilityAuraLinux::UpdatePlatformAttributes() {
 
 void BrowserAccessibilityAuraLinux::OnDataChanged() {
   BrowserAccessibility::OnDataChanged();
-
   DCHECK(node_);
-  node_->DataChanged();
+  node_->EnsureAtkObjectIsValid();
 }
 
 bool BrowserAccessibilityAuraLinux::IsNative() const {

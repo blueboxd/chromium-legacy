@@ -109,7 +109,7 @@ class SharedWorkerHostTest : public testing::Test {
     mojo::MessagePipe message_pipe;
     MessagePortChannel local_port(std::move(message_pipe.handle0));
     MessagePortChannel remote_port(std::move(message_pipe.handle1));
-    host->AddClient(std::move(client), host->process_id(),
+    host->AddClient(std::move(client), mock_render_process_host_.GetID(),
                     22 /* dummy frame_id */, std::move(remote_port));
     return local_port;
   }

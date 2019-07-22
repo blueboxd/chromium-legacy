@@ -112,12 +112,13 @@ class ReportGeneratorTest : public ::testing::Test {
     int expected_profile_number =
         active_profiles_names.size() + inactive_profiles_names.size();
     EXPECT_EQ(expected_profile_number,
-              actual_browser_report.profile_info_list_size());
+              actual_browser_report.chrome_user_profile_infos_size());
 
     auto mutable_active_profiles_names(active_profiles_names);
     auto mutable_inactive_profiles_names(inactive_profiles_names);
     for (int i = 0; i < expected_profile_number; i++) {
-      auto actual_profile_info = actual_browser_report.profile_info_list(i);
+      auto actual_profile_info =
+          actual_browser_report.chrome_user_profile_infos(i);
       std::string actual_profile_name = actual_profile_info.name();
 
       // Verify that the profile id is set as profile path.
@@ -212,9 +213,9 @@ TEST_F(ReportGeneratorTest, DISABLED_ReportSeparation) {
 
   std::set<std::string> first_request_profiles, second_request_profiles;
   first_request_profiles.insert(
-      requests[0]->browser_report().profile_info_list(0).name());
+      requests[0]->browser_report().chrome_user_profile_infos(0).name());
   second_request_profiles.insert(
-      requests[0]->browser_report().profile_info_list(1).name());
+      requests[0]->browser_report().chrome_user_profile_infos(1).name());
 
   requests = GenerateRequests();
 

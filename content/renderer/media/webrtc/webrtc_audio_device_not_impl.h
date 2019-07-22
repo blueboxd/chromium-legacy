@@ -7,9 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/webrtc/modules/audio_device/include/audio_device.h"

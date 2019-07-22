@@ -34,10 +34,8 @@ NowPlayingInfoCenterNotifier::NowPlayingInfoCenterNotifier(
 
   // Observe the active media controller for changes to playback state and
   // supported actions.
-  media_session::mojom::MediaControllerObserverPtr media_controller_observer;
-  media_controller_observer_binding_.Bind(
-      mojo::MakeRequest(&media_controller_observer));
-  media_controller_ptr_->AddObserver(std::move(media_controller_observer));
+  media_controller_ptr_->AddObserver(
+      media_controller_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
 NowPlayingInfoCenterNotifier::~NowPlayingInfoCenterNotifier() = default;

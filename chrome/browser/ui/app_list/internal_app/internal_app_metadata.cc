@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
@@ -81,7 +82,7 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
                             internal_app_list_static->end());
 
   const bool add_camera_app = get_all || !profile->IsGuestSession();
-  if (add_camera_app) {
+  if (add_camera_app && !chromeos::CameraUI::IsEnabled()) {
     internal_app_list->push_back(
         {kInternalAppIdCamera, IDS_INTERNAL_APP_CAMERA, IDR_CAMERA_LOGO_192,
          /*recommendable=*/true,

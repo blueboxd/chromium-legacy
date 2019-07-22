@@ -128,10 +128,6 @@ class VIEWS_EXPORT EditableCombobox : public View,
                        const base::string16& new_contents) override;
   bool HandleKeyEvent(Textfield* sender,
                       const ui::KeyEvent& key_event) override;
-  bool HandleMouseEvent(Textfield* sender,
-                        const ui::MouseEvent& mouse_event) override;
-  bool HandleGestureEvent(Textfield* sender,
-                          const ui::GestureEvent& gesture_event) override;
 
   // Overridden from ViewObserver:
   void OnViewBlurred(View* observed_view) override;

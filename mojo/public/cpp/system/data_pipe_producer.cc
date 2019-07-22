@@ -110,6 +110,10 @@ class DataPipeProducer::SequenceState
       // Lock as much of the pipe as we can.
       void* pipe_buffer;
       uint32_t size = kDefaultMaxReadSize;
+      int64_t max_data_size = data_source_->GetLength();
+      if (static_cast<int64_t>(size) > max_data_size)
+        size = static_cast<uint32_t>(max_data_size);
+
       MojoResult mojo_result = producer_handle_->BeginWriteData(
           &pipe_buffer, &size, MOJO_WRITE_DATA_FLAG_NONE);
       if (mojo_result == MOJO_RESULT_SHOULD_WAIT)

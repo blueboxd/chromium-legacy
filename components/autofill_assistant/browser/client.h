@@ -14,7 +14,6 @@ class PersonalDataManager;
 }  // namespace autofill
 
 namespace autofill_assistant {
-class UiController;
 class AccessTokenFetcher;
 
 // A client interface that needs to be supplied to the controller by the
@@ -47,9 +46,6 @@ class Client {
 
   // Returns the server URL to be used for requests to the backend.
   virtual std::string GetServerUrl() = 0;
-
-  // Returns a UiController.
-  virtual UiController* GetUiController() = 0;
 
   // Returns the locale.
   virtual std::string GetLocale() = 0;

@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantClient_jni.h"
@@ -248,14 +247,6 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
 
 std::string ClientAndroid::GetServerUrl() {
   return server_url_;
-}
-
-UiController* ClientAndroid::GetUiController() {
-  if (ui_controller_android_ && ui_controller_android_->IsAttached())
-    return ui_controller_android_.get();
-
-  static base::NoDestructor<UiController> noop_controller_;
-  return noop_controller_.get();
 }
 
 std::string ClientAndroid::GetLocale() {

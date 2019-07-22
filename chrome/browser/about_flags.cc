@@ -3546,6 +3546,18 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClickToCallUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
 
+    {"enable-ambient-authentication-in-incognito",
+     flag_descriptions::kEnableAmbientAuthenticationInIncognitoName,
+     flag_descriptions::kEnableAmbientAuthenticationInIncognitoDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAmbientAuthenticationInIncognito)},
+
+    {"enable-ambient-authentication-in-guest-session",
+     flag_descriptions::kEnableAmbientAuthenticationInGuestSessionName,
+     flag_descriptions::kEnableAmbientAuthenticationInGuestSessionDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAmbientAuthenticationInGuestSession)},
+
     {"enable-filesystem-in-incognito",
      flag_descriptions::kEnableFilesystemInIncognitoName,
      flag_descriptions::kEnableFilesystemInIncognitoDescription, kOsAll,

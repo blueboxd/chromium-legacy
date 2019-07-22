@@ -62,7 +62,7 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed, bool seek_to_time) {
     SVGSMILElement* animation = it_animation.Get();
     DCHECK(animation->HasValidTarget());
 
-    if (animation->NeedsToProgress(elapsed, seek_to_time)) {
+    if (animation->NeedsToProgress(elapsed)) {
       animation->Progress(elapsed, seek_to_time);
       active_.push_back(animation);
     } else if (animation->IsContributing(elapsed)) {

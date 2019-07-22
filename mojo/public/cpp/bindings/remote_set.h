@@ -128,7 +128,6 @@ class RemoteSetImpl {
 
   void FlushForTesting() {
     for (auto& it : storage_) {
-      if (it.second)
         it.second.FlushForTesting();
     }
   }

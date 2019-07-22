@@ -54,7 +54,7 @@ void ReportGenerator::Generate(ReportCallback callback) {
     // Basic request is already too large so we can't upload any valid report.
     // Skip all Profiles and response an empty request list.
     GetNextProfileReport(
-        basic_request_.browser_report().profile_info_list_size());
+        basic_request_.browser_report().chrome_user_profile_infos_size());
     return;
   }
 
@@ -74,8 +74,9 @@ void ReportGenerator::CreateBasicRequest() {
   basic_request_.set_allocated_os_report(GetOSReport().release());
   basic_request_.set_allocated_browser_report(GetBrowserReport().release());
   for (auto& profile : GetProfiles()) {
-    basic_request_.mutable_browser_report()->add_profile_info_list()->Swap(
-        profile.get());
+    basic_request_.mutable_browser_report()
+        ->add_chrome_user_profile_infos()
+        ->Swap(profile.get());
   }
   basic_request_size_ = basic_request_.ByteSizeLong();
 }
@@ -129,13 +130,13 @@ ReportGenerator::GetProfiles() {
 
 void ReportGenerator::GetNextProfileReport(int profile_index) {
   if (profile_index >=
-      basic_request_.browser_report().profile_info_list_size()) {
+      basic_request_.browser_report().chrome_user_profile_infos_size()) {
     std::move(callback_).Run(std::move(requests_));
     return;
   }
 
   auto basic_profile_report =
-      basic_request_.browser_report().profile_info_list(profile_index);
+      basic_request_.browser_report().chrome_user_profile_infos(profile_index);
   profile_report_generator_.MaybeGenerate(
       base::FilePath::FromUTF8Unsafe(basic_profile_report.id()),
       basic_profile_report.name(),
@@ -160,7 +161,7 @@ void ReportGenerator::OnProfileReportReady(
     // The new full Profile report can be appended into the current request.
     requests_.back()
         ->mutable_browser_report()
-        ->mutable_profile_info_list(profile_index)
+        ->mutable_chrome_user_profile_infos(profile_index)
         ->Swap(profile_report.get());
   } else if (basic_request_size_ + profile_report_size <=
              maximum_report_size_) {
@@ -170,7 +171,7 @@ void ReportGenerator::OnProfileReportReady(
         std::make_unique<em::ChromeDesktopReportRequest>(basic_request_));
     requests_.back()
         ->mutable_browser_report()
-        ->mutable_profile_info_list(profile_index)
+        ->mutable_chrome_user_profile_infos(profile_index)
         ->Swap(profile_report.get());
   }
   // Else: The new full Profile report is too big to be uploaded, skip this

@@ -409,6 +409,18 @@ const char kEnableAccessibilityObjectModelDescription[] =
     "Enables experimental support for Accessibility Object Model APIs "
     "that are in development.";
 
+const char kEnableAmbientAuthenticationInIncognitoName[] =
+    "Enable Ambient Authentication in Incognito mode";
+const char kEnableAmbientAuthenticationInIncognitoDescription[] =
+    "Enables ambient authentication in Incognito mode. This flag may be "
+    "overriden by policies.";
+
+const char kEnableAmbientAuthenticationInGuestSessionName[] =
+    "Enable Ambient Authentication in Guest session.";
+const char kEnableAmbientAuthenticationInGuestSessionDescription[] =
+    "Enables ambient authentication in Guest session. This flag may be "
+    "overriden by policies.";
+
 const char kEnableAudioFocusEnforcementName[] = "Audio Focus Enforcement";
 const char kEnableAudioFocusEnforcementDescription[] =
     "Enables enforcement of a single media session having audio focus at "

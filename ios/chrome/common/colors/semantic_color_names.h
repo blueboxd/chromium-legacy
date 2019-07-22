@@ -12,6 +12,9 @@ extern NSString* const kDestructiveTintColor;
 extern NSString* const kDisabledTintColor;
 extern NSString* const kScrimBackgroundColor;
 extern NSString* const kSolidButtonTextColor;
+extern NSString* const kTextPrimaryColor;
+extern NSString* const kTextfieldBackgroundColor;
+extern NSString* const kTextfieldPlaceholderColor;
 extern NSString* const kTintColor;
 
 #endif  // IOS_CHROME_COMMON_COLORS_SEMANTIC_COLOR_NAMES_H_

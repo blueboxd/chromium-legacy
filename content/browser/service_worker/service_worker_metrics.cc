@@ -20,6 +20,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "net/url_request/url_request.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -655,6 +656,17 @@ void ServiceWorkerMetrics::RecordLookupRegistrationTime(
   } else {
     UMA_HISTOGRAM_TIMES(
         "ServiceWorker.LookupRegistration.MainResource.Time.Error", duration);
+  }
+}
+
+void ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
+    blink::ServiceWorkerStatusCode status,
+    bool has_found_update) {
+  DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.UpdateCheck.Result", status);
+  if (status == blink::ServiceWorkerStatusCode::kOk) {
+    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.UpdateCheck.UpdateFound",
+                          has_found_update);
   }
 }
 

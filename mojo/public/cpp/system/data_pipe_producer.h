@@ -47,6 +47,11 @@ class MOJO_CPP_SYSTEM_EXPORT DataPipeProducer {
     // Checks if this Reader instance owns a valid content to read.
     virtual bool IsValid() const = 0;
 
+    // Returns maximum data size. Actual size may be smaller. This should return
+    // a positive value.
+    // TODO(crbug.com/983023): Return size_t.
+    virtual int64_t GetLength() const = 0;
+
     // Similar to base::File::Read(), reads the given number of bytes (or until
     // EOF is reached) starting with the given offset. Returns ReadResult to
     // represent the number of bytes read and errors.

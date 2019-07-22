@@ -69,7 +69,6 @@ class ClientAndroid : public Client,
   AccessTokenFetcher* GetAccessTokenFetcher() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   std::string GetServerUrl() override;
-  UiController* GetUiController() override;
   std::string GetLocale() override;
   std::string GetCountryCode() override;
   void Shutdown(Metrics::DropOutReason reason) override;

@@ -528,4 +528,68 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   manager.reset();
 }
 
+TEST_F(BrowserAccessibilityAuraLinuxTest,
+       TestAtkObjectsNotDeletedDuringTreeUpdate) {
+  ui::AXNodeData container;
+  container.id = 4;
+  container.role = ax::mojom::Role::kGenericContainer;
+
+  ui::AXNodeData combo_box;
+  combo_box.id = 6;
+  combo_box.role = ax::mojom::Role::kPopUpButton;
+  combo_box.AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "select");
+  combo_box.AddState(ax::mojom::State::kCollapsed);
+  combo_box.SetValue("1");
+  container.child_ids.push_back(combo_box.id);
+
+  ui::AXNodeData menu_list;
+  menu_list.id = 8;
+  menu_list.role = ax::mojom::Role::kMenuListPopup;
+  menu_list.AddState(ax::mojom::State::kInvisible);
+  combo_box.child_ids.push_back(menu_list.id);
+
+  ui::AXNodeData menu_option_1;
+  menu_option_1.id = 9;
+  menu_option_1.role = ax::mojom::Role::kMenuListOption;
+  menu_option_1.SetName("1");
+  menu_list.child_ids.push_back(menu_option_1.id);
+
+  ui::AXNodeData menu_option_2;
+  menu_option_2.id = 10;
+  menu_option_2.role = ax::mojom::Role::kMenuListOption;
+  menu_option_2.SetName("2");
+  menu_option_2.AddState(ax::mojom::State::kInvisible);
+  menu_list.child_ids.push_back(menu_option_2.id);
+
+  ui::AXNodeData root;
+  root.id = 2;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids.push_back(container.id);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, container, combo_box, menu_list, menu_option_1,
+                           menu_option_2),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  ui::AXPlatformNodeAuraLinux* combo_box_node =
+      ToBrowserAccessibilityAuraLinux(manager->GetFromID(combo_box.id))
+          ->GetNode();
+  ASSERT_FALSE(combo_box_node->IsChildOfLeaf());
+  AtkObject* original_atk_object = combo_box_node->GetNativeViewAccessible();
+  g_object_ref(original_atk_object);
+
+  // The interface mask is only dependent on IsChildOfLeaf. Create an update
+  // which won't modify this.
+  container.SetName("container");
+  ui::AXTree* tree = const_cast<ui::AXTree*>(manager->ax_tree());
+  ASSERT_TRUE(tree->Unserialize(MakeAXTreeUpdate(container)));
+  ASSERT_FALSE(combo_box_node->IsChildOfLeaf());
+  ASSERT_EQ(original_atk_object, combo_box_node->GetNativeViewAccessible());
+
+  g_object_unref(original_atk_object);
+  manager.reset();
+}
+
 }  // namespace content

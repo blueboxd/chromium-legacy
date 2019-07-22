@@ -5,6 +5,8 @@
 source_set("autofill") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "autofill_add_credit_card_view_controller.h",
+    "autofill_add_credit_card_view_controller.mm",
     "autofill_credit_card_edit_table_view_controller.h",
     "autofill_credit_card_edit_table_view_controller.mm",
     "autofill_credit_card_table_view_controller.h",

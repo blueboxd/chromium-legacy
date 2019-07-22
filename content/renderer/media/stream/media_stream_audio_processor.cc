@@ -22,7 +22,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -499,8 +498,7 @@ void MediaStreamAudioProcessor::OnRenderThreadChanged() {
 webrtc::AudioProcessorInterface::AudioProcessorStatistics
 MediaStreamAudioProcessor::GetStats(bool has_remote_tracks) {
   AudioProcessorStatistics stats;
-  stats.typing_noise_detected =
-      (base::subtle::Acquire_Load(&typing_detected_) != false);
+  stats.typing_noise_detected = base::subtle::Acquire_Load(&typing_detected_);
   stats.apm_statistics = audio_processing_->GetStatistics(has_remote_tracks);
   return stats;
 }
@@ -720,7 +718,8 @@ int MediaStreamAudioProcessor::ProcessData(const float* const* process_ptrs,
                "capture_delay_ms", capture_delay_ms, "render_delay_ms",
                render_delay_ms);
 
-  const int total_delay_ms = capture_delay_ms + render_delay_ms;
+  const int total_delay_ms =
+      static_cast<int>(capture_delay_ms) + render_delay_ms;
   if (total_delay_ms > 300 && large_delay_log_count_ < 10) {
     LOG(WARNING) << "Large audio delay, capture delay: " << capture_delay_ms
                  << "ms; render delay: " << render_delay_ms << "ms";

@@ -10988,6 +10988,21 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="Gzip-compressed Tar"/>
 </enum>
 
+<enum name="CrosDisksClientFormatError">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="Internal"/>
+  <int value="3" label="Invalid device path"/>
+  <int value="4" label="Device being formatted"/>
+  <int value="5" label="Unsupported filesystem"/>
+  <int value="6" label="Format program not found"/>
+  <int value="7" label="Format program failed"/>
+  <int value="8" label="Device not allowed for formatting"/>
+  <int value="9" label="Invalid format options"/>
+  <int value="10" label="Label too long"/>
+  <int value="11" label="Label has invalid character"/>
+</enum>
+
 <enum name="CrosDisksClientMountError">
   <int value="0" label="Success"/>
   <int value="1" label="Unknown"/>
@@ -11425,6 +11440,10 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="GetBootAttribute"/>
   <int value="2" label="SetBootAttribute"/>
   <int value="3" label="FlushAndSignBootAttributes"/>
+  <int value="4" label="SignBootLockbox"/>
+  <int value="5" label="VerifyBootLockbox"/>
+  <int value="6" label="FinalizeBootLockbox"/>
+  <int value="7" label="TpmIsBeingOwned"/>
 </enum>
 
 <enum name="CryptohomeDiskCleanupProgress">
@@ -25244,6 +25263,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FirstMeaningfulPaintOrdering">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="FMP 0-quiet &lt; FMP 2-quiet"/>
   <int value="1" label="FMP 0-quiet &gt; FMP 2-quiet"/>
   <int value="2" label="FMP 0-quiet = FMP 2-quiet"/>
@@ -28924,6 +28946,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HadUserInput">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="Did not have user input"/>
   <int value="1" label="Had user input"/>
 </enum>
@@ -34174,6 +34199,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1411733990" label="OmniboxDedupeGoogleDriveURLs:disabled"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1410394131" label="EvDetailsInPageInfo:enabled"/>
+  <int value="-1410001116"
+      label="EnableAmbientAuthenticationInGuestSession:disabled"/>
   <int value="-1409643943" label="enable-child-account-detection"/>
   <int value="-1408869905"
       label="AutofillEnforceMinRequiredFieldsForQuery:disabled"/>
@@ -34869,6 +34896,8 @@ from previous Chrome versions.
   <int value="-438379844" label="SwapSideVolumeButtonsForOrientation:enabled"/>
   <int value="-436470115" label="TouchpadAndWheelScrollLatching:enabled"/>
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
+  <int value="-433879402"
+      label="EnableAmbientAuthenticationInIncognito:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
   <int value="-426815606" label="HomepageTile:enabled"/>
@@ -34948,6 +34977,8 @@ from previous Chrome versions.
   <int value="-328361990" label="enable-experimental-extension-apis"/>
   <int value="-327272022" label="AutofillRejectCompanyBirthyearName:enabled"/>
   <int value="-326083626" label="AppBanners:disabled"/>
+  <int value="-324786035"
+      label="EnableAmbientAuthenticationInGuestSession:enabled"/>
   <int value="-323964300" label="ArcVpn:enabled"/>
   <int value="-323831744" label="token-binding:enabled"/>
   <int value="-323508281" label="VrWebInputEditing:disabled"/>
@@ -35276,6 +35307,7 @@ from previous Chrome versions.
   <int value="132560299"
       label="OmniboxUIExperimentHideSteadyStateUrlScheme:disabled"/>
   <int value="133482330" label="AppNotificationStatusMessaging:enabled"/>
+  <int value="138345654" label="enable-ambient-authentication-in-incognito"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
@@ -35366,6 +35398,8 @@ from previous Chrome versions.
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
   <int value="307543404" label="disable-team-drives"/>
+  <int value="307670929"
+      label="enable-ambient-authentication-in-guest-session"/>
   <int value="310143091"
       label="AutofillImportNonFocusableCreditCardForms:enabled"/>
   <int value="313253630" label="AutofillRefreshStyleAndroid:enabled"/>
@@ -35972,6 +36006,8 @@ from previous Chrome versions.
   <int value="1196644408" label="performance-monitor-gathering"/>
   <int value="1196834473" label="disable-smart-virtual-keyboard"/>
   <int value="1198839129" label="OfflinePagesLivePageSharing:enabled"/>
+  <int value="1201008500"
+      label="EnableAmbientAuthenticationInIncognito:enabled"/>
   <int value="1201441984"
       label="new-password-form-parsing-for-saving:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
@@ -42227,6 +42263,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="NetworkQuietStatus">
+  <obsolete>
+    Removed July 2019.
+  </obsolete>
   <int value="0" label="Had network 0-quiet for 0.5 seconds"/>
   <int value="1" label="Had network 2-quiet for 2 seconds"/>
 </enum>

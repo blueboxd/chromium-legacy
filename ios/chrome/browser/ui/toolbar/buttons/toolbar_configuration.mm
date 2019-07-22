@@ -93,9 +93,8 @@
 - (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor {
   switch (self.style) {
     case NORMAL:
-      return [UIColor colorWithWhite:0
-                               alpha:kAdaptiveLocationBarBackgroundAlpha *
-                                     visibilityFactor];
+      return [[UIColor colorNamed:kTextfieldBackgroundColor]
+          colorWithAlphaComponent:visibilityFactor];
     case INCOGNITO:
       return
           [UIColor colorWithWhite:1

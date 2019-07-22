@@ -134,7 +134,7 @@ Polymer({
    * @private
    */
   canDelete_: function(model) {
-    return !model.readonly && !model.policy;
+    return model.canBeDeleted;
   },
 
   /** @private */

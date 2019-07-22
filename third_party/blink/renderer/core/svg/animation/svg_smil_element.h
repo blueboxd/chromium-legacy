@@ -86,7 +86,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   void SeekToIntervalCorrespondingToTime(double elapsed);
 
-  bool NeedsToProgress(double elapsed, bool seek_to_time);
+  bool NeedsToProgress(double elapsed);
   void Progress(double elapsed, bool seek_to_time);
   void TriggerPendingEvents(double elapsed);
   void UpdateSyncbases();

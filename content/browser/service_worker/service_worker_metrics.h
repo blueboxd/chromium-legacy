@@ -273,6 +273,14 @@ class ServiceWorkerMetrics {
       blink::ServiceWorkerStatusCode status,
       base::TimeDelta duration);
 
+  // Records the result of byte-for-byte update checking.
+  // |has_found_update| should be true when the update checking finds update of
+  // the script. It's recorded only when |status| is kOk.
+  // This is used only when ServiceWorkerImportedScriptUpdateCheck is enabled.
+  static void RecordByteForByteUpdateCheckStatus(
+      blink::ServiceWorkerStatusCode status,
+      bool has_found_update);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

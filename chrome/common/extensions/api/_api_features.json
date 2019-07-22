@@ -713,13 +713,22 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://bookmarks/*"
+      "chrome://bookmarks/*",
+      "chrome://terminal/*"
     ]
   }],
-  "terminalPrivate": {
+  "terminalPrivate": [{
     "dependencies": ["permission:terminalPrivate"],
-    "contexts": ["blessed_extension"]
-  },
+    "contexts": ["blessed_extension"],
+    "platforms": ["chromeos"]
+  }, {
+    "channel": "dev",
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://terminal/*"
+    ],
+    "platforms": ["chromeos"]
+  }],
   "topSites": {
     "dependencies": ["permission:topSites"],
     "contexts": ["blessed_extension"]
@@ -805,7 +814,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://bookmarks/*"
+      "chrome://bookmarks/*",
+      "chrome://terminal/*"
     ]
   }]
 }

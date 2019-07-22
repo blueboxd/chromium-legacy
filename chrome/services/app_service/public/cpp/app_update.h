@@ -70,6 +70,9 @@ class AppUpdate {
   const std::string& Description() const;
   bool DescriptionChanged() const;
 
+  const std::string& Version() const;
+  bool VersionChanged() const;
+
   std::vector<std::string> AdditionalSearchTerms() const;
   bool AdditionalSearchTermsChanged() const;
 

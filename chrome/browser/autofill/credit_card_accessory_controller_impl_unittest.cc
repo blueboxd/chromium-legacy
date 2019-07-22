@@ -28,7 +28,8 @@ AccessorySheetData::Builder CreditCardAccessorySheetDataBuilder() {
              l10n_util::GetStringUTF16(
                  IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE))
       .AppendFooterCommand(
-          l10n_util::GetStringUTF16(IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE),
+          l10n_util::GetStringUTF16(
+              IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_ALL_ADDRESSES_LINK),
           AccessoryAction::MANAGE_CREDIT_CARDS);
 }
 

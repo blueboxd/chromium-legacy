@@ -57,6 +57,7 @@ class SystemLogUploader : public UploadJob::Delegate {
   // Http header constants to upload zipped logs.
   static const char* const kFileTypeZippedLogFile;
   static const char* const kZippedLogsName;
+  static const char* const kZippedLogsFileName;
   static const char* const kContentTypeOctetStream;
 
   // A delegate interface used by SystemLogUploader to read the system logs

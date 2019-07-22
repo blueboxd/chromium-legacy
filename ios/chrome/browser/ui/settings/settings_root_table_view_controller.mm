@@ -104,15 +104,13 @@ NSString* const kSettingsToolbarDeleteButtonId =
 
 #pragma mark - UIViewController
 
-- (NSArray<UIBarButtonItem*>*)toolbarItems {
+- (void)viewDidLoad {
   UIBarButtonItem* flexibleSpace = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  return @[ flexibleSpace, self.deleteButton, flexibleSpace ];
-}
-
-- (void)viewDidLoad {
+  [self setToolbarItems:@[ flexibleSpace, self.deleteButton, flexibleSpace ]
+               animated:YES];
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
     self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
   } else {

@@ -171,6 +171,12 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPolicyFcmInvalidations;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kEnableAmbientAuthenticationInGuestSession;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kEnableAmbientAuthenticationInIncognito;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnableIncognitoWindowCounter;
 
 #if !defined(OS_ANDROID)

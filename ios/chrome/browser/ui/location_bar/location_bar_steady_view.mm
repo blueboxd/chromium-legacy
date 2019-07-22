@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,10 +66,9 @@ const CGFloat kButtonTrailingSpacing = 10;
   LocationBarSteadyViewColorScheme* scheme =
       [[LocationBarSteadyViewColorScheme alloc] init];
 
-  scheme.fontColor = [UIColor colorWithWhite:0 alpha:0.7];
-  scheme.placeholderColor = [UIColor colorWithWhite:0
-                                              alpha:kOmniboxPlaceholderAlpha];
-  scheme.trailingButtonColor = [UIColor colorWithWhite:0 alpha:0.45];
+  scheme.fontColor = [UIColor colorNamed:kTextPrimaryColor];
+  scheme.placeholderColor = [UIColor colorNamed:kTextfieldPlaceholderColor];
+  scheme.trailingButtonColor = [UIColor colorNamed:@"tab_toolbar_button_color"];
 
   return scheme;
 }
@@ -106,9 +106,7 @@ const CGFloat kButtonTrailingSpacing = 10;
                         delay:0
                       options:UIViewAnimationOptionBeginFromCurrentState
                    animations:^{
-                     CGFloat alpha = 0;
-                     if (highlighted)
-                       alpha += 0.07;
+                     CGFloat alpha = highlighted ? 0.07 : 0;
                      self.backgroundColor =
                          [UIColor colorWithWhite:0 alpha:alpha];
                    }

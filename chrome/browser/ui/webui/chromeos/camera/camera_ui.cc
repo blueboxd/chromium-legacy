@@ -9,7 +9,9 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/camera_resources.h"
 #include "chrome/grit/camera_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -48,6 +50,9 @@ content::WebUIDataSource* CreateCameraUIHTMLSource() {
   source->AddResourcePath("src/js/mojo/mojo_bindings_lite.js",
                           IDR_MOJO_MOJO_BINDINGS_LITE_JS);
 
+  // Add System Web App resources.
+  source->AddResourcePath("pwa.html", IDR_PWA_HTML);
+
   source->SetJsonPath("strings.js");
 
   return source;
@@ -73,7 +78,8 @@ CameraUI::~CameraUI() = default;
 
 // static
 bool CameraUI::IsEnabled() {
-  return base::FeatureList::IsEnabled(chromeos::features::kCameraSystemWebApp);
+  return web_app::SystemWebAppManager::IsAppEnabled(
+      web_app::SystemAppType::CAMERA);
 }
 
 }  // namespace chromeos

@@ -282,6 +282,19 @@ const base::Feature kDriveFcmInvalidations{"DriveFCMInvalidations",
 const base::Feature kPolicyFcmInvalidations{"PolicyFCMInvalidations",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables ambient authentication in incognito mode.
+// TODO(https://crbug.com/458508): Change to disabled by default after proper
+// notice to use the policy to activate when required, M79-M80.
+const base::Feature kEnableAmbientAuthenticationInIncognito{
+    "EnableAmbientAuthenticationInIncognito", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables ambient authentication in guest sessions.
+// TODO(https://crbug.com/458508): Change to disabled by default after proper
+// notice to use the policy to activate when required, M79-M80.
+const base::Feature kEnableAmbientAuthenticationInGuestSession{
+    "EnableAmbientAuthenticationInGuestSession",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Show the number of open incognito windows besides incognito icon on the
 // toolbar.
 const base::Feature kEnableIncognitoWindowCounter{

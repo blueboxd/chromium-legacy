@@ -261,6 +261,12 @@ extern const char kEnableAccessibilityImageDescriptionsDescription[];
 extern const char kEnableAccessibilityObjectModelName[];
 extern const char kEnableAccessibilityObjectModelDescription[];
 
+extern const char kEnableAmbientAuthenticationInIncognitoName[];
+extern const char kEnableAmbientAuthenticationInIncognitoDescription[];
+
+extern const char kEnableAmbientAuthenticationInGuestSessionName[];
+extern const char kEnableAmbientAuthenticationInGuestSessionDescription[];
+
 extern const char kEnableAudioFocusEnforcementName[];
 extern const char kEnableAudioFocusEnforcementDescription[];
 

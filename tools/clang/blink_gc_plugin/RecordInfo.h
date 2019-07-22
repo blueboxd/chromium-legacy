@@ -103,7 +103,6 @@ class RecordInfo {
   bool IsStackAllocated();
   bool IsNonNewable();
   bool IsOnlyPlacementNewable();
-  bool IsEagerlyFinalized();
 
   bool HasDefinition();
 
@@ -148,7 +147,6 @@ class RecordInfo {
   CachedBool does_need_finalization_;
   CachedBool has_gc_mixin_methods_;
   CachedBool is_declaring_local_trace_;
-  CachedBool is_eagerly_finalized_;
 
   bool determined_trace_methods_;
   clang::CXXMethodDecl* trace_method_;

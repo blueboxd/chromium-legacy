@@ -61,7 +61,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
 
   // Creates the worker if necessary or connects to an already existing worker.
   void ConnectToWorker(
-      int process_id,
+      int client_process_id,
       int frame_id,
       blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::FetchClientSettingsObjectPtr
@@ -80,12 +80,13 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   friend class SharedWorkerHostTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkServiceRestartBrowserTest, SharedWorker);
 
+  // Creates a new worker in the client's renderer process.
   void CreateWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
       blink::mojom::SharedWorkerClientPtr client,
-      int process_id,
+      int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
@@ -93,7 +94,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       std::unique_ptr<SharedWorkerInstance> instance,
       base::WeakPtr<SharedWorkerHost> host,
       blink::mojom::SharedWorkerClientPtr client,
-      int process_id,
+      int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
@@ -109,7 +110,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       std::unique_ptr<SharedWorkerInstance> instance,
       base::WeakPtr<SharedWorkerHost> host,
       blink::mojom::SharedWorkerClientPtr client,
-      int process_id,
+      int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr
@@ -122,7 +123,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
           controller_service_worker_object_host);
 
   // Returns nullptr if there is no such host.
-  SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);
   SharedWorkerHost* FindAvailableSharedWorkerHost(
       const SharedWorkerInstance& instance);
 

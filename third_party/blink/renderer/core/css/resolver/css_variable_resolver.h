@@ -172,9 +172,13 @@ class CORE_EXPORT CSSVariableResolver {
   scoped_refptr<CSSVariableData> ValueForEnvironmentVariable(
       const AtomicString& name);
   // Returns the CSSVariableData for a custom property, resolving and storing it
-  // if necessary.
+  // if necessary. If a cycle via font-relative units was discovered, the
+  // unit_cycle flag is set to true.
+  //
+  // https://drafts.css-houdini.org/css-properties-values-api-1/#dependency-cycles
   scoped_refptr<CSSVariableData> ValueForCustomProperty(AtomicString name,
-                                                        const Options&);
+                                                        const Options&,
+                                                        bool& unit_cycle);
   // Resolves the CSSVariableData from a custom property declaration.
   scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
                                                        const CSSVariableData&,
@@ -188,9 +192,12 @@ class CORE_EXPORT CSSVariableResolver {
       const Options&,
       bool& cycle_detected);
 
-  bool IsVariableDisallowed(const CSSVariableData&,
-                            const Options&,
-                            const PropertyRegistration*);
+  bool IsDisallowedByFontUnitFlags(const CSSVariableData&,
+                                   const Options&,
+                                   const PropertyRegistration*);
+
+  bool IsDisallowedByAnimationTaintedFlag(const CSSVariableData&,
+                                          const Options&);
 
   // The following utilities get/set variables on either StyleInheritedVariables
   // or StyleNonInheritedVariables, according to their PropertyRegistration.

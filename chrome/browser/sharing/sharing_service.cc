@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -150,35 +151,45 @@ void SharingService::SendMessageToDevice(
     base::TimeDelta time_to_live,
     chrome_browser_sharing::SharingMessage message,
     SendMessageCallback callback) {
-  fcm_sender_->SendMessageToDevice(
-      device_guid, time_to_live, std::move(message),
-      base::BindOnce(&SharingService::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void SharingService::OnMessageSent(SendMessageCallback callback,
-                                   base::Optional<std::string> message_id) {
-  if (!message_id) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  send_message_callbacks_.emplace(*message_id, std::move(callback));
+  std::string message_guid = base::GenerateGUID();
+  send_message_callbacks_.emplace(message_guid, std::move(callback));
 
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
       base::BindOnce(&SharingService::InvokeSendMessageCallback,
-                     weak_ptr_factory_.GetWeakPtr(), *message_id, false),
+                     weak_ptr_factory_.GetWeakPtr(), message_guid,
+                     /*success=*/false),
       kSendMessageTimeout);
+
+  fcm_sender_->SendMessageToDevice(
+      device_guid, time_to_live, std::move(message),
+      base::BindOnce(&SharingService::OnMessageSent,
+                     weak_ptr_factory_.GetWeakPtr(), message_guid));
+}
+
+void SharingService::OnMessageSent(const std::string& message_guid,
+                                   base::Optional<std::string> message_id) {
+  if (!message_id) {
+    InvokeSendMessageCallback(message_guid, /*success=*/false);
+    return;
+  }
+
+  message_guids_.emplace(*message_id, message_guid);
 }
 
 void SharingService::OnAckReceived(const std::string& message_id) {
-  InvokeSendMessageCallback(message_id, /*success=*/true);
+  auto iter = message_guids_.find(message_id);
+  if (iter == message_guids_.end())
+    return;
+
+  std::string message_guid = std::move(iter->second);
+  message_guids_.erase(iter);
+  InvokeSendMessageCallback(message_guid, /*success=*/true);
 }
 
-void SharingService::InvokeSendMessageCallback(const std::string& message_id,
+void SharingService::InvokeSendMessageCallback(const std::string& message_guid,
                                                bool result) {
-  auto iter = send_message_callbacks_.find(message_id);
+  auto iter = send_message_callbacks_.find(message_guid);
   if (iter == send_message_callbacks_.end())
     return;
 

@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/editable_combobox/editable_combobox_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -54,6 +55,27 @@ class DummyListener : public EditableComboboxListener {
   int change_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(DummyListener);
+};
+
+// No-op test double of a ContextMenuController
+class TestContextMenuController : public ContextMenuController {
+ public:
+  TestContextMenuController() = default;
+  ~TestContextMenuController() override = default;
+
+  // ContextMenuController:
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override {
+    opened_menu_ = true;
+  }
+
+  bool opened_menu() const { return opened_menu_; }
+
+ private:
+  bool opened_menu_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
 };
 
 class EditableComboboxTest : public ViewsTestBase {
@@ -719,36 +741,33 @@ TEST_F(EditableComboboxTest, ArrowButtonOpensAndClosesMenu) {
   EXPECT_FALSE(IsMenuOpen());
 }
 
-TEST_F(EditableComboboxTest, ShowMenuOnMouseRelease) {
+TEST_F(EditableComboboxTest, ShowContextMenuOnMouseRelease) {
   std::vector<base::string16> items = {ASCIIToUTF16("item0"),
                                        ASCIIToUTF16("item1")};
   InitEditableCombobox(items, /*filter_on_edit=*/false,
                        /*show_on_empty=*/true);
-  dummy_focusable_view_->RequestFocus();
-  WaitForMenuClosureAnimation();
   EXPECT_FALSE(IsMenuOpen());
-
-  // Without initial focus.
-  EXPECT_FALSE(combobox_->GetTextfieldForTest()->HasFocus());
+  TestContextMenuController context_menu_controller;
+  combobox_->GetTextfieldForTest()->set_context_menu_controller(
+      &context_menu_controller);
   const gfx::Point textfield_point(combobox_->x() + 1, combobox_->y() + 1);
-  PerformMouseEvent(widget_, textfield_point, ui::ET_MOUSE_PRESSED);
+  ui::MouseEvent click_mouse_event(ui::ET_MOUSE_PRESSED, textfield_point,
+                                   textfield_point, ui::EventTimeForNow(),
+                                   ui::EF_RIGHT_MOUSE_BUTTON,
+                                   ui::EF_RIGHT_MOUSE_BUTTON);
+  widget_->OnMouseEvent(&click_mouse_event);
   EXPECT_FALSE(IsMenuOpen());
-  PerformMouseEvent(widget_, textfield_point, ui::ET_MOUSE_RELEASED);
-  EXPECT_TRUE(IsMenuOpen());
-
-  SendKeyEvent(ui::VKEY_ESCAPE);
-  WaitForMenuClosureAnimation();
+  ui::MouseEvent release_mouse_event(ui::ET_MOUSE_RELEASED, textfield_point,
+                                     textfield_point, ui::EventTimeForNow(),
+                                     ui::EF_RIGHT_MOUSE_BUTTON,
+                                     ui::EF_RIGHT_MOUSE_BUTTON);
+  widget_->OnMouseEvent(&release_mouse_event);
+  // The context menu should appear, not the combobox dropdown.
   EXPECT_FALSE(IsMenuOpen());
-
-  // With initial focus.
-  EXPECT_TRUE(combobox_->GetTextfieldForTest()->HasFocus());
-  PerformMouseEvent(widget_, textfield_point, ui::ET_MOUSE_PRESSED);
-  EXPECT_FALSE(IsMenuOpen());
-  PerformMouseEvent(widget_, textfield_point, ui::ET_MOUSE_RELEASED);
-  EXPECT_TRUE(IsMenuOpen());
+  EXPECT_TRUE(context_menu_controller.opened_menu());
 }
 
-TEST_F(EditableComboboxTest, DragToSelectDoesntOpenTheMenuUntilDone) {
+TEST_F(EditableComboboxTest, DragToSelectDoesntOpenTheMenu) {
   std::vector<base::string16> items = {ASCIIToUTF16("item0"),
                                        ASCIIToUTF16("item1")};
   InitEditableCombobox(items, /*filter_on_edit=*/false,
@@ -775,7 +794,7 @@ TEST_F(EditableComboboxTest, DragToSelectDoesntOpenTheMenuUntilDone) {
   PerformMouseEvent(widget_, end_point, ui::ET_MOUSE_RELEASED);
   ASSERT_EQ(ASCIIToUTF16("abc"),
             combobox_->GetTextfieldForTest()->GetSelectedText());
-  EXPECT_TRUE(IsMenuOpen());
+  EXPECT_FALSE(IsMenuOpen());
 }
 
 }  // namespace

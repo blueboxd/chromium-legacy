@@ -6,10 +6,14 @@
 #define CONTENT_PUBLIC_BROWSER_CONTENT_INDEX_CONTEXT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/content_index_provider.h"
+#include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 
 class SkBitmap;
 
@@ -19,6 +23,12 @@ namespace content {
 // query auxiliary data for its entries from the right source.
 class CONTENT_EXPORT ContentIndexContext {
  public:
+  using GetAllEntriesCallback =
+      base::OnceCallback<void(blink::mojom::ContentIndexError,
+                              std::vector<ContentIndexEntry>)>;
+  using GetEntryCallback =
+      base::OnceCallback<void(base::Optional<ContentIndexEntry>)>;
+
   ContentIndexContext() = default;
   virtual ~ContentIndexContext() = default;
 
@@ -28,6 +38,12 @@ class CONTENT_EXPORT ContentIndexContext {
   virtual void GetIcon(int64_t service_worker_registration_id,
                        const std::string& description_id,
                        base::OnceCallback<void(SkBitmap)> icon_callback) = 0;
+
+  virtual void GetAllEntries(GetAllEntriesCallback callback) = 0;
+
+  virtual void GetEntry(int64_t service_worker_registration_id,
+                        const std::string& description_id,
+                        GetEntryCallback callback) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexContext);
 };

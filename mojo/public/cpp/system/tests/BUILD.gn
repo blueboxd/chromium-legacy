@@ -13,7 +13,7 @@ source_set("tests") {
     "handle_signals_state_unittest.cc",
     "scope_to_message_pipe_unittest.cc",
     "simple_watcher_unittest.cc",
-    "string_data_pipe_producer_unittest.cc",
+    "string_data_source_unittest.cc",
     "wait_set_unittest.cc",
     "wait_unittest.cc",
   ]

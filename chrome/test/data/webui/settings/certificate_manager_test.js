@@ -160,7 +160,7 @@ cr.define('certificate_manager', function() {
       id: 'dummySubnodeId',
       name: 'dummySubnodeName',
       policy: false,
-      readonly: false,
+      canBeDeleted: true,
       untrusted: false,
       urlLocked: false,
     };
@@ -546,15 +546,9 @@ cr.define('certificate_manager', function() {
       const deleteButton = subentry.shadowRoot.querySelector('#delete');
       assertTrue(!!deleteButton);
 
-      // Should be disabled when 'model.readonly' is true.
+      // Should be disabled when 'model.canBeDeleted' is false.
       let model = createSampleCertificateSubnode();
-      model.readonly = true;
-      subentry.model = model;
-      assertTrue(deleteButton.hidden);
-
-      // Should be disabled when 'model.policy' is true.
-      model = createSampleCertificateSubnode();
-      model.policy = true;
+      model.canBeDeleted = false;
       subentry.model = model;
       assertTrue(deleteButton.hidden);
 

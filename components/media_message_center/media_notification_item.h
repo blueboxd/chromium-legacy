@@ -116,8 +116,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   // updating |view_|'s metadata twice on a single change.
   bool view_needs_metadata_update_ = false;
 
-  mojo::Binding<media_session::mojom::MediaControllerObserver>
-      observer_binding_{this};
+  mojo::Receiver<media_session::mojom::MediaControllerObserver>
+      observer_receiver_{this};
 
   mojo::Receiver<media_session::mojom::MediaControllerImageObserver>
       artwork_observer_receiver_{this};

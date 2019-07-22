@@ -231,7 +231,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
     cert_infos.reserve(certs.size());
     for (auto& cert : certs) {
       net::CertType type = x509_certificate_model::GetType(cert.get());
-      bool read_only = cert_db_->IsReadOnly(cert.get());
+      bool can_be_deleted = !cert_db_->IsReadOnly(cert.get());
       bool untrusted = cert_db_->IsUntrusted(cert.get());
       bool hardware_backed = cert_db_->IsHardwareBacked(cert.get());
       bool web_trust_anchor = cert_db_->IsWebTrustAnchor(cert.get());
@@ -241,7 +241,7 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource {
 #endif
       base::string16 name = GetName(cert.get(), hardware_backed);
       cert_infos.push_back(std::make_unique<CertificateManagerModel::CertInfo>(
-          std::move(cert), type, name, read_only, untrusted,
+          std::move(cert), type, name, can_be_deleted, untrusted,
           CertificateManagerModel::CertInfo::Source::kPlatform,
           web_trust_anchor, hardware_backed, device_wide));
     }
@@ -353,8 +353,8 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
       base::string16 cert_name = base::UTF8ToUTF16(
           x509_certificate_model::GetCertNameOrNickname(nss_cert.get()));
       cert_infos.push_back(std::make_unique<CertificateManagerModel::CertInfo>(
-          std::move(nss_cert), type, std::move(cert_name), true /* read_only */,
-          false /* untrusted */,
+          std::move(nss_cert), type, std::move(cert_name),
+          false /* can_be_deleted */, false /* untrusted */,
           CertificateManagerModel::CertInfo::Source::kPolicy,
           policy_web_trusted /* web_trust_anchor */,
           false /* hardware_backed */, false /* device_wide */));
@@ -421,7 +421,7 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
       cert_infos.push_back(std::make_unique<CertificateManagerModel::CertInfo>(
           std::move(nss_cert), net::CertType::USER_CERT /* type */,
-          display_name, true /* read_only */, false /* untrusted */,
+          display_name, false /* can_be_deleted */, false /* untrusted */,
           CertificateManagerModel::CertInfo::Source::kExtension,
           false /* web_trust_anchor */, false /* hardware_backed */,
           false /* device_wide */));
@@ -444,7 +444,7 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 CertificateManagerModel::CertInfo::CertInfo(net::ScopedCERTCertificate cert,
                                             net::CertType type,
                                             base::string16 name,
-                                            bool read_only,
+                                            bool can_be_deleted,
                                             bool untrusted,
                                             Source source,
                                             bool web_trust_anchor,
@@ -453,7 +453,7 @@ CertificateManagerModel::CertInfo::CertInfo(net::ScopedCERTCertificate cert,
     : cert_(std::move(cert)),
       type_(type),
       name_(std::move(name)),
-      read_only_(read_only),
+      can_be_deleted_(can_be_deleted),
       untrusted_(untrusted),
       source_(source),
       web_trust_anchor_(web_trust_anchor),
@@ -467,7 +467,7 @@ std::unique_ptr<CertificateManagerModel::CertInfo>
 CertificateManagerModel::CertInfo::Clone(const CertInfo* cert_info) {
   return std::make_unique<CertInfo>(
       net::x509_util::DupCERTCertificate(cert_info->cert()), cert_info->type(),
-      cert_info->name(), cert_info->read_only(), cert_info->untrusted(),
+      cert_info->name(), cert_info->can_be_deleted(), cert_info->untrusted(),
       cert_info->source(), cert_info->web_trust_anchor(),
       cert_info->hardware_backed(), cert_info->device_wide());
 }

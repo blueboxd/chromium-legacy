@@ -29,7 +29,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   const GURL& GetCurrentURL() override;
   const GURL& GetDeeplinkURL() override;
   Service* GetService() override;
-  UiController* GetUiController() override;
   WebController* GetWebController() override;
   ClientMemory* GetClientMemory() override;
   TriggerContext* GetTriggerContext() override;
@@ -68,10 +67,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   void SetService(Service* service) { service_ = service; }
 
-  void SetUiController(UiController* ui_controller) {
-    ui_controller_ = ui_controller;
-  }
-
   void SetWebController(WebController* web_controller) {
     web_controller_ = web_controller;
   }
@@ -105,7 +100,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   ClientSettings client_settings_;
   GURL current_url_;
   Service* service_ = nullptr;
-  UiController* ui_controller_ = nullptr;
   WebController* web_controller_ = nullptr;
   ClientMemory memory_;
   std::unique_ptr<TriggerContext> trigger_context_;

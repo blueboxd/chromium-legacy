@@ -79,7 +79,7 @@ void DatabaseErrorCallback(base::OnceClosure quit_closure,
   std::move(quit_closure).Run();
 }
 
-void GetEntriesCallback(
+void GetDescriptionsCallback(
     base::OnceClosure quit_closure,
     blink::mojom::ContentIndexError* out_error,
     std::vector<blink::mojom::ContentDescriptionPtr>* out_descriptions,
@@ -153,8 +153,8 @@ class ContentIndexDatabaseTest : public ::testing::Test {
     std::vector<blink::mojom::ContentDescriptionPtr> descriptions;
     database_->GetDescriptions(
         service_worker_registration_id_,
-        base::BindOnce(&GetEntriesCallback, run_loop.QuitClosure(), out_error,
-                       &descriptions));
+        base::BindOnce(&GetDescriptionsCallback, run_loop.QuitClosure(),
+                       out_error, &descriptions));
     run_loop.Run();
     return descriptions;
   }
@@ -169,6 +169,36 @@ class ContentIndexDatabaseTest : public ::testing::Test {
                        }));
     run_loop.Run();
     return out_icon;
+  }
+
+  std::vector<ContentIndexEntry> GetAllEntries() {
+    base::RunLoop run_loop;
+    std::vector<ContentIndexEntry> out_entries;
+    database_->GetAllEntries(
+        base::BindLambdaForTesting([&](blink::mojom::ContentIndexError error,
+                                       std::vector<ContentIndexEntry> entries) {
+          ASSERT_EQ(error, blink::mojom::ContentIndexError::NONE);
+          out_entries = std::move(entries);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return out_entries;
+  }
+
+  std::unique_ptr<ContentIndexEntry> GetEntry(
+      const std::string& description_id) {
+    base::RunLoop run_loop;
+    std::unique_ptr<ContentIndexEntry> out_entry;
+    database_->GetEntry(service_worker_registration_id_, description_id,
+                        base::BindLambdaForTesting(
+                            [&](base::Optional<ContentIndexEntry> entry) {
+                              if (entry)
+                                out_entry = std::make_unique<ContentIndexEntry>(
+                                    std::move(*entry));
+                              run_loop.Quit();
+                            }));
+    run_loop.Run();
+    return out_entry;
   }
 
   MockContentIndexProvider* provider() {
@@ -325,32 +355,6 @@ TEST_F(ContentIndexDatabaseTest, ProviderUpdated) {
   }
 }
 
-TEST_F(ContentIndexDatabaseTest, ProviderInitializatied) {
-  // If nothing is registered the provider shouldn't be notified.
-  {
-    EXPECT_CALL(*provider(), OnContentAdded(_)).Times(0);
-    database()->InitializeProviderWithEntries();
-    thread_bundle().RunUntilIdle();
-  }
-
-  // Add two entries.
-  {
-    EXPECT_CALL(*provider(), OnContentAdded(_)).Times(2);
-    EXPECT_EQ(AddEntry(CreateDescription("id1")),
-              blink::mojom::ContentIndexError::NONE);
-    EXPECT_EQ(AddEntry(CreateDescription("id2")),
-              blink::mojom::ContentIndexError::NONE);
-    thread_bundle().RunUntilIdle();
-  }
-
-  // Simulate initialization.
-  {
-    EXPECT_CALL(*provider(), OnContentAdded(_)).Times(2);
-    database()->InitializeProviderWithEntries();
-    thread_bundle().RunUntilIdle();
-  }
-}
-
 TEST_F(ContentIndexDatabaseTest, IconLifetimeTiedToEntry) {
   // Initially we don't have an icon.
   EXPECT_TRUE(GetIcon("id").isNull());
@@ -365,6 +369,44 @@ TEST_F(ContentIndexDatabaseTest, IconLifetimeTiedToEntry) {
 
   EXPECT_EQ(DeleteEntry("id"), blink::mojom::ContentIndexError::NONE);
   EXPECT_TRUE(GetIcon("id").isNull());
+}
+
+TEST_F(ContentIndexDatabaseTest, GetEntries) {
+  // Initially there are no entries.
+  EXPECT_FALSE(GetEntry("any-id"));
+  EXPECT_TRUE(GetAllEntries().empty());
+
+  std::unique_ptr<ContentIndexEntry> added_entry;
+  {
+    EXPECT_CALL(*provider(), OnContentAdded(_))
+        .WillOnce(testing::Invoke([&](auto entry) {
+          added_entry = std::make_unique<ContentIndexEntry>(std::move(entry));
+        }));
+    EXPECT_EQ(AddEntry(CreateDescription("id")),
+              blink::mojom::ContentIndexError::NONE);
+    base::RunLoop().RunUntilIdle();
+    ASSERT_TRUE(added_entry);
+  }
+
+  // Check the notified entries match the queried entries.
+  {
+    auto entry = GetEntry("id");
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->description->Equals(*added_entry->description));
+
+    auto entries = GetAllEntries();
+    ASSERT_EQ(entries.size(), 1u);
+    EXPECT_TRUE(entries[0].description->Equals(*added_entry->description));
+  }
+
+  // Add one more entry.
+  {
+    EXPECT_CALL(*provider(), OnContentAdded(_));
+    EXPECT_EQ(AddEntry(CreateDescription("id-2")),
+              blink::mojom::ContentIndexError::NONE);
+    auto entries = GetAllEntries();
+    EXPECT_EQ(entries.size(), 2u);
+  }
 }
 
 }  // namespace content

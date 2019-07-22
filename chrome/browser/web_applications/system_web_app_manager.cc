@@ -38,8 +38,14 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   base::flat_map<SystemAppType, SystemAppInfo> infos;
 // TODO(calamity): Split this into per-platform functions.
 #if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp))
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::DISCOVER))
     infos[SystemAppType::DISCOVER] = {GURL(chrome::kChromeUIDiscoverURL)};
+
+  if (SystemWebAppManager::IsAppEnabled(SystemAppType::CAMERA)) {
+    constexpr char kCameraAppPWAURL[] = "chrome://camera/pwa.html";
+    infos[SystemAppType::CAMERA] = {GURL(kCameraAppPWAURL),
+                                    app_list::kInternalAppIdCamera};
+  }
 
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
     constexpr char kChromeSettingsPWAURL[] = "chrome://os-settings/pwa.html";
@@ -73,8 +79,28 @@ ExternalInstallOptions CreateInstallOptionsForSystemApp(
 
 }  // namespace
 
+// static
 const char SystemWebAppManager::kInstallResultHistogramName[];
 
+// static
+bool SystemWebAppManager::IsAppEnabled(SystemAppType type) {
+#if defined(OS_CHROMEOS)
+  switch (type) {
+    case SystemAppType::SETTINGS:
+      return true;
+      break;
+    case SystemAppType::DISCOVER:
+      return base::FeatureList::IsEnabled(chromeos::features::kDiscoverApp);
+      break;
+    case SystemAppType::CAMERA:
+      return base::FeatureList::IsEnabled(
+          chromeos::features::kCameraSystemWebApp);
+      break;
+  }
+#else
+  return false;
+#endif  // OS_CHROMEOS
+}
 SystemWebAppManager::SystemWebAppManager(Profile* profile)
     : on_apps_synchronized_(new base::OneShotEvent()),
       pref_service_(profile->GetPrefs()) {

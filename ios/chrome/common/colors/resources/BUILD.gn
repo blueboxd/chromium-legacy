@@ -11,6 +11,9 @@ group("resources") {
     ":disabled_tint_color",
     ":scrim_background_color",
     ":solid_button_text_color",
+    ":text_primary_color",
+    ":textfield_background_color",
+    ":textfield_placeholder_color",
     ":tint_color",
   ]
 }
@@ -42,6 +45,24 @@ colorset("scrim_background_color") {
 colorset("solid_button_text_color") {
   sources = [
     "solid_button_text_color.colorset/Contents.json",
+  ]
+}
+
+colorset("text_primary_color") {
+  sources = [
+    "text_primary_color.colorset/Contents.json",
+  ]
+}
+
+colorset("textfield_placeholder_color") {
+  sources = [
+    "textfield_placeholder_color.colorset/Contents.json",
+  ]
+}
+
+colorset("textfield_background_color") {
+  sources = [
+    "textfield_background_color.colorset/Contents.json",
   ]
 }
 

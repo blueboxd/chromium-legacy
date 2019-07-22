@@ -151,7 +151,8 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
                  std::back_inserter(info_to_add), &TranslateCard);
 
   const std::vector<FooterCommand> footer_commands = {FooterCommand(
-      l10n_util::GetStringUTF16(IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_TITLE),
+      l10n_util::GetStringUTF16(
+          IDS_MANUAL_FILLING_CREDIT_CARD_SHEET_ALL_ADDRESSES_LINK),
       AccessoryAction::MANAGE_CREDIT_CARDS)};
 
   bool has_suggestions = !info_to_add.empty();

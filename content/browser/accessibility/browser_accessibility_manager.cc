@@ -1230,13 +1230,6 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
   wrapper->Init(this, node);
 }
 
-void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,
-                                                ui::AXNode* node) {
-  DCHECK(node);
-  if (BrowserAccessibility* wrapper = GetFromAXNode(node))
-    wrapper->OnDataChanged();
-}
-
 void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
@@ -1261,22 +1254,12 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTreeManagerMap::GetInstance().AddTreeManager(ax_tree_id_, this);
   }
 
-  // Calls OnDataChanged on newly created or reparented nodes.
+  // Calls OnDataChanged on newly created, reparented or changed nodes.
   for (const auto change : changes) {
     ui::AXNode* node = change.node;
     BrowserAccessibility* wrapper = GetFromAXNode(node);
     if (wrapper) {
-      switch (change.type) {
-        case NODE_CREATED:
-        case NODE_REPARENTED:
-          wrapper->OnDataChanged();
-          break;
-          // Unhandled.
-        case NODE_CHANGED:
-        case SUBTREE_CREATED:
-        case SUBTREE_REPARENTED:
-          break;
-      }
+      wrapper->OnDataChanged();
     }
   }
 }

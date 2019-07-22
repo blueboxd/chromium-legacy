@@ -4,9 +4,11 @@
 
 #include "content/browser/content_index/content_index_context_impl.h"
 
+#include "base/bind.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -14,18 +16,8 @@ ContentIndexContextImpl::ContentIndexContextImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : content_index_database_(browser_context,
-                              std::move(service_worker_context)),
-      should_initialize_(browser_context->GetContentIndexProvider()) {
+                              std::move(service_worker_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-}
-
-void ContentIndexContextImpl::InitializeOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!should_initialize_)
-    return;
-
-  content_index_database_.InitializeProviderWithEntries();
 }
 
 void ContentIndexContextImpl::GetIcon(
@@ -34,8 +26,48 @@ void ContentIndexContextImpl::GetIcon(
     base::OnceCallback<void(SkBitmap)> icon_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  content_index_database_.GetIcon(service_worker_registration_id,
-                                  description_id, std::move(icon_callback));
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ContentIndexDatabase::GetIcon,
+                     content_index_database_.GetWeakPtrForIO(),
+                     service_worker_registration_id, description_id,
+                     std::move(icon_callback)));
+}
+
+void ContentIndexContextImpl::GetAllEntries(GetAllEntriesCallback callback) {
+  GetAllEntriesCallback wrapped_callback = base::BindOnce(
+      [](GetAllEntriesCallback callback, blink::mojom::ContentIndexError error,
+         std::vector<ContentIndexEntry> entries) {
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
+            base::BindOnce(std::move(callback), error, std::move(entries)));
+      },
+      std::move(callback));
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ContentIndexDatabase::GetAllEntries,
+                     content_index_database_.GetWeakPtrForIO(),
+                     std::move(wrapped_callback)));
+}
+
+void ContentIndexContextImpl::GetEntry(int64_t service_worker_registration_id,
+                                       const std::string& description_id,
+                                       GetEntryCallback callback) {
+  GetEntryCallback wrapped_callback = base::BindOnce(
+      [](GetEntryCallback callback, base::Optional<ContentIndexEntry> entry) {
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::UI},
+            base::BindOnce(std::move(callback), std::move(entry)));
+      },
+      std::move(callback));
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ContentIndexDatabase::GetEntry,
+                     content_index_database_.GetWeakPtrForIO(),
+                     service_worker_registration_id, description_id,
+                     std::move(wrapped_callback)));
 }
 
 void ContentIndexContextImpl::Shutdown() {

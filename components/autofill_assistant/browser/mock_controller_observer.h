@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
-#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
+#ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_CONTROLLER_OBSERVER_H_
+#define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_CONTROLLER_OBSERVER_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/script.h"
-#include "components/autofill_assistant/browser/ui_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace autofill_assistant {
 
-class MockUiController : public UiController {
+class MockControllerObserver : public ControllerObserver {
  public:
-  MockUiController();
-  ~MockUiController() override;
+  MockControllerObserver();
+  ~MockControllerObserver() override;
 
   MOCK_METHOD1(OnStatusMessageChanged, void(const std::string& message));
   MOCK_METHOD1(OnBubbleMessageChanged, void(const std::string& message));
@@ -47,4 +47,4 @@ class MockUiController : public UiController {
 
 }  // namespace autofill_assistant
 
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_UI_CONTROLLER_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_MOCK_CONTROLLER_OBSERVER_H_

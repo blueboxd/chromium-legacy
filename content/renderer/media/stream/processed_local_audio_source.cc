@@ -19,6 +19,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
+#include "media/webrtc/audio_processor_controls.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"

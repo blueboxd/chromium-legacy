@@ -15,12 +15,12 @@
 #include "base/task/post_task.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
-#include "components/autofill_assistant/browser/ui_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,10 +78,6 @@ Service* Controller::GetService() {
   return service_.get();
 }
 
-UiController* Controller::GetUiController() {
-  return client_->GetUiController();
-}
-
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
     web_controller_ =
@@ -116,7 +112,9 @@ void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
 
 void Controller::SetStatusMessage(const std::string& message) {
   status_message_ = message;
-  GetUiController()->OnStatusMessageChanged(message);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnStatusMessageChanged(message);
+  }
 }
 
 std::string Controller::GetStatusMessage() const {
@@ -125,7 +123,9 @@ std::string Controller::GetStatusMessage() const {
 
 void Controller::SetBubbleMessage(const std::string& message) {
   bubble_message_ = message;
-  GetUiController()->OnBubbleMessageChanged(message);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnBubbleMessageChanged(message);
+  }
 }
 
 std::string Controller::GetBubbleMessage() const {
@@ -134,7 +134,9 @@ std::string Controller::GetBubbleMessage() const {
 
 void Controller::SetDetails(std::unique_ptr<Details> details) {
   details_ = std::move(details);
-  GetUiController()->OnDetailsChanged(details_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnDetailsChanged(details_.get());
+  }
 }
 
 const Details* Controller::GetDetails() const {
@@ -150,12 +152,16 @@ void Controller::SetInfoBox(const InfoBox& info_box) {
     info_box_ = std::make_unique<InfoBox>();
   }
   *info_box_ = info_box;
-  GetUiController()->OnInfoBoxChanged(info_box_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnInfoBoxChanged(info_box_.get());
+  }
 }
 
 void Controller::ClearInfoBox() {
   info_box_.reset();
-  GetUiController()->OnInfoBoxChanged(nullptr);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnInfoBoxChanged(nullptr);
+  }
 }
 
 const InfoBox* Controller::GetInfoBox() const {
@@ -168,7 +174,9 @@ void Controller::SetProgress(int progress) {
     return;
 
   progress_ = progress;
-  GetUiController()->OnProgressChanged(progress);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnProgressChanged(progress);
+  }
 }
 
 void Controller::SetProgressVisible(bool visible) {
@@ -176,7 +184,9 @@ void Controller::SetProgressVisible(bool visible) {
     return;
 
   progress_visible_ = visible;
-  GetUiController()->OnProgressVisibilityChanged(visible);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnProgressVisibilityChanged(visible);
+  }
 }
 
 bool Controller::GetProgressVisible() const {
@@ -194,7 +204,9 @@ void Controller::SetUserActions(
     SetDefaultChipType(user_actions.get());
   }
   user_actions_ = std::move(user_actions);
-  GetUiController()->OnUserActionsChanged(GetUserActions());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserActionsChanged(GetUserActions());
+  }
 }
 
 bool Controller::IsNavigatingToNewDocument() {
@@ -242,7 +254,9 @@ void Controller::SetResizeViewport(bool resize_viewport) {
     return;
 
   resize_viewport_ = resize_viewport;
-  GetUiController()->OnResizeViewportChanged(resize_viewport);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnResizeViewportChanged(resize_viewport);
+  }
 }
 
 void Controller::SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) {
@@ -250,7 +264,9 @@ void Controller::SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) {
     return;
 
   peek_mode_ = peek_mode;
-  GetUiController()->OnPeekModeChanged(peek_mode);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPeekModeChanged(peek_mode);
+  }
 }
 
 const FormProto* Controller::GetForm() const {
@@ -265,7 +281,9 @@ bool Controller::SetForm(
   form_callback_ = base::DoNothing();
 
   if (!form) {
-    GetUiController()->OnFormChanged(nullptr);
+    for (ControllerObserver& observer : observers_) {
+      observer.OnFormChanged(nullptr);
+    }
     return true;
   }
 
@@ -315,7 +333,9 @@ bool Controller::SetForm(
   // Call the callback with initial result.
   form_callback_.Run(form_result_.get());
 
-  GetUiController()->OnFormChanged(form_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnFormChanged(form_.get());
+  }
   return true;
 }
 
@@ -361,6 +381,14 @@ void Controller::SetChoiceSelected(int input_index,
   form_callback_.Run(form_result_.get());
 }
 
+void Controller::AddObserver(ControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void Controller::RemoveObserver(const ControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 bool Controller::GetResizeViewport() {
   return resize_viewport_;
 }
@@ -372,10 +400,14 @@ ConfigureBottomSheetProto::PeekMode Controller::GetPeekMode() {
 void Controller::SetOverlayColors(std::unique_ptr<OverlayColors> colors) {
   overlay_colors_ = std::move(colors);
   if (overlay_colors_) {
-    GetUiController()->OnOverlayColorsChanged(*overlay_colors_);
+    for (ControllerObserver& observer : observers_) {
+      observer.OnOverlayColorsChanged(*overlay_colors_);
+    }
   } else {
     OverlayColors default_colors;
-    GetUiController()->OnOverlayColorsChanged(default_colors);
+    for (ControllerObserver& observer : observers_) {
+      observer.OnOverlayColorsChanged(default_colors);
+    }
   }
 }
 
@@ -417,7 +449,9 @@ void Controller::EnterState(AutofillAssistantState state) {
   bool old_needs_ui = NeedsUI();
   state_ = state;
 
-  GetUiController()->OnStateChanged(state);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnStateChanged(state);
+  }
 
   if (!old_needs_ui && NeedsUI())
     client_->AttachUI();
@@ -642,7 +676,9 @@ void Controller::OnScriptExecuted(const std::string& script_path,
       break;
 
     case ScriptExecutor::CLOSE_CUSTOM_TAB:
-      GetUiController()->CloseCustomTab();
+      for (ControllerObserver& observer : observers_) {
+        observer.CloseCustomTab();
+      }
       if (!tracking_) {
         client_->Shutdown(Metrics::DropOutReason::CUSTOM_TAB_CLOSED);
         return;
@@ -838,8 +874,9 @@ void Controller::SetShippingAddress(
     return;
 
   payment_request_info_->shipping_address = std::move(address);
-  GetUiController()->OnPaymentRequestInformationChanged(
-      payment_request_info_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+  }
   UpdatePaymentRequestActions();
 }
 
@@ -849,8 +886,9 @@ void Controller::SetBillingAddress(
     return;
 
   payment_request_info_->billing_address = std::move(address);
-  GetUiController()->OnPaymentRequestInformationChanged(
-      payment_request_info_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+  }
   UpdatePaymentRequestActions();
 }
 
@@ -863,8 +901,9 @@ void Controller::SetContactInfo(std::string name,
   payment_request_info_->payer_name = name;
   payment_request_info_->payer_phone = phone;
   payment_request_info_->payer_email = email;
-  GetUiController()->OnPaymentRequestInformationChanged(
-      payment_request_info_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+  }
   UpdatePaymentRequestActions();
 }
 
@@ -873,8 +912,9 @@ void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
     return;
 
   payment_request_info_->card = std::move(card);
-  GetUiController()->OnPaymentRequestInformationChanged(
-      payment_request_info_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+  }
   UpdatePaymentRequestActions();
 }
 
@@ -885,8 +925,9 @@ void Controller::SetTermsAndConditions(
 
   payment_request_info_->terms_and_conditions = terms_and_conditions;
   UpdatePaymentRequestActions();
-  GetUiController()->OnPaymentRequestInformationChanged(
-      payment_request_info_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+  }
 }
 
 void Controller::UpdatePaymentRequestActions() {
@@ -1192,8 +1233,10 @@ void Controller::OnTouchableAreaChanged(
     const RectF& visual_viewport,
     const std::vector<RectF>& touchable_areas,
     const std::vector<RectF>& restricted_areas) {
-  GetUiController()->OnTouchableAreaChanged(visual_viewport, touchable_areas,
-                                            restricted_areas);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnTouchableAreaChanged(visual_viewport, touchable_areas,
+                                    restricted_areas);
+  }
 }
 
 void Controller::SetPaymentRequestOptions(
@@ -1213,10 +1256,10 @@ void Controller::SetPaymentRequestOptions(
 
   payment_request_options_ = std::move(options);
   UpdatePaymentRequestActions();
-  GetUiController()->OnPaymentRequestOptionsChanged(
-      payment_request_options_.get());
-  GetUiController()->OnPaymentRequestInformationChanged(
-      payment_request_info_.get());
+  for (ControllerObserver& observer : observers_) {
+    observer.OnPaymentRequestOptionsChanged(payment_request_options_.get());
+    observer.OnPaymentRequestInformationChanged(payment_request_info_.get());
+  }
 }
 
 ElementArea* Controller::touchable_element_area() {

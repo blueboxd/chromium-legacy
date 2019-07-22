@@ -425,7 +425,7 @@ void BlinkGCPluginConsumer::CheckFinalization(RecordInfo* info) {
   // For finalized classes, check the finalization method if possible.
   if (info->IsGCFinalized()) {
     if (dtor && dtor->hasBody()) {
-      CheckFinalizerVisitor visitor(&cache_, info->IsEagerlyFinalized());
+      CheckFinalizerVisitor visitor(&cache_);
       visitor.TraverseCXXMethodDecl(dtor);
       if (!visitor.finalized_fields().empty()) {
         reporter_.FinalizerAccessesFinalizedFields(

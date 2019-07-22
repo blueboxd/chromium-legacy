@@ -27,7 +27,6 @@ class CONTENT_EXPORT ContentIndexContextImpl
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
 
-  void InitializeOnIOThread();
   void Shutdown();
 
   ContentIndexDatabase& database();
@@ -36,6 +35,10 @@ class CONTENT_EXPORT ContentIndexContextImpl
   void GetIcon(int64_t service_worker_registration_id,
                const std::string& description_id,
                base::OnceCallback<void(SkBitmap)> icon_callback) override;
+  void GetAllEntries(GetAllEntriesCallback callback) override;
+  void GetEntry(int64_t service_worker_registration_id,
+                const std::string& description_id,
+                GetEntryCallback callback) override;
 
  private:
   friend class base::DeleteHelper<ContentIndexContextImpl>;
@@ -46,9 +49,6 @@ class CONTENT_EXPORT ContentIndexContextImpl
   ~ContentIndexContextImpl() override;
 
   ContentIndexDatabase content_index_database_;
-
-  // Whether initialization DB tasks should run on start-up.
-  bool should_initialize_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexContextImpl);
 };

@@ -55,18 +55,15 @@ cc::PictureLayer* ToCcLayer(GraphicsLayer* layer) {
 
 ScrollAnimatorBase* ScrollAnimatorBase::Create(
     ScrollableArea* scrollable_area) {
-  if (scrollable_area && scrollable_area->ScrollAnimatorEnabled()) {
-    return MakeGarbageCollected<ScrollAnimator>(scrollable_area, [] {
-      return base::TimeTicks::Now().since_origin().InSecondsF();
-    });
-  }
+  if (scrollable_area && scrollable_area->ScrollAnimatorEnabled())
+    return MakeGarbageCollected<ScrollAnimator>(scrollable_area);
   return MakeGarbageCollected<ScrollAnimatorBase>(scrollable_area);
 }
 
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollable_area,
-                               TimeFunction time_function)
+                               const base::TickClock* tick_clock)
     : ScrollAnimatorBase(scrollable_area),
-      time_function_(time_function),
+      tick_clock_(tick_clock),
       last_granularity_(ScrollGranularity::kScrollByPixel) {}
 
 ScrollAnimator::~ScrollAnimator() {
@@ -100,7 +97,7 @@ void ScrollAnimator::ResetAnimationState() {
   ScrollAnimatorCompositorCoordinator::ResetAnimationState();
   if (animation_curve_)
     animation_curve_.reset();
-  start_time_ = 0.0;
+  start_time_ = base::TimeTicks();
   if (on_finish_)
     std::move(on_finish_).Run();
 }
@@ -190,7 +187,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
     // of sending to the compositor.
     if (run_state_ == RunState::kRunningOnMainThread) {
       animation_curve_->UpdateTarget(
-          base::TimeDelta::FromSecondsD(time_function_() - start_time_),
+          tick_clock_->NowTicks() - start_time_,
           CompositorOffsetFromBlinkOffset(target_offset));
 
       // Schedule an animation for this scrollable area even though we are
@@ -214,7 +211,7 @@ bool ScrollAnimator::WillAnimateToOffset(const ScrollOffset& target_offset) {
     return false;
 
   target_offset_ = target_offset;
-  start_time_ = time_function_();
+  start_time_ = tick_clock_->NowTicks();
 
   if (RegisterAndScheduleAnimation())
     run_state_ = RunState::kWaitingToSendToCompositor;
@@ -255,7 +252,8 @@ void ScrollAnimator::TickAnimation(double monotonic_time) {
     return;
 
   TRACE_EVENT0("blink", "ScrollAnimator::tickAnimation");
-  double elapsed_time = monotonic_time - start_time_;
+  double elapsed_time =
+      monotonic_time - start_time_.since_origin().InSecondsF();
 
   bool is_finished = (elapsed_time > animation_curve_->Duration());
   ScrollOffset offset = BlinkOffsetFromCompositorOffset(
@@ -362,7 +360,7 @@ void ScrollAnimator::UpdateCompositorAnimations() {
       // ::adjustScrollOffsetAnimation should have made the necessary
       // adjustment to the curve.
       animation_curve_->UpdateTarget(
-          base::TimeDelta::FromSecondsD(time_function_() - start_time_),
+          tick_clock_->NowTicks() - start_time_,
           CompositorOffsetFromBlinkOffset(target_offset_));
     }
 
@@ -449,7 +447,8 @@ void ScrollAnimator::NotifyAnimationTakeover(
   if (WillAnimateToOffset(target_value)) {
     animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
         scroll_offset_animation_curve);
-    start_time_ = animation_start_time;
+    start_time_ =
+        base::TimeTicks() + base::TimeDelta::FromSecondsD(animation_start_time);
   }
 }
 

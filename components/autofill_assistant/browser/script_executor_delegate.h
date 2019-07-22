@@ -28,7 +28,6 @@ class WebContents;
 namespace autofill_assistant {
 
 class Service;
-class UiController;
 class WebController;
 class ClientMemory;
 struct ClientSettings;
@@ -47,7 +46,6 @@ class ScriptExecutorDelegate {
   virtual const GURL& GetCurrentURL() = 0;
   virtual const GURL& GetDeeplinkURL() = 0;
   virtual Service* GetService() = 0;
-  virtual UiController* GetUiController() = 0;
   virtual WebController* GetWebController() = 0;
   virtual ClientMemory* GetClientMemory() = 0;
   virtual const TriggerContext* GetTriggerContext() = 0;

@@ -61,7 +61,7 @@ Polymer({
     },
 
     errorString_:
-        {type: String, computed: 'getErrorString(currentValidationError_)'}
+        {type: String, computed: 'getErrorString_(currentValidationError_)'}
   },
 
   /** @override */

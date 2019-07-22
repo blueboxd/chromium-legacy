@@ -29,7 +29,6 @@ extern const char kVisitorDispatcherName[];
 extern const char kVisitorVarName[];
 extern const char kAdjustAndMarkName[];
 extern const char kIsHeapObjectAliveName[];
-extern const char kIsEagerlyFinalizedName[];
 extern const char kConstIteratorName[];
 extern const char kIteratorName[];
 extern const char kConstReverseIteratorName[];

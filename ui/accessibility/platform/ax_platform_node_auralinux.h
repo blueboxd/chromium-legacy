@@ -94,7 +94,11 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // Do asynchronous static initialization.
   static void StaticInitialize();
 
-  void DataChanged();
+  // EnsureAtkObjectIsValid will destroy and recreate |atk_object_| if the
+  // interface mask is different. This partially relies on looking at the tree's
+  // structure. This must not be called when the tree is unstable e.g. in the
+  // middle of being unserialized.
+  void EnsureAtkObjectIsValid();
   void Destroy() override;
 
   AtkRole GetAtkRole();
@@ -160,6 +164,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool SelectionAndFocusAreTheSame();
 
   // AXPlatformNode overrides.
+  // This has a side effect of creating the AtkObject if one does not already
+  // exist.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
 
@@ -237,6 +243,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   int GetGTypeInterfaceMask();
   GType GetAccessibilityGType();
   AtkObject* CreateAtkObject();
+  gfx::NativeViewAccessible GetOrCreateAtkObject();
   void DestroyAtkObjects();
   void AddRelationToSet(AtkRelationSet*,
                         AtkRelationType,

@@ -655,34 +655,34 @@ class ProcessingBasedContainer {
 
     failed_constraint_name =
         echo_cancellation_container_.ApplyConstraintSet(constraint_set);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         sample_size_container_.ApplyConstraintSet(constraint_set.sample_size);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         channels_container_.ApplyConstraintSet(constraint_set.channel_count);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         sample_rate_container_.ApplyConstraintSet(constraint_set.sample_rate);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         latency_container_.ApplyConstraintSet(constraint_set.latency);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     for (auto& info : kBooleanPropertyContainerInfoMap) {
       failed_constraint_name =
           boolean_containers_[info.index].ApplyConstraintSet(
               constraint_set.*(info.constraint_member));
-      if (failed_constraint_name != nullptr)
+      if (failed_constraint_name)
         return failed_constraint_name;
     }
     return failed_constraint_name;
@@ -997,9 +997,9 @@ class DeviceContainer {
 
 #if DCHECK_IS_ON()
     if (source_info.type() == SourceType::kNone)
-      DCHECK(processing_based_containers_.size() == 3);
+      DCHECK_EQ(processing_based_containers_.size(), 3u);
     else
-      DCHECK(processing_based_containers_.size() == 1);
+      DCHECK_EQ(processing_based_containers_.size(), 1u);
 #endif
 
     if (source_info.type() == SourceType::kNone)
@@ -1023,12 +1023,12 @@ class DeviceContainer {
 
     failed_constraint_name =
         device_id_container_.ApplyConstraintSet(constraint_set.device_id);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     failed_constraint_name =
         group_id_container_.ApplyConstraintSet(constraint_set.group_id);
-    if (failed_constraint_name != nullptr)
+    if (failed_constraint_name)
       return failed_constraint_name;
 
     for (size_t i = 0; i < kNumBooleanContainerIds; ++i) {
@@ -1036,7 +1036,7 @@ class DeviceContainer {
       failed_constraint_name =
           boolean_containers_[info.index].ApplyConstraintSet(
               constraint_set.*(info.constraint_member));
-      if (failed_constraint_name != nullptr)
+      if (failed_constraint_name)
         return failed_constraint_name;
     }
 
@@ -1046,7 +1046,7 @@ class DeviceContainer {
          it != processing_based_containers_.end();) {
       DCHECK(!it->IsEmpty());
       failed_constraint_name = it->ApplyConstraintSet(constraint_set);
-      if (failed_constraint_name != nullptr)
+      if (failed_constraint_name)
         processing_based_containers_.erase(it);
       else
         ++it;
@@ -1181,7 +1181,7 @@ class DeviceContainer {
     base::Optional<int> sample_rate;
     base::Optional<double> latency;
 
-    if (source == nullptr) {
+    if (!source) {
       source_type = SourceType::kNone;
     } else {
       media::AudioParameters source_parameters = source->GetAudioParameters();
@@ -1189,7 +1189,7 @@ class DeviceContainer {
       sample_rate = source_parameters.sample_rate();
       latency = source_parameters.GetBufferDuration().InSecondsF();
 
-      if (processed_source == nullptr) {
+      if (!processed_source) {
         source_type = SourceType::kUnprocessed;
         properties.DisableDefaultProperties();
 

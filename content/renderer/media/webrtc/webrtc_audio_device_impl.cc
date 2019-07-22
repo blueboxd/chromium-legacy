@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/base/audio_bus.h"

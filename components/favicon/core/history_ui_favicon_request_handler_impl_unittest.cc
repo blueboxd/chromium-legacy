@@ -46,6 +46,11 @@ const int kDefaultDesiredSizeInPixel = 16;
 // TODO(victorvianna): Add unit tests specific for mobile.
 const SkColor kTestColor = SK_ColorRED;
 
+// Custom matcher for FaviconServerFetcherParams.
+MATCHER_P(FetcherParamsPageUrlEq, url, "") {
+  return arg->page_url() == GURL(url);
+}
+
 SkBitmap CreateTestSkBitmap(int desired_size_in_pixel) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(desired_size_in_pixel, desired_size_in_pixel);
@@ -92,8 +97,6 @@ class MockLargeIconService : public LargeIconService {
   MockLargeIconService() = default;
   ~MockLargeIconService() override = default;
 
-  // TODO(victorvianna): Add custom matcher to check page url when calling
-  // GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache.
   MOCK_METHOD5(GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache,
                void(std::unique_ptr<FaviconServerFetcherParams> params,
                     bool may_page_url_be_private,
@@ -250,7 +253,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       });
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  _, _, /*should_trim_url_path=*/false, _, _))
+                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  /*should_trim_url_path=*/false, _, _))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::GoogleFaviconServerCallback server_callback) {
         std::move(server_callback)
@@ -291,7 +295,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       });
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  _, _, /*should_trim_url_path=*/true, _, _))
+                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  /*should_trim_url_path=*/true, _, _))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::GoogleFaviconServerCallback server_callback) {
         std::move(server_callback)
@@ -392,7 +397,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       });
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  _, _, /*should_trim_url_path=*/false, _, _))
+                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  /*should_trim_url_path=*/false, _, _))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::GoogleFaviconServerCallback server_callback) {
         std::move(server_callback)
@@ -428,7 +434,8 @@ TEST_F(HistoryUiFaviconRequestHandlerImplTest,
       });
   EXPECT_CALL(mock_large_icon_service_,
               GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-                  _, _, /*should_trim_url_path=*/true, _, _))
+                  FetcherParamsPageUrlEq(kDummyPageUrl), _,
+                  /*should_trim_url_path=*/true, _, _))
       .WillOnce([](auto, auto, auto, auto,
                    favicon_base::GoogleFaviconServerCallback server_callback) {
         std::move(server_callback)

@@ -16,7 +16,6 @@
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
-#include "components/autofill_assistant/browser/ui_controller.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
 
@@ -36,6 +35,8 @@ namespace autofill_assistant {
 class ClientMemory;
 class ClientStatus;
 struct ClientSettings;
+struct PaymentRequestOptions;
+class UserAction;
 
 // Action delegate called when processing actions.
 class ActionDelegate {

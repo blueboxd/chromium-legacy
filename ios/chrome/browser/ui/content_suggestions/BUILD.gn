@@ -177,6 +177,7 @@ source_set("content_suggestions_ui_util") {
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
     "//ios/web/common",
     "//ui/base",

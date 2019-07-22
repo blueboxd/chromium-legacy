@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
@@ -79,7 +80,8 @@ void PasswordGenerationFrameHelper::ProcessPasswordRequirements(
 
 // In order for password generation to be enabled, we need to make sure:
 // (1) Password sync is enabled, and
-// (2) Password saving is enabled.
+// (2) Password saving is enabled
+// (3) The current page is not *.google.com.
 bool PasswordGenerationFrameHelper::IsGenerationEnabled(
     bool log_debug_data) const {
   std::unique_ptr<Logger> logger;
@@ -88,7 +90,11 @@ bool PasswordGenerationFrameHelper::IsGenerationEnabled(
         new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
   }
 
-  if (!client_->IsSavingAndFillingEnabled(driver_->GetLastCommittedURL())) {
+  GURL url = driver_->GetLastCommittedURL();
+  if (url.DomainIs("google.com"))
+    return false;
+
+  if (!client_->IsSavingAndFillingEnabled(url)) {
     if (logger)
       logger->LogMessage(Logger::STRING_GENERATION_DISABLED_SAVING_DISABLED);
     return false;

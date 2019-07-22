@@ -65,7 +65,12 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
     p256dh_ = p256dh;
     auth_secret_ = auth_secret;
     fcm_token_ = fcm_token;
-    std::move(callback).Run(base::make_optional(kMessageId));
+    if (should_respond_)
+      std::move(callback).Run(base::make_optional(kMessageId));
+  }
+
+  void set_should_respond(bool should_respond) {
+    should_respond_ = should_respond;
   }
 
   const std::string& p256dh() { return p256dh_; }
@@ -74,6 +79,7 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
 
  private:
   std::string p256dh_, auth_secret_, fcm_token_;
+  bool should_respond_ = true;
 };
 
 class MockInstanceIDDriver : public InstanceIDDriver {
@@ -359,6 +365,44 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
 
   EXPECT_TRUE(send_message_success().has_value());
   EXPECT_TRUE(*send_message_success());
+}
+
+TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
+  std::string id = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> device_info =
+      CreateFakeDeviceInfo(id, kDeviceName);
+  device_info_tracker_.Add(device_info.get());
+  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+
+  // FCM driver will not respond to the send request.
+  fake_gcm_driver_.set_should_respond(false);
+
+  GetSharingService()->SendMessageToDevice(
+      id, kTtl, chrome_browser_sharing::SharingMessage(),
+      base::BindOnce(&SharingServiceTest::OnMessageSent,
+                     base::Unretained(this)));
+
+  EXPECT_EQ(kP256dh, fake_gcm_driver_.p256dh());
+  EXPECT_EQ(kAuthSecret, fake_gcm_driver_.auth_secret());
+  EXPECT_EQ(kFcmToken, fake_gcm_driver_.fcm_token());
+
+  // Advance time so send message will expire.
+  scoped_task_environment_.FastForwardBy(kSendMessageTimeout);
+  EXPECT_TRUE(send_message_success().has_value());
+  EXPECT_FALSE(*send_message_success());
+
+  // Simulate ack message received by AckMessageHandler, which will be
+  // disregarded.
+  SharingMessageHandler* ack_message_handler = fcm_handler_->GetSharingHandler(
+      chrome_browser_sharing::SharingMessage::kAckMessage);
+  EXPECT_TRUE(ack_message_handler);
+
+  chrome_browser_sharing::SharingMessage ack_message;
+  ack_message.mutable_ack_message()->set_original_message_id(kMessageId);
+  ack_message_handler->OnMessage(ack_message);
+
+  EXPECT_TRUE(send_message_success().has_value());
+  EXPECT_FALSE(*send_message_success());
 }
 
 TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {

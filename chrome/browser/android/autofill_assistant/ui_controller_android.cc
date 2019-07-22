@@ -125,7 +125,15 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   DCHECK(ui_delegate);
 
   client_ = client;
+
+  // Detach from the current ui_delegate, if one was set previously.
+  if (ui_delegate_)
+    ui_delegate_->RemoveObserver(this);
+
+  // Attach to the new ui_delegate.
   ui_delegate_ = ui_delegate;
+  ui_delegate_->AddObserver(this);
+
   captured_debug_context_.clear();
   destroy_timer_.reset();
 
@@ -172,6 +180,9 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
 UiControllerAndroid::~UiControllerAndroid() {
   Java_AutofillAssistantUiController_clearNativePtr(AttachCurrentThread(),
                                                     java_object_);
+
+  if (ui_delegate_)
+    ui_delegate_->RemoveObserver(this);
 }
 
 base::android::ScopedJavaLocalRef<jobject> UiControllerAndroid::GetModel() {
@@ -635,7 +646,7 @@ void UiControllerAndroid::Detach() {
   // Capture the debug context, for including into a feedback possibly sent
   // later.
   captured_debug_context_ = ui_delegate_->GetDebugContext();
-
+  ui_delegate_->RemoveObserver(this);
   ui_delegate_ = nullptr;
 }
 

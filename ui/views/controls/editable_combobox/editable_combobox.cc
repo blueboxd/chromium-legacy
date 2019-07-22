@@ -439,24 +439,6 @@ bool EditableCombobox::HandleKeyEvent(Textfield* sender,
   return false;
 }
 
-bool EditableCombobox::HandleMouseEvent(Textfield* sender,
-                                        const ui::MouseEvent& mouse_event) {
-  // We show the menu on mouse release instead of mouse press so that the menu
-  // showing up doesn't interrupt a potential text selection operation by the
-  // user.
-  if (mouse_event.type() == ui::ET_MOUSE_RELEASED) {
-    ShowDropDownMenu(ui::MENU_SOURCE_MOUSE);
-  }
-  return false;
-}
-
-bool EditableCombobox::HandleGestureEvent(
-    Textfield* sender,
-    const ui::GestureEvent& gesture_event) {
-  ShowDropDownMenu(ui::MENU_SOURCE_TOUCH);
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // EditableCombobox, View overrides:
 

@@ -10,6 +10,7 @@
 
 #include <bitset>
 #include <memory>
+#include <queue>
 
 #include <linux/input.h>
 // See if we compile against new enough headers and add missing definition
@@ -88,6 +89,9 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
                         base::TimeTicks timestamp);
   void ReportEvents(base::TimeTicks timestamp);
 
+  void ProcessTouchEvent(InProgressTouchEvdev* event,
+                         base::TimeTicks timestamp);
+
   void UpdateTrackingId(int slot, int tracking_id);
   void ReleaseTouches();
   // Returns true if all touches were marked cancelled. Otherwise false.
@@ -157,6 +161,11 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   // In-progress touch points.
   std::vector<InProgressTouchEvdev> events_;
+
+  // In progress touch points, from being held, along with the timestamp they
+  // were held at.
+  std::vector<std::queue<std::pair<InProgressTouchEvdev, base::TimeTicks>>>
+      held_events_;
 
   // Finds touches that need to be filtered.
   std::unique_ptr<FalseTouchFinder> false_touch_finder_;

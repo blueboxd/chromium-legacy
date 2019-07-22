@@ -12,17 +12,12 @@
 #include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/files/file.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/thread_annotations.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_not_impl.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface

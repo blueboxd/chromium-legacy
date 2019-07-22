@@ -146,7 +146,6 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
           std::make_unique<AssistantSettingsManagerImpl>(service, this)),
       service_(service),
       background_thread_("background thread"),
-      media_controller_observer_binding_(this),
       app_list_subscriber_binding_(this),
       weak_factory_(this) {
   background_thread_.Start();
@@ -204,7 +203,7 @@ void AssistantManagerServiceImpl::Stop() {
     assistant_manager_->ResetAllDataAndShutdown();
   }
 
-  media_controller_observer_binding_.Close();
+  media_controller_observer_receiver_.reset();
 
   assistant_manager_internal_ = nullptr;
   assistant_manager_.reset(nullptr);
@@ -278,9 +277,8 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
 
 void AssistantManagerServiceImpl::AddMediaControllerObserver() {
   if (features::IsMediaSessionIntegrationEnabled()) {
-    media_session::mojom::MediaControllerObserverPtr observer;
-    media_controller_observer_binding_.Bind(mojo::MakeRequest(&observer));
-    media_controller_->AddObserver(std::move(observer));
+    media_controller_->AddObserver(
+        media_controller_observer_receiver_.BindNewPipeAndPassRemote());
   }
 }
 

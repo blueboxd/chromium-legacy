@@ -14,7 +14,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/public/cpp/system/string_data_pipe_producer.h"
+#include "mojo/public/cpp/system/data_pipe_producer.h"
+#include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -92,15 +93,15 @@ class NativeFileSystemFileWriterImplTest : public testing::Test {
     options.capacity_num_bytes = 16;
     mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle);
     CHECK(producer_handle.is_valid());
-    auto producer = std::make_unique<mojo::StringDataPipeProducer>(
-        std::move(producer_handle));
+    auto producer =
+        std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
     auto* producer_raw = producer.get();
     producer_raw->Write(
-        contents,
-        mojo::StringDataPipeProducer::AsyncWritingMode::
-            STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION,
+        std::make_unique<mojo::StringDataSource>(
+            contents, mojo::StringDataSource::AsyncWritingMode::
+                          STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
         base::BindOnce(
-            base::DoNothing::Once<std::unique_ptr<mojo::StringDataPipeProducer>,
+            base::DoNothing::Once<std::unique_ptr<mojo::DataPipeProducer>,
                                   MojoResult>(),
             std::move(producer)));
     return consumer_handle;

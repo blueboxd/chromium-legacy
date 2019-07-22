@@ -92,8 +92,8 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   void drawTextBlob(sk_sp<SkTextBlob> blob,
                     SkScalar x,
                     SkScalar y,
-                    const PaintFlags& flags,
-                    const NodeHolder& holder) override;
+                    NodeId node_id,
+                    const PaintFlags& flags) override;
 
   void drawPicture(sk_sp<const PaintRecord> record) override;
 

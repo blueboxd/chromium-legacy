@@ -709,6 +709,9 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
   ClientSocketPoolTest test_base_;
 };
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
+// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST_F(ClientSocketPoolBaseTest, BasicSynchronous) {
   CreatePool(kDefaultMaxSockets, kDefaultMaxSocketsPerGroup);
 
@@ -802,9 +805,11 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
   const PrivacyMode kPrivacyModes[] = {PrivacyMode::PRIVACY_MODE_DISABLED,
                                        PrivacyMode::PRIVACY_MODE_ENABLED};
 
+  const auto kOriginA = url::Origin::Create(GURL("http://a.test/"));
+  const auto kOriginB = url::Origin::Create(GURL("http://b.test/"));
   const NetworkIsolationKey kNetworkIsolationKeys[] = {
-      NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("http://b.test/"))),
+      NetworkIsolationKey(kOriginA, kOriginA),
+      NetworkIsolationKey(kOriginB, kOriginB),
   };
 
   int total_idle_sockets = 0;

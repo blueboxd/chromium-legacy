@@ -27,7 +27,7 @@ std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
     Profile* profile,
     web_app::AppRegistrar* registrar,
     web_app::InstallFinalizer* install_finalizer,
-    web_app::InstallOptions install_options) {
+    web_app::ExternalInstallOptions install_options) {
   return std::make_unique<BookmarkAppInstallationTask>(
       profile, registrar, install_finalizer, std::move(install_options));
 }
@@ -57,8 +57,9 @@ void PendingBookmarkAppManager::Shutdown() {
   web_contents_.reset();
 }
 
-void PendingBookmarkAppManager::Install(web_app::InstallOptions install_options,
-                                        OnceInstallCallback callback) {
+void PendingBookmarkAppManager::Install(
+    web_app::ExternalInstallOptions install_options,
+    OnceInstallCallback callback) {
   if (shutting_down_)
     return;
 
@@ -74,7 +75,7 @@ void PendingBookmarkAppManager::Install(web_app::InstallOptions install_options,
 }
 
 void PendingBookmarkAppManager::InstallApps(
-    std::vector<web_app::InstallOptions> install_options_list,
+    std::vector<web_app::ExternalInstallOptions> install_options_list,
     const RepeatingInstallCallback& callback) {
   for (auto& install_options : install_options_list) {
     pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
@@ -120,7 +121,7 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
         std::move(pending_tasks_and_callbacks_.front());
     pending_tasks_and_callbacks_.pop_front();
 
-    const web_app::InstallOptions& install_options =
+    const web_app::ExternalInstallOptions& install_options =
         front->task->install_options();
 
     if (install_options.force_reinstall) {

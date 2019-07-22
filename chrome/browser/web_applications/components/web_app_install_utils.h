@@ -29,7 +29,7 @@ namespace web_app {
 enum class InstallResultCode;
 
 struct BitmapAndSource;
-struct InstallOptions;
+struct ExternalInstallOptions;
 
 enum class ForInstallableSite {
   kYes,
@@ -97,7 +97,7 @@ void UpdateWebAppIconsWithoutChangingLinks(
 void RecordAppBanner(content::WebContents* contents, const GURL& app_url);
 
 WebappInstallSource ConvertOptionsToMetricsInstallSource(
-    const InstallOptions& options);
+    const ExternalInstallOptions& options);
 
 void RecordExternalAppInstallResultCode(
     const char* histogram_name,

@@ -53,7 +53,7 @@ class WebAppInstallManager final : public InstallManager {
       WebappInstallSource install_source,
       OnceInstallCallback callback) override;
   void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                const InstallOptions& install_options,
+                                const ExternalInstallOptions& install_options,
                                 OnceInstallCallback callback) override;
   void InstallOrUpdateWebAppFromSync(
       const AppId& app_id,

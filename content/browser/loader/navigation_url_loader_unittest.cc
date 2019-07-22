@@ -99,13 +99,14 @@ class NavigationURLLoaderTest : public testing::Test {
     common_params.url = url;
     common_params.initiator_origin = url::Origin::Create(url);
 
+    url::Origin origin = url::Origin::Create(url);
     std::unique_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(
-            common_params, std::move(begin_params), url,
-            net::NetworkIsolationKey(url::Origin::Create(url)), true, false,
-            false, -1, false, false, false, false, nullptr,
-            base::UnguessableToken::Create(),
-            base::UnguessableToken::Create()));
+        new NavigationRequestInfo(common_params, std::move(begin_params), url,
+                                  net::NetworkIsolationKey(origin, origin),
+                                  true, false, false, -1, false, false, false,
+                                  false, nullptr,
+                                  base::UnguessableToken::Create(),
+                                  base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
         browser_context_.get(), browser_context_->GetResourceContext(),
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),

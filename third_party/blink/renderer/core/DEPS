@@ -48,7 +48,6 @@ include_rules = [
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
     "+cc/paint/paint_worklet_input.h",
-    "+cc/paint/text_holder.h",
     "+cc/trees/paint_holding_commit_trigger.h",
     "+gpu/config/gpu_feature_info.h",
     "-inspector/v8",

@@ -96,7 +96,7 @@ void WebFont::DrawText(cc::PaintCanvas* canvas,
     context.Save();
     context.SetFillColor(color);
     context.DrawText(private_->GetFont(), run_info, left_baseline,
-                     cc::NodeHolder::EmptyNodeHolder());
+                     kInvalidDOMNodeId);
     context.Restore();
   }
 

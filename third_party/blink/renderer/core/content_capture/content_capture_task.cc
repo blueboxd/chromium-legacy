@@ -8,7 +8,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
-#include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
@@ -44,7 +43,7 @@ void ContentCaptureTask::Shutdown() {
   local_frame_root_ = nullptr;
 }
 
-bool ContentCaptureTask::CaptureContent(Vector<cc::NodeHolder>& data) {
+bool ContentCaptureTask::CaptureContent(Vector<cc::NodeId>& data) {
   if (captured_content_for_testing_) {
     data = captured_content_for_testing_.value();
     return true;
@@ -54,7 +53,7 @@ bool ContentCaptureTask::CaptureContent(Vector<cc::NodeHolder>& data) {
   if (const auto* root_frame_view = local_frame_root_->View()) {
     if (const auto* cc_layer = root_frame_view->RootCcLayer()) {
       if (auto* layer_tree_host = cc_layer->layer_tree_host()) {
-        std::vector<cc::NodeHolder> content;
+        std::vector<cc::NodeId> content;
         if (layer_tree_host->CaptureContent(&content)) {
           for (auto c : content)
             data.push_back(std::move(c));
@@ -69,7 +68,7 @@ bool ContentCaptureTask::CaptureContent(Vector<cc::NodeHolder>& data) {
 
 bool ContentCaptureTask::CaptureContent() {
   DCHECK(task_session_);
-  Vector<cc::NodeHolder> buffer;
+  Vector<cc::NodeId> buffer;
   if (histogram_reporter_)
     histogram_reporter_->OnCaptureContentStarted();
   bool result = CaptureContent(buffer);
@@ -89,20 +88,19 @@ void ContentCaptureTask::SendContent(
 
   if (histogram_reporter_)
     histogram_reporter_->OnSendContentStarted();
-  WebVector<scoped_refptr<WebContentHolder>> content_batch;
+  WebVector<WebContentHolder> content_batch;
   content_batch.reserve(kBatchSize);
   // Only send changed content after the new content was sent.
   bool sending_changed_content = !doc_session.HasUnsentCapturedContent();
   while (content_batch.size() < kBatchSize) {
-    scoped_refptr<ContentHolder> content_holder;
+    Node* node;
     if (sending_changed_content)
-      content_holder = doc_session.GetNextChangedContentHolder();
+      node = doc_session.GetNextChangedNode();
     else
-      content_holder = doc_session.GetNextUnsentContentHolder();
-    if (!content_holder)
+      node = doc_session.GetNextUnsentNode();
+    if (!node)
       break;
-    content_batch.emplace_back(
-        base::MakeRefCounted<WebContentHolder>(content_holder));
+    content_batch.emplace_back(WebContentHolder(*node));
   }
   if (!content_batch.empty()) {
     if (sending_changed_content) {

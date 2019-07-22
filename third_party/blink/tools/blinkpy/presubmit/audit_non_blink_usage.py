@@ -217,8 +217,7 @@ _CONFIG = [
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',
-            'cc::NodeHolder',
-            'cc::TextHolder',
+            'cc::NodeId',
 
             # Chromium geometry types.
             'gfx::Point',

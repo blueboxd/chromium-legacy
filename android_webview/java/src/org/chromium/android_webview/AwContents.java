@@ -83,6 +83,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.MessagePort;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.SmartClipProvider;
@@ -2669,6 +2670,11 @@ public class AwContents implements SmartClipProvider {
     public void postMessageToFrame(
             String frameName, String message, String targetOrigin, MessagePort[] sentPorts) {
         if (isDestroyed(WARN)) return;
+
+        RenderFrameHost mainFrame = mWebContents.getMainFrame();
+        // If the RenderFrameHost or the RenderFrame doesn't exist we couldn't post the message.
+        if (mainFrame == null || !mainFrame.isRenderFrameCreated()) return;
+
         mWebContents.postMessageToFrame(frameName, message, null, targetOrigin, sentPorts);
     }
 

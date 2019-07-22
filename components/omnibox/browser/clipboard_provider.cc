@@ -231,18 +231,18 @@ bool ClipboardProvider::CreateImageMatch(const AutocompleteInput& input) {
     return false;
   }
 
+  base::Optional<gfx::Image> optional_image =
+      clipboard_content_->GetRecentImageFromClipboard();
+  if (!optional_image) {
+    return false;
+  }
+
   // Make sure current provider supports image search
   TemplateURLService* url_service = client_->GetTemplateURLService();
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
 
   if (!default_url || default_url->image_url().empty() ||
       !default_url->image_url_ref().IsValid(url_service->search_terms_data())) {
-    return false;
-  }
-
-  base::Optional<gfx::Image> optional_image =
-      clipboard_content_->GetRecentImageFromClipboard();
-  if (!optional_image) {
     return false;
   }
 

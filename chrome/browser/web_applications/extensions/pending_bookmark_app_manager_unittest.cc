@@ -44,10 +44,10 @@ const GURL kFooWebAppUrl("https://foo.example");
 const GURL kBarWebAppUrl("https://bar.example");
 const GURL kQuxWebAppUrl("https://qux.example");
 
-web_app::InstallOptions GetFooInstallOptions(
+web_app::ExternalInstallOptions GetFooInstallOptions(
     base::Optional<bool> override_previous_user_uninstall =
         base::Optional<bool>()) {
-  web_app::InstallOptions options(
+  web_app::ExternalInstallOptions options(
       kFooWebAppUrl, web_app::LaunchContainer::kTab,
       web_app::ExternalInstallSource::kExternalPolicy);
 
@@ -58,15 +58,15 @@ web_app::InstallOptions GetFooInstallOptions(
   return options;
 }
 
-web_app::InstallOptions GetBarInstallOptions() {
-  web_app::InstallOptions options(
+web_app::ExternalInstallOptions GetBarInstallOptions() {
+  web_app::ExternalInstallOptions options(
       kBarWebAppUrl, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kExternalPolicy);
   return options;
 }
 
-web_app::InstallOptions GetQuxInstallOptions() {
-  web_app::InstallOptions options(
+web_app::ExternalInstallOptions GetQuxInstallOptions() {
+  web_app::ExternalInstallOptions options(
       kQuxWebAppUrl, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kExternalPolicy);
   return options;
@@ -85,7 +85,7 @@ class TestBookmarkAppInstallationTaskFactory {
 
   size_t install_run_count() { return install_run_count_; }
 
-  const std::vector<web_app::InstallOptions>& install_options_list() {
+  const std::vector<web_app::ExternalInstallOptions>& install_options_list() {
     return install_options_list_;
   }
 
@@ -99,13 +99,13 @@ class TestBookmarkAppInstallationTaskFactory {
       Profile* profile,
       web_app::AppRegistrar* registrar,
       web_app::InstallFinalizer* install_finalizer,
-      web_app::InstallOptions install_options) {
+      web_app::ExternalInstallOptions install_options) {
     return std::make_unique<TestBookmarkAppInstallationTask>(
         this, profile, static_cast<web_app::TestAppRegistrar*>(registrar),
         install_finalizer, std::move(install_options));
   }
 
-  void OnInstallCalled(const web_app::InstallOptions& install_options) {
+  void OnInstallCalled(const web_app::ExternalInstallOptions& install_options) {
     ++install_run_count_;
     install_options_list_.push_back(install_options);
   }
@@ -125,7 +125,7 @@ class TestBookmarkAppInstallationTaskFactory {
         Profile* profile,
         web_app::TestAppRegistrar* registrar,
         web_app::InstallFinalizer* install_finalizer,
-        web_app::InstallOptions install_options)
+        web_app::ExternalInstallOptions install_options)
         : BookmarkAppInstallationTask(profile,
                                       registrar,
                                       install_finalizer,
@@ -163,13 +163,13 @@ class TestBookmarkAppInstallationTaskFactory {
     TestBookmarkAppInstallationTaskFactory* factory_;
     Profile* profile_;
     web_app::TestAppRegistrar* registrar_;
-    web_app::InstallOptions install_options_;
+    web_app::ExternalInstallOptions install_options_;
     web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
     DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppInstallationTask);
   };
 
-  std::vector<web_app::InstallOptions> install_options_list_;
+  std::vector<web_app::ExternalInstallOptions> install_options_list_;
   size_t install_run_count_ = 0;
 
   std::map<GURL, web_app::InstallResultCode> next_installation_task_results_;
@@ -198,7 +198,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   std::pair<GURL, web_app::InstallResultCode> InstallAndWait(
       web_app::PendingAppManager* pending_app_manager,
-      web_app::InstallOptions install_options) {
+      web_app::ExternalInstallOptions install_options) {
     base::RunLoop run_loop;
 
     base::Optional<GURL> url;
@@ -219,7 +219,7 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::vector<std::pair<GURL, web_app::InstallResultCode>> InstallAppsAndWait(
       web_app::PendingAppManager* pending_app_manager,
-      std::vector<web_app::InstallOptions> apps_to_install) {
+      std::vector<web_app::ExternalInstallOptions> apps_to_install) {
     std::vector<std::pair<GURL, web_app::InstallResultCode>> results;
 
     base::RunLoop run_loop;
@@ -276,8 +276,8 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
     return manager;
   }
 
-  // InstallOptions that was used to run the last installation task.
-  const web_app::InstallOptions& last_install_options() {
+  // ExternalInstallOptions that was used to run the last installation task.
+  const web_app::ExternalInstallOptions& last_install_options() {
     DCHECK(!task_factory_->install_options_list().empty());
     return task_factory_->install_options_list().back();
   }
@@ -651,7 +651,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_AlwaysUpdate) {
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
   auto get_force_reinstall_info = []() {
-    web_app::InstallOptions options(
+    web_app::ExternalInstallOptions options(
         kFooWebAppUrl, web_app::LaunchContainer::kWindow,
         web_app::ExternalInstallSource::kExternalPolicy);
     options.force_reinstall = true;
@@ -737,7 +737,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_Succeeds) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
 
   InstallAppsResults results =
@@ -758,7 +758,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_FailsInstallationFails) {
   url_loader()->SetNextLoadUrlResult(
       kFooWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
 
   InstallAppsResults results =
@@ -781,7 +781,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PlaceholderApp) {
 
   auto install_options = GetFooInstallOptions();
   install_options.install_placeholder = true;
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(install_options);
 
   InstallAppsResults results =
@@ -806,7 +806,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_Multiple) {
   url_loader()->SetNextLoadUrlResult(
       kBarWebAppUrl, web_app::WebAppUrlLoader::Result::kUrlLoaded);
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 
@@ -835,7 +835,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstallApps) {
 
   base::RunLoop run_loop;
   {
-    std::vector<web_app::InstallOptions> apps_to_install;
+    std::vector<web_app::ExternalInstallOptions> apps_to_install;
     apps_to_install.push_back(GetFooInstallOptions());
 
     pending_app_manager->InstallApps(
@@ -851,7 +851,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstallApps) {
   }
 
   {
-    std::vector<web_app::InstallOptions> apps_to_install;
+    std::vector<web_app::ExternalInstallOptions> apps_to_install;
     apps_to_install.push_back(GetBarInstallOptions());
 
     pending_app_manager->InstallApps(
@@ -887,7 +887,7 @@ TEST_F(PendingBookmarkAppManagerTest, Install_PendingMulitpleInstallApps) {
 
   base::RunLoop run_loop;
 
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 
@@ -964,7 +964,7 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstall) {
           }));
 
   // Queue through InstallApps.
-  std::vector<web_app::InstallOptions> apps_to_install;
+  std::vector<web_app::ExternalInstallOptions> apps_to_install;
   apps_to_install.push_back(GetFooInstallOptions());
   apps_to_install.push_back(GetBarInstallOptions());
 

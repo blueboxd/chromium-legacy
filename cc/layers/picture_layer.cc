@@ -240,7 +240,7 @@ void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 }
 
 void PictureLayer::CaptureContent(const gfx::Rect& rect,
-                                  std::vector<NodeHolder>* content) {
+                                  std::vector<NodeId>* content) {
   if (!DrawsContent())
     return;
 

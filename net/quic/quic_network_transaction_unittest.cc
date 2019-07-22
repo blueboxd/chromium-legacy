@@ -978,6 +978,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::ValuesIn(AllSupportedVersionsWithoutTls()),
                        ::testing::Bool()));
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
+// kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   base::HistogramTester histograms;
@@ -8428,10 +8431,10 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
 // Test that NetworkIsolationKey is respected by QUIC connections, when
 // kPartitionConnectionsByNetworkIsolationKey is enabled.
 TEST_P(QuicNetworkTransactionTest, NetworkIsolation) {
-  NetworkIsolationKey network_isolation_key1(
-      url::Origin::Create(GURL("http://origin1/")));
-  NetworkIsolationKey network_isolation_key2(
-      url::Origin::Create(GURL("http://origin2/")));
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  const auto kOrigin2 = url::Origin::Create(GURL("http://origin2/"));
+  NetworkIsolationKey network_isolation_key1(kOrigin1, kOrigin1);
+  NetworkIsolationKey network_isolation_key2(kOrigin2, kOrigin2);
 
   session_params_.quic_params.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
@@ -8791,8 +8794,8 @@ TEST_P(QuicNetworkTransactionTest, NetworkIsolationTunnel) {
   CheckResponseData(&trans, "0123456789");
 
   HttpRequestInfo request2;
-  request_.network_isolation_key =
-      NetworkIsolationKey(url::Origin::Create(GURL("http://origin1/")));
+  const auto kOrigin1 = url::Origin::Create(GURL("http://origin1/"));
+  request_.network_isolation_key = NetworkIsolationKey(kOrigin1, kOrigin1);
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session_.get());
   RunTransaction(&trans2);
   CheckResponseData(&trans2, "0123456789");

@@ -14,7 +14,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -49,9 +49,9 @@ base::Value GetWindowedItem() {
   return item;
 }
 
-InstallOptions GetWindowedInstallOptions() {
-  InstallOptions options(kWindowedUrl, LaunchContainer::kWindow,
-                         ExternalInstallSource::kExternalPolicy);
+ExternalInstallOptions GetWindowedInstallOptions() {
+  ExternalInstallOptions options(kWindowedUrl, LaunchContainer::kWindow,
+                                 ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -69,9 +69,9 @@ base::Value GetTabbedItem() {
   return item;
 }
 
-InstallOptions GetTabbedInstallOptions() {
-  InstallOptions options(kTabbedUrl, LaunchContainer::kTab,
-                         ExternalInstallSource::kExternalPolicy);
+ExternalInstallOptions GetTabbedInstallOptions() {
+  ExternalInstallOptions options(kTabbedUrl, LaunchContainer::kTab,
+                                 ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -87,9 +87,9 @@ base::Value GetNoContainerItem() {
   return item;
 }
 
-InstallOptions GetNoContainerInstallOptions() {
-  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         ExternalInstallSource::kExternalPolicy);
+ExternalInstallOptions GetNoContainerInstallOptions() {
+  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+                                 ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -105,9 +105,9 @@ base::Value GetCreateDesktopShorcutDefaultItem() {
   return item;
 }
 
-InstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
-  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         ExternalInstallSource::kExternalPolicy);
+ExternalInstallOptions GetCreateDesktopShorcutDefaultInstallOptions() {
+  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+                                 ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -124,9 +124,9 @@ base::Value GetCreateDesktopShorcutFalseItem() {
   return item;
 }
 
-InstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
-  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         ExternalInstallSource::kExternalPolicy);
+ExternalInstallOptions GetCreateDesktopShorcutFalseInstallOptions() {
+  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+                                 ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -143,9 +143,9 @@ base::Value GetCreateDesktopShorcutTrueItem() {
   return item;
 }
 
-InstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
-  InstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
-                         ExternalInstallSource::kExternalPolicy);
+ExternalInstallOptions GetCreateDesktopShorcutTrueInstallOptions() {
+  ExternalInstallOptions options(kNoContainerUrl, LaunchContainer::kTab,
+                                 ExternalInstallSource::kExternalPolicy);
   options.add_to_applications_menu = true;
   options.add_to_desktop = true;
   options.add_to_quick_launch_bar = false;
@@ -237,7 +237,7 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
 
   const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetWindowedInstallOptions());
   expected_install_options_list.push_back(GetTabbedInstallOptions());
 
@@ -254,7 +254,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoDefaultLaunchContainer) {
 
   const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetNoContainerInstallOptions());
 
   EXPECT_EQ(install_requests, expected_install_options_list);
@@ -271,7 +271,7 @@ TEST_F(WebAppPolicyManagerTest,
 
   const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(
       GetCreateDesktopShorcutDefaultInstallOptions());
 
@@ -289,7 +289,7 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithCreateDesktopShortcut) {
 
   const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(
       GetCreateDesktopShorcutFalseInstallOptions());
   expected_install_options_list.push_back(
@@ -309,7 +309,7 @@ TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
 
   const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetWindowedInstallOptions());
 
   EXPECT_EQ(install_requests, expected_install_options_list);
@@ -346,7 +346,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInPreviousSession) {
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the policy.
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetWindowedInstallOptions());
   EXPECT_EQ(pending_app_manager()->install_requests(),
             expected_install_options_list);
@@ -372,7 +372,7 @@ TEST_F(WebAppPolicyManagerTest, UninstallAppInstalledInCurrentSession) {
 
   const auto& install_requests = pending_app_manager()->install_requests();
 
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetWindowedInstallOptions());
   expected_install_options_list.push_back(GetTabbedInstallOptions());
 
@@ -404,7 +404,7 @@ TEST_F(WebAppPolicyManagerTest, ReinstallPlaceholderApp) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  std::vector<InstallOptions> expected_options_list;
+  std::vector<ExternalInstallOptions> expected_options_list;
   expected_options_list.push_back(GetWindowedInstallOptions());
 
   const auto& install_options_list = pending_app_manager()->install_requests();
@@ -430,7 +430,7 @@ TEST_F(WebAppPolicyManagerTest, TryToInexistentPlaceholderApp) {
   policy_manager()->Start();
   base::RunLoop().RunUntilIdle();
 
-  std::vector<InstallOptions> expected_options_list;
+  std::vector<ExternalInstallOptions> expected_options_list;
   expected_options_list.push_back(GetWindowedInstallOptions());
 
   const auto& install_options_list = pending_app_manager()->install_requests();
@@ -461,7 +461,7 @@ TEST_F(WebAppPolicyManagerTest, SayRefreshTwoTimesQuickly) {
   base::RunLoop().RunUntilIdle();
 
   // Both apps should have been installed.
-  std::vector<InstallOptions> expected_options_list;
+  std::vector<ExternalInstallOptions> expected_options_list;
   expected_options_list.push_back(GetWindowedInstallOptions());
   expected_options_list.push_back(GetTabbedInstallOptions());
 

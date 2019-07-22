@@ -144,6 +144,7 @@ public class PageLoadMetricsTest {
 
     @Test
     @SmallTest
+    @FlakyTest(message = "crbug.com/986025")
     public void testPageLoadMetricNavigationIdSetCorrectly() throws InterruptedException {
         PageLoadMetricsTestObserver metricsObserver = new PageLoadMetricsTestObserver();
         TestThreadUtils.runOnUiThreadBlockingNoException(

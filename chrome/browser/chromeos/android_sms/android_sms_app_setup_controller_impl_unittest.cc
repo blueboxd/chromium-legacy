@@ -20,7 +20,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
 #include "chrome/test/base/testing_profile.h"
@@ -42,8 +42,8 @@ const char kTestUrl1[] = "https://test-url-1.com/";
 const char kTestInstallUrl1[] = "https://test-url-1.com/install";
 const char kTestUrl2[] = "https://test-url-2.com/";
 
-web_app::InstallOptions GetInstallOptionsForUrl(const GURL& url) {
-  web_app::InstallOptions options(
+web_app::ExternalInstallOptions GetInstallOptionsForUrl(const GURL& url) {
+  web_app::ExternalInstallOptions options(
       url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;

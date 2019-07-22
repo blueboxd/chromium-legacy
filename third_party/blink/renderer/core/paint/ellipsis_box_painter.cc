@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/paint/ellipsis_box_painter.h"
 
-#include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
@@ -13,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
@@ -71,7 +71,7 @@ void EllipsisBoxPainter::PaintEllipsis(const PaintInfo& paint_info,
                            ellipsis_box_.IsHorizontal());
   text_painter.Paint(0, ellipsis_box_.EllipsisStr().length(),
                      ellipsis_box_.EllipsisStr().length(), text_style,
-                     NodeHolder::EmptyNodeHolder());
+                     kInvalidDOMNodeId);
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();

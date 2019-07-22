@@ -5,7 +5,7 @@
 import("//net/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-enable_built_in_dns = !is_ios && !is_proto_quic
+enable_built_in_dns = !is_ios
 
 source_set("dns") {
   # Due to circular dependencies, should only be depended on through //net.

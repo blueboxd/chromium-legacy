@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -99,10 +100,10 @@ public class StartSurfaceLayoutTest {
         mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
         mRepeat = 3;
 
-        StartSurfaceCoordinator coordinator =
-                (StartSurfaceCoordinator) mStartSurfaceLayout.getStartSurfaceForTesting();
-        coordinator.setBitmapCallbackForTesting(mBitmapListener);
-        Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting());
+        GridTabSwitcher.TabGridDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        delegate.setBitmapCallbackForTesting(mBitmapListener);
+        Assert.assertEquals(0, delegate.getBitmapFetchCountForTesting());
 
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
@@ -112,9 +113,10 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
-        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
-        assertEquals(0, startSurface.getSoftCleanupDelayForTesting());
-        assertEquals(0, startSurface.getCleanupDelayForTesting());
+        GridTabSwitcher.TabGridDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        assertEquals(0, delegate.getSoftCleanupDelayForTesting());
+        assertEquals(0, delegate.getCleanupDelayForTesting());
 
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
@@ -139,9 +141,10 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
-        StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
-        assertEquals(10000, startSurface.getSoftCleanupDelayForTesting());
-        assertEquals(10000, startSurface.getCleanupDelayForTesting());
+        GridTabSwitcher.TabGridDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        assertEquals(10000, delegate.getSoftCleanupDelayForTesting());
+        assertEquals(10000, delegate.getCleanupDelayForTesting());
 
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
@@ -226,7 +229,7 @@ public class StartSurfaceLayoutTest {
             enterGTS();
 
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { startSurface.getGridController().onBackPressed(); });
+                    () -> { startSurface.getController().onBackPressed(); });
             // clang-format off
             CriteriaHelper.pollInstrumentationThread(
                     () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible(),
@@ -344,9 +347,9 @@ public class StartSurfaceLayoutTest {
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testRestoredTabsDontFetch() throws Exception {
         prepareTabs(2, mUrl);
-        StartSurfaceCoordinator coordinator =
-                (StartSurfaceCoordinator) mStartSurfaceLayout.getStartSurfaceForTesting();
-        int oldCount = coordinator.getBitmapFetchCountForTesting();
+        GridTabSwitcher.TabGridDelegate delegate =
+                mStartSurfaceLayout.getStartSurfaceForTesting().getTabGridDelegate();
+        int oldCount = delegate.getBitmapFetchCountForTesting();
 
         // Restart Chrome.
         // Although we're destroying the activity, the Application will still live on since its in
@@ -358,8 +361,7 @@ public class StartSurfaceLayoutTest {
         Layout layout = mActivityTestRule.getActivity().getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
         mStartSurfaceLayout = (StartSurfaceLayout) layout;
-        coordinator = (StartSurfaceCoordinator) mStartSurfaceLayout.getStartSurfaceForTesting();
-        Assert.assertEquals(0, coordinator.getBitmapFetchCountForTesting() - oldCount);
+        Assert.assertEquals(0, delegate.getBitmapFetchCountForTesting() - oldCount);
     }
 
     @Test

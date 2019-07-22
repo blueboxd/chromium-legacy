@@ -101,7 +101,7 @@ void WebAppInstallManager::InstallWebAppFromInfo(
 
 void WebAppInstallManager::InstallWebAppWithOptions(
     content::WebContents* web_contents,
-    const InstallOptions& install_options,
+    const ExternalInstallOptions& install_options,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), finalizer(), data_retriever_factory_.Run());

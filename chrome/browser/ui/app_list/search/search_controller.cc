@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "content/public/browser/system_connector.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
 using metrics::ChromeOSAppListLaunchEventProto;
@@ -75,8 +76,11 @@ SearchController::SearchController(AppListModelUpdater* model_updater,
           profile->GetPath(),
           chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       list_controller_(list_controller) {
-  mixer_->SetNonAppSearchResultRanker(
-      std::make_unique<SearchResultRanker>(profile));
+  std::unique_ptr<SearchResultRanker> ranker =
+      std::make_unique<SearchResultRanker>(profile,
+                                           content::GetSystemConnector());
+  ranker->InitializeRankers();
+  mixer_->SetNonAppSearchResultRanker(std::move(ranker));
 }
 
 SearchController::~SearchController() {}

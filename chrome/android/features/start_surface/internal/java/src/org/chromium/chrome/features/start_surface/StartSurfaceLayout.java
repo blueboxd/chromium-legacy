@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.widget.Toast;
@@ -50,7 +51,7 @@ import java.util.Locale;
 /**
  * A {@link Layout} that shows all tabs in one grid view.
  */
-public class StartSurfaceLayout extends Layout implements StartSurface.GridOverviewModeObserver {
+public class StartSurfaceLayout extends Layout implements StartSurface.OverviewModeObserver {
     private static final String TAG = "SSLayout";
 
     // Duration of the transition animation
@@ -67,7 +68,8 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
 
     private final TabListSceneLayer mSceneLayer = new TabListSceneLayer();
     private final StartSurface mStartSurface;
-    private final StartSurface.GridController mGridController;
+    private final StartSurface.Controller mController;
+    private final GridTabSwitcher.TabGridDelegate mTabGridDelegate;
     // To force Toolbar finishes its animation when this Layout finished hiding.
     private final LayoutTab mDummyLayoutTab;
 
@@ -93,8 +95,9 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
         mDummyLayoutTab.setShowToolbar(true);
         mStartSurface = startSurface;
         mStartSurface.setOnTabSelectingListener(this::onTabSelecting);
-        mGridController = startSurface.getGridController();
-        mGridController.addOverviewModeObserver(this);
+        mController = mStartSurface.getController();
+        mController.addOverviewModeObserver(this);
+        mTabGridDelegate = mStartSurface.getTabGridDelegate();
     }
 
     // StartSurface.GridOverviewModeObserver implementation.
@@ -127,7 +130,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
         }
         // If we are doing GTS-to-Tab transition animation, we start showing the Bitmap version of
         // the GTS overview in the background while expanding the thumbnail to the viewport.
-        expandTab(mStartSurface.getThumbnailLocationOfCurrentTab(true));
+        expandTab(mTabGridDelegate.getThumbnailLocationOfCurrentTab(true));
     }
 
     // Layout implementation.
@@ -138,8 +141,8 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
 
     @Override
     public void destroy() {
-        if (mGridController != null) {
-            mGridController.removeOverviewModeObserver(this);
+        if (mController != null) {
+            mController.removeOverviewModeObserver(this);
         }
     }
 
@@ -148,7 +151,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
         super.show(time, animate);
 
         boolean showShrinkingAnimation = animate && FeatureUtilities.isTabToGtsAnimationEnabled();
-        boolean quick = mStartSurface.prepareOverview();
+        boolean quick = mTabGridDelegate.prepareOverview();
         Log.d(TAG, "SkipSlowZooming = " + getSkipSlowZooming());
         if (getSkipSlowZooming()) {
             showShrinkingAnimation &= quick;
@@ -163,11 +166,11 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
         mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
 
         if (!showShrinkingAnimation) {
-            mGridController.showOverview(animate);
+            mController.showOverview(animate);
             return;
         }
 
-        shrinkTab(() -> mStartSurface.getThumbnailLocationOfCurrentTab(false));
+        shrinkTab(() -> mTabGridDelegate.getThumbnailLocationOfCurrentTab(false));
     }
 
     @Override
@@ -206,7 +209,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
         updateCacheVisibleIds(new LinkedList<>(Arrays.asList(sourceTabId)));
 
         mIsAnimating = true;
-        mGridController.hideOverview(!FeatureUtilities.isTabToGtsAnimationEnabled());
+        mController.hideOverview(!FeatureUtilities.isTabToGtsAnimationEnabled());
     }
 
     @Override
@@ -218,7 +221,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
     @Override
     public boolean onBackPressed() {
         if (mTabModelSelector.getCurrentModel().getCount() == 0) return false;
-        return mGridController.onBackPressed();
+        return mController.onBackPressed();
     }
 
     @Override
@@ -297,7 +300,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
             public void onAnimationEnd(Animator animation) {
                 mTabToSwitcherAnimation = null;
                 // Step 2: fade in the real GTS RecyclerView.
-                mGridController.showOverview(true);
+                mController.showOverview(true);
 
                 reportAnimationPerf(true);
             }
@@ -360,7 +363,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
     }
 
     private void postHiding() {
-        mStartSurface.postHiding();
+        mTabGridDelegate.postHiding();
         mIsAnimating = false;
         doneHiding();
     }
@@ -378,7 +381,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
     private void reportAnimationPerf(boolean isShrinking) {
         int frameRendered = mFrameCount - mStartFrame;
         long elapsedMs = SystemClock.elapsedRealtime() - mStartTime;
-        long lastDirty = mStartSurface.getLastDirtyTimeForTesting();
+        long lastDirty = mTabGridDelegate.getLastDirtyTimeForTesting();
         int dirtySpan = (int) (lastDirty - mStartTime);
         float fps = 1000.f * frameRendered / elapsedMs;
         String message = String.format(Locale.US,
@@ -431,7 +434,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.GridOverv
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
-                FeatureUtilities.isTabToGtsAnimationEnabled() ? mStartSurface.getResourceId()
+                FeatureUtilities.isTabToGtsAnimationEnabled() ? mTabGridDelegate.getResourceId()
                                                               : 0,
                 mBackgroundAlpha);
         mFrameCount++;

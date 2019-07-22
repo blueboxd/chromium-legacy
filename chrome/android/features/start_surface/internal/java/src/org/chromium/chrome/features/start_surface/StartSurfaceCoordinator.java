@@ -4,16 +4,13 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.support.annotation.NonNull;
-
-import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.start_surface.R;
 
 /**
  * Root coordinator that is responsible for showing start surfaces, like a grid of Tabs, explore
@@ -21,6 +18,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvi
  */
 public class StartSurfaceCoordinator implements StartSurface {
     private final GridTabSwitcher mGridTabSwitcher;
+    private final StartSurfaceMediator mStartSurfaceMediator;
     private BottomBarCoordinator mBottomBarCoordinator;
     private ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
 
@@ -28,69 +26,41 @@ public class StartSurfaceCoordinator implements StartSurface {
         mGridTabSwitcher =
                 TabManagementModuleProvider.getDelegate().createGridTabSwitcher(activity);
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)) {
-            mBottomBarCoordinator = new BottomBarCoordinator();
+        // Do not enable this feature when the bottom bar is enabled since it will
+        // overlap the start surface's bottom bar.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.TWO_PANES_START_SURFACE_ANDROID)
+                && !FeatureUtilities.isBottomToolbarEnabled()) {
+            // Margin the bottom of the Tab grid to save space for the bottom bar.
+            mGridTabSwitcher.getTabGridDelegate().setBottomControlsHeight(
+                    ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                            R.dimen.ss_bottom_bar_height));
+
+            // Create the bottom bar.
+            mBottomBarCoordinator = new BottomBarCoordinator(
+                    activity, activity.getCompositorViewHolder(), activity.getTabModelSelector());
+
+            // Create the explore surface.
             mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator();
         }
+
+        mStartSurfaceMediator = new StartSurfaceMediator(mGridTabSwitcher.getGridController(),
+                mBottomBarCoordinator, mExploreSurfaceCoordinator);
+    }
+
+    // Implements StartSurface.
+    @Override
+    public void setOnTabSelectingListener(StartSurface.OnTabSelectingListener listener) {
+        mGridTabSwitcher.setOnTabSelectingListener(
+                (GridTabSwitcher.OnTabSelectingListener) listener);
     }
 
     @Override
-    public void setOnTabSelectingListener(OnTabSelectingListener listener) {
-        mGridTabSwitcher.setOnTabSelectingListener(listener);
+    public Controller getController() {
+        return mStartSurfaceMediator;
     }
 
     @Override
-    public GridController getGridController() {
-        return mGridTabSwitcher.getGridController();
-    }
-
-    @Override
-    public int getResourceId() {
-        return mGridTabSwitcher.getResourceId();
-    }
-
-    @Override
-    public long getLastDirtyTimeForTesting() {
-        return mGridTabSwitcher.getLastDirtyTimeForTesting();
-    }
-
-    @Override
-    public boolean prepareOverview() {
-        return mGridTabSwitcher.prepareOverview();
-    }
-
-    @Override
-    public void postHiding() {
-        mGridTabSwitcher.postHiding();
-    }
-
-    @Override
-    @NonNull
-    public Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate) {
-        return mGridTabSwitcher.getThumbnailLocationOfCurrentTab(forceUpdate);
-    }
-
-    @Override
-    @VisibleForTesting
-    public void setBitmapCallbackForTesting(Callback<Bitmap> callback) {
-        mGridTabSwitcher.setBitmapCallbackForTesting(callback);
-    }
-
-    @Override
-    @VisibleForTesting
-    public int getBitmapFetchCountForTesting() {
-        return mGridTabSwitcher.getBitmapFetchCountForTesting();
-    }
-
-    @Override
-    @VisibleForTesting
-    public int getSoftCleanupDelayForTesting() {
-        return mGridTabSwitcher.getSoftCleanupDelayForTesting();
-    }
-
-    @Override
-    @VisibleForTesting
-    public int getCleanupDelayForTesting() {
-        return mGridTabSwitcher.getCleanupDelayForTesting();
+    public GridTabSwitcher.TabGridDelegate getTabGridDelegate() {
+        return mGridTabSwitcher.getTabGridDelegate();
     }
 }

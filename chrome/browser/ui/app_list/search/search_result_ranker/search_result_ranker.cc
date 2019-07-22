@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -105,16 +106,32 @@ std::string NormalizeId(const std::string& id, RankingItemType type) {
 
 }  // namespace
 
-SearchResultRanker::SearchResultRanker(Profile* profile)
-    : enable_zero_state_mixed_types_(
-          app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
+SearchResultRanker::SearchResultRanker(Profile* profile,
+                                       service_manager::Connector* connector)
+    : config_converter_(connector), profile_(profile) {
+  DCHECK(profile);
+  if (auto* notifier =
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
+              profile_)) {
+    notifier->AddObserver(this);
+  }
+}
+
+SearchResultRanker::~SearchResultRanker() {
+  if (auto* notifier =
+          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
+              profile_)) {
+    notifier->RemoveObserver(this);
+  }
+}
+
+void SearchResultRanker::InitializeRankers() {
   if (app_list_features::IsQueryBasedMixedTypesRankerEnabled()) {
     results_list_boost_coefficient_ = base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableQueryBasedMixedTypesRanker,
         "boost_coefficient", 0.1);
 
     RecurrenceRankerConfigProto config;
-
     config.set_min_seconds_between_saves(240u);
     config.set_condition_limit(0u);
     config.set_condition_decay(0.5f);
@@ -124,34 +141,44 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
     config.set_target_decay(base::GetFieldTrialParamByFeatureAsDouble(
         app_list_features::kEnableQueryBasedMixedTypesRanker, "target_decay",
         0.8f));
-    // TODO(931149): Replace this with a more sophisticated model if the
-    // query-based mixed type model is being used.
     config.mutable_predictor()->mutable_default_predictor();
 
     if (GetFieldTrialParamByFeatureAsBool(
             app_list_features::kEnableQueryBasedMixedTypesRanker,
             "use_category_model", false)) {
+      // Group ranker model.
       results_list_group_ranker_ = std::make_unique<RecurrenceRanker>(
-          profile->GetPath().AppendASCII("results_list_group_ranker.pb"),
-          config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
+          profile_->GetPath().AppendASCII("results_list_group_ranker.pb"),
+          config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
+
     } else {
-      query_based_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
-          profile->GetPath().AppendASCII("query_based_mixed_types_ranker.pb"),
-          config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
+      // Item ranker model.
+      const std::string config_json = GetFieldTrialParamValueByFeature(
+          app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
+      config_converter_.Convert(
+          config_json,
+          base::BindOnce(
+              [](SearchResultRanker* ranker,
+                 const RecurrenceRankerConfigProto& default_config,
+                 base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+                if (ranker->json_config_parsed_for_testing_)
+                  std::move(ranker->json_config_parsed_for_testing_).Run();
+                ranker->query_based_mixed_types_ranker_ =
+                    std::make_unique<RecurrenceRanker>(
+                        ranker->profile_->GetPath().AppendASCII(
+                            "query_based_mixed_types_ranker.pb"),
+                        parsed_config ? parsed_config.value() : default_config,
+                        chromeos::ProfileHelper::IsEphemeralUserProfile(
+                            ranker->profile_));
+              },
+              base::Unretained(this), config));
     }
   }
 
-  profile_ = profile;
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-              profile_)) {
-    notifier->AddObserver(this);
-  }
-
-  if (enable_zero_state_mixed_types_) {
+  if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
     RecurrenceRankerConfigProto config;
     config.set_min_seconds_between_saves(240u);
-    config.set_condition_limit(0u);
+    config.set_condition_limit(1u);
     config.set_condition_decay(0.5f);
 
     config.set_target_limit(base::GetFieldTrialParamByFeatureAsInt(
@@ -166,16 +193,8 @@ SearchResultRanker::SearchResultRanker(Profile* profile)
     config.mutable_predictor()->mutable_default_predictor();
 
     zero_state_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
-        profile->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
-        config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile));
-  }
-}
-
-SearchResultRanker::~SearchResultRanker() {
-  if (auto* notifier =
-          file_manager::file_tasks::FileTasksNotifier::GetForProfile(
-              profile_)) {
-    notifier->RemoveObserver(this);
+        profile_->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
+        config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
 }
 
@@ -188,16 +207,13 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
     return;
   time_of_last_fetch_ = now;
 
-  // TODO(931149): The passed |query| should be used to choose between ranking
-  // results with using a zero-state or query-based model. It may also be needed
-  // for rankings from the query model.
-
   if (results_list_group_ranker_) {
     group_ranks_.clear();
     group_ranks_ = results_list_group_ranker_->Rank();
-  } else if (query_based_mixed_types_ranker_) {
+  } else if (query.size() > 0 && query_based_mixed_types_ranker_) {
     query_mixed_ranks_.clear();
-    query_mixed_ranks_ = query_based_mixed_types_ranker_->Rank();
+    query_mixed_ranks_ =
+        query_based_mixed_types_ranker_->Rank(base::UTF16ToUTF8(query));
   }
 }
 
@@ -238,23 +254,21 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 }
 
 void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
-  // TODO(931149): Use the passed |app_launch_data.query| as part of the
-  // training for the query model if it requires it.
   if (ModelForType(app_launch_data.ranking_item_type) == Model::MIXED_TYPES) {
     if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(base::NumberToString(
           static_cast<int>(app_launch_data.ranking_item_type)));
     } else if (query_based_mixed_types_ranker_) {
       query_based_mixed_types_ranker_->Record(
-          NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type));
+          NormalizeId(app_launch_data.id, app_launch_data.ranking_item_type),
+          app_launch_data.query);
     }
   }
 }
 
 void SearchResultRanker::OnFilesOpened(
     const std::vector<FileOpenEvent>& file_opens) {
-  if (enable_zero_state_mixed_types_) {
-    DCHECK(zero_state_mixed_types_ranker_);
+  if (zero_state_mixed_types_ranker_) {
     for (const auto& file_open : file_opens)
       zero_state_mixed_types_ranker_->Record(file_open.path.value());
   }
@@ -262,10 +276,6 @@ void SearchResultRanker::OnFilesOpened(
   for (const auto& file_open : file_opens)
     UMA_HISTOGRAM_ENUMERATION(kLogFileOpenType,
                               GetTypeFromFileTaskNotifier(file_open.open_type));
-}
-
-RecurrenceRanker* SearchResultRanker::get_zero_state_mixed_types_ranker() {
-  return zero_state_mixed_types_ranker_.get();
 }
 
 }  // namespace app_list

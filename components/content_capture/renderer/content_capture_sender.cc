@@ -33,13 +33,6 @@ void ContentCaptureSender::BindPendingReceiver(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-cc::NodeHolder::Type ContentCaptureSender::GetNodeHolderType() const {
-  if (content_capture::features::ShouldUseNodeID())
-    return cc::NodeHolder::Type::kID;
-  else
-    return cc::NodeHolder::Type::kTextHolder;
-}
-
 void ContentCaptureSender::GetTaskTimingParameters(
     base::TimeDelta& short_delay,
     base::TimeDelta& long_delay) const {
@@ -50,7 +43,7 @@ void ContentCaptureSender::GetTaskTimingParameters(
 }
 
 void ContentCaptureSender::DidCaptureContent(
-    const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data,
+    const blink::WebVector<blink::WebContentHolder>& data,
     bool first_data) {
   ContentCaptureData frame_data;
   FillContentCaptureData(data, &frame_data, first_data /* set_url */);
@@ -58,7 +51,7 @@ void ContentCaptureSender::DidCaptureContent(
 }
 
 void ContentCaptureSender::DidUpdateContent(
-    const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data) {
+    const blink::WebVector<blink::WebContentHolder>& data) {
   ContentCaptureData frame_data;
   FillContentCaptureData(data, &frame_data, false /* set_url */);
   GetContentCaptureReceiver()->DidUpdateContent(frame_data);
@@ -81,8 +74,7 @@ void ContentCaptureSender::OnDestruct() {
 }
 
 void ContentCaptureSender::FillContentCaptureData(
-    const blink::WebVector<scoped_refptr<blink::WebContentHolder>>&
-        node_holders,
+    const blink::WebVector<blink::WebContentHolder>& node_holders,
     ContentCaptureData* data,
     bool set_url) {
   data->bounds = render_frame()->GetWebFrame()->VisibleContentRect();
@@ -92,11 +84,11 @@ void ContentCaptureSender::FillContentCaptureData(
   }
   data->children.reserve(node_holders.size());
   base::TimeTicks start = base::TimeTicks::Now();
-  for (auto holder : node_holders) {
+  for (auto& holder : node_holders) {
     ContentCaptureData child;
-    child.id = holder->GetId();
-    child.value = holder->GetValue().Utf16();
-    child.bounds = holder->GetBoundingBox();
+    child.id = holder.GetId();
+    child.value = holder.GetValue().Utf16();
+    child.bounds = holder.GetBoundingBox();
     data->children.push_back(child);
   }
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(

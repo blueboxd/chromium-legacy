@@ -27,11 +27,11 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {
-namespace test {
 namespace {
 
 using ResultType = ash::SearchResultType;
@@ -100,8 +100,8 @@ class SearchResultRankerTest : public testing::Test {
           app_list_features::kEnableQueryBasedMixedTypesRanker);
     }
 
-    auto ranker = std::make_unique<SearchResultRanker>(profile_.get());
-    Wait();
+    auto ranker = std::make_unique<SearchResultRanker>(profile_.get(),
+                                                       dd_service_.connector());
     return ranker;
   }
 
@@ -119,12 +119,15 @@ class SearchResultRankerTest : public testing::Test {
   void Wait() { thread_bundle_.RunUntilIdle(); }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
+
   // This is used only to make the ownership clear for the TestSearchResult
   // objects that the return value of MakeSearchResults() contains raw pointers
   // to.
   std::list<TestSearchResult> test_search_results_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  data_decoder::TestDataDecoderService dd_service_;
+
   ScopedFeatureList scoped_feature_list_;
   ScopedTempDir temp_dir_;
 
@@ -135,10 +138,14 @@ class SearchResultRankerTest : public testing::Test {
 
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
   auto ranker = MakeRanker(false);
+  ranker->InitializeRankers();
+  Wait();
+
   AppLaunchData app_launch_data;
   app_launch_data.id = "unused";
   app_launch_data.ranking_item_type = RankingItemType::kFile;
   app_launch_data.query = "query";
+
   for (int i = 0; i < 20; ++i)
     ranker->Train(app_launch_data);
   ranker->FetchRankings(base::string16());
@@ -158,10 +165,14 @@ TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
 TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
   auto ranker = MakeRanker(
       true, {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
+  ranker->InitializeRankers();
+  Wait();
+
   AppLaunchData app_launch_data;
   app_launch_data.id = "unused";
   app_launch_data.ranking_item_type = RankingItemType::kFile;
   app_launch_data.query = "query";
+
   for (int i = 0; i < 20; ++i)
     ranker->Train(app_launch_data);
   ranker->FetchRankings(base::string16());
@@ -177,10 +188,17 @@ TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
                                               HasId("B"), HasId("A"))));
 }
 
-TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
+TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
   // Without the |use_category_model| parameter, the ranker defaults to the item
-  // model.
+  // model.  With the |config| parameter, the ranker uses the default predictor
+  // for the RecurrenceRanker.
+  base::RunLoop run_loop;
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
+  ranker->InitializeRankers();
+  run_loop.Run();
+  Wait();
+
   AppLaunchData app_launch_data_c;
   app_launch_data_c.id = "C";
   app_launch_data_c.ranking_item_type = RankingItemType::kFile;
@@ -195,7 +213,7 @@ TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
     ranker->Train(app_launch_data_c);
     ranker->Train(app_launch_data_d);
   }
-  ranker->FetchRankings(base::string16());
+  ranker->FetchRankings(base::UTF8ToUTF16("query"));
 
   // The types associated with these results don't match what was trained on,
   // to check that the type is irrelevant to the item model.
@@ -211,7 +229,7 @@ TEST_F(SearchResultRankerTest, ItemModelImprovesScores) {
 
 // URL IDs should ignore the query and fragment, and URLs for google docs should
 // ignore a trailing /view or /edit.
-TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
+TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
   // We want |url_1| and |_3| to be equivalent to |url_2| and |_4|. So, train on
   // 1 and 3 but rank 2 and 4. Even with zero relevance, they should be at the
   // top of the rankings.
@@ -220,7 +238,13 @@ TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
   const std::string& url_3 = "some.domain.com?query#edit";
   const std::string& url_4 = "some.domain.com";
 
+  base::RunLoop run_loop;
   auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
+  ranker->InitializeRankers();
+  run_loop.Run();
+  Wait();
+
   AppLaunchData app_launch_data_1;
   app_launch_data_1.id = url_1;
   app_launch_data_1.ranking_item_type = RankingItemType::kOmniboxHistory;
@@ -234,7 +258,7 @@ TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
     ranker->Train(app_launch_data_1);
     ranker->Train(app_launch_data_3);
   }
-  ranker->FetchRankings(base::string16());
+  ranker->FetchRankings(base::UTF8ToUTF16("query"));
 
   auto results = MakeSearchResults(
       {url_2, url_4, "untrained id"},
@@ -246,5 +270,37 @@ TEST_F(SearchResultRankerTest, ItemModelNormalizesUrlIds) {
                                               HasId("untrained id"))));
 }
 
-}  // namespace test
+// Ensure that a JSON config deployed via Finch results in the correct model
+// being constructed.
+TEST_F(SearchResultRankerTest, QueryMixedModelConfigDeployment) {
+  const std::string json = R"({
+      "min_seconds_between_saves": 250,
+      "target_limit": 100,
+      "target_decay": 0.5,
+      "condition_limit": 50,
+      "condition_decay": 0.7,
+      "predictor": {
+        "predictor_type": "exponential weights ensemble",
+        "learning_rate": 1.6,
+        "predictors": [
+          {"predictor_type": "default"},
+          {"predictor_type": "markov"},
+          {"predictor_type": "frecency", "decay_coeff": 0.8}
+        ]
+      }
+    })";
+
+  base::RunLoop run_loop;
+  auto ranker =
+      MakeRanker(true, {{"boost_coefficient", "1.0"}, {"config", json}});
+  ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
+  ranker->InitializeRankers();
+  run_loop.Run();
+  Wait();
+
+  EXPECT_EQ(std::string(ranker->query_based_mixed_types_ranker_
+                            ->GetPredictorNameForTesting()),
+            "ExponentialWeightsEnsemble");
+}
+
 }  // namespace app_list

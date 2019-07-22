@@ -16,8 +16,8 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -273,7 +273,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
   }
 
   const Extension* InstallWebAppWithOptions(
-      const web_app::InstallOptions& install_options) {
+      const web_app::ExternalInstallOptions& install_options) {
     base::RunLoop run_loop;
     web_app::AppId app_id;
 
@@ -344,7 +344,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppDefaultApp) {
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
-  web_app::InstallOptions install_options{
+  web_app::ExternalInstallOptions install_options{
       kAppUrl, web_app::LaunchContainer::kDefault,
       web_app::ExternalInstallSource::kExternalDefault};
 
@@ -364,7 +364,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppPolicyInstalled) {
   CreateDataRetrieverWithRendererWebAppInfo(std::move(web_app_info),
                                             /*is_installable=*/false);
 
-  web_app::InstallOptions install_options{
+  web_app::ExternalInstallOptions install_options{
       kAppUrl, web_app::LaunchContainer::kDefault,
       web_app::ExternalInstallSource::kExternalPolicy};
 
@@ -539,7 +539,7 @@ TEST_F(InstallManagerBookmarkAppTest,
                                            /*open_as_window=*/true,
                                            /*is_installable=*/true);
 
-    web_app::InstallOptions install_options{
+    web_app::ExternalInstallOptions install_options{
         app_url, web_app::LaunchContainer::kTab,
         web_app::ExternalInstallSource::kInternalDefault};
 
@@ -552,7 +552,7 @@ TEST_F(InstallManagerBookmarkAppTest,
     CreateDataRetrieverWithLaunchContainer(kAppUrl, /*open_as_window=*/false,
                                            /*is_installable=*/false);
 
-    web_app::InstallOptions install_options{
+    web_app::ExternalInstallOptions install_options{
         kAppUrl, web_app::LaunchContainer::kWindow,
         web_app::ExternalInstallSource::kInternalDefault};
 

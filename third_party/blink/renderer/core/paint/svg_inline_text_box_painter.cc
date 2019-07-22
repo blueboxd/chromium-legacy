@@ -466,7 +466,7 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
   text_run_paint_info.to = end_position;
 
   context.DrawText(scaled_font, text_run_paint_info, text_origin, flags,
-                   text_layout_object.EnsureNodeHolder());
+                   text_layout_object.EnsureNodeId());
   // TODO(npm): Check that there are non-whitespace characters. See
   // crbug.com/788444.
   context.GetPaintController().SetTextPainted();

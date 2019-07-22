@@ -83,14 +83,14 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
     auto begin_params = mojom::BeginNavigationParams::New();
     begin_params->request_context_type =
         blink::mojom::RequestContextType::HYPERLINK;
+    url::Origin origin = url::Origin::Create(gurl);
     NavigationRequestInfo request_info(
         common_params, std::move(begin_params), gurl,
-        net::NetworkIsolationKey(url::Origin::Create(gurl)),
-        true /* is_main_frame */, false /* parent_is_main_frame */,
-        true /* are_ancestors_secure */, -1 /* frame_tree_node_id */,
-        false /* is_for_guests_only */, false /* report_raw_headers */,
-        false /* is_prerendering */, false /* upgrade_if_insecure */,
-        nullptr /* blob_url_loader_factory */,
+        net::NetworkIsolationKey(origin, origin), true /* is_main_frame */,
+        false /* parent_is_main_frame */, true /* are_ancestors_secure */,
+        -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
+        false /* report_raw_headers */, false /* is_prerendering */,
+        false /* upgrade_if_insecure */, nullptr /* blob_url_loader_factory */,
         base::UnguessableToken::Create() /* devtools_navigation_token */,
         base::UnguessableToken::Create() /* devtools_frame_token */);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =

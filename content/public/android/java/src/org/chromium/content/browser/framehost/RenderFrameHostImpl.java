@@ -99,6 +99,11 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         nativeNotifyUserActivation(mNativeRenderFrameHostAndroid);
     }
 
+    @Override
+    public boolean isRenderFrameCreated() {
+        return nativeIsRenderFrameCreated(mNativeRenderFrameHostAndroid);
+    }
+
     /**
      * Return the AndroidOverlay routing token for this RenderFrameHostImpl.
      */
@@ -113,4 +118,5 @@ public class RenderFrameHostImpl implements RenderFrameHost {
     private native UnguessableToken nativeGetAndroidOverlayRoutingToken(
             long nativeRenderFrameHostAndroid);
     private native void nativeNotifyUserActivation(long nativeRenderFrameHostAndroid);
+    private native boolean nativeIsRenderFrameCreated(long nativeRenderFrameHostAndroid);
 }

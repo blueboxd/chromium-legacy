@@ -422,8 +422,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestComplex) {
       message_;
 }
 
-// This test times out regularly on MSAN trybots. See https://crbug.com/733395.
-#if defined(MEMORY_SANITIZER)
+// This test times out regularly on ASAN/MSAN trybots. See
+// https://crbug.com/733395.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_WebRequestTypes DISABLED_WebRequestTypes
 #else
 #define MAYBE_WebRequestTypes WebRequestTypes

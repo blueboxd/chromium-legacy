@@ -14,8 +14,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -78,7 +78,7 @@ class WebAppInstallTask : content::WebContentsObserver {
   // process and then retrieves a manifest in a way similar to
   // |InstallWebAppFromManifestWithFallback|.
   void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                const InstallOptions& install_options,
+                                const ExternalInstallOptions& install_options,
                                 InstallManager::OnceInstallCallback callback);
 
   // Starts background installation of a web app: does not show UI dialog.
@@ -161,7 +161,7 @@ class WebAppInstallTask : content::WebContentsObserver {
 
   InstallManager::WebAppInstallDialogCallback dialog_callback_;
   InstallManager::OnceInstallCallback install_callback_;
-  base::Optional<InstallOptions> install_options_;
+  base::Optional<ExternalInstallOptions> install_options_;
   bool background_installation_ = false;
 
   // The mechanism via which the app creation was triggered.

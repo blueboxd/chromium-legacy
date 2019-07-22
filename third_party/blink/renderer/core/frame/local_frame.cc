@@ -1131,8 +1131,8 @@ ContentCaptureManager* LocalFrame::GetContentCaptureManager() {
 
   if (auto* content_capture_client = Client()->GetWebContentCaptureClient()) {
     if (!content_capture_manager_) {
-      content_capture_manager_ = MakeGarbageCollected<ContentCaptureManager>(
-          *this, content_capture_client->GetNodeHolderType());
+      content_capture_manager_ =
+          MakeGarbageCollected<ContentCaptureManager>(*this);
     }
   } else if (content_capture_manager_) {
     content_capture_manager_->Shutdown();

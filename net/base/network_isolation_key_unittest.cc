@@ -23,7 +23,7 @@ TEST(NetworkIsolationKeyTest, EmptyKey) {
 
 TEST(NetworkIsolationKeyTest, NonEmptyKey) {
   url::Origin origin = url::Origin::Create(GURL("http://a.test/"));
-  NetworkIsolationKey key(origin);
+  NetworkIsolationKey key(origin, origin);
   EXPECT_TRUE(key.IsFullyPopulated());
   EXPECT_EQ(origin.Serialize(), key.ToString());
   EXPECT_FALSE(key.IsTransient());
@@ -33,16 +33,16 @@ TEST(NetworkIsolationKeyTest, NonEmptyKey) {
 TEST(NetworkIsolationKeyTest, OpaqueOriginKey) {
   url::Origin origin_data =
       url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
-  NetworkIsolationKey key(origin_data);
+  NetworkIsolationKey key(origin_data, origin_data);
   EXPECT_TRUE(key.IsFullyPopulated());
   EXPECT_EQ(std::string(), key.ToString());
   EXPECT_TRUE(key.IsTransient());
 
   // Create another opaque origin, and make sure it has a different debug
   // string.
-  EXPECT_NE(
-      key.ToDebugString(),
-      NetworkIsolationKey(origin_data.DeriveNewOpaqueOrigin()).ToDebugString());
+  const auto kOriginNew = origin_data.DeriveNewOpaqueOrigin();
+  EXPECT_NE(key.ToDebugString(),
+            NetworkIsolationKey(kOriginNew, kOriginNew).ToDebugString());
 }
 
 TEST(NetworkIsolationKeyTest, Operators) {
@@ -52,11 +52,16 @@ TEST(NetworkIsolationKeyTest, Operators) {
       // Unique origins are still sorted by scheme, so data is before file, and
       // file before http.
       NetworkIsolationKey(
+          url::Origin::Create(GURL("data:text/html,<body>Hello World</body>")),
           url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("file:///foo"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("http://b.test/"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("https://a.test/"))),
+      NetworkIsolationKey(url::Origin::Create(GURL("file:///foo")),
+                          url::Origin::Create(GURL("file:///foo"))),
+      NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/")),
+                          url::Origin::Create(GURL("http://a.test/"))),
+      NetworkIsolationKey(url::Origin::Create(GURL("http://b.test/")),
+                          url::Origin::Create(GURL("http://b.test/"))),
+      NetworkIsolationKey(url::Origin::Create(GURL("https://a.test/")),
+                          url::Origin::Create(GURL("https://a.test/"))),
   };
 
   for (size_t first = 0; first < base::size(kKeys); ++first) {
@@ -86,10 +91,12 @@ TEST(NetworkIsolationKeyTest, Operators) {
 }
 
 TEST(NetworkIsolationKeyTest, UniqueOriginOperators) {
-  NetworkIsolationKey key1(
-      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>")));
-  NetworkIsolationKey key2(
-      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>")));
+  const auto kOrigin1 =
+      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
+  const auto kOrigin2 =
+      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
+  NetworkIsolationKey key1(kOrigin1, kOrigin1);
+  NetworkIsolationKey key2(kOrigin2, kOrigin2);
 
   EXPECT_TRUE(key1 == key1);
   EXPECT_TRUE(key2 == key2);
@@ -107,9 +114,10 @@ TEST(NetworkIsolationKeyTest, UniqueOriginOperators) {
 }
 
 TEST(NetworkIsolationKeyTest, WithFrameOrigin) {
-  NetworkIsolationKey key1(url::Origin::Create(GURL("http://b.test")));
-  NetworkIsolationKey key2(url::Origin::Create(GURL("http://b.test")),
-                           url::Origin::Create(GURL("http://a.test/")));
+  const auto kOriginA = url::Origin::Create(GURL("http://a.test"));
+  const auto kOriginB = url::Origin::Create(GURL("http://b.test"));
+  NetworkIsolationKey key1(kOriginB, kOriginB);
+  NetworkIsolationKey key2(kOriginB, kOriginA);
   EXPECT_TRUE(key2.IsFullyPopulated());
   EXPECT_FALSE(key2.IsTransient());
   EXPECT_EQ("http://b.test", key2.ToString());

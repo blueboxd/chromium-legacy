@@ -1320,6 +1320,74 @@ TEST_F(WallpaperControllerTest, SetDefaultWallpaperForChildAccount) {
             GetDecodeFilePaths()[0]);
 }
 
+// Verify that the |ShowWallpaperImage| will be called with the default image
+// for the guest session only even if there's a policy that has been set for
+// another user which invokes |SetPolicyWallpaper|.
+TEST_F(WallpaperControllerTest,
+       SetDefaultWallpaperForGuestSessionUnaffectedByWallpaperPolicy) {
+  SetBypassDecode();
+  // Simulate the login screen.
+  ClearLogin();
+  CreateDefaultWallpapers();
+  ClearWallpaperCount();
+
+  // First, simulate settings for a guest user which will show the default
+  // wallpaper image by invoking |ShowWallpaperImage|.
+  SimulateGuestLogin();
+
+  UpdateDisplay("1600x1200");
+  RunAllTasksUntilIdle();
+  ClearWallpaperCount();
+  ClearDecodeFilePaths();
+
+  const AccountId guest_id =
+      AccountId::FromUserEmail(user_manager::kGuestUserName);
+  fake_user_manager_->AddGuestUser(guest_id);
+  controller_->SetDefaultWallpaper(guest_id, wallpaper_files_id_1,
+                                   /*show_wallpaper=*/true);
+
+  WallpaperInfo wallpaper_info;
+  WallpaperInfo default_wallpaper_info(std::string(),
+                                       WALLPAPER_LAYOUT_CENTER_CROPPED, DEFAULT,
+                                       base::Time::Now().LocalMidnight());
+  // Verify that the current displayed wallpaper is the default one inside the
+  // guest session.
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(guest_id, &wallpaper_info));
+  EXPECT_EQ(wallpaper_info, default_wallpaper_info);
+  ASSERT_EQ(1u, GetDecodeFilePaths().size());
+  EXPECT_EQ(default_wallpaper_dir_.GetPath().Append(kGuestLargeWallpaperName),
+            GetDecodeFilePaths()[0]);
+
+  // Second, set a user policy for which is being set for another
+  // user and verifying that the policy has been applied successfully.
+  WallpaperInfo policy_wallpaper_info;
+  controller_->SetPolicyWallpaper(account_id_1, wallpaper_files_id_2,
+                                  /*data=*/std::string());
+  EXPECT_TRUE(
+      controller_->GetUserWallpaperInfo(account_id_1, &policy_wallpaper_info));
+  WallpaperInfo expected_policy_wallpaper_info(
+      base::FilePath(wallpaper_files_id_2)
+          .Append("policy-controlled.jpeg")
+          .value(),
+      WALLPAPER_LAYOUT_CENTER_CROPPED, POLICY,
+      base::Time::Now().LocalMidnight());
+  EXPECT_EQ(policy_wallpaper_info, expected_policy_wallpaper_info);
+  EXPECT_TRUE(controller_->IsPolicyControlled(account_id_1));
+
+  // Finally, verifying that the guest session hasn't been affected by the new
+  // policy and |ShowWallpaperImage| hasn't been invoked another time.
+
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
+  EXPECT_TRUE(controller_->GetUserWallpaperInfo(guest_id, &wallpaper_info));
+  EXPECT_EQ(wallpaper_info, default_wallpaper_info);
+  ASSERT_EQ(1u, GetDecodeFilePaths().size());
+  EXPECT_EQ(default_wallpaper_dir_.GetPath().Append(kGuestLargeWallpaperName),
+            GetDecodeFilePaths()[0]);
+}
+
 TEST_F(WallpaperControllerTest, SetDefaultWallpaperForGuestSession) {
   CreateDefaultWallpapers();
 

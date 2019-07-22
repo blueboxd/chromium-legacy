@@ -4889,10 +4889,12 @@ void RenderFrameHostImpl::CommitNavigation(
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
   if (!is_same_document) {
-    url::Origin top_frame_origin = frame_tree_node_->IsMainFrame()
-                                       ? url::Origin::Create(common_params.url)
-                                       : frame_tree_->root()->current_origin();
-    network_isolation_key_ = net::NetworkIsolationKey(top_frame_origin);
+    const url::Origin frame_origin = url::Origin::Create(common_params.url);
+    const url::Origin top_frame_origin =
+        frame_tree_node_->IsMainFrame() ? frame_origin
+                                        : frame_tree_->root()->current_origin();
+    network_isolation_key_ =
+        net::NetworkIsolationKey(top_frame_origin, frame_origin);
   }
 
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
@@ -7253,6 +7255,8 @@ void RenderFrameHostImpl::PostMessageEvent(int32_t source_routing_id,
                                            const base::string16& source_origin,
                                            const base::string16& target_origin,
                                            blink::TransferableMessage message) {
+  DCHECK(render_frame_created_);
+
   GetNavigationControl()->PostMessageEvent(source_routing_id, source_origin,
                                            target_origin, std::move(message));
 }

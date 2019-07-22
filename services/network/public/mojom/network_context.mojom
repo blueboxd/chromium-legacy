@@ -632,8 +632,11 @@ interface NetworkContext {
   //
   // This is being proxied by the browser because the renderer is unable to
   // directly interact with NetworkContext.
+  // TODO(crbug.com/965126): Use NetworkIsolationKey instead of top frame
+  // origin and frame origin.
   NotifyExternalCacheHit(url.mojom.Url url, string http_method,
-                         url.mojom.Origin? top_frame_origin);
+                         url.mojom.Origin? top_frame_origin,
+                         url.mojom.Origin frame_origin);
 
   // Clears the host cache. This will affect all NetworkContexts that share the
   // same HostResolved as the NetworkContext this is called on.

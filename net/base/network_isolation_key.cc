@@ -16,15 +16,12 @@ std::string GetOriginDebugString(const base::Optional<url::Origin>& origin) {
 
 }  // namespace
 
-NetworkIsolationKey::NetworkIsolationKey(
-    const url::Origin& top_frame_origin,
-    const base::Optional<url::Origin>& frame_origin)
+NetworkIsolationKey::NetworkIsolationKey(const url::Origin& top_frame_origin,
+                                         const url::Origin& frame_origin)
     : use_frame_origin_(base::FeatureList::IsEnabled(
           net::features::kAppendFrameOriginToNetworkIsolationKey)),
       top_frame_origin_(top_frame_origin) {
   if (use_frame_origin_) {
-    // TODO(crbug.com/950069): Move this above if once call sites are modified.
-    DCHECK(frame_origin);
     frame_origin_ = frame_origin;
   }
 }
@@ -63,8 +60,8 @@ std::string NetworkIsolationKey::ToDebugString() const {
 }
 
 bool NetworkIsolationKey::IsFullyPopulated() const {
-  DCHECK(!use_frame_origin_ || frame_origin_.has_value());
-  return top_frame_origin_.has_value();
+  return top_frame_origin_.has_value() &&
+         (!use_frame_origin_ || frame_origin_.has_value());
 }
 
 bool NetworkIsolationKey::IsTransient() const {

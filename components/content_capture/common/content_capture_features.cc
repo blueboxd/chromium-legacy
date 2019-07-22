@@ -16,11 +16,6 @@ bool IsContentCaptureEnabled() {
   return base::FeatureList::IsEnabled(kContentCapture);
 }
 
-bool ShouldUseNodeID() {
-  return base::GetFieldTrialParamByFeatureAsBool(kContentCapture, "use_node_id",
-                                                 false);
-}
-
 int TaskLongDelayInMilliseconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kContentCapture, "task_long_delay_in_milliseconds", 5000);

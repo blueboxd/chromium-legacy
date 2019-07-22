@@ -16,9 +16,9 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/install_manager_observer.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -143,7 +143,7 @@ void OnBookmarkAppInstalled(std::unique_ptr<InstallTask> install_task,
       FROM_HERE, base::BindOnce(DestroyInstallTask, std::move(install_task)));
 }
 
-void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
+void SetBookmarkAppHelperOptions(const web_app::ExternalInstallOptions& options,
                                  BookmarkAppHelper* helper) {
   switch (options.launch_container) {
     case web_app::LaunchContainer::kDefault:
@@ -190,10 +190,11 @@ void SetBookmarkAppHelperOptions(const web_app::InstallOptions& options,
     helper->set_require_manifest();
 }
 
-void OnGetWebApplicationInfo(const BookmarkAppInstallManager* install_manager,
-                             std::unique_ptr<InstallTask> install_task,
-                             const web_app::InstallOptions& install_options,
-                             std::unique_ptr<WebApplicationInfo> web_app_info) {
+void OnGetWebApplicationInfo(
+    const BookmarkAppInstallManager* install_manager,
+    std::unique_ptr<InstallTask> install_task,
+    const web_app::ExternalInstallOptions& install_options,
+    std::unique_ptr<WebApplicationInfo> web_app_info) {
   if (!web_app_info) {
     install_task->CallInstallCallback(
         web_app::AppId(),
@@ -328,7 +329,7 @@ void BookmarkAppInstallManager::InstallWebAppFromInfo(
 
 void BookmarkAppInstallManager::InstallWebAppWithOptions(
     content::WebContents* web_contents,
-    const web_app::InstallOptions& install_options,
+    const web_app::ExternalInstallOptions& install_options,
     OnceInstallCallback callback) {
   auto data_retriever = data_retriever_factory_.Run();
 

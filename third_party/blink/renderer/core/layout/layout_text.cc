@@ -82,7 +82,7 @@ struct SameSizeAsLayoutText : public LayoutObject {
   float widths[4];
   String text;
   void* pointers[2];
-  NodeHolder node_holder;
+  DOMNodeId node_id;
 };
 
 static_assert(sizeof(LayoutText) == sizeof(SameSizeAsLayoutText),
@@ -240,11 +240,10 @@ void LayoutText::WillBeDestroyed() {
           g_secure_text_timers ? g_secure_text_timers->Take(this) : nullptr)
     delete secure_text_timer;
 
-  if (!node_holder_.is_empty) {
+  if (node_id_ != kInvalidDOMNodeId) {
     if (auto* manager = GetContentCaptureManager())
-      manager->OnLayoutTextWillBeDestroyed(node_holder_);
-    node_holder_.text_holder.reset();
-    node_holder_.is_empty = true;
+      manager->OnLayoutTextWillBeDestroyed(*GetNode());
+    node_id_ = kInvalidDOMNodeId;
   }
 
   RemoveAndDestroyTextBoxes();
@@ -1854,9 +1853,9 @@ void LayoutText::SetText(scoped_refptr<StringImpl> text,
   if (text_autosizer)
     text_autosizer->Record(this);
 
-  if (HasNodeHolder()) {
+  if (HasNodeId()) {
     if (auto* content_capture_manager = GetContentCaptureManager())
-      content_capture_manager->OnNodeTextChanged(node_holder_);
+      content_capture_manager->OnNodeTextChanged(*GetNode());
   }
 
   valid_ng_items_ = false;
@@ -2394,12 +2393,12 @@ PhysicalRect LayoutText::DebugRect() const {
   return PhysicalRect(EnclosingIntRect(PhysicalLinesBoundingBox()));
 }
 
-NodeHolder LayoutText::EnsureNodeHolder() {
-  if (node_holder_.is_empty) {
+DOMNodeId LayoutText::EnsureNodeId() {
+  if (node_id_ == kInvalidDOMNodeId) {
     if (auto* content_capture_manager = GetContentCaptureManager())
-      node_holder_ = content_capture_manager->GetNodeHolder(*GetNode());
+      node_id_ = content_capture_manager->GetNodeId(*GetNode());
   }
-  return node_holder_;
+  return node_id_;
 }
 
 ContentCaptureManager* LayoutText::GetContentCaptureManager() {

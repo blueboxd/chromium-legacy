@@ -27,7 +27,7 @@ class TestPendingAppManager : public PendingAppManager {
   // InstallApps or UninstallApps arguments do. The deduped_foo_count methods
   // only count new installs or new uninstalls.
 
-  const std::vector<InstallOptions>& install_requests() const {
+  const std::vector<ExternalInstallOptions>& install_requests() const {
     return install_requests_;
   }
   const std::vector<GURL>& uninstall_requests() const {
@@ -48,17 +48,18 @@ class TestPendingAppManager : public PendingAppManager {
   void SetInstallResultCode(InstallResultCode result_code);
 
   // PendingAppManager:
-  void Install(InstallOptions install_options,
+  void Install(ExternalInstallOptions install_options,
                OnceInstallCallback callback) override;
-  void InstallApps(std::vector<InstallOptions> install_options_list,
+  void InstallApps(std::vector<ExternalInstallOptions> install_options_list,
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
                      const UninstallCallback& callback) override;
   void Shutdown() override {}
 
  private:
-  void DoInstall(InstallOptions install_options, OnceInstallCallback callback);
-  std::vector<InstallOptions> install_requests_;
+  void DoInstall(ExternalInstallOptions install_options,
+                 OnceInstallCallback callback);
+  std::vector<ExternalInstallOptions> install_requests_;
   std::vector<GURL> uninstall_requests_;
 
   // TODO(calamity): Remove and replace with TestAppRegistrar methods.

@@ -108,63 +108,79 @@ public interface GridTabSwitcher {
     GridController getGridController();
 
     /**
-     * @return The dynamic resource ID of the GridTabSwitcher RecyclerView.
+     * Interface to access the Tab Grid.
      */
-    int getResourceId();
+    interface TabGridDelegate {
+        /**
+         * @return The dynamic resource ID of the GridTabSwitcher RecyclerView.
+         */
+        int getResourceId();
+
+        /**
+         * @return The timestamp of last dirty event of {@link ViewResourceAdapter} of
+         * {@link TabListRecyclerView}.
+         */
+        long getLastDirtyTimeForTesting();
+
+        /**
+         * Set the bottom control height to margin the bottom of the TabListRecyclerView.
+         * @param bottomControlsHeight The bottom control height in pixel.
+         */
+        void setBottomControlsHeight(int bottomControlsHeight);
+
+        /**
+         * Before calling {@link GridController#showOverview} to start showing the
+         * GridTabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
+         * visible.
+         * @return Whether the {@link TabListRecyclerView} can be shown quickly.
+         */
+        boolean prepareOverview();
+
+        /**
+         * This is called after the compositor animation is done, for potential clean-up work.
+         * {@link GridOverviewModeObserver#finishedHiding} happens after
+         * the Android View animation, but before the compositor animation.
+         */
+        void postHiding();
+
+        /**
+         * @param forceUpdate Whether to measure the current location again. If not, return the last
+         *                    location measured on last layout, which can be wrong after scrolling.
+         * @return The {@link Rect} of the thumbnail of the current tab, relative to the
+         *         GridTabSwitcher {@link TabListRecyclerView} coordinates.
+         */
+        @NonNull
+        Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate);
+
+        /**
+         * Set a hook to receive all the {@link Bitmap}s returned by
+         * {@link TabListMediator.ThumbnailFetcher} for testing.
+         * @param callback The callback to send bitmaps through.
+         */
+        @VisibleForTesting
+        void setBitmapCallbackForTesting(Callback<Bitmap> callback);
+
+        /**
+         * @return The number of thumbnail fetching for testing.
+         */
+        @VisibleForTesting
+        int getBitmapFetchCountForTesting();
+
+        /**
+         * @return The soft cleanup delay for testing.
+         */
+        @VisibleForTesting
+        int getSoftCleanupDelayForTesting();
+
+        /**
+         * @return The cleanup delay for testing.
+         */
+        @VisibleForTesting
+        int getCleanupDelayForTesting();
+    }
 
     /**
-     * @return The timestamp of last dirty event of {@link ViewResourceAdapter} of
-     * {@link TabListRecyclerView}.
+     * @return The {@link TabGridDelegate}.
      */
-    long getLastDirtyTimeForTesting();
-
-    /**
-     * Before calling {@link GridController#showOverview} to start showing the
-     * GridTabSwitcher {@link TabListRecyclerView}, call this to populate it without making it
-     * visible.
-     * @return Whether the {@link TabListRecyclerView} can be shown quickly.
-     */
-    boolean prepareOverview();
-
-    /**
-     * This is called after the compositor animation is done, for potential clean-up work.
-     * {@link GridOverviewModeObserver#finishedHiding} happens after
-     * the Android View animation, but before the compositor animation.
-     */
-    void postHiding();
-
-    /**
-     * @param forceUpdate Whether to measure the current location again. If not, return the last
-     *                    location measured on last layout, which can be wrong after scrolling.
-     * @return The {@link Rect} of the thumbnail of the current tab, relative to the
-     *         GridTabSwitcher {@link TabListRecyclerView} coordinates.
-     */
-    @NonNull
-    Rect getThumbnailLocationOfCurrentTab(boolean forceUpdate);
-
-    /**
-     * Set a hook to receive all the {@link Bitmap}s returned by
-     * {@link TabListMediator.ThumbnailFetcher} for testing.
-     * @param callback The callback to send bitmaps through.
-     */
-    @VisibleForTesting
-    void setBitmapCallbackForTesting(Callback<Bitmap> callback);
-
-    /**
-     * @return The number of thumbnail fetching for testing.
-     */
-    @VisibleForTesting
-    int getBitmapFetchCountForTesting();
-
-    /**
-     * @return The soft cleanup delay for testing.
-     */
-    @VisibleForTesting
-    int getSoftCleanupDelayForTesting();
-
-    /**
-     * @return The cleanup delay for testing.
-     */
-    @VisibleForTesting
-    int getCleanupDelayForTesting();
+    TabGridDelegate getTabGridDelegate();
 }

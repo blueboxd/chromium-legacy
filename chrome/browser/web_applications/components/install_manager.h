@@ -28,7 +28,7 @@ enum class InstallResultCode;
 class InstallManagerObserver;
 class InstallFinalizer;
 class AppRegistrar;
-struct InstallOptions;
+struct ExternalInstallOptions;
 
 // TODO(loyso): Rework this interface once BookmarkAppHelper erased. Unify the
 // API and merge similar InstallWebAppZZZZ functions. crbug.com/915043.
@@ -91,9 +91,10 @@ class InstallManager {
 
   // Starts a background web app installation process for a given
   // |web_contents|.
-  virtual void InstallWebAppWithOptions(content::WebContents* web_contents,
-                                        const InstallOptions& install_options,
-                                        OnceInstallCallback callback) = 0;
+  virtual void InstallWebAppWithOptions(
+      content::WebContents* web_contents,
+      const ExternalInstallOptions& install_options,
+      OnceInstallCallback callback) = 0;
 
   // Starts background installation or an update of a web app from the sync
   // system. |web_application_info| contains received sync data. Icons will be

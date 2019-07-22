@@ -101,4 +101,10 @@ void RenderFrameHostAndroid::NotifyUserActivation(
   render_frame_host_->NotifyUserActivation();
 }
 
+jboolean RenderFrameHostAndroid::IsRenderFrameCreated(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>&) const {
+  return render_frame_host_->IsRenderFrameCreated();
+}
+
 }  // namespace content

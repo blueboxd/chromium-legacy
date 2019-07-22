@@ -1129,10 +1129,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // TODO(crbug.com/950069): Also add the case for ResourceType::kSubFrame.
     if (resource_request_->resource_type ==
         static_cast<int>(ResourceType::kMainFrame)) {
-      base::Optional<url::Origin> origin =
-          url::Origin::Create(resource_request_->url);
+      url::Origin origin = url::Origin::Create(resource_request_->url);
       resource_request_->trusted_network_isolation_key =
-          net::NetworkIsolationKey(origin.value(), origin);
+          net::NetworkIsolationKey(origin, origin);
     }
 
     resource_request_->referrer = GURL(redirect_info_.new_referrer);

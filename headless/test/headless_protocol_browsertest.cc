@@ -320,7 +320,14 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(CompositorBasicRaf,
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(
     CompositorImageAnimation,
     "emulation/compositor-image-animation-test.js")
-HEADLESS_PROTOCOL_COMPOSITOR_TEST(CompositorCssAnimation,
+
+// Flaky on Linux. TODO(crbug.com/986027): Re-enable.
+#if defined(OS_LINUX)
+#define MAYBE_CompositorCssAnimation DISABLED_CompositorCssAnimation
+#else
+#define MAYBE_CompositorCssAnimation CompositorCssAnimation
+#endif
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorCssAnimation,
                                   "emulation/compositor-css-animation-test.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(VirtualTimeControllerTest,
                                   "helpers/virtual-time-controller-test.js")

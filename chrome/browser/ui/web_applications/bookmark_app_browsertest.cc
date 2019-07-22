@@ -40,8 +40,8 @@ void NavigateToURLAndWait(Browser* browser, const GURL& url) {
 
 // TODO(loyso): Merge this with PendingBookmarkAppManagerBrowserTest's
 // implementation in some test_support library.
-web_app::InstallOptions CreateInstallOptions(const GURL& url) {
-  web_app::InstallOptions install_options(
+web_app::ExternalInstallOptions CreateInstallOptions(const GURL& url) {
+  web_app::ExternalInstallOptions install_options(
       url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kInternalDefault);
   // Avoid creating real shortcuts in tests.
@@ -197,7 +197,8 @@ class BookmarkAppTest : public extensions::ExtensionBrowserTest {
   // TODO(loyso): Merge this method with
   // PendingBookmarkAppManagerBrowserTest::InstallApp in some
   // test_support library.
-  void InstallDefaultAppAndCountApps(web_app::InstallOptions install_options) {
+  void InstallDefaultAppAndCountApps(
+      web_app::ExternalInstallOptions install_options) {
     base::RunLoop run_loop;
 
     web_app::WebAppProvider::Get(browser()->profile())

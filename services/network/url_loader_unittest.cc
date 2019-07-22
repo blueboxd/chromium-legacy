@@ -3069,14 +3069,14 @@ TEST_F(URLLoaderTest, FollowRedirectTwice) {
 TEST_F(URLLoaderNetworkIsolationTest, CachedUsingNetworkIsolationKey) {
   GURL url = test_server()->GetURL("/resource");
   url::Origin origin_a = url::Origin::Create(GURL("http://a.test/"));
-  net::NetworkIsolationKey key_a(origin_a);
+  net::NetworkIsolationKey key_a(origin_a, origin_a);
   LoadAndVerifyCached(url, key_a, false /* was_cached */,
                       false /* is_navigation */);
 
   // Load again with a different isolation key. The cached entry should not be
   // loaded.
   url::Origin origin_b = url::Origin::Create(GURL("http://b.test/"));
-  net::NetworkIsolationKey key_b(origin_b);
+  net::NetworkIsolationKey key_b(origin_b, origin_b);
   LoadAndVerifyCached(url, key_b, false /* was_cached */,
                       false /* is_navigation */);
 
@@ -3088,14 +3088,16 @@ TEST_F(URLLoaderNetworkIsolationTest, CachedUsingNetworkIsolationKey) {
 TEST_F(URLLoaderNetworkIsolationTest,
        NavigationResourceCachedUsingNetworkIsolationKey) {
   GURL url = test_server()->GetURL("othersite.test", "/main.html");
-  net::NetworkIsolationKey key_a(url::Origin::Create(url));
+  url::Origin origin_a = url::Origin::Create(url);
+  net::NetworkIsolationKey key_a(origin_a, origin_a);
   LoadAndVerifyCached(url, key_a, false /* was_cached */,
                       true /* is_navigation */);
 
   // Load again with a different isolation key. The cached entry should not be
   // loaded.
   GURL url_b = test_server()->GetURL("/main.html");
-  net::NetworkIsolationKey key_b(url::Origin::Create(url_b));
+  url::Origin origin_b = url::Origin::Create(url_b);
+  net::NetworkIsolationKey key_b(origin_b, origin_b);
   LoadAndVerifyCached(url_b, key_b, false /* was_cached */,
                       true /* is_navigation */);
 
@@ -3105,27 +3107,51 @@ TEST_F(URLLoaderNetworkIsolationTest,
 }
 
 TEST_F(URLLoaderNetworkIsolationTest,
+       CachedUsingNetworkIsolationKeyWithFrameOrigin) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {net::features::kSplitCacheByNetworkIsolationKey,
+       net::features::kAppendFrameOriginToNetworkIsolationKey},
+      {});
+
+  GURL url = test_server()->GetURL("/resource");
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.test/"));
+  net::NetworkIsolationKey key_a(origin_a, origin_a);
+  LoadAndVerifyCached(url, key_a, false /* was_cached */,
+                      false /* is_navigation */);
+
+  // Load again with a different isolation key. The cached entry should not be
+  // loaded.
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.test/"));
+  net::NetworkIsolationKey key_b(origin_a, origin_b);
+  LoadAndVerifyCached(url, key_b, false /* was_cached */,
+                      false /* is_navigation */);
+}
+
+TEST_F(URLLoaderNetworkIsolationTest,
        NavigationResourceRedirectNetworkIsolationKey) {
   // Create a request that redirects to d.com/title1.html.
   GURL url = test_server()->GetURL(
       "/server-redirect-301?" +
       test_server()->GetURL("othersite.test", "/title1.html").spec());
-  net::NetworkIsolationKey key(url::Origin::Create(url));
+  url::Origin origin = url::Origin::Create(url);
+  net::NetworkIsolationKey key(origin, origin);
   LoadAndVerifyCached(url, key, false /* was_cached */,
                       true /* is_navigation */, true /* expect_redirect */);
 
   // Now directly load now with the key using the redirected URL. This should be
   // a cache hit.
   GURL redirected_url = test_server()->GetURL("othersite.test", "/title1.html");
+  url::Origin redirected_origin = url::Origin::Create(redirected_url);
   LoadAndVerifyCached(
       redirected_url,
-      net::NetworkIsolationKey(url::Origin::Create(redirected_url)),
+      net::NetworkIsolationKey(redirected_origin, redirected_origin),
       true /* was_cached */, true /* is_navigation */);
 
   // A non-navigation resource with the same key and url should also be cached.
   LoadAndVerifyCached(
       redirected_url,
-      net::NetworkIsolationKey(url::Origin::Create(redirected_url)),
+      net::NetworkIsolationKey(redirected_origin, redirected_origin),
       true /* was_cached */, false /* is_navigation */);
 }
 

@@ -238,6 +238,10 @@ class GridTabSwitcherMediator implements GridTabSwitcher.GridController,
         mTabSelectionEditorController = tabSelectionEditorController;
     }
 
+    void setBottomControlsHeight(int bottomControlsHeight) {
+        mContainerViewModel.set(BOTTOM_CONTROLS_HEIGHT, bottomControlsHeight);
+    }
+
     /**
      * Set the handler of the Grid Dialog so that it can be directly controlled.
      * @param tabGridDialogResetHandler The handler of the Grid Dialog

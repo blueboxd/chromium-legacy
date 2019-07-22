@@ -988,9 +988,8 @@ void WallpaperControllerImpl::SetPolicyWallpaper(
   if (IsInKioskMode())
     return;
 
-  // Updates the screen only when the user has logged in.
-  const bool show_wallpaper =
-      Shell::Get()->session_controller()->IsActiveUserSessionStarted();
+  // Updates the screen only when the user with this account_id has logged in.
+  const bool show_wallpaper = IsActiveUser(account_id);
   LoadedCallback callback = base::BindOnce(
       &WallpaperControllerImpl::SaveAndSetWallpaper, weak_factory_.GetWeakPtr(),
       account_id, wallpaper_files_id, kPolicyWallpaperFile, POLICY,

@@ -18,7 +18,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/optional.h"
 #include "cc/base/math_util.h"
-#include "cc/paint/node_holder.h"
+#include "cc/paint/node_id.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_flags.h"
@@ -744,8 +744,8 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
   DrawTextBlobOp(sk_sp<SkTextBlob> blob,
                  SkScalar x,
                  SkScalar y,
-                 const PaintFlags& flags,
-                 const NodeHolder& node_holder);
+                 NodeId node_id,
+                 const PaintFlags& flags);
   ~DrawTextBlobOp();
   static void RasterWithFlags(const DrawTextBlobOp* op,
                               const PaintFlags* flags,
@@ -760,7 +760,7 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
   SkScalar x;
   SkScalar y;
   // This field isn't serialized.
-  NodeHolder node_holder;
+  NodeId node_id = kInvalidNodeId;
 
  private:
   DrawTextBlobOp();

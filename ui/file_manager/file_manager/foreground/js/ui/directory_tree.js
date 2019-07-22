@@ -645,7 +645,13 @@ class DirectoryItem extends cr.ui.TreeItem {
     ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.setAttribute('tabindex', '0');
 
-    // Block other mouse handlers.
+    // Add paper-ripple effect on the eject button.
+    const ripple = cr.doc.createElement('paper-ripple');
+    ripple.setAttribute('fit', '');
+    ripple.className = 'circle recenteringTouch';
+    ejectButton.appendChild(ripple);
+
+    // Block mouse handlers, handle click.
     ejectButton.addEventListener('mouseup', (event) => {
       event.stopPropagation();
     });
@@ -668,9 +674,8 @@ class DirectoryItem extends cr.ui.TreeItem {
     });
 
     // Add the eject button as the last element of the tree row content.
-    const contentParent = rowElement.querySelector('.label').parentElement;
-    assert(contentParent);
-    contentParent.appendChild(ejectButton);
+    const parent = rowElement.querySelector('.label').parentElement;
+    assert(parent).appendChild(ejectButton);
 
     // Mark the tree row element with CSS class .ejectable.
     rowElement.classList.add('ejectable');
@@ -680,12 +685,6 @@ class DirectoryItem extends cr.ui.TreeItem {
     if (rowRipple) {
       rowRipple.setAttribute('style', 'visibility:hidden');
     }
-
-    // Add paper-ripple effect on the eject button.
-    const ripple = cr.doc.createElement('paper-ripple');
-    ripple.setAttribute('fit', '');
-    ripple.className = 'circle recenteringTouch';
-    ejectButton.appendChild(ripple);
   }
 
   /**
@@ -1589,14 +1588,14 @@ class ShortcutItem extends cr.ui.TreeItem {
 // AndroidAppItem
 
 /**
- * A TreeItem which represents an Android picker app.
- * Android app items are displayed as top-level children of DirectoryTree.
+ * A TreeItem representing an Android picker app. These Android app items are
+ * shown as top-level volume entries of the DirectoryTree.
  */
 class AndroidAppItem extends cr.ui.TreeItem {
   /**
-   * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem of
-   *     this volume.
-   * @param {!DirectoryTree} tree Current tree, which contains this item.
+   * @param {!NavigationModelAndroidAppItem} modelItem NavigationModelItem
+   *     associated with this volume.
+   * @param {!DirectoryTree} tree Directory tree.
    */
   constructor(modelItem, tree) {
     super();
@@ -1627,9 +1626,14 @@ class AndroidAppItem extends cr.ui.TreeItem {
       }
     }
 
+    // Create an external link icon. TODO(crbug.com/986169) does this icon
+    // element need aria-label, role, tabindex, etc?
     const externalLinkIcon = cr.doc.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
-    this.rowElement.appendChild(externalLinkIcon);
+
+    // Add the external link as the last element of the tree row content.
+    const parent = this.rowElement.querySelector('.label').parentElement;
+    assert(parent).appendChild(externalLinkIcon);
   }
 
   /**

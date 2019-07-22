@@ -483,6 +483,9 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
 
 using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
+// kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST_F(HttpStreamFactoryTest, PreconnectDirect) {
   for (size_t i = 0; i < base::size(kTests); ++i) {
     SpdySessionDependencies session_deps(
@@ -642,8 +645,10 @@ TEST_F(HttpStreamFactoryTest, PreconnectNetworkIsolationKey) {
   peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
 
   const GURL kURL("http://foo.test/");
-  const NetworkIsolationKey kKey1(url::Origin::Create(GURL("http://foo.test")));
-  const NetworkIsolationKey kKey2(url::Origin::Create(GURL("http://bar.test")));
+  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test"));
+  const auto kOriginBar = url::Origin::Create(GURL("http://bar.test"));
+  const NetworkIsolationKey kKey1(kOriginFoo, kOriginFoo);
+  const NetworkIsolationKey kKey2(kOriginBar, kOriginBar);
   PreconnectHelperForURL(1, kURL, kKey1, session.get());
   EXPECT_EQ(1, transport_conn_pool->last_num_streams());
   EXPECT_EQ(kKey1,

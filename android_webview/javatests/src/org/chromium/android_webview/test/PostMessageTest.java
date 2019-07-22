@@ -944,4 +944,27 @@ public class PostMessageTest {
         Assert.assertEquals("bar", data2.mMessage);
         Assert.assertEquals(Looper.getMainLooper(), data2.mLastLooper);
     }
+
+    // Regression test for crbug.com/973901
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testPostMessageBeforePageLoadWontBlockNavigation() throws Throwable {
+        final String baseUrl = mWebServer.getBaseUrl();
+
+        // postMessage before page load.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.postMessageToFrame(null, "1", baseUrl, null));
+
+        // loadPage shouldn't timeout.
+        loadPage(TEST_PAGE);
+
+        // Verify that after the page gets load, postMessage still works.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, baseUrl, null));
+
+        MessageObject.Data data = mMessageObject.waitForMessage();
+        Assert.assertEquals(WEBVIEW_MESSAGE, data.mMessage);
+        Assert.assertEquals(SOURCE_ORIGIN, data.mOrigin);
+    }
 }

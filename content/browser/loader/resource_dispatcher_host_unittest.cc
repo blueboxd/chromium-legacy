@@ -837,14 +837,15 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestMode> {
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.initiator_origin = url::Origin::Create(url);
+    url::Origin origin = url::Origin::Create(url);
 
     std::unique_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(
-            common_params, std::move(begin_params), url,
-            net::NetworkIsolationKey(url::Origin::Create(url)), true, false,
-            false, -1, false, false, false, false, nullptr,
-            base::UnguessableToken::Create(),
-            base::UnguessableToken::Create()));
+        new NavigationRequestInfo(common_params, std::move(begin_params), url,
+                                  net::NetworkIsolationKey(origin, origin),
+                                  true, false, false, -1, false, false, false,
+                                  false, nullptr,
+                                  base::UnguessableToken::Create(),
+                                  base::UnguessableToken::Create()));
     std::unique_ptr<NavigationURLLoader> test_loader =
         NavigationURLLoader::Create(
             browser_context_.get(), browser_context_->GetResourceContext(),

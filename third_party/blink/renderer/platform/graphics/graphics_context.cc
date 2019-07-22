@@ -788,11 +788,11 @@ void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const FloatPoint& point,
                                const PaintFlags& flags,
-                               const cc::NodeHolder& node_holder) {
+                               DOMNodeId node_id) {
   if (ContextDisabled())
     return;
 
-  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_holder,
+  font.DrawText(canvas_, text_info, point, device_scale_factor_, node_id,
                 DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kText));
 }
 
@@ -819,13 +819,13 @@ template <typename TextPaintInfo>
 void GraphicsContext::DrawTextInternal(const Font& font,
                                        const TextPaintInfo& text_info,
                                        const FloatPoint& point,
-                                       const cc::NodeHolder& node_holder) {
+                                       DOMNodeId node_id) {
   if (ContextDisabled())
     return;
 
   DrawTextPasses([&](const PaintFlags& flags) {
     font.DrawText(
-        canvas_, text_info, point, device_scale_factor_, node_holder,
+        canvas_, text_info, point, device_scale_factor_, node_id,
         DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kText));
   });
 }
@@ -833,15 +833,15 @@ void GraphicsContext::DrawTextInternal(const Font& font,
 void GraphicsContext::DrawText(const Font& font,
                                const TextRunPaintInfo& text_info,
                                const FloatPoint& point,
-                               const cc::NodeHolder& node_holder) {
-  DrawTextInternal(font, text_info, point, node_holder);
+                               DOMNodeId node_id) {
+  DrawTextInternal(font, text_info, point, node_id);
 }
 
 void GraphicsContext::DrawText(const Font& font,
                                const NGTextFragmentPaintInfo& text_info,
                                const FloatPoint& point,
-                               const cc::NodeHolder& node_holder) {
-  DrawTextInternal(font, text_info, point, node_holder);
+                               DOMNodeId node_id) {
+  DrawTextInternal(font, text_info, point, node_id);
 }
 
 template <typename TextPaintInfo>

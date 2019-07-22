@@ -19,7 +19,7 @@ class Profile;
 namespace web_app {
 
 using ScanForExternalWebAppsCallback =
-    base::OnceCallback<void(std::vector<web_app::InstallOptions>)>;
+    base::OnceCallback<void(std::vector<web_app::ExternalInstallOptions>)>;
 
 void ScanForExternalWebApps(Profile* profile,
                             ScanForExternalWebAppsCallback callback);
@@ -29,9 +29,9 @@ void ScanForExternalWebApps(Profile* profile,
 // at https://developer.chrome.com/apps/external_extensions
 //
 // This function performs file I/O, and must not be scheduled on UI threads.
-std::vector<web_app::InstallOptions> ScanDirForExternalWebAppsForTesting(
-    const base::FilePath& dir,
-    Profile* profile);
+std::vector<web_app::ExternalInstallOptions>
+ScanDirForExternalWebAppsForTesting(const base::FilePath& dir,
+                                    Profile* profile);
 
 }  // namespace web_app
 

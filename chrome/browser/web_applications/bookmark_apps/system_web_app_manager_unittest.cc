@@ -42,9 +42,9 @@ const GURL kAppUrl1(content::GetWebUIURL("system-app1"));
 const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
 const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
 
-InstallOptions GetWindowedInstallOptions() {
-  InstallOptions options(kAppUrl1, LaunchContainer::kWindow,
-                         ExternalInstallSource::kSystemInstalled);
+ExternalInstallOptions GetWindowedInstallOptions() {
+  ExternalInstallOptions options(kAppUrl1, LaunchContainer::kWindow,
+                                 ExternalInstallSource::kSystemInstalled);
   options.add_to_applications_menu = false;
   options.add_to_desktop = false;
   options.add_to_quick_launch_bar = false;
@@ -176,7 +176,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   base::RunLoop().RunUntilIdle();
 
   // We should only try to install the app in the System App list.
-  std::vector<InstallOptions> expected_install_options_list;
+  std::vector<ExternalInstallOptions> expected_install_options_list;
   expected_install_options_list.push_back(GetWindowedInstallOptions());
   EXPECT_EQ(pending_app_manager()->install_requests(),
             expected_install_options_list);
@@ -229,7 +229,7 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 }
 
 TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
-  const std::vector<InstallOptions>& install_requests =
+  const std::vector<ExternalInstallOptions>& install_requests =
       pending_app_manager()->install_requests();
 
   system_web_app_manager()->SetUpdatePolicy(

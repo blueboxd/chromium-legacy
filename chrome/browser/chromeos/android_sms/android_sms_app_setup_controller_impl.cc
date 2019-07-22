@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -231,7 +231,7 @@ void AndroidSmsAppSetupControllerImpl::TryInstallApp(const GURL& install_url,
   PA_LOG(VERBOSE) << "AndroidSmsAppSetupControllerImpl::TryInstallApp(): "
                   << "Trying to install PWA for " << install_url
                   << ". Num attempts so far # " << num_attempts_so_far;
-  web_app::InstallOptions options(
+  web_app::ExternalInstallOptions options(
       install_url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kInternalDefault);
   options.override_previous_user_uninstall = true;

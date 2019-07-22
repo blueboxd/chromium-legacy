@@ -244,7 +244,7 @@ public class StartSurfaceLayoutPerfTest {
             // Make sure the fading animation is done.
             Thread.sleep(1000);
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { startSurface.getGridController().onBackPressed(); });
+                    () -> { startSurface.getController().onBackPressed(); });
             Thread.sleep(1000);
             CriteriaHelper.pollInstrumentationThread(()
                                                              -> !mActivityTestRule.getActivity()

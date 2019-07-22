@@ -32,10 +32,10 @@ bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
 }
 
 void FillTextContent(const PaintOpBuffer* buffer,
-                     std::vector<NodeHolder>* content) {
+                     std::vector<NodeId>* content) {
   for (auto* op : PaintOpBuffer::Iterator(buffer)) {
     if (op->GetType() == PaintOpType::DrawTextBlob) {
-      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_holder);
+      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_id);
     } else if (op->GetType() == PaintOpType::DrawRecord) {
       FillTextContent(static_cast<DrawRecordOp*>(op)->record.get(), content);
     }
@@ -44,12 +44,12 @@ void FillTextContent(const PaintOpBuffer* buffer,
 
 void FillTextContentByOffsets(const PaintOpBuffer* buffer,
                               const std::vector<size_t>& offsets,
-                              std::vector<NodeHolder>* content) {
+                              std::vector<NodeId>* content) {
   if (!buffer)
     return;
   for (auto* op : PaintOpBuffer::OffsetIterator(buffer, &offsets)) {
     if (op->GetType() == PaintOpType::DrawTextBlob) {
-      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_holder);
+      content->push_back(static_cast<DrawTextBlobOp*>(op)->node_id);
     } else if (op->GetType() == PaintOpType::DrawRecord) {
       FillTextContent(static_cast<DrawRecordOp*>(op)->record.get(), content);
     }
@@ -82,7 +82,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 }
 
 void DisplayItemList::CaptureContent(const gfx::Rect& rect,
-                                     std::vector<NodeHolder>* content) const {
+                                     std::vector<NodeId>* content) const {
   std::vector<size_t> offsets;
   rtree_.Search(rect, &offsets);
   FillTextContentByOffsets(&paint_op_buffer_, offsets, content);

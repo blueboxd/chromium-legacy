@@ -1031,8 +1031,9 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithOptions_GuestProfile) {
   auto install_task = std::make_unique<WebAppInstallTask>(
       guest_profile, install_finalizer_.get(), std::move(data_retriever));
 
-  InstallOptions install_options{app_url, LaunchContainer::kDefault,
-                                 ExternalInstallSource::kExternalDefault};
+  ExternalInstallOptions install_options{
+      app_url, LaunchContainer::kDefault,
+      ExternalInstallSource::kExternalDefault};
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithOptions(

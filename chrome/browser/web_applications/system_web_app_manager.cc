@@ -55,11 +55,12 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
   return infos;
 }
 
-InstallOptions CreateInstallOptionsForSystemApp(const SystemAppInfo& info,
-                                                bool force_update) {
+ExternalInstallOptions CreateInstallOptionsForSystemApp(
+    const SystemAppInfo& info,
+    bool force_update) {
   DCHECK_EQ(content::kChromeUIScheme, info.install_url.scheme());
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       info.install_url, LaunchContainer::kWindow,
       ExternalInstallSource::kSystemInstalled);
   install_options.add_to_applications_menu = false;
@@ -120,7 +121,7 @@ void SystemWebAppManager::Start() {
     }
   }
 
-  std::vector<InstallOptions> install_options_list;
+  std::vector<ExternalInstallOptions> install_options_list;
   if (IsEnabled()) {
     // Skipping this will uninstall all System Apps currently installed.
     for (const auto& app : system_app_infos_) {

@@ -146,8 +146,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
                   kVideoAudioHtmlFile);
 }
 
+// https://crbug.com/986020.
 IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
-                       CaptureFromCanvas2DHandlesContextLoss) {
+                       DISABLED_CaptureFromCanvas2DHandlesContextLoss) {
   MakeTypicalCall("testCanvas2DContextLoss(true);",
                   kCanvasCaptureColorTestHtmlFile);
 }

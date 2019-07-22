@@ -159,13 +159,23 @@ const base::Feature kOmniboxAlternateMatchDescriptionSeparator{
 
 // Feature to enable clipboard provider to suggest copied text.
 const base::Feature kEnableClipboardProviderTextSuggestions{
-    "OmniboxEnableClipboardProviderTextSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxEnableClipboardProviderTextSuggestions",
+#if defined(OS_IOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Feature to enable clipboard provider to suggest searching for copied images.
 const base::Feature kEnableClipboardProviderImageSuggestions{
-    "OmniboxEnableClipboardProviderImageSuggestions",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxEnableClipboardProviderImageSuggestions",
+#if defined(OS_IOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Feature to enable the search provider to send a request to the suggest
 // server on focus.  This allows the suggest server to warm up, by, for

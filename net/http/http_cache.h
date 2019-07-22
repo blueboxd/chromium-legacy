@@ -219,13 +219,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   void CloseIdleConnections();
 
   // Called whenever an external cache in the system reuses the resource
-  // referred to by |url| and |http_method|, inside a page with a top-level
-  // URL at |top_frame_origin|.
-  // TODO(crbug.com/965126): Use NetworkIsolationKey instead of top frame
-  // origin.
+  // referred to by |url| and |http_method| and |network_isolation_key|.
   void OnExternalCacheHit(const GURL& url,
                           const std::string& http_method,
-                          base::Optional<url::Origin> top_frame_origin);
+                          const NetworkIsolationKey& network_isolation_key);
 
   // Causes all transactions created after this point to simulate lock timeout
   // and effectively bypass the cache lock whenever there is lock contention.

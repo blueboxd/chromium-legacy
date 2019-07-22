@@ -25,6 +25,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_H_
 
+#include "cc/paint/node_id.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
@@ -45,7 +46,6 @@
 namespace cc {
 class PaintCanvas;
 class PaintFlags;
-struct NodeHolder;
 }  // namespace cc
 
 namespace blink {
@@ -98,13 +98,13 @@ class PLATFORM_EXPORT Font {
                 const TextRunPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
-                const cc::NodeHolder&,
+                cc::NodeId node_id,
                 const cc::PaintFlags&) const;
   void DrawText(cc::PaintCanvas*,
                 const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
-                const cc::NodeHolder&,
+                cc::NodeId node_id,
                 const cc::PaintFlags&) const;
   bool DrawBidiText(cc::PaintCanvas*,
                     const TextRunPaintInfo&,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/public/cpp/network_isolation_key_mojom_traits.h"
+#include "net/base/features.h"
 
 namespace mojo {
 
@@ -19,7 +20,15 @@ bool StructTraits<network::mojom::NetworkIsolationKeyDataView,
   // given the flags set).  The constructor verifies this, so if the top-frame
   // origin is populated, we call the full constructor, otherwise, the empty.
   if (top_frame_origin.has_value()) {
-    *out = net::NetworkIsolationKey(top_frame_origin.value(), frame_origin);
+    // We need a dummy value when the initiating_frame_origin is empty,
+    // indicating that the flag to popuate it in the key was not set.
+    if (!frame_origin.has_value()) {
+      DCHECK(!base::FeatureList::IsEnabled(
+          net::features::kAppendFrameOriginToNetworkIsolationKey));
+      frame_origin = url::Origin();
+    }
+    *out = net::NetworkIsolationKey(top_frame_origin.value(),
+                                    frame_origin.value());
   } else {
     *out = net::NetworkIsolationKey();
   }

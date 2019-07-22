@@ -33,7 +33,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
-#include "cc/paint/node_holder.h"
+#include "cc/paint/node_id.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_client.h"
@@ -675,8 +675,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   std::string LayersAsString() const;
 
   // Captures the on-screen text content, if success, fills the associated
-  // NodeHolder in |content| and return true, otherwise return false.
-  bool CaptureContent(std::vector<NodeHolder>* content);
+  // NodeId in |content| and return true, otherwise return false.
+  bool CaptureContent(std::vector<NodeId>* content);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);

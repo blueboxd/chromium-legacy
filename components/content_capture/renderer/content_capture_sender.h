@@ -40,15 +40,12 @@ class ContentCaptureSender : public content::RenderFrameObserver,
           pending_receiver);
 
   // blink::WebContentCaptureClient:
-  cc::NodeHolder::Type GetNodeHolderType() const override;
   void GetTaskTimingParameters(base::TimeDelta& short_delay,
                                base::TimeDelta& long_delay) const override;
-  void DidCaptureContent(
-      const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data,
-      bool first_data) override;
+  void DidCaptureContent(const blink::WebVector<blink::WebContentHolder>& data,
+                         bool first_data) override;
   void DidUpdateContent(
-      const blink::WebVector<scoped_refptr<blink::WebContentHolder>>& data)
-      override;
+      const blink::WebVector<blink::WebContentHolder>& data) override;
   void DidRemoveContent(blink::WebVector<int64_t> data) override;
 
   // mojom::ContentCaptureSender:
@@ -60,8 +57,7 @@ class ContentCaptureSender : public content::RenderFrameObserver,
 
  private:
   void FillContentCaptureData(
-      const blink::WebVector<scoped_refptr<blink::WebContentHolder>>&
-          node_holders,
+      const blink::WebVector<blink::WebContentHolder>& node_holders,
       ContentCaptureData* data,
       bool set_url);
   const mojo::AssociatedRemote<mojom::ContentCaptureReceiver>&

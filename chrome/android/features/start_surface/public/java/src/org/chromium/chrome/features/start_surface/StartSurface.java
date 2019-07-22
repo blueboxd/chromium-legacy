@@ -7,6 +7,89 @@ package org.chromium.chrome.features.start_surface;
 import org.chromium.chrome.browser.tasks.tab_management.GridTabSwitcher;
 
 /** Interface to communicate with the start surface. */
-public interface StartSurface extends GridTabSwitcher {
-    // TODO(crbug.com/982018): Decouple StartSurface and GridTabSwitcher.
+public interface StartSurface {
+    /**
+     * Defines an interface to pass out tab selecting event.
+     */
+    interface OnTabSelectingListener extends GridTabSwitcher.OnTabSelectingListener {}
+
+    /**
+     * Set the listener to get the {@link Layout#onTabSelecting} event from the Grid Tab Switcher.
+     * @param listener The {@link OnTabSelectingListener} to use.
+     */
+    void setOnTabSelectingListener(OnTabSelectingListener listener);
+
+    /**
+     * An observer that is notified when the StartSurface view state changes.
+     */
+    interface OverviewModeObserver {
+        /**
+         * Called when overview mode starts showing.
+         */
+        void startedShowing();
+
+        /**
+         * Called when overview mode finishes showing.
+         */
+        void finishedShowing();
+
+        /**
+         * Called when overview mode starts hiding.
+         */
+        void startedHiding();
+
+        /**
+         * Called when overview mode finishes hiding.
+         */
+        void finishedHiding();
+    }
+
+    /**
+     * Interface to control the StartSurface.
+     */
+    interface Controller {
+        /**
+         * @return Whether or not the overview {@link Layout} is visible.
+         */
+        boolean overviewVisible();
+
+        /**
+         * @param listener Registers {@code listener} for overview mode status changes.
+         */
+        void addOverviewModeObserver(OverviewModeObserver listener);
+
+        /**
+         * @param listener Unregisters {@code listener} for overview mode status changes.
+         */
+        void removeOverviewModeObserver(OverviewModeObserver listener);
+
+        /**
+         * Hide the overview.
+         * @param animate Whether we should animate while hiding.
+         */
+        void hideOverview(boolean animate);
+
+        /**
+         * Show the overview.
+         * @param animate Whether we should animate while showing.
+         */
+        void showOverview(boolean animate);
+
+        /**
+         * Called by the GridTabSwitcherLayout when the system back button is pressed.
+         * @return Whether or not the GridTabSwitcher consumed the event.
+         */
+        boolean onBackPressed();
+    }
+
+    /**
+     * @return Controller implementation that can be used for controlling
+     *         visibility changes.
+     */
+    Controller getController();
+
+    /**
+     * @return TabGridDelegate implementation that can be used to access the Tab Grid.
+     */
+    GridTabSwitcher.TabGridDelegate getTabGridDelegate();
 }

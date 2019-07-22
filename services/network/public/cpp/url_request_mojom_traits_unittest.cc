@@ -48,9 +48,11 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.method = "POST";
   original.url = GURL("https://example.com/resources/dummy.xml");
   original.site_for_cookies = GURL("https://example.com/index.html");
-  original.top_frame_origin = url::Origin::Create(original.url);
+  url::Origin origin = url::Origin::Create(original.url);
+  ;
+  original.top_frame_origin = origin;
   original.trusted_network_isolation_key =
-      net::NetworkIsolationKey(url::Origin::Create(original.url));
+      net::NetworkIsolationKey(origin, origin);
   original.update_network_isolation_key_on_redirect =
       network::mojom::UpdateNetworkIsolationKeyOnRedirect::
           kUpdateTopFrameAndInitiatingFrameOrigin;

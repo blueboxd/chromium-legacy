@@ -35,8 +35,9 @@ import java.util.List;
 /**
  * Parent coordinator that is responsible for showing a grid of tabs for the main TabSwitcher UI.
  */
-public class GridTabSwitcherCoordinator
-        implements Destroyable, GridTabSwitcher, GridTabSwitcherMediator.ResetHandler {
+public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
+                                                   GridTabSwitcher.TabGridDelegate,
+                                                   GridTabSwitcherMediator.ResetHandler {
     final static String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
@@ -129,6 +130,16 @@ public class GridTabSwitcherCoordinator
     @Override
     public GridController getGridController() {
         return mMediator;
+    }
+
+    @Override
+    public TabGridDelegate getTabGridDelegate() {
+        return this;
+    }
+
+    @Override
+    public void setBottomControlsHeight(int bottomControlsHeight) {
+        mMediator.setBottomControlsHeight(bottomControlsHeight);
     }
 
     @Override

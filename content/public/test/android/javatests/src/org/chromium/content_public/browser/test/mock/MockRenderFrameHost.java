@@ -32,4 +32,9 @@ public class MockRenderFrameHost implements RenderFrameHost {
     public boolean isIncognito() {
         return false;
     }
+
+    @Override
+    public boolean isRenderFrameCreated() {
+        return false;
+    }
 }

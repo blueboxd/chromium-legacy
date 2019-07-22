@@ -3689,7 +3689,7 @@
       },
       'Linux MSan Tests': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
           'x86-64',
         ],
         'test_suites': {

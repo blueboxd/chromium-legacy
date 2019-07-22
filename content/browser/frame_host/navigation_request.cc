@@ -1706,11 +1706,11 @@ void NavigationRequest::OnStartChecksComplete(
   // URL from the top frame.
   // TODO(crbug.com/979296): Consider changing this code to copy an origin
   // instead of creating one from a URL which lacks opacity information.
-  GURL top_frame_url =
+  url::Origin frame_origin = url::Origin::Create(common_params_.url);
+  url::Origin top_frame_origin =
       frame_tree_node_->IsMainFrame()
-          ? common_params_.url
-          : frame_tree_node_->frame_tree()->root()->current_url();
-  url::Origin top_frame_origin = url::Origin::Create(top_frame_url);
+          ? frame_origin
+          : frame_tree_node_->frame_tree()->root()->current_origin();
 
   // Merge headers with embedder's headers.
   net::HttpRequestHeaders headers;
@@ -1722,7 +1722,7 @@ void NavigationRequest::OnStartChecksComplete(
       browser_context, browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_, begin_params_.Clone(), site_for_cookies,
-          net::NetworkIsolationKey(top_frame_origin),
+          net::NetworkIsolationKey(top_frame_origin, frame_origin),
           frame_tree_node_->IsMainFrame(), parent_is_main_frame,
           IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,

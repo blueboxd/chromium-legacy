@@ -837,11 +837,12 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
       update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/title1.html"));
+  url::Origin origin = url::Origin::Create(url);
 
   NavigateAndRecordNetworkIsolationKeys(
       url, url /* final_resource */, false /* from_renderer */,
       &network_isolation_keys, &update_network_isolation_key_on_redirects);
-  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
             network_isolation_keys[url]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
                 kUpdateTopFrameAndInitiatingFrameOrigin,
@@ -854,11 +855,12 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
       update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/title2.html"));
+  url::Origin origin = url::Origin::Create(url);
 
   NavigateAndRecordNetworkIsolationKeys(
       url, url /* final_resource */, true /* from_renderer */,
       &network_isolation_keys, &update_network_isolation_key_on_redirects);
-  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
             network_isolation_keys[url]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
                 kUpdateTopFrameAndInitiatingFrameOrigin,
@@ -871,16 +873,18 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubframeNetworkIsolationKey) {
       update_network_isolation_key_on_redirects;
   GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL iframe_document = embedded_test_server()->GetURL("/title1.html");
+  url::Origin origin = url::Origin::Create(url);
+  url::Origin iframe_origin = url::Origin::Create(iframe_document);
 
   NavigateAndRecordNetworkIsolationKeys(
       url, iframe_document /* final_resource */, false /* from_renderer */,
       &network_isolation_keys, &update_network_isolation_key_on_redirects);
-  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+  EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
             network_isolation_keys[url]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
                 kUpdateTopFrameAndInitiatingFrameOrigin,
             update_network_isolation_key_on_redirects[url]);
-  EXPECT_EQ(net::NetworkIsolationKey(url::Origin::Create(url)),
+  EXPECT_EQ(net::NetworkIsolationKey(origin, iframe_origin),
             network_isolation_keys[iframe_document]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate,
             update_network_isolation_key_on_redirects[iframe_document]);

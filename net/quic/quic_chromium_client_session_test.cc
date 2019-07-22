@@ -260,6 +260,9 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(::testing::ValuesIn(quic::AllSupportedVersions()),
                        ::testing::Bool()));
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
+// kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST_P(QuicChromiumClientSessionTest, IsFatalErrorNotSetForNonFatalError) {
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<quic::QuicEncryptedPacket> settings_packet(
@@ -1343,14 +1346,16 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
   EXPECT_FALSE(session_->CanPool("mail.google.com", PRIVACY_MODE_DISABLED,
                                  SocketTag(), NetworkIsolationKey()));
 
+  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test/"));
+
   // Check that NetworkIsolationKey is respected when feature is enabled.
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndDisableFeature(
         features::kPartitionConnectionsByNetworkIsolationKey);
-    EXPECT_TRUE(session_->CanPool(
-        "mail.example.com", PRIVACY_MODE_DISABLED, SocketTag(),
-        NetworkIsolationKey(url::Origin::Create(GURL("http://foo.test/")))));
+    EXPECT_TRUE(session_->CanPool("mail.example.com", PRIVACY_MODE_DISABLED,
+                                  SocketTag(),
+                                  NetworkIsolationKey(kOriginFoo, kOriginFoo)));
   }
   {
     base::test::ScopedFeatureList feature_list;
@@ -1358,7 +1363,7 @@ TEST_P(QuicChromiumClientSessionTest, CanPool) {
         features::kPartitionConnectionsByNetworkIsolationKey);
     EXPECT_FALSE(session_->CanPool(
         "mail.example.com", PRIVACY_MODE_DISABLED, SocketTag(),
-        NetworkIsolationKey(url::Origin::Create(GURL("http://foo.test/")))));
+        NetworkIsolationKey(kOriginFoo, kOriginFoo)));
   }
 }
 
@@ -1368,10 +1373,10 @@ TEST_P(QuicChromiumClientSessionTest, CanPoolWithNetworkIsolationKey) {
   feature_list.InitAndEnableFeature(
       features::kPartitionConnectionsByNetworkIsolationKey);
 
-  const NetworkIsolationKey kNetworkIsolationKey1(
-      url::Origin::Create(GURL("http://foo.test/")));
-  const NetworkIsolationKey kNetworkIsolationKey2(
-      url::Origin::Create(GURL("http://bar.test/")));
+  const auto kOriginFoo = url::Origin::Create(GURL("http://foo.test/"));
+  const auto kOriginBar = url::Origin::Create(GURL("http://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOriginFoo, kOriginFoo);
+  const NetworkIsolationKey kNetworkIsolationKey2(kOriginBar, kOriginBar);
 
   session_key_ =
       QuicSessionKey(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED,

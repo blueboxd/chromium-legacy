@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 
 #include <ostream>
 #include <tuple>
@@ -11,23 +11,27 @@
 
 namespace web_app {
 
-InstallOptions::InstallOptions(const GURL& url,
-                               LaunchContainer launch_container,
-                               ExternalInstallSource install_source)
+ExternalInstallOptions::ExternalInstallOptions(
+    const GURL& url,
+    LaunchContainer launch_container,
+    ExternalInstallSource install_source)
     : url(url),
       launch_container(launch_container),
       install_source(install_source) {}
 
-InstallOptions::~InstallOptions() = default;
+ExternalInstallOptions::~ExternalInstallOptions() = default;
 
-InstallOptions::InstallOptions(const InstallOptions& other) = default;
+ExternalInstallOptions::ExternalInstallOptions(
+    const ExternalInstallOptions& other) = default;
 
-InstallOptions::InstallOptions(InstallOptions&& other) = default;
-
-InstallOptions& InstallOptions::operator=(const InstallOptions& other) =
+ExternalInstallOptions::ExternalInstallOptions(ExternalInstallOptions&& other) =
     default;
 
-bool InstallOptions::operator==(const InstallOptions& other) const {
+ExternalInstallOptions& ExternalInstallOptions::operator=(
+    const ExternalInstallOptions& other) = default;
+
+bool ExternalInstallOptions::operator==(
+    const ExternalInstallOptions& other) const {
   return std::tie(url, launch_container, install_source,
                   add_to_applications_menu, add_to_desktop,
                   add_to_quick_launch_bar, override_previous_user_uninstall,
@@ -44,7 +48,7 @@ bool InstallOptions::operator==(const InstallOptions& other) const {
 }
 
 std::ostream& operator<<(std::ostream& out,
-                         const InstallOptions& install_options) {
+                         const ExternalInstallOptions& install_options) {
   return out << "url: " << install_options.url << "\n launch_container: "
              << static_cast<int32_t>(install_options.launch_container)
              << "\n install_source: "

@@ -46,7 +46,6 @@ include_rules = [
     "+base/unguessable_token.h",
     "+base/values.h",
     "+base/lazy_instance.h",
-    "+cc/paint/text_holder.h",
     "+net/base/filename_util.h",
     "+net/http/http_util.h",
     "+net/http/http_request_headers.h",

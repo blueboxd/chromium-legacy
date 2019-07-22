@@ -24,7 +24,6 @@
 
 #include "third_party/blink/renderer/platform/fonts/font.h"
 
-#include "cc/paint/node_holder.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
@@ -107,12 +106,11 @@ void Font::Update(FontSelector* font_selector) const {
 
 namespace {
 
-void DrawBlobs(
-    cc::PaintCanvas* canvas,
-    const cc::PaintFlags& flags,
-    const ShapeResultBloberizer::BlobBuffer& blobs,
-    const FloatPoint& point,
-    const cc::NodeHolder& node_holder = cc::NodeHolder::EmptyNodeHolder()) {
+void DrawBlobs(cc::PaintCanvas* canvas,
+               const cc::PaintFlags& flags,
+               const ShapeResultBloberizer::BlobBuffer& blobs,
+               const FloatPoint& point,
+               cc::NodeId node_id = cc::kInvalidNodeId) {
   for (const auto& blob_info : blobs) {
     DCHECK(blob_info.blob);
     cc::PaintCanvasAutoRestore auto_restore(canvas, false);
@@ -123,9 +121,9 @@ void DrawBlobs(
       m.setSinCos(-1, 0, point.X(), point.Y());
       canvas->concat(m);
     }
-    if (!node_holder.is_empty) {
-      canvas->drawTextBlob(blob_info.blob, point.X(), point.Y(), flags,
-                           node_holder);
+    if (node_id != cc::kInvalidNodeId) {
+      canvas->drawTextBlob(blob_info.blob, point.X(), point.Y(), node_id,
+                           flags);
     } else {
       canvas->drawTextBlob(blob_info.blob, point.X(), point.Y(), flags);
     }
@@ -139,15 +137,15 @@ void Font::DrawText(cc::PaintCanvas* canvas,
                     const FloatPoint& point,
                     float device_scale_factor,
                     const cc::PaintFlags& flags) const {
-  DrawText(canvas, run_info, point, device_scale_factor,
-           cc::NodeHolder::EmptyNodeHolder(), flags);
+  DrawText(canvas, run_info, point, device_scale_factor, cc::kInvalidNodeId,
+           flags);
 }
 
 void Font::DrawText(cc::PaintCanvas* canvas,
                     const TextRunPaintInfo& run_info,
                     const FloatPoint& point,
                     float device_scale_factor,
-                    const cc::NodeHolder& node_holder,
+                    cc::NodeId node_id,
                     const cc::PaintFlags& flags) const {
   // Don't draw anything while we are using custom fonts that are in the process
   // of loading.
@@ -159,14 +157,14 @@ void Font::DrawText(cc::PaintCanvas* canvas,
   ShapeResultBuffer buffer;
   word_shaper.FillResultBuffer(run_info, &buffer);
   bloberizer.FillGlyphs(run_info, buffer);
-  DrawBlobs(canvas, flags, bloberizer.Blobs(), point, node_holder);
+  DrawBlobs(canvas, flags, bloberizer.Blobs(), point, node_id);
 }
 
 void Font::DrawText(cc::PaintCanvas* canvas,
                     const NGTextFragmentPaintInfo& text_info,
                     const FloatPoint& point,
                     float device_scale_factor,
-                    const cc::NodeHolder& node_holder,
+                    cc::NodeId node_id,
                     const cc::PaintFlags& flags) const {
   // Don't draw anything while we are using custom fonts that are in the process
   // of loading.
@@ -176,7 +174,7 @@ void Font::DrawText(cc::PaintCanvas* canvas,
   ShapeResultBloberizer bloberizer(*this, device_scale_factor);
   bloberizer.FillGlyphs(text_info.text, text_info.from, text_info.to,
                         text_info.shape_result);
-  DrawBlobs(canvas, flags, bloberizer.Blobs(), point, node_holder);
+  DrawBlobs(canvas, flags, bloberizer.Blobs(), point, node_id);
 }
 
 bool Font::DrawBidiText(cc::PaintCanvas* canvas,

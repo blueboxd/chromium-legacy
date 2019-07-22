@@ -771,7 +771,7 @@ std::string LayerTreeHost::LayersAsString() const {
   return layers;
 }
 
-bool LayerTreeHost::CaptureContent(std::vector<NodeHolder>* content) {
+bool LayerTreeHost::CaptureContent(std::vector<NodeId>* content) {
   if (viewport_visible_rect_.IsEmpty())
     return false;
 

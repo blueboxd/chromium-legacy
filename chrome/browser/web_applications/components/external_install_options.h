@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_OPTIONS_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_OPTIONS_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNAL_INSTALL_OPTIONS_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNAL_INSTALL_OPTIONS_H_
 
 #include <iosfwd>
 
@@ -14,16 +14,16 @@ namespace web_app {
 enum class ExternalInstallSource;
 enum class LaunchContainer;
 
-struct InstallOptions {
-  InstallOptions(const GURL& url,
-                 LaunchContainer launch_container,
-                 ExternalInstallSource install_source);
-  ~InstallOptions();
-  InstallOptions(const InstallOptions& other);
-  InstallOptions(InstallOptions&& other);
-  InstallOptions& operator=(const InstallOptions& other);
+struct ExternalInstallOptions {
+  ExternalInstallOptions(const GURL& url,
+                         LaunchContainer launch_container,
+                         ExternalInstallSource install_source);
+  ~ExternalInstallOptions();
+  ExternalInstallOptions(const ExternalInstallOptions& other);
+  ExternalInstallOptions(ExternalInstallOptions&& other);
+  ExternalInstallOptions& operator=(const ExternalInstallOptions& other);
 
-  bool operator==(const InstallOptions& other) const;
+  bool operator==(const ExternalInstallOptions& other) const;
 
   GURL url;
   LaunchContainer launch_container;
@@ -80,8 +80,8 @@ struct InstallOptions {
 };
 
 std::ostream& operator<<(std::ostream& out,
-                         const InstallOptions& install_options);
+                         const ExternalInstallOptions& install_options);
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_OPTIONS_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_EXTERNAL_INSTALL_OPTIONS_H_

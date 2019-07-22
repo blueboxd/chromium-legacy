@@ -84,7 +84,8 @@ class MemlogBrowserTest : public InProcessBrowserTest,
 
 // Ensure invocations via TracingController can generate a valid JSON file with
 // expected data.
-IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
+// TODO(crbug.com/843467): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, DISABLED_EndToEnd) {
   LOG(INFO) << "Memlog mode: " << static_cast<int>(GetParam().mode);
   LOG(INFO) << "Memlog stack mode: " << static_cast<int>(GetParam().stack_mode);
   LOG(INFO) << "Started via command line flag: "

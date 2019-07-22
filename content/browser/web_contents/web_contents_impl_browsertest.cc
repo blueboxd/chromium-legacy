@@ -1076,14 +1076,29 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
     observer.WaitForResourceCompletion(resource);
 
     // Test the network isolation key.
-    RenderFrameHostImpl* frame_host =
-        static_cast<RenderFrameHostImpl*>(host_to_load_resource);
     url::Origin top_frame_origin =
         main_frame->frame_tree_node()->current_origin();
 
-    if (!top_frame_origin.opaque()) {
-      EXPECT_EQ(net::NetworkIsolationKey(top_frame_origin),
+    RenderFrameHostImpl* frame_host =
+        static_cast<RenderFrameHostImpl*>(host_to_load_resource);
+    url::Origin frame_origin;
+    if (sub_frame.is_empty()) {
+      frame_origin = top_frame_origin;
+    } else {
+      frame_origin = url::Origin::Create(sub_frame);
+      // TODO(crbug.com/888079) in about:blank currently committed origin is
+      // different from the origin at the time of CommitNavigation.
+      if (!frame_origin.opaque()) {
+        // Modify to take redirects into account.
+        frame_origin = frame_host->GetLastCommittedOrigin();
+      }
+    }
+
+    if (!top_frame_origin.opaque() && !frame_origin.opaque()) {
+      EXPECT_EQ(net::NetworkIsolationKey(top_frame_origin, frame_origin),
                 frame_host->network_isolation_key_);
+    } else {
+      EXPECT_TRUE(frame_host->network_isolation_key_.IsTransient());
     }
 
     return (*observer.FindResource(resource))->was_cached;
@@ -1131,6 +1146,20 @@ class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsSplitCacheBrowserTest);
+};
+
+class WebContentsSplitCacheWithFrameOriginBrowserTest
+    : public WebContentsSplitCacheBrowserTest {
+ public:
+  WebContentsSplitCacheWithFrameOriginBrowserTest() {
+    feature_list.InitWithFeatures(
+        {net::features::kSplitCacheByNetworkIsolationKey,
+         net::features::kAppendFrameOriginToNetworkIsolationKey},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
 };
 
 class WebContentsSplitCacheBrowserTestEnabled
@@ -1234,9 +1263,64 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
   // behavior and about:blank main frame pages will inherit the origin of the
   // page that opened it.
   EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
+}
 
-  // TODO(crbug.com/950069): Add tests for about:blank, about:srcdoc subframes
-  // when the cache key also starts using subframe origin.
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
+                       SplitCache) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
+
+  // The second time, it's cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
+
+  // Load it from a a.com/redirect_to_d which redirects to d.com/title1.html and
+  // the resource shouldn't be cached because now we're on d.com.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                                GenURL("a.com", "/redirect_to_d")));
+
+  // Now load it from the d.com iframe directly. It should be cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                               GenURL("d.com", "/title1.html")));
+
+  // Load the resource from a same-origin iframe on a page where it's already
+  // cached. It should still be cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                               GenURL("a.com", "/title1.html")));
+
+  // Load the resource from a cross-origin iframe on a page where the
+  // iframe hasn't been cached previously.  It should not be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                                GenURL("e.com", "/title1.html")));
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                               GenURL("e.com", "/title1.html")));
+
+  // Load the resource from a same-origin iframe on a page where it's not
+  // cached. It should not be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("e.com", "/title1.html"),
+                                GenURL("e.com", "/title1.html")));
+  EXPECT_TRUE(TestResourceLoad(GenURL("e.com", "/title1.html"),
+                               GenURL("e.com", "/title1.html")));
+
+  // Load the resource from a cross-origin iframe where the iframe's origin has
+  // seen the object before but the top frame hasn't. It should not be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("f.com", "/title1.html"),
+                                GenURL("a.com", "/title1.html")));
+
+  // Load the resource from a data url which has an opaque origin. It shouldn't
+  // be cached.
+  GURL data_url("data:text/html,<body>Hello World</body>");
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), data_url));
+
+  // Load the same resource from the same data url, it shouldn't be cached
+  // because the origin should be unique.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), data_url));
+
+  // Load the resource from a subframe document that points to about:blank. The
+  // resource is cached because the resource load is using the main frame's
+  // URLLoaderFactory and main frame's factory has the NIK set to
+  // (a.com, a.com) which is already in the cache.
+  GURL blank_url(url::kAboutBlankURL);
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"), blank_url));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
@@ -1253,6 +1337,40 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
   // Load it from a cross-origin iframe, and it's still cached.
   EXPECT_TRUE(TestResourceLoad(GenURL("b.com", "/title1.html"),
                                GenURL("c.com", "/title1.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
+                       SplitCacheDedicatedWorkers) {
+  // Load 3p.com/script from a.com's worker. The first time it's loaded from the
+  // network and the second it's cached.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("a.com", "/title1.html"), GenURL("a.com", "/worker.js")));
+
+  // Load 3p.com/script from a worker with a new top frame origin. Due to split
+  // caching it's a cache miss.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("b.com", "/title1.html"), GenURL("b.com", "/worker.js")));
+
+  // Cross origin workers.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("d.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorkerInIframe(
+      GenURL("d.com", "/title1.html"), GenURL("e.com", "/title1.html"),
+      GenURL("e.com", "/worker.js")));
+
+  // Load 3p.com/script from a nested worker with a new top-frame origin. Due to
+  // split caching it's a cache miss.
+  EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
+      GenURL("c.com", "/title1.html"),
+      GenURL("c.com", "/embedding_worker.js?c")));
+  EXPECT_TRUE(TestResourceLoadFromDedicatedWorker(
+      GenURL("c.com", "/title1.html"),
+      GenURL("c.com", "/embedding_worker.js?c")));
 }
 
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,

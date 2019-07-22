@@ -351,19 +351,14 @@ void HttpCache::CloseIdleConnections() {
 void HttpCache::OnExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
-    base::Optional<url::Origin> top_frame_origin) {
+    const NetworkIsolationKey& network_isolation_key) {
   if (!disk_cache_.get() || mode_ == DISABLE)
     return;
 
   HttpRequestInfo request_info;
   request_info.url = url;
   request_info.method = http_method;
-
-  if (top_frame_origin.has_value()) {
-    request_info.network_isolation_key =
-        NetworkIsolationKey(top_frame_origin.value());
-  }
-
+  request_info.network_isolation_key = network_isolation_key;
   std::string key = GenerateCacheKey(&request_info);
   disk_cache_->OnExternalCacheHit(key);
 }

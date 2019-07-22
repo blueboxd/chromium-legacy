@@ -192,7 +192,7 @@ void PaintDocumentMarkers(GraphicsContext& context,
           break;
         text_painter->Paint(paint_start_offset, paint_end_offset,
                             paint_end_offset - paint_start_offset, text_style,
-                            NodeHolder::EmptyNodeHolder());
+                            kInvalidDOMNodeId);
       } break;
 
       case DocumentMarker::kComposition:
@@ -265,7 +265,7 @@ void NGTextFragmentPainter::PaintSymbol(const PaintInfo& paint_info,
 // ltr, expanding new line wrap or so which uses InlineTextBox functions.
 void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
                                   const PhysicalOffset& paint_offset,
-                                  const NodeHolder& node_holder) {
+                                  DOMNodeId node_id) {
   const auto& text_fragment =
       To<NGPhysicalTextFragment>(fragment_.PhysicalFragment());
   const ComputedStyle& style = fragment_.Style();
@@ -430,15 +430,14 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       // Paint only the text that is not selected.
       if (start_offset < selection_status->start) {
         text_painter.Paint(start_offset, selection_status->start, length,
-                           text_style, node_holder);
+                           text_style, node_id);
       }
       if (selection_status->end < end_offset) {
         text_painter.Paint(selection_status->end, end_offset, length,
-                           text_style, node_holder);
+                           text_style, node_id);
       }
     } else {
-      text_painter.Paint(start_offset, end_offset, length, text_style,
-                         node_holder);
+      text_painter.Paint(start_offset, end_offset, length, text_style, node_id);
     }
 
     // Paint line-through decoration if needed.
@@ -453,7 +452,7 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       (paint_selected_text_only || paint_selected_text_separately)) {
     // Paint only the text that is selected.
     text_painter.Paint(selection_status->start, selection_status->end, length,
-                       selection_style, node_holder);
+                       selection_style, node_id);
   }
 
   if (paint_info.phase != PaintPhase::kForeground)

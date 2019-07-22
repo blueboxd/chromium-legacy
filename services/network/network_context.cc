@@ -1379,11 +1379,16 @@ void NetworkContext::VerifyCertForSignedExchange(
 void NetworkContext::NotifyExternalCacheHit(
     const GURL& url,
     const std::string& http_method,
-    const base::Optional<url::Origin>& top_frame_origin) {
+    const base::Optional<url::Origin>& top_frame_origin,
+    const url::Origin& frame_origin) {
   net::HttpCache* cache =
       url_request_context_->http_transaction_factory()->GetCache();
-  if (cache)
-    cache->OnExternalCacheHit(url, http_method, top_frame_origin);
+  net::NetworkIsolationKey key;
+  if (cache) {
+    if (top_frame_origin)
+      key = net::NetworkIsolationKey(*top_frame_origin, frame_origin);
+    cache->OnExternalCacheHit(url, http_method, key);
+  }
 }
 
 void NetworkContext::SetCorsOriginAccessListsForOrigin(

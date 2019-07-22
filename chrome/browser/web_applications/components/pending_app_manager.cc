@@ -43,15 +43,15 @@ void PendingAppManager::SetSubsystems(AppRegistrar* registrar,
 }
 
 void PendingAppManager::SynchronizeInstalledApps(
-    std::vector<InstallOptions> desired_apps_install_options,
+    std::vector<ExternalInstallOptions> desired_apps_install_options,
     ExternalInstallSource install_source,
     SynchronizeCallback callback) {
   DCHECK(registrar_);
-  DCHECK(std::all_of(desired_apps_install_options.begin(),
-                     desired_apps_install_options.end(),
-                     [&install_source](const InstallOptions& install_options) {
-                       return install_options.install_source == install_source;
-                     }));
+  DCHECK(std::all_of(
+      desired_apps_install_options.begin(), desired_apps_install_options.end(),
+      [&install_source](const ExternalInstallOptions& install_options) {
+        return install_options.install_source == install_source;
+      }));
   // Only one concurrent SynchronizeInstalledApps() expected per
   // ExternalInstallSource.
   DCHECK(!base::Contains(synchronize_requests_, install_source));

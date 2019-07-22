@@ -143,7 +143,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
 
 void WebAppInstallTask::InstallWebAppWithOptions(
     content::WebContents* contents,
-    const InstallOptions& install_options,
+    const ExternalInstallOptions& install_options,
     InstallManager::OnceInstallCallback install_callback) {
   CheckInstallPreconditions();
 

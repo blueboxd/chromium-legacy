@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
-#include "cc/paint/node_holder.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
@@ -18,7 +17,6 @@ class WebContentHolder;
 // the ContentCapture is disabled without implementation of this interface.
 class WebContentCaptureClient {
  public:
-  virtual cc::NodeHolder::Type GetNodeHolderType() const = 0;
   // Adjusts the ContentCaptureTask delay time, has no effect for the existing
   // tasks.
   virtual void GetTaskTimingParameters(base::TimeDelta& short_delay,
@@ -26,13 +24,11 @@ class WebContentCaptureClient {
 
   // Invoked when a list of |content| is captured, |first_content| indicates if
   // this is first captured content in the current document.
-  virtual void DidCaptureContent(
-      const WebVector<scoped_refptr<WebContentHolder>>& content,
-      bool first_data) = 0;
+  virtual void DidCaptureContent(const WebVector<WebContentHolder>& content,
+                                 bool first_data) = 0;
 
   // Invoked when a list of |content| is updated.
-  virtual void DidUpdateContent(
-      const WebVector<scoped_refptr<WebContentHolder>>& content) = 0;
+  virtual void DidUpdateContent(const WebVector<WebContentHolder>& content) = 0;
 
   // Invoked when the previously captured content is removed, |content_ids| is a
   // list of removed content id.

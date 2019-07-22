@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "cc/paint/node_holder.h"
+#include "cc/paint/node_id.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_task_histogram_reporter.h"
 #include "third_party/blink/renderer/core/content_capture/task_session.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -59,7 +59,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   }
 
   void SetCapturedContentForTesting(
-      const Vector<cc::NodeHolder>& captured_content) {
+      const Vector<cc::NodeId>& captured_content) {
     captured_content_for_testing_ = captured_content;
   }
 
@@ -94,7 +94,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   void SendContent(TaskSession::DocumentSession& doc_session);
 
   void ScheduleInternal(ScheduleReason reason);
-  bool CaptureContent(Vector<cc::NodeHolder>& data);
+  bool CaptureContent(Vector<cc::NodeId>& data);
 
   bool is_scheduled_ = false;
 
@@ -112,7 +112,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   base::TimeDelta task_long_delay_;
   scoped_refptr<ContentCaptureTaskHistogramReporter> histogram_reporter_;
   base::Optional<TaskState> task_stop_for_testing_;
-  base::Optional<Vector<cc::NodeHolder>> captured_content_for_testing_;
+  base::Optional<Vector<cc::NodeId>> captured_content_for_testing_;
 };
 
 }  // namespace blink

@@ -301,8 +301,8 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
 void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                    SkScalar x,
                                    SkScalar y,
-                                   const PaintFlags& flags,
-                                   const NodeHolder& holder) {
+                                   NodeId node_id,
+                                   const PaintFlags& flags) {
   drawTextBlob(blob, x, y, flags);
 }
 

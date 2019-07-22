@@ -1470,6 +1470,9 @@ class HangingCertVerifier : public CertVerifier {
 
 }  // namespace
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
+// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST_F(SSLClientSocketTest, Connect) {
   ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
 
@@ -3272,16 +3275,16 @@ TEST_F(SSLClientSocketTest, SessionResumptionNetworkIsolationKeyDisabled) {
 
   // Using a different NetworkIsolationKey shares session cache key because
   // sharding is disabled.
-  ssl_config.network_isolation_key =
-      NetworkIsolationKey(url::Origin::Create(GURL("https://a.test")));
+  const auto kOriginA = url::Origin::Create(GURL("https://a.test"));
+  ssl_config.network_isolation_key = NetworkIsolationKey(kOriginA, kOriginA);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_RESUME, ssl_info.handshake_type);
   sock_.reset();
 
-  ssl_config.network_isolation_key =
-      NetworkIsolationKey(url::Origin::Create(GURL("https://b.test")));
+  const auto kOriginB = url::Origin::Create(GURL("https://a.test"));
+  ssl_config.network_isolation_key = NetworkIsolationKey(kOriginB, kOriginB);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   ASSERT_THAT(rv, IsOk());
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
@@ -3296,10 +3299,10 @@ TEST_F(SSLClientSocketTest, SessionResumptionNetworkIsolationKeyEnabled) {
   feature_list.InitAndEnableFeature(
       features::kPartitionSSLSessionsByNetworkIsolationKey);
 
-  const NetworkIsolationKey kNetworkIsolationKeyA(
-      url::Origin::Create(GURL("https://a.test")));
-  const NetworkIsolationKey kNetworkIsolationKeyB(
-      url::Origin::Create(GURL("https://b.test")));
+  const auto kOriginA = url::Origin::Create(GURL("https://a.test"));
+  const auto kOriginB = url::Origin::Create(GURL("https://b.test"));
+  const NetworkIsolationKey kNetworkIsolationKeyA(kOriginA, kOriginA);
+  const NetworkIsolationKey kNetworkIsolationKeyB(kOriginB, kOriginB);
 
   SpawnedTestServer::SSLOptions ssl_options;
   ASSERT_TRUE(StartTestServer(ssl_options));

@@ -20,6 +20,9 @@ namespace net {
 
 namespace {
 
+// TODO(950069): Add testing for frame_origin in NetworkIsolationKey
+// using kAppendInitiatingFrameOriginToNetworkIsolationKey.
+
 TEST(ClientSocketPool, GroupIdOperators) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -43,9 +46,11 @@ TEST(ClientSocketPool, GroupIdOperators) {
       PrivacyMode::PRIVACY_MODE_ENABLED,
   };
 
+  const auto kOriginA = url::Origin::Create(GURL("http://a.test/"));
+  const auto kOriginB = url::Origin::Create(GURL("http://b.test/"));
   const NetworkIsolationKey kNetworkIsolationKeys[] = {
-      NetworkIsolationKey(url::Origin::Create(GURL("http://a.test/"))),
-      NetworkIsolationKey(url::Origin::Create(GURL("http://b.test/"))),
+      NetworkIsolationKey(kOriginA, kOriginA),
+      NetworkIsolationKey(kOriginB, kOriginB),
   };
 
   // All previously created |group_ids|. They should all be less than the
@@ -127,13 +132,16 @@ TEST(ClientSocketPool, GroupIdToString) {
       ClientSocketPool::GroupId(
           HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
           PrivacyMode::PRIVACY_MODE_DISABLED,
-          NetworkIsolationKey(url::Origin::Create(GURL("https://foo.com"))))
+          NetworkIsolationKey(url::Origin::Create(GURL("https://foo.com")),
+                              url::Origin::Create(GURL("https://foo.com"))))
           .ToString());
 }
 
 TEST(ClientSocketPool, PartitionConnectionsByNetworkIsolationKeyDisabled) {
   // Partitioning connections by NetworkIsolationKey is disabled by default, so
   // test both the explicitly and implicitly disabled cases.
+  const auto kOriginFoo = url::Origin::Create(GURL("https://foo.com"));
+  const auto kOriginBar = url::Origin::Create(GURL("https://bar.com"));
   for (bool explicitly_disabled : {false, true}) {
     base::test::ScopedFeatureList feature_list;
     if (explicitly_disabled) {
@@ -144,12 +152,12 @@ TEST(ClientSocketPool, PartitionConnectionsByNetworkIsolationKeyDisabled) {
     ClientSocketPool::GroupId group_id1(
         HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_DISABLED,
-        NetworkIsolationKey(url::Origin::Create(GURL("https://foo.com"))));
+        NetworkIsolationKey(kOriginFoo, kOriginFoo));
 
     ClientSocketPool::GroupId group_id2(
         HostPortPair("foo", 443), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_DISABLED,
-        NetworkIsolationKey(url::Origin::Create(GURL("http://bar.com"))));
+        NetworkIsolationKey(kOriginBar, kOriginBar));
 
     EXPECT_FALSE(group_id1.network_isolation_key().IsFullyPopulated());
     EXPECT_FALSE(group_id2.network_isolation_key().IsFullyPopulated());

@@ -161,7 +161,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void NotifyExternalCacheHit(
       const GURL& url,
       const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin) override {}
+      const base::Optional<url::Origin>& top_frame_origin,
+      const url::Origin& frame_origin) override {}
   void VerifyCertForSignedExchange(
       const scoped_refptr<net::X509Certificate>& certificate,
       const GURL& url,

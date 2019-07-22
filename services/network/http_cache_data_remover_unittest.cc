@@ -110,11 +110,12 @@ class HttpCacheDataRemoverTest : public testing::Test {
 
   std::string ComputeCacheKey(const std::string& url_string) {
     GURL url(url_string);
+    const auto kOrigin = url::Origin::Create(url);
     net::HttpRequestInfo request_info;
     request_info.url = url;
     request_info.method = "GET";
     request_info.network_isolation_key =
-        net::NetworkIsolationKey(url::Origin::Create(url));
+        net::NetworkIsolationKey(kOrigin, kOrigin);
     return cache_->GenerateCacheKeyForTest(&request_info);
   }
 

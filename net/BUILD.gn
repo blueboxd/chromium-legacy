@@ -14,10 +14,7 @@ import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 import("//url/features.gni")
-
-if (!is_proto_quic) {
-  import("//v8/gni/v8.gni")
-}
+import("//v8/gni/v8.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -33,8 +30,8 @@ if (is_android) {
 # So enable it for x86 only for now.
 posix_avoid_mmap = is_android && current_cpu != "x86"
 
-use_v8_in_net = !is_ios && !is_proto_quic
-enable_built_in_dns = !is_ios && !is_proto_quic
+use_v8_in_net = !is_ios
+enable_built_in_dns = !is_ios
 
 # Unix sockets are not supported on iOS or NaCl.
 enable_unix_sockets = is_posix && !is_ios && !is_nacl
@@ -2432,29 +2429,27 @@ proto_library("net_quic_proto") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-if (!is_proto_quic) {
-  component("extras") {
-    sources = [
-      "extras/sqlite/cookie_crypto_delegate.h",
-      "extras/sqlite/sqlite_persistent_cookie_store.cc",
-      "extras/sqlite/sqlite_persistent_cookie_store.h",
-      "extras/sqlite/sqlite_persistent_store_backend_base.cc",
-      "extras/sqlite/sqlite_persistent_store_backend_base.h",
-    ]
-    defines = [ "IS_NET_EXTRAS_IMPL" ]
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-    deps = [
-      ":net",
-      "//base",
-      "//sql:sql",
-    ]
+component("extras") {
+  sources = [
+    "extras/sqlite/cookie_crypto_delegate.h",
+    "extras/sqlite/sqlite_persistent_cookie_store.cc",
+    "extras/sqlite/sqlite_persistent_cookie_store.h",
+    "extras/sqlite/sqlite_persistent_store_backend_base.cc",
+    "extras/sqlite/sqlite_persistent_store_backend_base.h",
+  ]
+  defines = [ "IS_NET_EXTRAS_IMPL" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  deps = [
+    ":net",
+    "//base",
+    "//sql:sql",
+  ]
 
-    if (enable_reporting) {
-      sources += [
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store.cc",
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
-      ]
-    }
+  if (enable_reporting) {
+    sources += [
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store.cc",
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store.h",
+    ]
   }
 }
 
@@ -5707,6 +5702,7 @@ test("net_unittests") {
   defines = []
 
   deps = [
+    ":extras",
     ":net",
     ":preload_decoder",
     ":quic_test_tools",
@@ -5715,6 +5711,7 @@ test("net_unittests") {
     ":spdy_test_tools",
     ":test_support",
     "//base",
+    "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//crypto",
     "//crypto:platform",
@@ -5725,6 +5722,7 @@ test("net_unittests") {
     "//net/http:transport_security_state_unittest_data",
     "//net/http:transport_security_state_unittest_data_default",
     "//net/tools/huffman_trie:huffman_trie_generator_sources",
+    "//sql",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
@@ -5762,20 +5760,10 @@ test("net_unittests") {
     ]
   }
 
-  if (!is_proto_quic) {
-    deps += [
-      ":extras",
-      "//base:i18n",
-      "//sql",
+  if (enable_reporting) {
+    sources += [
+      "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
     ]
-
-    if (enable_reporting) {
-      sources += [
-        "extras/sqlite/sqlite_persistent_reporting_and_nel_store_unittest.cc",
-      ]
-    }
-  } else {
-    sources -= [ "extras/sqlite/sqlite_persistent_cookie_store_unittest.cc" ]
   }
 
   data = []
@@ -5845,7 +5833,7 @@ test("net_unittests") {
     sources -= [ "proxy_resolution/proxy_config_service_linux_unittest.cc" ]
   }
 
-  if (!is_proto_quic && v8_use_external_startup_data) {
+  if (v8_use_external_startup_data) {
     deps += [ "//gin" ]
   }
 
@@ -6116,7 +6104,7 @@ test("net_unittests") {
 }
 
 # !is_android && !is_win && !is_mac
-if (!is_ios && !is_proto_quic) {
+if (!is_ios) {
   # TODO(crbug.com/594965): this should be converted to "app" template and
   # enabled on iOS too.
   test("net_perftests") {

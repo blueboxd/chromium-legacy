@@ -20,11 +20,8 @@ class NET_EXPORT NetworkIsolationKey {
  public:
   // Full constructor.  When a request is initiated by the top frame, it must
   // also populate the |frame_origin| parameter when calling this constructor.
-  explicit NetworkIsolationKey(
-      // TODO(crbug.com/950069): Make the frame_origin argument non-optional
-      // once all call sites are updated to include the frame_origin.
-      const url::Origin& top_frame_origin,
-      const base::Optional<url::Origin>& frame_origin = base::nullopt);
+  explicit NetworkIsolationKey(const url::Origin& top_frame_origin,
+                               const url::Origin& frame_origin);
 
   // Construct an empty key.
   NetworkIsolationKey();

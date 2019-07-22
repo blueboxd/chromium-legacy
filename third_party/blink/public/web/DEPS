@@ -14,7 +14,6 @@ include_rules = [
     "+cc/input/overscroll_behavior.h",
     "+cc/input/layer_selection_bound.h",
     "+cc/paint/element_id.h",
-    "+cc/paint/node_holder.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
     "+cc/trees/layer_tree_host_client.h",

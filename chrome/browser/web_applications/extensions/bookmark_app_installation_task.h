@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/components/install_options.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
 
@@ -61,7 +61,7 @@ class BookmarkAppInstallationTask {
       Profile* profile,
       web_app::AppRegistrar* registrar,
       web_app::InstallFinalizer* install_finalizer,
-      web_app::InstallOptions install_options);
+      web_app::ExternalInstallOptions install_options);
 
   virtual ~BookmarkAppInstallationTask();
 
@@ -72,7 +72,9 @@ class BookmarkAppInstallationTask {
                        web_app::WebAppUrlLoader::Result load_url_result,
                        ResultCallback result_callback);
 
-  const web_app::InstallOptions& install_options() { return install_options_; }
+  const web_app::ExternalInstallOptions& install_options() {
+    return install_options_;
+  }
 
  private:
   void InstallPlaceholder(ResultCallback result_callback);
@@ -95,7 +97,7 @@ class BookmarkAppInstallationTask {
 
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
-  const web_app::InstallOptions install_options_;
+  const web_app::ExternalInstallOptions install_options_;
 
   base::WeakPtrFactory<BookmarkAppInstallationTask> weak_ptr_factory_{this};
 

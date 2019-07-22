@@ -33,23 +33,9 @@
 // Try to connect to a host which does not speak QUIC:
 //   quic_client http://www.example.com
 
-#include <iostream>
-
-#include "base/at_exit.h"
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
-#include "base/task/thread_pool/thread_pool.h"
 #include "net/base/net_errors.h"
-#include "net/base/privacy_mode.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/ct_log_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
-#include "net/http/transport_security_state.h"
 #include "net/quic/address_utils.h"
-#include "net/quic/crypto/proof_verifier_chromium.h"
-#include "net/spdy/spdy_http_utils.h"
 #include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
@@ -63,20 +49,8 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/tools/quic/quic_simple_client.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
-#include "url/gurl.h"
 
-using net::CertVerifier;
-using net::CTVerifier;
-using net::MultiLogCTVerifier;
 using quic::ProofVerifier;
-using net::ProofVerifierChromium;
-using quic::QuicStringPiece;
-using quic::QuicTextUtils;
-using net::TransportSecurityState;
-using spdy::SpdyHeaderBlock;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 namespace {
 

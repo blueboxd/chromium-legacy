@@ -27,7 +27,7 @@ class PendingAppManagerTest : public testing::Test {
   void Sync(std::vector<GURL> urls) {
     pending_app_manager_.ResetCounts();
 
-    std::vector<InstallOptions> install_options_list;
+    std::vector<ExternalInstallOptions> install_options_list;
     for (const auto& url : urls) {
       install_options_list.emplace_back(
           url, LaunchContainer::kWindow,
@@ -78,7 +78,7 @@ TEST_F(PendingAppManagerTest, DestroyDuringInstallInSynchronize) {
   auto pending_app_manager =
       std::make_unique<TestPendingAppManager>(&registrar);
 
-  std::vector<InstallOptions> install_options_list;
+  std::vector<ExternalInstallOptions> install_options_list;
   install_options_list.emplace_back(GURL("https://foo.example"),
                                     LaunchContainer::kWindow,
                                     ExternalInstallSource::kInternalDefault);
@@ -105,7 +105,7 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
 
   // Install an app that will be uninstalled next.
   {
-    std::vector<InstallOptions> install_options_list;
+    std::vector<ExternalInstallOptions> install_options_list;
     install_options_list.emplace_back(GURL("https://foo.example"),
                                       LaunchContainer::kWindow,
                                       ExternalInstallSource::kInternalDefault);
@@ -120,7 +120,8 @@ TEST_F(PendingAppManagerTest, DestroyDuringUninstallInSynchronize) {
   }
 
   pending_app_manager->SynchronizeInstalledApps(
-      std::vector<InstallOptions>(), ExternalInstallSource::kInternalDefault,
+      std::vector<ExternalInstallOptions>(),
+      ExternalInstallSource::kInternalDefault,
       // PendingAppManager gives no guarantees about whether its pending
       // callbacks will be run or not when it gets destroyed.
       base::DoNothing());

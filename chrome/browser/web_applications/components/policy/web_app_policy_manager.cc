@@ -13,7 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
@@ -27,7 +27,8 @@ namespace web_app {
 
 namespace {
 
-InstallOptions ParseInstallOptionsFromPolicyEntry(const base::Value& entry) {
+ExternalInstallOptions ParseInstallOptionsFromPolicyEntry(
+    const base::Value& entry) {
   const base::Value& url = *entry.FindKey(kUrlKey);
   const base::Value* default_launch_container =
       entry.FindKey(kDefaultLaunchContainerKey);
@@ -50,8 +51,9 @@ InstallOptions ParseInstallOptionsFromPolicyEntry(const base::Value& entry) {
     launch_container = LaunchContainer::kWindow;
   }
 
-  InstallOptions install_options{GURL(url.GetString()), launch_container,
-                                 ExternalInstallSource::kExternalPolicy};
+  ExternalInstallOptions install_options{
+      GURL(url.GetString()), launch_container,
+      ExternalInstallSource::kExternalPolicy};
 
   install_options.add_to_applications_menu = true;
   install_options.add_to_desktop =
@@ -99,7 +101,8 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {
   if (it == web_apps_list.end())
     return;
 
-  InstallOptions install_options = ParseInstallOptionsFromPolicyEntry(*it);
+  ExternalInstallOptions install_options =
+      ParseInstallOptionsFromPolicyEntry(*it);
 
   // No need to install a placeholder because there should be one already.
   install_options.wait_for_windows_closed = true;
@@ -139,12 +142,13 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
 
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
-  std::vector<InstallOptions> install_options_list;
+  std::vector<ExternalInstallOptions> install_options_list;
   // No need to validate the types or values of the policy members because we
   // are using a SimpleSchemaValidatingPolicyHandler which should validate them
   // for us.
   for (const base::Value& entry : web_apps->GetList()) {
-    InstallOptions install_options = ParseInstallOptionsFromPolicyEntry(entry);
+    ExternalInstallOptions install_options =
+        ParseInstallOptionsFromPolicyEntry(entry);
 
     install_options.install_placeholder = true;
     // When the policy gets refreshed, we should try to reinstall placeholder

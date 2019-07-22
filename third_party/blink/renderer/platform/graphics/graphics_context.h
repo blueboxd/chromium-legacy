@@ -31,11 +31,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/paint/node_holder.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
 #include "third_party/blink/renderer/platform/graphics/dash_array.h"
+#include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
@@ -262,11 +262,11 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawText(const Font&,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
-                const cc::NodeHolder&);
+                DOMNodeId);
   void DrawText(const Font&,
                 const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
-                const cc::NodeHolder&);
+                DOMNodeId);
 
   // TODO(layout-dev): This method is only used by SVGInlineTextBoxPainter, see
   // if we can change that to use the four parameter version above.
@@ -274,7 +274,7 @@ class PLATFORM_EXPORT GraphicsContext {
                 const TextRunPaintInfo&,
                 const FloatPoint&,
                 const PaintFlags&,
-                const cc::NodeHolder&);
+                DOMNodeId);
 
   void DrawEmphasisMarks(const Font&,
                          const TextRunPaintInfo&,
@@ -410,7 +410,7 @@ class PLATFORM_EXPORT GraphicsContext {
   void DrawTextInternal(const Font&,
                         const TextPaintInfo&,
                         const FloatPoint&,
-                        const cc::NodeHolder&);
+                        DOMNodeId);
 
   template <typename TextPaintInfo>
   void DrawEmphasisMarksInternal(const Font&,

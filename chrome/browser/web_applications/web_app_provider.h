@@ -115,7 +115,7 @@ class WebAppProvider : public WebAppProviderBase,
 
   void OnRegistryReady();
 
-  void OnScanForExternalWebApps(std::vector<InstallOptions>);
+  void OnScanForExternalWebApps(std::vector<ExternalInstallOptions>);
 
   // Called just before profile destruction. All WebContents must be destroyed
   // by the end of this method.

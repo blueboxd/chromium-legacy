@@ -3574,8 +3574,6 @@
                 {
                     "name": "iOSExperiments",
                     "enable_features": [
-                        "OmniboxEnableClipboardProviderImageSuggestions",
-                        "OmniboxEnableClipboardProviderTextSuggestions",
                         "OmniboxPopupShortcutIconsInZeroState"
                     ]
                 }

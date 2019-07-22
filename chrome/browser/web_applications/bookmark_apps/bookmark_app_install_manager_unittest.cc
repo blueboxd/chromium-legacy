@@ -16,7 +16,7 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
-#include "chrome/browser/web_applications/components/install_options.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
@@ -135,7 +135,7 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_WebContentsDestroyed) {
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kExternalPolicy);
 
@@ -167,7 +167,7 @@ TEST_F(BookmarkAppInstallManagerTest,
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kExternalPolicy);
 
@@ -227,7 +227,7 @@ TEST_F(BookmarkAppInstallManagerTest, WithOptions_InstallManagerDestroyed) {
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kExternalPolicy);
 
@@ -260,7 +260,7 @@ TEST_F(BookmarkAppInstallManagerTest,
   const GURL app_url("https://example.com/path");
   NavigateAndCommit(app_url);
 
-  web_app::InstallOptions install_options(
+  web_app::ExternalInstallOptions install_options(
       app_url, web_app::LaunchContainer::kWindow,
       web_app::ExternalInstallSource::kExternalPolicy);
 

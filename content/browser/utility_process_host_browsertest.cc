@@ -125,11 +125,8 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
       const ChildProcessTerminationInfo& info) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
-    EXPECT_EQ(EXCEPTION_ILLEGAL_INSTRUCTION, DWORD{info.exit_code});
-#elif defined(OS_MACOSX)
-    EXPECT_TRUE(WIFSIGNALED(info.exit_code));
-    EXPECT_EQ(SIGILL, WTERMSIG(info.exit_code));
-#elif defined(OS_LINUX)
+    EXPECT_EQ(EXCEPTION_BREAKPOINT, DWORD{info.exit_code});
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
     EXPECT_TRUE(WIFSIGNALED(info.exit_code));
     EXPECT_EQ(SIGTRAP, WTERMSIG(info.exit_code));
 #endif

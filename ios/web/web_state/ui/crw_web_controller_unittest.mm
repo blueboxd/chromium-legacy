@@ -35,7 +35,7 @@
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/download/download_controller.h"
 #import "ios/web/public/download/download_task.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"

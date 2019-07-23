@@ -59,10 +59,6 @@ void MediaDialogView::HideMediaSession(const std::string& id) {
   OnAnchorBoundsChanged();
 }
 
-bool MediaDialogView::ShouldShowCloseButton() const {
-  return true;
-}
-
 int MediaDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
@@ -72,7 +68,7 @@ bool MediaDialogView::Close() {
 }
 
 gfx::Size MediaDialogView::CalculatePreferredSize() const {
-  // If we have an active session, then fit to it.
+  // If we have active sessions, then fit to them.
   if (!active_sessions_view_->empty())
     return views::BubbleDialogDelegateView::CalculatePreferredSize();
 
@@ -92,14 +88,8 @@ MediaDialogView::MediaDialogView(views::View* anchor_view,
 MediaDialogView::~MediaDialogView() = default;
 
 void MediaDialogView::Init() {
-  auto* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      gfx::Insets(provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
-                  0,
-                  provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL),
-                  0));
+  // Remove margins.
+  set_margins(gfx::Insets());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

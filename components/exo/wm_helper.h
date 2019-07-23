@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_EXO_WM_HELPER_H_
 #define COMPONENTS_EXO_WM_HELPER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"

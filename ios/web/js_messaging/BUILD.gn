@@ -45,6 +45,7 @@ source_set("unittests") {
     "//base",
     "//base/test:test_support",
     "//crypto",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public/js_messaging",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

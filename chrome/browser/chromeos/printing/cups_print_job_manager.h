@@ -71,7 +71,7 @@ class CupsPrintJobManager : public KeyedService {
   void NotifyJobResumed(base::WeakPtr<CupsPrintJob> job);
   void NotifyJobSuspended(base::WeakPtr<CupsPrintJob> job);
   void NotifyJobCanceled(base::WeakPtr<CupsPrintJob> job);
-  void NotifyJobError(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobFailed(base::WeakPtr<CupsPrintJob> job);
   void NotifyJobDone(base::WeakPtr<CupsPrintJob> job);
 
   Profile* profile_;

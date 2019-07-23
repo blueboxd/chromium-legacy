@@ -213,6 +213,9 @@ class MEDIA_EXPORT VideoRendererImpl
   // Provides video frames to VideoRendererImpl.
   std::unique_ptr<VideoDecoderStream> video_decoder_stream_;
 
+  // Passed in during Initialize().
+  DemuxerStream* demuxer_stream_;
+
   MediaLog* media_log_;
 
   // Flag indicating low-delay mode.

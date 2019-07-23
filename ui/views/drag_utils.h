@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_DRAG_UTILS_H_
 #define UI_VIEWS_DRAG_UTILS_H_
 
+#include <memory>
+
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/native_widget_types.h"

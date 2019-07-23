@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -168,6 +169,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void Stop(StopCallback callback) override;
 
   // gpu::GpuChannelManagerDelegate:
+  void RegisterDisplayContext(gpu::DisplayContext* display_context) override;
+  void UnregisterDisplayContext(gpu::DisplayContext* display_context) override;
+  void LoseAllContexts() override;
   void DidCreateContextSuccessfully() override;
   void DidCreateOffscreenContext(const GURL& active_url) override;
   void DidDestroyChannel(int client_id) override;
@@ -348,6 +352,9 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 #endif  // defined(OS_CHROMEOS)
 
   bool oopd_enabled_ = false;
+
+  // Display compositor contexts that don't have a corresponding GPU channel.
+  base::ObserverList<gpu::DisplayContext>::Unchecked display_contexts_;
 
   base::WeakPtr<GpuServiceImpl> weak_ptr_;
   base::WeakPtrFactory<GpuServiceImpl> weak_ptr_factory_{this};

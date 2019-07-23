@@ -24,7 +24,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
+#include "net/filter/gzip_header.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/brotli/include/brotli/decode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -91,6 +93,74 @@ SkBitmap CreateEmptyBitmap() {
   bitmap.allocN32Pixels(32, 32);
   bitmap.eraseARGB(255, 255, 255, 0);
   return bitmap;
+}
+
+// Helper function for determining whether a resource is gzipped.
+bool HasGzipHeader(base::StringPiece data) {
+  net::GZipHeader header;
+  const char* header_end = nullptr;
+  net::GZipHeader::Status header_status =
+      header.ReadMore(data.data(), data.length(), &header_end);
+  return header_status == net::GZipHeader::COMPLETE_HEADER;
+}
+
+// Helper function for determining whether a resource is brotli compressed.
+bool HasBrotliHeader(base::StringPiece data) {
+  // Check that the data is brotli decoded by checking for kBrotliConst in
+  // header. Header added during compression at tools/grit/grit/node/base.py.
+  const uint8_t* data_bytes = reinterpret_cast<const uint8_t*>(data.data());
+  static_assert(base::size(ResourceBundle::kBrotliConst) == 2,
+                "Magic number should be 2 bytes long");
+  return data.size() >= ResourceBundle::kBrotliHeaderSize &&
+         *data_bytes == ResourceBundle::kBrotliConst[0] &&
+         *(data_bytes + 1) == ResourceBundle::kBrotliConst[1];
+}
+
+// Returns the uncompressed size of Brotli compressed |input| from header.
+size_t GetBrotliDecompressSize(base::StringPiece input) {
+  CHECK(input.data());
+  CHECK(HasBrotliHeader(input));
+  const uint8_t* raw_input = reinterpret_cast<const uint8_t*>(input.data());
+  raw_input = raw_input + base::size(ResourceBundle::kBrotliConst);
+  // Get size of uncompressed resource from header.
+  uint64_t uncompress_size = 0;
+  int bytes_size = static_cast<int>(ResourceBundle::kBrotliHeaderSize -
+                                    base::size(ResourceBundle::kBrotliConst));
+  for (int i = 0; i < bytes_size; i++) {
+    uncompress_size |= static_cast<uint64_t>(*(raw_input + i)) << (i * 8);
+  }
+  return static_cast<size_t>(uncompress_size);
+}
+
+// Decompresses data in |input| using brotli, storing
+// the result in |output|, which is resized as necessary. Returns true for
+// success. To be used for grit compressed resources only.
+bool BrotliDecompress(base::StringPiece input, std::string* output) {
+  size_t decompress_size = GetBrotliDecompressSize(input);
+  const uint8_t* raw_input = reinterpret_cast<const uint8_t*>(input.data());
+  raw_input = raw_input + ResourceBundle::kBrotliHeaderSize;
+
+  output->resize(decompress_size);
+  uint8_t* output_bytes =
+      reinterpret_cast<uint8_t*>(const_cast<char*>(output->data()));
+  return BrotliDecoderDecompress(
+             input.size() - ResourceBundle::kBrotliHeaderSize, raw_input,
+             &decompress_size, output_bytes) == BROTLI_DECODER_RESULT_SUCCESS;
+}
+
+// Helper function for decompressing resource.
+std::string Decompress(base::StringPiece data) {
+  std::string response;
+  if (HasBrotliHeader(data)) {
+    bool success = BrotliDecompress(data, &response);
+    DCHECK(success);
+  } else if (HasGzipHeader(data)) {
+    bool success = compression::GzipUncompress(data, &response);
+    DCHECK(success);
+  } else {
+    NOTREACHED() << "Resource is not compressed";
+  }
+  return response;
 }
 
 }  // namespace
@@ -500,6 +570,8 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   return inserted.first->second;
 }
 
+constexpr uint8_t ResourceBundle::kBrotliConst[];
+
 base::RefCountedMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
   return LoadDataResourceBytesForScale(resource_id, ui::SCALE_FACTOR_NONE);
@@ -557,32 +629,18 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
 }
 
 std::string ResourceBundle::DecompressDataResource(int resource_id) {
-  DCHECK(IsGzipped(resource_id));
-  base::StringPiece raw_resource = GetRawDataResource(resource_id);
-  std::string uncompressed_resource;
-  bool success =
-      compression::GzipUncompress(raw_resource, &uncompressed_resource);
-  DCHECK(success);
-  return uncompressed_resource;
+  return DecompressDataResourceScaled(resource_id, ui::SCALE_FACTOR_NONE);
 }
 
 std::string ResourceBundle::DecompressDataResourceScaled(
     int resource_id,
     ScaleFactor scaling_factor) {
-  DCHECK(IsGzipped(resource_id));
-  base::StringPiece raw_resource =
-      GetRawDataResourceForScale(resource_id, scaling_factor);
-  std::string uncompressed_resource;
-  bool success =
-      compression::GzipUncompress(raw_resource, &uncompressed_resource);
-  DCHECK(success);
-  return uncompressed_resource;
+  return Decompress(GetRawDataResourceForScale(resource_id, scaling_factor));
 }
 
 std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
   base::StringPiece data;
-
   if (!(locale_resources_data_.get() &&
         locale_resources_data_->GetStringPiece(
             static_cast<uint16_t>(resource_id), &data) &&
@@ -595,19 +653,23 @@ std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
       data = GetRawDataResource(resource_id);
     }
   }
-  std::string uncompressed_resource;
-  bool success = compression::GzipUncompress(data, &uncompressed_resource);
-  DCHECK(success);
-  return uncompressed_resource;
+  return Decompress(data);
 }
 
 bool ResourceBundle::IsGzipped(int resource_id) const {
-  bool is_gzipped;
-  for (const auto& pack : data_packs_) {
-    if (pack->IsGzipped(resource_id, &is_gzipped))
-      return is_gzipped;
-  }
-  return false;
+  base::StringPiece raw_data = GetRawDataResource(resource_id);
+  if (!raw_data.data())
+    return false;
+
+  return HasGzipHeader(raw_data);
+}
+
+bool ResourceBundle::IsBrotli(int resource_id) const {
+  base::StringPiece raw_data = GetRawDataResource(resource_id);
+  if (!raw_data.data())
+    return false;
+
+  return HasBrotliHeader(raw_data);
 }
 
 base::string16 ResourceBundle::GetLocalizedString(int resource_id) {

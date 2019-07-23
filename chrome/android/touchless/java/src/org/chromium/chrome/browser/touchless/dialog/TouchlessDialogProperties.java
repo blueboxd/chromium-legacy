@@ -7,8 +7,10 @@ package org.chromium.chrome.browser.touchless.dialog;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
+import android.text.TextUtils;
 import android.view.InputEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -123,11 +125,18 @@ public class TouchlessDialogProperties {
     public static final WritableBooleanPropertyKey FORCE_SINGLE_LINE_TITLE =
             new WritableBooleanPropertyKey();
 
+    /** Force the title to have a specific text direction. See {@link View#setTextDirection}. */
+    public static final WritableIntPropertyKey TITLE_DIRECTION = new WritableIntPropertyKey();
+
+    /** Set ellipsize location for the title. See {@link TextView#setEllipsize}. */
+    public static final WritableObjectPropertyKey<TextUtils.TruncateAt> TITLE_ELLIPSIZE =
+            new WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] MINIMAL_DIALOG_KEYS = {
             ModalDialogProperties.TITLE, ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY};
 
-    public static final PropertyKey[] ALL_DIALOG_KEYS =
-            PropertyModel.concatKeys(ModalDialogProperties.ALL_KEYS,
-                    new PropertyKey[] {ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY,
-                            IS_FULLSCREEN, LIST_MODELS, FORCE_SINGLE_LINE_TITLE});
+    public static final PropertyKey[] ALL_DIALOG_KEYS = PropertyModel.concatKeys(
+            ModalDialogProperties.ALL_KEYS,
+            new PropertyKey[] {ACTION_NAMES, CANCEL_ACTION, ALT_ACTION, PRIORITY, IS_FULLSCREEN,
+                    LIST_MODELS, FORCE_SINGLE_LINE_TITLE, TITLE_DIRECTION, TITLE_ELLIPSIZE});
 }

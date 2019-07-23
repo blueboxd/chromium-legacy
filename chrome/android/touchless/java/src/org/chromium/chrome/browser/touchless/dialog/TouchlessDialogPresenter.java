@@ -181,6 +181,12 @@ public class TouchlessDialogPresenter extends Presenter {
             textView.setMaxLines(model.get(TouchlessDialogProperties.FORCE_SINGLE_LINE_TITLE)
                             ? 1
                             : Integer.MAX_VALUE);
+        } else if (TouchlessDialogProperties.TITLE_DIRECTION == propertyKey) {
+            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            textView.setTextDirection(model.get(TouchlessDialogProperties.TITLE_DIRECTION));
+        } else if (TouchlessDialogProperties.TITLE_ELLIPSIZE == propertyKey) {
+            TextView textView = dialogView.findViewById(R.id.touchless_dialog_title);
+            textView.setEllipsize(model.get(TouchlessDialogProperties.TITLE_ELLIPSIZE));
         }
     }
 

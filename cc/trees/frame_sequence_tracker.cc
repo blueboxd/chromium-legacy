@@ -156,9 +156,7 @@ FrameSequenceTracker::FrameSequenceTracker(
 
 FrameSequenceTracker::~FrameSequenceTracker() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
-  // TODO(sad): Reenable the DCHECK after crbug.com/985847 is resolved.
-  // DCHECK_LE(main_throughput_.frames_produced,
-  //           main_throughput_.frames_expected);
+  DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, impl_throughput_.frames_produced);
   TRACE_EVENT_ASYNC_END1(
       "cc,benchmark", "FrameSequenceTracker", this, "args",
@@ -177,6 +175,9 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
+  if (ShouldIgnoreBeginFrameSource(args.source_id))
+    return;
+
   UpdateTrackedFrameData(&begin_impl_frame_data_, args.source_id,
                          args.sequence_number);
   impl_throughput_.frames_expected +=
@@ -186,6 +187,9 @@ void FrameSequenceTracker::ReportBeginImplFrame(
 void FrameSequenceTracker::ReportBeginMainFrame(
     const viz::BeginFrameArgs& args) {
   if (termination_status_ != TerminationStatus::kActive)
+    return;
+
+  if (ShouldIgnoreBeginFrameSource(args.source_id))
     return;
 
   UpdateTrackedFrameData(&begin_main_frame_data_, args.source_id,
@@ -203,6 +207,9 @@ void FrameSequenceTracker::ReportSubmitFrame(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
+  if (ShouldIgnoreBeginFrameSource(ack.source_id))
+    return;
+
   if (begin_impl_frame_data_.previous_sequence == 0 ||
       ack.sequence_number < begin_impl_frame_data_.previous_sequence) {
     return;
@@ -212,12 +219,14 @@ void FrameSequenceTracker::ReportSubmitFrame(
     first_submitted_frame_ = frame_token;
   last_submitted_frame_ = frame_token;
 
-  if (first_received_main_sequence_ &&
+  if (!ShouldIgnoreBeginFrameSource(origin_args.source_id) &&
+      first_received_main_sequence_ &&
       origin_args.sequence_number >= first_received_main_sequence_) {
     if (last_submitted_main_sequence_ == 0 ||
         origin_args.sequence_number > last_submitted_main_sequence_) {
       last_submitted_main_sequence_ = origin_args.sequence_number;
       main_frames_.push_back(frame_token);
+      DCHECK_GE(main_throughput_.frames_expected, main_frames_.size());
     }
   }
 }
@@ -257,9 +266,8 @@ void FrameSequenceTracker::ReportFramePresented(
   while (!main_frames_.empty() &&
          !viz::FrameTokenGT(main_frames_.front(), frame_token)) {
     if (was_presented && main_frames_.front() == frame_token) {
-      // TODO(sad): Reenable the DCHECK after crbug.com/985847 is resolved.
-      // DCHECK_LT(main_throughput_.frames_produced,
-      //           main_throughput_.frames_expected);
+      DCHECK_LT(main_throughput_.frames_produced,
+                main_throughput_.frames_expected);
       ++main_throughput_.frames_produced;
     }
     main_frames_.pop_front();
@@ -269,6 +277,9 @@ void FrameSequenceTracker::ReportFramePresented(
 void FrameSequenceTracker::ReportImplFrameCausedNoDamage(
     const viz::BeginFrameAck& ack) {
   if (termination_status_ != TerminationStatus::kActive)
+    return;
+
+  if (ShouldIgnoreBeginFrameSource(ack.source_id))
     return;
 
   // It is possible that this is called before a begin-impl-frame has been
@@ -290,6 +301,9 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (termination_status_ != TerminationStatus::kActive)
     return;
 
+  if (ShouldIgnoreBeginFrameSource(args.source_id))
+    return;
+
   // It is possible that this is called before a begin-main-frame has been
   // dispatched for this frame-sequence. In such cases, ignore this call.
   if (begin_main_frame_data_.previous_sequence == 0 ||
@@ -300,6 +314,7 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   DCHECK_GT(main_throughput_.frames_expected, 0u);
   DCHECK_GT(main_throughput_.frames_expected, main_throughput_.frames_produced);
   --main_throughput_.frames_expected;
+  DCHECK_GE(main_throughput_.frames_expected, main_frames_.size());
 
   if (begin_main_frame_data_.previous_sequence == args.sequence_number)
     begin_main_frame_data_.previous_sequence = 0;
@@ -324,6 +339,13 @@ void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
   }
   frame_data->previous_source = source_id;
   frame_data->previous_sequence = sequence_number;
+}
+
+bool FrameSequenceTracker::ShouldIgnoreBeginFrameSource(
+    uint64_t source_id) const {
+  if (begin_impl_frame_data_.previous_source == 0)
+    return false;
+  return source_id != begin_impl_frame_data_.previous_source;
 }
 
 std::unique_ptr<base::trace_event::TracedValue>

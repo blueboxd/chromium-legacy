@@ -293,7 +293,7 @@ public class MinidumpUploaderTest {
                 Assert.assertTrue(currentMinidumps[m].delete());
             }
             crashReceiverService.performMinidumpCopyingSerially(
-                    uids[n] /* uid */, fileDescriptors[n], false /* scheduleUploads */);
+                    uids[n] /* uid */, fileDescriptors[n], null, false /* scheduleUploads */);
         }
 
         final CrashReportingPermissionManager permManager =

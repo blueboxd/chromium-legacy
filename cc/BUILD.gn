@@ -676,6 +676,7 @@ cc_test("cc_unittests") {
     "tiles/tile_manager_unittest.cc",
     "tiles/tile_priority_unittest.cc",
     "trees/damage_tracker_unittest.cc",
+    "trees/frame_sequence_tracker_unittest.cc",
     "trees/image_animation_controller_unittest.cc",
     "trees/layer_tree_frame_sink_unittest.cc",
     "trees/layer_tree_host_common_unittest.cc",

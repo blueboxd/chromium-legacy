@@ -9,8 +9,8 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/reload_type.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/reload_type.h"
 #include "ios/web/public/security/web_interstitial.h"
 #import "ios/web/public/web_state/web_state.h"
 

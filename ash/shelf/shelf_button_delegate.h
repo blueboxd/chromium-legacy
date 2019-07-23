@@ -14,7 +14,6 @@ class Event;
 namespace views {
 class Button;
 class InkDrop;
-class View;
 }  // namespace views
 
 namespace ash {
@@ -42,12 +41,6 @@ class ShelfButtonDelegate {
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event,
                              views::InkDrop* ink_drop) = 0;
-
-  // Returns true if |event| on the shelf item is going to activate the
-  // ShelfItem associated with |view|. Used to determine whether a pending ink
-  // drop should be shown or not.
-  virtual bool ShouldEventActivateButton(views::View* view,
-                                         const ui::Event& event) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfButtonDelegate);

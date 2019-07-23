@@ -384,13 +384,18 @@ TEST_F(MojoRendererTest, OnBufferingStateChange) {
   Initialize();
   Play();
 
-  EXPECT_CALL(renderer_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
+  EXPECT_CALL(renderer_client_,
+              OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                     BUFFERING_CHANGE_REASON_UNKNOWN))
       .Times(1);
-  remote_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_ENOUGH);
+  remote_renderer_client_->OnBufferingStateChange(
+      BUFFERING_HAVE_ENOUGH, BUFFERING_CHANGE_REASON_UNKNOWN);
 
-  EXPECT_CALL(renderer_client_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+  EXPECT_CALL(renderer_client_,
+              OnBufferingStateChange(BUFFERING_HAVE_NOTHING, DECODER_UNDERFLOW))
       .Times(1);
-  remote_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
+  remote_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
+                                                  DECODER_UNDERFLOW);
 
   base::RunLoop().RunUntilIdle();
 }

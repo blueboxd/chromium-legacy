@@ -35,6 +35,8 @@
 
 cr-expand-button {
   padding-inline-end: 8px;
+  /* Overrides default value 12px for cr-icon-button */
+  --cr-section-vertical-padding: 0;
 }
 
 .toggle {

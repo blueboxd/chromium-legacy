@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -45,11 +46,11 @@ gfx::Transform GetWindowEndTransform(aura::Window* window, bool going_left) {
 class WindowMoveToDeskAnimation : public ui::ImplicitAnimationObserver {
  public:
   WindowMoveToDeskAnimation(aura::Window* window, bool going_left)
-      : old_window_layer_tree_(wm::RecreateLayers(window)) {
+      : old_window_layer_tree_(::wm::RecreateLayers(window)) {
     ui::Layer* layer = old_window_layer_tree_->root();
     ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
     constexpr base::TimeDelta kDuration =
-        base::TimeDelta::FromMilliseconds(250);
+        base::TimeDelta::FromMilliseconds(200);
     settings.SetTransitionDuration(kDuration);
     settings.SetTweenType(gfx::Tween::EASE_IN);
     settings.SetPreemptionStrategy(
@@ -115,8 +116,12 @@ void PerformHitTheWallAnimation(aura::Window* root, bool going_left) {
 void PerformWindowMoveToDeskAnimation(aura::Window* window, bool going_left) {
   DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
-  // This is a self-deleting object.
-  new WindowMoveToDeskAnimation(window, going_left);
+  // The entire transient window tree should appear to animate together towards
+  // the target desk.
+  for (auto* transient_window : wm::GetTransientTreeIterator(window)) {
+    // This is a self-deleting object.
+    new WindowMoveToDeskAnimation(transient_window, going_left);
+  }
 }
 
 }  // namespace desks_animations

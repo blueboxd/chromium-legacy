@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
-#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/navigation/navigation_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

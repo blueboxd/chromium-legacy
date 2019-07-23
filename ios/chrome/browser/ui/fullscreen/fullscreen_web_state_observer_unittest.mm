@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_mediator.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"

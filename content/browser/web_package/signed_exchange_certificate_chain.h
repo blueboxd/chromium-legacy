@@ -81,7 +81,7 @@ class CONTENT_EXPORT SignedExchangeCertificateChain {
 
   // Returns true if SPKI hash of |cert_| is included in the
   // --ignore-certificate-errors-spki-list command line flag, and
-  // ContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() returns true.
+  // ContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() returns true.
   bool ShouldIgnoreErrors() const;
 
  private:

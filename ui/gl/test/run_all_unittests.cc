@@ -18,7 +18,6 @@
 #if defined(USE_OZONE)
 #include "base/command_line.h"
 #include "mojo/core/embedder/embedder.h"                  // nogncheck
-#include "services/viz/public/interfaces/constants.mojom.h"  // nogncheck
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 

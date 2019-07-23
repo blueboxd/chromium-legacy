@@ -73,6 +73,12 @@ class VIEWS_EXPORT Textfield : public View,
  public:
   METADATA_HEADER(Textfield);
 
+  // An enum giving different model properties unique keys for the
+  // OnPropertyChanged call.
+  enum ModelPropertyKey {
+    kTextProperty = 1,
+  };
+
   // Returns the text cursor blink time, or 0 for no blinking.
   static base::TimeDelta GetCaretBlinkInterval();
 
@@ -385,7 +391,7 @@ class VIEWS_EXPORT Textfield : public View,
       bool is_composition_committed) override;
 #endif
 
-  views::PropertyChangedSubscription AddModelChangedCallback(
+  views::PropertyChangedSubscription AddTextChangedCallback(
       views::PropertyChangedCallback callback);
 
  protected:

@@ -32,6 +32,11 @@ constexpr int kArtworkViewHeight = 200;
 
 const base::string16 kTestAppName = base::ASCIIToUTF16("Test app");
 
+MediaSessionAction kActionButtonOrder[] = {
+    MediaSessionAction::kPreviousTrack, MediaSessionAction::kSeekBackward,
+    MediaSessionAction::kPause, MediaSessionAction::kSeekForward,
+    MediaSessionAction::kNextTrack};
+
 // Checks if the view class name is used by a media button.
 bool IsMediaButtonType(const char* class_name) {
   return class_name == views::ImageButton::kViewClassName ||
@@ -230,10 +235,16 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {
   EnableAllActions();
 
   EXPECT_TRUE(button_row()->GetVisible());
-  EXPECT_EQ(3u, button_row()->children().size());
+  EXPECT_EQ(5u, button_row()->children().size());
 
-  for (auto* child : button_row()->children()) {
+  for (int i = 0; i < 5; /* size of |button_row| */ i++) {
+    auto* child = button_row()->children()[i];
+
     ASSERT_TRUE(IsMediaButtonType(child->GetClassName()));
+
+    ASSERT_EQ(
+        static_cast<MediaSessionAction>(views::Button::AsButton(child)->tag()),
+        kActionButtonOrder[i]);
 
     EXPECT_TRUE(child->GetVisible());
     EXPECT_FALSE(views::Button::AsButton(child)->GetAccessibleName().empty());
@@ -242,6 +253,8 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsSanityCheck) {
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPreviousTrack));
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kNextTrack));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekBackward));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kSeekForward));
 
   // |kPlay| cannot be present if |kPause| is.
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
@@ -260,7 +273,15 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsFocusCheck) {
   }
 
   SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kSeekBackward),
+            focus_manager->GetFocusedView());
+
+  SimulateTab();
   EXPECT_EQ(GetButtonForAction(MediaSessionAction::kPause),
+            focus_manager->GetFocusedView());
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kSeekForward),
             focus_manager->GetFocusedView());
 
   SimulateTab();
@@ -335,6 +356,28 @@ TEST_F(LockScreenMediaControlsViewTest, NextTrackButtonClick) {
   media_controls_view_->FlushForTesting();
 
   EXPECT_EQ(1, media_controller()->next_track_count());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, SeekBackwardButtonClick) {
+  EnableAction(MediaSessionAction::kSeekBackward);
+
+  EXPECT_EQ(0, media_controller()->seek_backward_count());
+
+  SimulateButtonClick(MediaSessionAction::kSeekBackward);
+  media_controls_view_->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->seek_backward_count());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, SeekForwardButtonClick) {
+  EnableAction(MediaSessionAction::kSeekForward);
+
+  EXPECT_EQ(0, media_controller()->seek_forward_count());
+
+  SimulateButtonClick(MediaSessionAction::kSeekForward);
+  media_controls_view_->FlushForTesting();
+
+  EXPECT_EQ(1, media_controller()->seek_forward_count());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {

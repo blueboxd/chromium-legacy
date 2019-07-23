@@ -7,12 +7,13 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow_mixin.h"
 
 namespace blink {
 
 // This overrides the default layout block algorithm to use Layout NG.
-class CORE_EXPORT LayoutNGBlockFlow : public LayoutNGMixin<LayoutBlockFlow> {
+class CORE_EXPORT LayoutNGBlockFlow
+    : public LayoutNGBlockFlowMixin<LayoutBlockFlow> {
  public:
   explicit LayoutNGBlockFlow(Element*);
   ~LayoutNGBlockFlow() override;
@@ -25,7 +26,6 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutNGMixin<LayoutBlockFlow> {
   bool IsOfType(LayoutObjectType) const override;
 
  private:
-  void UpdateOutOfFlowBlockLayout();
   void UpdateMargins(const NGConstraintSpace&);
 };
 

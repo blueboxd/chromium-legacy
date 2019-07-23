@@ -54,6 +54,9 @@ class AppListControllerDelegate {
   // Dismisses the view.
   virtual void DismissView() = 0;
 
+  // Gets app list window.
+  virtual aura::Window* GetAppListWindow() = 0;
+
   // Gets display ID of app list window.
   virtual int64_t GetAppListDisplayId() = 0;
 

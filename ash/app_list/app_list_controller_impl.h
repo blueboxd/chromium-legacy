@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
@@ -126,6 +127,7 @@ class ASH_EXPORT AppListControllerImpl
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   void ShowAppListAndSwitchToState(ash::AppListState state) override;
   void ShowAppList() override;
+  aura::Window* GetWindow() override;
 
   // app_list::AppListModelObserver:
   void OnAppListItemAdded(app_list::AppListItem* item) override;
@@ -199,6 +201,10 @@ class ASH_EXPORT AppListControllerImpl
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
+  void NotifySearchResultsForLogging(
+      const base::string16& raw_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) override;
   bool IsAssistantAllowedAndEnabled() const override;
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
@@ -267,8 +273,6 @@ class ASH_EXPORT AppListControllerImpl
       UpdateAnimationSettingsCallback callback) override;
   void UpdateAfterHomeLauncherShown() override;
   base::Optional<base::TimeDelta> GetOptionalAnimationDuration() override;
-  bool ShouldShowShelfOnHomeScreen() const override;
-  bool ShouldShowStatusAreaOnHomeScreen() const override;
   void NotifyHomeLauncherAnimationTransition(AnimationTrigger trigger,
                                              bool launcher_will_show) override;
 

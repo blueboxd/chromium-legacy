@@ -17,7 +17,8 @@ enum class SMSReceiverOutcome {
   kSuccess = 0,
   kTimeout = 1,
   kConnectionError = 2,
-  kMaxValue = kConnectionError
+  kCancelled = 3,
+  kMaxValue = kCancelled
 };
 
 void RecordSMSOutcome(SMSReceiverOutcome outcome);

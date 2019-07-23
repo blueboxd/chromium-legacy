@@ -30,7 +30,6 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/worker_thread.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
-#include "content/renderer/loader/tracked_child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/loader/web_url_request_util.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
@@ -109,6 +108,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     blink::mojom::EmbeddedWorkerStartTimingPtr start_timing,
     blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_loaders,
+    mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+        subresource_loader_updater,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
@@ -120,6 +121,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       proxy_(nullptr),
       pending_service_worker_request_(std::move(service_worker_request)),
       pending_controller_request_(std::move(controller_request)),
+      pending_subresource_loader_updater_(
+          std::move(subresource_loader_updater)),
       owner_(owner),
       start_timing_(std::move(start_timing)) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
@@ -146,10 +149,9 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
                            base::Unretained(this)));
   }
 
-  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
-      main_thread_task_runner_);
-  loader_factories_->Update(std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-      std::move(subresource_loaders)));
+  loader_factories_ = base::MakeRefCounted<ChildURLLoaderFactoryBundle>(
+      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
+          std::move(subresource_loaders)));
 
   service_worker_provider_info_ = std::move(provider_info);
 
@@ -177,15 +179,6 @@ void ServiceWorkerContextClient::StartWorkerContext(
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   return *worker_;
-}
-
-void ServiceWorkerContextClient::UpdateSubresourceLoaderFactories(
-    std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-        subresource_loader_factories) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  loader_factories_->UpdateThisAndAllClones(
-      std::make_unique<ChildURLLoaderFactoryBundleInfo>(
-          std::move(subresource_loader_factories)));
 }
 
 void ServiceWorkerContextClient::WorkerReadyForInspectionOnMainThread() {
@@ -409,14 +402,15 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThreadLegacy(
               ->Clone();
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
-      *renderer_preferences_, script_url_, loader_factories_->Clone(),
+      *renderer_preferences_, script_url_, loader_factories_->PassInterface(),
       std::move(script_loader_factory_info),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
-      std::move(preference_watcher_request_));
+      std::move(preference_watcher_request_),
+      std::move(pending_subresource_loader_updater_));
 }
 
 scoped_refptr<blink::WebWorkerFetchContext>
@@ -431,14 +425,15 @@ ServiceWorkerContextClient::CreateWorkerFetchContextOnMainThread() {
           service_worker_provider_info_->script_loader_factory_ptr_info));
 
   return base::MakeRefCounted<ServiceWorkerFetchContextImpl>(
-      *renderer_preferences_, script_url_, loader_factories_->Clone(),
+      *renderer_preferences_, script_url_, loader_factories_->PassInterface(),
       std::move(script_loader_factory_info),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
           URLLoaderThrottleProviderType::kWorker),
       GetContentClient()
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
-      std::move(preference_watcher_request_));
+      std::move(preference_watcher_request_),
+      std::move(pending_subresource_loader_updater_));
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(

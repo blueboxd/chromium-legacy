@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/deprecated/navigation_item_list.h"
-#include "ios/web/public/reload_type.h"
+#include "ios/web/public/navigation/reload_type.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 

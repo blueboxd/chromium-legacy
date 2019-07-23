@@ -42,10 +42,22 @@ const base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
 // A time delta of length one day.
 const base::TimeDelta kOneDay = base::TimeDelta::FromDays(1);
 
+// A time delta with length of a half day.
+const base::TimeDelta kHalfDay = base::TimeDelta::FromHours(12);
+
+// A time delta with length zero.
+const base::TimeDelta kZeroTime = base::TimeDelta();
+
 // When the password will expire in |kUrgentWarningDays| or less, the
 // UrgentPasswordExpiryNotification will be used - which is larger and actually
 // a dialog (not a true notification) - instead of the normal notification.
 const int kUrgentWarningDays = 3;
+
+// Rounds to the nearest day - eg plus or minus 12 hours is zero days, 12 to 36
+// hours is 1 day, -12 to -36 hours is -1 day, etc.
+inline int RoundToDays(base::TimeDelta time_delta) {
+  return (time_delta + kHalfDay).InDaysFloored();
+}
 
 }  // namespace
 
@@ -148,15 +160,28 @@ void InSessionPasswordChangeManager::MaybeShowExpiryNotification() {
   // Calculate how many days until the password will expire.
   const base::TimeDelta time_until_expiry =
       attrs.expiration_time() - base::Time::Now();
-  const int less_than_n_days =
-      std::max(0, time_until_expiry.InDaysFloored() + 1);
-  const int advance_warning_days = std::max(
-      0, prefs->GetInteger(prefs::kSamlPasswordExpirationAdvanceWarningDays));
+  const int days_until_expiry = RoundToDays(time_until_expiry);
+  const int advance_warning_days =
+      prefs->GetInteger(prefs::kSamlPasswordExpirationAdvanceWarningDays);
 
-  if (less_than_n_days <= advance_warning_days) {
-    // The password is expired, or expires in less than |advance_warning_days|.
-    // So we show a notification immediately.
-    ShowExpiryNotification(less_than_n_days);
+  bool is_expired = time_until_expiry <= kZeroTime;
+  // Show notification if a) expired, or b) advance_warning_days is set > 0 and
+  // we are now within advance_warning_days of the expiry time.
+  const bool show_notification =
+      is_expired ||
+      (advance_warning_days > 0 && days_until_expiry <= advance_warning_days);
+
+  if (show_notification) {
+    // Show as urgent if urgent_warning_days is set > 0 and we are now within
+    // urgent_warning_days of the expiry time.
+    const bool show_as_urgent =
+        (urgent_warning_days_ > 0 && days_until_expiry <= urgent_warning_days_);
+    if (show_as_urgent) {
+      ShowUrgentExpiryNotification();
+    } else {
+      ShowStandardExpiryNotification(time_until_expiry);
+    }
+
     // We check again whether to reshow / update the notification after one day:
     recheck_task_.RecheckAfter(kOneDay);
 
@@ -172,17 +197,19 @@ void InSessionPasswordChangeManager::MaybeShowExpiryNotification() {
   }
 }
 
-void InSessionPasswordChangeManager::ShowExpiryNotification(
-    int less_than_n_days) {
+void InSessionPasswordChangeManager::ShowStandardExpiryNotification(
+    base::TimeDelta time_until_expiry) {
   // Show a notification, and reshow it each time the screen is unlocked.
   renotify_on_unlock_ = true;
+  PasswordExpiryNotification::Show(primary_profile_, time_until_expiry);
+  UrgentPasswordExpiryNotificationDialog::Dismiss();
+}
 
-  less_than_n_days = std::max(0, less_than_n_days);
-  if (less_than_n_days < urgent_warning_days_) {
-    UrgentPasswordExpiryNotificationDialog::Show(less_than_n_days);
-  } else {
-    PasswordExpiryNotification::Show(primary_profile_, less_than_n_days);
-  }
+void InSessionPasswordChangeManager::ShowUrgentExpiryNotification() {
+  // Show a notification, and reshow it each time the screen is unlocked.
+  renotify_on_unlock_ = true;
+  UrgentPasswordExpiryNotificationDialog::Show();
+  PasswordExpiryNotification::Dismiss(primary_profile_);
 }
 
 void InSessionPasswordChangeManager::DismissExpiryNotification() {

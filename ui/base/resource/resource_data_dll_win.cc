@@ -28,10 +28,6 @@ bool ResourceDataDLL::HasResource(uint16_t resource_id) const {
                                               &data_size);
 }
 
-bool ResourceDataDLL::IsGzipped(uint16_t resource_id, bool* is_gzipped) const {
-  return false;
-}
-
 bool ResourceDataDLL::GetStringPiece(uint16_t resource_id,
                                      base::StringPiece* data) const {
   DCHECK(data);

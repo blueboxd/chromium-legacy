@@ -1969,7 +1969,6 @@ test("ash_unittests") {
     "//services/device/public/cpp/bluetooth",
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
-    "//services/viz/public/cpp:manifest",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
@@ -2019,7 +2018,6 @@ test("ash_unittests") {
 
   data_deps = [
     "//ash/resources:ash_test_resources_100_percent",
-    "//services/viz",
   ]
 
   data = [

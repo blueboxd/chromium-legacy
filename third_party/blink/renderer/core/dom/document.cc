@@ -323,10 +323,10 @@ namespace blink {
 
 using namespace html_names;
 
-class DocumentOutliveTimeReporter : public BlinkGCObserver {
+class DocumentOutliveTimeReporter : public HeapObserver {
  public:
   explicit DocumentOutliveTimeReporter(Document* document)
-      : BlinkGCObserver(ThreadState::Current()), document_(document) {}
+      : HeapObserver(ThreadState::Current()), document_(document) {}
 
   ~DocumentOutliveTimeReporter() override {
     // As not all documents are destroyed before the process dies, this might
@@ -336,12 +336,14 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
         GetOutliveTimeCount() + 1, 101);
   }
 
-  void OnCompleteSweepDone() override {
+  void GCFinished(const ThreadHeapStatsCollector::Event& event) override {
     enum GCCount {
       kGCCount5,
       kGCCount10,
       kGCCountMax,
     };
+
+    last_recorded_gc_age_ = event.gc_age;
 
     // There are some cases that a document can live after shutting down because
     // the document can still be referenced (e.g. a document opened via
@@ -354,7 +356,7 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
               document_->domWindow())) {
         return;
       }
-      gc_age_when_document_detached_ = ThreadState::Current()->GcAge();
+      gc_age_when_document_detached_ = last_recorded_gc_age_;
     }
 
     int outlive_time_count = GetOutliveTimeCount();
@@ -377,13 +379,15 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
 
  private:
   int GetOutliveTimeCount() const {
-    if (!gc_age_when_document_detached_)
-      return 0;
-    return ThreadState::Current()->GcAge() - gc_age_when_document_detached_;
+    return gc_age_when_document_detached_
+               ? static_cast<int>(last_recorded_gc_age_ -
+                                  gc_age_when_document_detached_)
+               : 0;
   }
 
   WeakPersistent<Document> document_;
-  int gc_age_when_document_detached_ = 0;
+  size_t last_recorded_gc_age_ = 0;
+  size_t gc_age_when_document_detached_ = 0;
 };
 
 static const unsigned kCMaxWriteRecursionDepth = 21;

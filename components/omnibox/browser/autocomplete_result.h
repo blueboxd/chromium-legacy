@@ -143,6 +143,8 @@ class AutocompleteResult {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           PedalSuggestionsRemainUnique);
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 

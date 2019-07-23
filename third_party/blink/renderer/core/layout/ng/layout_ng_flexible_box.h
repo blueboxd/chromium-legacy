@@ -7,10 +7,11 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 
 namespace blink {
 
-class CORE_EXPORT LayoutNGFlexibleBox : public LayoutBlock {
+class CORE_EXPORT LayoutNGFlexibleBox : public LayoutNGMixin<LayoutBlock> {
  public:
   explicit LayoutNGFlexibleBox(Element*);
 
@@ -18,12 +19,12 @@ class CORE_EXPORT LayoutNGFlexibleBox : public LayoutBlock {
 
   bool IsFlexibleBoxIncludingDeprecatedAndNG() const final { return true; }
   bool IsFlexibleBoxIncludingNG() const final { return true; }
-  bool IsLayoutNGObject() const override { return true; }
   const char* GetName() const override { return "LayoutNGFlexibleBox"; }
 
  protected:
   bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectNGFlexibleBox || LayoutBlock::IsOfType(type);
+    return type == kLayoutObjectNGFlexibleBox ||
+           LayoutNGMixin<LayoutBlock>::IsOfType(type);
   }
 };
 

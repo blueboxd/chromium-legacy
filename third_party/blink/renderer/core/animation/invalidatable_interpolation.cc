@@ -271,19 +271,21 @@ void InvalidatableInterpolation::ApplyStack(
     current_interpolation.SetFlagIfInheritUsed(environment);
     double underlying_fraction = current_interpolation.UnderlyingFraction();
     if (underlying_fraction == 0 || !underlying_value_owner ||
-        underlying_value_owner.GetType() != current_value->GetType())
+        underlying_value_owner.GetType() != current_value->GetType()) {
       underlying_value_owner.Set(current_value);
-    else
+    } else {
       current_value->GetType().Composite(
           underlying_value_owner, underlying_fraction, current_value->Value(),
           current_interpolation.current_fraction_);
+    }
   }
 
-  if (should_apply && underlying_value_owner)
+  if (should_apply && underlying_value_owner) {
     underlying_value_owner.GetType().Apply(
         *underlying_value_owner.Value().interpolable_value,
         underlying_value_owner.Value().non_interpolable_value.get(),
         environment);
+  }
 }
 
 }  // namespace blink

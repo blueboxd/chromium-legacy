@@ -300,6 +300,22 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   bool notify_visibility_change = false;
 };
 
+// A struct holding a search result id and its corresponding position index that
+// was being shown to the user.
+struct SearchResultIdWithPositionIndex {
+  SearchResultIdWithPositionIndex(std::string result_id, int index)
+      : id(result_id), position_index(index) {}
+
+  // The id of the result.
+  std::string id;
+
+  // The position index of the result.
+  int position_index;
+};
+
+using SearchResultIdWithPositionIndices =
+    std::vector<SearchResultIdWithPositionIndex>;
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_APP_LIST_APP_LIST_TYPES_H_

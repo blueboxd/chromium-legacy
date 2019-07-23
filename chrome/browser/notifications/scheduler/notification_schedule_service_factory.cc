@@ -79,7 +79,8 @@ KeyedService* NotificationScheduleServiceFactory::BuildServiceInstanceFor(
       profile->GetProfileKey());
   return notifications::CreateNotificationScheduleService(
       std::move(client_registrar), std::move(background_task_scheduler),
-      std::move(display_agent), db_provider, storage_dir);
+      std::move(display_agent), db_provider, storage_dir,
+      context->IsOffTheRecord());
 }
 
 content::BrowserContext*

@@ -47,9 +47,10 @@ class ContentIndexProviderImplTest : public testing::Test,
   MOCK_METHOD1(OnItemsAdded,
                void(const OfflineContentProvider::OfflineItemList& items));
   MOCK_METHOD1(OnItemRemoved, void(const ContentId& id));
-  MOCK_METHOD2(OnItemUpdated,
-               void(const OfflineItem& item,
-                    const base::Optional<UpdateDelta>& update_delta));
+  void OnItemUpdated(const OfflineItem& item,
+                     const base::Optional<UpdateDelta>& update_delta) override {
+    NOTREACHED();
+  }
 
   content::ContentIndexEntry CreateEntry(const std::string& id) {
     auto description = blink::mojom::ContentDescription::New(
@@ -58,20 +59,6 @@ class ContentIndexProviderImplTest : public testing::Test,
     return content::ContentIndexEntry(kServiceWorkerRegistrationId,
                                       std::move(description), kLaunchURL,
                                       base::Time::Now());
-  }
-
-  std::vector<OfflineItem> GetAllItems() {
-    std::vector<OfflineItem> out_items;
-
-    base::RunLoop run_loop;
-    provider_->GetAllItems(
-        base::BindLambdaForTesting([&](const std::vector<OfflineItem>& items) {
-          out_items = items;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-
-    return out_items;
   }
 
  protected:
@@ -106,33 +93,13 @@ TEST_F(ContentIndexProviderImplTest, ObserverUpdates) {
 
   // Adding an already existing ID should call update.
   {
-    EXPECT_CALL(*this, OnItemsAdded(_)).Times(0);
-    EXPECT_CALL(*this, OnItemUpdated(_, _));
+    EXPECT_CALL(*this, OnItemRemoved(_)).Times(1);
+    EXPECT_CALL(*this, OnItemsAdded(_)).Times(1);
     provider_->OnContentAdded(CreateEntry("id"));
-  }
-
-  // Removing a fake ID won't notify observers.
-  {
-    EXPECT_CALL(*this, OnItemRemoved(_)).Times(0);
-    provider_->OnContentDeleted(kServiceWorkerRegistrationId, kOrigin,
-                                "wrong-id");
   }
 
   {
     EXPECT_CALL(*this, OnItemRemoved(_));
     provider_->OnContentDeleted(kServiceWorkerRegistrationId, kOrigin, "id");
   }
-}
-
-TEST_F(ContentIndexProviderImplTest, GetAllItems) {
-  // Inititally there are no items.
-  EXPECT_TRUE(GetAllItems().empty());
-
-  provider_->OnContentAdded(CreateEntry("id1"));
-  provider_->OnContentAdded(CreateEntry("id2"));
-
-  auto items = GetAllItems();
-  ASSERT_EQ(items.size(), 2u);
-  EXPECT_EQ(items[0].id.name_space, items[0].id.name_space);
-  EXPECT_NE(items[0].id.id, items[1].id.id);
 }

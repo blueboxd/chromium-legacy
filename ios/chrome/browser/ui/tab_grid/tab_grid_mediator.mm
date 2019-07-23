@@ -30,7 +30,7 @@
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/gfx/image/image.h"

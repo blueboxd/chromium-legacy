@@ -41,8 +41,8 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#import "ios/web/public/navigation_manager.h"
-#include "ios/web/public/referrer.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

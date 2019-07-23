@@ -105,9 +105,8 @@ class CORE_EXPORT PaintLayerCompositor {
 
   bool RootShouldAlwaysComposite() const;
 
-  // Copy the accelerated compositing related flags from Settings
-  // TODO(danakj): This setting shouldn't change after initialization, remove
-  // this public method.
+  // Notifies about changes to PreferCompositingToLCDText or
+  // AcceleratedCompositing.
   void UpdateAcceleratedCompositingSettings();
 
   // Used to indicate that a compositing update will be needed for the next
@@ -214,12 +213,8 @@ class CORE_EXPORT PaintLayerCompositor {
       GraphicsLayer* child_frame_parent_candidate = nullptr) const;
 
   LayoutView& layout_view_;
+  const bool has_accelerated_compositing_ = true;
 
-  // After initialization, compositing updates must be done, so start dirty.
-  CompositingUpdateType pending_update_type_ =
-      kCompositingUpdateAfterCompositingInputChange;
-
-  bool has_accelerated_compositing_ = true;
   bool compositing_ = false;
 
   // The root layer doesn't composite if it's a non-scrollable frame.
@@ -230,6 +225,10 @@ class CORE_EXPORT PaintLayerCompositor {
   // except the one in UpdateIfNeeded(), then rename this to
   // compositing_dirty_.
   bool root_should_always_composite_dirty_ = true;
+
+  // After initialization, compositing updates must be done, so start dirty.
+  CompositingUpdateType pending_update_type_ =
+      kCompositingUpdateAfterCompositingInputChange;
 
   enum RootLayerAttachment {
     kRootLayerUnattached,

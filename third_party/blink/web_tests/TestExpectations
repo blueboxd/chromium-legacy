@@ -593,9 +593,11 @@ crbug.com/847274 virtual/layout_ng_experimental/external/wpt/css/css-contain/con
 crbug.com/880802 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882367 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/882367 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-flexbox-001.html [ Failure ]
 crbug.com/955170 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003a.html [ Failure ]
 crbug.com/955163 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003b.html [ Failure ]
 crbug.com/955163 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-replaced-003c.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/css-contain/contain-size-scrollbars-002.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
 crbug.com/882383 virtual/layout_ng_experimental/external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
@@ -609,6 +611,8 @@ crbug.com/881057 [ Mac ] virtual/layout_ng_experimental/external/wpt/css/vendor-
 crbug.com/880802 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-ignored-cases-ruby-stacking-and-clipping-001.html [ Failure ]
 crbug.com/881057 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-stacking-context-001b.html [ Failure ]
 crbug.com/965491 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-fieldset-002.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-flex-001.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_experimental/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-inline-flex-001.html [ Failure ]
 
 # [css-align]
 
@@ -683,6 +687,9 @@ crbug.com/885175 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 # [css-ui]
 # Layout team disagrees with the spec for this particular test.
 crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
+
+# Fails only on Linux bots. Pass on all other bots and on local Linux.
+crbug.com/985620 [ Linux ] fast/text/zwnj-disables-kerning.html [ Failure ]
 
 # ====== Layout team owned tests to here ======
 
@@ -2029,7 +2036,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-wrap-reverse.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-column-wrap.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_flow-row-wrap-reverse.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_inline-abspos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_inline.html [ Failure ]
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_justifycontent-center-overflow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/flexbox_margin-collapse.html [ Failure ]
@@ -3233,6 +3239,15 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
+crbug.com/626703 external/wpt/webxr/xrWebGLLayer_viewports.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-linethrough-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
+crbug.com/626703 external/wpt/webxr/xrWebGLLayer_framebuffer.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
@@ -3470,7 +3485,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/response/r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-https/xhr-request/no-redirect/upgrade-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/http-rp/cross-origin/http-http/iframe-tag/swap-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/meta-referrer/cross-origin/http-http/img-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/meta-referrer/same-origin/http-http/module-worker/keep-origin-redirect/insecure-protocol.http.html [ Timeout ]
@@ -4096,7 +4110,7 @@ crbug.com/626703 external/wpt/css/css-fonts/font-feature-settings-descriptor-01.
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.worker.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/fetch/api/redirect/redirect-count.any.html [ Timeout ]
 
-crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout ]
+crbug.com/626703 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Timeout Crash ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-integrity-classic.sub.html [ Skip ]
@@ -4643,12 +4657,6 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
 
 # Underline offset and thickness are not implemented yet.
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-linethrough-001.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-overline-001.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-scroll-001.html [ Skip ]
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-width-underline-001.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-width-vertical-001.html [ Skip ]
-crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-width-vertical-002.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Skip ]
@@ -4680,8 +4688,6 @@ crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.htm
 # Needs investigation. These are timing out.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Skip ]
-# This is crashing because of DCHECK.
-crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/dedicated-worker-service-worker-interception.https.html [ Skip ]
 # These are timing out because filesystem: URL is not supported yet with
 # PlzDedicatedWorker.
 crbug.com/980451 virtual/omt-worker-fetch/external/wpt/content-security-policy/inside-worker/dedicated-script.html [ Skip ]
@@ -6299,14 +6305,29 @@ crbug.com/985232 [ Win7 ] external/wpt/html/semantics/scripting-1/the-script-ele
 crbug.com/985232 [ Win7 ] virtual/streaming-preload/external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/dynamic-imports-credentials.sub.html [ Pass Failure ]
 
 # Sheriff 2019-07-19
-crbug.com/985811 [ Win7 ] http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Pass Timeout ]
+crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-1.js [ Pass Timeout ]
+crbug.com/985811 [ Win ] http/tests/devtools/elements/edit/edit-dom-actions-2.js [ Pass Timeout ]
 crbug.com/985869 [ Linux Win7 ] http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSecurityPolicy/object-src-no-url-allowed.html [ Pass Failure ]
 
 # Sheriff 2019-07-20
-crbug.com/986019 [ Linux Win ] animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 
 # Sheriff 2019-07-22
-crbug.com/986019 [ Linux Win ] virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
+crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Timeout ]
+crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
+
+# ecosystem-infra sheriff 2019-07-22
+crbug.com/986286 external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986286 virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986286 virtual/not-omt-sw-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986286 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
+crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
+crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
+crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
+
+# Sheriff 2019-07-23
+crbug.com/986019 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986019 virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]

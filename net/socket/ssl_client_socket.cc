@@ -4,13 +4,9 @@
 
 #include "net/socket/ssl_client_socket.h"
 
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
-#include "base/strings/string_util.h"
-#include "crypto/ec_private_key.h"
-#include "net/base/net_errors.h"
+#include <string>
+
 #include "net/socket/ssl_client_socket_impl.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_key_logger.h"
 
 namespace net {

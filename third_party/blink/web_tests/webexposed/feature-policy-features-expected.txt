@@ -47,7 +47,6 @@ popups
 presentation
 scripts
 serial
-speaker
 sync-script
 sync-xhr
 top-navigation

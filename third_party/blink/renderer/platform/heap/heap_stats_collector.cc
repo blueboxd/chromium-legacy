@@ -100,11 +100,13 @@ void ThreadHeapStatsCollector::IncreaseCollectedWrapperCount(size_t count) {
   collected_wrapper_count_ += count;
 }
 
-void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
+void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason,
+                                                    size_t gc_age) {
   DCHECK(!is_started_);
   DCHECK(current_.marking_time().is_zero());
   is_started_ = true;
   current_.reason = reason;
+  current_.gc_age = gc_age;
 }
 
 void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {
@@ -128,19 +130,24 @@ void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {
 }
 
 void ThreadHeapStatsCollector::NotifySweepingCompleted() {
+  DCHECK(is_started());
   is_started_ = false;
   current_.live_object_rate =
       current_.object_size_in_bytes_before_sweeping
           ? static_cast<double>(current().marked_bytes) /
                 current_.object_size_in_bytes_before_sweeping
           : 0.0;
-  current_.gc_nested_in_v8_ = gc_nested_in_v8_;
+  current_.gc_nested_in_v8 = gc_nested_in_v8_;
   gc_nested_in_v8_ = base::TimeDelta();
   // Reset the current state.
   static_assert(std::is_trivially_copyable<Event>::value,
                 "Event should be trivially copyable");
   previous_ = std::move(current_);
   current_ = Event();
+
+  ForAllObservers([this](ThreadHeapStatsObserver* observer) {
+    observer->GCFinished(previous_);
+  });
 }
 
 void ThreadHeapStatsCollector::UpdateReason(BlinkGC::GCReason reason) {

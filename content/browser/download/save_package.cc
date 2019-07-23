@@ -830,8 +830,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
         requester_frame->GetProcess()->GetID(),
         requester_frame->render_view_host()->GetRoutingID(),
         requester_frame->routing_id(), save_item_ptr->save_source(),
-        save_item_ptr->full_path(),
-        web_contents()->GetBrowserContext()->GetResourceContext(),
+        save_item_ptr->full_path(), web_contents()->GetBrowserContext(),
         web_contents()
             ->GetRenderViewHost()
             ->GetProcess()

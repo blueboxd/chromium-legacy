@@ -81,6 +81,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void DoomSparseEntry();
   void PartialSparseEntry();
   void SparseInvalidArg();
+  void SparseClipEnd(bool expected_unsupported);
   bool SimpleCacheMakeBadChecksumEntry(const std::string& key, int data_size);
   bool SimpleCacheThirdStreamFileExists(const char* key);
   void SyncDoomEntry(const char* key);
@@ -2430,6 +2431,14 @@ void DiskCacheEntryTest::SparseInvalidArg() {
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
             GetAvailableRange(entry, 0, -1, &start_out));
 
+  int rv = WriteSparseData(
+      entry, std::numeric_limits<int64_t>::max() - kSize + 1, buf.get(), kSize);
+  // Blockfile rejects anything over 64GiB with
+  // net::ERR_CACHE_OPERATION_NOT_SUPPORTED, which is also OK here, as it's not
+  // an overflow or something else nonsensical.
+  EXPECT_TRUE(rv == net::ERR_INVALID_ARGUMENT ||
+              rv == net::ERR_CACHE_OPERATION_NOT_SUPPORTED);
+
   entry->Close();
 }
 
@@ -2448,6 +2457,67 @@ TEST_F(DiskCacheEntryTest, SimpleSparseInvalidArg) {
   SetSimpleCacheMode();
   InitCache();
   SparseInvalidArg();
+}
+
+void DiskCacheEntryTest::SparseClipEnd(bool expect_unsupported) {
+  std::string key("key");
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(key, &entry), IsOk());
+
+  const int kSize = 1024;
+  scoped_refptr<net::IOBuffer> buf = base::MakeRefCounted<net::IOBuffer>(kSize);
+  CacheTestFillBuffer(buf->data(), kSize, false);
+
+  scoped_refptr<net::IOBuffer> read_buf =
+      base::MakeRefCounted<net::IOBuffer>(kSize * 2);
+  CacheTestFillBuffer(read_buf->data(), kSize * 2, false);
+
+  const int64_t kOffset = std::numeric_limits<int64_t>::max() - kSize;
+  int rv = WriteSparseData(entry, kOffset, buf.get(), kSize);
+  EXPECT_EQ(
+      rv, expect_unsupported ? net::ERR_CACHE_OPERATION_NOT_SUPPORTED : kSize);
+
+  // Try to read further than offset range, should get clipped (if supported).
+  rv = ReadSparseData(entry, kOffset, read_buf.get(), kSize * 2);
+  if (expect_unsupported) {
+    EXPECT_EQ(rv, net::ERR_CACHE_OPERATION_NOT_SUPPORTED);
+  } else {
+    EXPECT_EQ(kSize, rv);
+    EXPECT_EQ(0, memcmp(buf->data(), read_buf->data(), kSize));
+  }
+
+  int64_t out_start = 0;
+  net::TestCompletionCallback cb;
+  rv = entry->GetAvailableRange(kOffset - kSize, kSize * 3, &out_start,
+                                cb.callback());
+  rv = cb.GetResult(rv);
+  if (expect_unsupported) {
+    EXPECT_EQ(rv, net::ERR_CACHE_OPERATION_NOT_SUPPORTED);
+  } else {
+    EXPECT_EQ(kSize, rv);
+    EXPECT_EQ(kOffset, out_start);
+  }
+
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SparseClipEnd) {
+  InitCache();
+
+  // Blockfile refuses to deal with sparse indices over 64GiB.
+  SparseClipEnd(/* expect_unsupported = */ true);
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlySparseClipEnd) {
+  SetMemoryOnlyMode();
+  InitCache();
+  SparseClipEnd(/* expect_unsupported = */ false);
+}
+
+TEST_F(DiskCacheEntryTest, SimpleSparseClipEnd) {
+  SetSimpleCacheMode();
+  InitCache();
+  SparseClipEnd(/* expect_unsupported = */ false);
 }
 
 // Tests that corrupt sparse children are removed automatically.

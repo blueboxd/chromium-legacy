@@ -124,6 +124,8 @@ aggregate_vector_icons("ash_vector_icons") {
     "lock_screen_play.icon",
     "lock_screen_previous_track.icon",
     "lock_screen_next_track.icon",
+    "lock_screen_seek_forward.icon",
+    "lock_screen_seek_backward.icon",
     "send.icon",
     "settings.icon",
     "shelf_add_person_button.icon",

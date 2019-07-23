@@ -76,14 +76,6 @@ public class UiAutomatorUtils {
     }
 
     /**
-     * Set the timeout used for location operations.
-     * @param timeout Timeout in milliseconds.
-     */
-    public void setTimeout(long timeout) {
-        mLocatorHelper.setTimeout(timeout);
-    }
-
-    /**
      * Launch application.
      * @param packageName Package name of the application.
      */
@@ -144,8 +136,18 @@ public class UiAutomatorUtils {
         clickOutsideOfArea(bounds.left, bounds.top, bounds.right, bounds.bottom);
     }
 
+    /** Get the UiLocatorHelper. */
     public UiLocatorHelper getLocatorHelper() {
         return mLocatorHelper;
+    }
+
+    /**
+     * Get a copy of the UiLocatorHelper with a different timeout.
+     * @param timeout The timeout in milliseconds.
+     * @return UiLocatorHelper with the specified timeout.
+     */
+    public UiLocatorHelper getLocatorHelper(long timeout) {
+        return new UiLocatorHelper(timeout);
     }
 
     /**
@@ -328,13 +330,8 @@ public class UiAutomatorUtils {
         context.startActivity(intent);
 
         IUi2Locator packageLocator = Ui2Locators.withPackageName(packageName);
-        long oldTimeout = getTimeout();
-        try {
-            setTimeout(timeout);
-            mLocatorHelper.getOne(packageLocator);
-        } finally {
-            setTimeout(oldTimeout);
-        }
+        UiLocatorHelper helper = getLocatorHelper(timeout);
+        helper.getOne(packageLocator);
     }
 
     // positive fraction indicates swipe up

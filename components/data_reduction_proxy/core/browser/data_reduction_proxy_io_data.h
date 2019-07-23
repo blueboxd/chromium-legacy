@@ -230,6 +230,7 @@ class DataReductionProxyIOData : public mojom::DataReductionProxy {
   std::unique_ptr<DataReductionProxyRequestOptions> request_options_;
 
   // Requests new Data Reduction Proxy configurations from a remote service.
+  // May be null.
   std::unique_ptr<DataReductionProxyConfigServiceClient> config_client_;
 
   // Watches for network connection changes.

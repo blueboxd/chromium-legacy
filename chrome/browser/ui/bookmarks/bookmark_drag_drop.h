@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_DRAG_DROP_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_DRAG_DROP_H_
 
+#include <memory>
 #include <vector>
 
 #include "build/build_config.h"

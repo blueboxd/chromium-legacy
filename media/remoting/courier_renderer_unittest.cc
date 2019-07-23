@@ -63,7 +63,7 @@ class RendererClientImpl final : public RendererClient {
     ON_CALL(*this, OnPipelineStatus(_))
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnPipelineStatus));
-    ON_CALL(*this, OnBufferingStateChange(_))
+    ON_CALL(*this, OnBufferingStateChange(_, _))
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnBufferingStateChange));
     ON_CALL(*this, OnAudioConfigChange(_))
@@ -85,7 +85,8 @@ class RendererClientImpl final : public RendererClient {
   void OnError(PipelineStatus status) override {}
   void OnEnded() override {}
   MOCK_METHOD1(OnStatisticsUpdate, void(const PipelineStatistics& stats));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState state));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState state, BufferingStateChangeReason reason));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig& config));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig& config));
   void OnWaiting(WaitingReason reason) override {}
@@ -96,7 +97,10 @@ class RendererClientImpl final : public RendererClient {
   void DelegateOnStatisticsUpdate(const PipelineStatistics& stats) {
     stats_ = stats;
   }
-  void DelegateOnBufferingStateChange(BufferingState state) { state_ = state; }
+  void DelegateOnBufferingStateChange(BufferingState state,
+                                      BufferingStateChangeReason reason) {
+    state_ = state;
+  }
   void DelegateOnAudioConfigChange(const AudioDecoderConfig& config) {
     audio_decoder_config_ = config;
   }
@@ -546,7 +550,8 @@ TEST_F(CourierRendererTest, OnTimeUpdate) {
 
 TEST_F(CourierRendererTest, OnBufferingStateChange) {
   InitializeRenderer();
-  EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+  EXPECT_CALL(*render_client_,
+              OnBufferingStateChange(BUFFERING_HAVE_NOTHING, _))
       .Times(1);
   IssuesBufferingStateRpc(BufferingState::BUFFERING_HAVE_NOTHING);
 }
@@ -666,7 +671,7 @@ TEST_F(CourierRendererTest, OnPacingTooSlowly) {
   // There should be no error reported with this playback rate.
   renderer_->SetPlaybackRate(0.8);
   RunPendingTasks();
-  EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
+  EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
       .Times(1);
   IssuesBufferingStateRpc(BufferingState::BUFFERING_HAVE_ENOUGH);
   clock_.Advance(base::TimeDelta::FromSeconds(3));

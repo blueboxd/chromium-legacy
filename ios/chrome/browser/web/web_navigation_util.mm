@@ -9,7 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 

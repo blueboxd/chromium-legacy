@@ -28,6 +28,14 @@
 }
 
 - (UIColor*)NTPBackgroundColor {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return ntp_home::kNTPBackgroundColor();
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return ntp_home::kNTPBackgroundColor();
@@ -38,15 +46,31 @@
 }
 
 - (UIColor*)backgroundColor {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return [UIColor colorNamed:kBackgroundColor];
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return [UIColor colorNamed:kBackgroundColor];
     case INCOGNITO:
       return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
-    }
+  }
 }
 
 - (UIColor*)buttonsTintColor {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return [UIColor colorNamed:@"tab_toolbar_button_color"];
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_color"];
@@ -56,41 +80,68 @@
 }
 
 - (UIColor*)buttonsTintColorHighlighted {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return [UIColor colorNamed:@"tab_toolbar_button_color_highlighted"];
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_color_highlighted"];
-      break;
     case INCOGNITO:
       return [UIColor
           colorWithWhite:1
                    alpha:kIncognitoToolbarButtonTintColorAlphaHighlighted];
-      break;
   }
 }
 
 - (UIColor*)buttonsSpotlightColor {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
-      break;
     case INCOGNITO:
       return [UIColor colorWithWhite:1 alpha:kToolbarSpotlightAlpha];
-      break;
   }
 }
 
 - (UIColor*)dimmedButtonsSpotlightColor {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
-      break;
     case INCOGNITO:
       return [UIColor colorWithWhite:1 alpha:kDimmedToolbarSpotlightAlpha];
-      break;
   }
 }
 
 - (UIColor*)locationBarBackgroundColorWithVisibility:(CGFloat)visibilityFactor {
+  // This compiler guard is needed because the API to force dark colors in
+  // incognito also needs it. Without this, incognito would appear in light
+  // colors on iOS 13 before compiling with the iOS 13 SDK.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    return [[UIColor colorNamed:kTextfieldBackgroundColor]
+        colorWithAlphaComponent:visibilityFactor];
+  }
+#endif
   switch (self.style) {
     case NORMAL:
       return [[UIColor colorNamed:kTextfieldBackgroundColor]

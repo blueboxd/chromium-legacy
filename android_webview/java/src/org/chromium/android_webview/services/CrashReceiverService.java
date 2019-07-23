@@ -12,6 +12,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 
+import org.chromium.android_webview.ui.util.CrashInfoLoader.CrashInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -20,8 +21,11 @@ import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service that is responsible for receiving crash dumps from an application, for upload.
@@ -31,6 +35,8 @@ public class CrashReceiverService extends Service {
 
     private static final String WEBVIEW_CRASH_DIR = "WebView_Crashes";
     private static final String WEBVIEW_TMP_CRASH_DIR = "WebView_Crashes_Tmp";
+    private static final String WEBVIEW_CRASH_LOG_DIR = "crash_logs";
+    private static final String WEBVIEW_CRASH_LOG_SUFFIX = "_log.json";
 
     private final Object mCopyingLock = new Object();
     private boolean mIsCopying;
@@ -39,7 +45,11 @@ public class CrashReceiverService extends Service {
         @Override
         public void transmitCrashes(ParcelFileDescriptor[] fileDescriptors, List crashInfo) {
             int uid = Binder.getCallingUid();
-            performMinidumpCopyingSerially(uid, fileDescriptors, true /* scheduleUploads */);
+            if (crashInfo != null) {
+                assert crashInfo.size() == fileDescriptors.length;
+            }
+            performMinidumpCopyingSerially(
+                    uid, fileDescriptors, crashInfo, true /* scheduleUploads */);
         }
     };
 
@@ -50,15 +60,15 @@ public class CrashReceiverService extends Service {
      * during testing).
      */
     @VisibleForTesting
-    public void performMinidumpCopyingSerially(
-            int uid, ParcelFileDescriptor[] fileDescriptors, boolean scheduleUploads) {
+    public void performMinidumpCopyingSerially(int uid, ParcelFileDescriptor[] fileDescriptors,
+            List<Map<String, String>> crashesInfo, boolean scheduleUploads) {
         if (!waitUntilWeCanCopy()) {
             Log.e(TAG, "something went wrong when waiting to copy minidumps, bailing!");
             return;
         }
 
         try {
-            boolean copySucceeded = copyMinidumps(uid, fileDescriptors);
+            boolean copySucceeded = copyMinidumps(uid, fileDescriptors, crashesInfo);
             if (copySucceeded && scheduleUploads) {
                 // Only schedule a new job if there actually are any files to upload.
                 scheduleNewJob();
@@ -98,16 +108,20 @@ public class CrashReceiverService extends Service {
 
     /**
      * Copy minidumps from the {@param fileDescriptors} to the directory where WebView stores its
-     * minidump files. {@param context} is used to look up the directory in which the files will be
-     * saved.
+     * minidump files. Also writes a new log file for each mindump, the log file contains a JSON
+     * object with info from {@param crashesInfo}. The log file name is: <copied-file-name> +
+     * {@code "_log.json"} suffix.
+     *
      * @return whether any minidump was copied.
      */
     @VisibleForTesting
-    public static boolean copyMinidumps(int uid, ParcelFileDescriptor[] fileDescriptors) {
+    public static boolean copyMinidumps(int uid, ParcelFileDescriptor[] fileDescriptors,
+            List<Map<String, String>> crashesInfo) {
         CrashFileManager crashFileManager = new CrashFileManager(getOrCreateWebViewCrashDir());
         boolean copiedAnything = false;
         if (fileDescriptors != null) {
-            for (ParcelFileDescriptor fd : fileDescriptors) {
+            for (int i = 0; i < fileDescriptors.length; i++) {
+                ParcelFileDescriptor fd = fileDescriptors[i];
                 if (fd == null) continue;
                 try {
                     File copiedFile = crashFileManager.copyMinidumpFromFD(
@@ -118,6 +132,12 @@ public class CrashReceiverService extends Service {
                         // minidumps here.
                     } else {
                         copiedAnything = true;
+                        if (crashesInfo != null) {
+                            Map<String, String> crashInfo = crashesInfo.get(i);
+                            File logFile = new File(getOrCreateWebViewCrashLogDir(),
+                                    copiedFile.getName() + WEBVIEW_CRASH_LOG_SUFFIX);
+                            writeCrashInfoToLogFile(logFile, copiedFile, crashInfo);
+                        }
                     }
                 } catch (IOException e) {
                     Log.w(TAG, "failed to copy minidump from " + fd.toString() + ": "
@@ -128,6 +148,38 @@ public class CrashReceiverService extends Service {
             }
         }
         return copiedAnything;
+    }
+
+    /**
+     * Writes info about crash in a separate log file for each crash as a JSON Object.
+     */
+    @VisibleForTesting
+    public static boolean writeCrashInfoToLogFile(
+            File logFile, File crashFile, Map<String, String> crashInfoMap) {
+        try {
+            CrashInfo crashInfo = new CrashInfo();
+            crashInfo.localId = CrashFileManager.getCrashLocalIdFromFileName(crashFile.getName());
+            if (crashInfo.localId == null) return false;
+            crashInfo.captureTime = crashFile.lastModified();
+
+            if (crashInfoMap == null) return false;
+            crashInfo.packageName = crashInfoMap.get("app-package-name");
+
+            if (crashInfoMap.containsKey("variations")) {
+                crashInfo.variations = Arrays.asList(crashInfoMap.get("variations").split(","));
+            }
+
+            FileWriter writer = new FileWriter(logFile);
+            try {
+                writer.write(crashInfo.serializeToJson());
+            } finally {
+                writer.close();
+            }
+            return true;
+        } catch (IOException e) {
+            Log.w(TAG, "failed to write JSON log entry for crash", e);
+        }
+        return false;
     }
 
     /**
@@ -151,16 +203,7 @@ public class CrashReceiverService extends Service {
         }
     }
 
-    /**
-     * Create the directory in which WebView will store its minidumps.
-     * WebView needs a crash directory different from Chrome's to ensure Chrome's and WebView's
-     * minidump handling won't clash in cases where both Chrome and WebView are provided by the
-     * same app (Monochrome).
-     * @return a reference to the created directory, or null if the creation failed.
-     */
-    @VisibleForTesting
-    public static File getOrCreateWebViewCrashDir() {
-        File dir = getWebViewCrashDir();
+    private static File getOrCreateDir(File dir) {
         // Call mkdir before isDirectory to ensure that if another thread created the directory
         // just before the call to mkdir, the current thread fails mkdir, but passes isDirectory.
         if (dir.mkdir() || dir.isDirectory()) {
@@ -170,12 +213,41 @@ public class CrashReceiverService extends Service {
     }
 
     /**
+     * Create the directory in which WebView will store its minidumps.
+     * WebView needs a crash directory different from Chrome's to ensure Chrome's and WebView's
+     * minidump handling won't clash in cases where both Chrome and WebView are provided by the
+     * same app (Monochrome).
+     * @return a reference to the created directory, or null if the creation failed.
+     */
+    @VisibleForTesting
+    public static File getOrCreateWebViewCrashDir() {
+        return getOrCreateDir(getWebViewCrashDir());
+    }
+
+    /**
      * Fetch the crash directory where WebView stores its minidumps.
      * @return a File pointing to the crash directory.
      */
     @VisibleForTesting
     public static File getWebViewCrashDir() {
         return new File(ContextUtils.getApplicationContext().getCacheDir(), WEBVIEW_CRASH_DIR);
+    }
+
+    /**
+     * Create the directory in which WebView will log crashes info.
+     * @return a reference to the created directory, or null if the creation failed.
+     */
+    private static File getOrCreateWebViewCrashLogDir() {
+        File dir = new File(getOrCreateWebViewCrashDir(), WEBVIEW_CRASH_LOG_DIR);
+        return getOrCreateDir(dir);
+    }
+
+    /**
+     * Create the directory in which WebView will log crashes info.
+     * @return a reference to the created directory, or null if the creation failed.
+     */
+    public static File getWebViewCrashLogDir() {
+        return new File(getWebViewCrashDir(), WEBVIEW_CRASH_LOG_DIR);
     }
 
     /**

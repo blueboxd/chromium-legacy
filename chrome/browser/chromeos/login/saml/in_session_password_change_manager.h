@@ -11,6 +11,7 @@
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 
 class Profile;
@@ -100,10 +101,13 @@ class InSessionPasswordChangeManager : public AuthStatusConsumer,
   // future, posts a task to check again in the distant future.
   void MaybeShowExpiryNotification();
 
-  // Shows a password expiry notification. |less_than_n_days| should be 1 if the
-  // password expires in less than 1 day, 0 if it has already expired, etc.
-  // Negative numbers are treated the same as zero.
-  void ShowExpiryNotification(int less_than_n_days);
+  // Shows a password expiry notification. If |time_until_expiry| is zero or
+  // negative then the password has already expired.
+  void ShowStandardExpiryNotification(base::TimeDelta time_until_expiry);
+
+  // Shows an urgent password expiry notification. This notification displays
+  // a live countdown until password expiry.
+  void ShowUrgentExpiryNotification();
 
   // Dismiss password expiry notification and dismiss urgent password expiry
   // notification, if either are shown.

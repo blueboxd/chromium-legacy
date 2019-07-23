@@ -44,6 +44,7 @@ class PLATFORM_EXPORT CanvasColorParams {
   // The default constructor will create an output-blended 8-bit surface.
   CanvasColorParams();
   CanvasColorParams(CanvasColorSpace, CanvasPixelFormat, OpacityMode);
+  CanvasColorParams(const CanvasColorParams& params, bool force_rgba);
   explicit CanvasColorParams(const SkImageInfo&);
 
   CanvasColorSpace ColorSpace() const { return color_space_; }
@@ -94,6 +95,7 @@ class PLATFORM_EXPORT CanvasColorParams {
   CanvasColorSpace color_space_ = kSRGBCanvasColorSpace;
   CanvasPixelFormat pixel_format_ = kRGBA8CanvasPixelFormat;
   OpacityMode opacity_mode_ = kNonOpaque;
+  bool force_rgba_ = false;
 };
 
 }  // namespace blink

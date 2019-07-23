@@ -770,8 +770,10 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   image_factory_ = params.image_factory;
 
-  if (gpu_channel_manager_delegate_)
+  if (gpu_channel_manager_delegate_) {
     gpu_channel_manager_delegate_->DidCreateContextSuccessfully();
+    gpu_channel_manager_delegate_->RegisterDisplayContext(this);
+  }
 
   return gpu::ContextResult::kSuccess;
 }
@@ -801,6 +803,9 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   TRACE_EVENT0("gpu", "InProcessCommandBuffer::DestroyOnGpuThread");
   UpdateActiveUrl();
+
+  if (gpu_channel_manager_delegate_)
+    gpu_channel_manager_delegate_->UnregisterDisplayContext(this);
 
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
@@ -860,37 +865,52 @@ void InProcessCommandBuffer::OnParseError() {
 
   CommandBuffer::State state = command_buffer_->GetState();
 
-  // Tell the browser about this context loss so it can determine whether client
-  // APIs like WebGL need to be blocked from automatically running.
   if (gpu_channel_manager_delegate_) {
+    // Tell the browser about this context loss so it can determine whether
+    // client APIs like WebGL need to be blocked from automatically running.
     gpu_channel_manager_delegate_->DidLoseContext(
         is_offscreen_, state.context_lost_reason, active_url_.url());
-  }
 
-  // Check the error reason and robustness extension to get a better idea if the
-  // GL context was lost. We might try restarting the GPU process to recover
-  // from actual GL context loss but it's unnecessary for other types of parse
-  // errors.
-  if (state.error == error::kLostContext) {
-    bool was_lost_by_robustness =
-        decoder_ && decoder_->WasContextLostByRobustnessExtension();
+    // Check the error reason and robustness extension to get a better idea if
+    // the GL context was lost. We might try restarting the GPU process to
+    // recover from actual GL context loss but it's unnecessary for other types
+    // of parse errors.
+    if (state.error == error::kLostContext) {
+      bool was_lost_by_robustness =
+          decoder_ && decoder_->WasContextLostByRobustnessExtension();
 
-    if (was_lost_by_robustness) {
-      GpuDriverBugWorkarounds workarounds(
-          GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
+      if (was_lost_by_robustness) {
+        GpuDriverBugWorkarounds workarounds(
+            GetGpuFeatureInfo().enabled_gpu_driver_bug_workarounds);
 
-      // Work around issues with recovery by allowing a new GPU process to
-      // launch.
-      if (workarounds.exit_on_context_lost && gpu_channel_manager_delegate_)
-        gpu_channel_manager_delegate_->MaybeExitOnContextLost();
+        // Work around issues with recovery by allowing a new GPU process to
+        // launch.
+        if (workarounds.exit_on_context_lost)
+          gpu_channel_manager_delegate_->MaybeExitOnContextLost();
 
-      // TODO(crbug.com/924148): Check if we should force lose all contexts
-      // too.
+        // Lose all other contexts.
+        if (gl::GLContext::LosesAllContextsOnContextLost() ||
+            (context_state_ && context_state_->use_virtualized_gl_contexts())) {
+          gpu_channel_manager_delegate_->LoseAllContexts();
+        }
+      }
     }
   }
 
   PostOrRunClientCallback(base::BindOnce(&InProcessCommandBuffer::OnContextLost,
                                          client_thread_weak_ptr_));
+}
+
+void InProcessCommandBuffer::MarkContextLost() {
+  if (!command_buffer_ ||
+      command_buffer_->GetState().error == error::kLostContext) {
+    return;
+  }
+
+  command_buffer_->SetContextLostReason(error::kUnknown);
+  if (decoder_)
+    decoder_->MarkContextLost(error::kUnknown);
+  command_buffer_->SetParseError(error::kLostContext);
 }
 
 void InProcessCommandBuffer::OnContextLost() {

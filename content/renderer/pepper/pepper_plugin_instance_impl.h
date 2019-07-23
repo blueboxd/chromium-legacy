@@ -61,6 +61,7 @@
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "third_party/blink/public/web/web_plugin.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -504,7 +505,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 
   // RenderFrameObserver
-  void AccessibilityModeChanged() override;
+  void AccessibilityModeChanged(const ui::AXMode& mode) override;
   void OnDestruct() override;
 
   // PluginInstanceThrottler::Observer
@@ -683,6 +684,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Whether a given viz::TransferableResource is in use by |texture_layer_|.
   bool IsTextureInUse(const viz::TransferableResource& resource) const;
+
+  void HandleAccessibilityChange();
 
   RenderFrameImpl* render_frame_;
   scoped_refptr<PluginModule> module_;

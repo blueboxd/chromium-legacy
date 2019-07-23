@@ -58,7 +58,7 @@
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

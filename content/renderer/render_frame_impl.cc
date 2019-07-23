@@ -2753,7 +2753,7 @@ void RenderFrameImpl::OnSetAccessibilityMode(ui::AXMode new_mode) {
   }
 
   for (auto& observer : observers_)
-    observer.AccessibilityModeChanged();
+    observer.AccessibilityModeChanged(new_mode);
 }
 
 void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,

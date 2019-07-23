@@ -152,7 +152,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       ssl_client_session_cache_(SSLClientSessionCache::Config()),
-      ssl_client_session_cache_privacy_mode_(SSLClientSessionCache::Config()),
       push_delegate_(nullptr),
       quic_stream_factory_(
           context.net_log,
@@ -433,7 +432,6 @@ void HttpNetworkSession::DisableQuic() {
 
 void HttpNetworkSession::ClearSSLSessionCache() {
   ssl_client_session_cache_.Flush();
-  ssl_client_session_cache_privacy_mode_.Flush();
 }
 
 CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
@@ -448,8 +446,6 @@ CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
       &params_.quic_params.supported_versions, &quic_stream_factory_,
       context_.proxy_delegate, context_.http_user_agent_settings,
       CreateClientSocketContext(context_, &ssl_client_session_cache_),
-      CreateClientSocketContext(context_,
-                                &ssl_client_session_cache_privacy_mode_),
       context_.socket_performance_watcher_factory,
       context_.network_quality_estimator, context_.net_log,
       for_websockets ? &websocket_endpoint_lock_manager_ : nullptr);

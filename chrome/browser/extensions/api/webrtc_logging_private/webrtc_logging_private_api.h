@@ -32,7 +32,7 @@ class WebrtcLoggingPrivateFunction : public ChromeAsyncExtensionFunction {
       const api::webrtc_logging_private::RequestInfo& request,
       const std::string& security_origin);
 
-  scoped_refptr<WebRtcLoggingHandlerHost> LoggingHandlerFromRequest(
+  WebRtcLoggingHandlerHost* LoggingHandlerFromRequest(
       const api::webrtc_logging_private::RequestInfo& request,
       const std::string& security_origin);
 };
@@ -46,10 +46,10 @@ class WebrtcLoggingPrivateFunctionWithGenericCallback
   // a generic callback object for when the task is completed.
   // If the logging handler can't be found for the given request+origin, the
   // returned ptr will be null.
-  scoped_refptr<WebRtcLoggingHandlerHost> PrepareTask(
-    const api::webrtc_logging_private::RequestInfo& request,
-    const std::string& security_origin,
-    WebRtcLoggingHandlerHost::GenericDoneCallback* callback);
+  WebRtcLoggingHandlerHost* PrepareTask(
+      const api::webrtc_logging_private::RequestInfo& request,
+      const std::string& security_origin,
+      WebRtcLoggingHandlerHost::GenericDoneCallback* callback);
 
   // Must be called on UI thread.
   void FireCallback(bool success, const std::string& error_message);

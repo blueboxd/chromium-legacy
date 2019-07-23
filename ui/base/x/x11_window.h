@@ -106,6 +106,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void GrabPointer();
   void ReleasePointerGrab();
   void StackAtTop();
+  bool IsTargetedBy(const XEvent& xev) const;
   void ProcessEvent(XEvent* xev);
 
   void SetSize(const gfx::Size& size_in_pixels);

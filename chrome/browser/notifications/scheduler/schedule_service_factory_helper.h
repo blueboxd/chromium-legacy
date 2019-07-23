@@ -30,7 +30,8 @@ KeyedService* CreateNotificationScheduleService(
         background_task_scheduler,
     std::unique_ptr<DisplayAgent> display_agent,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    const base::FilePath& storage_dir);
+    const base::FilePath& storage_dir,
+    bool off_the_record);
 
 }  // namespace notifications
 

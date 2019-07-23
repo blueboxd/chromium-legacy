@@ -109,6 +109,13 @@ class NET_EXPORT_PRIVATE NetworkCongestionAnalyzer {
   bool ShouldStartNewMeasurement(const base::TimeDelta& delay,
                                  size_t count_inflight_requests);
 
+  // Finalizes the current peak queueing delay measurement period before a new
+  // measurement period starts. It exports the tracked data, such as the peak
+  // queueing delay and the count of in-flight requests causing the peak delay
+  // before they are reset. Only exports data when there are at least 3
+  // concurrent requests within the current measurement period.
+  void FinalizeCurrentMeasurementPeriod();
+
   // Starts tracking the peak queueing delay for |request|.
   void TrackPeakQueueingDelayBegin(const URLRequest* request);
 

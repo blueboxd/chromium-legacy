@@ -21,6 +21,7 @@ WebApkInfo::WebApkInfo(std::string name,
                        base::Optional<SkColor> theme_color,
                        base::Optional<SkColor> background_color,
                        base::Time last_update_check_time,
+                       base::Time last_update_completion_time,
                        bool relax_updates,
                        std::string update_status)
     : name(std::move(name)),
@@ -38,6 +39,7 @@ WebApkInfo::WebApkInfo(std::string name,
       theme_color(theme_color),
       background_color(background_color),
       last_update_check_time(last_update_check_time),
+      last_update_completion_time(last_update_completion_time),
       relax_updates(relax_updates),
       update_status(std::move(update_status)) {}
 

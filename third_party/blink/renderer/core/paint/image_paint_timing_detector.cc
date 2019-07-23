@@ -158,20 +158,17 @@ void ImagePaintTimingDetector::LayoutObjectWillBeDestroyed(
   if (!is_recording_)
     return;
 
-  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
-  if (node_id == kInvalidDOMNodeId)
-    return;
   // The visible record removal has been handled by
-  // |NotifyBackgroundImageRemoved|.
-  records_manager_.RemoveInvisibleRecordIfNeeded(node_id);
+  // |NotifyImageRemoved|.
+  records_manager_.RemoveInvisibleRecordIfNeeded(object);
 }
 
 void ImagePaintTimingDetector::NotifyImageRemoved(
-    DOMNodeId node_id,
+    const LayoutObject& object,
     const ImageResourceContent* cached_image) {
   if (!is_recording_)
     return;
-  RecordId record_id = std::make_pair(node_id, cached_image);
+  RecordId record_id = std::make_pair(&object, cached_image);
   if (!records_manager_.IsRecordedVisibleImage(record_id))
     return;
   records_manager_.RemoveVisibleRecord(record_id);
@@ -239,12 +236,10 @@ void ImagePaintTimingDetector::RecordImage(
   Node* node = object.GetNode();
   if (!node)
     return;
-  DOMNodeId node_id = DOMNodeIds::IdForNode(node);
-  DCHECK_NE(node_id, kInvalidDOMNodeId);
-  if (records_manager_.IsRecordedInvisibleImage(node_id))
+  if (records_manager_.IsRecordedInvisibleImage(object))
     return;
 
-  RecordId record_id = std::make_pair(node_id, &cached_image);
+  RecordId record_id = std::make_pair(&object, &cached_image);
   bool is_recored_visible_image =
       records_manager_.IsRecordedVisibleImage(record_id);
   if (is_recored_visible_image &&
@@ -275,7 +270,7 @@ void ImagePaintTimingDetector::RecordImage(
       rect_size, intrinsic_size.Area(),
       float_visual_rect.width * float_visual_rect.height);
   if (rect_size == 0) {
-    records_manager_.RecordInvisible(node_id);
+    records_manager_.RecordInvisible(object);
   } else {
     records_manager_.RecordVisible(record_id, rect_size);
     if (cached_image.IsLoaded()) {
@@ -304,16 +299,18 @@ void ImageRecordsManager::OnImageLoadedInternal(
 void ImageRecordsManager::RecordVisible(const RecordId& record_id,
                                         const uint64_t& visual_size) {
   std::unique_ptr<ImageRecord> record =
-      CreateImageRecord(record_id.first, record_id.second, visual_size);
+      CreateImageRecord(*record_id.first, record_id.second, visual_size);
   size_ordered_set_.insert(record->AsWeakPtr());
   visible_images_.insert(record_id, std::move(record));
 }
 
 std::unique_ptr<ImageRecord> ImageRecordsManager::CreateImageRecord(
-    const DOMNodeId& node_id,
+    const LayoutObject& object,
     const ImageResourceContent* cached_image,
     const uint64_t& visual_size) {
   DCHECK_GT(visual_size, 0u);
+  Node* node = object.GetNode();
+  DOMNodeId node_id = DOMNodeIds::IdForNode(node);
   std::unique_ptr<ImageRecord> record =
       std::make_unique<ImageRecord>(node_id, cached_image, visual_size);
   return record;

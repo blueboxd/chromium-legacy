@@ -144,8 +144,8 @@ declare_args() {
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
   enable_mojo_media =
-      is_android || is_chromecast || is_chromeos || is_mac || is_win ||
-      enable_library_cdms || (is_desktop_linux && use_vaapi)
+      is_android || is_chromeos || is_mac || is_win || enable_library_cdms ||
+      (is_desktop_linux && use_vaapi) || (is_chromecast && !is_fuchsia)
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.

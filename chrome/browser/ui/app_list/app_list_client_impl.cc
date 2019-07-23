@@ -429,6 +429,10 @@ void AppListClientImpl::DismissView() {
   app_list_controller_->DismissAppList();
 }
 
+aura::Window* AppListClientImpl::GetAppListWindow() {
+  return app_list_controller_->GetWindow();
+}
+
 int64_t AppListClientImpl::GetAppListDisplayId() {
   return display_id_;
 }
@@ -511,6 +515,13 @@ void AppListClientImpl::LaunchApp(Profile* profile,
 
   if (!IsTabletMode())
     DismissView();
+}
+
+void AppListClientImpl::NotifySearchResultsForLogging(
+    const base::string16& trimmed_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int position_index) {
+  search_ranking_event_logger_.Log(trimmed_query, results, position_index);
 }
 
 ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(

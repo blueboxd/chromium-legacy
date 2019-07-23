@@ -14,8 +14,8 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
-#include "components/autofill/content/common/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -27,6 +27,7 @@
 #include "third_party/blink/public/web/web_form_control_element.h"
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_input_element.h"
+#include "ui/accessibility/ax_mode.h"
 
 namespace blink {
 class WebNode;
@@ -171,6 +172,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   void DidFinishDocumentLoad() override;
   void DidChangeScrollOffset() override;
   void FocusedElementChanged(const blink::WebElement& element) override;
+  void AccessibilityModeChanged(const ui::AXMode& mode) override;
   void OnDestruct() override;
 
   // Fires Mojo messages for a given form submission.
@@ -391,6 +393,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   bool was_last_action_fill_ = false;
 
   base::OneShotTimer on_select_update_timer_;
+
+  // Will be set when accessibility mode changes, depending on what the new mode
+  // is.
+  bool is_screen_reader_enabled_ = false;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_{this};
 

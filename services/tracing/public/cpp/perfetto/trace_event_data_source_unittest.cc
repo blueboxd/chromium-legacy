@@ -410,7 +410,7 @@ class TraceEventDataSourceTest : public testing::Test {
   void ExpectInternedNames(
       const google::protobuf::RepeatedPtrField<T>& field,
       std::initializer_list<std::pair<uint32_t, std::string>> entries) {
-    EXPECT_EQ(field.size(), static_cast<int>(entries.size()));
+    ASSERT_EQ(field.size(), static_cast<int>(entries.size()));
     int i = 0;
     for (const auto& entry : entries) {
       EXPECT_EQ(field[i].iid(), entry.first);
@@ -990,8 +990,12 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar",
                        TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY,
                        "arg1_name", "arg1_val", "arg2_name", "arg2_val");
+  TRACE_EVENT_INSTANT2(kCategoryGroup, "javaName",
+                       TRACE_EVENT_SCOPE_THREAD | TRACE_EVENT_FLAG_COPY |
+                           TRACE_EVENT_FLAG_JAVA_STRING_LITERALS,
+                       "arg1_name", "arg1_val", "arg2_name", "arg2_val");
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
   auto* e_packet = producer_client()->GetFinalizedPacket(1);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
@@ -1001,6 +1005,16 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
 
   ExpectEventCategories(e_packet, {{1u, kCategoryGroup}});
   ExpectEventNames(e_packet, {{1u, "PRIVACY_FILTERED"}});
+  ExpectDebugAnnotationNames(e_packet, {});
+
+  e_packet = producer_client()->GetFinalizedPacket(2);
+  ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
+                   TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
+
+  const auto& annotations2 = e_packet->track_event().debug_annotations();
+  EXPECT_EQ(annotations2.size(), 0);
+
+  ExpectEventNames(e_packet, {{2u, "javaName"}});
   ExpectDebugAnnotationNames(e_packet, {});
 }
 

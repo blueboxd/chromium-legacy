@@ -215,6 +215,10 @@ class BackgroundTaskSchedulerUma {
      * @param startupMode Chrome's startup mode.
      */
     public void reportStartupMode(int startupMode) {
+        // We don't record full browser's warm startup since most of the full browser warm startup
+        // don't even reach here.
+        if (startupMode < 0) return;
+
         cacheEvent("Servicification.Startup3", startupMode);
     }
 

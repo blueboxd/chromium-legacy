@@ -86,7 +86,7 @@ constexpr int32_t kPageShadowRight = 5;
 constexpr draw_utils::PageInsetSizes kSingleViewInsets{
     kPageShadowLeft, kPageShadowTop, kPageShadowRight, kPageShadowBottom};
 
-constexpr int32_t kPageSeparatorThickness = 4;
+constexpr int32_t kBottomSeparator = 4;
 constexpr int32_t kHighlightColorR = 153;
 constexpr int32_t kHighlightColorG = 193;
 constexpr int32_t kHighlightColorB = 218;
@@ -2449,7 +2449,7 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
   for (int i = 0; i < num_pages; ++i) {
     if (i != 0) {
       // Add space for horizontal separator.
-      document_size_.Enlarge(0, kPageSeparatorThickness);
+      document_size_.Enlarge(0, kBottomSeparator);
     }
 
     pp::Rect rect(pp::Point(0, document_size_.height()), page_size);
@@ -2616,7 +2616,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   for (size_t i = 0; i < new_page_count; ++i) {
     if (i != 0) {
       // Add space for horizontal separator.
-      document_size_.Enlarge(0, kPageSeparatorThickness);
+      document_size_.Enlarge(0, kBottomSeparator);
     }
 
     // Get page availability. If |reload| == true and the page is not new,
@@ -2933,7 +2933,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   pp::Rect page_rect = pages_[page_index]->rect();
   if (page_rect.x() > 0) {
     pp::Rect left = draw_utils::GetLeftFillRect(page_rect, kSingleViewInsets,
-                                                kPageSeparatorThickness);
+                                                kBottomSeparator);
     left = GetScreenRect(left).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, left.x() - dirty_in_screen.x(),
@@ -2942,9 +2942,8 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
   }
 
   if (page_rect.right() < document_size_.width()) {
-    pp::Rect right = draw_utils::GetRightFillRect(page_rect, kSingleViewInsets,
-                                                  document_size_.width(),
-                                                  kPageSeparatorThickness);
+    pp::Rect right = draw_utils::GetRightFillRect(
+        page_rect, kSingleViewInsets, document_size_.width(), kBottomSeparator);
     right = GetScreenRect(right).Intersect(dirty_in_screen);
 
     FPDFBitmap_FillRect(bitmap, right.x() - dirty_in_screen.x(),
@@ -2954,7 +2953,7 @@ void PDFiumEngine::FillPageSides(int progressive_index) {
 
   // Paint separator.
   pp::Rect bottom = draw_utils::GetBottomFillRect(page_rect, kSingleViewInsets,
-                                                  kPageSeparatorThickness);
+                                                  kBottomSeparator);
   bottom = GetScreenRect(bottom).Intersect(dirty_in_screen);
 
   FPDFBitmap_FillRect(bitmap, bottom.x() - dirty_in_screen.x(),
@@ -3112,8 +3111,7 @@ pp::Rect PDFiumEngine::GetVisibleRect() const {
 pp::Rect PDFiumEngine::GetPageScreenRect(int page_index) const {
   const pp::Rect& page_rect = pages_[page_index]->rect();
   return GetScreenRect(draw_utils::GetSurroundingRect(
-      page_rect, kSingleViewInsets, document_size_.width(),
-      kPageSeparatorThickness));
+      page_rect, kSingleViewInsets, document_size_.width(), kBottomSeparator));
 }
 
 pp::Rect PDFiumEngine::GetScreenRect(const pp::Rect& rect) const {

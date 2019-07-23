@@ -31,7 +31,6 @@
 #include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
 #include "services/video_capture/public/cpp/manifest.h"
-#include "services/viz/public/cpp/manifest.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/manifest.h"  // nogncheck
@@ -98,7 +97,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
                         kOutOfProcessBuiltin
                   : service_manager::Manifest::ExecutionMode::
                         kInProcessBuiltin),
-          viz::GetManifest(),
 #if defined(OS_LINUX)
           font_service::GetManifest(),
 #endif

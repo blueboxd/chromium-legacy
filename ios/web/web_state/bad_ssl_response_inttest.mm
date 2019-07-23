@@ -6,7 +6,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/certificate_policy_cache.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"

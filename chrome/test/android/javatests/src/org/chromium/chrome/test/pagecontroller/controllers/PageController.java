@@ -6,6 +6,8 @@ package org.chromium.chrome.test.pagecontroller.controllers;
 
 import android.os.RemoteException;
 
+import org.junit.Assert;
+
 /**
  * Base class for page controllers.
  * A page controller allows tests to interact with a single page (think Android activity)
@@ -36,4 +38,12 @@ public abstract class PageController extends ElementController {
      * @return True if current page can be controlled by this controller, else false.
      */
     public abstract boolean isCurrentPageThis();
+
+    /**
+     * Verifies that the current page belongs to the controller.
+     * @throws           AssertionError if the current page does not belong the controller.
+     */
+    public void verify() {
+        Assert.assertTrue("Page expected to be " + getClass().getName(), isCurrentPageThis());
+    }
 }

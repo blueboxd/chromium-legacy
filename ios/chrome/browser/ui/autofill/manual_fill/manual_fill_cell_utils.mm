@@ -7,7 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/chip_button.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -155,7 +155,7 @@ UILabel* CreateLabel() {
 
 UIView* CreateGraySeparatorForContainer(UIView* container) {
   UIView* grayLine = [[UIView alloc] init];
-  grayLine.backgroundColor = UIColor.cr_manualFillGrayLineColor;
+  grayLine.backgroundColor = UIColor.cr_systemGray5Color;
   grayLine.translatesAutoresizingMaskIntoConstraints = NO;
   [container addSubview:grayLine];
 

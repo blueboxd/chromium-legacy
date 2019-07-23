@@ -52,7 +52,7 @@ def _Divide(a, b):
 
 
 def _IncludeInTotals(section_name):
-  return section_name != models.SECTION_BSS and '(' not in section_name
+  return section_name not in models.BSS_SECTIONS and '(' not in section_name
 
 
 def _GetSectionSizeInfo(section_sizes):

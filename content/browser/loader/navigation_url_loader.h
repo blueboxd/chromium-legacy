@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
 #include "content/public/common/previews_state.h"
 
@@ -55,7 +56,9 @@ class CONTENT_EXPORT NavigationURLLoader {
       AppCacheNavigationHandle* appcache_handle,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      NavigationURLLoaderDelegate* delegate);
+      NavigationURLLoaderDelegate* delegate,
+      std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+          initial_interceptors = {});
 
   // For testing purposes; sets the factory for use in testing.
   static void SetFactoryForTesting(NavigationURLLoaderFactory* factory);

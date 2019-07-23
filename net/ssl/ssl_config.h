@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/privacy_mode.h"
 #include "net/cert/x509_certificate.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/ssl_private_key.h"
@@ -140,6 +141,16 @@ struct NET_EXPORT SSLConfig {
   // If the PartitionSSLSessionsByNetworkIsolationKey feature is enabled, the
   // session cache is partitioned by this value.
   NetworkIsolationKey network_isolation_key;
+
+  // An additional boolean to partition the session cache by.
+  //
+  // TODO(https://crbug.com/775438, https://crbug.com/951205): This should
+  // additionally disable client certificates, once client certificate handling
+  // is moved into SSLClientContext. With client certificates are disabled, the
+  // current session cache partitioning behavior will be needed to correctly
+  // implement it. For now, it acts as an incomplete version of
+  // PartitionSSLSessionsByNetworkIsolationKey.
+  PrivacyMode privacy_mode;
 };
 
 }  // namespace net

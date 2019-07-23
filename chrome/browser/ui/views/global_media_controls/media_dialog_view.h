@@ -31,9 +31,6 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
       base::WeakPtr<media_message_center::MediaNotificationItem> item) override;
   void HideMediaSession(const std::string& id) override;
 
-  // views::WidgetDelegateView implementation.
-  bool ShouldShowCloseButton() const override;
-
   // views::DialogDelegate implementation.
   int GetDialogButtons() const override;
   bool Close() override;

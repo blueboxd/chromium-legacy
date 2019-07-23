@@ -644,9 +644,6 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     // Convert internal format from GLES2 to platform GL.
     const auto* version_info = impl_on_gpu_->gl_version_info();
     unsigned int texture_storage_format = TextureStorageFormat(resource_format);
-    // Switch to format supported by Skia.
-    if (texture_storage_format == GL_LUMINANCE16F_EXT)
-      texture_storage_format = GL_R16F_EXT;
     return GrBackendFormat::MakeGL(
         gl::GetInternalFormat(version_info, texture_storage_format),
         gl_texture_target);

@@ -19,7 +19,7 @@
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
-#include "ios/web/public/navigation_item.h"
+#include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/web_client.h"

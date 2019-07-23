@@ -20,7 +20,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
 
 namespace ash {
 
@@ -55,8 +54,6 @@ const service_manager::Manifest& GetManifest() {
           .RequireCapability("*", "app")
           .RequireCapability(content::mojom::kServiceName, "navigation")
           .RequireCapability(data_decoder::mojom::kServiceName, "image_decoder")
-          .RequireCapability(viz::mojom::kVizServiceName, "ozone")
-          .RequireCapability(viz::mojom::kVizServiceName, "viz_host")
           .RequireCapability(device::mojom::kServiceName,
                              "device:bluetooth_system")
           .RequireCapability(device::mojom::kServiceName, "device:fingerprint")

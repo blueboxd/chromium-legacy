@@ -97,7 +97,6 @@ class VizMainImpl : public mojom::VizMain {
 
   void SetLogMessagesForHost(LogMessages messages);
 
-  void Bind(mojo::PendingReceiver<mojom::VizMain> pending_receiver);
   void BindAssociated(
       mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver);
 
@@ -171,8 +170,7 @@ class VizMainImpl : public mojom::VizMain {
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 
   std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
-  mojo::Receiver<mojom::VizMain> receiver_{this};
-  mojo::AssociatedReceiver<mojom::VizMain> associated_receiver_{this};
+  mojo::AssociatedReceiver<mojom::VizMain> receiver_{this};
 
   std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;

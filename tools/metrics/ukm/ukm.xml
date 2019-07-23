@@ -749,7 +749,6 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="metrics.PredictedType"/>
-        <index fields="metrics.PredictionSource,metrics.PredictedType"/>
         <statistics>
           <enumeration/>
         </statistics>
@@ -786,7 +785,6 @@ be describing additional metrics about the same event.
     <aggregation>
       <history>
         <index fields="metrics.ActualType"/>
-        <index fields="metrics.ActualType,metrics.PredictionSource"/>
         <statistics>
           <enumeration/>
         </statistics>
@@ -797,13 +795,6 @@ be describing additional metrics about the same event.
     <summary>
       The system which generated the prediction: heuristics, server, overall.
     </summary>
-    <aggregation>
-      <history>
-        <statistics export="False">
-          <enumeration/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="ValidationEvent" enum="AutofillQualitiyMetricType">
     <summary>

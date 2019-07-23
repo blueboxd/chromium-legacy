@@ -186,11 +186,11 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Password expiry notifications -->
-      <message name="IDS_PASSWORD_EXPIRY_DAYS_TITLE" desc="Message title for a notification that tells the user their password will expire in less than some number of days (where 0 days means it has expired).">
-        {NUM_DAYS, plural,
-         =0 {Password is expired}
-         =1 {Password expires in less than one day}
-         other {Password expires in less than # days}}
+      <message name="IDS_PASSWORD_CHANGE_OVERDUE_TITLE" desc="Message title for a notification that tells the user they are already late in changing their password, since the password has already expired.">
+        Password change overdue
+      </message>
+      <message name="IDS_PASSWORD_EXPIRES_AFTER_TIME_TITLE" desc="Message title for a notification that tells the user their password will expire at a certain time. This time could be X days(s) or X hour(s) or X minute(s). The alternative text 'Password expires in: $1' is okay if this would make more sense in the grammar of the target language.">
+        Password expires in <ph name="TIME">$1<ex>5 days</ex></ph>
       </message>
       <message name="IDS_PASSWORD_EXPIRY_CALL_TO_ACTION" desc="Message body on a notification that politely requests the user to choose a new password since their old password is expiring soon. (The title makes clear that the password is expiring.)">
         Choose a new one now

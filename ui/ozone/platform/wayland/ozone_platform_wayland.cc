@@ -62,7 +62,9 @@ constexpr OzonePlatform::PlatformProperties kWaylandPlatformProperties = {
     // Ozone/Wayland relies on the mojo communication when running in
     // !single_process.
     // TODO(msisov, rjkroege): Remove after http://crbug.com/806092.
-    /*requires_mojo=*/true};
+    /*requires_mojo=*/true,
+
+    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_DEFAULT};
 
 class OzonePlatformWayland : public OzonePlatform {
  public:

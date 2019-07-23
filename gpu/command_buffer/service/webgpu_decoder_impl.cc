@@ -397,8 +397,12 @@ ContextResult WebGPUDecoderImpl::Initialize() {
     return ContextResult::kFatalFailure;
   }
 
-  wire_server_ = std::make_unique<dawn_wire::WireServer>(
-      dawn_device_, dawn_procs_, wire_serializer_.get());
+  dawn_wire::WireServerDescriptor descriptor = {};
+  descriptor.device = dawn_device_;
+  descriptor.procs = &dawn_procs_;
+  descriptor.serializer = wire_serializer_.get();
+
+  wire_server_ = std::make_unique<dawn_wire::WireServer>(descriptor);
 
   return ContextResult::kSuccess;
 }

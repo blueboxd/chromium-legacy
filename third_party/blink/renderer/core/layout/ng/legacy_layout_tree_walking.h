@@ -90,14 +90,13 @@ inline bool AreNGBlockFlowChildrenInline(const LayoutBlock* block) {
 inline bool IsLayoutNGContainingBlock(const LayoutBlock* containing_block) {
   if (UNLIKELY(containing_block->IsLayoutFlowThread()))
     containing_block = containing_block->ContainingBlock();
-  return containing_block && (containing_block->IsLayoutNGMixin() ||
-                              containing_block->IsLayoutNGFlexibleBox());
+  return containing_block && containing_block->IsLayoutNGMixin();
 }
 
 // Return true if the layout object is a LayoutNG object that is managed by the
 // LayoutNG engine (i.e. its containing block is a LayoutNG object as well).
 inline bool IsManagedByLayoutNG(const LayoutObject& object) {
-  if (!object.IsLayoutNGMixin() && !object.IsLayoutNGFlexibleBox())
+  if (!object.IsLayoutNGMixin())
     return false;
   const auto* containing_block = object.ContainingBlock();
   if (UNLIKELY(!containing_block))

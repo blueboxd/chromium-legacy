@@ -10,8 +10,8 @@
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #include "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 #include "ios/chrome/browser/ui/activity_services/share_to_data.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 

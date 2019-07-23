@@ -68,6 +68,8 @@ struct ShortcutMatch {
         type(static_cast<AutocompleteMatch::Type>(shortcut->match_core.type)) {}
 
   int relevance;
+  // To satisfy |CompareWithDemoteByType<>::operator()|.
+  size_t subrelevance = 0;
   GURL stripped_destination_url;
   const ShortcutsDatabase::Shortcut* shortcut;
   base::string16 contents;

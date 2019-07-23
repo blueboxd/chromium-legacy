@@ -80,8 +80,6 @@ const CLASSES = {
 const LOG_TYPE = {
   // All NTP tiles have finished loading (successfully or failing).
   NTP_ALL_TILES_LOADED: 11,
-  // Shortcuts have been customized.
-  NTP_SHORTCUT_CUSTOMIZED: 39,
   // The 'Add shortcut' link was clicked.
   NTP_CUSTOMIZE_ADD_SHORTCUT_CLICKED: 44,
   // The 'Edit shortcut' link was clicked.
@@ -792,12 +790,6 @@ function countLoad() {
     logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
     let tilesAreCustomLinks = isCustomLinksEnabled() &&
         chrome.embeddedSearch.newTabPage.isCustomLinks;
-    // Note that it's easiest to capture this when all custom links are loaded,
-    // rather than when the impression for each link is logged.
-    if (tilesAreCustomLinks) {
-      chrome.embeddedSearch.newTabPage.logEvent(
-          LOG_TYPE.NTP_SHORTCUT_CUSTOMIZED);
-    }
     // Tell the parent page whether to show the restore default shortcuts option
     // in the menu.
     window.parent.postMessage(

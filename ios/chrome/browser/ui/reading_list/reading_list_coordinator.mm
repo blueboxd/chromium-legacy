@@ -37,7 +37,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "url/gurl.h"

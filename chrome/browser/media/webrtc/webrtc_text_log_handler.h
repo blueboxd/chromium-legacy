@@ -10,10 +10,16 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/threading/thread_checker.h"
-#include "chrome/common/media/webrtc_logging_message_data.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "components/webrtc_logging/common/partial_circular_buffer.h"
 #include "net/base/network_interfaces.h"
+
+namespace chrome {
+namespace mojom {
+class WebRtcLoggingMessage;
+}  // namespace mojom
+}  // namespace chrome
 
 #if defined(OS_ANDROID)
 const size_t kWebRtcLogSize = 1 * 1024 * 1024;  // 1 MB
@@ -46,14 +52,13 @@ class WebRtcLogBuffer {
   void SetComplete();
 
  private:
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   uint8_t buffer_[kWebRtcLogSize];
   webrtc_logging::PartialCircularBuffer circular_;
   bool read_only_;
 };
 
-class WebRtcTextLogHandler
-    : public base::RefCountedThreadSafe<WebRtcTextLogHandler> {
+class WebRtcTextLogHandler {
  public:
   // States used for protecting from function calls made at non-allowed points
   // in time. For example, StartLogging() is only allowed in CLOSED state.
@@ -77,6 +82,7 @@ class WebRtcTextLogHandler
   typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
 
   explicit WebRtcTextLogHandler(int render_process_id);
+  ~WebRtcTextLogHandler();
 
   // Returns the current state of the log. Must be called on the IO thread.
   LoggingState GetState() const;
@@ -123,7 +129,8 @@ class WebRtcTextLogHandler
   void LogMessage(const std::string& message);
 
   // Adds a message to the log. Must be called on the IO thread.
-  void LogWebRtcLoggingMessageData(const WebRtcLoggingMessageData& message);
+  void LogWebRtcLoggingMessage(
+      const chrome::mojom::WebRtcLoggingMessage* message);
 
   // Returns true if the logging state is CLOSED and fires an the callback
   // with an error message otherwise. Must be called on the IO thread.
@@ -137,21 +144,15 @@ class WebRtcTextLogHandler
   void SetWebAppId(int web_app_id);
 
  private:
-  friend class base::RefCountedThreadSafe<WebRtcTextLogHandler>;
-  ~WebRtcTextLogHandler();
-
   void StartDone(const GenericDoneCallback& callback);
 
   void LogToCircularBuffer(const std::string& message);
-
-  void GetNetworkInterfaceListOnUIThread(const GenericDoneCallback& callback);
 
   void OnGetNetworkInterfaceList(
       const GenericDoneCallback& callback,
       const base::Optional<net::NetworkInterfaceList>& networks);
 
-  void LogInitialInfoOnIOThread(const GenericDoneCallback& callback,
-                                const net::NetworkInterfaceList& network_list);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The render process ID this object belongs to.
   const int render_process_id_;
@@ -185,6 +186,8 @@ class WebRtcTextLogHandler
   // |WebRtcLoggingHandlerHost::web_app_id_|. Must only be accessed on the IO
   // thread.
   int web_app_id_ = 0;
+
+  base::WeakPtrFactory<WebRtcTextLogHandler> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcTextLogHandler);
 };

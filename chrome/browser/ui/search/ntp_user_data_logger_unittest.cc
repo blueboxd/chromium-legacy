@@ -81,8 +81,19 @@ class TestNTPUserDataLogger : public NTPUserDataLogger {
     return is_custom_background_configured_;
   }
 
-  bool is_google_ = true;
+  bool AreShortcutsCustomized() const override {
+    return are_shortcuts_customized_;
+  }
+
+  std::pair<bool, bool> GetCurrentShortcutSettings() const override {
+    return std::make_pair(using_most_visited_, is_visible_);
+  }
+
+  bool are_shortcuts_customized_ = false;
   bool is_custom_background_configured_ = false;
+  bool is_google_ = true;
+  bool is_visible_ = true;
+  bool using_most_visited_ = true;
 };
 
 using NTPUserDataLoggerTest = testing::Test;
@@ -812,7 +823,7 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordImpressionsAge) {
                   /*count=*/1)));
 }
 
-TEST_F(NTPUserDataLoggerTest, ShouldRecordBackgroundCustomization) {
+TEST_F(NTPUserDataLoggerTest, ShouldRecordBackgroundIsCustomized) {
   base::HistogramTester histogram_tester;
 
   TestNTPUserDataLogger logger((GURL(chrome::kChromeSearchLocalNtpUrl)));
@@ -855,6 +866,78 @@ TEST_F(NTPUserDataLoggerTest, ShouldRecordBackgroundCustomization) {
       ElementsAre(Bucket(
           static_cast<int>(CustomizedFeature::CUSTOMIZED_FEATURE_BACKGROUND),
           1)));
+}
+
+TEST_F(NTPUserDataLoggerTest, ShouldRecordShortcutsAreCustomizedFromNTPGoogle) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger((GURL(chrome::kChromeSearchLocalNtpUrl)));
+  logger.is_google_ = true;
+  logger.are_shortcuts_customized_ = true;
+
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.Customized"),
+      ElementsAre(Bucket(
+          static_cast<int>(CustomizedFeature::CUSTOMIZED_FEATURE_SHORTCUT),
+          1)));
+}
+
+TEST_F(NTPUserDataLoggerTest,
+       ShouldNotRecordShortcutsAreCustomizedFromNTPOther) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger(GURL("https://www.notgoogle.com/newtab"));
+  logger.is_google_ = false;
+  logger.are_shortcuts_customized_ = true;
+
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.Customized"),
+              IsEmpty());
+}
+
+TEST_F(NTPUserDataLoggerTest,
+       ShouldRecordCustomizedShortcutSettingsFromNTPGoogle) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger((GURL(chrome::kChromeSearchLocalNtpUrl)));
+  logger.is_google_ = true;
+
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("NewTabPage.CustomizedShortcuts"),
+      ElementsAre(Bucket(
+          static_cast<int>(CustomizedShortcutSettings::
+                               CUSTOMIZED_SHORTCUT_SETTINGS_MOST_VISITED),
+          1)));
+}
+
+TEST_F(NTPUserDataLoggerTest,
+       ShouldNotRecordCustomizedShortcutSettingsFromNTPOther) {
+  base::HistogramTester histogram_tester;
+
+  TestNTPUserDataLogger logger(GURL("https://www.notgoogle.com/newtab"));
+  logger.is_google_ = false;
+
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.CustomizedShortcuts"),
+              IsEmpty());
 }
 
 TEST_F(NTPUserDataLoggerTest, ShouldRecordCustomizationActionFromNTPGoogle) {

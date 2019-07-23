@@ -22,8 +22,8 @@
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/time_smoother.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/browser_url_rewriter.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/browser_url_rewriter.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_client.h"
 

@@ -315,7 +315,7 @@ bool WebTestContentBrowserClient::CanCreateWindow(
   return !block_popups_ || user_gesture;
 }
 
-bool WebTestContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+bool WebTestContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kRunWebTests);
 }

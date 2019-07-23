@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.test.pagecontroller.utils;
 
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.By;
 
 import java.util.regex.Pattern;
@@ -69,6 +71,55 @@ public final class Ui2Locators {
         stringBuilder.append(")");
         return withResIdRegex(stringBuilder.toString());
     }
+
+    /**
+     * Locates the node(s) having a resource id name among a list of names (excluding the
+     * package:id/ part).
+     *
+     * @param index         The value of n.
+     * @param firstId       The first id to match against.
+     * @param additionalIds Optional ids to match against.
+     * @return       A locator that will find the nth node whose id matches.
+     */
+    public static IUi2Locator withResIdsByIndex(
+            int index, String firstId, String... additionalIds) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("(");
+        stringBuilder.append(firstId);
+        for (int i = 0; i < additionalIds.length; i++) {
+            stringBuilder.append("|" + additionalIds[i]);
+        }
+        stringBuilder.append(")");
+        return withResNameRegexByIndex("^.*:id/" + stringBuilder.toString() + "$", index);
+    }
+
+    /**
+     * Returns a locator that find node(s) matching any one of R.id.* entry names (ignoring the
+     * package name).
+     *
+     * @param id             The layout resource id of the corresponding view node.
+     * @param additionalIds  Optional additional layout resource ids to match.
+     * @return               A locator that will match against the any of the ids.
+     */
+    public static IUi2Locator withResEntries(@IdRes int id, @IdRes int... additionalIds) {
+        return withResIds(getResourceEntryName(id), getResourceEntryNames(additionalIds));
+    }
+
+    /**
+     * Returns a locator that find the nth node matching any one of R.id.* entry names (ignoring
+     * the package name).
+     *
+     * @param index          The index into the list of matching nodes.
+     * @param id             The layout resource id of the corresponding view node.
+     * @param additionalIds  Optional additional layout resource ids to match.
+     * @return               A locator that will find the nth node whose id matches.
+     */
+    public static IUi2Locator withResEntriesByIndex(
+            int index, @IdRes int id, @IdRes int... additionalIds) {
+        return withResIdsByIndex(
+                index, getResourceEntryName(id), getResourceEntryNames(additionalIds));
+    }
+
     /**
      * Locates the node(s) having an exact resource name (including the package:id/ part).
      *
@@ -191,5 +242,31 @@ public final class Ui2Locators {
      */
     public static IUi2Locator withPackageName(@NonNull String packageName) {
         return new BySelectorUi2Locator(By.pkg(packageName));
+    }
+
+    /**
+     * This converts the integer resource ids to string resource entry names so
+     * that UIAutomator can be used to located them.
+     *
+     * @param id The layout resource id of the corresponding view node.
+     * @return   String resource entry name for id.
+     */
+    private static String getResourceEntryName(@IdRes int id) {
+        return InstrumentationRegistry.getTargetContext().getResources().getResourceEntryName(id);
+    }
+
+    /**
+     * This converts the integer resource ids to string resource entry names so
+     * that UIAutomator can be used to located them.
+     *
+     * @param ids The layout resource id of the corresponding view node.
+     * @return    Array of string resource entry names for ids.
+     */
+    private static String[] getResourceEntryNames(@IdRes int... ids) {
+        String[] names = new String[(ids.length)];
+        for (int i = 0; i < ids.length; i++) {
+            names[i] = getResourceEntryName(ids[i]);
+        }
+        return names;
     }
 }

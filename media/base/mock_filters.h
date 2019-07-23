@@ -54,7 +54,8 @@ class MockPipelineClient : public Pipeline::Client {
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnMetadata, void(const PipelineMetadata&));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,
                void(const TextTrackConfig&, const AddTextTrackDoneCB&));
@@ -280,7 +281,8 @@ class MockRendererClient : public RendererClient {
   MOCK_METHOD1(OnError, void(PipelineStatus));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD1(OnStatisticsUpdate, void(const PipelineStatistics&));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD1(OnWaiting, void(WaitingReason));
   MOCK_METHOD1(OnAudioConfigChange, void(const AudioDecoderConfig&));
   MOCK_METHOD1(OnVideoConfigChange, void(const VideoDecoderConfig&));

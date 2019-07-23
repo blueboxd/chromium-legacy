@@ -5,7 +5,7 @@
 #include "ios/web/common/referrer_util.h"
 
 #include "base/logging.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "url/gurl.h"
 
 namespace web {

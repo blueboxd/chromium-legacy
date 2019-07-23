@@ -254,10 +254,6 @@
       depends_on: ["Serial"],
     },
     {
-      name: "Speaker",
-      feature_policy_name: "speaker",
-    },
-    {
       name: "SyncScript",
       feature_policy_name: "sync-script",
       depends_on: ["ExperimentalProductivityFeatures"],

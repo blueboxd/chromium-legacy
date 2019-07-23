@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "ios/web/public/navigation/url_schemes.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
-#include "ios/web/public/url_schemes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 

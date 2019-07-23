@@ -2175,7 +2175,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   // commands between BeginRaster and EndRaster will not flush).
   FlushToWorkAroundMacCrashes();
 
-  if (!gr_context()) {
+  if (!gr_context() || !supports_oop_raster_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "chromium_raster_transport not enabled via attribs");
     return;

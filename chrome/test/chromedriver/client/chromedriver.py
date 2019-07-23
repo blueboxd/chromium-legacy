@@ -629,3 +629,7 @@ class ChromeDriver(object):
       options['isUserVerified'] = isUserVerified
 
     return self.ExecuteCommand(Command.ADD_VIRTUAL_AUTHENTICATOR, options)
+
+  def RemoveVirtualAuthenticator(self, authenticatorId):
+    params = {'authenticatorId': authenticatorId}
+    return self.ExecuteCommand(Command.REMOVE_VIRTUAL_AUTHENTICATOR, params)

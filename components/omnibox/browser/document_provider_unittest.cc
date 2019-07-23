@@ -30,12 +30,7 @@ const std::string SAMPLE_ORIGINAL_URL =
     "domain.tld/open?id%3D_0123_ID_4567_&_placeholder_";
 
 const std::string SAMPLE_STRIPPED_URL =
-#if defined(OS_IOS) || defined(OS_ANDROID)
-    SAMPLE_ORIGINAL_URL
-#else
-    "https://drive.google.com/open?id=_0123_ID_4567_"
-#endif
-    ;
+    "https://drive.google.com/open?id=_0123_ID_4567_";
 
 using testing::Return;
 

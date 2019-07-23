@@ -15,6 +15,8 @@ namespace viz {
 SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
                                                ResourceFormat format) {
   if (!gpu_compositing) {
+    // TODO(crbug.com/986405): Remove this assumption and have clients tag
+    // resources with the correct format.
     // In software compositing we lazily use RGBA_8888 throughout the system,
     // but actual pixel encodings are the native skia bit ordering, which can be
     // RGBA or BGRA.

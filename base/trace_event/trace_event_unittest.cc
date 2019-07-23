@@ -1823,10 +1823,11 @@ TEST_F(TraceEventTestFixture, DeepCopy) {
   std::string val2("val2");
 
   BeginTrace();
-  TRACE_EVENT_COPY_INSTANT0("category", name1.c_str(),
-                            TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_COPY_BEGIN1("category", name2.c_str(),
-                          arg1.c_str(), 5);
+  TRACE_EVENT_INSTANT_WITH_FLAGS0(
+      "category", name1.c_str(),
+      TRACE_EVENT_FLAG_COPY | TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_BEGIN_WITH_FLAGS1("category", name2.c_str(),
+                                TRACE_EVENT_FLAG_COPY, arg1.c_str(), 5);
   TRACE_EVENT_COPY_END2("category", name3.c_str(),
                         arg1.c_str(), val1,
                         arg2.c_str(), val2);

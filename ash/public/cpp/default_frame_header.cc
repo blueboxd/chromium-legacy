@@ -42,6 +42,10 @@ void TileRoundRect(gfx::Canvas* canvas,
                        0,  // bottom-right
                        0,
                        0};  // bottom-left
+  // Antialiasing can result in blending a transparent pixel and
+  // leave non opaque alpha between the frame and the client area.
+  // Extend 1dp to make sure it's fully opaque.
+  rect.fBottom += 1;
   SkPath path;
   path.addRoundRect(rect, radii, SkPath::kCW_Direction);
   canvas->DrawPath(path, flags);

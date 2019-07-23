@@ -12,7 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

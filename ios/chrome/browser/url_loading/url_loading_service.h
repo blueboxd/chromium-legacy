@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 #include "components/keyed_service/core/keyed_service.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 

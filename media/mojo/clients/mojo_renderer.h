@@ -67,7 +67,8 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void OnTimeUpdate(base::TimeDelta time,
                     base::TimeDelta max_time,
                     base::TimeTicks capture_time) override;
-  void OnBufferingStateChange(BufferingState state) override;
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) override;
   void OnEnded() override;
   void OnError() override;
   void OnAudioConfigChange(const AudioDecoderConfig& config) override;

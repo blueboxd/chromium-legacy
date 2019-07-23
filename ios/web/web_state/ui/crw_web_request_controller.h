@@ -7,7 +7,7 @@
 
 #import <WebKit/WebKit.h>
 
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 

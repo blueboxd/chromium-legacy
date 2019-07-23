@@ -365,6 +365,7 @@ cr.define('languages_page_tests', function() {
         });
       });
 
+      // TODO(crbug.com/950007): Remove when SplitSettings is the default.
       test('changing UI language in CrOS', function() {
         if (!cr.isChromeOS) {
           return;
@@ -589,6 +590,7 @@ cr.define('languages_page_tests', function() {
       });
     });
 
+    // TODO(crbug.com/950007): Remove when SplitSettings is the default.
     test(TestNames.InputMethods, function() {
       const inputMethodsCollapse = languagesPage.$.inputMethodsCollapse;
       const inputMethodSettingsExist = !!inputMethodsCollapse;

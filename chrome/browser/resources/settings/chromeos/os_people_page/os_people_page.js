@@ -13,7 +13,6 @@ Polymer({
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
-    CrPngBehavior,
     LockStateBehavior,
   ],
 
@@ -60,12 +59,6 @@ Polymer({
       type: String,
       value: '',
     },
-
-    /**
-     * The currently selected profile icon URL. May be a data URL.
-     * @private
-     */
-    profileIconUrl_: String,
 
     /**
      * The current profile name.
@@ -135,9 +128,6 @@ Polymer({
               loadTimeData.getBoolean('unifiedConsentEnabled') ?
                   '#sync-setup' :
                   '#sync-status .subpage-arrow');
-        }
-        if (settings.routes.CHANGE_PICTURE) {
-          map.set(settings.routes.CHANGE_PICTURE.path, '#profile-icon');
         }
         if (settings.routes.LOCK_SCREEN) {
           map.set(
@@ -215,23 +205,13 @@ Polymer({
   },
 
   /**
-   * Handler for when the profile's icon and name is updated.
+   * Handler for when the profile's name is updated.
    * @private
    * @param {!settings.ProfileInfo} info
    */
   handleProfileInfo_: function(info) {
     this.profileName_ = info.name;
-    /**
-     * Extract first frame from image by creating a single frame PNG using
-     * url as input if base64 encoded and potentially animated.
-     */
-    if (info.iconUrl.startsWith('data:image/png;base64')) {
-      this.profileIconUrl_ =
-          CrPngBehavior.convertImageSequenceToPng([info.iconUrl]);
-      return;
-    }
-
-    this.profileIconUrl_ = info.iconUrl;
+    // info.iconUrl is not used for this page.
   },
 
   /**
@@ -265,11 +245,6 @@ Polymer({
    */
   handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
-  },
-
-  /** @private */
-  onProfileIconTap_: function() {
-    settings.navigateTo(settings.routes.CHANGE_PICTURE);
   },
 
   /** @private */
@@ -443,15 +418,6 @@ Polymer({
     }
 
     return '';
-  },
-
-  /**
-   * @param {string} iconUrl
-   * @return {string} A CSS image-set for multiple scale factors.
-   * @private
-   */
-  getIconImageSet_: function(iconUrl) {
-    return cr.icon.getImage(iconUrl);
   },
 
   /**

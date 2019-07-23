@@ -53,8 +53,6 @@ enum FeaturePolicyFeature {
   kMidiFeature = 7,
   // Controls access to PaymentRequest interface.
   kPayment = 8,
-  // Controls access to audio output devices.
-  kSpeaker = 9,
   // Controls access to document.cookie attribute.
   kDocumentCookie = 10,
   // Contols access to document.domain attribute.

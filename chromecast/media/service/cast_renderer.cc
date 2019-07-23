@@ -367,9 +367,11 @@ void CastRenderer::OnStatisticsUpdate(
   client_->OnStatisticsUpdate(stats);
 }
 
-void CastRenderer::OnBufferingStateChange(::media::BufferingState state) {
+void CastRenderer::OnBufferingStateChange(
+    ::media::BufferingState state,
+    ::media::BufferingStateChangeReason reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnBufferingStateChange(state);
+  client_->OnBufferingStateChange(state, reason);
 }
 
 void CastRenderer::OnWaiting(::media::WaitingReason reason) {

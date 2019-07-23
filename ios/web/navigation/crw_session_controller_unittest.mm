@@ -17,7 +17,7 @@
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/test/fakes/crw_fake_session_controller_delegate.h"

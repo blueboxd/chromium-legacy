@@ -8,6 +8,7 @@
 #include "ash/public/cpp/session/session_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -35,7 +36,11 @@ inline base::string16 utf16(const char* ascii) {
   return base::ASCIIToUTF16(ascii);
 }
 
-class SamlPasswordExpiryNotificationTest : public testing::Test {
+inline base::string16 GetTitleText(base::TimeDelta time_until_expiry) {
+  return PasswordExpiryNotification::GetTitleText(time_until_expiry);
+}
+
+class PasswordExpiryNotificationTest : public testing::Test {
  protected:
   base::Optional<Notification> Notification() {
     return NotificationDisplayServiceTester::Get()->GetNotification(
@@ -49,24 +54,48 @@ class SamlPasswordExpiryNotificationTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(SamlPasswordExpiryNotificationTest, ShowWillSoonExpire) {
-  PasswordExpiryNotification::Show(&profile_, 14);
+TEST_F(PasswordExpiryNotificationTest, ShowWillSoonExpire) {
+  PasswordExpiryNotification::Show(&profile_, base::TimeDelta::FromDays(14));
   ASSERT_TRUE(Notification().has_value());
 
-  EXPECT_EQ(utf16("Password expires in less than 14 days"),
-            Notification()->title());
+  EXPECT_EQ(utf16("Password expires in 14 days"), Notification()->title());
   EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
 
   PasswordExpiryNotification::Dismiss(&profile_);
   EXPECT_FALSE(Notification().has_value());
 }
 
-TEST_F(SamlPasswordExpiryNotificationTest, ShowAlreadyExpired) {
-  PasswordExpiryNotification::Show(&profile_, 0);
+TEST_F(PasswordExpiryNotificationTest, ShowAlreadyExpired) {
+  PasswordExpiryNotification::Show(&profile_, base::TimeDelta::FromDays(0));
   ASSERT_TRUE(Notification().has_value());
 
-  EXPECT_EQ(utf16("Password is expired"), Notification()->title());
+  EXPECT_EQ(utf16("Password change overdue"), Notification()->title());
   EXPECT_EQ(utf16("Choose a new one now"), Notification()->message());
+
+  PasswordExpiryNotification::Dismiss(&profile_);
+  EXPECT_FALSE(Notification().has_value());
+}
+
+TEST_F(PasswordExpiryNotificationTest, GetTitleText) {
+  EXPECT_EQ(utf16("Password expires in 2 days"),
+            GetTitleText(base::TimeDelta::FromDays(2)));
+  EXPECT_EQ(utf16("Password expires in 1 day"),
+            GetTitleText(base::TimeDelta::FromDays(1)));
+  EXPECT_EQ(utf16("Password expires in 12 hours"),
+            GetTitleText(base::TimeDelta::FromHours(12)));
+  EXPECT_EQ(utf16("Password expires in 1 hour"),
+            GetTitleText(base::TimeDelta::FromHours(1)));
+  EXPECT_EQ(utf16("Password expires in 30 minutes"),
+            GetTitleText(base::TimeDelta::FromMinutes(30)));
+  EXPECT_EQ(utf16("Password expires in 1 minute"),
+            GetTitleText(base::TimeDelta::FromMinutes(1)));
+
+  EXPECT_EQ(utf16("Password change overdue"),
+            GetTitleText(base::TimeDelta::FromSeconds(30)));
+  EXPECT_EQ(utf16("Password change overdue"),
+            GetTitleText(base::TimeDelta::FromSeconds(0)));
+  EXPECT_EQ(utf16("Password change overdue"),
+            GetTitleText(base::TimeDelta::FromSeconds(-10)));
 
   PasswordExpiryNotification::Dismiss(&profile_);
   EXPECT_FALSE(Notification().has_value());

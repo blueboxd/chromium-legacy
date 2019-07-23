@@ -380,7 +380,11 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
   if (Scrollbar* vertical_scrollbar = this->VerticalScrollbar())
     vertical_scrollbar->OffsetDidChange();
 
-  if (GetScrollOffset() != old_offset) {
+  ScrollOffset delta = GetScrollOffset() - old_offset;
+  // TODO(skobes): Should we exit sooner when the offset has not changed?
+  bool offset_changed = !delta.IsZero();
+
+  if (offset_changed) {
     GetScrollAnimator().NotifyContentAreaScrolled(
         GetScrollOffset() - old_offset, scroll_type);
   }
@@ -389,7 +393,7 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
       (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled() ||
        RuntimeEnabledFeatures::ElementTimingEnabled(
            &GetLayoutBox()->GetDocument()))) {
-    if (GetScrollOffset() != old_offset && GetLayoutBox()->GetFrameView() &&
+    if (offset_changed && GetLayoutBox()->GetFrameView() &&
         GetLayoutBox()
             ->GetFrameView()
             ->GetPaintTimingDetector()
@@ -399,10 +403,9 @@ void ScrollableArea::ScrollOffsetChanged(const ScrollOffset& offset,
     }
   }
 
-  if (GetScrollOffset() != old_offset && GetLayoutBox() &&
-      GetLayoutBox()->GetFrameView()) {
+  if (offset_changed && GetLayoutBox() && GetLayoutBox()->GetFrameView()) {
     GetLayoutBox()->GetFrameView()->GetLayoutShiftTracker().NotifyScroll(
-        scroll_type);
+        scroll_type, delta);
   }
 
   GetScrollAnimator().SetCurrentOffset(offset);

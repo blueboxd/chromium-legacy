@@ -129,7 +129,8 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
-#include "chrome/browser/signin/header_modification_delegate_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_on_io_thread_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_on_ui_thread_impl.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
@@ -347,7 +348,6 @@
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "services/strings/grit/services_strings.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -1459,14 +1459,9 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #endif
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
   host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
-  WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
-      new WebRtcLoggingHandlerHost(id, profile,
-                                   g_browser_process->webrtc_log_uploader());
-  host->AddFilter(webrtc_logging_handler_host);
-  host->SetUserData(
-      WebRtcLoggingHandlerHost::kWebRtcLoggingHandlerHostKey,
-      std::make_unique<base::UserDataAdapter<WebRtcLoggingHandlerHost>>(
-          webrtc_logging_handler_host));
+
+  WebRtcLoggingHandlerHost::AttachToRenderProcessHost(
+      host, g_browser_process->webrtc_log_uploader());
 
   // The audio manager outlives the host, so it's safe to hand a raw pointer to
   // it to the AudioDebugRecordingsHandler, which is owned by the host.
@@ -2353,17 +2348,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
-#if defined(OS_CHROMEOS)
-  if (identity.name() == viz::mojom::kVizServiceName) {
-    if (ui::OzonePlatform::EnsureInstance()->GetMessageLoopTypeForGpu() ==
-        base::MessageLoop::TYPE_UI) {
-      command_line->AppendSwitch(switches::kMessageLoopTypeUi);
-    }
-    content::GpuDataManager::GetInstance()->AppendGpuCommandLine(
-        command_line, content::GPU_PROCESS_KIND_SANDBOXED);
-  }
-#endif
-
 #if defined(OS_MACOSX)
   // On Mac, the video-capture and audio services require a CFRunLoop, provided
   // by a UI message loop, to run AVFoundation and CoreAudio code.
@@ -4786,8 +4770,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
       resource_context, request.resource_type, frame_tree_node_id));
 #endif
 
-  auto delegate = std::make_unique<signin::HeaderModificationDelegateImpl>(
-      resource_context);
+  auto delegate =
+      std::make_unique<signin::HeaderModificationDelegateOnIOThreadImpl>(
+          resource_context);
   auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
       std::move(delegate), navigation_ui_data, wc_getter);
   if (signin_throttle)
@@ -4883,6 +4868,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   result.push_back(std::make_unique<PluginResponseInterceptorURLLoaderThrottle>(
       browser_context, request.resource_type, frame_tree_node_id));
 #endif
+
+  auto delegate =
+      std::make_unique<signin::HeaderModificationDelegateOnUIThreadImpl>(
+          profile);
+  auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
+      std::move(delegate), navigation_ui_data, wc_getter);
+  if (signin_throttle)
+    result.push_back(std::move(signin_throttle));
 
   return result;
 }
@@ -5541,7 +5534,7 @@ ChromeContentBrowserClient::GetOriginPolicyErrorPage(
       error_reason, handle);
 }
 
-bool ChromeContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+bool ChromeContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   // We require --user-data-dir flag too so that no dangerous changes are made
   // in the user's regular profile.
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

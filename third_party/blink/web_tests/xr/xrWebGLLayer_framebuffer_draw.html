@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
 
@@ -14,8 +16,6 @@ let testName =
   "Ensure a WebGL layer's framebuffer can only be drawn to inside a XR frame";
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
-
-let requestSessionModes =  ['immersive-vr'];
 
 // Very simple program setup with no error checking.
 function setupProgram(gl, vertexSrc, fragmentSrc) {
@@ -38,7 +38,9 @@ function setupProgram(gl, vertexSrc, fragmentSrc) {
 }
 
 let testFunction =
-  (session, fakeDeviceController, t) => new Promise((resolve, reject) => {
+  (session, fakeDeviceController, t, sessionObjects) => new Promise((resolve, reject) => {
+  let gl = sessionObjects.gl;
+  let webglLayer = sessionObjects.glLayer;
   // Setup simple WebGL geometry to draw with.
   let program = setupProgram(gl,
     "attribute vec4 vPosition; void main() { gl_Position = vPosition; }",
@@ -57,10 +59,6 @@ let testFunction =
   let indexObject = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexObject);
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0, 1, 2]), gl.STATIC_DRAW);
-
-  // Session must have a baseLayer or frame requests will be ignored.
-  let webglLayer = new XRWebGLLayer(session, gl);
-  session.updateRenderState({ baseLayer: webglLayer });
 
   let xrFramebuffer = webglLayer.framebuffer;
 
@@ -95,6 +93,6 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 
 </script>

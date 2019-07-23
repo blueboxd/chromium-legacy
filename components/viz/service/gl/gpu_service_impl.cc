@@ -625,6 +625,29 @@ void GpuServiceImpl::UpdateGpuInfoPlatform(
 }
 #endif
 
+void GpuServiceImpl::RegisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  display_contexts_.AddObserver(display_context);
+}
+
+void GpuServiceImpl::UnregisterDisplayContext(
+    gpu::DisplayContext* display_context) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+  display_contexts_.RemoveObserver(display_context);
+}
+
+void GpuServiceImpl::LoseAllContexts() {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+
+  if (IsExiting())
+    return;
+
+  for (auto& display_context : display_contexts_)
+    display_context.MarkContextLost();
+  gpu_channel_manager_->LoseAllContexts();
+}
+
 void GpuServiceImpl::DidCreateContextSuccessfully() {
   DCHECK(main_runner_->BelongsToCurrentThread());
   gpu_host_->DidCreateContextSuccessfully();

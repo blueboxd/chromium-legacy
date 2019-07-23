@@ -31,10 +31,6 @@ class UI_DATA_PACK_EXPORT ResourceHandle {
   // Returns true if the DataPack contains a resource with id |resource_id|.
   virtual bool HasResource(uint16_t resource_id) const = 0;
 
-  // Whether a specific |resource_id| is gzipped. Returns false if
-  // !HasResource(resource_id). |is_gzipped| cannot be nullptr.
-  virtual bool IsGzipped(uint16_t resource_id, bool* is_gzipped) const = 0;
-
   // Get resource by id |resource_id|, filling in |data|.
   // The data is owned by the DataPack object and should not be modified.
   // Returns false if the resource id isn't found.

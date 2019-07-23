@@ -1657,6 +1657,10 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
         },
+        'mixins': [
+          'arm64',
+          'linux-xenial',
+        ],
       },
       'fuchsia-fyi-x64-dbg': {
         'additional_compile_targets': [
@@ -2324,7 +2328,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'additional_compile_targets': [
@@ -2340,7 +2344,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'test_suites': {
@@ -2352,7 +2356,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'additional_compile_targets': [
@@ -2368,7 +2372,7 @@
         'skip_merge_script': True,
         'mixins': [
           'gpu_pool',
-          'pie',
+          'android_q',
           'walleye',
         ],
         'test_suites': {
@@ -3315,6 +3319,7 @@
       },
       'Linux Builder': {
         'mixins': [
+          'code-coverage',
           'linux-trusty',
         ],
         'additional_compile_targets': [
@@ -3350,6 +3355,7 @@
       },
       'Linux Tests': {
         'mixins': [
+          'code-coverage',
           'linux-xenial',
         ],
         'test_suites': {

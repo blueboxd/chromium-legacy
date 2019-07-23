@@ -888,23 +888,18 @@ TEST_P(LayerTreeHostMasksForBackdropFiltersPixelTest,
           ? base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter_gpu.png"))
           : base::FilePath(FILE_PATH_LITERAL("mask_of_backdrop_filter.png"));
 
-  if (renderer_type() == RENDERER_SKIA_VK) {
-    if (raster_type() == GPU) {
-      // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
-      // slight different).
-      float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
-      float percentage_pixels_small_error = 0.0f;
-      float average_error_allowed_in_bad_pixels = 182.f;
-      int large_error_allowed = 182;
-      int small_error_allowed = 0;
-      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-          true /* discard_alpha */, percentage_pixels_large_error,
-          percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
-          large_error_allowed, small_error_allowed);
-    } else if (raster_type() == ZERO_COPY) {
-      pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(
-          true /* discard_alpha  */);
-    }
+  if (renderer_type() == RENDERER_SKIA_VK && raster_type() == GPU) {
+    // Vulkan with GPU raster has 4 pixels errors (the circle mask shape is
+    // slight different).
+    float percentage_pixels_large_error = 0.04f;  // 4px / (100*100)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 182.f;
+    int large_error_allowed = 182;
+    int small_error_allowed = 0;
+    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
+        true /* discard_alpha */, percentage_pixels_large_error,
+        percentage_pixels_small_error, average_error_allowed_in_bad_pixels,
+        large_error_allowed, small_error_allowed);
   }
 
   RunPixelResourceTest(background, image_name);
@@ -1003,22 +998,16 @@ class LayerTreeHostMaskAsBlendingPixelTest
             Layer::LayerMaskType::SINGLE_TEXTURE_MASK),
         use_antialiasing_(GetParam().flags & kUseAntialiasing),
         force_shaders_(GetParam().flags & kForceShaders) {
-    float percentage_pixels_small_error = 0.f;
     float percentage_pixels_error = 0.f;
+    float percentage_pixels_small_error = 0.f;
     float average_error_allowed_in_bad_pixels = 0.f;
     int large_error_allowed = 0;
     int small_error_allowed = 0;
-    if (use_antialiasing_) {
+    if (renderer_type() != RENDERER_SOFTWARE) {
+      percentage_pixels_error = 6.0f;
       percentage_pixels_small_error = 2.f;
-      percentage_pixels_error = 6.7f;
-      average_error_allowed_in_bad_pixels = 3.5f;
-      large_error_allowed = 15;
-      small_error_allowed = 1;
-    } else if (raster_type() != SOFTWARE) {
-      percentage_pixels_small_error = 2.f;
-      percentage_pixels_error = 6.5f;
-      average_error_allowed_in_bad_pixels = 3.5f;
-      large_error_allowed = 15;
+      average_error_allowed_in_bad_pixels = 2.1f;
+      large_error_allowed = 11;
       small_error_allowed = 1;
     } else {
 #if defined(ARCH_CPU_ARM64)
@@ -1121,7 +1110,6 @@ class LayerTreeHostMaskAsBlendingPixelTest
   bool force_shaders_;
 };
 
-// TODO(crbug.com/963446): Enable these tests for Vulkan.
 MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_SOFTWARE, SOFTWARE}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_GL, ZERO_COPY}, 0},
@@ -1132,6 +1120,11 @@ MaskTestConfig const kTestConfigs[] = {
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY}, 0},
     MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_GL, ZERO_COPY},
                    kUseAntialiasing},
+#if defined(ENABLE_CC_VULKAN_TESTS)
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY}, 0},
+    MaskTestConfig{{LayerTreeTest::RENDERER_SKIA_VK, ZERO_COPY},
+                   kUseAntialiasing},
+#endif
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

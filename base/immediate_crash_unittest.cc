@@ -38,19 +38,14 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
   NativeLibraryLoadError load_error;
   FilePath helper_library_path;
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-  // Appending the library name to DIR_EXE isn't necessary on all platforms (and
-  // can even break in some places):
-  // - on Android M, DIR_EXE == /system/bin when running base_unittests.
-  // - on Fuchsia, NativeLibrary knows where to look already, since it
-  //   understands the platform convention that libraries are not colocated with
-  //   the binary.
+  // On Android M, DIR_EXE == /system/bin when running base_unittests.
+  // On Fuchsia, NativeLibrary understands the native convention that libraries
+  // are not colocated with the binary.
   ASSERT_TRUE(PathService::Get(DIR_EXE, &helper_library_path));
 #endif
   helper_library_path = helper_library_path.AppendASCII(
       GetNativeLibraryName("immediate_crash_test_helper"));
 #if defined(OS_ANDROID) && defined(COMPONENT_BUILD)
-  // Android component builds use a unique shared library suffix to avoid naming
-  // collisions.
   helper_library_path = helper_library_path.ReplaceExtension(".cr.so");
 #endif
   // TODO(dcheng): Shouldn't GetNativeLibraryName just return a FilePath?
@@ -91,10 +86,8 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
   for (int i = 0; i < 2; ++i) {
-#if defined(OS_LINUX)
-    // INT3
+    // INT 3
     EXPECT_EQ(0xCC, *++it);
-#endif  // defined(OS_LINUX)
     // UD2
     EXPECT_EQ(0x0F, *++it);
     EXPECT_EQ(0x0B, *++it);
@@ -127,6 +120,8 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
   for (int i = 0; i < 2; ++i) {
+    // BKPT #0
+    EXPECT_EQ(0xBE00, *++it);
     // UDF #0
     EXPECT_EQ(0xDE00, *++it);
   }
@@ -148,6 +143,8 @@ TEST(ImmediateCrashTest, ExpectedOpcodeSequence) {
 
   // Look for two IMMEDIATE_CRASH() opcode sequences.
   for (int i = 0; i < 2; ++i) {
+    // BRK #0
+    EXPECT_EQ(0XD4200000, *++it);
     // HLT #0
     EXPECT_EQ(0xD4400000, *++it);
   }

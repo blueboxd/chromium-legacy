@@ -198,6 +198,7 @@ class PDFiumEngine : public PDFEngine,
   };
 
   friend class PDFiumFormFiller;
+  friend class PDFiumTestBase;
   friend class SelectionChangeInvalidator;
 
   // We finished getting the pdf file, so load it. This will complete

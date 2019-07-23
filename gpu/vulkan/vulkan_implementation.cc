@@ -26,9 +26,9 @@ std::unique_ptr<VulkanDeviceQueue> CreateVulkanDeviceQueue(
       base::Unretained(vulkan_implementation));
   std::vector<const char*> required_extensions =
       vulkan_implementation->GetRequiredDeviceExtensions();
-  if (!device_queue->Initialize(option, std::move(required_extensions),
-                                callback,
-                                vulkan_implementation->use_swiftshader())) {
+  if (!device_queue->Initialize(
+          option, vulkan_implementation->GetVulkanInstance()->api_version(),
+          std::move(required_extensions), callback)) {
     device_queue->Destroy();
     return nullptr;
   }

@@ -37,7 +37,6 @@ class GaiaAuthConsumer {
   };
 
   struct ClientOAuthResult {
-    ClientOAuthResult();
     ClientOAuthResult(const std::string& new_refresh_token,
                       const std::string& new_access_token,
                       int new_expires_in_secs,

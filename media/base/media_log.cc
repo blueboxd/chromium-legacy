@@ -160,15 +160,27 @@ std::string MediaLog::MediaEventToMessageString(const MediaLogEvent& event) {
   }
 }
 
-std::string MediaLog::BufferingStateToString(BufferingState state) {
-  switch (state) {
-    case BUFFERING_HAVE_NOTHING:
-      return "BUFFERING_HAVE_NOTHING";
-    case BUFFERING_HAVE_ENOUGH:
-      return "BUFFERING_HAVE_ENOUGH";
-  }
-  NOTREACHED();
-  return "";
+std::string MediaLog::BufferingStateToString(
+    BufferingState state,
+    BufferingStateChangeReason reason) {
+  DCHECK(state == BUFFERING_HAVE_NOTHING || state == BUFFERING_HAVE_ENOUGH);
+  DCHECK(reason == BUFFERING_CHANGE_REASON_UNKNOWN ||
+         reason == DEMUXER_UNDERFLOW || reason == DECODER_UNDERFLOW ||
+         reason == REMOTING_NETWORK_CONGESTION);
+
+  std::string state_string = state == BUFFERING_HAVE_NOTHING
+                                 ? "BUFFERING_HAVE_NOTHING"
+                                 : "BUFFERING_HAVE_ENOUGH";
+
+  std::vector<std::string> flag_strings;
+  if (reason == DEMUXER_UNDERFLOW)
+    state_string += " (DEMUXER_UNDERFLOW)";
+  else if (reason == DECODER_UNDERFLOW)
+    state_string += " (DECODER_UNDERFLOW)";
+  else if (reason == REMOTING_NETWORK_CONGESTION)
+    state_string += " (REMOTING_NETWORK_CONGESTION)";
+
+  return state_string;
 }
 
 MediaLog::MediaLog() : MediaLog(new ParentLogRecord(this)) {}
@@ -315,9 +327,10 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateVideoSizeSetEvent(
 
 std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferingStateChangedEvent(
     const std::string& property,
-    BufferingState state) {
+    BufferingState state,
+    BufferingStateChangeReason reason) {
   return CreateStringEvent(MediaLogEvent::PROPERTY_CHANGE, property,
-                           BufferingStateToString(state));
+                           BufferingStateToString(state, reason));
 }
 
 void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {

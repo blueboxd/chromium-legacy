@@ -148,11 +148,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
-  // There are multiple possible configurations that affects the layout, but
-  // first add resources that are shared across all layouts.
-  html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
-  html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
-
   if (nux::IsNuxOnboardingEnabled(profile)) {
     // Add Onboarding welcome strings.
     AddOnboardingStrings(html_source);
@@ -230,26 +225,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
         base::BindRepeating(&HandleRequestCallback,
                             weak_ptr_factory_.GetWeakPtr()));
     html_source->SetJsonPath("strings.js");
-  } else if (kIsBranded &&
-             AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
-    // Use special layout if the application is branded and DICE is enabled.
-    html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
-    html_source->AddLocalizedString("acceptText",
-                                    IDS_PROFILES_DICE_SIGNIN_BUTTON);
-    html_source->AddLocalizedString("secondHeaderText",
-                                    IDS_DICE_WELCOME_SECOND_HEADER);
-    html_source->AddLocalizedString("descriptionText",
-                                    IDS_DICE_WELCOME_DESCRIPTION);
-    html_source->AddLocalizedString("declineText",
-                                    IDS_DICE_WELCOME_DECLINE_BUTTON);
-    html_source->AddResourcePath("welcome_browser_proxy.html",
-                                 IDR_DICE_WELCOME_BROWSER_PROXY_HTML);
-    html_source->AddResourcePath("welcome_browser_proxy.js",
-                                 IDR_DICE_WELCOME_BROWSER_PROXY_JS);
-    html_source->AddResourcePath("welcome_app.html", IDR_DICE_WELCOME_APP_HTML);
-    html_source->AddResourcePath("welcome_app.js", IDR_DICE_WELCOME_APP_JS);
-    html_source->AddResourcePath("welcome.css", IDR_DICE_WELCOME_CSS);
-    html_source->SetDefaultResource(IDR_DICE_WELCOME_HTML);
   } else {
     // Use default layout for non-DICE or unbranded build.
     std::string value;
@@ -274,6 +249,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->AddResourcePath("welcome.js", IDR_WELCOME_JS);
     html_source->AddResourcePath("welcome.css", IDR_WELCOME_CSS);
     html_source->SetDefaultResource(IDR_WELCOME_HTML);
+
+    html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
+    html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
   }
 
   content::WebUIDataSource::Add(profile, html_source);

@@ -19,6 +19,7 @@
  *   themeColor: string,
  *   backgroundColor: string,
  *   lastUpdateCheckTimeMs: number,
+ *   lastUpdateCompletionTimeMs: number,
  *   relaxUpdates: boolean,
  *   updateStatus: string,
  * }}
@@ -32,6 +33,8 @@ let WebApkInfo;
  * }}
  */
 let UpdateStatus;
+
+const UPDATE_TIMEOUT = 60 * 1000;  // milliseconds.
 
 /**
  * Creates and returns an element (with |text| as content) assigning it the
@@ -81,12 +84,14 @@ function addWebApkField(webApkList, label, value) {
  * attributes.
  * @param {string} text For the button.
  * @param {function()} callback Invoked on click.
+ * @return {Element} The button that was created.
  */
 function addWebApkButton(webApkList, text, callback) {
   const divElement =
       createElementWithTextAndClass(text, 'button', 'update-button');
   divElement.onclick = callback;
   webApkList.appendChild(divElement);
+  return divElement;
 }
 
 /**
@@ -121,6 +126,9 @@ function addWebApk(webApkInfo) {
       webApkList, 'Last Update Check Time: ',
       new Date(webApkInfo.lastUpdateCheckTimeMs).toString());
   addWebApkField(
+      webApkList, 'Last Update Completion Time: ',
+      new Date(webApkInfo.lastUpdateCompletionTimeMs).toString());
+  addWebApkField(
       webApkList, 'Check for Updates Less Frequently: ',
       webApkInfo.relaxUpdates.toString());
   addWebApkField(webApkList, 'Update Status: ', webApkInfo.updateStatus);
@@ -130,14 +138,24 @@ function addWebApk(webApkInfo) {
     return;
   }
 
-  addWebApkButton(webApkList, 'Update ' + webApkInfo.name, () => {
-    alert(
-        'The WebAPK will check for an update the next time it launches. ' +
-        'If an update is available, the "Update Status" on this page ' +
-        'will switch to "Scheduled". The update will be installed once ' +
-        'the WebAPK is closed (this may take a few minutes).');
-    chrome.send('requestWebApkUpdate', [webApkInfo.id]);
-  });
+  const buttonElement =
+      addWebApkButton(webApkList, 'Update ' + webApkInfo.name, () => {
+        alert(
+            'The WebAPK will check for an update the next time it launches. ' +
+            'If an update is available, the "Update Status" on this page ' +
+            'will switch to "Scheduled". The update will be installed once ' +
+            'the WebAPK is closed (this may take a few minutes).');
+        chrome.send('requestWebApkUpdate', [webApkInfo.id]);
+      });
+
+  // Prevent updates in the WebAPK server caching window as they will fail.
+  const msSinceLastUpdate = Date.now() - webApkInfo.lastUpdateCompletionTimeMs;
+  if (msSinceLastUpdate < UPDATE_TIMEOUT) {
+    buttonElement.disabled = true;
+    window.setTimeout(() => {
+      buttonElement.disabled = false;
+    }, UPDATE_TIMEOUT - msSinceLastUpdate);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

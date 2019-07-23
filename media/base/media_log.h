@@ -65,7 +65,9 @@ class MEDIA_EXPORT MediaLog {
   // MediaError.message as the UA-specific-error-code.
   static std::string PipelineStatusToString(PipelineStatus status);
 
-  static std::string BufferingStateToString(BufferingState state);
+  static std::string BufferingStateToString(
+      BufferingState state,
+      BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN);
 
   static std::string MediaEventToLogString(const MediaLogEvent& event);
 
@@ -120,7 +122,8 @@ class MEDIA_EXPORT MediaLog {
                                                          size_t height);
   std::unique_ptr<MediaLogEvent> CreateBufferingStateChangedEvent(
       const std::string& property,
-      BufferingState state);
+      BufferingState state,
+      BufferingStateChangeReason reason);
 
   // Report a log message at the specified log level.
   void AddLogEvent(MediaLogLevel level, const std::string& message);

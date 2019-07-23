@@ -7,16 +7,12 @@
 
 #include <stdint.h>
 
-#include <string>
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/strings/string_piece.h"
-#include "net/base/load_flags.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/socket/ssl_socket.h"
-#include "net/socket/stream_socket.h"
 
 namespace net {
 

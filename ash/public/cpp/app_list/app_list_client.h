@@ -128,6 +128,11 @@ class ASH_PUBLIC_EXPORT AppListClient {
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
           receiver) = 0;
 
+  virtual void NotifySearchResultsForLogging(
+      const base::string16& trimmed_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) = 0;
+
  protected:
   virtual ~AppListClient() = default;
 };

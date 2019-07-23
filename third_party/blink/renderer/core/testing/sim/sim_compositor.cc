@@ -39,11 +39,6 @@ void SimCompositor::SetWebView(
   layer_tree_view_ = &layer_tree_view;
   test_web_view_client_ = &view_client;
   test_web_widget_client_ = &widget_client;
-
-  // SimCompositor starts with defer commits enabled, but uses synchronous
-  // compositing which does not use defer commits anyhow, it only uses it for
-  // reading deferred state in tests.
-  web_view_->DeferMainFrameUpdateForTesting();
 }
 
 SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {

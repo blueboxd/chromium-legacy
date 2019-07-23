@@ -11,7 +11,7 @@
 #include <memory>
 
 #import "ios/chrome/browser/sessions/session_window_restoring.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 
 #include "ui/base/page_transition_types.h"
 

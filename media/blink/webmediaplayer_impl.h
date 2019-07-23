@@ -336,7 +336,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnError(PipelineStatus status) override;
   void OnEnded() override;
   void OnMetadata(const PipelineMetadata& metadata) override;
-  void OnBufferingStateChange(BufferingState state) override;
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) override;
   void OnDurationChange() override;
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb) override;
@@ -550,6 +551,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // |for_suspended_start| is true, the given state will be set even if the
   // pipeline is not currently stable.
   void OnBufferingStateChangeInternal(BufferingState state,
+                                      BufferingStateChangeReason reason,
                                       bool for_suspended_start = false);
 
   // Records |natural_size| to MediaLog and video height to UMA.

@@ -1291,7 +1291,7 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
   SubmenuView* source = menu_item()->GetSubmenu();
   MenuItemView* target = source->GetMenuItemAt(0);
 
-  SetDropMenuItem(target, MenuDelegate::DropPosition::DROP_AFTER);
+  SetDropMenuItem(target, MenuDelegate::DropPosition::kAfter);
 
   ui::OSExchangeData drop_data;
   gfx::PointF location(target->origin());

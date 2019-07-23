@@ -176,11 +176,11 @@ class AuraClipboard {
     return sequence_number_;
   }
 
-  // Returns the data currently on the top of the clipboard stack, NULL if the
-  // clipboard stack is empty.
+  // Returns the data currently on the top of the clipboard stack, nullptr if
+  // the clipboard stack is empty.
   const ClipboardData* GetData() const {
     if (data_list_.empty())
-      return NULL;
+      return nullptr;
     return data_list_.front().get();
   }
 

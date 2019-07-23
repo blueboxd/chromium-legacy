@@ -370,6 +370,7 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
     const JavaParamRef<jlongArray>& jtheme_colors,
     const JavaParamRef<jlongArray>& jbackground_colors,
     const JavaParamRef<jlongArray>& jlast_update_check_times_ms,
+    const JavaParamRef<jlongArray>& jlast_update_completion_times_ms,
     const JavaParamRef<jbooleanArray>& jrelax_updates,
     const JavaParamRef<jobjectArray>& jupdateStatuses) {
   DCHECK(jcallback_pointer);
@@ -410,6 +411,9 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   std::vector<int64_t> last_update_check_times_ms;
   base::android::JavaLongArrayToInt64Vector(env, jlast_update_check_times_ms,
                                             &last_update_check_times_ms);
+  std::vector<int64_t> last_update_completion_times_ms;
+  base::android::JavaLongArrayToInt64Vector(
+      env, jlast_update_completion_times_ms, &last_update_completion_times_ms);
   std::vector<bool> relax_updates;
   base::android::JavaBooleanArrayToBoolVector(env, jrelax_updates,
                                               &relax_updates);
@@ -431,6 +435,7 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
   DCHECK(short_names.size() == theme_colors.size());
   DCHECK(short_names.size() == background_colors.size());
   DCHECK(short_names.size() == last_update_check_times_ms.size());
+  DCHECK(short_names.size() == last_update_completion_times_ms.size());
   DCHECK(short_names.size() == relax_updates.size());
   DCHECK(short_names.size() == update_statuses.size());
 
@@ -447,6 +452,7 @@ void JNI_ShortcutHelper_OnWebApksRetrieved(
         JavaColorToOptionalSkColor(theme_colors[i]),
         JavaColorToOptionalSkColor(background_colors[i]),
         base::Time::FromJavaTime(last_update_check_times_ms[i]),
+        base::Time::FromJavaTime(last_update_completion_times_ms[i]),
         relax_updates[i], std::move(update_statuses[i])));
   }
 

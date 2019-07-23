@@ -6660,12 +6660,6 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
   EXPECT_EQ(2U, server_cards.size());
   for (CreditCard* card : server_cards)
     EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized", true, 1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
 }
 
 // Test that calling OnSyncServiceInitialized with a sync service in auth error
@@ -6692,13 +6686,6 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   EXPECT_EQ(2U, server_cards.size());
   for (CreditCard* card : server_cards)
     EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
-
-  // Check that the metrics are logged correctly.
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.SyncServiceNotActiveOnInitialized", true,
-      1);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.ResetFullServerCards.NumberOfCardsReset", 1, 1);
 
   // Call OnSyncShutdown to ensure removing observer added by
   // OnSyncServiceInitialized.

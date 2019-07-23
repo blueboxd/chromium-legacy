@@ -52,7 +52,7 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   bool loaded = false;
 };
 
-typedef std::pair<DOMNodeId, const ImageResourceContent*> RecordId;
+typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
 
 // |ImageRecordsManager| is the manager of all of the images that Largest Image
 // Paint cares about. Note that an image does not necessarily correspond to a
@@ -71,9 +71,8 @@ class CORE_EXPORT ImageRecordsManager {
   ImageRecordsManager();
   ImageRecord* FindLargestPaintCandidate() const;
 
-  inline void RemoveInvisibleRecordIfNeeded(
-      const DOMNodeId& invisible_node_id) {
-    invisible_images_.erase(invisible_node_id);
+  inline void RemoveInvisibleRecordIfNeeded(const LayoutObject& object) {
+    invisible_images_.erase(&object);
   }
 
   inline void RemoveVisibleRecord(const RecordId& record_id) {
@@ -85,15 +84,15 @@ class CORE_EXPORT ImageRecordsManager {
     // record will be removed in |AssignPaintTimeToRegisteredQueuedRecords|.
   }
 
-  inline void RecordInvisible(const DOMNodeId& node_id) {
-    invisible_images_.insert(node_id);
+  inline void RecordInvisible(const LayoutObject& object) {
+    invisible_images_.insert(&object);
   }
   void RecordVisible(const RecordId& record_id, const uint64_t& visual_size);
   bool IsRecordedVisibleImage(const RecordId& record_id) const {
     return visible_images_.Contains(record_id);
   }
-  bool IsRecordedInvisibleImage(const DOMNodeId& node_id) const {
-    return invisible_images_.Contains(node_id);
+  bool IsRecordedInvisibleImage(const LayoutObject& object) const {
+    return invisible_images_.Contains(&object);
   }
 
   inline bool IsVisibleImageLoaded(const RecordId& record_id) const {
@@ -137,7 +136,7 @@ class CORE_EXPORT ImageRecordsManager {
     return visible_images_.find(record_id)->value->AsWeakPtr();
   }
   std::unique_ptr<ImageRecord> CreateImageRecord(
-      const DOMNodeId&,
+      const LayoutObject& object,
       const ImageResourceContent* cached_image,
       const uint64_t& visual_size);
   inline void QueueToMeasurePaintTime(base::WeakPtr<ImageRecord>& record,
@@ -150,7 +149,7 @@ class CORE_EXPORT ImageRecordsManager {
   }
 
   HashMap<RecordId, std::unique_ptr<ImageRecord>> visible_images_;
-  HashSet<DOMNodeId> invisible_images_;
+  HashSet<const LayoutObject*> invisible_images_;
 
   // This stores the image records, which are ordered by size.
   ImageRecordSet size_ordered_set_;
@@ -198,7 +197,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
       const PropertyTreeState& current_paint_chunk_properties);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
-  void NotifyImageRemoved(DOMNodeId, const ImageResourceContent*);
+  void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);
   // After the method being called, the detector stops to record new entries and
   // node removal. But it still observe the loading status. In other words, if
   // an image is recorded before stopping recording, and finish loading after

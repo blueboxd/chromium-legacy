@@ -1167,23 +1167,21 @@ class WebContentsSplitCacheBrowserTestEnabled
       public ::testing::WithParamInterface<bool> {
  public:
   WebContentsSplitCacheBrowserTestEnabled() {
-    if (GetParam()) {
-      feature_list.InitWithFeatures(
-          {/* Enabled features */
-           // To enable kPlzDedicatedWorker, we also need to enable
-           // kOffMainThreadDedicatedWorkerScriptFetch and
-           // kNetworkService.
-           net::features::kSplitCacheByNetworkIsolationKey,
-           blink::features::kPlzDedicatedWorker,
-           blink::features::kOffMainThreadDedicatedWorkerScriptFetch,
-           network::features::kNetworkService},
-          {/* Disabled features */});
-    } else {
-      feature_list.InitWithFeatures(
-          {/* Enabled feature */ net::features::
-               kSplitCacheByNetworkIsolationKey},
-          {/* Disabled feature */ blink::features::kPlzDedicatedWorker});
+    std::vector<base::Feature> enabled_features;
+    enabled_features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
+
+    // When the test parameter is true and network service is available, we
+    // test the split cache with PlzDedicatedWorker enabled, which itself
+    // requires OffMainThreadWorkerScriptFetch to be enabled.  We cannot
+    // enable PlzDedicatedWorker without also enabling NetworkService.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+        GetParam()) {
+      enabled_features.push_back(blink::features::kPlzDedicatedWorker);
+      enabled_features.push_back(
+          blink::features::kOffMainThreadDedicatedWorkerScriptFetch);
     }
+
+    feature_list.InitWithFeatures(enabled_features, {});
   }
 
  private:
@@ -1202,7 +1200,14 @@ class WebContentsSplitCacheBrowserTestDisabled
   base::test::ScopedFeatureList feature_list;
 };
 
-IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
+// See: http://crbug.com/983931
+#if defined(OS_ANDROID)
+#define MAYBE_SplitCache DISABLED_SplitCache
+#else
+#define MAYBE_SplitCache SplitCache
+#endif
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
+                       MAYBE_SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1265,8 +1270,14 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
   EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
 }
 
+// See: http://crbug.com/983931
+#if defined(OS_ANDROID)
+#define MAYBE_SplitCache DISABLED_SplitCache
+#else
+#define MAYBE_SplitCache SplitCache
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
-                       SplitCache) {
+                       MAYBE_SplitCache) {
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1339,8 +1350,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
                                GenURL("c.com", "/title1.html")));
 }
 
+// See: http://crbug.com/983931
+#if defined(OS_ANDROID)
+#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
+#else
+#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
+#endif
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
-                       SplitCacheDedicatedWorkers) {
+                       MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1373,8 +1390,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
       GenURL("c.com", "/embedding_worker.js?c")));
 }
 
+// See: http://crbug.com/983931
+#if defined(OS_ANDROID)
+#define MAYBE_NavigationResources DISABLED_NavigationResources
+#else
+#define MAYBE_NavigationResources NavigationResources
+#endif
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       NavigationResources) {
+                       MAYBE_NavigationResources) {
   // Navigate for the first time, and it's not cached.
   EXPECT_FALSE(
       NavigationResourceCached(GenURL("a.com", "/title1.html"), GURL(), false));
@@ -1406,8 +1429,14 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
       GenURL("a.com", "/title1.html"), false));
 }
 
+// See: http://crbug.com/983931
+#if defined(OS_ANDROID)
+#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
+#else
+#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
+#endif
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       SplitCacheDedicatedWorkers) {
+                       MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1481,7 +1510,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
       GenURL("e.com", "/worker.js")));
 }
 
-INSTANTIATE_TEST_SUITE_P(SplitCacheParamByPlzDedicatedWorker,
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          WebContentsSplitCacheBrowserTestEnabled,
                          ::testing::Values(true, false));
 

@@ -72,7 +72,7 @@ source_set("browsing_data") {
     "//ios/chrome/browser/webdata_services",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
-    "//ios/web",
+    "//ios/web/common:web_view_creation_util",
     "//net",
     "//url",
   ]

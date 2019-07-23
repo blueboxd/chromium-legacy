@@ -273,10 +273,10 @@ class DataReductionProxyConfig
   // Fetches the warmup URL.
   void FetchWarmupProbeURL();
 
-  // URL fetcher used for performing the secure proxy check.
+  // URL fetcher used for performing the secure proxy check. May be null.
   std::unique_ptr<SecureProxyChecker> secure_proxy_checker_;
 
-  // URL fetcher used for fetching the warmup URL.
+  // URL fetcher used for fetching the warmup URL. May be null.
   std::unique_ptr<WarmupURLFetcher> warmup_url_fetcher_;
 
   bool unreachable_;

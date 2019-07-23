@@ -24,7 +24,9 @@ namespace data_reduction_proxy {
 
 SecureProxyChecker::SecureProxyChecker(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)) {}
+    : url_loader_factory_(std::move(url_loader_factory)) {
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
+}
 
 void SecureProxyChecker::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
@@ -65,6 +67,8 @@ void SecureProxyChecker::OnURLLoaderRedirect(
 
 void SecureProxyChecker::CheckIfSecureProxyIsAllowed(
     SecureProxyCheckerCallback fetcher_callback) {
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
+
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation(
           "data_reduction_proxy_secure_proxy_check", R"(

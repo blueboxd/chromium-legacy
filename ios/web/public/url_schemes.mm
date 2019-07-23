@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/url_schemes.h"
+#include "ios/web/public/navigation/url_schemes.h"
 
 #include <algorithm>
 #include <vector>

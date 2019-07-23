@@ -241,6 +241,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // Cached copy of audio params that the renderer is initialized with.
   AudioParameters audio_parameters_;
 
+  // Passed in during Initialize().
+  DemuxerStream* demuxer_stream_;
+
   RendererClient* client_;
 
   // Callback provided during Initialize().

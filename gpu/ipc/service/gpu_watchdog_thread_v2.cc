@@ -73,6 +73,7 @@ void GpuWatchdogThreadImplV2::AddPowerObserver() {
   // Forward it to the watchdog thread. Call PowerMonitor::AddObserver on the
   // watchdog thread so that OnSuspend and OnResume will be called on watchdog
   // thread.
+  is_add_power_observer_called_ = true;
   task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&GpuWatchdogThreadImplV2::OnAddPowerObserver,
                                 base::Unretained(this)));
@@ -143,7 +144,7 @@ void GpuWatchdogThreadImplV2::OnResume() {
 // Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnAddPowerObserver() {
   DCHECK(base::PowerMonitor::IsInitialized());
-  base::PowerMonitor::AddObserver(this);
+  is_power_observer_added_ = base::PowerMonitor::AddObserver(this);
 }
 
 // Running on the watchdog thread.
@@ -242,6 +243,8 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&foregrounded_time_);
   base::debug::Alias(&in_power_suspension_);
   base::debug::Alias(&is_backgrounded_);
+  base::debug::Alias(&is_add_power_observer_called_);
+  base::debug::Alias(&is_power_observer_added_);
 
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogKill);
 
@@ -256,9 +259,26 @@ void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(
 }
 
 // For gpu testing only. Return whether a GPU hang was detected or not.
-bool GpuWatchdogThreadImplV2::IsGpuHangDetected() {
+bool GpuWatchdogThreadImplV2::IsGpuHangDetectedForTesting() {
   DCHECK(is_test_mode_);
   return test_result_timeout_and_gpu_hang_.IsSet();
+}
+
+// This should be called on the test main thread only. It will wait until the
+// power observer is added on the watchdog thread.
+void GpuWatchdogThreadImplV2::WaitForPowerObserverAddedForTesting() {
+  DCHECK(watched_task_runner_->BelongsToCurrentThread());
+  DCHECK(is_add_power_observer_called_);
+
+  // Just return if it has been added.
+  if (is_power_observer_added_)
+    return;
+
+  base::WaitableEvent event;
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&event)));
+  event.Wait();
 }
 
 }  // namespace gpu

@@ -5,6 +5,8 @@
 #ifndef UI_AURA_CLIENT_DRAG_DROP_DELEGATE_H_
 #define UI_AURA_CLIENT_DRAG_DROP_DELEGATE_H_
 
+#include <memory>
+
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 #include "ui/base/dragdrop/os_exchange_data.h"

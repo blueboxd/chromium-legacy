@@ -373,40 +373,20 @@ TEST(AutocompleteMatchTest, Duplicates) {
   }
 }
 
-TEST(AutocompleteMatchTest, DedupeDriveURLsDisabled) {
-  DuplicateCase cases[] = {
-      // Document URLs pointing to the same document are not deduped when
-      // the feature is in its default state (off).
-      {L"docs", "https://docs.google.com/spreadsheets/d/the_doc-id/preview?x=1",
-       "https://docs.google.com/spreadsheets/d/the_doc-id/edit?x=2#y=3", false},
-  };
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(omnibox::kDedupeGoogleDriveURLs);
-
-  for (size_t i = 0; i < base::size(cases); ++i) {
-    CheckDuplicateCase(cases[i]);
-  }
-}
-
-TEST(AutocompleteMatchTest, DedupeDriveURLsEnabled) {
+TEST(AutocompleteMatchTest, DedupeDriveURLs) {
   DuplicateCase cases[] = {
       // Document URLs pointing to the same document, perhaps with different
-      // /edit points, hashes, or cgiargs, are deduped when the DedupeDrive
-      // feature is on.
+      // /edit points, hashes, or cgiargs, are deduped.
       {L"docs", "https://docs.google.com/spreadsheets/d/the_doc-id/preview?x=1",
        "https://docs.google.com/spreadsheets/d/the_doc-id/edit?x=2#y=3", true},
       {L"report", "https://drive.google.com/open?id=the-doc-id",
        "https://docs.google.com/spreadsheets/d/the-doc-id/edit?x=2#y=3", true},
-      // Similar Different URLs should not be deduped.
+      // Similar but different URLs should not be deduped.
       {L"docs", "https://docs.google.com/spreadsheets/d/the_doc-id/preview",
        "https://docs.google.com/spreadsheets/d/another_doc-id/preview", false},
       {L"report", "https://drive.google.com/open?id=the-doc-id",
        "https://drive.google.com/open?id=another-doc-id", false},
   };
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kDedupeGoogleDriveURLs);
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     CheckDuplicateCase(cases[i]);

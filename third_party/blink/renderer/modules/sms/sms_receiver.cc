@@ -88,6 +88,11 @@ void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
         DOMExceptionCode::kTimeoutError, "SMSReceiver timed out."));
     RecordSMSOutcome(SMSReceiverOutcome::kTimeout);
     return;
+  } else if (status == mojom::blink::SmsStatus::kCancelled) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "SMSReceiver was aborted."));
+    RecordSMSOutcome(SMSReceiverOutcome::kCancelled);
+    return;
   }
 
   RecordSMSSuccessTime(base::TimeTicks::Now() - start_time);

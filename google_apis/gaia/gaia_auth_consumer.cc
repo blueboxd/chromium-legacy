@@ -23,9 +23,6 @@ bool GaiaAuthConsumer::ClientLoginResult::operator==(
   return sid == b.sid && lsid == b.lsid && token == b.token && data == b.data;
 }
 
-GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult()
-    : expires_in_secs(0) {}
-
 GaiaAuthConsumer::ClientOAuthResult::ClientOAuthResult(
     const std::string& new_refresh_token,
     const std::string& new_access_token,

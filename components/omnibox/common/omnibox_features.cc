@@ -264,18 +264,6 @@ const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to dedupe Google Drive URLs between different formats.
-// OmniboxDocumentProvider arms may wish to enable this, though it may also be
-// run on its own.
-const base::Feature kDedupeGoogleDriveURLs {
-  "OmniboxDedupeGoogleDriveURLs",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
 // Feature to replace the standard ZeroSuggest with icons for most visited sites
 // and collections (bookmarks, history, recent tabs, reading list). Only
 // available on iOS.

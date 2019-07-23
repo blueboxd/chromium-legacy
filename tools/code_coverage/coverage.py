@@ -996,13 +996,19 @@ def Main():
     profdata_file_path = args.profdata_file
     binary_paths = _GetBinaryPathsFromTargets(args.targets, args.build_dir)
 
-  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
-  # and xcode-select wasn't run.  This path needs to be set prior to calling
-  # otool which happens on mac in coverage_utils.GetSharedLibraries().
-  _SetMacXcodePath()
-
+  # If the checkout uses the hermetic xcode binaries, then otool must be
+  # directly invoked. The indirection via /usr/bin/otool won't work unless
+  # there's an actual system install of Xcode.
+  otool_path = None
+  if sys.platform == 'darwin':
+    hermetic_otool_path = os.path.join(
+        SRC_ROOT_PATH, 'build', 'mac_files', 'xcode_binaries', 'Contents',
+        'Developer', 'Toolchains', 'XcodeDefault.xctoolchain', 'usr', 'bin',
+        'otool')
+    if os.path.exists(hermetic_otool_path):
+      otool_path = hermetic_otool_path
   binary_paths.extend(
-      coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR))
+      coverage_utils.GetSharedLibraries(binary_paths, BUILD_DIR, otool_path))
 
   logging.info('Generating code coverage report in html (this can take a while '
                'depending on size of target!).')

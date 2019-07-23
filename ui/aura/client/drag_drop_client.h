@@ -5,6 +5,8 @@
 #ifndef UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_
 #define UI_AURA_CLIENT_DRAG_DROP_CLIENT_H_
 
+#include <memory>
+
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/gfx/native_widget_types.h"

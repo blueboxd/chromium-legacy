@@ -16,7 +16,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/interstitials/ios_chrome_controller_client.h"
 #include "ios/chrome/browser/interstitials/ios_chrome_metrics_helper.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "net/base/net_errors.h"

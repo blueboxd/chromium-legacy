@@ -83,7 +83,8 @@ class CrostiniExportImport : public KeyedService,
                        CrostiniManager::CrostiniResultCallback callback);
 
   // Called by the notification when it is closed so it can be destroyed.
-  void NotificationCompleted(CrostiniExportImportNotification* notification);
+  void NotificationCompleted(
+      const CrostiniExportImportNotification& notification);
 
   CrostiniExportImportNotification* GetNotificationForTesting(
       ContainerId container_id);
@@ -105,7 +106,7 @@ class CrostiniExportImport : public KeyedService,
                     void* params) override;
 
   void Start(ExportImportType type,
-             const ContainerId& container_id,
+             ContainerId container_id,
              base::FilePath path,
              CrostiniManager::CrostiniResultCallback callback);
 

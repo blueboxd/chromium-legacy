@@ -7,10 +7,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 
 namespace cryptauthv2 {
-class RequestContext;
+class ClientMetadata;
+class ClientAppMetadata;
 }  // namespace cryptauthv2
 
 namespace chromeos {
@@ -36,28 +36,30 @@ class CryptAuthDeviceSyncResult;
 //     public key in the response differs from the one sent in the request,
 //     another SyncMetadataRequest is made. Otherwise, the second
 //     SyncMetadataRequest is skipped and the encrypted remote device metadata
-//     is decrypted using the group private key.
+//     is decrypted using the group private key if available. Note: The remote
+//     devices are only those registered in the DeviceSync:BetterTogether group,
+//     in other words, those using v2 DeviceSync.
 //
 // 2a) (Possible) Second SyncMetadataRequest: Not invoked if the group public
-//     key from the first SyncMetadataResponse (1b) matches that sent in the
-//     first SyncMetadataRequest (1a). Now that the correct group key pair has
-//     been established, another request is made.
+//     key from the first SyncMetadataResponse (1b) agrees with the one sent in
+//     the first SyncMetadataRequest (1a). The client has the correct group
+//     public key at this point.
 //
 // 2b) (Possible) Second SyncMetadataResponse: The included remote device
-//     metadata can now be decrypted. The remote devices are only those
-//     registered in the DeviceSync:BetterTogether group, in other words, those
-//     using v2 DeviceSync.
+//     metadata can be decrypted if a group private key is sent. If no group
+//     private key is returned, the client must wait for a GCM message
+//     requesting another DeviceSync when the key becomes available.
 //
 // 3)  BatchGetFeatureStatusesRequest/Response: Gets the supported and enabled
 //     states of all multidevice (BetterTogether) features for all devices.
 //
-// 4a) ShareGroupPrivateKeyRequest: Sends CryptAuth the device's group private
+// 4a) ShareGroupPrivateKeyRequest: Sends CryptAuth this device's group private
 //     key encrypted with each remote device's
 //     CryptAuthKeyBundle::kDeviceSyncBetterTogether public key. This ensures
 //     end-to-end encryption of the group private key and consequently the
 //     device metadata.
 //
-// 4b) ShareGroupPrivateKeyResponse: We view this response as an indication that
+// 4b) ShareGroupPrivateKeyResponse: This response is only an indication that
 //     the ShareGroupPrivateKeyRequest was successful.
 //
 // A CryptAuthDeviceSyncer object is designed to be used for only one Sync()
@@ -69,24 +71,29 @@ class CryptAuthDeviceSyncer {
   using DeviceSyncAttemptFinishedCallback =
       base::OnceCallback<void(const CryptAuthDeviceSyncResult&)>;
 
-  // Starts the v2 DeviceSync flow.
-  // |request_context|: Information about the DeviceSync attempt--such as
-  //     invocation reason and device identifiers--that is sent to CryptAuth in
+  // Starts the CryptAuth v2 DeviceSync flow.
+  // |client_metadata|: Information about the DeviceSync attempt--such as
+  //     invocation reason, retry count, etc.--that is sent to CryptAuth in
   //     each request.
+  // |client_app_metadata|: Information about the local device such as the
+  //     Instance ID and hardware information.
   // |callback|: Invoked when the DeviceSync attempt concludes, successfully or
   //     not. The CryptAuthDeviceSyncResult provides information about the
   //     outcome of the DeviceSync attempt and possibly a new ClientDirective.
-  void Sync(const cryptauthv2::RequestContext& request_context,
+  void Sync(const cryptauthv2::ClientMetadata& client_metadata,
+            const cryptauthv2::ClientAppMetadata& client_app_metadata,
             DeviceSyncAttemptFinishedCallback callback);
 
  protected:
   CryptAuthDeviceSyncer();
 
   virtual void OnAttemptStarted(
-      const cryptauthv2::RequestContext& request_context) = 0;
+      const cryptauthv2::ClientMetadata& client_metadata,
+      const cryptauthv2::ClientAppMetadata& client_app_metadata) = 0;
 
   void OnAttemptFinished(const CryptAuthDeviceSyncResult& device_sync_result);
 
+ private:
   DeviceSyncAttemptFinishedCallback callback_;
   bool was_sync_called_ = false;
 

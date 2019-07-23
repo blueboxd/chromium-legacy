@@ -31,6 +31,7 @@ extern const char kGoogleTalkOAuth2Scope[];
 extern const char kGoogleUserInfoEmail[];
 extern const char kGoogleUserInfoProfile[];
 extern const char kPeopleApiReadOnlyOAuth2Scope[];
+extern const char kAccountsReauthOAuth2Scope[];
 
 // Used with uber auth tokens when needed.
 extern const char kGaiaSid[];

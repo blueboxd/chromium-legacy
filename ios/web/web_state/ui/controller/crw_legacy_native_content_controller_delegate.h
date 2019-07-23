@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_WEB_STATE_UI_CONTROLLER_CRW_LEGACY_NATIVE_CONTENT_CONTROLLER_DELEGATE_H_
 #define IOS_WEB_WEB_STATE_UI_CONTROLLER_CRW_LEGACY_NATIVE_CONTENT_CONTROLLER_DELEGATE_H_
 
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "ui/base/page_transition_types.h"
 
 namespace web {

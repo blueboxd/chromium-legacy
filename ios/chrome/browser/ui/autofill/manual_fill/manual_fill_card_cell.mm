@@ -11,9 +11,9 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/credit_card.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -239,7 +239,8 @@
   UILabel* expirationSeparatorLabel = CreateLabel();
   expirationSeparatorLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  [expirationSeparatorLabel setTextColor:UIColor.cr_manualFillChipColor];
+  [expirationSeparatorLabel
+      setTextColor:UIColor.cr_secondarySystemBackgroundColor];
   expirationSeparatorLabel.text = @"/";
   [self.contentView addSubview:expirationSeparatorLabel];
   AppendHorizontalConstraintsForViews(

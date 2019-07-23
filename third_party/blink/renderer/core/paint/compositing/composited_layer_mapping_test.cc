@@ -2788,7 +2788,7 @@ TEST_F(CompositedLayerMappingTest, TouchActionRectsWithoutContent) {
 
   const auto* layer = mapping->MainGraphicsLayer()->CcLayer();
   auto expected = gfx::Rect(0, 0, 100, 100);
-  EXPECT_EQ(layer->touch_action_region().region().bounds(), expected);
+  EXPECT_EQ(layer->touch_action_region().GetAllRegions().bounds(), expected);
 
   EXPECT_TRUE(mapping->MainGraphicsLayer()->PaintsHitTest());
 

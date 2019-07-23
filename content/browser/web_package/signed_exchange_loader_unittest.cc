@@ -11,6 +11,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "build/build_config.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_package/mock_signed_exchange_handler.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
@@ -148,7 +149,13 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoaderTest);
 };
 
-TEST_P(SignedExchangeLoaderTest, Simple) {
+// Test is flaky on Fuchsia. See https://crbug.com/986337.
+#if defined(OS_FUCHSIA)
+#define MAYBE_Simple DISABLED_Simple
+#else
+#define MAYBE_Simple Simple
+#endif
+TEST_P(SignedExchangeLoaderTest, MAYBE_Simple) {
   network::mojom::URLLoaderPtr loader;
   network::mojom::URLLoaderClientPtr loader_client;
   MockURLLoader mock_loader(mojo::MakeRequest(&loader));

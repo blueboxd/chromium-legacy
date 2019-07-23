@@ -14,13 +14,15 @@
 namespace blink {
 
 LayoutNGFlexibleBox::LayoutNGFlexibleBox(Element* element)
-    : LayoutBlock(element) {}
+    : LayoutNGMixin<LayoutBlock>(element) {}
 
 void LayoutNGFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
-  // TODO(dgrogan): Reuse logic from LayoutNGBlockFlow's
-  // UpdateOutOfFlowBlockLayout when this flexbox is out of flow.
+  if (IsOutOfFlowPositioned()) {
+    UpdateOutOfFlowBlockLayout();
+    return;
+  }
 
   NGConstraintSpace constraint_space =
       NGConstraintSpace::CreateFromLayoutObject(*this);

@@ -204,9 +204,6 @@ void ServiceWorkerSubresourceLoader::StartRequest(
       TRACE_EVENT_FLAG_FLOW_OUT, "url", resource_request.url.spec());
   TransitionToStatus(Status::kStarted);
 
-  DCHECK(!ServiceWorkerUtils::IsMainResourceType(
-      static_cast<ResourceType>(resource_request.resource_type)));
-
   DCHECK(!controller_connector_observer_.IsObservingSources());
   controller_connector_observer_.Add(controller_connector_.get());
   fetch_request_restarted_ = false;

@@ -164,7 +164,8 @@ void MediaPlayerRenderer::StartPlayingFrom(base::TimeDelta time) {
   // the buffering state.
   //
   // TODO(tguilbert): Investigate the effect of this call on UMAs.
-  renderer_client_->OnBufferingStateChange(media::BUFFERING_HAVE_ENOUGH);
+  renderer_client_->OnBufferingStateChange(
+      media::BUFFERING_HAVE_ENOUGH, media::BUFFERING_CHANGE_REASON_UNKNOWN);
 }
 
 void MediaPlayerRenderer::SetPlaybackRate(double playback_rate) {

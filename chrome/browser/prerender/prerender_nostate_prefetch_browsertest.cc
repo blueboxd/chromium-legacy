@@ -898,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Loop) {
 #else
 #define MAYBE_RendererCrash RendererCrash
 #endif
-IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, RendererCrash) {
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, MAYBE_RendererCrash) {
   // Navigate to about:blank to get the session storage namespace.
   ui_test_utils::NavigateToURL(current_browser(), GURL(url::kAboutBlankURL));
   content::SessionStorageNamespace* storage_namespace =

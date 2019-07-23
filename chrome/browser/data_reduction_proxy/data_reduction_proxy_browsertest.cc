@@ -292,7 +292,12 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     config_ = config;
   }
 
-  void WaitForConfig() { config_run_loop_->Run(); }
+  void WaitForConfig() {
+    // Config is not fetched in the holdback group. So, return early.
+    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
+      return;
+    config_run_loop_->Run();
+  }
 
   std::string expect_exp_value_in_request_header_;
 
@@ -303,6 +308,10 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
  private:
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
       const net::test_server::HttpRequest& request) {
+    // Config should not be fetched when in holdback.
+    EXPECT_FALSE(
+        data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial());
+
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_content(config_.SerializeAsString());
     response->set_content_type("text/plain");
@@ -638,12 +647,17 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
 }
 
 // Test that enabling the holdback disables the proxy.
+// Parameter is true if the data reduction proxy holdback should be enabled.
 class DataReductionProxyWithHoldbackBrowsertest
     : public ::testing::WithParamInterface<bool>,
       public DataReductionProxyBrowsertest {
  public:
+  DataReductionProxyWithHoldbackBrowsertest()
+      : DataReductionProxyBrowsertest(),
+        data_reduction_proxy_holdback_enabled_(GetParam()) {}
+
   void SetUp() override {
-    if (GetParam()) {
+    if (data_reduction_proxy_holdback_enabled_) {
       scoped_feature_list_.InitWithFeatures(
           {features::kDataReductionProxyEnabledWithNetworkService,
            data_reduction_proxy::features::kDataReductionProxyHoldback},
@@ -655,6 +669,8 @@ class DataReductionProxyWithHoldbackBrowsertest
 
     InProcessBrowserTest::SetUp();
   }
+
+  const bool data_reduction_proxy_holdback_enabled_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -673,8 +689,13 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   SetConfig(CreateConfigForServer(proxy_server));
   // A network change forces the config to be fetched.
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+
   WaitForConfig();
 
+  // Load a webpage in holdback group as well. This ensures that while in
+  // holdback group, Chrome does not fetch the client config. If Chrome were to
+  // fetch the client config, the DHCECKs and other conditionals that check that
+  // holdback is not enabled would trigger and cause the test to fail.
   ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
 
   if (GetParam()) {

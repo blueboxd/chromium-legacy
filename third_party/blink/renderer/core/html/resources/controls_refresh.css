@@ -54,3 +54,28 @@ input[type="range" i] {
 input[type="range" i]:disabled {
   color: #c5c5c5;
 }
+
+meter::-webkit-meter-bar {
+  background: #efefef;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #cecece;
+  border-radius: 2px;
+  box-sizing: border-box;
+  padding: 1px;
+}
+
+meter::-webkit-meter-optimum-value {
+  background: #107c10;
+  border-radius: 1px 0px 0px 1px;
+}
+
+meter::-webkit-meter-suboptimum-value {
+  background: #ffb900;
+  border-radius: 1px 0px 0px 1px;
+}
+
+meter::-webkit-meter-even-less-good-value {
+  background: #d83b01;
+  border-radius: 1px 0px 0px 1px;
+}

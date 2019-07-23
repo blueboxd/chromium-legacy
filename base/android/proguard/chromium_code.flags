@@ -65,9 +65,7 @@
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
 # names of just those ones. For now, we'll just keep them all.
--keepnames class org.chromium.** implements android.os.Parcelable {
-  <init>(...);
-}
+-keepnames class org.chromium.** implements android.os.Parcelable {}
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html

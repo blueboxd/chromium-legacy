@@ -50,6 +50,14 @@ ShelfAppButton* ShelfViewTestAPI::GetButton(int index) {
   return static_cast<ShelfAppButton*>(GetViewAt(index));
 }
 
+ShelfID ShelfViewTestAPI::AddItem(ShelfItemType type) {
+  ShelfItem item;
+  item.type = type;
+  item.id = ShelfID(base::NumberToString(id_++));
+  shelf_view_->model_->Add(item);
+  return item.id;
+}
+
 views::View* ShelfViewTestAPI::GetViewAt(int index) {
   return shelf_view_->view_model_->view_at(index);
 }

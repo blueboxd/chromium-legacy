@@ -15,7 +15,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/js_test_util.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"

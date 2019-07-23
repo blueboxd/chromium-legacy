@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
 let testName =
@@ -20,16 +22,7 @@ let fakeDeviceInitParams = {
     floorOrigin: VALID_FLOOR_ORIGIN
 };
 
-let requestSessionModes = [
-  'immersive-vr',
-];
-
 let testFunction = function(session, fakeDeviceController, t) {
-  // Session must have a baseLayer or else frame requests will be ignored.
-  session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl)
-  });
-
   // If the array bounds aren't set, but the stage size is, then Chrome should
   // fake the stage size.
   fakeDeviceController.setStageSize(2.0, 3.0);
@@ -94,6 +87,6 @@ let testFunction = function(session, fakeDeviceController, t) {
 };
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 
 </script>

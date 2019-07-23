@@ -60,22 +60,9 @@
 # android.net.ProxyProperties.
 -dontnote org.chromium.net.ProxyChangeListener$ProxyReceiver
 
-# Silence warnings about reflection used to check for onShow/HideCustomView.
-# This class is not really kept since it's in a library jar.
--keep class android.webkit.WebChromeClient {
-  void onShowCustomView(...);
-  void onHideCustomView();
-}
-
 -keep class org.chromium.android_webview.AwBrowserProcess {
     java.nio.channels.FileLock sExclusiveFileLock;
 }
-
-# Accessed via reflection but not present in all builds
--keep class com.android.webview.chromium.AwSafeBrowsingApiHandler {
-  AwSafeBrowsingApiHandler(...);
-}
--dontnote com.android.webview.chromium.AwSafeBrowsingApiHandler
 
 # We strip some unused resources when preprocessing the GMS client libs.
 -dontwarn com.google.android.gms.R**
@@ -133,9 +120,7 @@
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
 # names of just those ones. For now, we'll just keep them all.
--keepnames class * implements android.os.Parcelable {
-  <init>(...);
-}
+-keepnames class * implements android.os.Parcelable {}
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html
@@ -253,9 +238,7 @@
 # If we annotated all Parcelables that get put into Bundles other than
 # for saveInstanceState (e.g. PendingIntents), then we could actually keep the
 # names of just those ones. For now, we'll just keep them all.
--keepnames class org.chromium.** implements android.os.Parcelable {
-  <init>(...);
-}
+-keepnames class org.chromium.** implements android.os.Parcelable {}
 
 # Keep all enum values and valueOf methods. See
 # http://proguard.sourceforge.net/index.html#manual/examples.html

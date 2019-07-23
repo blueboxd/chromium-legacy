@@ -131,7 +131,7 @@ class SplitCompatClassAdapter extends ClassVisitor {
         // Push return value on stack (ModuleInstaller).
         // Calls getInstance.
         mv.visitMethodInsn(INVOKESTATIC, MODULE_INSTALLER_CLASS_NAME, GET_INSTANCE_METHOD_NAME,
-                GET_INSTANCE_DESCRIPTOR, false);
+                GET_INSTANCE_DESCRIPTOR, true);
         // Push "this" on stack.
         mv.visitVarInsn(ALOAD, 0);
         // Pop argument from stack ("this").

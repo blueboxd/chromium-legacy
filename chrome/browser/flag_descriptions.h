@@ -787,6 +787,10 @@ extern const char kNewTabLoadingAnimationDescription[];
 extern const char kNotificationIndicatorName[];
 extern const char kNotificationIndicatorDescription[];
 
+extern const char kNotificationSchedulerDebugOptionName[];
+extern const char kNotificationSchedulerDebugOptionDescription[];
+extern const char kNotificationSchedulerImmediateBackgroundTaskDescription[];
+
 extern const char kNotificationsNativeFlagName[];
 extern const char kNotificationsNativeFlagDescription[];
 
@@ -1607,9 +1611,6 @@ extern const char kMirroringServiceDescription[];
 
 extern const char kOmniboxDriveSuggestionsName[];
 extern const char kOmniboxDriveSuggestionsDescriptions[];
-
-extern const char kOmniboxDeduplicateDriveUrlsName[];
-extern const char kOmniboxDeduplicateDriveUrlsDescription[];
 
 extern const char kOmniboxExperimentalKeywordModeName[];
 extern const char kOmniboxExperimentalKeywordModeDescription[];

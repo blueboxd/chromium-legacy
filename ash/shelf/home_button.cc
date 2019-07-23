@@ -9,10 +9,10 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/aura/window.h"
@@ -60,7 +60,8 @@ void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
     bool reverse) {
   DCHECK_EQ(button, this);
-  if (!reverse) {
+  if (!reverse && Shell::Get()->tablet_mode_controller() &&
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     // We're trying to focus this button by advancing from the last view of
     // the shelf. Let the focus manager advance to the status area instead.
     shelf()->shelf_focus_cycler()->FocusOut(reverse, SourceView::kShelfView);
@@ -76,11 +77,6 @@ void HomeButton::ButtonPressed(views::Button* sender,
       event.IsShiftDown() ? app_list::kShelfButtonFullscreen
                           : app_list::kShelfButton;
   OnPressed(show_source, event.time_stamp());
-}
-
-bool HomeButton::ShouldEventActivateButton(views::View* view,
-                                           const ui::Event& event) {
-  return true;
 }
 
 void HomeButton::OnVoiceInteractionAvailabilityChanged() {

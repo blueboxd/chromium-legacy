@@ -64,7 +64,7 @@ void CupsPrintJobManager::NotifyJobCanceled(base::WeakPtr<CupsPrintJob> job) {
     observer.OnPrintJobCancelled(job);
 }
 
-void CupsPrintJobManager::NotifyJobError(base::WeakPtr<CupsPrintJob> job) {
+void CupsPrintJobManager::NotifyJobFailed(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobError(job);
 }

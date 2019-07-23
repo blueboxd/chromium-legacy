@@ -25,9 +25,9 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
 
 bool VulkanDeviceQueue::Initialize(
     uint32_t options,
+    uint32_t max_api_version,
     const std::vector<const char*>& required_extensions,
-    const GetPresentationSupportCallback& get_presentation_support,
-    bool use_swiftshader) {
+    const GetPresentationSupportCallback& get_presentation_support) {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), owned_vk_device_);
   DCHECK_EQ(static_cast<VkDevice>(VK_NULL_HANDLE), vk_device_);
@@ -135,10 +135,14 @@ bool VulkanDeviceQueue::Initialize(
                             std::end(required_extensions));
 
 #if defined(OS_ANDROID)
+  if (!vkGetPhysicalDeviceFeatures2) {
+    DLOG(ERROR) << "Vulkan 1.1 or VK_KHR_get_physical_device_properties2 "
+                   "extension is required.";
+    return false;
+  }
+
   // Query if VkPhysicalDeviceSamplerYcbcrConversionFeatures is supported by
   // the implementation. This extension must be supported for android.
-  // Note that vulkan is only turned on in chrome for android P+ and android P+
-  // requires vulkan apiVersion 1.1.
   sampler_ycbcr_conversion_features_.sType =
       VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
   sampler_ycbcr_conversion_features_.pNext = nullptr;
@@ -177,16 +181,10 @@ bool VulkanDeviceQueue::Initialize(
   enabled_extensions_ = gfx::ExtensionSet(std::begin(enabled_extensions),
                                           std::end(enabled_extensions));
 
+  uint32_t device_api_version =
+      std::min(max_api_version, vk_physical_device_properties_.apiVersion);
   if (!gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
-          owned_vk_device_, use_swiftshader)) {
-    vkDestroyDevice(owned_vk_device_, nullptr);
-    owned_vk_device_ = VK_NULL_HANDLE;
-    return false;
-  }
-
-  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SWAPCHAIN_EXTENSION_NAME) &&
-      !gpu::GetVulkanFunctionPointers()->BindSwapchainFunctionPointers(
-          owned_vk_device_)) {
+          owned_vk_device_, device_api_version, enabled_extensions_)) {
     vkDestroyDevice(owned_vk_device_, nullptr);
     owned_vk_device_ = VK_NULL_HANDLE;
     return false;

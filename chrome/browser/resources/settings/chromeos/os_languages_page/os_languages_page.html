@@ -153,7 +153,7 @@
           $i18n{learnMore}
         </a>
       </span>
-      <div class="list-frame vertical-list">
+      <div class="list-frame vertical-list" id="languagesList">
         <template is="dom-repeat" items="[[languages.enabled]]">
           <div class$="list-item [[getLanguageItemClass_(
               item.language.code, language.prospectiveUILanguage)]]">
@@ -191,7 +191,7 @@
 
       <h2>$i18n{inputMethodsListTitle}</h2>
 
-      <div class="list-frame vertical-list">
+      <div class="list-frame vertical-list" id="inputMethodsList">
         <template is="dom-repeat"
             items="[[languages.inputMethods.enabled]]">
           <div class$="list-item [[getInputMethodItemClass_(
@@ -199,7 +199,7 @@
               on-click="onInputMethodTap_" on-keypress="onInputMethodTap_"
               actionable tabindex="0">
             <div class="start">
-              <div>[[item.displayName]]</div>
+              <div class="display-name">[[item.displayName]]</div>
               <div class="explain-selected"
                   hidden="[[!isCurrentInputMethod_(
                       item.id, languages.inputMethods.currentId)]]">

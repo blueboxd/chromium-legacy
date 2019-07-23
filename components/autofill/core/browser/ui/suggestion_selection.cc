@@ -282,7 +282,15 @@ void PrepareSuggestions(const std::vector<base::string16>& labels,
       // The given |suggestions| are already sorted from highest to lowest
       // ranking. Suggestions with lower indices have a higher ranking and
       // should be kept.
-      (*suggestions)[index_to_add_suggestion].label = labels[i];
+      //
+      // We check whether the value and label are the same because in certain
+      // cases, e.g. when a credit card form contains a zip code field and the
+      // user clicks on the zip code, a suggestion's value and the label
+      // produced for it may both be a zip code.
+      if (!comparator.Compare((*suggestions)[index_to_add_suggestion].value,
+                              labels[i])) {
+        (*suggestions)[index_to_add_suggestion].label = labels[i];
+      }
       ++index_to_add_suggestion;
     }
   }

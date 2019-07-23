@@ -997,6 +997,14 @@ void XWindow::OnFocusEvent(bool focus_in, int mode, int detail) {
   AfterActivationStateChanged();
 }
 
+bool XWindow::IsTargetedBy(const XEvent& xev) const {
+  ::Window target_window =
+      (xev.type == GenericEvent)
+          ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
+          : xev.xany.window;
+  return target_window == xwindow_;
+}
+
 // In Ozone, there are no ui::*Event constructors receiving XEvent* as input,
 // in this case ui::PlatformEvent is expected. Furthermore,
 // X11EventSourceLibevent is used in that case, which already translates

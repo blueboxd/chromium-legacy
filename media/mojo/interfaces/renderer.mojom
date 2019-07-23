@@ -60,7 +60,8 @@ interface RendererClient {
                mojo_base.mojom.TimeTicks capture_time);
 
   // Called to report buffering state changes, see media_types.mojom.
-  OnBufferingStateChange(BufferingState state);
+  OnBufferingStateChange(BufferingState state,
+                         BufferingStateChangeReason reason);
 
   // Executed when rendering has reached the end of stream.
   OnEnded();

@@ -224,6 +224,7 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         'ChromeDriverTest.testNewTabDoesNotFocus',
         # Android does not support the virtual authenticator environment.
         'ChromeDriverSecureContextTest.testAddVirtualAuthenticator',
+        'ChromeDriverSecureContextTest.testRemoveVirtualAuthenticator',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -2051,6 +2052,32 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTest):
     result = self._driver.ExecuteAsyncScript(script)
     self.assertEquals('OK', result['status'])
     self.assertEquals(['usb'], result['credential']['transports'])
+
+  def testRemoveVirtualAuthenticator(self):
+    self._driver.Load(self.GetHttpsUrlForFile(
+        '/chromedriver/webauthn_test.html', 'chromedriver.test'))
+
+    # Removing a non existent virtual authenticator should fail.
+    self.assertRaisesRegexp(
+        chromedriver.InvalidArgument,
+        'Could not find a Virtual Authenticator matching the ID',
+        self._driver.RemoveVirtualAuthenticator, 'id')
+
+    # Create an authenticator and try removing it.
+    response = self._driver.AddVirtualAuthenticator(
+        protocol = 'ctap2',
+        transport = 'usb',
+        hasResidentKey = False,
+        hasUserVerification = False,
+    )
+    self._driver.RemoveVirtualAuthenticator(response['authenticatorId'])
+
+    # Trying to remove the same authenticator should fail.
+    self.assertRaisesRegexp(
+        chromedriver.InvalidArgument,
+        'Could not find a Virtual Authenticator matching the ID',
+        self._driver.RemoveVirtualAuthenticator, response['authenticatorId'])
+
 
 # Tests in the following class are expected to be moved to ChromeDriverTest
 # class when we no longer support the legacy mode.

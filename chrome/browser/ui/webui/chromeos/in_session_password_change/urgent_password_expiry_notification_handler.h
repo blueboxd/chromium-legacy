@@ -23,6 +23,9 @@ class UrgentPasswordExpiryNotificationHandler
   // User taps the button and agrees to change their password.
   void HandleContinue(const base::ListValue* params);
 
+  // Need to update title to show new time remaining until password expiry.
+  void HandleGetTitleText(const base::ListValue* params);
+
  private:
   base::WeakPtrFactory<UrgentPasswordExpiryNotificationHandler> weak_factory_{
       this};

@@ -60,9 +60,6 @@ Polymer({
         position: absolute;
         outline: none;
         z-index: 1002;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        -webkit-user-select: none;
         user-select: none;
         cursor: default;
       }

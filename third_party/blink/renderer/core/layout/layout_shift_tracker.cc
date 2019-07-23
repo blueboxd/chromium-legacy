@@ -173,6 +173,14 @@ void LayoutShiftTracker::AccumulateJank(
     return;
   }
 
+  if (EqualWithinMovementThreshold(old_rect.Location() + frame_scroll_delta_,
+                                   new_rect.Location(), source)) {
+    // TODO(skobes): Checking frame_scroll_delta_ is an imperfect solution to
+    // allowing counterscrolled layout shifts. Ideally, we would map old_rect
+    // to viewport coordinates using the previous frame's scroll tree.
+    return;
+  }
+
   FloatRect clipped_old_rect(old_rect), clipped_new_rect(new_rect);
   if (!clip_rect.IsInfinite()) {
     clipped_old_rect.Intersect(clip_rect.Rect());
@@ -355,6 +363,7 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     region_ = Region();
   }
   frame_max_distance_ = 0.0;
+  frame_scroll_delta_ = ScrollOffset();
 }
 
 void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
@@ -387,13 +396,14 @@ void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
   }
 }
 
-void LayoutShiftTracker::NotifyScroll(ScrollType scroll_type) {
-  // Only include user-initiated scrolls. Ignore scrolls due to e.g. hash
-  // fragment navigations.
-  if (scroll_type != kUserScroll && scroll_type != kCompositorScroll)
-    return;
+void LayoutShiftTracker::NotifyScroll(ScrollType scroll_type,
+                                      ScrollOffset delta) {
+  frame_scroll_delta_ += delta;
 
-  observed_input_or_scroll_ = true;
+  // Only set observed_input_or_scroll_ for user-initiated scrolls, and not
+  // other scrolls such as hash fragment navigations.
+  if (scroll_type == kUserScroll || scroll_type == kCompositorScroll)
+    observed_input_or_scroll_ = true;
 }
 
 void LayoutShiftTracker::NotifyViewportSizeChanged() {

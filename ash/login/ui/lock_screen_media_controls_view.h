@@ -103,7 +103,8 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // Creates and adds a new media button to |button_row_|. This should not be
   // used to create toggle buttons such as play/pause.
-  void CreateMediaButton(media_session::mojom::MediaSessionAction action,
+  void CreateMediaButton(int size,
+                         media_session::mojom::MediaSessionAction action,
                          const base::string16& accessible_name);
 
   // Updates the visibility of buttons on |button_row_| depending on what is

@@ -1796,14 +1796,14 @@ static void AccumulateTouchActionRectList(
     HitTestLayerRectList* hit_test_rects) {
   const cc::TouchActionRegion& touch_action_region =
       graphics_layer->CcLayer()->touch_action_region();
-  if (!touch_action_region.region().IsEmpty()) {
+  if (!touch_action_region.GetAllRegions().IsEmpty()) {
     const auto& layer_position = graphics_layer->CcLayer()->position();
     const auto& layer_bounds = graphics_layer->CcLayer()->bounds();
     IntRect layer_rect(layer_position.x(), layer_position.y(),
                        layer_bounds.width(), layer_bounds.height());
 
     Vector<IntRect> layer_hit_test_rects;
-    for (const gfx::Rect& hit_test_rect : touch_action_region.region())
+    for (const gfx::Rect& hit_test_rect : touch_action_region.GetAllRegions())
       layer_hit_test_rects.push_back(IntRect(hit_test_rect));
     MergeRects(layer_hit_test_rects);
 
@@ -1841,13 +1841,13 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     for (const auto& layer : content_layers) {
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
-      if (!touch_action_region.region().IsEmpty()) {
+      if (!touch_action_region.GetAllRegions().IsEmpty()) {
         const auto& offset = layer->offset_to_transform_parent();
         IntRect layer_rect(RoundedIntPoint(FloatPoint(offset.x(), offset.y())),
                            IntSize(layer->bounds()));
 
         Vector<IntRect> layer_hit_test_rects;
-        for (const gfx::Rect& hit_test_rect : touch_action_region.region())
+        for (const auto& hit_test_rect : touch_action_region.GetAllRegions())
           layer_hit_test_rects.push_back(IntRect(hit_test_rect));
         MergeRects(layer_hit_test_rects);
 

@@ -54,6 +54,13 @@ namespace blink {
 class WebServiceWorkerContextProxy;
 }
 
+namespace chrome {
+namespace mojom {
+class WebRtcLoggingAgent;
+}  // namespace mojom
+class WebRtcLoggingAgentImpl;
+}  // namespace chrome
+
 namespace content {
 class BrowserPluginDelegate;
 struct WebPluginInfo;
@@ -78,8 +85,6 @@ class UnverifiedRulesetDealer;
 namespace web_cache {
 class WebCacheImpl;
 }
-
-class WebRtcLoggingMessageFilter;
 
 class ChromeContentRendererClient
     : public content::ContentRendererClient,
@@ -269,6 +274,9 @@ class ChromeContentRendererClient
 
   service_manager::Connector* GetConnector();
 
+  void OnWebRtcLoggingAgentRequest(
+      mojo::InterfaceRequest<chrome::mojom::WebRtcLoggingAgent> request);
+
 #if defined(OS_WIN)
   // Observes module load events and notifies the ModuleDatabase in the browser
   // process. This instance is created on the main thread but then lives on the
@@ -283,6 +291,7 @@ class ChromeContentRendererClient
 
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
+  std::unique_ptr<chrome::WebRtcLoggingAgentImpl> webrtc_logging_agent_impl_;
 
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;
@@ -295,7 +304,6 @@ class ChromeContentRendererClient
   std::unique_ptr<subresource_filter::UnverifiedRulesetDealer>
       subresource_filter_ruleset_dealer_;
   std::unique_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
-  scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   std::unique_ptr<ChromePDFPrintClient> pdf_print_client_;
 #endif

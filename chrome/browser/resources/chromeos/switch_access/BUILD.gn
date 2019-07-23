@@ -108,6 +108,7 @@ js2gtest("switch_access_extjs_tests") {
     "auto_scan_manager_test.extjs",
     "navigation_manager_test.extjs",
     "switch_access_predicate_test.extjs",
+    "text_navigation_manager_test.extjs",
   ]
   gen_include_files = [
     "../chromevox/testing/callback_helper.js",

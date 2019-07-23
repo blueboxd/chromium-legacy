@@ -280,6 +280,10 @@ void AutofillAgent::OnDestruct() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
+void AutofillAgent::AccessibilityModeChanged(const ui::AXMode& mode) {
+  is_screen_reader_enabled_ = mode.has_mode(ui::AXMode::kScreenReader);
+}
+
 void AutofillAgent::FireHostSubmitEvents(const WebFormElement& form,
                                          bool known_success,
                                          SubmissionSource source) {
@@ -946,9 +950,12 @@ void AutofillAgent::FormControlElementClicked(
 void AutofillAgent::HandleFocusChangeComplete() {
   WebElement focused_element =
       render_frame()->GetWebFrame()->GetDocument().FocusedElement();
-
-  if (focused_node_was_last_clicked_ && !focused_element.IsNull() &&
-      focused_element.IsFormControlElement() &&
+  // When using Talkback on Android, and possibly others, traversing to and
+  // focusing a field will not register as a click. Thus, when screen readers
+  // are used, treat the focused node as if it was the last clicked. Also check
+  // to ensure focus is on a field where text can be entered.
+  if ((focused_node_was_last_clicked_ || is_screen_reader_enabled_) &&
+      !focused_element.IsNull() && focused_element.IsFormControlElement() &&
       (form_util::IsTextInput(blink::ToWebInputElement(&focused_element)) ||
        focused_element.HasHTMLTagName("textarea"))) {
     FormControlElementClicked(focused_element.ToConst<WebFormControlElement>(),

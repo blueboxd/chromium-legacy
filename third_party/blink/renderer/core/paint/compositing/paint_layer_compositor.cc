@@ -68,9 +68,10 @@
 namespace blink {
 
 PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
-    : layout_view_(layout_view) {
-  UpdateAcceleratedCompositingSettings();
-}
+    : layout_view_(layout_view),
+      has_accelerated_compositing_(layout_view.GetDocument()
+                                       .GetSettings()
+                                       ->GetAcceleratedCompositingEnabled()) {}
 
 PaintLayerCompositor::~PaintLayerCompositor() {
   DCHECK_EQ(root_layer_attachment_, kRootLayerUnattached);
@@ -151,9 +152,12 @@ bool PaintLayerCompositor::RootShouldAlwaysComposite() const {
 }
 
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
-  has_accelerated_compositing_ = layout_view_.GetDocument()
-                                     .GetSettings()
-                                     ->GetAcceleratedCompositingEnabled();
+  // AcceleratedCompositing setting does not change after initialization.
+  DCHECK_EQ(has_accelerated_compositing_,
+            layout_view_.GetDocument()
+                .GetSettings()
+                ->GetAcceleratedCompositingEnabled());
+
   root_should_always_composite_dirty_ = true;
   if (root_layer_attachment_ != kRootLayerUnattached)
     RootLayer()->SetNeedsCompositingInputsUpdate();

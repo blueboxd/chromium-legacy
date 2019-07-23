@@ -5994,6 +5994,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BooleanHasReadStoragePermission">
+  <obsolete>
+    Removed from the code in July 2019. See https://crbug.com/975701.
+  </obsolete>
   <int value="0" label="Lacks Read Storage Permission"/>
   <int value="1" label="Has Read Storage Permission"/>
 </enum>
@@ -6850,6 +6853,15 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Cache Name Not Found Error"/>
   <int value="6" label="Query Too Large Error"/>
   <int value="7" label="Not Implemented Error"/>
+</enum>
+
+<enum name="CacheStorageIndexResult">
+  <int value="0" label="OK"/>
+  <int value="1" label="Failed to Parse"/>
+  <int value="2" label="Missing Origin"/>
+  <int value="3" label="Empty Origin URL"/>
+  <int value="4" label="Path Mismatch"/>
+  <int value="5" label="Path FileInfo Failed"/>
 </enum>
 
 <enum name="CALayerResult">
@@ -23955,6 +23967,7 @@ Called by update_net_error_codes.py.-->
   <int value="2967" label="CSSValueAppearanceMeterForOthersRendered"/>
   <int value="2968" label="SVGSMILDiscardElementParsed"/>
   <int value="2969" label="SVGSMILDiscardElementTriggered"/>
+  <int value="2970" label="LinkHeaderStylesheet"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34699,6 +34712,8 @@ from previous Chrome versions.
   <int value="-735084806" label="NewTabLoadingAnimation:enabled"/>
   <int value="-734301625"
       label="AutofillImportNonFocusableCreditCardForms:disabled"/>
+  <int value="-734067604"
+      label="notification-scheduler-immediate-background-task"/>
   <int value="-731502579" label="CupsPrintersUiOverhaul:disabled"/>
   <int value="-731133967" label="AutofillSettingsCardTypeSplit:disabled"/>
   <int value="-728461030" label="AutofillPruneSuggestions:disabled"/>
@@ -42704,6 +42719,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Shortcut customized"/>
 </enum>
 
+<enum name="NTPCustomizedShortcutSettings">
+  <int value="0" label="Most Visited is enabled"/>
+  <int value="1" label="Custom links is enabled"/>
+  <int value="2" label="Shortcuts are hidden"/>
+</enum>
+
 <enum name="NTPCustomizeLocalImageBackgroundAction">
   <int value="0" label="'Cancel' clicked in the 'Upload an image' dialog"/>
   <int value="1" label="'Done' clicked in the 'Upload an image' dialog"/>
@@ -42718,6 +42739,8 @@ Called by update_net_trust_anchors.py.-->
       label="All custom shortcuts were restored (via menu or message pop-up)."/>
   <int value="5" label="A custom shortcut was added."/>
   <int value="6" label="A custom shortcut was updated."/>
+  <int value="7" label="The type of shortcuts displayed was changed."/>
+  <int value="8" label="The visibility of shortcuts was changed."/>
 </enum>
 
 <enum name="NtpFollowAction">
@@ -54359,6 +54382,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Timed out"/>
   <int value="2" label="Connection Error"/>
+  <int value="3" label="Cancelled"/>
 </enum>
 
 <enum name="SnackbarIdentifier">

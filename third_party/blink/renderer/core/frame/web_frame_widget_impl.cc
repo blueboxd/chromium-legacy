@@ -508,6 +508,8 @@ void WebFrameWidgetImpl::OnFallbackCursorModeToggled(bool is_on) {
   NOTREACHED();
 }
 
+void WebFrameWidgetImpl::DidDetachLocalFrameTree() {}
+
 WebInputMethodController*
 WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
   WebLocalFrameImpl* local_frame =
@@ -982,19 +984,6 @@ void WebFrameWidgetImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view,
                                       LocalRootImpl()->GetFrame()->View());
 }
 
-void WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(bool active) {
-  if (!active)
-    return;
-  if (is_accelerated_compositing_active_)
-    return;
-  DCHECK(layer_tree_view_);
-
-  TRACE_EVENT0("blink",
-               "WebFrameWidgetImpl::SetIsAcceleratedCompositingActive(true)");
-  Client()->SetRootLayer(root_layer_);
-  is_accelerated_compositing_active_ = true;
-}
-
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
   LocalFrame* frame = LocalRootImpl()->GetFrame();
   if (!frame || !frame->GetDocument() || !frame->GetDocument()->GetLayoutView())
@@ -1009,13 +998,13 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  root_layer_ = layer;
+  root_layer_ = std::move(layer);
 
-  SetIsAcceleratedCompositingActive(!!layer);
-
-  // TODO(danakj): Is this called after Close?? (With a null layer?)
-  if (!layer_tree_view_)
+  if (!root_layer_) {
+    // This notifies the WebFrameWidgetImpl that its LocalFrame tree is being
+    // detached.
     return;
+  }
 
   // WebFrameWidgetImpl is used for child frames, which always have a
   // transparent background color.

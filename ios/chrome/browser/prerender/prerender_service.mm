@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/web/load_timing_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"

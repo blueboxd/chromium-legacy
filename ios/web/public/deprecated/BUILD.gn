@@ -21,8 +21,6 @@ source_set("deprecated") {
     "crw_native_content_holder.h",
     "crw_native_content_provider.h",
     "global_web_state_observer.h",
-    "navigation_item_list.h",
-    "navigation_item_list.mm",
     "url_verification_constants.h",
   ]
 }
@@ -41,6 +39,15 @@ source_set("deprecated_web_util") {
   sources = [
     "crw_web_controller_util.h",
     "crw_web_controller_util.mm",
+  ]
+}
+
+source_set("deprecated_navigation_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "navigation_item_list.h",
+    "navigation_item_list.mm",
   ]
 }
 

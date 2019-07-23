@@ -5,45 +5,58 @@
 #include "chrome/browser/ui/views/native_file_system/native_file_system_restricted_directory_dialog_view.h"
 
 #include "base/files/file_path.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/window/dialog_client_view.h"
+
+using SensitiveDirectoryResult =
+    content::NativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
 class NativeFileSystemRestrictedDirectoryDialogViewTest
     : public DialogBrowserTest {
  public:
-  void SetUpOnMainThread() override {
-    // Release builds may strip out unused string resources when
-    // enable_resource_whitelist_generation is enabled. Manually override the
-    // strings needed by the dialog to ensure they are available for tests.
-    // TODO(https://crbug.com/979659): Remove these overrides once the strings
-    // are referenced from the Chrome binary.
-    auto& shared_resource_bundle = ui::ResourceBundle::GetSharedInstance();
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TITLE,
-        base::ASCIIToUTF16("Can't save to this folder"));
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_TEXT,
-        base::ASCIIToUTF16("$1 can't save your changes to this folder because "
-                           "it contains system files."));
-    shared_resource_bundle.OverrideLocaleStringResource(
-        IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON,
-        base::ASCIIToUTF16("Choose a different folder"));
-  }
-
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    NativeFileSystemRestrictedDirectoryDialogView::ShowDialog(
+    widget_ = NativeFileSystemRestrictedDirectoryDialogView::ShowDialog(
         kTestOrigin, base::FilePath(FILE_PATH_LITERAL("/foo/bar")),
-        base::DoNothing(),
+        base::BindLambdaForTesting([&](SensitiveDirectoryResult result) {
+          callback_called_ = true;
+          callback_result_ = result;
+        }),
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
  protected:
   const url::Origin kTestOrigin =
       url::Origin::Create(GURL("https://example.com"));
+
+  views::Widget* widget_ = nullptr;
+
+  bool callback_called_ = false;
+  SensitiveDirectoryResult callback_result_ =
+      SensitiveDirectoryResult::kAllowed;
 };
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemRestrictedDirectoryDialogViewTest,
+                       AcceptRunsCallback) {
+  ShowUi(std::string());
+  widget_->client_view()->AsDialogClientView()->AcceptWindow();
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain, callback_result_);
+  base::RunLoop().RunUntilIdle();
+}
+
+IN_PROC_BROWSER_TEST_F(NativeFileSystemRestrictedDirectoryDialogViewTest,
+                       CancelRunsCallback) {
+  ShowUi(std::string());
+  widget_->client_view()->AsDialogClientView()->CancelWindow();
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort, callback_result_);
+  base::RunLoop().RunUntilIdle();
+}
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemRestrictedDirectoryDialogViewTest,
                        InvokeUi_default) {

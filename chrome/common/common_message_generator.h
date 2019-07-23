@@ -55,12 +55,6 @@
 #endif
 #endif
 
-#undef CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_
-#include "chrome/common/media/webrtc_logging_messages.h"
-#ifndef CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_
-#error "Failed to include header chrome/common/media/webrtc_logging_messages.h"
-#endif
-
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer_param_traits.h"
 #endif

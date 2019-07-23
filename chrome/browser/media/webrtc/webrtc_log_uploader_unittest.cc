@@ -19,10 +19,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kTestTime[] = "time";
@@ -190,14 +188,14 @@ class WebRtcLogUploaderTest : public testing::Test {
     run_loop.Run();
   }
 
-  void FlushIOThread() {
+  void FlushRunLoop() {
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             run_loop.QuitClosure());
+    base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                     run_loop.QuitClosure());
     run_loop.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::FilePath test_list_path_;
 };
 
@@ -235,8 +233,8 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasLocalStorageInfoOnly());
 
-  webrtc_log_uploader->StartShutdown();
-  FlushIOThread();
+  webrtc_log_uploader->Shutdown();
+  FlushRunLoop();
 }
 
 TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
@@ -263,8 +261,8 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
   ASSERT_TRUE(VerifyNumberOfLines(2));
   ASSERT_TRUE(VerifyLastLineHasUploadInfoOnly());
 
-  webrtc_log_uploader->StartShutdown();
-  FlushIOThread();
+  webrtc_log_uploader->Shutdown();
+  FlushRunLoop();
 }
 
 TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
@@ -293,13 +291,8 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   WebRtcLogUploadDoneData upload_done_data;
   upload_done_data.log_path = temp_dir.GetPath().AppendASCII("log");
 
-  std::unique_ptr<Profile> profile(new TestingProfile());
-  scoped_refptr<WebRtcLoggingHandlerHost> host(new WebRtcLoggingHandlerHost(
-      -1, profile.get(), webrtc_log_uploader.get()));
-
   upload_done_data.incoming_rtp_dump = incoming_dump;
   upload_done_data.outgoing_rtp_dump = outgoing_dump;
-  upload_done_data.host = host.get();
 
   std::unique_ptr<WebRtcLogBuffer> log(new WebRtcLogBuffer());
   log->SetComplete();
@@ -317,6 +310,6 @@ TEST_F(WebRtcLogUploaderTest, AddRtpDumpsToPostedData) {
   VerifyRtpDumpInMultipart(post_data, "rtpdump_recv", incoming_dump_content);
   VerifyRtpDumpInMultipart(post_data, "rtpdump_send", outgoing_dump_content);
 
-  webrtc_log_uploader->StartShutdown();
-  FlushIOThread();
+  webrtc_log_uploader->Shutdown();
+  FlushRunLoop();
 }

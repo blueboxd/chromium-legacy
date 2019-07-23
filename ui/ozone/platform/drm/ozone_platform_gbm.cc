@@ -17,7 +17,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"

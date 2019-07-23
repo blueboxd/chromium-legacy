@@ -41,10 +41,13 @@ namespace {
 const char kCachePrefKeyPrefix[] = "previews.prober.cache";
 
 const char kSuccessHistogram[] = "Previews.Prober.DidSucceed";
+const char kTimeUntilSuccess[] = "Previews.Prober.TimeUntilSuccess";
+const char kTimeUntilFailure[] = "Previews.Prober.TimeUntilFailure";
 const char kAttemptsBeforeSuccessHistogram[] =
     "Previews.Prober.NumAttemptsBeforeSuccess";
 const char kHttpRespCodeHistogram[] = "Previews.Prober.ResponseCode";
 const char kNetErrorHistogram[] = "Previews.Prober.NetError";
+const char kCacheEntryAgeHistogram[] = "Previews.Prober.CacheEntryAge";
 
 // Please keep this up to date with logged histogram suffix
 // |Previews.Prober.Clients| in tools/metrics/histograms/histograms.xml.
@@ -263,7 +266,6 @@ PreviewsProber::PreviewsProber(
       cached_probe_results_(std::make_unique<base::DictionaryValue>()),
       tick_clock_(tick_clock),
       clock_(clock),
-      is_active_(false),
       network_connection_tracker_(nullptr),
       pref_service_(pref_service),
       url_loader_factory_(url_loader_factory),
@@ -308,7 +310,7 @@ void PreviewsProber::AddSelfAsNetworkConnectionObserver(
 }
 
 void PreviewsProber::ResetState() {
-  is_active_ = false;
+  time_when_set_active_ = base::nullopt;
   successive_retry_count_ = 0;
   successive_timeout_count_ = 0;
   retry_timer_.reset();
@@ -322,7 +324,7 @@ void PreviewsProber::ResetState() {
 void PreviewsProber::SendNowIfInactive(bool send_only_in_foreground) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (is_active_)
+  if (time_when_set_active_.has_value())
     return;
 
 #if defined(OS_ANDROID)
@@ -364,7 +366,7 @@ void PreviewsProber::OnConnectionChanged(network::mojom::ConnectionType type) {
 
 void PreviewsProber::CreateAndStartURLLoader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!is_active_ || successive_retry_count_ > 0);
+  DCHECK(!time_when_set_active_.has_value() || successive_retry_count_ > 0);
   DCHECK(!retry_timer_ || !retry_timer_->IsRunning());
   DCHECK(!url_loader_);
 
@@ -373,7 +375,7 @@ void PreviewsProber::CreateAndStartURLLoader() {
     return;
   }
 
-  is_active_ = true;
+  time_when_set_active_ = clock_->Now();
 
   GURL url = url_;
   if (retry_policy_.use_random_urls) {
@@ -483,9 +485,20 @@ void PreviewsProber::ProcessProbeFailure() {
   DCHECK(!retry_timer_ || !retry_timer_->IsRunning());
   DCHECK(!timeout_timer_ || !timeout_timer_->IsRunning());
   DCHECK(!url_loader_);
-  DCHECK(is_active_);
+  DCHECK(time_when_set_active_.has_value());
 
   RecordProbeResult(false);
+
+  DCHECK(time_when_set_active_.has_value());
+  if (time_when_set_active_.has_value()) {
+    base::TimeDelta active_time = clock_->Now() - time_when_set_active_.value();
+    base::LinearHistogram::FactoryTimeGet(
+        AppendNameToHistogram(kTimeUntilFailure),
+        base::TimeDelta::FromMilliseconds(0) /* minimum */,
+        base::TimeDelta::FromMilliseconds(60000) /* maximum */,
+        50 /* bucket_count */, base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(active_time.InMilliseconds());
+  }
 
   if (retry_policy_.max_retries > successive_retry_count_) {
     base::TimeDelta interval = ComputeNextTimeDeltaForBackoff(
@@ -510,7 +523,7 @@ void PreviewsProber::ProcessProbeSuccess() {
   DCHECK(!retry_timer_ || !retry_timer_->IsRunning());
   DCHECK(!timeout_timer_ || !timeout_timer_->IsRunning());
   DCHECK(!url_loader_);
-  DCHECK(is_active_);
+  DCHECK(time_when_set_active_.has_value());
 
   base::LinearHistogram::FactoryGet(
       AppendNameToHistogram(kAttemptsBeforeSuccessHistogram), 1 /* minimum */,
@@ -519,6 +532,17 @@ void PreviewsProber::ProcessProbeSuccess() {
       // |successive_retry_count_| is zero when the first attempt is successful.
       // Increase by one for more intuitive metrics.
       ->Add(successive_retry_count_ + 1);
+
+  DCHECK(time_when_set_active_.has_value());
+  if (time_when_set_active_.has_value()) {
+    base::TimeDelta active_time = clock_->Now() - time_when_set_active_.value();
+    base::LinearHistogram::FactoryTimeGet(
+        AppendNameToHistogram(kTimeUntilSuccess),
+        base::TimeDelta::FromMilliseconds(0) /* minimum */,
+        base::TimeDelta::FromMilliseconds(60000) /* maximum */,
+        50 /* bucket_count */, base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(active_time.InMilliseconds());
+  }
 
   RecordProbeResult(true);
   ResetState();
@@ -537,9 +561,20 @@ base::Optional<bool> PreviewsProber::LastProbeWasSuccessful() {
   if (!entry.has_value())
     return base::nullopt;
 
-  // Check if the cache entry should be revalidated.
-  if (clock_->Now() >=
-      LastModifiedTimeFromCacheEntry(entry.value()) + revalidate_cache_after_) {
+  base::TimeDelta cache_entry_age =
+      clock_->Now() - LastModifiedTimeFromCacheEntry(entry.value());
+
+  base::LinearHistogram::FactoryTimeGet(
+      AppendNameToHistogram(kCacheEntryAgeHistogram),
+      base::TimeDelta::FromHours(0) /* minimum */,
+      base::TimeDelta::FromHours(72) /* maximum */, 50 /* bucket_count */,
+      base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(cache_entry_age.InHours());
+
+  // Check if the cache entry should be revalidated because it has expired or
+  // cache_entry_age is negative because the clock was moved back.
+  if (cache_entry_age >= revalidate_cache_after_ ||
+      cache_entry_age < base::TimeDelta()) {
     SendNowIfInactive(false);
   }
 

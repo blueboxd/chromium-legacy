@@ -15,7 +15,7 @@
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/third_party/material_components_ios/src/components/FlexibleHeader/src/MaterialFlexibleHeader.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/web/public/web_view_creation_util.h"
+#import "ios/web/common/web_view_creation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

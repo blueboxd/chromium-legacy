@@ -3326,6 +3326,22 @@ TEST_F(TabStripModelTest, NewTabWithGroup) {
   strip.CloseAllTabs();
 }
 
+TEST_F(TabStripModelTest, NewTabWithGroupDeletedCorrectly) {
+  TestTabStripModelDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  strip.AppendWebContents(CreateWebContents(), true);
+  strip.AddToNewGroup({0});
+  strip.InsertWebContentsAt(1, CreateWebContents(), TabStripModel::ADD_NONE,
+                            strip.GetTabGroupForTab(0));
+
+  strip.RemoveFromGroup({1});
+  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  strip.RemoveFromGroup({0});
+  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+
+  strip.CloseAllTabs();
+}
+
 TEST_F(TabStripModelTest, NewTabWithoutIndexInsertsAtEndOfGroup) {
   TestTabStripModelDelegate delegate;
   TabStripModel strip(&delegate, profile());

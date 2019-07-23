@@ -1167,7 +1167,7 @@ void Textfield::OnCompositionTextConfirmedOrCleared() {
 }
 
 void Textfield::OnTextChanged() {
-  OnPropertyChanged(&model_, kPropertyEffectsPaint);
+  OnPropertyChanged(&model_ + kTextProperty, kPropertyEffectsPaint);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2034,9 +2034,10 @@ bool Textfield::ShouldShowPlaceholderText() const {
   return text().empty() && !GetPlaceholderText().empty();
 }
 
-views::PropertyChangedSubscription Textfield::AddModelChangedCallback(
+views::PropertyChangedSubscription Textfield::AddTextChangedCallback(
     views::PropertyChangedCallback callback) {
-  return AddPropertyChangedCallback(&model_, std::move(callback));
+  return AddPropertyChangedCallback(&model_ + kTextProperty,
+                                    std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

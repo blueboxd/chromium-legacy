@@ -126,7 +126,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
 void AppListControllerDelegate::UninstallApp(Profile* profile,
                                              const std::string& app_id) {
   // ExtensionUninstall deletes itself when done or aborted.
-  ExtensionUninstaller* uninstaller = new ExtensionUninstaller(profile, app_id);
+  ExtensionUninstaller* uninstaller =
+      new ExtensionUninstaller(profile, app_id, GetAppListWindow());
   uninstaller->Run();
 }
 

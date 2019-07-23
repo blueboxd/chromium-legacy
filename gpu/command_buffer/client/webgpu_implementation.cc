@@ -29,7 +29,12 @@ WebGPUImplementation::WebGPUImplementation(
     : ImplementationBase(helper, transfer_buffer, gpu_control),
       helper_(helper),
 #if BUILDFLAG(USE_DAWN)
-      wire_client_(new dawn_wire::WireClient(this)),
+      wire_client_([this]() {
+        dawn_wire::WireClientDescriptor descriptor = {};
+        descriptor.serializer = this;
+
+        return new dawn_wire::WireClient(descriptor);
+      }()),
       procs_(wire_client_->GetProcs()),
 #endif
       c2s_buffer_(helper, transfer_buffer) {

@@ -61,7 +61,6 @@ $_documentContainer.innerHTML = `<dom-module id="paper-spinner-styles">
       }
 
       #spinnerContainer.active {
-        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
         animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
       }
 
@@ -107,10 +106,6 @@ $_documentContainer.innerHTML = `<dom-module id="paper-spinner-styles">
        * seems).
        */
       .active .spinner-layer {
-        -webkit-animation-name: fill-unfill-rotate;
-        -webkit-animation-duration: var(--paper-spinner-full-cycle-duration);
-        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
-        -webkit-animation-iteration-count: infinite;
         animation-name: fill-unfill-rotate;
         animation-duration: var(--paper-spinner-full-cycle-duration);
         animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -119,22 +114,18 @@ $_documentContainer.innerHTML = `<dom-module id="paper-spinner-styles">
       }
 
       .active .spinner-layer.layer-1 {
-        -webkit-animation-name: fill-unfill-rotate, layer-1-fade-in-out;
         animation-name: fill-unfill-rotate, layer-1-fade-in-out;
       }
 
       .active .spinner-layer.layer-2 {
-        -webkit-animation-name: fill-unfill-rotate, layer-2-fade-in-out;
         animation-name: fill-unfill-rotate, layer-2-fade-in-out;
       }
 
       .active .spinner-layer.layer-3 {
-        -webkit-animation-name: fill-unfill-rotate, layer-3-fade-in-out;
         animation-name: fill-unfill-rotate, layer-3-fade-in-out;
       }
 
       .active .spinner-layer.layer-4 {
-        -webkit-animation-name: fill-unfill-rotate, layer-4-fade-in-out;
         animation-name: fill-unfill-rotate, layer-4-fade-in-out;
       }
 
@@ -268,34 +259,27 @@ $_documentContainer.innerHTML = `<dom-module id="paper-spinner-styles">
       .circle-clipper.left .circle {
         left: 0;
         border-right-color: transparent !important;
-        -webkit-transform: rotate(129deg);
         transform: rotate(129deg);
       }
 
       .circle-clipper.right .circle {
         left: -100%;
         border-left-color: transparent !important;
-        -webkit-transform: rotate(-129deg);
         transform: rotate(-129deg);
       }
 
       .active .gap-patch::after,
       .active .circle-clipper .circle {
-        -webkit-animation-duration: var(--paper-spinner-expand-contract-duration);
-        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
-        -webkit-animation-iteration-count: infinite;
         animation-duration: var(--paper-spinner-expand-contract-duration);
         animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
         animation-iteration-count: infinite;
       }
 
       .active .circle-clipper.left .circle {
-        -webkit-animation-name: left-spin;
         animation-name: left-spin;
       }
 
       .active .circle-clipper.right .circle {
-        -webkit-animation-name: right-spin;
         animation-name: right-spin;
       }
 
@@ -324,7 +308,6 @@ $_documentContainer.innerHTML = `<dom-module id="paper-spinner-styles">
       }
 
       #spinnerContainer.cooldown {
-        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
         animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
       }
 

@@ -33,11 +33,6 @@ namespace android_sms {
 class AndroidSmsAppSetupController;
 enum class PwaDomain;
 
-// TODO(https://crbug.com/874605): Consider retrying failed installation
-// attempts. Currently, we make one attempt to install the app when
-// SetUpAndroidSmsApp() or SetUpAndLaunchAndroidSmsApp() is called, then do not
-// retry if that attempt fails. Since PWA installation requires Internet
-// connectivity, it is expected that some portion of installs should fail.
 class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
  public:
   AndroidSmsAppManagerImpl(

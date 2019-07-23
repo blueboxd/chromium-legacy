@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/html/media/html_media_source.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
@@ -73,10 +72,8 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
   // Allow play attempts for plain src= media to force a reload in the error
   // state. This allows potential recovery for transient network and decoder
   // resource issues.
-  const String& url = MediaElement().currentSrc().GetString();
-  if (MediaElement().error() && !HTMLMediaSource::Lookup(url)) {
+  if (MediaElement().error() && !MediaElement().HasMediaSource())
     MediaElement().load();
-  }
 
   MediaElement().TogglePlayState();
 

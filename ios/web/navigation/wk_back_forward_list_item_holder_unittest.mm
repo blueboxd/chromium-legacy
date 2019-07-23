@@ -7,7 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #import "ios/web/navigation/navigation_item_impl.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

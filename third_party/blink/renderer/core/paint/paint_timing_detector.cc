@@ -130,11 +130,8 @@ void PaintTimingDetector::LayoutObjectWillBeDestroyed(
 void PaintTimingDetector::NotifyImageRemoved(
     const LayoutObject& object,
     const ImageResourceContent* cached_image) {
-  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
-  if (node_id == kInvalidDOMNodeId)
-    return;
   if (image_paint_timing_detector_) {
-    image_paint_timing_detector_->NotifyImageRemoved(node_id, cached_image);
+    image_paint_timing_detector_->NotifyImageRemoved(object, cached_image);
   }
 }
 

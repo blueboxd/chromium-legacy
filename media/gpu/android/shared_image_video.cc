@@ -77,6 +77,7 @@ sk_sp<SkPromiseImageTexture> CreatePromiseTexture(
                            vk_image_info.format,
                            vk_image_info.mipLevels,
                            VK_QUEUE_FAMILY_EXTERNAL,
+                           GrProtected::kNo,
                            fYcbcrConversionInfo};
 
   // TODO(bsalomon): Determine whether it makes sense to attempt to reuse this
@@ -415,8 +416,11 @@ SharedImageVideo::ProduceGLTexture(gpu::SharedImageManager* manager,
   // which should result in no image.
   if (!codec_image_->texture_owner())
     return nullptr;
-  auto* texture = gpu::gles2::Texture::CheckedCast(
-      codec_image_->texture_owner()->GetTextureBase());
+  // TODO(vikassoni): We would want to give the TextureOwner's underlying
+  // Texture, but it was not set with the correct size. The AbstractTexture,
+  // that we use for legacy mailbox, is correctly set.
+  auto* texture =
+      gpu::gles2::Texture::CheckedCast(abstract_texture_->GetTextureBase());
   DCHECK(texture);
 
   return std::make_unique<SharedImageRepresentationGLTextureVideo>(

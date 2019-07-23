@@ -60,6 +60,9 @@ struct SchedulerConfig {
   // The time window to launch the background task.
   base::TimeDelta background_task_window_duration;
 
+  // A random time delta to distribute the user clicks to a time window.
+  base::TimeDelta background_task_random_time_window;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerConfig);
 };

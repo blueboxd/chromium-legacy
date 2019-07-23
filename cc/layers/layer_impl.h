@@ -320,11 +320,13 @@ class CC_EXPORT LayerImpl {
     return non_fast_scrollable_region_;
   }
 
-  void SetTouchActionRegion(TouchActionRegion touch_action_region) {
-    touch_action_region_ = std::move(touch_action_region);
-  }
+  void SetTouchActionRegion(TouchActionRegion);
   const TouchActionRegion& touch_action_region() const {
     return touch_action_region_;
+  }
+  const Region& GetAllTouchActionRegions() const;
+  bool has_touch_action_regions() const {
+    return !touch_action_region_.IsEmpty();
   }
 
   // Set or get the region that contains wheel event handler.
@@ -585,6 +587,10 @@ class CC_EXPORT LayerImpl {
 
   std::unique_ptr<base::trace_event::TracedValue> owned_debug_info_;
   base::trace_event::TracedValue* debug_info_;
+
+  // Cache of all regions represented by any touch action from
+  // |touch_action_region_|.
+  mutable std::unique_ptr<Region> all_touch_action_regions_;
 
   bool has_will_change_transform_hint_ : 1;
   bool needs_push_properties_ : 1;

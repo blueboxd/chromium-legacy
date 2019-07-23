@@ -13,10 +13,10 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "url/gurl.h"
 
 @class NSURLRequest;

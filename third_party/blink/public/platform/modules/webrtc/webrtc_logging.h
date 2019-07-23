@@ -24,11 +24,11 @@ class BLINK_PLATFORM_EXPORT WebRtcLogMessageDelegate {
   virtual ~WebRtcLogMessageDelegate() {}
 };
 
-// Must be called on IO thread.
+// Must only be called once, and |delegate| must be non-null.
 BLINK_PLATFORM_EXPORT void InitWebRtcLoggingDelegate(
     WebRtcLogMessageDelegate* delegate);
 
-// Must be called on IO thread.
+// Called to start the diagnostic WebRTC log.
 BLINK_PLATFORM_EXPORT void InitWebRtcLogging();
 
 // This function will add |message| to the diagnostic WebRTC log, if started.

@@ -313,12 +313,13 @@ public class ChromeBrowserInitializer {
         });
 
         if (!mNativeInitializationComplete) {
-            tasks.add(UiThreadTaskTraits.DEFAULT, () -> {
-                int startupMode = getBrowserStartupController().getStartupMode(
-                        delegate.startServiceManagerOnly());
-                onFinishNativeInitialization(startupMode);
-            });
+            tasks.add(UiThreadTaskTraits.DEFAULT, this::onFinishNativeInitialization);
         }
+
+        int startupMode =
+                getBrowserStartupController().getStartupMode(delegate.startServiceManagerOnly());
+        tasks.add(UiThreadTaskTraits.BEST_EFFORT,
+                () -> { BackgroundTaskSchedulerExternalUma.reportStartupMode(startupMode); });
 
         if (isAsync) {
             // We want to start this queue once the C++ startup tasks have run; allow the
@@ -400,7 +401,7 @@ public class ChromeBrowserInitializer {
         SpeechRecognition.initialize();
     }
 
-    private void onFinishNativeInitialization(int startupMode) {
+    private void onFinishNativeInitialization() {
         if (mNativeInitializationComplete) return;
 
         mNativeInitializationComplete = true;
@@ -435,8 +436,6 @@ public class ChromeBrowserInitializer {
 
         // TODO(crbug.com/960767): Remove this in M77.
         ServiceManagerStartupUtils.cleanupSharedPreferences();
-
-        BackgroundTaskSchedulerExternalUma.reportStartupMode(startupMode);
 
         PostTask.postTask(
                 TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);

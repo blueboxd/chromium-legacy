@@ -574,5 +574,18 @@ TEST_F(SuggestionSelectionTest,
                       base::ASCIIToUTF16("1 Winterfell Ln")))));
 }
 
+TEST_F(SuggestionSelectionTest, PrepareSuggestions_SameStringInValueAndLabel) {
+  std::vector<Suggestion> suggestions{
+      Suggestion(base::UTF8ToUTF16("4 Mañana Road"))};
+
+  const std::vector<base::string16> labels{base::ASCIIToUTF16("4 manana road")};
+
+  PrepareSuggestions(labels, &suggestions, comparator_);
+  EXPECT_THAT(suggestions,
+              ElementsAre(AllOf(
+                  Field(&Suggestion::value, base::UTF8ToUTF16("4 Mañana Road")),
+                  Field(&Suggestion::label, base::string16()))));
+}
+
 }  // namespace suggestion_selection
 }  // namespace autofill

@@ -1,29 +1,22 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
 let testName = "inlineVerticalFieldOfView is set appropriately on immersively sessions";
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes =  ['immersive-vr'];
-
 let testFunction = function(session, fakeDeviceController, t) {
-
-  // Session must have a baseLayer or frame requests will be ignored.
-  session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl, {
-        compositionDisabled: session.mode == 'inline' })
-  });
-
   return new Promise((resolve, reject) => {
       // inlineVerticalFieldOfView should be null for immersive sessions;
       t.step(() => {
@@ -50,6 +43,6 @@ let testFunction = function(session, fakeDeviceController, t) {
 };
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 
 </script>

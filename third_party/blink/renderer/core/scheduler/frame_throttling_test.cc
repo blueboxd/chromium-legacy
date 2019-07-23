@@ -64,14 +64,14 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
     if (own_graphics_layer) {
       result += own_graphics_layer->CcLayer()
                     ->touch_action_region()
-                    .region()
+                    .GetAllRegions()
                     .GetRegionComplexity();
     }
     GraphicsLayer* child_graphics_layer = layer->GraphicsLayerBacking();
     if (child_graphics_layer && child_graphics_layer != own_graphics_layer) {
       result += child_graphics_layer->CcLayer()
                     ->touch_action_region()
-                    .region()
+                    .GetAllRegions()
                     .GetRegionComplexity();
     }
     return result;

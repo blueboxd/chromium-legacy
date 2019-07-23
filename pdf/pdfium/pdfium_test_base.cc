@@ -67,4 +67,11 @@ void PDFiumTestBase::InitializePDFium() {
   FPDF_InitLibraryWithConfig(&config);
 }
 
+PDFiumPage* PDFiumTestBase::GetPDFiumPageForTest(PDFiumEngine* engine,
+                                                 size_t page_index) {
+  if (engine && page_index < engine->pages_.size())
+    return engine->pages_[page_index].get();
+  return nullptr;
+}
+
 }  // namespace chrome_pdf

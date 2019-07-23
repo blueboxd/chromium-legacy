@@ -173,7 +173,8 @@ TEST_F(ChildProcessTaskPortProviderTest, ChildLifecycle) {
   EXPECT_EQ(1u, GetDeadNameRefCount(send_right.get()));
 }
 
-TEST_F(ChildProcessTaskPortProviderTest, DeadTaskPort) {
+// Test is flaky. See https://crbug.com/986288.
+TEST_F(ChildProcessTaskPortProviderTest, DISABLED_DeadTaskPort) {
   EXPECT_EQ(kMachPortNull, provider()->TaskForPid(6));
 
   // Create a fake task port for the fake process.

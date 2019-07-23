@@ -265,7 +265,7 @@ void X11WindowOzone::CheckCanDispatchNextPlatformEvent(XEvent* xev) {
   if (is_shutting_down_)
     return;
 
-  handle_next_event_ = IsEventForXWindow(*xev);
+  handle_next_event_ = x11_window_->IsTargetedBy(*xev);
 }
 
 void X11WindowOzone::PlatformEventDispatchFinished() {
@@ -277,7 +277,7 @@ PlatformEventDispatcher* X11WindowOzone::GetPlatformEventDispatcher() {
 }
 
 bool X11WindowOzone::DispatchXEvent(XEvent* xev) {
-  if (!IsEventForXWindow(*xev))
+  if (!x11_window_->IsTargetedBy(*xev))
     return false;
 
   x11_window_->ProcessEvent(xev);
@@ -320,14 +320,6 @@ void X11WindowOzone::SetWidget(XID xid) {
   widget_ = static_cast<gfx::AcceleratedWidget>(xid);
   if (widget_ != gfx::kNullAcceleratedWidget)
     delegate_->OnAcceleratedWidgetAvailable(widget_);
-}
-
-bool X11WindowOzone::IsEventForXWindow(const XEvent& xev) const {
-  // TODO(nickdiego): Move this into ui::XWindow
-  XID target_window = (xev.type == GenericEvent)
-                          ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
-                          : xev.xany.window;
-  return target_window == x11_window_->window();
 }
 
 void X11WindowOzone::OnXWindowCreated() {

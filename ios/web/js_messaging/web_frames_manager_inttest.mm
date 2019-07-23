@@ -7,7 +7,7 @@
 #include "ios/web/common/features.h"
 #include "ios/web/js_messaging/web_frames_manager_impl.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/test/web_int_test.h"

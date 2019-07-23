@@ -15,7 +15,7 @@
 namespace blink {
 
 LayoutNGTableCell::LayoutNGTableCell(Element* element)
-    : LayoutNGMixin<LayoutTableCell>(element) {}
+    : LayoutNGBlockFlowMixin<LayoutTableCell>(element) {}
 
 void LayoutNGTableCell::UpdateBlockLayout(bool relayout_children) {
   LayoutAnalyzer::BlockScope analyzer(*this);

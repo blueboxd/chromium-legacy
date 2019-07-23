@@ -67,8 +67,8 @@ ACTION_P2(SetError, renderer_client, status) {
   (*renderer_client)->OnError(status);
 }
 
-ACTION_P2(SetBufferingState, renderer_client, buffering_state) {
-  (*renderer_client)->OnBufferingStateChange(buffering_state);
+ACTION_P3(SetBufferingState, renderer_client, buffering_state, reason) {
+  (*renderer_client)->OnBufferingStateChange(buffering_state, reason);
 }
 
 ACTION_TEMPLATE(PostCallback,
@@ -207,9 +207,12 @@ class PipelineImplTest : public ::testing::Test {
         EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
         EXPECT_CALL(*renderer_, SetVolume(1.0f));
         EXPECT_CALL(*renderer_, StartPlayingFrom(start_time_))
-            .WillOnce(
-                SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH));
-        EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+            .WillOnce(SetBufferingState(&renderer_client_,
+                                        BUFFERING_HAVE_ENOUGH,
+                                        BUFFERING_CHANGE_REASON_UNKNOWN));
+        EXPECT_CALL(callbacks_,
+                    OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                           BUFFERING_CHANGE_REASON_UNKNOWN));
       }
     }
 
@@ -241,19 +244,18 @@ class PipelineImplTest : public ::testing::Test {
     EXPECT_CALL(*demuxer_, Seek(seek_time, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
-    EXPECT_CALL(*renderer_, Flush(_))
-        .WillOnce(
-            DoAll(SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
-                  RunClosure<0>()));
+    EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
     EXPECT_CALL(*renderer_, SetVolume(_));
     EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
-        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH));
-    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH,
+                                    BUFFERING_CHANGE_REASON_UNKNOWN));
 
     // We expect a successful seek callback followed by a buffering update.
     EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
-    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+    EXPECT_CALL(callbacks_,
+                OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                       BUFFERING_CHANGE_REASON_UNKNOWN));
   }
 
   void DoSeek(const base::TimeDelta& seek_time) {
@@ -288,8 +290,11 @@ class PipelineImplTest : public ::testing::Test {
     EXPECT_CALL(*renderer_, SetPlaybackRate(_));
     EXPECT_CALL(*renderer_, SetVolume(_));
     EXPECT_CALL(*renderer_, StartPlayingFrom(seek_time))
-        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH));
-    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH,
+                                    BUFFERING_CHANGE_REASON_UNKNOWN));
+    EXPECT_CALL(callbacks_,
+                OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                       BUFFERING_CHANGE_REASON_UNKNOWN));
     EXPECT_CALL(callbacks_, OnResume(PIPELINE_OK));
   }
 
@@ -697,11 +702,7 @@ TEST_F(PipelineImplTest, ErrorDuringSeek) {
 
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
-  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-  EXPECT_CALL(*renderer_, Flush(_))
-      .WillOnce(
-          DoAll(SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
-                RunClosure<0>()));
+  EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
@@ -752,11 +753,7 @@ TEST_F(PipelineImplTest, NoMessageDuringTearDownFromError) {
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
   // Seek() isn't called as the demuxer errors out first.
-  EXPECT_CALL(*renderer_, Flush(_))
-      .WillOnce(
-          DoAll(SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
-                RunClosure<0>()));
-  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+  EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
 
   EXPECT_CALL(*demuxer_, AbortPendingReads());
   EXPECT_CALL(*demuxer_, Seek(seek_time, _))
@@ -795,8 +792,11 @@ TEST_F(PipelineImplTest, Underflow) {
   StartPipelineAndExpect(PIPELINE_OK);
 
   // Simulate underflow.
-  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
-  renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
+  EXPECT_CALL(callbacks_,
+              OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
+                                     BUFFERING_CHANGE_REASON_UNKNOWN));
+  renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING,
+                                           BUFFERING_CHANGE_REASON_UNKNOWN);
   base::RunLoop().RunUntilIdle();
 
   // Seek while underflowed.
@@ -1027,8 +1027,11 @@ class PipelineTeardownTest : public PipelineImplTest {
     EXPECT_CALL(*renderer_, SetPlaybackRate(0.0));
     EXPECT_CALL(*renderer_, SetVolume(1.0f));
     EXPECT_CALL(*renderer_, StartPlayingFrom(base::TimeDelta()))
-        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH));
-    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+        .WillOnce(SetBufferingState(&renderer_client_, BUFFERING_HAVE_ENOUGH,
+                                    BUFFERING_CHANGE_REASON_UNKNOWN));
+    EXPECT_CALL(callbacks_,
+                OnBufferingStateChange(BUFFERING_HAVE_ENOUGH,
+                                       BUFFERING_CHANGE_REASON_UNKNOWN));
   }
 
   void DoSeek(TeardownState state, StopOrError stop_or_error) {
@@ -1049,28 +1052,21 @@ class PipelineTeardownTest : public PipelineImplTest {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*renderer_, Flush(_))
             .WillOnce(DoAll(
-                SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
                 Stop(pipeline_.get()), RunClosure<0>()));
-        // Note: OnBufferingStateChange or OnSeek callbacks are not called
+        // Note: OnSeek callbacks are not called
         // after pipeline is stopped.
       } else {
         EXPECT_CALL(*renderer_, Flush(_))
             .WillOnce(DoAll(
-                SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
                 SetError(&renderer_client_, PIPELINE_ERROR_READ),
                 RunClosure<0>()));
-        EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
         EXPECT_CALL(callbacks_, OnSeek(PIPELINE_ERROR_READ))
             .WillOnce(Stop(pipeline_.get()));
       }
       return;
     }
 
-    EXPECT_CALL(*renderer_, Flush(_))
-        .WillOnce(
-            DoAll(SetBufferingState(&renderer_client_, BUFFERING_HAVE_NOTHING),
-                  RunClosure<0>()));
-    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
+    EXPECT_CALL(*renderer_, Flush(_)).WillOnce(RunClosure<0>());
 
     if (state == kSeeking) {
       if (stop_or_error == kStop) {

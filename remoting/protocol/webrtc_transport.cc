@@ -161,8 +161,8 @@ class CreateSessionDescriptionObserver
   void OnSuccess(webrtc::SessionDescriptionInterface* desc) override {
     std::move(result_callback_).Run(base::WrapUnique(desc), std::string());
   }
-  void OnFailure(const std::string& error) override {
-    std::move(result_callback_).Run(nullptr, error);
+  void OnFailure(webrtc::RTCError error) override {
+    std::move(result_callback_).Run(nullptr, error.message());
   }
 
  protected:
@@ -195,8 +195,8 @@ class SetSessionDescriptionObserver
     std::move(result_callback_).Run(true, std::string());
   }
 
-  void OnFailure(const std::string& error) override {
-    std::move(result_callback_).Run(false, error);
+  void OnFailure(webrtc::RTCError error) override {
+    std::move(result_callback_).Run(false, error.message());
   }
 
  protected:

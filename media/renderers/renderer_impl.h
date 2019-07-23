@@ -166,7 +166,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   //   - A non-waiting to waiting transition indicates underflow has occurred
   //     and PausePlayback() should be called
   void OnBufferingStateChange(DemuxerStream::Type type,
-                              BufferingState new_buffering_state);
+                              BufferingState new_buffering_state,
+                              BufferingStateChangeReason reason);
 
   // Handles the buffering notifications that we might get while an audio or a
   // video stream is being restarted. In those cases we don't want to report

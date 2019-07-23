@@ -279,6 +279,16 @@ void UpdateDx12VulkanInfoOnIO(
 }
 #endif
 
+// Determines if SwiftShader is available as a fallback for WebGL.
+bool SwiftShaderAllowed() {
+#if !BUILDFLAG(ENABLE_SWIFTSHADER)
+  return false;
+#else
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSoftwareRasterizer);
+#endif
+}
+
 }  // anonymous namespace
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
@@ -333,34 +343,28 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
 }
 
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
-  bool swiftshader_available = false;
-#if BUILDFLAG(ENABLE_SWIFTSHADER)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSoftwareRasterizer)) {
-    swiftshader_available = true;
+  switch (gpu_mode_) {
+    case gpu::GpuMode::HARDWARE_ACCELERATED:
+      return true;
+    case gpu::GpuMode::SWIFTSHADER:
+      DCHECK(SwiftShaderAllowed());
+      return true;
+    default:
+      if (reason) {
+        // If SwiftShader is allowed, then we are here because it was blocked.
+        if (SwiftShaderAllowed()) {
+          *reason = "GPU process crashed too many times with SwiftShader.";
+        } else {
+          *reason = "GPU access is disabled ";
+          if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                  switches::kDisableGpu))
+            *reason += "through commandline switch --disable-gpu.";
+          else
+            *reason += "in chrome://settings.";
+        }
+      }
+      return false;
   }
-#endif
-  if (swiftshader_blocked_) {
-    if (reason) {
-      *reason = "GPU process crashed too many times with SwiftShader.";
-    }
-    return false;
-  }
-  if (swiftshader_available)
-    return true;
-
-  if (card_disabled_) {
-    if (reason) {
-      *reason = "GPU access is disabled ";
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableGpu))
-        *reason += "through commandline switch --disable-gpu.";
-      else
-        *reason += "in chrome://settings.";
-    }
-    return false;
-  }
-  return true;
 }
 
 bool GpuDataManagerImplPrivate::GpuProcessStartAllowed() const {
@@ -583,12 +587,15 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
                                   gpu_prefs.ToSwitchValue());
 
   std::string use_gl;
-  if (card_disabled_ && SwiftShaderAllowed()) {
-    use_gl = gl::kGLImplementationSwiftShaderForWebGLName;
-  } else if (card_disabled_) {
-    use_gl = gl::kGLImplementationDisabledName;
-  } else {
-    use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
+  switch (gpu_mode_) {
+    case gpu::GpuMode::HARDWARE_ACCELERATED:
+      use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
+      break;
+    case gpu::GpuMode::SWIFTSHADER:
+      use_gl = gl::kGLImplementationSwiftShaderForWebGLName;
+      break;
+    default:
+      use_gl = gl::kGLImplementationDisabledName;
   }
   if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
@@ -648,32 +655,35 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
 #endif
 
 #if defined(USE_OZONE)
-  gpu_preferences->message_loop_type =
-      ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
+  gpu_preferences->message_loop_type = ui::OzonePlatform::GetInstance()
+                                           ->GetPlatformProperties()
+                                           .message_loop_type_for_gpu;
 #endif
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
-  card_disabled_ = true;
-  if (!SwiftShaderAllowed())
+  if (!HardwareAccelerationEnabled())
+    return;
+
+  if (SwiftShaderAllowed()) {
+    gpu_mode_ = gpu::GpuMode::SWIFTSHADER;
+  } else {
     OnGpuBlocked();
+  }
 }
 
 bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
-  return !card_disabled_;
-}
-
-bool GpuDataManagerImplPrivate::SwiftShaderAllowed() const {
-#if !BUILDFLAG(ENABLE_SWIFTSHADER)
-  return false;
-#else
-  return !swiftshader_blocked_ &&
-         !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableSoftwareRasterizer);
-#endif
+  return gpu_mode_ == gpu::GpuMode::HARDWARE_ACCELERATED;
 }
 
 void GpuDataManagerImplPrivate::OnGpuBlocked() {
+  // Decide which gpu mode to use now that gpu access is blocked.
+  if (features::IsVizDisplayCompositorEnabled()) {
+    gpu_mode_ = gpu::GpuMode::DISPLAY_COMPOSITOR;
+  } else {
+    gpu_mode_ = gpu::GpuMode::DISABLED;
+  }
+
   base::Optional<gpu::GpuFeatureInfo> gpu_feature_info_for_hardware_gpu;
   if (gpu_feature_info_.IsInitialized())
     gpu_feature_info_for_hardware_gpu = gpu_feature_info_;
@@ -882,15 +892,7 @@ bool GpuDataManagerImplPrivate::NeedsCompleteGpuInfoCollection() const {
 }
 
 gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
-  if (HardwareAccelerationEnabled()) {
-    return gpu::GpuMode::HARDWARE_ACCELERATED;
-  } else if (SwiftShaderAllowed()) {
-    return gpu::GpuMode::SWIFTSHADER;
-  } else if (features::IsVizDisplayCompositorEnabled()) {
-    return gpu::GpuMode::DISPLAY_COMPOSITOR;
-  } else {
-    return gpu::GpuMode::DISABLED;
-  }
+  return gpu_mode_;
 }
 
 void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
@@ -900,22 +902,24 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
   // browser process to reset everything.
   LOG(FATAL) << "GPU process isn't usable. Goodbye.";
 #else
-  // TODO(kylechar): Use GpuMode to store the current mode instead of
-  // multiple bools.
-  if (!card_disabled_) {
-    DisableHardwareAcceleration();
-  } else if (SwiftShaderAllowed()) {
-    swiftshader_blocked_ = true;
-    OnGpuBlocked();
-  } else if (features::IsVizDisplayCompositorEnabled()) {
-    // The GPU process is frequently crashing with only the display compositor
-    // running. This should never happen so something is wrong. Crash the
-    // browser process to reset everything.
-    LOG(FATAL) << "The display compositor is frequently crashing. Goodbye.";
-  } else {
-    // We are already at GpuMode::DISABLED. We shouldn't be launching the GPU
-    // process for it to fail.
-    NOTREACHED();
+  switch (gpu_mode_) {
+    case gpu::GpuMode::HARDWARE_ACCELERATED:
+      DisableHardwareAcceleration();
+      break;
+    case gpu::GpuMode::SWIFTSHADER:
+      OnGpuBlocked();
+      break;
+    case gpu::GpuMode::DISPLAY_COMPOSITOR:
+      // The GPU process is frequently crashing with only the display compositor
+      // running. This should never happen so something is wrong. Crash the
+      // browser process to reset everything.
+      LOG(FATAL) << "The display compositor is frequently crashing. Goodbye.";
+      break;
+    case gpu::GpuMode::DISABLED:
+    case gpu::GpuMode::UNKNOWN:
+      // We are already at GpuMode::DISABLED. We shouldn't be launching the GPU
+      // process for it to fail.
+      NOTREACHED();
   }
 #endif
 }

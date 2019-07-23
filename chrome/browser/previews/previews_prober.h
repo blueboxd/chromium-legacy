@@ -159,7 +159,7 @@ class PreviewsProber
   base::Optional<bool> LastProbeWasSuccessful();
 
   // True if probes are being attempted, including retries.
-  bool is_active() const { return is_active_; }
+  bool is_active() const { return time_when_set_active_.has_value(); }
 
   // network::NetworkConnectionTracker::NetworkConnectionObserver:
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
@@ -258,8 +258,8 @@ class PreviewsProber
   // The time clock used within this class.
   const base::Clock* clock_;
 
-  // Whether the prober is currently sending probes.
-  bool is_active_;
+  // Remembers the last time the prober became active.
+  base::Optional<base::Time> time_when_set_active_;
 
   // This reference is kept around for unregistering |this| as an observer on
   // any thread.
@@ -271,7 +271,8 @@ class PreviewsProber
   // Used for setting up the |url_loader_|.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // The URLLoader used for the probe. Expected to be non-null iff |is_active_|.
+  // The URLLoader used for the probe. Expected to be non-null iff
+  // |is_active()|.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
 #if defined(OS_ANDROID)

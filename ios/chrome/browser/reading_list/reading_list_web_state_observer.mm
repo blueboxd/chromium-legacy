@@ -14,9 +14,9 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_manager.h"
-#include "ios/web/public/reload_type.h"
+#include "ios/web/public/navigation/navigation_item.h"
+#include "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/navigation/reload_type.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

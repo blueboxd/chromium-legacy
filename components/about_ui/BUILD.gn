@@ -10,7 +10,6 @@ static_library("about_ui") {
   deps = [
     "//base",
     "//components/resources:components_resources",
-    "//third_party/brotli:dec",
     "//ui/base",
     "//ui/resources",
   ]

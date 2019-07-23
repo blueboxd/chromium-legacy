@@ -6,9 +6,12 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
@@ -19,6 +22,7 @@ class WebSocketHandshakeThrottleProvider;
 
 class ServiceWorkerFetchContextImpl final
     : public blink::WebWorkerFetchContext,
+      public blink::mojom::ServiceWorkerSubresourceLoaderUpdater,
       public blink::mojom::RendererPreferenceWatcher {
  public:
   // |url_loader_factory_info| is used for regular loads from the service worker
@@ -38,8 +42,9 @@ class ServiceWorkerFetchContextImpl final
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
-      blink::mojom::RendererPreferenceWatcherRequest
-          preference_watcher_request);
+      blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+          pending_subresource_loader_updater);
 
   // blink::WebWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
@@ -61,6 +66,11 @@ class ServiceWorkerFetchContextImpl final
 
  private:
   ~ServiceWorkerFetchContextImpl() override;
+
+  // Implements blink::mojom::ServiceWorkerFetchContext
+  void UpdateSubresourceLoaderFactories(
+      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
+          subresource_loader_factories) override;
 
   // Implements blink::mojom::RendererPreferenceWatcher.
   void NotifyUpdate(blink::mojom::RendererPreferencesPtr new_prefs) override;
@@ -87,10 +97,14 @@ class ServiceWorkerFetchContextImpl final
 
   mojo::Binding<blink::mojom::RendererPreferenceWatcher>
       preference_watcher_binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      subresource_loader_updater_{this};
 
-  // Kept while staring up the worker thread. Valid until
-  // InitializeOnWorkerThread().
+  // These mojo objects are kept while starting up the worker thread. Valid
+  // until InitializeOnWorkerThread().
   blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
+      pending_subresource_loader_updater_;
 
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;

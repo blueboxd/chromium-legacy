@@ -35,3 +35,8 @@ async function GetIds() {
   const descriptions = await registration.index.getDescriptions();
   return descriptions.map(d => d.id);
 }
+
+async function waitForMessageFromServiceWorker() {
+  return await new Promise(r =>
+      navigator.serviceWorker.addEventListener('message', e => r(e.data)));
+}

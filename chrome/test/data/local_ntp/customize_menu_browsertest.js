@@ -303,6 +303,29 @@ test.customizeMenu.testMenu_ApplyUserSelections = function() {
 };
 
 /**
+ * Tests that a background is applied if it was selected and then the back arrow
+ * was clicked.
+ */
+test.customizeMenu.testMenu_BackgroundAppliedAfterBackArrow = function() {
+  setupFakeAsyncCollectionLoad();
+  init();
+
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+
+  // Select a background.
+  setupFakeAsyncImageLoad('coll_tile_0');
+  $('coll_tile_0').click();
+  $('coll_0_img_tile_0').click();
+
+  // Go back to main menu.
+  $(test.customizeMenu.IDS.MENU_BACK).click();
+
+  // Click done and check that the selections was applied.
+  $(test.customizeMenu.IDS.MENU_DONE).click();
+  assertEquals(1, test.customizeMenu.timesCustomBackgroundWasSet);
+};
+
+/**
  * Tests that background previews are applied.
  */
 test.customizeMenu.testMenu_BackgroundPreviewApplied = function() {

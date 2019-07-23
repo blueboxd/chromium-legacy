@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "ios/web/init/web_main_loop.h"
 #include "ios/web/public/init/ios_global_state.h"
-#include "ios/web/public/url_schemes.h"
+#include "ios/web/public/navigation/url_schemes.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/web_thread_impl.h"
 #include "mojo/core/embedder/embedder.h"

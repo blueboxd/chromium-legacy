@@ -83,7 +83,8 @@ class CastRenderer : public ::media::Renderer,
   void OnError(::media::PipelineStatus status);
   void OnEnded(Stream stream);
   void OnStatisticsUpdate(const ::media::PipelineStatistics& stats);
-  void OnBufferingStateChange(::media::BufferingState state);
+  void OnBufferingStateChange(::media::BufferingState state,
+                              ::media::BufferingStateChangeReason reason);
   void OnWaiting(::media::WaitingReason reason);
   void OnVideoNaturalSizeChange(const gfx::Size& size);
   void OnVideoOpacityChange(bool opaque);

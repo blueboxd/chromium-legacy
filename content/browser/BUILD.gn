@@ -188,7 +188,6 @@ jumbo_source_set("browser") {
     "//services/video_capture/public/mojom:constants",
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
-    "//services/viz/public/cpp:manifest",
     "//services/viz/public/cpp/gpu",
     "//services/viz/public/interfaces",
     "//skia",
@@ -1919,6 +1918,10 @@ jumbo_source_set("browser") {
     "web_contents/web_drag_dest_mac.mm",
     "web_contents/web_drag_utils_win.cc",
     "web_contents/web_drag_utils_win.h",
+    "web_package/bundled_exchanges_factory.cc",
+    "web_package/bundled_exchanges_factory.h",
+    "web_package/bundled_exchanges_source.cc",
+    "web_package/bundled_exchanges_source.h",
     "web_package/prefetched_signed_exchange_cache.cc",
     "web_package/prefetched_signed_exchange_cache.h",
     "web_package/prefetched_signed_exchange_cache_adapter.cc",
@@ -2492,6 +2495,12 @@ jumbo_source_set("browser") {
       "ENABLE_SCREEN_CAPTURE=1",
     ]
     libs += [ "jnigraphics" ]
+
+    # TODO(crbug.com/986346): this define should not be required once debug URL
+    # triggering has been generalized.
+    if (!notouch_build) {
+      defines += [ "ENABLE_ADDRESS_BAR" ]
+    }
   } else {
     # Not Android.
     sources += [

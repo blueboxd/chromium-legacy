@@ -512,7 +512,7 @@ bool ClientBase::Init(const InitParams& params) {
     uint32_t queue_family_index = UINT32_MAX;
     vk_device_ = CreateVkDevice(vk_instance_->get(), &queue_family_index);
     CHECK(gpu::GetVulkanFunctionPointers()->BindDeviceFunctionPointers(
-        vk_device_->get(), true));
+        vk_device_->get(), VK_VERSION_1_0, gfx::ExtensionSet()));
     vk_render_pass_ = CreateVkRenderPass(vk_device_->get());
 
     vkGetDeviceQueue(vk_device_->get(), queue_family_index, 0, &vk_queue_);

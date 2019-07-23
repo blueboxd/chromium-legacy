@@ -944,7 +944,7 @@ base::Optional<std::string> ContentBrowserClient::GetOriginPolicyErrorPage(
   return base::nullopt;
 }
 
-bool ContentBrowserClient::CanIgnoreCertificateErrorIfNeeded() {
+bool ContentBrowserClient::CanAcceptUntrustedExchangesIfNeeded() {
   return false;
 }
 

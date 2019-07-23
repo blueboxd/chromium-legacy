@@ -3400,6 +3400,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/common/url_icon_source.h",
       "app_list/search/extension_app_result.cc",
       "app_list/search/extension_app_result.h",
+      "app_list/search/logging/search_ranking_event_logger.cc",
+      "app_list/search/logging/search_ranking_event_logger.h",
       "app_list/search/mixer.cc",
       "app_list/search/mixer.h",
       "app_list/search/omnibox_provider.cc",

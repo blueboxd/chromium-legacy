@@ -457,6 +457,10 @@ void AppListControllerImpl::ShowAppList() {
   presenter_.Show(GetDisplayIdToShowAppListOn(), base::TimeTicks());
 }
 
+aura::Window* AppListControllerImpl::GetWindow() {
+  return presenter_.GetWindow();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // app_list::AppListModelObserver:
 
@@ -779,14 +783,6 @@ AppListControllerImpl::GetOptionalAnimationDuration() {
     return base::TimeDelta::Min();
   }
   return base::nullopt;
-}
-
-bool AppListControllerImpl::ShouldShowShelfOnHomeScreen() const {
-  return true;
-}
-
-bool AppListControllerImpl::ShouldShowStatusAreaOnHomeScreen() const {
-  return true;
 }
 
 void AppListControllerImpl::Back() {
@@ -1163,6 +1159,17 @@ void AppListControllerImpl::OnSearchResultVisibilityChanged(
     bool visibility) {
   if (client_)
     client_->OnSearchResultVisibilityChanged(id, visibility);
+}
+
+void AppListControllerImpl::NotifySearchResultsForLogging(
+    const base::string16& raw_query,
+    const ash::SearchResultIdWithPositionIndices& results,
+    int position_index) {
+  if (client_) {
+    base::string16 query;
+    base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
+    client_->NotifySearchResultsForLogging(query, results, position_index);
+  }
 }
 
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {

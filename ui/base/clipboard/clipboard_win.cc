@@ -453,7 +453,7 @@ SkBitmap ClipboardWin::ReadImage(ClipboardType type) const {
                           false, 0, &dst_bits);
 
   {
-    base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
+    base::win::ScopedCreateDC hdc(CreateCompatibleDC(nullptr));
     HBITMAP old_hbitmap =
         static_cast<HBITMAP>(SelectObject(hdc.Get(), dst_hbitmap));
     ::SetDIBitsToDevice(hdc.Get(), 0, 0, bitmap->bmiHeader.biWidth,
@@ -565,9 +565,8 @@ void ClipboardWin::WriteObjects(ClipboardType type, const ObjectMap& objects) {
 
   ::EmptyClipboard();
 
-  for (ObjectMap::const_iterator iter = objects.begin(); iter != objects.end();
-       ++iter) {
-    DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
+  for (const auto& object : objects) {
+    DispatchObject(static_cast<ObjectType>(object.first), object.second);
   }
 }
 
@@ -616,14 +615,14 @@ void ClipboardWin::WriteBookmark(const char* title_data,
 }
 
 void ClipboardWin::WriteWebSmartPaste() {
-  DCHECK(clipboard_owner_->hwnd() != NULL);
+  DCHECK(clipboard_owner_->hwnd() != nullptr);
   ::SetClipboardData(
       ClipboardFormatType::GetWebKitSmartPasteType().ToFormatEtc().cfFormat,
-      NULL);
+      nullptr);
 }
 
 void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
-  HDC dc = ::GetDC(NULL);
+  HDC dc = ::GetDC(nullptr);
 
   SkBitmap bitmap;
   // Either points bitmap at in_bitmap, or allocates and converts pixels.
@@ -651,7 +650,7 @@ void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
   // https://docs.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-createdibsection)
   void* bits;
   HBITMAP source_hbitmap =
-      ::CreateDIBSection(dc, &bm_info, DIB_RGB_COLORS, &bits, NULL, 0);
+      ::CreateDIBSection(dc, &bm_info, DIB_RGB_COLORS, &bits, nullptr, 0);
 
   if (bits && source_hbitmap) {
     // Copy the bitmap out of shared memory and into GDI
@@ -663,7 +662,7 @@ void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
   }
 
   ::DeleteObject(source_hbitmap);
-  ::ReleaseDC(NULL, dc);
+  ::ReleaseDC(nullptr, dc);
 }
 
 void ClipboardWin::WriteData(const ClipboardFormatType& format,
@@ -686,9 +685,9 @@ void ClipboardWin::WriteBitmapFromHandle(HBITMAP source_hbitmap,
   // For this reason, we create a new bitmap, copy the bits over, and then
   // write that to the clipboard.
 
-  HDC dc = ::GetDC(NULL);
-  HDC compatible_dc = ::CreateCompatibleDC(NULL);
-  HDC source_dc = ::CreateCompatibleDC(NULL);
+  HDC dc = ::GetDC(nullptr);
+  HDC compatible_dc = ::CreateCompatibleDC(nullptr);
+  HDC source_dc = ::CreateCompatibleDC(nullptr);
 
   // This is the HBITMAP we will eventually write to the clipboard
   HBITMAP hbitmap = ::CreateCompatibleBitmap(dc, size.width(), size.height());
@@ -696,7 +695,7 @@ void ClipboardWin::WriteBitmapFromHandle(HBITMAP source_hbitmap,
     // Failed to create the bitmap
     ::DeleteDC(compatible_dc);
     ::DeleteDC(source_dc);
-    ::ReleaseDC(NULL, dc);
+    ::ReleaseDC(nullptr, dc);
     return;
   }
 
@@ -724,13 +723,13 @@ void ClipboardWin::WriteBitmapFromHandle(HBITMAP source_hbitmap,
   ::DeleteObject(old_source);
   ::DeleteDC(compatible_dc);
   ::DeleteDC(source_dc);
-  ::ReleaseDC(NULL, dc);
+  ::ReleaseDC(nullptr, dc);
 
   WriteToClipboard(CF_BITMAP, hbitmap);
 }
 
 void ClipboardWin::WriteToClipboard(unsigned int format, HANDLE handle) {
-  DCHECK(clipboard_owner_->hwnd() != NULL);
+  DCHECK(clipboard_owner_->hwnd() != nullptr);
   if (handle && !::SetClipboardData(format, handle)) {
     DCHECK(ERROR_CLIPBOARD_NOT_OPEN != GetLastError());
     FreeData(format, handle);
@@ -739,9 +738,9 @@ void ClipboardWin::WriteToClipboard(unsigned int format, HANDLE handle) {
 
 HWND ClipboardWin::GetClipboardWindow() const {
   if (!clipboard_owner_)
-    return NULL;
+    return nullptr;
 
-  if (clipboard_owner_->hwnd() == NULL)
+  if (clipboard_owner_->hwnd() == nullptr)
     clipboard_owner_->Create(base::Bind(&ClipboardOwnerWndProc));
 
   return clipboard_owner_->hwnd();

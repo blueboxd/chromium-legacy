@@ -348,17 +348,12 @@ int SSLConnectJob::DoSSLConnect() {
   ssl_negotiation_started_ = true;
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
-  // TODO(mmenke): Consider moving this up to the socket pool layer, after
-  // giving socket pools knowledge of privacy mode.
-  const SSLClientSocketContext& context =
-      params_->privacy_mode() == PRIVACY_MODE_ENABLED
-          ? ssl_client_socket_context_privacy_mode()
-          : ssl_client_socket_context();
-
   SSLConfig ssl_config = params_->ssl_config();
   ssl_config.network_isolation_key = params_->network_isolation_key();
+  ssl_config.privacy_mode = params_->privacy_mode();
   ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
-      std::move(nested_socket_), params_->host_and_port(), ssl_config, context);
+      std::move(nested_socket_), params_->host_and_port(), ssl_config,
+      ssl_client_socket_context());
   nested_connect_job_.reset();
   return ssl_socket_->Connect(callback_);
 }

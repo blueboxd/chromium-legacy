@@ -45,8 +45,9 @@ class RendererImpl::RendererClientInternal final : public RendererClient {
   void OnStatisticsUpdate(const PipelineStatistics& stats) override {
     renderer_->OnStatisticsUpdate(stats);
   }
-  void OnBufferingStateChange(BufferingState state) override {
-    renderer_->OnBufferingStateChange(type_, state);
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) override {
+    renderer_->OnBufferingStateChange(type_, state, reason);
   }
   void OnWaiting(WaitingReason reason) override {
     renderer_->OnWaiting(reason);
@@ -666,7 +667,8 @@ void RendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
 }
 
 void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
-                                          BufferingState new_buffering_state) {
+                                          BufferingState new_buffering_state,
+                                          BufferingStateChangeReason reason) {
   DCHECK((type == DemuxerStream::AUDIO) || (type == DemuxerStream::VIDEO));
   BufferingState* buffering_state = type == DemuxerStream::AUDIO
                                         ? &audio_buffering_state_
@@ -675,11 +677,11 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
   const auto* type_string = DemuxerStream::GetTypeName(type);
   DVLOG(1) << __func__ << " " << type_string << " "
            << MediaLog::BufferingStateToString(*buffering_state) << " -> "
-           << MediaLog::BufferingStateToString(new_buffering_state);
+           << MediaLog::BufferingStateToString(new_buffering_state, reason);
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT2("media", "RendererImpl::OnBufferingStateChange", "type",
                type_string, "state",
-               MediaLog::BufferingStateToString(new_buffering_state));
+               MediaLog::BufferingStateToString(new_buffering_state, reason));
 
   bool was_waiting_for_enough_data = WaitingForEnoughData();
 
@@ -707,7 +709,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
       DVLOG(4) << __func__ << " Deferring HAVE_NOTHING for video stream.";
       deferred_video_underflow_cb_.Reset(
           base::Bind(&RendererImpl::OnBufferingStateChange, weak_this_, type,
-                     new_buffering_state));
+                     new_buffering_state, reason));
       task_runner_->PostDelayedTask(FROM_HERE,
                                     deferred_video_underflow_cb_.callback(),
                                     video_underflow_threshold_);
@@ -737,7 +739,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
   // Renderer underflowed.
   if (!was_waiting_for_enough_data && WaitingForEnoughData()) {
     PausePlayback();
-    client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
+    client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING, reason);
     return;
   }
 
@@ -748,7 +750,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
     // a StartPlayback to be called while the audio renderer is being flushed.
     if (!pending_audio_track_change_ && !pending_video_track_change_) {
       StartPlayback();
-      client_->OnBufferingStateChange(BUFFERING_HAVE_ENOUGH);
+      client_->OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, reason);
       return;
     }
   }

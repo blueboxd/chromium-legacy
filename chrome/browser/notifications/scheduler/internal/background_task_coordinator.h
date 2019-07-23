@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/scheduler/public/notification_scheduler_types.h"
 
@@ -30,9 +31,13 @@ class BackgroundTaskCoordinator {
   using Notifications =
       std::map<SchedulerClientType, std::vector<const NotificationEntry*>>;
   using ClientStates = std::map<SchedulerClientType, const ClientState*>;
+  using TimeRandomizer = base::RepeatingCallback<base::TimeDelta()>;
+  static base::TimeDelta DefaultTimeRandomizer(
+      const base::TimeDelta& time_window);
   BackgroundTaskCoordinator(
       std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
       const SchedulerConfig* config,
+      TimeRandomizer time_randomizer,
       base::Clock* clock);
   virtual ~BackgroundTaskCoordinator();
 
@@ -47,6 +52,10 @@ class BackgroundTaskCoordinator {
 
   // System configuration.
   const SchedulerConfig* config_;
+
+  // Randomize the time to show the notification, to avoid large number of users
+  // to perform actions at the same time.
+  TimeRandomizer time_randomizer_;
 
   // Clock to query the current timestamp.
   base::Clock* clock_;

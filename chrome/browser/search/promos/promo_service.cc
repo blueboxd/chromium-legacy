@@ -130,6 +130,8 @@ void PromoService::Refresh() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetApiUrl();
   resource_request->allow_credentials = false;
+  resource_request->request_initiator =
+      url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 
   simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                     traffic_annotation);

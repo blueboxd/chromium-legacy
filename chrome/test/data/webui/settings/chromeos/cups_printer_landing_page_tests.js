@@ -190,10 +190,10 @@ suite('CupsSavedPrintersTests', function() {
 
   setup(function() {
     printerList = [
+      createCupsPrinterInfo('google', '4', 'id4'),
       createCupsPrinterInfo('test1', '1', 'id1'),
       createCupsPrinterInfo('test2', '2', 'id2'),
       createCupsPrinterInfo('test3', '3', 'id3'),
-      createCupsPrinterInfo('google', '4', 'id4'),
     ];
 
     cupsPrintersBrowserProxy =
@@ -410,7 +410,7 @@ suite('CupsNearbyPrintersTests', function() {
     ];
     const discoveredPrinterList = [
       createCupsPrinterInfo('test3', '3', 'id3'),
-      createCupsPrinterInfo('google', '4', 'id4'),
+      createCupsPrinterInfo('test4', '4', 'id4'),
     ];
 
     return cupsPrintersBrowserProxy.whenCalled('startDiscoveringPrinters')

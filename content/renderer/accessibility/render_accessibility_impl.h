@@ -30,6 +30,7 @@ class WebDocument;
 
 namespace ui {
 struct AXActionData;
+class AXActionTarget;
 struct AXEvent;
 }
 
@@ -84,7 +85,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void DidCreateNewDocument() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
-  void AccessibilityModeChanged() override;
+  void AccessibilityModeChanged(const ui::AXMode& mode) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::mojom::RendererPreferenceObserver implementation.
@@ -144,8 +145,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnHitTest(const gfx::Point& point,
                  ax::mojom::Event event_to_fire,
                  int action_request_id);
-  void OnLoadInlineTextBoxes(const blink::WebAXObject& obj);
-  void OnGetImageData(const blink::WebAXObject& obj, const gfx::Size& max_size);
+  void OnLoadInlineTextBoxes(const ui::AXActionTarget* target);
+  void OnGetImageData(const ui::AXActionTarget* target,
+                      const gfx::Size& max_size);
   void AddPluginTreeToUpdate(AXContentTreeUpdate* update,
                              bool invalidate_plugin_subtree);
 
@@ -161,7 +163,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // Marks all AXObjects with the given role in the current tree dirty.
   void MarkAllAXObjectsDirty(ax::mojom::Role role);
 
-  void Scroll(const blink::WebAXObject& target,
+  void Scroll(const ui::AXActionTarget* target,
               ax::mojom::Action scroll_action);
   void ScrollPlugin(int id_to_make_visible);
   void ScheduleSendAccessibilityEventsIfNeeded();

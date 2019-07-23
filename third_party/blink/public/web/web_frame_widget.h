@@ -64,6 +64,11 @@ class WebFrameWidget : public WebWidget {
   // WebWidget implementation.
   bool IsWebFrameWidget() const final { return true; }
 
+  // Called when the root LocalFrame of this WebFrameWidget (and implicitly its
+  // subtree) are being detached. The frame pointer and the WebWidgetClient are
+  // still valid while this is called, for them to be used for any cleanup.
+  virtual void DidDetachLocalFrameTree() = 0;
+
   // Current instance of the active WebInputMethodController, that is, the
   // WebInputMethodController corresponding to (and owned by) the focused
   // WebLocalFrameImpl. It will return nullptr when there are no focused

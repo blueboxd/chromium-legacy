@@ -224,6 +224,8 @@ void VideoRendererImpl::Initialize(
   DCHECK(!was_background_rendering_);
   DCHECK(!time_progressing_);
 
+  demuxer_stream_ = stream;
+
   video_decoder_stream_.reset(new VideoDecoderStream(
       std::make_unique<VideoDecoderStream::StreamTraits>(media_log_),
       task_runner_, create_video_decoders_cb_, media_log_));
@@ -236,7 +238,7 @@ void VideoRendererImpl::Initialize(
         base::Unretained(gpu_memory_buffer_pool_.get())));
   }
 
-  low_delay_ = ShouldUseLowDelayMode(stream);
+  low_delay_ = ShouldUseLowDelayMode(demuxer_stream_);
 
   UMA_HISTOGRAM_BOOLEAN("Media.VideoRenderer.LowDelay", low_delay_);
   if (low_delay_)
@@ -250,11 +252,11 @@ void VideoRendererImpl::Initialize(
   wall_clock_time_cb_ = wall_clock_time_cb;
   state_ = kInitializing;
 
-  current_decoder_config_ = stream->video_decoder_config();
+  current_decoder_config_ = demuxer_stream_->video_decoder_config();
   DCHECK(current_decoder_config_.IsValidConfig());
 
   video_decoder_stream_->Initialize(
-      stream,
+      demuxer_stream_,
       base::BindOnce(&VideoRendererImpl::OnVideoDecoderStreamInitialized,
                      weak_factory_.GetWeakPtr()),
       cdm_context,
@@ -387,11 +389,21 @@ void VideoRendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
+void VideoRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // "Underflow" is only possible when playing. This avoids noise like blaming
+  // the decoder for an "underflow" that is really just a seek.
+  BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
+  if (state_ == kPlaying && buffering_state == BUFFERING_HAVE_NOTHING) {
+    reason = demuxer_stream_->IsReadPending() ? DEMUXER_UNDERFLOW
+                                              : DECODER_UNDERFLOW;
+  }
+
   media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
-      "video_buffering_state", state));
-  client_->OnBufferingStateChange(state);
+      "video_buffering_state", buffering_state, reason));
+
+  client_->OnBufferingStateChange(buffering_state, reason);
 }
 
 void VideoRendererImpl::OnWaiting(WaitingReason reason) {

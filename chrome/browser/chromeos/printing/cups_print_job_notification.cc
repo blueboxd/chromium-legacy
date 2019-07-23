@@ -187,7 +187,7 @@ void CupsPrintJobNotification::UpdateNotificationTitle() {
           base::UTF8ToUTF16(print_job_->document_title()));
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
-    case CupsPrintJob::State::STATE_ERROR:
+    case CupsPrintJob::State::STATE_FAILED:
       title = l10n_util::GetStringFUTF16(
           IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE,
           base::UTF8ToUTF16(print_job_->document_title()));
@@ -215,7 +215,7 @@ void CupsPrintJobNotification::UpdateNotificationIcon() {
       notification_->set_vector_small_image(kNotificationPrintingDoneIcon);
       break;
     case CupsPrintJob::State::STATE_CANCELLED:
-    case CupsPrintJob::State::STATE_ERROR:
+    case CupsPrintJob::State::STATE_FAILED:
       notification_->set_accent_color(ash::kSystemNotificationColorWarning);
       notification_->set_vector_small_image(kNotificationPrintingWarningIcon);
       break;
@@ -256,7 +256,7 @@ void CupsPrintJobNotification::UpdateNotificationType() {
       break;
     case CupsPrintJob::State::STATE_NONE:
     case CupsPrintJob::State::STATE_DOCUMENT_DONE:
-    case CupsPrintJob::State::STATE_ERROR:
+    case CupsPrintJob::State::STATE_FAILED:
     case CupsPrintJob::State::STATE_CANCELLED:
       notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
       break;
@@ -282,8 +282,6 @@ CupsPrintJobNotification::GetButtonCommands() const {
   std::vector<CupsPrintJobNotification::ButtonCommand> commands;
   switch (print_job_->state()) {
     case CupsPrintJob::State::STATE_WAITING:
-      commands.push_back(ButtonCommand::CANCEL_PRINTING);
-      break;
     case CupsPrintJob::State::STATE_STARTED:
     case CupsPrintJob::State::STATE_PAGE_DONE:
     case CupsPrintJob::State::STATE_RESUMED:
@@ -291,7 +289,7 @@ CupsPrintJobNotification::GetButtonCommands() const {
       // TODO(crbug.com/679927): Add PAUSE and RESUME buttons.
       commands.push_back(ButtonCommand::CANCEL_PRINTING);
       break;
-    case CupsPrintJob::State::STATE_ERROR:
+    case CupsPrintJob::State::STATE_FAILED:
     case CupsPrintJob::State::STATE_CANCELLED:
       commands.push_back(ButtonCommand::GET_HELP);
       break;

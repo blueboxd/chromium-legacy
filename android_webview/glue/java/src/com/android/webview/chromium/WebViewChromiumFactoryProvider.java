@@ -51,7 +51,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
-import org.chromium.base.process_launcher.ChildProcessService;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
 
@@ -384,14 +383,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     public static boolean preloadInZygote() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
-            // If we're on O, where the split APK handling bug exists, then go through the motions
-            // of applying the workaround - don't actually change anything if Chrome is an APK (as
-            // opposed to an app bundle), but do the reflection to check for compatibility issues.
-            // The result will be logged to UMA later, because we can't do very much in the
-            // restricted environment of the WebView zygote process.
-            ChildProcessService.setSplitApkWorkaroundResult(
-                    SplitApkWorkaround.apply(/* realRun */ BundleUtils.isBundle()));
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.P && BundleUtils.isBundle()) {
+            // Apply workaround if we're a bundle on O, where the split APK handling bug exists.
+            SplitApkWorkaround.apply();
         }
 
         for (String library : NativeLibraries.LIBRARIES) {

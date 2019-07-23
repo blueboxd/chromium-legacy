@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_consumer.h"
@@ -243,10 +242,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self updateEncryptionItem:NO];
 
   // GoogleActivityControlsItemType.
-  SettingsMultilineDetailItem* googleActivityControlsItem =
-      [[SettingsMultilineDetailItem alloc]
-          initWithType:GoogleActivityControlsItemType];
-  googleActivityControlsItem.text =
+  TableViewImageItem* googleActivityControlsItem =
+      [[TableViewImageItem alloc] initWithType:GoogleActivityControlsItemType];
+  googleActivityControlsItem.title =
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
   googleActivityControlsItem.detailText =
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION);
@@ -254,9 +252,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 
   // AdvancedSettingsSectionIdentifier.
-  SettingsMultilineDetailItem* dataFromChromeSyncItem =
-      [[SettingsMultilineDetailItem alloc] initWithType:DataFromChromeSync];
-  dataFromChromeSyncItem.text =
+  TableViewImageItem* dataFromChromeSyncItem =
+      [[TableViewImageItem alloc] initWithType:DataFromChromeSync];
+  dataFromChromeSyncItem.title =
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
   dataFromChromeSyncItem.detailText =
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);

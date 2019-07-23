@@ -19,6 +19,7 @@
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/web_package/bundled_exchanges_factory.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/navigation_params.h"
@@ -939,6 +940,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // performed.
   // TODO(clamy): Revisit the unit test architecture.
   ThrottleChecksFinishedCallback complete_callback_for_testing_;
+
+  // The factory to handle the BundledExchanges that's bound to this request.
+  // Used to navigate to the main resource URL of the BundledExchanges, and
+  // load it from the corresponding entry.
+  std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

@@ -15,7 +15,8 @@ CryptAuthDeviceSyncer::CryptAuthDeviceSyncer() = default;
 CryptAuthDeviceSyncer::~CryptAuthDeviceSyncer() = default;
 
 void CryptAuthDeviceSyncer::Sync(
-    const cryptauthv2::RequestContext& request_context,
+    const cryptauthv2::ClientMetadata& client_metadata,
+    const cryptauthv2::ClientAppMetadata& client_app_metadata,
     DeviceSyncAttemptFinishedCallback callback) {
   // Enforce that Sync() can only be called once.
   DCHECK(!was_sync_called_);
@@ -23,7 +24,7 @@ void CryptAuthDeviceSyncer::Sync(
 
   callback_ = std::move(callback);
 
-  OnAttemptStarted(request_context);
+  OnAttemptStarted(client_metadata, client_app_metadata);
 }
 
 void CryptAuthDeviceSyncer::OnAttemptFinished(

@@ -10,8 +10,13 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/resource_request_info.h"
+
+namespace content_settings {
+class CookieSettings;
+}
 
 namespace net {
 class HttpResponseHeaders;
@@ -19,7 +24,6 @@ class URLRequest;
 }
 
 class GURL;
-class ProfileIOData;
 
 // Utility functions for handling Chrome/Gaia headers during signin process.
 // Chrome identity should always stay in sync with Gaia identity. Therefore
@@ -77,13 +81,24 @@ class ResponseAdapter {
 void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms);
 
 // Adds an account consistency header to Gaia requests from a connected profile,
-// with the exception of requests from gaia webview. Must be called on IO
-// thread.
+// with the exception of requests from gaia webview.
 // Returns true if the account consistency header was added to the request.
 // Removes the header if it is already in the headers but should not be there.
-void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
-                                        const GURL& redirect_url,
-                                        ProfileIOData* io_data);
+void FixAccountConsistencyRequestHeader(
+    ChromeRequestAdapter* request,
+    const GURL& redirect_url,
+    bool is_off_the_record,
+    int incognito_availibility,
+    AccountConsistencyMethod account_consistency,
+    std::string primary_account_id,
+#if defined(OS_CHROMEOS)
+    bool account_consistency_mirror_required,
+#endif
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+    bool is_sync_enabled,
+    std::string signin_scoped_device_id,
+#endif
+    content_settings::CookieSettings* cookie_settings);
 
 // Processes account consistency response headers (X-Chrome-Manage-Accounts and
 // Dice). |redirect_url| is empty if the request is not a redirect.

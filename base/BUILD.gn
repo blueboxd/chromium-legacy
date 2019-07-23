@@ -419,8 +419,6 @@ jumbo_component("base") {
     "memory/memory_pressure_monitor_chromeos.h",
     "memory/memory_pressure_monitor_mac.cc",
     "memory/memory_pressure_monitor_mac.h",
-    "memory/memory_pressure_monitor_notifying_chromeos.cc",
-    "memory/memory_pressure_monitor_notifying_chromeos.h",
     "memory/memory_pressure_monitor_win.cc",
     "memory/memory_pressure_monitor_win.h",
     "memory/platform_shared_memory_region.cc",
@@ -1821,6 +1819,8 @@ jumbo_component("base") {
       "CoreFoundation.framework",
       "IOKit.framework",
       "OpenDirectory.framework",
+      "pmenergy",
+      "pmsample",
       "Security.framework",
     ]
   }
@@ -2553,7 +2553,6 @@ test("base_unittests") {
     "memory/memory_pressure_listener_unittest.cc",
     "memory/memory_pressure_monitor_chromeos_unittest.cc",
     "memory/memory_pressure_monitor_mac_unittest.cc",
-    "memory/memory_pressure_monitor_notifying_chromeos_unittest.cc",
     "memory/memory_pressure_monitor_unittest.cc",
     "memory/memory_pressure_monitor_win_unittest.cc",
     "memory/platform_shared_memory_region_unittest.cc",

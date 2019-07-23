@@ -30,7 +30,6 @@ if (closure_compile) {
         "settings:closure_compile",
         "signin/sync_confirmation:closure_compile",
         "user_manager:closure_compile",
-        "welcome/dice_welcome:closure_compile",
         "welcome/onboarding_welcome:closure_compile",
       ]
     }

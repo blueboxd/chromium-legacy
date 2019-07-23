@@ -1407,20 +1407,24 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsCantBeDefaultMatch) {
   EXPECT_NE(result.match_at(2)->pedal, nullptr);
   EXPECT_NE(result.match_at(3)->pedal, nullptr);
 
-  // Neither should be allowed to be default match, even though they were both
+  // Neither should be the default match, even though they were both
   // derived from suggestions where the field is set true.
   EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
+  EXPECT_EQ(result.match_at(0)->pedal, nullptr);
   EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
-  EXPECT_FALSE(result.match_at(2)->allowed_to_be_default_match);
-  EXPECT_FALSE(result.match_at(3)->allowed_to_be_default_match);
+  EXPECT_EQ(result.match_at(1)->pedal, nullptr);
+  EXPECT_TRUE(result.match_at(2)->allowed_to_be_default_match);
+  EXPECT_NE(result.match_at(2)->pedal, nullptr);
+  EXPECT_TRUE(result.match_at(3)->allowed_to_be_default_match);
+  EXPECT_NE(result.match_at(3)->pedal, nullptr);
 }
 
 TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
   TestData data[] = {
-      {1, 1, 500, true},
-      {0, 1, 1100, true},
+      {1, 1, 500, false},
+      {0, 1, 1100, false},
       {2, 1, 1000, true},
-      {0, 1, 1200, true},
+      {0, 1, 1200, false},
   };
 
   ACMatches matches;
@@ -1437,6 +1441,8 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
 
   FakeAutocompleteProviderClient client;
   result.AppendDedicatedPedalMatches(&client, input);
+  result.SortAndDedupMatches(metrics::OmniboxEventProto::OTHER,
+                             &result.matches_);
 
   // Exactly 2 (not 3) unique Pedals should be added with relevance close to max
   // of the triggering suggestions.
@@ -1444,16 +1450,33 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
   EXPECT_NE(result.match_at(4)->pedal, nullptr);
   EXPECT_NE(result.match_at(5)->pedal, nullptr);
   EXPECT_NE(result.match_at(4)->pedal, result.match_at(5)->pedal);
-  EXPECT_EQ(result.match_at(4)->relevance, 999);
-  EXPECT_EQ(result.match_at(5)->relevance, 1099);
+  EXPECT_EQ(result.match_at(4)->relevance, 1100);
+  EXPECT_EQ(result.match_at(5)->relevance, 1000);
 
   // Now artificially modify existing suggestions and run again to ensure that
   // no duplicates are added, but the existing Pedal suggestion is updated.
   result.match_at(3)->contents = base::UTF8ToUTF16("open incognito tab");
   result.AppendDedicatedPedalMatches(&client, input);
+  result.SortAndDedupMatches(metrics::OmniboxEventProto::OTHER,
+                             &result.matches_);
   EXPECT_EQ(result.size(), 6u);
   EXPECT_NE(result.match_at(4)->pedal, nullptr);
   EXPECT_NE(result.match_at(5)->pedal, nullptr);
   EXPECT_NE(result.match_at(4)->pedal, result.match_at(5)->pedal);
-  EXPECT_EQ(result.match_at(5)->relevance, 1199);
+  EXPECT_EQ(result.match_at(5)->relevance, 1200);
+
+  // Finally run a real final sort to make sure default match and its
+  // pedal get promoted.
+  result.SortAndCull(input, template_url_service_.get());
+  EXPECT_EQ(result.size(), 5u);
+  EXPECT_EQ(result.match_at(0)->relevance, 1000);
+  EXPECT_EQ(result.match_at(0)->pedal, nullptr);
+  EXPECT_EQ(result.match_at(1)->relevance, 1000);
+  EXPECT_NE(result.match_at(1)->pedal, nullptr);
+  EXPECT_EQ(result.match_at(2)->relevance, 1200);
+  EXPECT_EQ(result.match_at(2)->pedal, nullptr);
+  EXPECT_EQ(result.match_at(3)->relevance, 1200);
+  EXPECT_NE(result.match_at(3)->pedal, nullptr);
+  EXPECT_EQ(result.match_at(4)->relevance, 500);
+  EXPECT_EQ(result.match_at(4)->pedal, nullptr);
 }

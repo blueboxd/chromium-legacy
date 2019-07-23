@@ -82,7 +82,9 @@ if [[ ! -z "${new}${deleted}" ]]; then
   echo
 fi
 
-# TODO css_strip_prefixes.py
+echo 'Stripping unnecessary prefixed CSS rules...'
+python ../v1_0/css_strip_prefixes.py --file_extension=js
+
 # TODO rgbify_hex_vars.py
 # TODO create components summary
 # TODO generate gn

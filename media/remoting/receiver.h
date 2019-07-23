@@ -34,7 +34,8 @@ class Receiver final : public RendererClient {
   void OnError(PipelineStatus status) override;
   void OnEnded() override;
   void OnStatisticsUpdate(const PipelineStatistics& stats) override;
-  void OnBufferingStateChange(BufferingState state) override;
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) override;
   void OnWaiting(WaitingReason reason) override;
   void OnAudioConfigChange(const AudioDecoderConfig& config) override;
   void OnVideoConfigChange(const VideoDecoderConfig& config) override;

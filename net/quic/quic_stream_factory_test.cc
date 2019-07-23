@@ -16,6 +16,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
+#include "net/base/load_flags.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -45,6 +46,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
@@ -70,26 +72,6 @@
 using std::string;
 
 namespace net {
-
-namespace {
-
-class MockSSLConfigService : public SSLConfigService {
- public:
-  MockSSLConfigService() {}
-  ~MockSSLConfigService() override {}
-
-  void GetSSLConfig(SSLConfig* config) override { *config = config_; }
-
-  bool CanShareConnectionWithClientCerts(
-      const std::string& hostname) const override {
-    return false;
-  }
-
- private:
-  SSLConfig config_;
-};
-
-}  // namespace
 
 namespace test {
 
@@ -231,7 +213,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   QuicStreamFactoryTestBase(quic::ParsedQuicVersion version,
                             bool client_headers_include_h2_stream_dependency)
       : host_resolver_(new MockHostResolver),
-        ssl_config_service_(new MockSSLConfigService),
+        ssl_config_service_(new SSLConfigServiceDefaults),
         socket_factory_(new MockClientSocketFactory),
         random_generator_(0),
         runner_(new TestTaskRunner(&clock_)),

@@ -197,6 +197,41 @@ the triage link for the problematic image.
 
 [skia crbug]: https://bugs.chromium.org/p/skia
 
+## Running Locally
+
+Normally, `goldctl` uploads images and image metadata to the Gold server when
+used. This is not desirable when running locally for a couple reasons:
+
+1. Uploading requires the user to be whitelisted on the server, and whitelisting
+everyone who wants to run the tests locally is not a viable solution.
+2. Images produced during local runs are usually slightly different from those
+that are produced on the bots due to hardware/software differences. Thus, most
+images uploaded to Gold from local runs would likely only ever actually be used
+by tests run on the machine that initially generated those images, which just
+adds noise to the list of approved images.
+
+Additionally, the tests normally rely on the Gold server for viewing images
+produced by a test run. This does not work if the data is not actually uploaded.
+
+In order to get around both of these issues, simply pass the `--local-run` flag
+to the tests. This will disable uploading, but otherwise go through the same
+steps as a test normally would. Each test will also print out a `file://` URL to
+the image it produces.
+
+Because the image produced by the test locally is likely slightly different from
+any of the approved images in Gold, local test runs are likely to fail during
+the comparison step. In order to cut down on the amount of noise, you can also
+pass the `--no-skia-gold-failure` flag to not fail the test on a failed image
+comparison.
+
+Example usage:
+`run_gpu_integration_test.py pixel --download-refimg-from-cloud-storage
+--use-skia-gold --no-skia-gold-failure --build-revision aabbccdd
+--test-machine-name local`
+
+The `--download-refimg-from-cloud-storage` is a temporary hold-over from the
+legacy pixel tests, and will be removed in the near future.
+
 ## Working On Gold
 
 ### Modifying Gold And goldctl

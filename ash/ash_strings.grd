@@ -1972,11 +1972,17 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK" desc="The button to trigger media playback to go to the previous track.">
         Previous Track
       </message>
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD" desc="The button to trigger media playback to seek backward a few seconds.">
+        Seek Backward
+      </message>
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PLAY" desc="The button to trigger media playback to start.">
         Play
       </message>
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PAUSE" desc="The button to trigger media playback to pause.">
         Pause
+      </message>
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD" desc="The button to trigger media playback to seek forward a few seconds.">
+        Seek Forward
       </message>
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK" desc="The button to trigger media playback to go to the next track.">
         Next Track

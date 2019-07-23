@@ -1,32 +1,27 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
-let testName = "Ensure that the framebuffer given by the WebGL layer is opaque";
+let immersiveTestName = "Ensure that the framebuffer given by the WebGL layer" +
+  " is opaque for immersive";
+let nonImmersiveTestName = "Ensure that the framebuffer given by the WebGL layer" +
+  " is opaque for non-immersive";
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes = [
-  'immersive-vr',
-  'inline'
-];
-
 let testFunction =
-  (session, fakeDeviceController, t) => new Promise((resolve, reject) => {
-  // Session must have a baseLayer or frame requests will be ignored.
-  let webglLayer = new XRWebGLLayer(session, gl, {
-      compositionDisabled: session.mode == 'inline' });
-  session.updateRenderState({
-    baseLayer: webglLayer
-  });
-
+  (session, fakeDeviceController, t, sessionObjects) => new Promise((resolve, reject) => {
+  let gl = sessionObjects.gl;
+  let webglLayer = sessionObjects.glLayer;
   let xrFramebuffer = webglLayer.framebuffer;
 
   // Make sure we're starting with a clean error slate.
@@ -119,6 +114,9 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  immersiveTestName, testFunction, fakeDeviceInitParams, 'immersive-vr');
+
+xr_session_promise_test(
+  nonImmersiveTestName, testFunction, fakeDeviceInitParams, 'inline');
 
 </script>

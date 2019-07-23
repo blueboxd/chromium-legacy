@@ -132,14 +132,6 @@ class OnHeapTimerOwner final
   scoped_refptr<Record> record_;
 };
 
-class GCForbiddenScope final {
-  STACK_ALLOCATED();
-
- public:
-  GCForbiddenScope() { ThreadState::Current()->EnterGCForbiddenScope(); }
-  ~GCForbiddenScope() { ThreadState::Current()->LeaveGCForbiddenScope(); }
-};
-
 TEST_F(TimerTest, StartOneShot_Zero) {
   TaskRunnerTimer<TimerTest> timer(GetTaskRunner(), this,
                                    &TimerTest::CountingTask);
@@ -671,7 +663,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
   EXPECT_FALSE(record->OwnerIsDestructed());
 
   {
-    GCForbiddenScope scope;
+    ThreadState::GCForbiddenScope gc_forbidden(ThreadState::Current());
     EXPECT_FALSE(record->TimerHasFired());
     platform_->RunUntilIdle();
     EXPECT_FALSE(record->TimerHasFired());

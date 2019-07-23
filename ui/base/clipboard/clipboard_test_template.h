@@ -645,7 +645,7 @@ TYPED_TEST(ClipboardTest, WebSmartPasteTest) {
 void HtmlTestHelper(const std::string& cf_html,
                     const std::string& expected_html) {
   std::string html;
-  ClipboardUtil::CFHtmlToHtml(cf_html, &html, NULL);
+  ClipboardUtil::CFHtmlToHtml(cf_html, &html, nullptr);
   EXPECT_EQ(html, expected_html);
 }
 

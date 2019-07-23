@@ -18,7 +18,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"

@@ -17,6 +17,24 @@ void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size) {
   doc_size->Enlarge(width_diff, rect_size.height());
 }
 
+PageInsetSizes GetPageInsetsForTwoUpView(
+    size_t page_index,
+    size_t num_of_pages,
+    const PageInsetSizes& single_view_insets,
+    int horizontal_separator) {
+  DCHECK_LT(page_index, num_of_pages);
+
+  // Don't change |two_up_insets| if the page is on the left side and is the
+  // last page. In this case, the shadows on both sides should be the same size.
+  PageInsetSizes two_up_insets = single_view_insets;
+  if (page_index % 2 == 1)
+    two_up_insets.left = horizontal_separator;
+  else if (page_index != num_of_pages - 1)
+    two_up_insets.right = horizontal_separator;
+
+  return two_up_insets;
+}
+
 pp::Rect GetLeftFillRect(const pp::Rect& page_rect,
                          const PageInsetSizes& inset_sizes,
                          int bottom_separator) {

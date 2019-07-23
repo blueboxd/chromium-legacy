@@ -327,7 +327,7 @@ public class FeedAppLifecycleTest {
     public void testDelayedInitNoParam() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         mTestDeferredStartupHandler.runAllTasks();
-        verify(mAppLifecycleListener, times(0)).initialize();
+        verify(mAppLifecycleListener, times(1)).initialize();
     }
 
     @Test
@@ -367,7 +367,7 @@ public class FeedAppLifecycleTest {
     testDelayedInitZeroParamNotBoolean() {
         verify(mAppLifecycleListener, times(1)).onEnterForeground();
         mTestDeferredStartupHandler.runAllTasks();
-        verify(mAppLifecycleListener, times(0)).initialize();
+        verify(mAppLifecycleListener, times(1)).initialize();
     }
 
     private void signalActivityStart(Activity activity)

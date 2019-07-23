@@ -194,6 +194,8 @@ class CC_EXPORT FrameSequenceTracker {
                               uint64_t source_id,
                               uint64_t sequence_number);
 
+  bool ShouldIgnoreBeginFrameSource(uint64_t source_id) const;
+
   const FrameSequenceTrackerType type_;
   base::OnceCallback<void(FrameSequenceTracker*)> destroy_callback_;
 

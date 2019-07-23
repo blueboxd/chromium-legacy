@@ -98,13 +98,16 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
     int frame_id,
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceClosure callback) {
+    base::OnceCallback<
+        void(ChromeNativeFileSystemPermissionContext::SensitiveDirectoryResult)>
+        callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(process_id, frame_id);
   if (!rfh || !rfh->IsCurrent()) {
     // Requested from a no longer valid render frame host.
-    std::move(callback).Run();
+    std::move(callback).Run(ChromeNativeFileSystemPermissionContext::
+                                SensitiveDirectoryResult::kAbort);
     return;
   }
 
@@ -112,7 +115,8 @@ void ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread(
       content::WebContents::FromRenderFrameHost(rfh);
   if (!web_contents) {
     // Requested from a worker, or a no longer existing tab.
-    std::move(callback).Run();
+    std::move(callback).Run(ChromeNativeFileSystemPermissionContext::
+                                SensitiveDirectoryResult::kAbort);
     return;
   }
 
@@ -218,13 +222,13 @@ bool ShouldBlockAccessToPath(const base::FilePath& check_path) {
 
 // Returns a callback that calls the passed in |callback| by posting a task to
 // the current sequenced task runner.
-base::OnceCallback<void(PermissionAction result)>
-BindPermissionActionCallbackToCurrentSequence(
-    base::OnceCallback<void(PermissionAction result)> callback) {
+template <typename ResultType>
+base::OnceCallback<void(ResultType result)> BindResultCallbackToCurrentSequence(
+    base::OnceCallback<void(ResultType result)> callback) {
   return base::BindOnce(
       [](scoped_refptr<base::TaskRunner> task_runner,
-         base::OnceCallback<void(PermissionAction result)> callback,
-         PermissionAction result) {
+         base::OnceCallback<void(ResultType result)> callback,
+         ResultType result) {
         task_runner->PostTask(FROM_HERE,
                               base::BindOnce(std::move(callback), result));
       },
@@ -345,7 +349,7 @@ class ChromeNativeFileSystemPermissionContext::PermissionGrantImpl
       return;
     }
 
-    auto result_callback = BindPermissionActionCallbackToCurrentSequence(
+    auto result_callback = BindResultCallbackToCurrentSequence(
         base::BindOnce(&PermissionGrantImpl::OnPermissionRequestComplete, this,
                        std::move(callback)));
 
@@ -672,13 +676,8 @@ void ChromeNativeFileSystemPermissionContext::
     return;
   }
 
-  auto result_callback = base::BindOnce(
-      [](scoped_refptr<base::TaskRunner> task_runner,
-         base::OnceClosure callback) {
-        task_runner->PostTask(FROM_HERE, std::move(callback));
-      },
-      base::SequencedTaskRunnerHandle::Get(),
-      base::BindOnce(std::move(callback), SensitiveDirectoryResult::kTryAgain));
+  auto result_callback =
+      BindResultCallbackToCurrentSequence(std::move(callback));
 
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},

@@ -12,12 +12,9 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_rtp_dump_writer.h"
-#include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -33,11 +30,10 @@ void FireGenericDoneCallback(
     const WebRtcRtpDumpHandler::GenericDoneCallback& callback,
     bool success,
     const std::string& error_message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback.is_null());
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(callback, success, error_message));
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, success, error_message));
 }
 
 bool DumpTypeContainsIncoming(RtpDumpType type) {

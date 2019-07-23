@@ -107,6 +107,7 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
+#include "content/browser/web_package/bundled_exchanges_factory.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
@@ -1655,6 +1656,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   document_interface_broker_content_binding_.Close();
   document_interface_broker_blink_binding_.Close();
   SetLastCommittedUrl(GURL());
+  bundled_exchanges_factory_.reset();
 
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
@@ -4428,7 +4430,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       nullptr /* response_head */, mojo::ScopedDataPipeConsumerHandle(),
       network::mojom::URLLoaderClientEndpointsPtr(), false, base::nullopt,
       base::nullopt /* subresource_overrides */, nullptr /* provider_info */,
-      base::UnguessableToken::Create() /* not traced */);
+      base::UnguessableToken::Create() /* not traced */,
+      nullptr /* bundled_exchanges_factory */);
 }
 
 void RenderFrameHostImpl::Stop() {
@@ -4781,7 +4784,10 @@ void RenderFrameHostImpl::CommitNavigation(
     base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
         subresource_overrides,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
-    const base::UnguessableToken& devtools_navigation_token) {
+    const base::UnguessableToken& devtools_navigation_token,
+    std::unique_ptr<BundledExchangesFactory> bundled_exchanges_factory) {
+  bundled_exchanges_factory_ = std::move(bundled_exchanges_factory);
+
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params.url.possibly_invalid_spec());
@@ -4981,6 +4987,14 @@ void RenderFrameHostImpl::CommitNavigation(
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
+    }
+
+    if (bundled_exchanges_factory_) {
+      mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory(
+          std::move(pending_default_factory));
+      bundled_exchanges_factory_->CreateURLLoaderFactory(
+          pending_default_factory.InitWithNewPipeAndPassReceiver(),
+          std::move(fallback_factory));
     }
 
     DCHECK(pending_default_factory);

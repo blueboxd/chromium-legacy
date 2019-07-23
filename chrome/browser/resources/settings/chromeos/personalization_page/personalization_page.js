@@ -21,6 +21,18 @@ Polymer({
 
     /** @private */
     isWallpaperPolicyControlled_: {type: Boolean, value: true},
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        const map = new Map();
+        if (settings.routes.CHANGE_PICTURE) {
+          map.set(settings.routes.CHANGE_PICTURE.path, '#changePictureRow');
+        }
+        return map;
+      }
+    },
   },
 
   /** @private {?settings.PersonalizationBrowserProxy} */
@@ -51,6 +63,11 @@ Polymer({
    */
   openWallpaperManager_: function() {
     this.browserProxy_.openWallpaperManager();
+  },
+
+  /** @private */
+  navigateToChangePicture_: function() {
+    settings.navigateTo(settings.routes.CHANGE_PICTURE);
   },
 });
 })();

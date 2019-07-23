@@ -16,7 +16,7 @@
 namespace blink {
 
 LayoutNGTableCaption::LayoutNGTableCaption(Element* element)
-    : LayoutNGMixin<LayoutTableCaption>(element) {}
+    : LayoutNGBlockFlowMixin<LayoutTableCaption>(element) {}
 
 void LayoutNGTableCaption::CalculateAndSetMargins(
     const NGConstraintSpace& constraint_space,

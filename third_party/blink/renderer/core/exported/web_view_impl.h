@@ -410,8 +410,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   Node* FindNodeFromScrollableCompositorElementId(
       cc::ElementId element_id) const;
 
-  void DeferMainFrameUpdateForTesting();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
@@ -428,6 +426,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   struct WidgetData;
   WidgetData& AsWidget() { return as_widget_; }
   const WidgetData& AsWidget() const { return as_widget_; }
+
+  // Called while the main LocalFrame is being detached. The MainFrameImpl() and
+  // WebWidgetClient are still valid until after this method is called.
+  void DidDetachLocalMainFrame();
 
   // WebWidget methods:
   void SetLayerTreeView(WebLayerTreeView*, cc::AnimationHost*) override;

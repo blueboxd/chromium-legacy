@@ -33,7 +33,7 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
-#include "ios/web/public/browser_url_rewriter.h"
+#include "ios/web/public/navigation/browser_url_rewriter.h"
 #include "ios/web/public/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
 #include "net/http/http_util.h"

@@ -63,7 +63,8 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
   void SetUp() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
-          {{"automatic-lazy-load-images-enabled", "true"}}}},
+          {{"automatic-lazy-load-images-enabled", "true"},
+           {"enable-lazy-load-images-metadata-fetch", "true"}}}},
         {});
     InProcessBrowserTest::SetUp();
   }

@@ -274,7 +274,7 @@ ClipboardAuraX11::AuraX11Details::AuraX11Details()
                               InputOnly,
                               CopyFromParent,  // visual
                               0,
-                              NULL)),
+                              nullptr)),
       selection_requestor_(x_display_, x_window_, this),
       clipboard_owner_(x_display_, x_window_, gfx::GetAtom(kClipboard)),
       primary_owner_(x_display_, x_window_, XA_PRIMARY) {
@@ -396,7 +396,7 @@ TargetList ClipboardAuraX11::AuraX11Details::WaitAndGetTargetsList(
       for (const auto& text_atom : types) {
         ::Atom type = x11::None;
         if (selection_requestor_.PerformBlockingConvertSelection(
-                selection_name, text_atom, NULL, NULL, &type) &&
+                selection_name, text_atom, nullptr, nullptr, &type) &&
             type == text_atom) {
           out.push_back(text_atom);
         }

@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <script src="../xr/resources/test-constants.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
 
@@ -86,19 +88,6 @@ function WrapReject(promise, name, errorMsg, errorType) {
   });
 }
 
-// Per security requirements, requesting an immersive session requires a user gesture.
-function requestImmersiveSession() {
-  return new Promise((resolve, reject) => {
-    runWithUserGesture(() => {
-      navigator.xr.requestSession('immersive-vr').then((session) => {
-        resolve(session);
-      }, (err) => {
-        reject(err);
-      });
-    });
-  });
-}
-
 let validateDeviceDisconnectPromise = function() {
   // Ensure that the state is properly set-up for our helper functions so that
   // we can be called multiple times.
@@ -123,7 +112,7 @@ let validateDeviceDisconnectPromise = function() {
     // Note that inline session requests still call out through the device.
     promises.push(WrapResolve(navigator.xr.requestSession('inline'), "Request Inline",
       "Inline should always be available"));
-    promises.push(WrapReject(requestImmersiveSession(), "Request Immersive",
+    promises.push(WrapReject(navigator.xr.requestSession('immersive-vr'), "Request Immersive",
       "Immersive should be rejected once device is disconnected", "NotSupportedError"));
     promises.push(WrapReject(navigator.xr.supportsSession('immersive-vr'), "Supports Immersive",
       "Immersive should not be supported once device is disconnected", "NotSupportedError"));
@@ -152,13 +141,20 @@ let validateDeviceDisconnectPromise = function() {
 }
 
 let testFunction = function(t) {
-  return validateDeviceDisconnectPromise().then(() => {
+  return new Promise((resolve) => {
+    // Give a user activation so that immersive requets don't get a security error.
+    navigator.xr.test.simulateUserActivation(() => { resolve(); });
+  })
+  .then(() => {
+    return validateDeviceDisconnectPromise()
+  })
+  .then(() => {
 
     // Validate that even after disconnecting and resolving the promises,
     // we can still request a new device, and that it will resolve any promises
     // on it's disconnect.
     return validateDeviceDisconnectPromise();
-  })
+  });
 }
 
 promise_test(testFunction, testName);

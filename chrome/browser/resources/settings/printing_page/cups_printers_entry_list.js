@@ -59,6 +59,11 @@ Polymer({
             item =>this.matchesSearchTerm_(item.printerInfo,this.searchTerm)) :
         this.printers.slice();
 
+    updatedPrinters.sort((first, second) => {
+      return settings.printing.alphabeticalSort(
+          first.printerInfo, second.printerInfo);
+    });
+
     this.updateList('filteredPrinters_', printer => printer.printerInfo,
         updatedPrinters);
   },

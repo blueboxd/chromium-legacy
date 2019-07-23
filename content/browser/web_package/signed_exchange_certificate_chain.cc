@@ -204,7 +204,7 @@ SignedExchangeCertificateChain::IgnoreErrorsSPKIList::IgnoreErrorsSPKIList(
 
 SignedExchangeCertificateChain::IgnoreErrorsSPKIList::IgnoreErrorsSPKIList(
     const base::CommandLine& command_line) {
-  if (!GetContentClient()->browser()->CanIgnoreCertificateErrorIfNeeded())
+  if (!GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded())
     return;
   Parse(command_line.GetSwitchValueASCII(
       network::switches::kIgnoreCertificateErrorsSPKIList));

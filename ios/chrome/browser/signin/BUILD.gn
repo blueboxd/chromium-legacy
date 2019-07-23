@@ -84,6 +84,7 @@ source_set("signin") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/web/common",
+    "//ios/web/common:web_view_creation_util",
     "//net",
     "//services/identity:lib",
     "//services/service_manager/public/mojom",

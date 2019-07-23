@@ -194,7 +194,14 @@ EasyUnlockService::EasyUnlockService(
       tpm_key_checked_(false),
       weak_ptr_factory_(this) {}
 
-EasyUnlockService::~EasyUnlockService() {}
+EasyUnlockService::~EasyUnlockService() {
+  // TODO(crbug.com/969135): Remove this once crbug.com/969135 is resolved.
+  // This CHECK ensures that EasyUnlockService is shutdown before it's deleted.
+  // This is added because the stack trace of the crash in question implies
+  // that a deleted member variable of EasyUnlockService is being touched during
+  // EasyUnlockService::Shutdown().
+  CHECK(shut_down_);
+}
 
 // static
 void EasyUnlockService::RegisterProfilePrefs(

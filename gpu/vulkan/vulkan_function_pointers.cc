@@ -69,12 +69,32 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
 }
 
 bool VulkanFunctionPointers::BindInstanceFunctionPointers(
-    VkInstance vk_instance) {
+    VkInstance vk_instance,
+    uint32_t api_version,
+    const gfx::ExtensionSet& enabled_extensions) {
+  vkCreateDeviceFn = reinterpret_cast<PFN_vkCreateDevice>(
+      vkGetInstanceProcAddrFn(vk_instance, "vkCreateDevice"));
+  if (!vkCreateDeviceFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCreateDevice";
+    return false;
+  }
+
   vkDestroyInstanceFn = reinterpret_cast<PFN_vkDestroyInstance>(
       vkGetInstanceProcAddrFn(vk_instance, "vkDestroyInstance"));
   if (!vkDestroyInstanceFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyInstance";
+    return false;
+  }
+
+  vkEnumerateDeviceLayerPropertiesFn =
+      reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkEnumerateDeviceLayerProperties"));
+  if (!vkEnumerateDeviceLayerPropertiesFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkEnumerateDeviceLayerProperties";
     return false;
   }
 
@@ -92,29 +112,6 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
   if (!vkGetDeviceProcAddrFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetDeviceProcAddr";
-    return false;
-  }
-
-  return true;
-}
-
-bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
-    VkInstance vk_instance) {
-  vkCreateDeviceFn = reinterpret_cast<PFN_vkCreateDevice>(
-      vkGetInstanceProcAddrFn(vk_instance, "vkCreateDevice"));
-  if (!vkCreateDeviceFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCreateDevice";
-    return false;
-  }
-
-  vkEnumerateDeviceLayerPropertiesFn =
-      reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
-          vkGetInstanceProcAddrFn(vk_instance,
-                                  "vkEnumerateDeviceLayerProperties"));
-  if (!vkEnumerateDeviceLayerPropertiesFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkEnumerateDeviceLayerProperties";
     return false;
   }
 
@@ -137,16 +134,6 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
     return false;
   }
 
-  vkGetPhysicalDeviceQueueFamilyPropertiesFn =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
-          vkGetInstanceProcAddrFn(vk_instance,
-                                  "vkGetPhysicalDeviceQueueFamilyProperties"));
-  if (!vkGetPhysicalDeviceQueueFamilyPropertiesFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetPhysicalDeviceQueueFamilyProperties";
-    return false;
-  }
-
   vkGetPhysicalDevicePropertiesFn =
       reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(
           vkGetInstanceProcAddrFn(vk_instance,
@@ -157,24 +144,125 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
     return false;
   }
 
-#if defined(OS_ANDROID)
-  vkGetPhysicalDeviceFeatures2Fn =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(
-          vkGetInstanceProcAddrFn(vk_instance, "vkGetPhysicalDeviceFeatures2"));
-  if (!vkGetPhysicalDeviceFeatures2Fn) {
+  vkGetPhysicalDeviceQueueFamilyPropertiesFn =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkGetPhysicalDeviceQueueFamilyProperties"));
+  if (!vkGetPhysicalDeviceQueueFamilyPropertiesFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetPhysicalDeviceFeatures2";
+                  << "vkGetPhysicalDeviceQueueFamilyProperties";
     return false;
   }
 
-#endif
+  if (gfx::HasExtension(enabled_extensions, VK_KHR_SURFACE_EXTENSION_NAME)) {
+    vkDestroySurfaceKHRFn = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
+        vkGetInstanceProcAddrFn(vk_instance, "vkDestroySurfaceKHR"));
+    if (!vkDestroySurfaceKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkDestroySurfaceKHR";
+      return false;
+    }
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
+            vkGetInstanceProcAddrFn(
+                vk_instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
+    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR";
+      return false;
+    }
+
+    vkGetPhysicalDeviceSurfaceFormatsKHRFn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
+            vkGetInstanceProcAddrFn(vk_instance,
+                                    "vkGetPhysicalDeviceSurfaceFormatsKHR"));
+    if (!vkGetPhysicalDeviceSurfaceFormatsKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceSurfaceFormatsKHR";
+      return false;
+    }
+
+    vkGetPhysicalDeviceSurfaceSupportKHRFn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
+            vkGetInstanceProcAddrFn(vk_instance,
+                                    "vkGetPhysicalDeviceSurfaceSupportKHR"));
+    if (!vkGetPhysicalDeviceSurfaceSupportKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceSurfaceSupportKHR";
+      return false;
+    }
+  }
+
+#if defined(USE_VULKAN_XLIB)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_XLIB_SURFACE_EXTENSION_NAME)) {
+    vkCreateXlibSurfaceKHRFn = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
+        vkGetInstanceProcAddrFn(vk_instance, "vkCreateXlibSurfaceKHR"));
+    if (!vkCreateXlibSurfaceKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkCreateXlibSurfaceKHR";
+      return false;
+    }
+
+    vkGetPhysicalDeviceXlibPresentationSupportKHRFn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
+            vkGetInstanceProcAddrFn(
+                vk_instance, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceXlibPresentationSupportKHR";
+      return false;
+    }
+  }
+#endif  // defined(USE_VULKAN_XLIB)
+
+#if defined(OS_ANDROID)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_ANDROID_SURFACE_EXTENSION_NAME)) {
+    vkCreateAndroidSurfaceKHRFn =
+        reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
+            vkGetInstanceProcAddrFn(vk_instance, "vkCreateAndroidSurfaceKHR"));
+    if (!vkCreateAndroidSurfaceKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkCreateAndroidSurfaceKHR";
+      return false;
+    }
+  }
+#endif  // defined(OS_ANDROID)
+
+  if (api_version >= VK_VERSION_1_1) {
+    vkGetPhysicalDeviceFeatures2Fn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(
+            vkGetInstanceProcAddrFn(vk_instance,
+                                    "vkGetPhysicalDeviceFeatures2"));
+    if (!vkGetPhysicalDeviceFeatures2Fn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceFeatures2";
+      return false;
+    }
+
+  } else if (gfx::HasExtension(
+                 enabled_extensions,
+                 VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+    vkGetPhysicalDeviceFeatures2Fn =
+        reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(
+            vkGetInstanceProcAddrFn(vk_instance,
+                                    "vkGetPhysicalDeviceFeatures2KHR"));
+    if (!vkGetPhysicalDeviceFeatures2Fn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetPhysicalDeviceFeatures2KHR";
+      return false;
+    }
+  }
 
   return true;
 }
 
 bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     VkDevice vk_device,
-    bool using_swiftshader) {
+    uint32_t api_version,
+    const gfx::ExtensionSet& enabled_extensions) {
   // Device functions
   vkAllocateCommandBuffersFn = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
       vkGetDeviceProcAddrFn(vk_device, "vkAllocateCommandBuffers"));
@@ -200,6 +288,14 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     return false;
   }
 
+  vkBeginCommandBufferFn = reinterpret_cast<PFN_vkBeginCommandBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkBeginCommandBuffer"));
+  if (!vkBeginCommandBufferFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkBeginCommandBuffer";
+    return false;
+  }
+
   vkBindBufferMemoryFn = reinterpret_cast<PFN_vkBindBufferMemory>(
       vkGetDeviceProcAddrFn(vk_device, "vkBindBufferMemory"));
   if (!vkBindBufferMemoryFn) {
@@ -216,11 +312,51 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     return false;
   }
 
-  vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCreateCommandPool"));
-  if (!vkCreateCommandPoolFn) {
+  vkCmdBeginRenderPassFn = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdBeginRenderPass"));
+  if (!vkCmdBeginRenderPassFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCreateCommandPool";
+                  << "vkCmdBeginRenderPass";
+    return false;
+  }
+
+  vkCmdCopyBufferToImageFn = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdCopyBufferToImage"));
+  if (!vkCmdCopyBufferToImageFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCmdCopyBufferToImage";
+    return false;
+  }
+
+  vkCmdEndRenderPassFn = reinterpret_cast<PFN_vkCmdEndRenderPass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdEndRenderPass"));
+  if (!vkCmdEndRenderPassFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCmdEndRenderPass";
+    return false;
+  }
+
+  vkCmdExecuteCommandsFn = reinterpret_cast<PFN_vkCmdExecuteCommands>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdExecuteCommands"));
+  if (!vkCmdExecuteCommandsFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCmdExecuteCommands";
+    return false;
+  }
+
+  vkCmdNextSubpassFn = reinterpret_cast<PFN_vkCmdNextSubpass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdNextSubpass"));
+  if (!vkCmdNextSubpassFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCmdNextSubpass";
+    return false;
+  }
+
+  vkCmdPipelineBarrierFn = reinterpret_cast<PFN_vkCmdPipelineBarrier>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdPipelineBarrier"));
+  if (!vkCmdPipelineBarrierFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCmdPipelineBarrier";
     return false;
   }
 
@@ -229,6 +365,14 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   if (!vkCreateBufferFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateBuffer";
+    return false;
+  }
+
+  vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateCommandPool"));
+  if (!vkCreateCommandPoolFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkCreateCommandPool";
     return false;
   }
 
@@ -354,19 +498,19 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     return false;
   }
 
-  vkDestroyFramebufferFn = reinterpret_cast<PFN_vkDestroyFramebuffer>(
-      vkGetDeviceProcAddrFn(vk_device, "vkDestroyFramebuffer"));
-  if (!vkDestroyFramebufferFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkDestroyFramebuffer";
-    return false;
-  }
-
   vkDestroyFenceFn = reinterpret_cast<PFN_vkDestroyFence>(
       vkGetDeviceProcAddrFn(vk_device, "vkDestroyFence"));
   if (!vkDestroyFenceFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyFence";
+    return false;
+  }
+
+  vkDestroyFramebufferFn = reinterpret_cast<PFN_vkDestroyFramebuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyFramebuffer"));
+  if (!vkDestroyFramebufferFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkDestroyFramebuffer";
     return false;
   }
 
@@ -423,6 +567,14 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   if (!vkDeviceWaitIdleFn) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDeviceWaitIdle";
+    return false;
+  }
+
+  vkEndCommandBufferFn = reinterpret_cast<PFN_vkEndCommandBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkEndCommandBuffer"));
+  if (!vkEndCommandBufferFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkEndCommandBuffer";
     return false;
   }
 
@@ -492,6 +644,30 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     return false;
   }
 
+  vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(
+      vkGetDeviceProcAddrFn(vk_device, "vkQueueSubmit"));
+  if (!vkQueueSubmitFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkQueueSubmit";
+    return false;
+  }
+
+  vkQueueWaitIdleFn = reinterpret_cast<PFN_vkQueueWaitIdle>(
+      vkGetDeviceProcAddrFn(vk_device, "vkQueueWaitIdle"));
+  if (!vkQueueWaitIdleFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkQueueWaitIdle";
+    return false;
+  }
+
+  vkResetCommandBufferFn = reinterpret_cast<PFN_vkResetCommandBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkResetCommandBuffer"));
+  if (!vkResetCommandBufferFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkResetCommandBuffer";
+    return false;
+  }
+
   vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
   if (!vkResetFencesFn) {
@@ -525,245 +701,165 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   }
 
 #if defined(OS_ANDROID)
-
-  vkGetAndroidHardwareBufferPropertiesANDROIDFn =
-      reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
-          vkGetDeviceProcAddrFn(vk_device,
-                                "vkGetAndroidHardwareBufferPropertiesANDROID"));
-  if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetAndroidHardwareBufferPropertiesANDROID";
-    return false;
+  if (gfx::HasExtension(
+          enabled_extensions,
+          VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
+    vkGetAndroidHardwareBufferPropertiesANDROIDFn =
+        reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
+            vkGetDeviceProcAddrFn(
+                vk_device, "vkGetAndroidHardwareBufferPropertiesANDROID"));
+    if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetAndroidHardwareBufferPropertiesANDROID";
+      return false;
+    }
   }
-
-#endif
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME)) {
+    vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
+    if (!vkGetSemaphoreFdKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetSemaphoreFdKHR";
+      return false;
+    }
 
-  vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkGetSemaphoreFdKHR"));
-  if (!vkGetSemaphoreFdKHRFn && !using_swiftshader) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetSemaphoreFdKHR";
-    return false;
+    vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
+    if (!vkImportSemaphoreFdKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkImportSemaphoreFdKHR";
+      return false;
+    }
   }
-
-  vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
-  if (!vkImportSemaphoreFdKHRFn && !using_swiftshader) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkImportSemaphoreFdKHR";
-    return false;
-  }
-
-#endif
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX)
-
-  vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
-  if (!vkGetMemoryFdKHRFn && !using_swiftshader) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetMemoryFdKHR";
-    return false;
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME)) {
+    vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkGetMemoryFdKHR"));
+    if (!vkGetMemoryFdKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetMemoryFdKHR";
+      return false;
+    }
   }
-
-#endif
+#endif  // defined(OS_LINUX)
 
 #if defined(OS_FUCHSIA)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME)) {
+    vkImportSemaphoreZirconHandleFUCHSIAFn =
+        reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device,
+                                  "vkImportSemaphoreZirconHandleFUCHSIA"));
+    if (!vkImportSemaphoreZirconHandleFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkImportSemaphoreZirconHandleFUCHSIA";
+      return false;
+    }
 
-  vkImportSemaphoreZirconHandleFUCHSIAFn =
-      reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
-          vkGetDeviceProcAddrFn(vk_device,
-                                "vkImportSemaphoreZirconHandleFUCHSIA"));
-  if (!vkImportSemaphoreZirconHandleFUCHSIAFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkImportSemaphoreZirconHandleFUCHSIA";
-    return false;
+    vkGetSemaphoreZirconHandleFUCHSIAFn =
+        reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device,
+                                  "vkGetSemaphoreZirconHandleFUCHSIA"));
+    if (!vkGetSemaphoreZirconHandleFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetSemaphoreZirconHandleFUCHSIA";
+      return false;
+    }
   }
+#endif  // defined(OS_FUCHSIA)
 
-  vkGetSemaphoreZirconHandleFUCHSIAFn =
-      reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
-          vkGetDeviceProcAddrFn(vk_device,
-                                "vkGetSemaphoreZirconHandleFUCHSIA"));
-  if (!vkGetSemaphoreZirconHandleFUCHSIAFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetSemaphoreZirconHandleFUCHSIA";
-    return false;
+#if defined(OS_FUCHSIA)
+  if (gfx::HasExtension(enabled_extensions,
+                        VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME)) {
+    vkCreateBufferCollectionFUCHSIAFn =
+        reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device,
+                                  "vkCreateBufferCollectionFUCHSIA"));
+    if (!vkCreateBufferCollectionFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkCreateBufferCollectionFUCHSIA";
+      return false;
+    }
+
+    vkSetBufferCollectionConstraintsFUCHSIAFn =
+        reinterpret_cast<PFN_vkSetBufferCollectionConstraintsFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device,
+                                  "vkSetBufferCollectionConstraintsFUCHSIA"));
+    if (!vkSetBufferCollectionConstraintsFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkSetBufferCollectionConstraintsFUCHSIA";
+      return false;
+    }
+
+    vkGetBufferCollectionPropertiesFUCHSIAFn =
+        reinterpret_cast<PFN_vkGetBufferCollectionPropertiesFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device,
+                                  "vkGetBufferCollectionPropertiesFUCHSIA"));
+    if (!vkGetBufferCollectionPropertiesFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetBufferCollectionPropertiesFUCHSIA";
+      return false;
+    }
+
+    vkDestroyBufferCollectionFUCHSIAFn =
+        reinterpret_cast<PFN_vkDestroyBufferCollectionFUCHSIA>(
+            vkGetDeviceProcAddrFn(vk_device,
+                                  "vkDestroyBufferCollectionFUCHSIA"));
+    if (!vkDestroyBufferCollectionFUCHSIAFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkDestroyBufferCollectionFUCHSIA";
+      return false;
+    }
   }
+#endif  // defined(OS_FUCHSIA)
 
-  vkCreateBufferCollectionFUCHSIAFn =
-      reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(
-          vkGetDeviceProcAddrFn(vk_device, "vkCreateBufferCollectionFUCHSIA"));
-  if (!vkCreateBufferCollectionFUCHSIAFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCreateBufferCollectionFUCHSIA";
-    return false;
-  }
+  if (gfx::HasExtension(enabled_extensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+    vkAcquireNextImageKHRFn = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkAcquireNextImageKHR"));
+    if (!vkAcquireNextImageKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkAcquireNextImageKHR";
+      return false;
+    }
 
-  vkSetBufferCollectionConstraintsFUCHSIAFn =
-      reinterpret_cast<PFN_vkSetBufferCollectionConstraintsFUCHSIA>(
-          vkGetDeviceProcAddrFn(vk_device,
-                                "vkSetBufferCollectionConstraintsFUCHSIA"));
-  if (!vkSetBufferCollectionConstraintsFUCHSIAFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkSetBufferCollectionConstraintsFUCHSIA";
-    return false;
-  }
+    vkCreateSwapchainKHRFn = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkCreateSwapchainKHR"));
+    if (!vkCreateSwapchainKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkCreateSwapchainKHR";
+      return false;
+    }
 
-  vkGetBufferCollectionPropertiesFUCHSIAFn =
-      reinterpret_cast<PFN_vkGetBufferCollectionPropertiesFUCHSIA>(
-          vkGetDeviceProcAddrFn(vk_device,
-                                "vkGetBufferCollectionPropertiesFUCHSIA"));
-  if (!vkGetBufferCollectionPropertiesFUCHSIAFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetBufferCollectionPropertiesFUCHSIA";
-    return false;
-  }
+    vkDestroySwapchainKHRFn = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkDestroySwapchainKHR"));
+    if (!vkDestroySwapchainKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkDestroySwapchainKHR";
+      return false;
+    }
 
-  vkDestroyBufferCollectionFUCHSIAFn =
-      reinterpret_cast<PFN_vkDestroyBufferCollectionFUCHSIA>(
-          vkGetDeviceProcAddrFn(vk_device, "vkDestroyBufferCollectionFUCHSIA"));
-  if (!vkDestroyBufferCollectionFUCHSIAFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkDestroyBufferCollectionFUCHSIA";
-    return false;
-  }
+    vkGetSwapchainImagesKHRFn = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkGetSwapchainImagesKHR"));
+    if (!vkGetSwapchainImagesKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetSwapchainImagesKHR";
+      return false;
+    }
 
-#endif
-
-  // Queue functions
-  vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(
-      vkGetDeviceProcAddrFn(vk_device, "vkQueueSubmit"));
-  if (!vkQueueSubmitFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkQueueSubmit";
-    return false;
-  }
-
-  vkQueueWaitIdleFn = reinterpret_cast<PFN_vkQueueWaitIdle>(
-      vkGetDeviceProcAddrFn(vk_device, "vkQueueWaitIdle"));
-  if (!vkQueueWaitIdleFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkQueueWaitIdle";
-    return false;
-  }
-
-  // Command Buffer functions
-  vkBeginCommandBufferFn = reinterpret_cast<PFN_vkBeginCommandBuffer>(
-      vkGetDeviceProcAddrFn(vk_device, "vkBeginCommandBuffer"));
-  if (!vkBeginCommandBufferFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkBeginCommandBuffer";
-    return false;
-  }
-
-  vkCmdBeginRenderPassFn = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCmdBeginRenderPass"));
-  if (!vkCmdBeginRenderPassFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCmdBeginRenderPass";
-    return false;
-  }
-
-  vkCmdCopyBufferToImageFn = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCmdCopyBufferToImage"));
-  if (!vkCmdCopyBufferToImageFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCmdCopyBufferToImage";
-    return false;
-  }
-
-  vkCmdEndRenderPassFn = reinterpret_cast<PFN_vkCmdEndRenderPass>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCmdEndRenderPass"));
-  if (!vkCmdEndRenderPassFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCmdEndRenderPass";
-    return false;
-  }
-
-  vkCmdExecuteCommandsFn = reinterpret_cast<PFN_vkCmdExecuteCommands>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCmdExecuteCommands"));
-  if (!vkCmdExecuteCommandsFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCmdExecuteCommands";
-    return false;
-  }
-
-  vkCmdNextSubpassFn = reinterpret_cast<PFN_vkCmdNextSubpass>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCmdNextSubpass"));
-  if (!vkCmdNextSubpassFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCmdNextSubpass";
-    return false;
-  }
-
-  vkCmdPipelineBarrierFn = reinterpret_cast<PFN_vkCmdPipelineBarrier>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCmdPipelineBarrier"));
-  if (!vkCmdPipelineBarrierFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCmdPipelineBarrier";
-    return false;
-  }
-
-  vkEndCommandBufferFn = reinterpret_cast<PFN_vkEndCommandBuffer>(
-      vkGetDeviceProcAddrFn(vk_device, "vkEndCommandBuffer"));
-  if (!vkEndCommandBufferFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkEndCommandBuffer";
-    return false;
-  }
-
-  vkResetCommandBufferFn = reinterpret_cast<PFN_vkResetCommandBuffer>(
-      vkGetDeviceProcAddrFn(vk_device, "vkResetCommandBuffer"));
-  if (!vkResetCommandBufferFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkResetCommandBuffer";
-    return false;
-  }
-
-  return true;
-}
-
-bool VulkanFunctionPointers::BindSwapchainFunctionPointers(VkDevice vk_device) {
-  vkAcquireNextImageKHRFn = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkAcquireNextImageKHR"));
-  if (!vkAcquireNextImageKHRFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkAcquireNextImageKHR";
-    return false;
-  }
-
-  vkCreateSwapchainKHRFn = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkCreateSwapchainKHR"));
-  if (!vkCreateSwapchainKHRFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkCreateSwapchainKHR";
-    return false;
-  }
-
-  vkDestroySwapchainKHRFn = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkDestroySwapchainKHR"));
-  if (!vkDestroySwapchainKHRFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkDestroySwapchainKHR";
-    return false;
-  }
-
-  vkGetSwapchainImagesKHRFn = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkGetSwapchainImagesKHR"));
-  if (!vkGetSwapchainImagesKHRFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkGetSwapchainImagesKHR";
-    return false;
-  }
-
-  vkQueuePresentKHRFn = reinterpret_cast<PFN_vkQueuePresentKHR>(
-      vkGetDeviceProcAddrFn(vk_device, "vkQueuePresentKHR"));
-  if (!vkQueuePresentKHRFn) {
-    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
-                  << "vkQueuePresentKHR";
-    return false;
+    vkQueuePresentKHRFn = reinterpret_cast<PFN_vkQueuePresentKHR>(
+        vkGetDeviceProcAddrFn(vk_device, "vkQueuePresentKHR"));
+    if (!vkQueuePresentKHRFn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkQueuePresentKHR";
+      return false;
+    }
   }
 
   return true;

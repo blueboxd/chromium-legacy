@@ -641,7 +641,7 @@ if (!is_android) {
       "//chrome/renderer",
       "//chrome/services/removable_storage_writer:lib",
       "//components/autofill/content/browser:risk_proto",
-      "//components/autofill/content/common:mojo_interfaces",
+      "//components/autofill/content/common/mojom",
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
       "//components/cbor",
@@ -3909,7 +3909,7 @@ test("unit_tests") {
       "../common/media_router/discovery/media_sink_service_base_unittest.cc",
       "../common/media_router/mojo/media_router_struct_traits_unittest.cc",
       "../common/media_router/providers/cast/cast_media_source_unittest.cc",
-      "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",
+      "../renderer/media/webrtc_logging_agent_impl_unittest.cc",
     ]
 
     deps += [
@@ -4294,6 +4294,7 @@ test("unit_tests") {
       "../browser/sync_file_system/sync_file_system_test_util.h",
       "../browser/sync_file_system/sync_process_runner_unittest.cc",
       "../browser/sync_file_system/syncable_file_system_util_unittest.cc",
+      "../browser/ui/webui/extensions/extensions_internals_unittest.cc",
       "../browser/ui/webui/settings/chrome_cleanup_handler_win_unittest.cc",
       "../common/apps/platform_apps/media_galleries_permission_unittest.cc",
       "../common/extensions/api/commands/commands_manifest_unittest.cc",

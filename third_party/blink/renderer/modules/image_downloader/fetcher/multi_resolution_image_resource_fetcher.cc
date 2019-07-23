@@ -26,15 +26,13 @@
 namespace blink {
 
 MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
-    ExecutionContext* context,
     const KURL& image_url,
     LocalFrame* frame,
     int id,
     mojom::blink::RequestContextType request_context,
     mojom::blink::FetchCacheMode cache_mode,
     Callback callback)
-    : ContextLifecycleObserver(context),
-      callback_(std::move(callback)),
+    : callback_(std::move(callback)),
       id_(id),
       http_status_code_(0),
       image_url_(image_url),
@@ -60,7 +58,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
       frame, request_context, network::mojom::RequestMode::kNoCors,
       network::mojom::CredentialsMode::kInclude,
       WTF::Bind(&MultiResolutionImageResourceFetcher::OnURLFetchComplete,
-                WrapPersistent(this)));
+                WTF::Unretained(this)));
 }
 
 MultiResolutionImageResourceFetcher::~MultiResolutionImageResourceFetcher() {}
@@ -91,9 +89,8 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
   std::move(callback_).Run(this, bitmaps);
 }
 
-void MultiResolutionImageResourceFetcher::ContextDestroyed(ExecutionContext*) {
-  if (callback_)
-    std::move(callback_).Run(this, WTF::Vector<SkBitmap>());
+void MultiResolutionImageResourceFetcher::OnRenderFrameDestruct() {
+  std::move(callback_).Run(this, WTF::Vector<SkBitmap>());
 }
 
 }  // namespace blink

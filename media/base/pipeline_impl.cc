@@ -131,7 +131,8 @@ class PipelineImpl::RendererWrapper : public DemuxerHost,
   void OnError(PipelineStatus error) final;
   void OnEnded() final;
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
-  void OnBufferingStateChange(BufferingState state) final;
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) final;
   void OnWaiting(WaitingReason reason) final;
   void OnAudioConfigChange(const AudioDecoderConfig& config) final;
   void OnVideoConfigChange(const VideoDecoderConfig& config) final;
@@ -706,13 +707,14 @@ void PipelineImpl::RendererWrapper::OnStatisticsUpdate(
 }
 
 void PipelineImpl::RendererWrapper::OnBufferingStateChange(
-    BufferingState state) {
+    BufferingState state,
+    BufferingStateChangeReason reason) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __func__ << "(" << state << ") ";
+  DVLOG(2) << __func__ << "(" << state << ", " << reason << ") ";
 
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PipelineImpl::OnBufferingStateChange,
-                                weak_pipeline_, state));
+                                weak_pipeline_, state, reason));
 }
 
 void PipelineImpl::RendererWrapper::OnWaiting(WaitingReason reason) {
@@ -1299,13 +1301,13 @@ void PipelineImpl::OnMetadata(const PipelineMetadata& metadata) {
   client_->OnMetadata(metadata);
 }
 
-void PipelineImpl::OnBufferingStateChange(BufferingState state) {
-  DVLOG(2) << __func__ << "(" << state << ")";
+void PipelineImpl::OnBufferingStateChange(BufferingState state,
+                                          BufferingStateChangeReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsRunning());
 
   DCHECK(client_);
-  client_->OnBufferingStateChange(state);
+  client_->OnBufferingStateChange(state, reason);
 }
 
 void PipelineImpl::OnDurationChange(base::TimeDelta duration) {

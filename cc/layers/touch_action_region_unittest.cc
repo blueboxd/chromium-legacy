@@ -63,25 +63,5 @@ TEST(TouchActionRegionTest, GetAllowedTouchActionSingleMapEntry) {
             touch_action_region.GetAllowedTouchAction(gfx::Point(60, 60)));
 }
 
-TEST(TouchActionRegionTest, ConstructorFromMap) {
-  gfx::Rect rect1(0, 0, 50, 50);
-  gfx::Rect rect2(50, 0, 50, 50);
-  base::flat_map<TouchAction, Region> region_map;
-  region_map[kTouchActionPanX].Union(rect1);
-  region_map[kTouchActionPanUp].Union(rect2);
-  TouchActionRegion touch_action_region(region_map);
-
-  Region expected_region1(rect1);
-  Region expected_region2(rect2);
-  Region expected_region3(rect1);
-  expected_region3.Union(rect2);
-
-  EXPECT_EQ(touch_action_region.GetRegionForTouchAction(kTouchActionPanX),
-            expected_region1);
-  EXPECT_EQ(touch_action_region.GetRegionForTouchAction(kTouchActionPanUp),
-            expected_region2);
-  EXPECT_EQ(touch_action_region.region(), expected_region3);
-}
-
 }  // namespace
 }  // namespace cc

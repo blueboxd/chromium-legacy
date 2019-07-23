@@ -37,7 +37,6 @@ public class LaunchMetrics {
     }
 
     private static final List<HomeScreenLaunch> sHomeScreenLaunches = new ArrayList<>();
-    private static final List<Long> sWebappHistogramTimes = new ArrayList<>();
 
     /**
      * Records the launch of a standalone Activity for a URL (i.e. a WebappActivity)
@@ -58,14 +57,6 @@ public class LaunchMetrics {
      */
     public static void recordHomeScreenLaunchIntoTab(String url, int source) {
         sHomeScreenLaunches.add(new HomeScreenLaunch(url, true, source, WebDisplayMode.UNDEFINED));
-    }
-
-    /**
-     * Records the time it took to look up from disk whether a MAC is valid during webapp startup.
-     * @param time the number of milliseconds it took to finish.
-     */
-    public static void recordWebappHistogramTimes(long time) {
-        sWebappHistogramTimes.add(time);
     }
 
     /**

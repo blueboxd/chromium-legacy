@@ -230,10 +230,11 @@ void MojoRenderer::OnTimeUpdate(base::TimeDelta time,
   media_time_interpolator_.SetBounds(time, max_time, capture_time);
 }
 
-void MojoRenderer::OnBufferingStateChange(BufferingState state) {
+void MojoRenderer::OnBufferingStateChange(BufferingState state,
+                                          BufferingStateChangeReason reason) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnBufferingStateChange(state);
+  client_->OnBufferingStateChange(state, reason);
 }
 
 void MojoRenderer::OnEnded() {

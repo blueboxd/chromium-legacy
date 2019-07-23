@@ -9,14 +9,15 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "url/origin.h"
 
 namespace content {
 
 ContentIndexContextImpl::ContentIndexContextImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : content_index_database_(browser_context,
-                              std::move(service_worker_context)) {
+    : service_worker_context_(service_worker_context),
+      content_index_database_(browser_context, service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -35,6 +36,8 @@ void ContentIndexContextImpl::GetIcon(
 }
 
 void ContentIndexContextImpl::GetAllEntries(GetAllEntriesCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   GetAllEntriesCallback wrapped_callback = base::BindOnce(
       [](GetAllEntriesCallback callback, blink::mojom::ContentIndexError error,
          std::vector<ContentIndexEntry> entries) {
@@ -54,6 +57,8 @@ void ContentIndexContextImpl::GetAllEntries(GetAllEntriesCallback callback) {
 void ContentIndexContextImpl::GetEntry(int64_t service_worker_registration_id,
                                        const std::string& description_id,
                                        GetEntryCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   GetEntryCallback wrapped_callback = base::BindOnce(
       [](GetEntryCallback callback, base::Optional<ContentIndexEntry> entry) {
         base::PostTaskWithTraits(
@@ -68,6 +73,71 @@ void ContentIndexContextImpl::GetEntry(int64_t service_worker_registration_id,
                      content_index_database_.GetWeakPtrForIO(),
                      service_worker_registration_id, description_id,
                      std::move(wrapped_callback)));
+}
+
+void ContentIndexContextImpl::OnUserDeletedItem(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    const std::string& description_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ContentIndexDatabase::DeleteEntry,
+                     content_index_database_.GetWeakPtrForIO(),
+                     service_worker_registration_id, origin, description_id,
+                     base::BindOnce(&ContentIndexContextImpl::DidDeleteItem,
+                                    this, service_worker_registration_id,
+                                    origin, description_id)));
+}
+
+void ContentIndexContextImpl::DidDeleteItem(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    const std::string& description_id,
+    blink::mojom::ContentIndexError error) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (error != blink::mojom::ContentIndexError::NONE)
+    return;
+
+  service_worker_context_->FindReadyRegistrationForId(
+      service_worker_registration_id, origin.GetURL(),
+      base::BindOnce(&ContentIndexContextImpl::StartActiveWorkerForDispatch,
+                     this, description_id));
+}
+
+void ContentIndexContextImpl::StartActiveWorkerForDispatch(
+    const std::string& description_id,
+    blink::ServiceWorkerStatusCode service_worker_status,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (service_worker_status != blink::ServiceWorkerStatusCode::kOk)
+    return;
+
+  ServiceWorkerVersion* service_worker_version = registration->active_version();
+  DCHECK(service_worker_version);
+
+  service_worker_version->RunAfterStartWorker(
+      ServiceWorkerMetrics::EventType::CONTENT_DELETE,
+      base::BindOnce(&ContentIndexContextImpl::DeliverMessageToWorker, this,
+                     base::WrapRefCounted(service_worker_version),
+                     std::move(registration), description_id));
+}
+
+void ContentIndexContextImpl::DeliverMessageToWorker(
+    scoped_refptr<ServiceWorkerVersion> service_worker,
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const std::string& description_id,
+    blink::ServiceWorkerStatusCode start_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  int request_id = service_worker->StartRequest(
+      ServiceWorkerMetrics::EventType::CONTENT_DELETE, base::DoNothing());
+
+  service_worker->endpoint()->DispatchContentDeleteEvent(
+      description_id, service_worker->CreateSimpleEventCallback(request_id));
 }
 
 void ContentIndexContextImpl::Shutdown() {

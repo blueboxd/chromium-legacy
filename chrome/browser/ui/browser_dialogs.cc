@@ -41,11 +41,14 @@ void ShowNativeFileSystemPermissionDialog(
 void ShowNativeFileSystemRestrictedDirectoryDialog(
     const url::Origin& origin,
     const base::FilePath& path,
-    base::OnceClosure callback,
+    base::OnceCallback<void(
+        content::NativeFileSystemPermissionContext::SensitiveDirectoryResult)>
+        callback,
     content::WebContents* web_contents) {
   // There's no dialog version of this available outside views, run callback as
   // if the dialog was instantly dismissed.
-  std::move(callback).Run();
+  std::move(callback).Run(content::NativeFileSystemPermissionContext::
+                              SensitiveDirectoryResult::kAbort);
 }
 
 void ShowNativeFileSystemDirectoryAccessConfirmationDialog(

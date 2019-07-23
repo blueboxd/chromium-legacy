@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
-#include "chrome/browser/signin/header_modification_delegate_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_on_io_thread_impl.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,8 +54,8 @@ class ResourceContextData : public base::SupportsUserData::Data {
                                     base::WrapUnique(self));
     }
 
-    auto delegate =
-        std::make_unique<HeaderModificationDelegateImpl>(resource_context);
+    auto delegate = std::make_unique<HeaderModificationDelegateOnIOThreadImpl>(
+        resource_context);
     auto proxy = std::make_unique<ProxyingURLLoaderFactory>(
         std::move(delegate), std::move(web_contents_getter), std::move(request),
         std::move(target_factory),

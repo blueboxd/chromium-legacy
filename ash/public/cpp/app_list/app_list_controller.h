@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/strings/string16.h"
+#include "ui/aura/window.h"
 
 namespace app_list {
 
@@ -168,6 +169,9 @@ class ASH_PUBLIC_EXPORT AppListController {
 
   // Shows the app list.
   virtual void ShowAppList() = 0;
+
+  // Returns the app list window or nullptr if it is not visible.
+  virtual aura::Window* GetWindow() = 0;
 
  protected:
   AppListController();

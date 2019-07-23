@@ -13,7 +13,6 @@ import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/trichrome.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -55,7 +54,6 @@ generate_jni("native_jni") {
     "java/src/org/chromium/android_webview/AwProxyController.java",
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "java/src/org/chromium/android_webview/AwRenderProcess.java",
-    "java/src/org/chromium/android_webview/AwResource.java",
     "java/src/org/chromium/android_webview/AwSettings.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
     "java/src/org/chromium/android_webview/AwVariationsSeedBridge.java",
@@ -296,16 +294,14 @@ grit("generate_components_resources") {
   inputs = [
     _whitelist,
   ]
-  _about_credits_file_bro =
-      get_label_info("//components/resources", "target_gen_dir") +
-      "/about_credits.bro"
+  _about_credits_file = get_label_info("//components/resources",
+                                       "target_gen_dir") + "/about_credits.html"
 
   grit_flags = [
     "-w",
     rebase_path(_whitelist, root_build_dir),
     "-E",
-    "about_credits_file=" +
-        rebase_path(_about_credits_file_bro, root_build_dir),
+    "about_credits_file=" + rebase_path(_about_credits_file, root_build_dir),
   ]
   outputs = [
     "grit/components_resources.h",
@@ -313,7 +309,7 @@ grit("generate_components_resources") {
   ]
 
   deps = [
-    "//components/resources:compressed_about_credits",
+    "//components/resources:about_credits",
   ]
 }
 
@@ -662,32 +658,6 @@ source_set("common") {
     "browser/tracing/aw_tracing_controller.h",
     "browser/tracing/aw_tracing_delegate.cc",
     "browser/tracing/aw_tracing_delegate.h",
-    "common/android_webview_message_generator.cc",
-    "common/android_webview_message_generator.h",
-    "common/aw_content_client.cc",
-    "common/aw_content_client.h",
-    "common/aw_descriptors.h",
-    "common/aw_hit_test_data.cc",
-    "common/aw_hit_test_data.h",
-    "common/aw_media_drm_bridge_client.cc",
-    "common/aw_media_drm_bridge_client.h",
-    "common/aw_paths.cc",
-    "common/aw_paths.h",
-    "common/aw_resource.cc",
-    "common/aw_resource.h",
-    "common/aw_resource_bundle.cc",
-    "common/aw_resource_bundle.h",
-    "common/aw_switches.cc",
-    "common/aw_switches.h",
-    "common/crash_reporter/aw_crash_reporter_client.cc",
-    "common/crash_reporter/aw_crash_reporter_client.h",
-    "common/crash_reporter/crash_keys.cc",
-    "common/crash_reporter/crash_keys.h",
-    "common/devtools_instrumentation.h",
-    "common/render_view_messages.cc",
-    "common/render_view_messages.h",
-    "common/url_constants.cc",
-    "common/url_constants.h",
     "gpu/aw_content_gpu_client.cc",
     "gpu/aw_content_gpu_client.h",
     "lib/aw_main_delegate.cc",
@@ -724,18 +694,19 @@ source_set("common") {
   ]
 
   deps = [
-    ":android_webview_mojom",
     ":generate_aw_resources",
     ":generate_aw_strings",
     ":generate_components_strings",
     ":native_jni",
     "//android_webview/browser/gfx:gfx",
+    "//android_webview/common",
+    "//android_webview/common:common_mojom",
     "//base",
     "//base/third_party/dynamic_annotations:dynamic_annotations",
     "//components/about_ui",
     "//components/autofill/android:provider",
     "//components/autofill/content/browser",
-    "//components/autofill/content/common:mojo_interfaces",
+    "//components/autofill/content/common/mojom",
     "//components/autofill/content/renderer",
     "//components/cdm/browser",
     "//components/cdm/renderer",
@@ -827,17 +798,6 @@ source_set("common") {
   ]
 }
 
-mojom("android_webview_mojom") {
-  sources = [
-    "common/js_java_interaction/interfaces.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//services/network/public/mojom:mojom",
-  ]
-}
-
 android_library("android_webview_java") {
   java_files = [
     "java/src/org/chromium/android_webview/AndroidProtocolHandler.java",
@@ -877,7 +837,6 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwQuotaManagerBridge.java",
     "java/src/org/chromium/android_webview/AwRenderProcess.java",
     "java/src/org/chromium/android_webview/AwRenderProcessGoneDetail.java",
-    "java/src/org/chromium/android_webview/AwResource.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConfigHelper.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingConversionHelper.java",
     "java/src/org/chromium/android_webview/AwSafeBrowsingResponse.java",
@@ -927,17 +886,22 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
-    "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/ui/util/UploadedCrashesInfoLoader.java",
   ]
   deps = [
     ":android_webview_commandline_java",
+    ":android_webview_crash_info_java",
     ":android_webview_platform_services_java",
     ":android_webview_services_java",
     ":android_webview_variations_utils_java",
     ":resources",
     ":strings_grd",
     ":system_webview_manifest",
+
+    # This includes AwResource, which may be called via JNI. We're including it
+    # here because there's currently no good way to enforce that it gets included
+    # when it's depended on via JNI.
+    "//android_webview/common:common_java",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
@@ -1079,6 +1043,15 @@ android_library("platform_service_bridge_upstream_implementation_java") {
   ]
 }
 
+android_library("android_webview_crash_info_java") {
+  java_files =
+      [ "java/src/org/chromium/android_webview/ui/util/CrashInfoLoader.java" ]
+
+  deps = [
+    "//base:base_java",
+  ]
+}
+
 android_library("android_webview_commandline_java") {
   java_files = [
     "java/src/org/chromium/android_webview/command_line/CommandLineUtil.java",
@@ -1102,6 +1075,7 @@ android_library("android_webview_services_java") {
   ]
   deps = [
     ":android_webview_commandline_java",
+    ":android_webview_crash_info_java",
     ":android_webview_platform_services_java",
     ":android_webview_variations_utils_java",
     ":system_webview_manifest",

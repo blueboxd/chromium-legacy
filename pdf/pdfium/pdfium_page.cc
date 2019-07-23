@@ -508,6 +508,49 @@ void PDFiumPage::CalculateLinks() {
   FPDFLink_CloseWebLinks(links);
 }
 
+bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
+                                               int* start_index,
+                                               uint32_t* char_len) {
+  if (!available_)
+    return false;
+
+  FPDF_TEXTPAGE text_page = GetTextPage();
+  const uint32_t char_count = FPDFText_CountChars(text_page);
+
+  int start_char_index = -1;
+  uint32_t cur_char_count = 0;
+
+  // Iterate over page text to find such continuous characters whose mid-points
+  // lie inside the rectangle.
+  for (uint32_t i = 0; i < char_count; ++i) {
+    double char_left;
+    double char_right;
+    double char_bottom;
+    double char_top;
+    if (!FPDFText_GetCharBox(text_page, i, &char_left, &char_right,
+                             &char_bottom, &char_top)) {
+      break;
+    }
+
+    float xmid = (char_left + char_right) / 2;
+    float ymid = (char_top + char_bottom) / 2;
+    if (rect.Contains(xmid, ymid)) {
+      if (start_char_index == -1)
+        start_char_index = i;
+      ++cur_char_count;
+    } else if (start_char_index != -1) {
+      break;
+    }
+  }
+
+  if (cur_char_count == 0)
+    return false;
+
+  *char_len = cur_char_count;
+  *start_index = start_char_index;
+  return true;
+}
+
 pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
                                   double zoom,
                                   double left,

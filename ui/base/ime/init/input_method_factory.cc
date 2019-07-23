@@ -57,7 +57,7 @@ std::unique_ptr<InputMethod> CreateInputMethod(
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kTSFImeSupport) &&
-      base::win::GetVersion() >= base::win::Version::WIN10_RS3) {
+      base::win::GetVersion() > base::win::Version::WIN7) {
     return std::make_unique<InputMethodWinTSF>(delegate, widget);
   }
   return std::make_unique<InputMethodWinImm32>(delegate, widget);

@@ -184,8 +184,17 @@ void AutocompleteResult::SortAndCull(
   // Top match is not allowed to be the default match.  Find the most
   // relevant legal match and shift it to the front.
   auto it = FindTopMatch(input.current_page_classification(), &matches_);
-  if (it != matches_.end())
-    std::rotate(matches_.begin(), it, it + 1);
+  if (it != matches_.end()) {
+    const size_t cookie = it->subrelevance;
+    auto next = std::next(it);
+    if (cookie != 0) {
+      // If default match followed by sub-match(es), move them too.
+      while (next != matches_.end() &&
+             AutocompleteMatch::IsSameFamily(cookie, next->subrelevance))
+        next = std::next(next);
+    }
+    std::rotate(matches_.begin(), it, next);
+  }
 
   size_t max_url_count = 0;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
@@ -270,40 +279,15 @@ void AutocompleteResult::AppendDedicatedPedalMatches(
     const AutocompleteInput& input) {
   const OmniboxPedalProvider* provider = client->GetPedalProvider();
   ACMatches pedal_suggestions;
-  // Map from Pedal to a vector and index so that we can update instead of
-  // adding a duplicate.  Existing Pedals are fully indexed before the next
-  // loop that adds|updates because, e.g. the first match may trigger a Pedal
-  // which is already applied on the last.  We should update it, but without the
-  // fully built index the below logic would add new, resulting in a duplicate.
-  std::unordered_map<OmniboxPedal*, std::pair<ACMatches&, size_t>> pedals_found;
-  for (size_t match_index = 0; match_index < matches_.size(); ++match_index) {
-    OmniboxPedal* const pedal = matches_[match_index].pedal;
-    if (pedal) {
-      const auto insertion =
-          pedals_found.insert({pedal, {matches_, match_index}});
-      DCHECK(insertion.second) << "Found existing duplicate Pedal suggestion.";
-    }
-  }
-  for (const auto& match : matches_) {
-    if (match.pedal)
+
+  for (auto& match : matches_) {
+    // We do not want to deal with pedals of pedals, or pedals among
+    // exclusive tail suggestions.
+    if (match.pedal || match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
       continue;
     OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
-    if (pedal) {
-      const auto insertion = pedals_found.insert(
-          {pedal, {pedal_suggestions, pedal_suggestions.size()}});
-      if (insertion.second) {
-        // This is the first use of the found pedal; add new suggestion.
-        pedal_suggestions.push_back(match.DerivePedalSuggestion(pedal));
-      } else {
-        // This is a subsequent use of the found pedal; update its suggestion to
-        // ensure that it is derived from the most relevant matching suggestion.
-        const auto& map_value_pair = insertion.first->second;
-        auto& suggestion = map_value_pair.first[map_value_pair.second];
-        if (suggestion.relevance < match.relevance - 1) {
-          suggestion = match.DerivePedalSuggestion(pedal);
-        }
-      }
-    }
+    if (pedal)
+      pedal_suggestions.push_back(match.DerivePedalSuggestion(pedal));
   }
   if (!pedal_suggestions.empty()) {
     AppendMatches(input, pedal_suggestions);
@@ -754,7 +738,9 @@ void AutocompleteResult::MergeMatchesByProvider(
 std::pair<GURL, bool> AutocompleteResult::GetMatchComparisonFields(
     const AutocompleteMatch& match) {
   return std::make_pair(match.stripped_destination_url,
-                        match.type == ACMatchType::CALCULATOR);
+                        match.type == ACMatchType::CALCULATOR ||
+                            // Separate sub-matches from their origins.
+                            match.IsSubMatch());
 }
 
 void AutocompleteResult::LimitNumberOfURLsShown(

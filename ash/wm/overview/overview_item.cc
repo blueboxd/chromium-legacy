@@ -705,36 +705,38 @@ void OverviewItem::SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen) {
 void OverviewItem::UpdateRoundedCornersAndShadow() {
   // Do not show the rounded corners and the shadow if overview is shutting down
   // or we're currently in entering overview animation.
-  bool should_show = true;
+  // Also don't update or animate the window's frame header clip under these
+  // conditions.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   const bool is_shutting_down =
       !overview_controller || !overview_controller->InOverviewSession();
-  if (disable_mask_ || is_shutting_down ||
-      overview_controller->IsInStartAnimation()) {
-    should_show = false;
-  }
+  const bool should_show_rounded_corners =
+      !disable_mask_ && !is_shutting_down &&
+      !overview_controller->IsInStartAnimation();
+
+  transform_window_.UpdateRoundedCorners(
+      should_show_rounded_corners,
+      /*update_clip=*/should_show_rounded_corners);
 
   // In addition, the shadow should be hidden if
   // 1) this overview item is being dragged or
   // 2) this overview item is the drop target window or
   // 3) this overview item is in animation.
   const bool should_show_shadow =
-      should_show && !is_being_dragged_ &&
+      should_show_rounded_corners && !is_being_dragged_ &&
       !overview_grid_->IsDropTargetWindow(GetWindow()) &&
       !transform_window_.GetOverviewWindow()
            ->layer()
            ->GetAnimator()
            ->is_animating();
 
-  transform_window_.UpdateRoundedCorners(should_show,
-                                         /*update_clip=*/!is_shutting_down);
   SetShadowBounds(should_show_shadow
                       ? base::make_optional(gfx::ToEnclosedRect(
                             transform_window_.GetTransformedBounds()))
                       : base::nullopt);
   if (transform_window_.IsMinimized()) {
     caption_container_view_->UpdatePreviewRoundedCorners(
-        should_show, kOverviewWindowRoundingDp);
+        should_show_rounded_corners, kOverviewWindowRoundingDp);
   }
 }
 

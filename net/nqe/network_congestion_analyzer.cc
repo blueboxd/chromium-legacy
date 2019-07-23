@@ -276,32 +276,7 @@ void NetworkCongestionAnalyzer::UpdatePeakDelayMapping(
     return;
 
   if (ShouldStartNewMeasurement(delay, count_inflight_requests)) {
-    // This is the logic to export the tracked mapping data from the last
-    // measurement period.
-    // Updates the count of in-flight requests that would likely cause a high
-    // network queueing delay later.
-    if (peak_queueing_delay_ >=
-        base::TimeDelta::FromMilliseconds(kHighQueueingDelayMsec)) {
-      count_inflight_requests_causing_high_delay_ =
-          count_inflight_requests_for_peak_queueing_delay_;
-    }
-
-    size_t peak_queueing_delay_level =
-        ComputePeakQueueingDelayLevel(peak_queueing_delay_);
-    DCHECK_GE(kQueueingDelayLevelMaxVal, peak_queueing_delay_level);
-
-    if (peak_queueing_delay_level >= kQueueingDelayLevelMinVal &&
-        peak_queueing_delay_level <= kQueueingDelayLevelMaxVal &&
-        peak_count_inflight_requests_measurement_period_ >= 3) {
-      // Records the count of in-flight requests causing the peak queueing delay
-      // within the current measurement period. These samples are bucketized
-      // into 10 peak queueing delay levels.
-      base::UmaHistogramCounts100(
-          "NQE.CongestionAnalyzer.CountInflightRequestsForPeakQueueingDelay."
-          "Level" +
-              base::NumberToString(peak_queueing_delay_level),
-          count_inflight_requests_for_peak_queueing_delay_);
-    }
+    FinalizeCurrentMeasurementPeriod();
 
     // Resets the tracked data for the new measurement period.
     peak_queueing_delay_ = delay;
@@ -326,6 +301,39 @@ void NetworkCongestionAnalyzer::UpdatePeakDelayMapping(
       count_inflight_requests_for_peak_queueing_delay_ =
           peak_count_inflight_requests_measurement_period_;
     }
+  }
+}
+
+void NetworkCongestionAnalyzer::FinalizeCurrentMeasurementPeriod() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Does nothing if the peak count of in-flight requests is less than 3.
+  if (peak_count_inflight_requests_measurement_period_ < 3)
+    return;
+
+  // Exports the tracked mapping data from the current measurement period.
+  // Updates the count of in-flight requests that would likely cause a high
+  // network queueing delay.
+  if (peak_queueing_delay_ >=
+      base::TimeDelta::FromMilliseconds(kHighQueueingDelayMsec)) {
+    count_inflight_requests_causing_high_delay_ =
+        count_inflight_requests_for_peak_queueing_delay_;
+  }
+
+  size_t peak_queueing_delay_level =
+      ComputePeakQueueingDelayLevel(peak_queueing_delay_);
+  DCHECK_GE(kQueueingDelayLevelMaxVal, peak_queueing_delay_level);
+
+  if (peak_queueing_delay_level >= kQueueingDelayLevelMinVal &&
+      peak_queueing_delay_level <= kQueueingDelayLevelMaxVal) {
+    // Records the count of in-flight requests causing the peak queueing delay
+    // within the current measurement period. These samples are bucketized
+    // into 10 peak queueing delay levels.
+    base::UmaHistogramCounts100(
+        "NQE.CongestionAnalyzer.CountInflightRequestsForPeakQueueingDelay."
+        "Level" +
+            base::NumberToString(peak_queueing_delay_level),
+        count_inflight_requests_for_peak_queueing_delay_);
   }
 }
 

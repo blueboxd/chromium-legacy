@@ -56,7 +56,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UnblockDomainFrom3DAPIs(const GURL& url);
   void DisableHardwareAcceleration();
   bool HardwareAccelerationEnabled() const;
-  bool SwiftShaderAllowed() const;
 
   void UpdateGpuInfo(
       const gpu::GPUInfo& gpu_info,
@@ -199,12 +198,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Contains the 1000 most recent log messages.
   std::vector<LogMessage> log_messages_;
 
-  // Current card force-disabled due to GPU crashes, or disabled through
-  // the --disable-gpu commandline switch.
-  bool card_disabled_ = false;
-
-  // SwiftShader force-blocked due to GPU crashes using SwiftShader.
-  bool swiftshader_blocked_ = false;
+  // What the gpu process is being run for.
+  gpu::GpuMode gpu_mode_ = gpu::GpuMode::HARDWARE_ACCELERATED;
 
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.

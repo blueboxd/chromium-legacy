@@ -37,9 +37,9 @@ class VULKAN_EXPORT VulkanDeviceQueue {
                                    uint32_t queue_family_index)>;
   bool Initialize(
       uint32_t options,
+      uint32_t max_api_version,
       const std::vector<const char*>& required_extensions,
-      const GetPresentationSupportCallback& get_presentation_support,
-      bool use_swiftshader);
+      const GetPresentationSupportCallback& get_presentation_support);
 
   bool InitializeForWebView(VkPhysicalDevice vk_physical_device,
                             VkDevice vk_device,

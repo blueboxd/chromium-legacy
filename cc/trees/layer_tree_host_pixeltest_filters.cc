@@ -763,9 +763,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, RotatedFilter) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
-#else
-  if (renderer_type() == RENDERER_SKIA_VK)
-    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(renderer_type(), background,
@@ -983,9 +980,6 @@ TEST_P(LayerTreeHostFiltersPixelTest, BlurFilterWithClip) {
       percentage_pixels_large_error, percentage_pixels_small_error,
       average_error_allowed_in_bad_pixels, large_error_allowed,
       small_error_allowed));
-#else
-  if (renderer_type() == RENDERER_SKIA_VK)
-    pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(true);
 #endif
 
   RunPixelTest(renderer_type(), filter_layer,

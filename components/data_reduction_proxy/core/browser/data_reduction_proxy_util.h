@@ -21,11 +21,6 @@ class Time;
 class TimeDelta;
 }  // namespace base
 
-namespace net {
-class ProxyConfig;
-class ProxyInfo;
-}  // namespace net
-
 namespace data_reduction_proxy {
 
 enum class Client {
@@ -67,24 +62,6 @@ void GetChromiumBuildAndPatchAsInts(const std::string& version_string,
 const char* GetStringForClient(Client client);
 
 GURL AddApiKeyToUrl(const GURL& url);
-
-// Returns whether this is valid for data reduction proxy use. |proxy_info|
-// should contain a single DIRECT ProxyServer, |url| should not be WS or WSO,
-// and the |method| should be idempotent for this to be eligible.
-bool EligibleForDataReductionProxy(const net::ProxyInfo& proxy_info,
-                                   const GURL& url,
-                                   const std::string& method);
-
-// Determines if |proxy_config| would override a direct. |proxy_config| should
-// be a data reduction proxy config with proxy servers mapped in the
-// rules, or DIRECT to indicate DRP is not to be used. |proxy_retry_info|
-// contains the list of bad proxies. |url| is used to determine whether it is
-// HTTP or HTTPS. |data_reduction_proxy_info| is an out param that will contain
-// the proxies that should be used.
-bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
-                                 const net::ProxyRetryInfoMap& proxy_retry_info,
-                                 const GURL& url,
-                                 net::ProxyInfo* data_reduction_proxy_info);
 
 // Returns the hostname used for the other bucket to record datause not scoped
 // to a page load such as chrome-services traffic, service worker, Downloads.

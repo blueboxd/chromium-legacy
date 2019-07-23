@@ -17,6 +17,7 @@ jumbo_component("service") {
     "command_buffer_stub.h",
     "context_url.cc",
     "context_url.h",
+    "display_context.h",
     "gles2_command_buffer_stub.cc",
     "gles2_command_buffer_stub.h",
     "gpu_channel.cc",

@@ -157,13 +157,13 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
       dawn_vertex_buffer.stepMode =
           AsDawnEnum<DawnInputStepMode>(vertex_buffer.stepMode());
       dawn_vertex_buffer.attributeCount =
-          static_cast<uint32_t>(vertex_buffer.attributes().size());
+          static_cast<uint32_t>(vertex_buffer.attributeSet().size());
       dawn_vertex_buffer.attributes = nullptr;
       dawn_vertex_buffers.push_back(dawn_vertex_buffer);
 
-      for (wtf_size_t j = 0; j < vertex_buffer.attributes().size(); ++j) {
+      for (wtf_size_t j = 0; j < vertex_buffer.attributeSet().size(); ++j) {
         const GPUVertexAttributeDescriptor* attribute =
-            vertex_buffer.attributes()[j];
+            vertex_buffer.attributeSet()[j];
         DawnVertexAttributeDescriptor dawn_vertex_attribute = {};
         dawn_vertex_attribute.shaderLocation = attribute->shaderLocation();
         dawn_vertex_attribute.offset = attribute->offset();

@@ -11,7 +11,7 @@
 #import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/navigation/legacy_navigation_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/security/wk_web_view_security_util.h"

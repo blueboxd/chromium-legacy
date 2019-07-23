@@ -10,7 +10,7 @@
 namespace blink {
 
 LayoutNGListMarker::LayoutNGListMarker(Element* element)
-    : LayoutNGMixin<LayoutBlockFlow>(element) {}
+    : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {}
 
 LayoutNGListMarker* LayoutNGListMarker::CreateAnonymous(Document* document) {
   LayoutNGListMarker* object = new LayoutNGListMarker(nullptr);

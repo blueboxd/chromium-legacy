@@ -9,7 +9,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/grit/ios_web_resources.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"

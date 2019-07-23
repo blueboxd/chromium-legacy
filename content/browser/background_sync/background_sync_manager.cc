@@ -1320,8 +1320,10 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
 
   // Don't fire the registration if the client hasn't yet resolved its
   // registration promise.
-  if (!registration.resolved())
+  if (!registration.resolved() &&
+      registration.sync_type() == BackgroundSyncType::ONE_SHOT) {
     return false;
+  }
 
   if (registration.sync_state() != blink::mojom::BackgroundSyncState::PENDING)
     return false;

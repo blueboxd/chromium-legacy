@@ -28,8 +28,10 @@ class RendererClient {
   // Executed periodically with rendering statistics.
   virtual void OnStatisticsUpdate(const PipelineStatistics& stats) = 0;
 
-  // Executed when buffering state is changed.
-  virtual void OnBufferingStateChange(BufferingState state) = 0;
+  // Executed when buffering state is changed. |reason| indicates the cause of
+  // the state change, when known.
+  virtual void OnBufferingStateChange(BufferingState state,
+                                      BufferingStateChangeReason reason) = 0;
 
   // Executed whenever the Renderer is waiting because of |reason|.
   virtual void OnWaiting(WaitingReason reason) = 0;

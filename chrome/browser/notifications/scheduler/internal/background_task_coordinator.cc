@@ -7,12 +7,15 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "base/time/clock.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
+#include "chrome/browser/notifications/scheduler/public/features.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 
 namespace notifications {
@@ -23,8 +26,12 @@ class BackgroundTaskCoordinatorHelper {
   BackgroundTaskCoordinatorHelper(
       NotificationBackgroundTaskScheduler* background_task,
       const SchedulerConfig* config,
+      BackgroundTaskCoordinator::TimeRandomizer time_randomizer,
       base::Clock* clock)
-      : background_task_(background_task), config_(config), clock_(clock) {}
+      : background_task_(background_task),
+        config_(config),
+        time_randomizer_(time_randomizer),
+        clock_(clock) {}
   ~BackgroundTaskCoordinatorHelper() = default;
 
   void ScheduleBackgroundTask(
@@ -143,13 +150,30 @@ class BackgroundTaskCoordinatorHelper {
     window_start_time = base::ClampToRange(window_start_time, base::TimeDelta(),
                                            base::TimeDelta::Max());
 
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kNotificationSchedulerImmediateBackgroundTask)) {
+      background_task_->Schedule(
+          task_start_time, base::TimeDelta(),
+          base::TimeDelta() + base::TimeDelta::FromMinutes(1));
+      return;
+    }
+
+    // Adds a randomized time delta to distribute the click loads.
+    // TODO(xingliu): Maybe show notifications one by one and spread into a time
+    // window.  See https://crbug.com/986614
+    base::TimeDelta random_interval;
+    if (task_start_time != SchedulerTaskTime::kUnknown)
+      random_interval = time_randomizer_.Run();
+
     background_task_->Schedule(
-        task_start_time, window_start_time,
-        window_start_time + config_->background_task_window_duration);
+        task_start_time, window_start_time + random_interval,
+        window_start_time + config_->background_task_window_duration +
+            random_interval);
   }
 
   NotificationBackgroundTaskScheduler* background_task_;
   const SchedulerConfig* config_;
+  BackgroundTaskCoordinator::TimeRandomizer time_randomizer_;
   base::Clock* clock_;
   base::Optional<base::Time> background_task_time_;
 
@@ -158,12 +182,20 @@ class BackgroundTaskCoordinatorHelper {
 
 }  // namespace
 
+// static
+base::TimeDelta BackgroundTaskCoordinator::DefaultTimeRandomizer(
+    const base::TimeDelta& time_window) {
+  return base::RandDouble() * time_window;
+}
+
 BackgroundTaskCoordinator::BackgroundTaskCoordinator(
     std::unique_ptr<NotificationBackgroundTaskScheduler> background_task,
     const SchedulerConfig* config,
+    TimeRandomizer time_randomizer,
     base::Clock* clock)
     : background_task_(std::move(background_task)),
       config_(config),
+      time_randomizer_(time_randomizer),
       clock_(clock) {}
 
 BackgroundTaskCoordinator::~BackgroundTaskCoordinator() = default;
@@ -173,7 +205,7 @@ void BackgroundTaskCoordinator::ScheduleBackgroundTask(
     ClientStates client_states,
     SchedulerTaskTime task_start_time) {
   auto helper = std::make_unique<BackgroundTaskCoordinatorHelper>(
-      background_task_.get(), config_, clock_);
+      background_task_.get(), config_, time_randomizer_, clock_);
   helper->ScheduleBackgroundTask(std::move(notifications),
                                  std::move(client_states), task_start_time);
 }

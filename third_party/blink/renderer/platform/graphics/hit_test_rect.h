@@ -9,10 +9,6 @@
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-namespace cc {
-class TouchActionRegion;
-}
-
 namespace blink {
 
 struct PLATFORM_EXPORT HitTestRect {
@@ -27,7 +23,6 @@ struct PLATFORM_EXPORT HitTestRect {
   HitTestRect(const LayoutRect& layout_rect, TouchAction action)
       : rect(layout_rect), allowed_touch_action(action) {}
 
-  static cc::TouchActionRegion BuildRegion(const Vector<HitTestRect>&);
   static LayoutRect GetBounds(const Vector<HitTestRect>&);
 
   bool operator==(const HitTestRect& rhs) const {

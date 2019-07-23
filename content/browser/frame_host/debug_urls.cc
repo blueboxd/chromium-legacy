@@ -136,8 +136,16 @@ bool HandleDebugURL(const GURL& url, ui::PageTransition transition) {
           cc::switches::kEnableGpuBenchmarking) &&
       (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED));
 
-  if (!(transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
-      !is_telemetry_navigation)
+  // TODO(crbug.com/986346): allow this behavior to be customized by the
+  // embedder.
+  bool is_explicit_navigation =
+#if defined(ENABLE_ADDRESS_BAR)
+      transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR;
+#else
+      ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED);
+#endif
+
+  if (!is_explicit_navigation && !is_telemetry_navigation)
     return false;
 
   if (IsAsanDebugURL(url))

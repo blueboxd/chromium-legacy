@@ -687,6 +687,16 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    html_source->AddLocalizedString("changePictureTitle",
+                                    IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE);
+  } else {
+    html_source->AddLocalizedString("changePictureTitle",
+                                    IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE);
+  }
+#endif
 }
 
 #if defined(OS_CHROMEOS)
@@ -1932,7 +1942,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_PIN_KEYBOARD_HINT_TEXT_PIN_PASSWORD},
     {"pinKeyboardDeleteAccessibleName",
      IDS_PIN_KEYBOARD_DELETE_ACCESSIBLE_NAME},
-    {"changePictureTitle", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE},
     {"changePicturePageDescription", IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT},
     {"takePhoto", IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO},
     {"captureVideo", IDS_SETTINGS_CHANGE_PICTURE_CAPTURE_VIDEO},

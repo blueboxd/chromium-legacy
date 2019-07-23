@@ -50,7 +50,7 @@
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
-#include "chrome/renderer/media/webrtc_logging_message_filter.h"
+#include "chrome/renderer/media/webrtc_logging_agent_impl.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
@@ -372,8 +372,10 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
   subresource_filter_ruleset_dealer_.reset(
       new subresource_filter::UnverifiedRulesetDealer());
-  webrtc_logging_message_filter_ =
-      new WebRtcLoggingMessageFilter(thread->GetIOTaskRunner());
+
+  registry_.AddInterface(base::BindRepeating(
+      &ChromeContentRendererClient::OnWebRtcLoggingAgentRequest,
+      base::Unretained(this)));
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(prerender_dispatcher_.get());
@@ -383,7 +385,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(SearchBouncer::GetInstance());
 #endif
 
-  thread->AddFilter(webrtc_logging_message_filter_.get());
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -1638,4 +1639,13 @@ bool ChromeContentRendererClient::RequiresHtmlImports(const GURL& url) {
   can_use_polyfill |= url.host() == chrome::kChromeUIPrintHost;
 #endif
   return url.SchemeIs(content::kChromeUIScheme) && !can_use_polyfill;
+}
+
+void ChromeContentRendererClient::OnWebRtcLoggingAgentRequest(
+    mojo::InterfaceRequest<chrome::mojom::WebRtcLoggingAgent> request) {
+  if (!webrtc_logging_agent_impl_) {
+    webrtc_logging_agent_impl_ =
+        std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+  }
+  webrtc_logging_agent_impl_->AddReceiver(std::move(request));
 }

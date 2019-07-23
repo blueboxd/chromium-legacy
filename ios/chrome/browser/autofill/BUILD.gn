@@ -70,6 +70,7 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/webdata_services",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",

@@ -18,7 +18,7 @@
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/navigation_manager.h"
+#include "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

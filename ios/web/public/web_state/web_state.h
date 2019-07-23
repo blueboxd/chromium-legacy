@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ui/base/page_transition_types.h"

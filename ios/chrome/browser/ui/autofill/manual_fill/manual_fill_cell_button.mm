@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_button.h"
 
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,7 +50,7 @@ static const CGFloat kButtonVerticalMargin = 12;
 #pragma mark - Private
 
 - (void)initializeStyling {
-  [self setTitleColor:UIColor.cr_manualFillTintColor
+  [self setTitleColor:[UIColor colorNamed:kTintColor]
              forState:UIControlStateNormal];
   self.translatesAutoresizingMaskIntoConstraints = NO;
   self.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];

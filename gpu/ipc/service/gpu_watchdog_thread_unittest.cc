@@ -4,6 +4,9 @@
 
 #include "gpu/ipc/service/gpu_watchdog_thread_v2.h"
 
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,6 +43,22 @@ class GpuWatchdogTest : public testing::Test {
   std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread_;
 };
 
+class GpuWatchdogPowerTest : public GpuWatchdogTest {
+ public:
+  GpuWatchdogPowerTest() {}
+
+  void LongTaskOnResume(base::TimeDelta duration,
+                        base::TimeDelta time_to_power_resume);
+
+  // Implements testing::Test
+  void SetUp() override;
+  void TearDown() override;
+
+ protected:
+  ~GpuWatchdogPowerTest() override = default;
+  base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
+};
+
 void GpuWatchdogTest::SetUp() {
   ASSERT_TRUE(base::ThreadTaskRunnerHandle::IsSet());
   ASSERT_TRUE(base::MessageLoopCurrent::IsSet());
@@ -49,6 +68,28 @@ void GpuWatchdogTest::SetUp() {
       /*start_backgrounded*/ false,
       /*timeout*/ kGpuWatchdogTimeout,
       /*test_mode*/ true);
+}
+
+void GpuWatchdogPowerTest::SetUp() {
+  GpuWatchdogTest::SetUp();
+
+  // Report GPU init complete.
+  watchdog_thread_->OnInitComplete();
+
+  // Create a power monitor test source.
+  auto power_monitor_source = std::make_unique<base::PowerMonitorTestSource>();
+  power_monitor_source_ = power_monitor_source.get();
+  base::PowerMonitor::Initialize(std::move(power_monitor_source));
+  watchdog_thread_->AddPowerObserver();
+
+  // Wait until the power observer is added on the watchdog thread
+  watchdog_thread_->WaitForPowerObserverAddedForTesting();
+}
+
+void GpuWatchdogPowerTest::TearDown() {
+  GpuWatchdogTest::TearDown();
+  watchdog_thread_.reset();
+  base::PowerMonitor::ShutdownForTesting();
 }
 
 // This task will run for duration_ms milliseconds. It will also call watchdog
@@ -76,6 +117,20 @@ void GpuWatchdogTest::LongTaskFromBackgroundToForeground(
   base::PlatformThread::Sleep(duration - time_to_switch_to_foreground);
 }
 
+void GpuWatchdogPowerTest::LongTaskOnResume(
+    base::TimeDelta duration,
+    base::TimeDelta time_to_power_resume) {
+  // Stay in power suspension mode first.
+  power_monitor_source_->GenerateSuspendEvent();
+
+  base::PlatformThread::Sleep(time_to_power_resume);
+
+  // Now wake up on power resume.
+  power_monitor_source_->GenerateResumeEvent();
+  // Continue the GPU task for the remaining time.
+  base::PlatformThread::Sleep(duration - time_to_power_resume);
+}
+
 // GPU Hang In Initialization
 TEST_F(GpuWatchdogTest, GpuInitializationHang) {
   // Gpu init (4000 ms) takes longer than timeout (1000 ms).
@@ -83,7 +138,7 @@ TEST_F(GpuWatchdogTest, GpuInitializationHang) {
 
   // Gpu hangs. OnInitComplete() is not called
 
-  bool result = watchdog_thread_->IsGpuHangDetected();
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
   EXPECT_TRUE(result);
 }
 
@@ -115,7 +170,7 @@ TEST_F(GpuWatchdogTest, GpuInitializationAndRunningTasks) {
   run_loop.Run();
 
   // Everything should be fine. No GPU hang detected.
-  bool result = watchdog_thread_->IsGpuHangDetected();
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
   EXPECT_FALSE(result);
 }
 
@@ -134,7 +189,7 @@ TEST_F(GpuWatchdogTest, GpuRunningATaskHang) {
   run_loop.Run();
 
   // This GPU task takes too long. A GPU hang should be detected.
-  bool result = watchdog_thread_->IsGpuHangDetected();
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
   EXPECT_TRUE(result);
 }
 
@@ -157,7 +212,7 @@ TEST_F(GpuWatchdogTest, ChromeInBackground) {
   run_loop.Run();
 
   // The gpu might be slow when running in the background. This is ok.
-  bool result = watchdog_thread_->IsGpuHangDetected();
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
   EXPECT_FALSE(result);
 }
 
@@ -182,7 +237,50 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
 
   // It takes too long to finish a task after switching to the foreground.
   // A GPU hang should be detected.
-  bool result = watchdog_thread_->IsGpuHangDetected();
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
+  EXPECT_TRUE(result);
+}
+
+TEST_F(GpuWatchdogPowerTest, GpuOnSuspend) {
+  // watchdog_thread_->OnInitComplete() is called in SetUp
+
+  // Enter power suspension mode.
+  power_monitor_source_->GenerateSuspendEvent();
+
+  // Run a task that takes longer (4000 milliseconds) than timeout.
+  main_loop.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&SimpleTask, kGpuWatchdogTimeout * 2 +
+                                      base::TimeDelta::FromMilliseconds(2000)));
+  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  // A task might take long time to finish after entering suspension mode.
+  // This one is not a GPU hang.
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
+  EXPECT_FALSE(result);
+}
+
+TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
+  // watchdog_thread_->OnInitComplete() is called in SetUp
+
+  // This task stays in the suspension mode for 200 milliseconds, and it
+  // wakes up on power resume and then runs for 6000 milliseconds. This is
+  // longer than the watchdog resume timeout (2000 ms).
+  main_loop.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&GpuWatchdogPowerTest::LongTaskOnResume,
+                                base::Unretained(this),
+                                /*duration*/ kGpuWatchdogTimeout * 2 +
+                                    base::TimeDelta::FromMilliseconds(4200),
+                                /*time_to_power_resume*/
+                                base::TimeDelta::FromMilliseconds(200)));
+
+  main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
+
+  // It takes too long to finish this task after power resume. A GPU hang should
+  // be detected.
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
   EXPECT_TRUE(result);
 }
 

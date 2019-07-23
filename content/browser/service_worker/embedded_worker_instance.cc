@@ -668,6 +668,9 @@ void EmbeddedWorkerInstance::Start(
   params->wait_for_debugger = false;
   params->v8_cache_options = GetV8CacheOptions();
 
+  params->subresource_loader_updater =
+      subresource_loader_updater_.BindNewPipeAndPassReceiver();
+
   blink::mojom::EmbeddedWorkerInstanceClientRequest request =
       mojo::MakeRequest(&client_);
   client_.set_connection_error_handler(
@@ -949,8 +952,11 @@ void EmbeddedWorkerInstance::UpdateLoaderFactories(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> subresource_bundle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(subresource_loader_updater_.is_bound());
 
-  client_->UpdateSubresourceLoaderFactories(std::move(subresource_bundle));
+  subresource_loader_updater_->UpdateSubresourceLoaderFactories(
+      std::move(subresource_bundle));
+
   if (script_loader_factory_) {
     static_cast<ServiceWorkerScriptLoaderFactory*>(
         script_loader_factory_->impl())
@@ -1110,6 +1116,7 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   devtools_proxy_.reset();
   process_handle_.reset();
   lifetime_tracker_.reset();
+  subresource_loader_updater_.reset();
   status_ = EmbeddedWorkerStatus::STOPPED;
   starting_phase_ = NOT_STARTING;
   thread_id_ = ServiceWorkerConsts::kInvalidEmbeddedWorkerThreadId;

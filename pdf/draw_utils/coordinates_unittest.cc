@@ -13,9 +13,18 @@ namespace draw_utils {
 namespace {
 
 constexpr int kBottomSeparator = 4;
+constexpr int kHorizontalSeparator = 1;
 constexpr PageInsetSizes kLeftInsets{5, 3, 1, 7};
 constexpr PageInsetSizes kRightInsets{1, 3, 5, 7};
 constexpr PageInsetSizes kSingleViewInsets{5, 3, 5, 7};
+
+void CompareInsetSizes(const PageInsetSizes& expected_insets,
+                       const PageInsetSizes& given_insets) {
+  EXPECT_EQ(expected_insets.left, given_insets.left);
+  EXPECT_EQ(expected_insets.top, given_insets.top);
+  EXPECT_EQ(expected_insets.right, given_insets.right);
+  EXPECT_EQ(expected_insets.bottom, given_insets.bottom);
+}
 
 }  // namespace
 
@@ -42,6 +51,28 @@ TEST(CoordinateTest, ExpandDocumentSize) {
   ExpandDocumentSize(rect_size, &doc_size);
   EXPECT_EQ(250, doc_size.width());
   EXPECT_EQ(1450, doc_size.height());
+}
+
+TEST(CoordinateTest, GetPageInsetsForTwoUpView) {
+  // Page is on the left side and isn't the last page in the document.
+  CompareInsetSizes(kLeftInsets,
+                    GetPageInsetsForTwoUpView(0, 10, kSingleViewInsets,
+                                              kHorizontalSeparator));
+
+  // Page is on the left side and is the last page in the document.
+  CompareInsetSizes(kSingleViewInsets,
+                    GetPageInsetsForTwoUpView(10, 11, kSingleViewInsets,
+                                              kHorizontalSeparator));
+
+  // Only one page in the document.
+  CompareInsetSizes(
+      kSingleViewInsets,
+      GetPageInsetsForTwoUpView(0, 1, kSingleViewInsets, kHorizontalSeparator));
+
+  // Page is on the right side of the document.
+  CompareInsetSizes(
+      kRightInsets,
+      GetPageInsetsForTwoUpView(1, 4, kSingleViewInsets, kHorizontalSeparator));
 }
 
 TEST(CoordinateTest, GetLeftFillRect) {

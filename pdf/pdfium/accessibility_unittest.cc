@@ -116,4 +116,39 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   }
 }
 
+TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
+  ASSERT_TRUE(engine);
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+
+  // The test rect spans across [0, 4] char indices.
+  int start_index = -1;
+  uint32_t char_count = 0;
+  EXPECT_TRUE(page->GetUnderlyingTextRangeForRect(
+      pp::FloatRect(20.0f, 50.0f, 26.0f, 8.0f), &start_index, &char_count));
+  EXPECT_EQ(start_index, 0);
+  EXPECT_EQ(char_count, 5u);
+
+  // The input rectangle is spanning across multiple lines.
+  // GetUnderlyingTextRangeForRect() should return only the char indices
+  // of first line.
+  start_index = -1;
+  char_count = 0;
+  EXPECT_TRUE(page->GetUnderlyingTextRangeForRect(
+      pp::FloatRect(20.0f, 0.0f, 26.0f, 58.0f), &start_index, &char_count));
+  EXPECT_EQ(start_index, 0);
+  EXPECT_EQ(char_count, 5u);
+
+  // There is no text below this rectangle. So, GetUnderlyingTextRangeForRect()
+  // will return false.
+  EXPECT_FALSE(page->GetUnderlyingTextRangeForRect(
+      pp::FloatRect(10.0f, 10.0f, 0.0f, 0.0f), &start_index, &char_count));
+  EXPECT_EQ(start_index, 0);
+  EXPECT_EQ(char_count, 5u);
+}
+
 }  // namespace chrome_pdf

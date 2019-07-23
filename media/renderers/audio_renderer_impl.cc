@@ -372,6 +372,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
     sink_->Stop();
 
   state_ = kInitializing;
+  demuxer_stream_ = stream;
   client_ = client;
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
@@ -382,7 +383,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   // media thread on synchronous IPC.
   sink_->GetOutputDeviceInfoAsync(
       base::BindOnce(&AudioRendererImpl::OnDeviceInfoReceived,
-                     weak_factory_.GetWeakPtr(), stream, cdm_context));
+                     weak_factory_.GetWeakPtr(), demuxer_stream_, cdm_context));
 }
 
 void AudioRendererImpl::OnDeviceInfoReceived(
@@ -668,11 +669,21 @@ void AudioRendererImpl::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void AudioRendererImpl::OnBufferingStateChange(BufferingState state) {
+void AudioRendererImpl::OnBufferingStateChange(BufferingState buffering_state) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // "Underflow" is only possible when playing. This avoids noise like blaming
+  // the decoder for an "underflow" that is really just a seek.
+  BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
+  if (state_ == kPlaying && buffering_state == BUFFERING_HAVE_NOTHING) {
+    reason = demuxer_stream_->IsReadPending() ? DEMUXER_UNDERFLOW
+                                              : DECODER_UNDERFLOW;
+  }
+
   media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
-      "audio_buffering_state", state));
-  client_->OnBufferingStateChange(state);
+      "audio_buffering_state", buffering_state, reason));
+
+  client_->OnBufferingStateChange(buffering_state, reason);
 }
 
 void AudioRendererImpl::OnWaiting(WaitingReason reason) {

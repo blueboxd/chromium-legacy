@@ -144,7 +144,8 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnError(PipelineStatus status) override { NOTREACHED(); }
   void OnEnded() override {}
   void OnMetadata(const PipelineMetadata& metadata) override {}
-  void OnBufferingStateChange(BufferingState state) override {}
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason) override {}
   void OnDurationChange() override {}
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb) override {}

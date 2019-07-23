@@ -5,6 +5,7 @@
 #ifndef SERVICES_MEDIA_SESSION_AUDIO_FOCUS_REQUEST_H_
 #define SERVICES_MEDIA_SESSION_AUDIO_FOCUS_REQUEST_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -13,6 +14,8 @@
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 
 namespace media_session {
+
+using GetMediaImageBitmapCallback = base::OnceCallback<void(const SkBitmap&)>;
 
 class AudioFocusManager;
 struct EnforcementState;
@@ -65,6 +68,12 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
   // has transiently suspended the session.
   void PerformUIAction(mojom::MediaSessionAction action);
 
+  // Retrieves the bitmap associated with a |image|.
+  void GetMediaImageBitmap(const MediaImage& image,
+                           int minimum_size_px,
+                           int desired_size_px,
+                           GetMediaImageBitmapCallback callback);
+
   mojom::MediaSession* ipc() { return session_.get(); }
   const mojom::MediaSessionInfoPtr& info() const { return session_info_; }
   const base::UnguessableToken& id() const { return id_; }
@@ -74,6 +83,9 @@ class AudioFocusRequest : public mojom::AudioFocusRequestClient {
  private:
   void SetSessionInfo(mojom::MediaSessionInfoPtr session_info);
   void OnConnectionError();
+
+  void OnImageDownloaded(GetMediaImageBitmapCallback callback,
+                         const SkBitmap& bitmap);
 
   AudioFocusManagerMetricsHelper metrics_helper_;
   bool encountered_error_ = false;

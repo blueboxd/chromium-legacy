@@ -59,6 +59,10 @@ const char kGoogleUserInfoProfile[] =
 const char kPeopleApiReadOnlyOAuth2Scope[] =
     "https://www.googleapis.com/auth/peopleapi.readonly";
 
+// OAuth scope for access to the Reauth flow.
+const char kAccountsReauthOAuth2Scope[] =
+    "https://www.googleapis.com/auth/accounts.reauth";
+
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";

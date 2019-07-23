@@ -158,6 +158,10 @@ WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }
 
+void WebViewFrameWidget::DidDetachLocalFrameTree() {
+  web_view_->DidDetachLocalMainFrame();
+}
+
 WebInputMethodController*
 WebViewFrameWidget::GetActiveWebInputMethodController() const {
   return web_view_->GetActiveWebInputMethodController();

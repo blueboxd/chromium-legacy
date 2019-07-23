@@ -9,6 +9,7 @@ import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
@@ -51,6 +52,11 @@ public class RadioButtonGroupThemePreference
         assert ThemeSetting.NUM_ENTRIES == 3;
         mButtons.set(ThemeSetting.SYSTEM_DEFAULT,
                 (RadioButtonWithDescription) holder.findViewById(R.id.system_default));
+        if (BuildInfo.isAtLeastQ()) {
+            mButtons.get(ThemeSetting.SYSTEM_DEFAULT)
+                    .setDescriptionText(
+                            getContext().getString(R.string.themes_system_default_summary_api_29));
+        }
         mButtons.set(
                 ThemeSetting.LIGHT, (RadioButtonWithDescription) holder.findViewById(R.id.light));
         mButtons.set(

@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -67,6 +68,35 @@ int64_t GetCacheStorageSize(const proto::CacheStorageIndex& index) {
   return storage_size;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class IndexResult {
+  kOk = 0,
+  kFailedToParse = 1,
+  kMissingOrigin = 2,
+  kEmptyOriginUrl = 3,
+  kPathMismatch = 4,
+  kPathFileInfoFailed = 5,
+  // Add new enums above
+  kMaxValue = kPathFileInfoFailed,
+};
+
+IndexResult ValidateIndex(proto::CacheStorageIndex index) {
+  if (!index.has_origin())
+    return IndexResult::kMissingOrigin;
+
+  GURL url(index.origin());
+  if (url.is_empty())
+    return IndexResult::kEmptyOriginUrl;
+
+  return IndexResult::kOk;
+}
+
+void RecordIndexValidationResult(IndexResult value) {
+  base::UmaHistogramEnumeration("ServiceWorkerCache.ListOriginsIndexValidity",
+                                value);
+}
+
 // Open the various cache directories' index files and extract their origins,
 // sizes (if current), and last modified times.
 void ListOriginsAndLastModifiedOnTaskRunner(
@@ -87,23 +117,40 @@ void ListOriginsAndLastModifiedOnTaskRunner(
     std::string protobuf;
     base::ReadFileToString(path.AppendASCII(LegacyCacheStorage::kIndexFileName),
                            &protobuf);
+
     proto::CacheStorageIndex index;
-    if (index.ParseFromString(protobuf)) {
-      if (index.has_origin()) {
-        if (path ==
-            LegacyCacheStorageManager::ConstructOriginPath(
-                root_path, url::Origin::Create(GURL(index.origin())), owner)) {
-          if (base::GetFileInfo(path, &file_info)) {
-            int64_t storage_size = CacheStorage::kSizeUnknown;
-            if (file_info.last_modified < index_last_modified)
-              storage_size = GetCacheStorageSize(index);
-            usages->push_back(
-                StorageUsageInfo(url::Origin::Create(GURL(index.origin())),
-                                 storage_size, file_info.last_modified));
-          }
-        }
-      }
+    if (!index.ParseFromString(protobuf)) {
+      RecordIndexValidationResult(IndexResult::kFailedToParse);
+      continue;
     }
+
+    IndexResult rv = ValidateIndex(index);
+    if (rv != IndexResult::kOk) {
+      RecordIndexValidationResult(rv);
+      continue;
+    }
+
+    auto origin = url::Origin::Create(GURL(index.origin()));
+    DCHECK(!origin.GetURL().is_empty());
+
+    auto origin_path = LegacyCacheStorageManager::ConstructOriginPath(
+        root_path, origin, owner);
+    if (path != origin_path) {
+      RecordIndexValidationResult(IndexResult::kPathMismatch);
+      continue;
+    }
+
+    if (!base::GetFileInfo(path, &file_info)) {
+      RecordIndexValidationResult(IndexResult::kPathFileInfoFailed);
+      continue;
+    }
+
+    int64_t storage_size = CacheStorage::kSizeUnknown;
+    if (file_info.last_modified < index_last_modified)
+      storage_size = GetCacheStorageSize(index);
+    usages->push_back(
+        StorageUsageInfo(origin, storage_size, file_info.last_modified));
+    RecordIndexValidationResult(IndexResult::kOk);
   }
 }
 

@@ -848,7 +848,8 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
     if (old_state == kReadyStateHaveEnoughData) {
       main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&WebMediaPlayerImpl::OnBufferingStateChange,
-                                    weak_this_, BUFFERING_HAVE_ENOUGH));
+                                    weak_this_, BUFFERING_HAVE_ENOUGH,
+                                    BUFFERING_CHANGE_REASON_UNKNOWN));
     }
     return;
   }
@@ -1546,7 +1547,8 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
     // Note: This call is dual purpose, it is also responsible for triggering an
     // UpdatePlayState() call which may need to resume the pipeline once Blink
     // has been told about the ReadyState change.
-    OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH, true);
+    OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH,
+                                   BUFFERING_CHANGE_REASON_UNKNOWN, true);
 
     // If |skip_metrics_due_to_startup_suspend_| is unset by a resume started by
     // the OnBufferingStateChangeInternal() call, record a histogram of it here.
@@ -1906,8 +1908,10 @@ void WebMediaPlayerImpl::ActivateSurfaceLayerForVideo() {
     OnSurfaceIdUpdated(bridge_->GetSurfaceId());
 }
 
-void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
-  OnBufferingStateChangeInternal(state, false);
+void WebMediaPlayerImpl::OnBufferingStateChange(
+    BufferingState state,
+    BufferingStateChangeReason reason) {
+  OnBufferingStateChangeInternal(state, reason, false);
 }
 
 void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
@@ -1999,8 +2003,9 @@ bool WebMediaPlayerImpl::CanPlayThrough() {
 
 void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
     BufferingState state,
+    BufferingStateChangeReason reason,
     bool for_suspended_start) {
-  DVLOG(1) << __func__ << "(" << state << ")";
+  DVLOG(1) << __func__ << "(" << state << ", " << reason << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Ignore buffering state changes caused by back-to-back seeking, so as not
@@ -2009,7 +2014,7 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
     return;
 
   auto log_event = media_log_->CreateBufferingStateChangedEvent(
-      "pipeline_buffering_state", state);
+      "pipeline_buffering_state", state, reason);
   log_event->params.SetBoolean("for_suspended_start", for_suspended_start);
   media_log_->AddEvent(std::move(log_event));
 

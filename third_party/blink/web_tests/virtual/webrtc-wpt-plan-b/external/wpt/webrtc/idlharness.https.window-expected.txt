@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 508 tests; 400 PASS, 108 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 508 tests; 399 PASS, 109 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
@@ -290,7 +290,6 @@ PASS RTCRtpTransceiver interface: existence and properties of interface prototyp
 PASS RTCRtpTransceiver interface: attribute mid
 PASS RTCRtpTransceiver interface: attribute sender
 PASS RTCRtpTransceiver interface: attribute receiver
-PASS RTCRtpTransceiver interface: attribute stopped
 PASS RTCRtpTransceiver interface: attribute direction
 PASS RTCRtpTransceiver interface: attribute currentDirection
 FAIL RTCRtpTransceiver interface: operation stop() assert_own_property: interface prototype object missing non-static operation expected property "stop" missing
@@ -300,7 +299,6 @@ FAIL Stringification of new RTCPeerConnection().addTransceiver('audio') assert_e
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "mid" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "sender" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "receiver" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
-FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "stopped" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "direction" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "currentDirection" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL RTCRtpTransceiver interface: new RTCPeerConnection().addTransceiver('audio') must inherit property "stop()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
@@ -412,6 +410,7 @@ PASS RTCDataChannel interface: attribute bufferedAmountLowThreshold
 PASS RTCDataChannel interface: attribute onopen
 PASS RTCDataChannel interface: attribute onbufferedamountlow
 PASS RTCDataChannel interface: attribute onerror
+FAIL RTCDataChannel interface: attribute onclosing assert_true: The prototype object must have a property "onclosing" expected true got false
 PASS RTCDataChannel interface: attribute onclose
 PASS RTCDataChannel interface: operation close()
 PASS RTCDataChannel interface: attribute onmessage
@@ -436,6 +435,7 @@ PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') mus
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onopen" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onbufferedamountlow" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onerror" with the proper type
+FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onclosing" with the proper type assert_inherits: property "onclosing" not found in prototype chain
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onclose" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "close()" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "onmessage" with the proper type

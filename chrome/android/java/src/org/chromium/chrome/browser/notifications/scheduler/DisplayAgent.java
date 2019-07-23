@@ -73,7 +73,7 @@ public class DisplayAgent {
         public final String title;
         public final String message;
         public final Bitmap icon;
-        public ArrayList<Button> buttons;
+        public ArrayList<Button> buttons = new ArrayList<>();
 
         private NotificationData(String title, String message, Bitmap icon) {
             // TODO(xingliu): Populate custom data.

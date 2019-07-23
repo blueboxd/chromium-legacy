@@ -211,6 +211,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   uint32_t flags = trace_event->flags();
   bool copy_strings = flags & TRACE_EVENT_FLAG_COPY;
+  bool is_java_event = flags & TRACE_EVENT_FLAG_JAVA_STRING_LITERALS;
   bool explicit_timestamp = flags & TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP;
 
   // We access |incremental_state_reset_id_| atomically but racily. It's OK if
@@ -238,7 +239,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   InterningIndexEntry interned_source_location{};
 
   if (copy_strings) {
-    if (privacy_filtering_enabled_) {
+    if (!is_java_event && privacy_filtering_enabled_) {
       interned_name = interned_event_names_.LookupOrAdd(kPrivacyFiltered);
     } else {
       interned_name =
@@ -448,7 +449,8 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     }
     auto* name_entry = interned_data->add_legacy_event_names();
     name_entry->set_iid(interned_name.id);
-    name_entry->set_name(copy_strings && privacy_filtering_enabled_
+    name_entry->set_name(copy_strings && !is_java_event &&
+                                 privacy_filtering_enabled_
                              ? kPrivacyFiltered
                              : trace_event->name());
   }

@@ -5,7 +5,10 @@
 #ifndef ASH_APP_LIST_TEST_TEST_APP_LIST_CLIENT_H_
 #define ASH_APP_LIST_TEST_TEST_APP_LIST_CLIENT_H_
 
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "base/macros.h"
@@ -58,6 +61,10 @@ class TestAppListClient : public app_list::AppListClient {
       override {}
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override {}
+  void NotifySearchResultsForLogging(
+      const base::string16& trimmed_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAppListClient);

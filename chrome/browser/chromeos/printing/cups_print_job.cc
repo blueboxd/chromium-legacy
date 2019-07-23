@@ -40,7 +40,7 @@ std::string CupsPrintJob::CreateUniqueId(const std::string& printer_id,
 
 bool CupsPrintJob::IsJobFinished() const {
   return state_ == CupsPrintJob::State::STATE_CANCELLED ||
-         state_ == CupsPrintJob::State::STATE_ERROR ||
+         state_ == CupsPrintJob::State::STATE_FAILED ||
          state_ == CupsPrintJob::State::STATE_DOCUMENT_DONE;
 }
 

@@ -884,7 +884,7 @@ bool PepperPluginInstanceImpl::Initialize(
     message_channel_->Start();
 
   if (success)
-    AccessibilityModeChanged();
+    HandleAccessibilityChange();
 
   initialized_ = success;
   return success;
@@ -2228,11 +2228,9 @@ bool PepperPluginInstanceImpl::PrepareTransferableResource(
       bitmap_registrar, transferable_resource, release_callback);
 }
 
-void PepperPluginInstanceImpl::AccessibilityModeChanged() {
-  if (render_frame_ && render_frame_->render_accessibility() &&
-      LoadPdfInterface()) {
-    plugin_pdf_interface_->EnableAccessibility(pp_instance());
-  }
+void PepperPluginInstanceImpl::AccessibilityModeChanged(
+    const ui::AXMode& mode) {
+  HandleAccessibilityChange();
 }
 
 void PepperPluginInstanceImpl::OnDestruct() {
@@ -3390,6 +3388,13 @@ bool PepperPluginInstanceImpl::IsTextureInUse(
                      return ref_count.first == resource.mailbox_holder.mailbox;
                    });
   return it != texture_ref_counts_.end();
+}
+
+void PepperPluginInstanceImpl::HandleAccessibilityChange() {
+  if (render_frame_ && render_frame_->render_accessibility() &&
+      LoadPdfInterface()) {
+    plugin_pdf_interface_->EnableAccessibility(pp_instance());
+  }
 }
 
 }  // namespace content

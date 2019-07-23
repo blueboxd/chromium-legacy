@@ -1227,10 +1227,6 @@ void WebViewImpl::Close() {
   // means the main frame's WebWidget remains valid while the main frame is
   // being detached (and in particular while its unload handlers run).
   {
-    // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
-    // for a local main frame is going away.
-    scoped_defer_main_frame_update_ = nullptr;
-
     AsWidget().client = nullptr;
 
     if (does_composite_)
@@ -2023,14 +2019,20 @@ void WebViewImpl::DidAttachLocalMainFrame(WebWidgetClient* client) {
   }
 }
 
+void WebViewImpl::DidDetachLocalMainFrame() {
+  // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
+  // for a local main frame is going away.
+  // TODO(crbug.com/419087): For now, the WebWidgetClient (aka RenderWidget)
+  // is not destroyed, so this comment is not true, but it will be in the
+  // future. All references between |this| and the WebWidgetClient should be
+  // dropped regardless.
+  scoped_defer_main_frame_update_ = nullptr;
+}
+
 void WebViewImpl::DidAttachRemoteMainFrame(WebWidgetClient* client) {
   DCHECK(does_composite_);
   DCHECK(!MainFrameImpl());
   AsWidget().client = client;
-
-  // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
-  // for a local main frame is gone.
-  scoped_defer_main_frame_update_ = nullptr;
 }
 
 WebLocalFrame* WebViewImpl::FocusedFrame() {
@@ -3255,10 +3257,9 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
 }
 
 void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
-  if (!layer_tree_view_)
-    return;
+  DCHECK(MainFrameImpl());
 
-  // In CAP, setRootLayer is used instead.
+  // In CAP, SetRootLayer() is used instead.
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
@@ -3276,33 +3277,22 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     root_graphics_layer_ = nullptr;
     visual_viewport_container_layer_ = nullptr;
     root_layer_ = nullptr;
-    // This means that we're transitioning to a new page. Suppress
-    // commits until Blink generates invalidations so we don't
-    // attempt to paint too early in the next page load.
-    // TODO(danakj): Since we do this in DidAttachLocalMainFrame() we don't need
-    // it here? Navs always go through there?
-    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
+
+    // This path is called when the local main frame is being detached, which
+    // will destroy the WebWidgetClient in the future, but does not right now.
+    // TODO(crbug.com/419087): There should be no need to clean up the
+    // WebWidgetClient once the RenderWidget is destroyed with the main frame.
     AsWidget().client->SetRootLayer(nullptr);
     AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
   }
 }
 
 void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  if (!layer_tree_view_)
-    return;
+  DCHECK(MainFrameImpl());
+  DCHECK(layer);
 
   root_layer_ = std::move(layer);
   AsWidget().client->SetRootLayer(root_layer_);
-
-  if (!root_layer_) {
-    // This means that we're transitioning to a new page. Suppress
-    // commits until Blink generates invalidations so we don't
-    // attempt to paint too early in the next page load.
-    // TODO(danakj): Since we do this in DidAttachLocalMainFrame() we don't need
-    // it here? Navs always go through there?
-    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
-    AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
-  }
 }
 
 void WebViewImpl::InvalidateRect(const IntRect& rect) {
@@ -3522,10 +3512,6 @@ void WebViewImpl::ClearAutoplayFlags() {
 
 int32_t WebViewImpl::AutoplayFlagsForTest() {
   return AsView().page->AutoplayFlags();
-}
-
-void WebViewImpl::DeferMainFrameUpdateForTesting() {
-  scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
 }
 
 void WebViewImpl::StopDeferringMainFrameUpdate() {

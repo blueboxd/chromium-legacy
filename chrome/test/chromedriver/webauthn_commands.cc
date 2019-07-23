@@ -53,3 +53,15 @@ Status ExecuteAddVirtualAuthenticator(WebView* web_view,
   return web_view->SendCommandAndGetResult("WebAuthn.addVirtualAuthenticator",
                                            options, value);
 }
+
+Status ExecuteRemoveVirtualAuthenticator(WebView* web_view,
+                                         const base::Value& params,
+                                         std::unique_ptr<base::Value>* value) {
+  base::DictionaryValue options;
+  const base::Value* authenticatorId = params.FindKey("authenticatorId");
+  if (authenticatorId)
+    options.SetKey("authenticatorId", authenticatorId->Clone());
+
+  return web_view->SendCommandAndGetResult(
+      "WebAuthn.removeVirtualAuthenticator", options, value);
+}

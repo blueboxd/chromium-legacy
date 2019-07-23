@@ -456,7 +456,7 @@ public class WebappDataStorage {
      * Returns the time, in milliseconds, that the last WebAPK update request completed
      * (successfully or unsuccessfully). This time needs to be set when the WebAPK is registered.
      */
-    long getLastWebApkUpdateRequestCompletionTimeMs() {
+    public long getLastWebApkUpdateRequestCompletionTimeMs() {
         return mPreferences.getLong(KEY_LAST_UPDATE_REQUEST_COMPLETE_TIME, TIMESTAMP_INVALID);
     }
 

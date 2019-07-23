@@ -420,6 +420,21 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("a.htm"), full_file_name));
 }
 
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveFileURL) {
+  GURL url = net::FilePathToFileURL(GetTestDirFile("text.txt"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  base::FilePath full_file_name, dir;
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_ONLY_HTML, "test", 1, &dir,
+                 &full_file_name);
+  ASSERT_FALSE(HasFailure());
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  EXPECT_TRUE(base::PathExists(full_file_name));
+  EXPECT_FALSE(base::PathExists(dir));
+  EXPECT_TRUE(base::ContentsEqual(GetTestDirFile("text.txt"), full_file_name));
+}
+
 IN_PROC_BROWSER_TEST_F(SavePageBrowserTest,
                        SaveHTMLOnly_CrossOriginReadPolicy) {
   GURL url = embedded_test_server()->GetURL(

@@ -56,6 +56,7 @@ WarmupURLFetcher::WarmupURLFetcher(
       user_agent_(user_agent),
       ui_task_runner_(ui_task_runner) {
   DCHECK(create_custom_proxy_config_callback);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 }
 
 WarmupURLFetcher::~WarmupURLFetcher() {}
@@ -64,6 +65,7 @@ void WarmupURLFetcher::FetchWarmupURL(
     size_t previous_attempt_counts,
     const DataReductionProxyServer& proxy_server) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 
   previous_attempt_counts_ = previous_attempt_counts;
 
@@ -97,6 +99,7 @@ base::TimeDelta WarmupURLFetcher::GetFetchWaitTime() const {
 void WarmupURLFetcher::FetchWarmupURLNow(
     const DataReductionProxyServer& proxy_server) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 
   UMA_HISTOGRAM_EXACT_LINEAR("DataReductionProxy.WarmupURL.FetchInitiated", 1,
                              2);

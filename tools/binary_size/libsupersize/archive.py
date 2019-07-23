@@ -1259,7 +1259,7 @@ def _FindPakSymbolsFromFiles(
 def _CalculateElfOverhead(section_sizes, elf_path):
   if elf_path:
     section_sizes_total_without_bss = sum(
-        s for k, s in section_sizes.iteritems() if k != models.SECTION_BSS)
+        s for k, s in section_sizes.iteritems() if k not in models.BSS_SECTIONS)
     elf_overhead_size = (
         os.path.getsize(elf_path) - section_sizes_total_without_bss)
     assert elf_overhead_size >= 0, (

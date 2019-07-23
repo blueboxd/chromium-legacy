@@ -4,14 +4,17 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/content_index/content_index_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
@@ -38,7 +41,8 @@ std::string GetDescriptionIdFromOfflineItemKey(const std::string& id) {
 }
 
 class ContentIndexTest : public InProcessBrowserTest,
-                         public OfflineContentProvider::Observer {
+                         public OfflineContentProvider::Observer,
+                         public TabStripModelObserver {
  public:
   ContentIndexTest() = default;
   ~ContentIndexTest() override = default;
@@ -58,6 +62,7 @@ class ContentIndexTest : public InProcessBrowserTest,
     DCHECK(provider);
     provider_ = static_cast<ContentIndexProviderImpl*>(provider);
     provider_->AddObserver(this);
+    browser()->tab_strip_model()->AddObserver(this);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -74,8 +79,7 @@ class ContentIndexTest : public InProcessBrowserTest,
   }
 
   // OfflineContentProvider::Observer implementation:
-  void OnItemsAdded(
-      const OfflineContentProvider::OfflineItemList& items) override {
+  void OnItemsAdded(const std::vector<OfflineItem>& items) override {
     ASSERT_EQ(items.size(), 1u);
     offline_items_[GetDescriptionIdFromOfflineItemKey(items[0].id.id)] =
         items[0];
@@ -89,9 +93,44 @@ class ContentIndexTest : public InProcessBrowserTest,
       const OfflineItem& item,
       const base::Optional<offline_items_collection::UpdateDelta>& update_delta)
       override {
-    std::string id = GetDescriptionIdFromOfflineItemKey(item.id.id);
-    ASSERT_TRUE(offline_items_.count(id));
-    offline_items_[id] = item;
+    NOTREACHED();
+  }
+
+  // TabStripModelObserver implementation:
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override {
+    if (wait_for_tab_change_)
+      std::move(wait_for_tab_change_).Run();
+  }
+
+  void SetTabChangeQuitClosure(base::OnceClosure closure) {
+    wait_for_tab_change_ = std::move(closure);
+  }
+
+  base::Optional<OfflineItem> GetItem(const ContentId& id) {
+    base::Optional<OfflineItem> out_item;
+    base::RunLoop run_loop;
+    provider_->GetItemById(id,
+                           base::BindLambdaForTesting(
+                               [&](const base::Optional<OfflineItem>& item) {
+                                 out_item = item;
+                                 run_loop.Quit();
+                               }));
+    run_loop.Run();
+    return out_item;
+  }
+
+  std::vector<OfflineItem> GetAllItems() {
+    std::vector<OfflineItem> out_items;
+    base::RunLoop run_loop;
+    provider_->GetAllItems(
+        base::BindLambdaForTesting([&](const std::vector<OfflineItem>& items) {
+          out_items = items;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return out_items;
   }
 
   std::map<std::string, OfflineItem>& offline_items() { return offline_items_; }
@@ -110,6 +149,7 @@ class ContentIndexTest : public InProcessBrowserTest,
   std::map<std::string, OfflineItem> offline_items_;
   ContentIndexProviderImpl* provider_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  base::OnceClosure wait_for_tab_change_;
 };
 
 IN_PROC_BROWSER_TEST_F(ContentIndexTest, OfflineItemObserversReceiveEvents) {
@@ -121,6 +161,7 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, OfflineItemObserversReceiveEvents) {
   ASSERT_TRUE(offline_items().count("my-id-1"));
   EXPECT_TRUE(offline_items().count("my-id-2"));
   EXPECT_EQ(RunScript("GetIds()"), "my-id-1,my-id-2");
+  EXPECT_EQ(GetAllItems().size(), 2u);
 
   std::string description1 = offline_items().at("my-id-1").description;
   RunScript("AddContent('my-id-1')");     // update
@@ -133,6 +174,36 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, OfflineItemObserversReceiveEvents) {
 
   // Expect the description to have been updated.
   EXPECT_NE(description1, offline_items().at("my-id-1").description);
+}
+
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, ContextAPI) {
+  EXPECT_TRUE(GetAllItems().empty());
+
+  RunScript("AddContent('my-id')");
+  base::RunLoop().RunUntilIdle();  // Wait for the provider to get the content.
+  {
+    const auto& observed_item = offline_items().at("my-id");
+    auto items = GetAllItems();
+    ASSERT_EQ(items.size(), 1u);
+    EXPECT_EQ(observed_item, items[0]);
+
+    auto item = GetItem(observed_item.id);
+    ASSERT_TRUE(item);
+    EXPECT_EQ(*item, observed_item);
+  }
+
+  // Overwrite the existing entry.
+  RunScript("AddContent('my-id')");
+  base::RunLoop().RunUntilIdle();  // Wait for the provider to get the content.
+  EXPECT_EQ(GetAllItems().size(), 1u);
+
+  // Delete the registration.
+  {
+    ContentId id = offline_items().at("my-id").id;
+    RunScript("DeleteContent('my-id')");
+    EXPECT_TRUE(GetAllItems().empty());
+    EXPECT_FALSE(GetItem(id));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ContentIndexTest, GetVisuals) {
@@ -171,12 +242,27 @@ IN_PROC_BROWSER_TEST_F(ContentIndexTest, LaunchUrl) {
 
   provider()->OpenItem(offline_items_collection::LaunchLocation::DOWNLOAD_HOME,
                        offline_items().at("my-id").id);
-  base::RunLoop().RunUntilIdle();  // Wait for the page to open.
+
+  // Wait for the page to open.
+  base::RunLoop run_loop;
+  SetTabChangeQuitClosure(run_loop.QuitClosure());
+  run_loop.Run();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(browser()->tab_strip_model()->count(), 2);
   current_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
   EXPECT_TRUE(base::EndsWith(current_url.spec(),
                              "/content_index/content_index.html?launch",
                              base::CompareCase::SENSITIVE));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentIndexTest, UserDeletedEntryDispatchesEvent) {
+  RunScript("AddContent('my-id')");
+  base::RunLoop().RunUntilIdle();  // Wait for the provider to get the content.
+
+  provider()->RemoveItem(offline_items().at("my-id").id);
+  EXPECT_EQ(RunScript("waitForMessageFromServiceWorker()"), "my-id");
+  EXPECT_TRUE(GetAllItems().empty());
 }
 
 }  // namespace

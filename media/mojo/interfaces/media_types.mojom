@@ -18,6 +18,8 @@ enum AudioCodec;
 // See media/base/buffering_state.h for descriptions.
 [Native]
 enum BufferingState;
+[Native]
+enum BufferingStateChangeReason;
 
 // See media/base/channel_layout.h for descriptions.
 [Native]

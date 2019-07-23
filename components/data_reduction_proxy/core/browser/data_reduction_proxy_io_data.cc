@@ -74,11 +74,13 @@ DataReductionProxyIOData::DataReductionProxyIOData(
     // It is safe to use base::Unretained here, since it gets executed
     // synchronously on the IO thread, and |this| outlives the caller (since the
     // caller is owned by |this|.
-    config_client_.reset(new DataReductionProxyConfigServiceClient(
-        GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
-        config_.get(), this, network_connection_tracker_,
-        base::BindRepeating(&DataReductionProxyIOData::StoreSerializedConfig,
-                            base::Unretained(this))));
+    if (!params::IsIncludedInHoldbackFieldTrial()) {
+      config_client_.reset(new DataReductionProxyConfigServiceClient(
+          GetBackoffPolicy(), request_options_.get(), raw_mutable_config,
+          config_.get(), this, network_connection_tracker_,
+          base::BindRepeating(&DataReductionProxyIOData::StoreSerializedConfig,
+                              base::Unretained(this))));
+    }
 
     network_properties_manager_.reset(new NetworkPropertiesManager(
         base::DefaultClock::GetInstance(), prefs, ui_task_runner_));

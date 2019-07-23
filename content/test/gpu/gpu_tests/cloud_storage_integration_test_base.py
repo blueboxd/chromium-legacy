@@ -141,6 +141,12 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       help='For Skia Gold integration. Always report that the test passed even '
            'if the Skia Gold image comparison reported a failure, but '
            'otherwise perform the same steps as usual.')
+    parser.add_option(
+      '--local-run',
+      action='store_true', default=False,
+      help='Runs the tests in a manner more suitable for local testing. '
+           'Specifically, runs goldctl in dryrun mode (no upload) and outputs '
+           'local links to generated images. Implies --no-luci-auth.')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 tolerance, device_pixel_ratio,
@@ -397,8 +403,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
 
-  # TODO(https://crbug.com/983600): Remove this once the truncated images are
-  # determined to be legitimate or due to upload issues.
+  # Not used consistently, but potentially useful for debugging issues on the
+  # bots, so kept around for future use.
   @classmethod
   def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
     machine_name = re.sub(r'\W+', '_',
@@ -461,14 +467,20 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       'model_name': str(ref_img_params.model_name),
     }
     mode = ['--passfail']
+    dryrun = []
+    luci = []
+    if self.GetParsedCommandLineOptions().local_run:
+      dryrun = ['--dryrun']
+    elif not self.GetParsedCommandLineOptions().no_luci_auth:
+      luci = ['--luci']
     json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
     failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
     with open(json_temp_file, 'w+') as f:
       json.dump(gpu_keys, f)
     try:
-      if not self.GetParsedCommandLineOptions().no_luci_auth:
-        subprocess.check_output([goldctl_bin, 'auth', '--luci',
-                                 '--work-dir', self._skia_gold_temp_dir],
+      subprocess.check_output([goldctl_bin, 'auth',
+                               '--work-dir', self._skia_gold_temp_dir]
+                               + luci,
             stderr=subprocess.STDOUT)
       cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
                             ['--test-name', image_name,
@@ -477,7 +489,7 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                              '--png-file', png_temp_file,
                              '--work-dir', self._skia_gold_temp_dir,
                              '--failure-file', failure_file] +
-                            build_id_args)
+                            build_id_args + dryrun)
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
       try:
@@ -490,9 +502,9 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       except Exception:
         logging.error('Failed to read contents of goldctl failure file')
       logging.error('goldctl failed with output: %s', e.output)
-      # TODO(https://crbug.com/983600): Remove this once the truncated images
-      # are determined to be legitimate or due to upload issues.
-      self._UploadGoldErrorImageToCloudStorage(image_name, screenshot)
+      if self.GetParsedCommandLineOptions().local_run:
+        logging.error(
+            'Image produced by %s: file://%s', image_name, png_temp_file)
       if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
         raise Exception('goldctl command failed')
 

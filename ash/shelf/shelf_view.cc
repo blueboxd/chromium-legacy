@@ -392,7 +392,7 @@ void ShelfView::Init() {
   const ShelfItems& items(model_->items());
 
   std::unique_ptr<BackButton> back_button_ptr =
-      std::make_unique<BackButton>(shelf_, this);
+      std::make_unique<BackButton>(shelf_);
   ConfigureChildView(back_button_ptr.get());
   back_button_ = AddChildView(std::move(back_button_ptr));
 
@@ -757,35 +757,6 @@ void ShelfView::ButtonPressed(views::Button* sender,
                      ink_drop));
 }
 
-bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
-  if (dragging())
-    return false;
-
-  // Ignore if we are already in a pointer event sequence started with a repost
-  // event on the same shelf item. See crbug.com/343005 for more detail.
-  if (is_repost_event_on_same_item_)
-    return false;
-
-  // Don't activate the item twice on double-click. Otherwise the window starts
-  // animating open due to the first click, then immediately minimizes due to
-  // the second click. The user most likely intended to open or minimize the
-  // item once, not do both.
-  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
-    return false;
-
-  const bool repost = IsRepostEvent(event);
-
-  // The back button is not part of the view model, treat it separately.
-  if (view == GetBackButton())
-    return !repost;
-
-  // Ignore if this is a repost event on the last pressed shelf item.
-  int index = view_model_->GetIndexOfView(view);
-  if (index == -1)
-    return false;
-  return !repost || last_pressed_index_ != index;
-}
-
 bool ShelfView::IsShowingMenuForView(const views::View* view) const {
   return IsShowingMenu() &&
          shelf_menu_model_adapter_->IsShowingMenuForView(*view);
@@ -845,6 +816,33 @@ void ShelfView::OnTabletModeEnded() {
 
 void ShelfView::OnVirtualKeyboardVisibilityChanged() {
   LayoutToIdealBounds();
+}
+
+bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
+  // This only applies to app buttons.
+  DCHECK_EQ(ShelfAppButton::kViewClassName, view->GetClassName());
+  if (dragging())
+    return false;
+
+  // Ignore if we are already in a pointer event sequence started with a repost
+  // event on the same shelf item. See crbug.com/343005 for more detail.
+  if (is_repost_event_on_same_item_)
+    return false;
+
+  // Don't activate the item twice on double-click. Otherwise the window starts
+  // animating open due to the first click, then immediately minimizes due to
+  // the second click. The user most likely intended to open or minimize the
+  // item once, not do both.
+  if (event.flags() & ui::EF_IS_DOUBLE_CLICK)
+    return false;
+
+  const bool repost = IsRepostEvent(event);
+
+  // Ignore if this is a repost event on the last pressed shelf item.
+  int index = view_model_->GetIndexOfView(view);
+  if (index == -1)
+    return false;
+  return !repost || last_pressed_index_ != index;
 }
 
 void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(

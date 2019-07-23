@@ -37,7 +37,12 @@ GrVkGetProc MakeUnifiedGetter(const PFN_vkGetInstanceProcAddr& iproc,
   };
 }
 
-bool InitVulkanForWebView(VkInstance instance, VkDevice device) {
+bool InitVulkanForWebView(VkInstance instance,
+                          VkPhysicalDevice physical_device,
+                          VkDevice device,
+                          uint32_t api_version,
+                          gfx::ExtensionSet instance_extensions,
+                          gfx::ExtensionSet device_extensions) {
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 
@@ -55,14 +60,19 @@ bool InitVulkanForWebView(VkInstance instance, VkDevice device) {
 
   // These vars depend on |instance| and |device| and should be
   // re-initialized.
-  if (!vulkan_function_pointers->BindInstanceFunctionPointers(instance))
+  if (!vulkan_function_pointers->BindInstanceFunctionPointers(
+          instance, api_version, instance_extensions)) {
     return false;
-  if (!vulkan_function_pointers->BindPhysicalDeviceFunctionPointers(instance))
-    return false;
-  if (!vulkan_function_pointers->BindDeviceFunctionPointers(device))
-    return false;
+  }
 
-  return true;
+  // Get API version for the selected physical device.
+  VkPhysicalDeviceProperties device_properties;
+  vkGetPhysicalDeviceProperties(physical_device, &device_properties);
+  uint32_t device_api_version =
+      std::min(api_version, device_properties.apiVersion);
+
+  return vulkan_function_pointers->BindDeviceFunctionPointers(
+      device, device_api_version, device_extensions);
 }
 
 }  // namespace
@@ -130,18 +140,26 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
   // Don't call init on implementation. Instead call InitVulkanForWebView,
   // which avoids creating a new instance.
   implementation_ = gpu::CreateVulkanImplementation();
-  if (!InitVulkanForWebView(params->instance, params->device)) {
+
+  gfx::ExtensionSet instance_extensions;
+  for (uint32_t i = 0; i < params->enabled_instance_extension_names_length; ++i)
+    instance_extensions.insert(params->enabled_instance_extension_names[i]);
+
+  gfx::ExtensionSet device_extensions;
+  for (uint32_t i = 0; i < params->enabled_device_extension_names_length; ++i)
+    device_extensions.insert(params->enabled_device_extension_names[i]);
+
+  if (!InitVulkanForWebView(params->instance, params->physical_device,
+                            params->device, params->api_version,
+                            instance_extensions, device_extensions)) {
     LOG(ERROR) << "Unable to initialize Vulkan pointers.";
     return false;
   }
 
   device_queue_ = std::make_unique<gpu::VulkanDeviceQueue>(params->instance);
-  gfx::ExtensionSet extensions;
-  for (uint32_t i = 0; i < params->enabled_device_extension_names_length; ++i)
-    extensions.insert(params->enabled_device_extension_names[i]);
   device_queue_->InitializeForWebView(
       params->physical_device, params->device, params->queue,
-      params->graphics_queue_index, std::move(extensions));
+      params->graphics_queue_index, std::move(device_extensions));
 
   // Create our Skia GrContext.
   GrVkGetProc get_proc =

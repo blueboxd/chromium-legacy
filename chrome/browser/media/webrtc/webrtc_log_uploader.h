@@ -14,11 +14,12 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "url/gurl.h"
 
 namespace network {
 class SimpleURLLoader;
@@ -34,7 +35,6 @@ struct WebRtcLogUploadDoneData : public WebRtcLogPaths {
   ~WebRtcLogUploadDoneData();
 
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
-  scoped_refptr<WebRtcLoggingHandlerHost> host;
   std::string local_log_id;
   // Used for statistics. See |WebRtcLoggingHandlerHost::web_app_id_|.
   int web_app_id;
@@ -86,8 +86,8 @@ class WebRtcLogUploader {
 
   // Cancels URL fetcher operation by deleting all URL fetchers. This cancels
   // any pending uploads and releases SystemURLRequestContextGetter references.
-  // Sets |shutting_down_| which prevent new fetchers to be created.
-  void StartShutdown();
+  // Sets |shutdown_| which prevents new fetchers from being created.
+  void Shutdown();
 
   // For testing purposes. If called, the multipart will not be uploaded, but
   // written to |post_data_| instead.
@@ -116,10 +116,6 @@ class WebRtcLogUploader {
   FRIEND_TEST_ALL_PREFIXES(WebRtcLogUploaderTest,
                            AddUploadedLogInfoToUploadListFile);
 
-  void InitURLLoaderFactoryIfNeeded();
-
-  void OnFactoryConnectionClosed();
-
   // Sets up a multipart body to be uploaded. The body is produced according
   // to RFC 2046.
   void SetupMultipart(std::string* post_data,
@@ -134,8 +130,6 @@ class WebRtcLogUploader {
                            std::unique_ptr<std::string> post_data);
 
   void DecreaseLogCount();
-
-  void ShutdownOnIOThread();
 
   // Must be called on the FILE thread.
   void WriteCompressedLogToFile(const std::string& compressed_log,
@@ -187,32 +181,31 @@ class WebRtcLogUploader {
                               const WebRtcLogUploadDoneData& upload_done_data,
                               std::unique_ptr<std::string> response_body);
 
-  // This is the UI thread for Chromium. Some other thread for tests.
-  THREAD_CHECKER(create_thread_checker_);
+  SEQUENCE_CHECKER(main_sequence_checker_);
+
+  // Main sequence where this class was constructed.
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // Background sequence where we run background, potentially blocking,
   // operations.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  // Keeps track of number of currently open logs. Must be accessed on the IO
-  // thread.
+  // Keeps track of number of currently open logs. Must only be accessed from
+  // the main sequence.
   int log_count_ = 0;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
-  // on the FILE thread.
+  // on the background sequence
   std::string* post_data_ = nullptr;
 
   // For testing purposes.
   GURL upload_url_for_testing_;
 
-  // Only accessed on the IO thread.
+  // Only accessed on the main sequence.
   SimpleURLLoaderList pending_uploads_;
 
-  // When shutting down, don't create new URL loaders.
-  bool shutting_down_ = false;
-
-  // URLLoaderFactory bound to the IO thread.
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
+  // When true, don't create new URL loaders.
+  bool shutdown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogUploader);
 };

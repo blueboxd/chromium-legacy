@@ -317,7 +317,6 @@ class NET_EXPORT HttpNetworkSession {
   HttpAuthCache http_auth_cache_;
   SSLClientAuthCache ssl_client_auth_cache_;
   SSLClientSessionCache ssl_client_session_cache_;
-  SSLClientSessionCache ssl_client_session_cache_privacy_mode_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
   std::unique_ptr<ClientSocketPoolManager> normal_socket_pool_manager_;
   std::unique_ptr<ClientSocketPoolManager> websocket_socket_pool_manager_;

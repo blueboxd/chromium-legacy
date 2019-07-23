@@ -34,8 +34,6 @@
 #include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/service_impl.h"
-#include "services/viz/public/interfaces/constants.mojom.h"
-#include "services/viz/service.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
@@ -173,8 +171,6 @@ void UtilityServiceFactory::RunService(
   } else if (service_name == video_capture::mojom::kServiceName) {
     service = std::make_unique<video_capture::ServiceImpl>(
         std::move(request), base::ThreadTaskRunnerHandle::Get());
-  } else if (service_name == viz::mojom::kVizServiceName) {
-    service = std::make_unique<viz::Service>(std::move(request));
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   else if (service_name == media::mojom::kCdmServiceName) {

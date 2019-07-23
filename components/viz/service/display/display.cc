@@ -377,6 +377,13 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       needs_surface_occluding_damage_rect));
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetOutputColorSpace(device_color_space_);
+  // Consider adding a softare limit as well.
+  aggregator_->SetMaximumTextureSize(
+      (output_surface_ && output_surface_->context_provider())
+          ? output_surface_->context_provider()
+                ->ContextCapabilities()
+                .max_texture_size
+          : 0);
 }
 
 void Display::UpdateRootFrameMissing() {

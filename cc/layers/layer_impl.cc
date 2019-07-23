@@ -318,6 +318,22 @@ void LayerImpl::SetScrollable(const gfx::Size& bounds) {
   NoteLayerPropertyChanged();
 }
 
+void LayerImpl::SetTouchActionRegion(TouchActionRegion region) {
+  // Avoid recalculating the cached |all_touch_action_regions_| value.
+  if (touch_action_region_ == region)
+    return;
+  touch_action_region_ = std::move(region);
+  all_touch_action_regions_ = nullptr;
+}
+
+const Region& LayerImpl::GetAllTouchActionRegions() const {
+  if (!all_touch_action_regions_) {
+    all_touch_action_regions_ =
+        std::make_unique<Region>(touch_action_region_.GetAllRegions());
+  }
+  return *all_touch_action_regions_;
+}
+
 std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return LayerImpl::Create(tree_impl, layer_id_);
@@ -447,9 +463,8 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() const {
   if (scrollable())
     result->SetBoolean("Scrollable", true);
 
-  if (!touch_action_region_.region().IsEmpty()) {
-    std::unique_ptr<base::Value> region =
-        touch_action_region_.region().AsValue();
+  if (!GetAllTouchActionRegions().IsEmpty()) {
+    std::unique_ptr<base::Value> region = GetAllTouchActionRegions().AsValue();
     result->Set("TouchRegion", std::move(region));
   }
 
@@ -817,9 +832,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
       MathUtil::MapQuad(ScreenSpaceTransform(),
                         gfx::QuadF(gfx::RectF(gfx::Rect(bounds()))), &clipped);
   MathUtil::AddToTracedValue("layer_quad", layer_quad, state);
-  if (!touch_action_region_.region().IsEmpty()) {
-    state->BeginArray("touch_action_region_region");
-    touch_action_region_.region().AsValueInto(state);
+  if (!GetAllTouchActionRegions().IsEmpty()) {
+    state->BeginArray("all_touch_action_regions");
+    GetAllTouchActionRegions().AsValueInto(state);
     state->EndArray();
   }
   if (!wheel_event_handler_region_.IsEmpty()) {

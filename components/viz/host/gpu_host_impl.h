@@ -49,33 +49,6 @@ class ShaderDiskCache;
 
 namespace viz {
 
-// TODO(kylechar): Remove this class as mash no longer exists.
-// Contains either an interface or an associated interface pointer to a
-// mojom::VizMain implementation and routes the requests appropriately.
-class VIZ_HOST_EXPORT VizMainWrapper {
- public:
-  explicit VizMainWrapper(
-      mojo::PendingAssociatedRemote<mojom::VizMain> viz_main);
-  ~VizMainWrapper();
-
-  void CreateGpuService(
-      mojo::PendingReceiver<mojom::GpuService> receiver,
-      mojo::PendingRemote<mojom::GpuHost> gpu_host,
-      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
-          discardable_memory_manager,
-      mojo::ScopedSharedBufferHandle activity_flags,
-      gfx::FontRenderParams::SubpixelRendering subpixel_rendering);
-  void CreateFrameSinkManager(mojom::FrameSinkManagerParamsPtr params);
-#if defined(USE_VIZ_DEVTOOLS)
-  void CreateVizDevTools(mojom::VizDevToolsParamsPtr params);
-#endif
-
- private:
-  mojo::AssociatedRemote<mojom::VizMain> viz_main_;
-
-  DISALLOW_COPY_AND_ASSIGN(VizMainWrapper);
-};
-
 class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
  public:
   class VIZ_HOST_EXPORT Delegate {
@@ -160,7 +133,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                               EstablishChannelStatus)>;
 
   GpuHostImpl(Delegate* delegate,
-              std::unique_ptr<VizMainWrapper> viz_main_ptr,
+              mojo::PendingAssociatedRemote<mojom::VizMain> viz_main,
               InitParams params);
   ~GpuHostImpl() override;
 
@@ -254,7 +227,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
                         const std::string& message) override;
 
   Delegate* const delegate_;
-  std::unique_ptr<VizMainWrapper> viz_main_ptr_;
+  mojo::AssociatedRemote<mojom::VizMain> viz_main_;
   const InitParams params_;
 
   // Task runner corresponding to the thread |this| is created on.

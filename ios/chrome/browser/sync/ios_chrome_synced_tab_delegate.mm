@@ -13,8 +13,8 @@
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #include "ios/web/public/favicon/favicon_status.h"
-#include "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 

@@ -2,27 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
-
-#include "base/task/post_task.h"
 #include "content/browser/download/save_file_manager.h"
-#include "content/public/browser/browser_task_traits.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_package.h"
+#include "content/browser/file_url_loader_factory.h"
+#include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_context.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/previews_state.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -193,7 +196,7 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
                               int render_frame_routing_id,
                               SaveFileCreateInfo::SaveFileSource save_source,
                               const base::FilePath& file_full_path,
-                              ResourceContext* context,
+                              BrowserContext* context,
                               StoragePartition* storage_partition,
                               SavePackage* save_package) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -249,15 +252,40 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
     request->mode = network::mojom::RequestMode::kNavigate;
 
     network::mojom::URLLoaderFactory* factory = nullptr;
-    std::unique_ptr<DataURLLoaderFactory> data_url_loader_factory;
+    std::unique_ptr<network::mojom::URLLoaderFactory> url_loader_factory;
+    RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_host_id,
+                                                   render_frame_routing_id);
 
     // TODO(qinmin): should this match the if statements in
     // DownloadManagerImpl::BeginResourceDownloadOnChecksComplete so that it
     // can handle blob, file, webui, embedder provided schemes etc?
     // https://crbug.com/953967
     if (url.SchemeIs(url::kDataScheme)) {
-      data_url_loader_factory = std::make_unique<DataURLLoaderFactory>();
-      factory = data_url_loader_factory.get();
+      url_loader_factory = std::make_unique<DataURLLoaderFactory>();
+      factory = url_loader_factory.get();
+    } else if (url.SchemeIsFile()) {
+      url_loader_factory = std::make_unique<FileURLLoaderFactory>(
+          context->GetPath(), context->GetSharedCorsOriginAccessList(),
+          base::TaskPriority::USER_VISIBLE);
+      factory = url_loader_factory.get();
+    } else if (url.SchemeIsFileSystem() && rfh) {
+      std::string storage_domain;
+      auto* site_instance = rfh->GetSiteInstance();
+      if (site_instance) {
+        std::string partition_name;
+        bool in_memory;
+        GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+            context, site_instance->GetSiteURL(), true, &storage_domain,
+            &partition_name, &in_memory);
+      }
+      url_loader_factory = CreateFileSystemURLLoaderFactory(
+          rfh, /*is_navigation=*/false,
+          storage_partition->GetFileSystemContext(), storage_domain);
+      factory = url_loader_factory.get();
+    } else if (rfh && url.SchemeIs(content::kChromeUIScheme)) {
+      url_loader_factory = CreateWebUIURLLoader(rfh, url.scheme(),
+                                                base::flat_set<std::string>());
+      factory = url_loader_factory.get();
     } else {
       factory = storage_partition->GetURLLoaderFactoryForBrowserProcess().get();
     }

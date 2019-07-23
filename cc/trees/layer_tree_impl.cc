@@ -2204,8 +2204,10 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
 
 struct FindTouchEventLayerFunctor {
   bool operator()(LayerImpl* layer) const {
+    if (!layer->has_touch_action_regions())
+      return false;
     return PointHitsRegion(screen_space_point, layer->ScreenSpaceTransform(),
-                           layer->touch_action_region().region(), layer);
+                           layer->GetAllTouchActionRegions(), layer);
   }
   const gfx::PointF screen_space_point;
 };

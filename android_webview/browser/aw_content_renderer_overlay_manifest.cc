@@ -6,7 +6,7 @@
 
 #include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "base/no_destructor.h"
-#include "components/autofill/content/common/autofill_agent.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"

@@ -430,7 +430,7 @@ void BrowserProcessImpl::StartTearDown() {
 
   // Cancel any uploads to release the system url request context references.
   if (webrtc_log_uploader_)
-    webrtc_log_uploader_->StartShutdown();
+    webrtc_log_uploader_->Shutdown();
 
   sessions::SessionIdGenerator::GetInstance()->Shutdown();
 

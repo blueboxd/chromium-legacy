@@ -15,8 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/zlib/zlib.h"
 
-using content::BrowserThread;
-
 namespace {
 
 static const size_t kMinimumGzipOutputBufferSize = 256;  // In bytes.

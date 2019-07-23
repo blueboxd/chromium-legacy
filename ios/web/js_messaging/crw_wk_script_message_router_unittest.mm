@@ -6,11 +6,11 @@
 
 #include "base/mac/scoped_block.h"
 #include "base/memory/ptr_util.h"
+#import "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_test.h"
-#import "ios/web/public/web_view_creation_util.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 

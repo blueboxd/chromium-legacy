@@ -1,6 +1,7 @@
 include_rules = [
   "+net",
   "+skia/ext",
+  "+third_party/brotli",
   "+third_party/skia",
   "+third_party/zlib",
   "+ui/base/ui_base_jni_headers",

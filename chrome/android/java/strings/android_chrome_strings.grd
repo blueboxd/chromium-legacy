@@ -702,6 +702,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_THEMES_SYSTEM_DEFAULT_SUMMARY" desc="Summary for the System Default option.">
         Turn on dark theme when your device's Battery Saver is on
       </message>
+      <message name="IDS_THEMES_SYSTEM_DEFAULT_SUMMARY_API_29" desc="Summary for the System Default option (Android Q+).">
+        Turn on dark theme when your device's dark theme or Battery Saver is on
+      </message>
 
       <!-- Privacy preferences -->
       <message name="IDS_PREFS_PRIVACY" desc="Title for the Privacy preferences. [CHAR-LIMIT=32]">
@@ -2567,6 +2570,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION_NO_SIZE" desc="Text containing the download list item description.">
+        <ph name="DESCRIPTION">%1$s<ex>www.example.com</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_FILES_TAB" desc="Tab text for showing the files a user explicitly downloaded.">
         My Files

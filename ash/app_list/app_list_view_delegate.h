@@ -5,7 +5,9 @@
 #ifndef ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define ASH_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
@@ -168,6 +170,18 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // be notified (i.e. its notify_visibility_change() returns true).
   virtual void OnSearchResultVisibilityChanged(const std::string& id,
                                                bool visibility) = 0;
+
+  // Called if a search result item got clicked, or a list of search result has
+  // been shown to the user after a certain amount of time. |raw_query| is the
+  // raw query that produced the results, |results| is a list of items that were
+  // being shown to the users and their corresponding position indices of them
+  // (see |SearchResultIdWithPositionIndex| for more details),
+  // |position_index| is the position index of the clicked item (if no item got
+  // clicked, |position_index| will be -1).
+  virtual void NotifySearchResultsForLogging(
+      const base::string16& raw_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) = 0;
 
   // Returns true if the Assistant feature is allowed and enabled.
   virtual bool IsAssistantAllowedAndEnabled() const = 0;

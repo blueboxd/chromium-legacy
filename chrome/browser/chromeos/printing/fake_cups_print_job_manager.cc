@@ -88,7 +88,7 @@ void FakeCupsPrintJobManager::ChangePrintJobState(CupsPrintJob* job) {
   }
 
   if (!found || job->state() == CupsPrintJob::State::STATE_SUSPENDED ||
-      job->state() == CupsPrintJob::State::STATE_ERROR) {
+      job->state() == CupsPrintJob::State::STATE_FAILED) {
     return;
   }
 

@@ -7,7 +7,7 @@
 #include "base/memory/singleton.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "ios/web/common/referrer_util.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 
 namespace sessions {
 

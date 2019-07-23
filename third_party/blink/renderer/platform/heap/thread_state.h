@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
+#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
@@ -122,24 +123,15 @@ class ThreadStateFor;
   ThreadState::PrefinalizerRegistration<Class> prefinalizer_dummy_ = this; \
   using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
-class PLATFORM_EXPORT BlinkGCObserver {
-  USING_FAST_MALLOC(BlinkGCObserver);
-
+// Automically registers as observer for heap and garabge collection changes.
+// For individual overrides see documentation of |ThreadHeapStatsObserver|.
+class PLATFORM_EXPORT HeapObserver : public ThreadHeapStatsObserver {
  public:
-  // The constructor automatically register this object to ThreadState's
-  // observer lists. The argument must not be null.
-  explicit BlinkGCObserver(ThreadState*);
-
-  // The destructor automatically unregister this object from ThreadState's
-  // observer lists.
-  virtual ~BlinkGCObserver();
-
-  virtual void OnCompleteSweepDone() = 0;
+  HeapObserver(ThreadState*);
+  virtual ~HeapObserver();
 
  private:
-  // As a ThreadState must live when a BlinkGCObserver lives, holding a raw
-  // pointer is safe.
-  ThreadState* thread_state_;
+  ThreadState* const thread_state_;
 };
 
 class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
@@ -284,44 +276,30 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void CompleteSweep();
   void FinishSnapshot();
+  void NotifySweepDone();
   void PostSweep();
 
-  // Support for disallowing allocation. Mainly used for sanity
-  // checks asserts.
+  // Returns whether it is currently allowed to allocate an object. Mainly used
+  // for sanity checks asserts.
   bool IsAllocationAllowed() const {
     // Allocation is not allowed during atomic marking pause, but it is allowed
     // during atomic sweeping pause.
     return !InAtomicMarkingPause() && !no_allocation_count_;
   }
-  void EnterNoAllocationScope() { no_allocation_count_++; }
-  void LeaveNoAllocationScope() { no_allocation_count_--; }
+
+  // Returns whether it is currently forbidden to trigger a GC.
   bool IsGCForbidden() const { return gc_forbidden_count_; }
-  void EnterGCForbiddenScope() { gc_forbidden_count_++; }
-  void LeaveGCForbiddenScope() {
-    DCHECK_GT(gc_forbidden_count_, 0u);
-    gc_forbidden_count_--;
-  }
+
+  // Returns whether it is currently forbidden to sweep objects.
   bool SweepForbidden() const { return sweep_forbidden_; }
+
+  // Returns whether is is currently forbidden to resurrect objects.
   bool IsObjectResurrectionForbidden() const {
     return object_resurrection_forbidden_;
   }
-  void EnterObjectResurrectionForbiddenScope() {
-    DCHECK(!object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = true;
-  }
-  void LeaveObjectResurrectionForbiddenScope() {
-    DCHECK(object_resurrection_forbidden_);
-    object_resurrection_forbidden_ = false;
-  }
+
   bool in_atomic_pause() const { return in_atomic_pause_; }
-  void EnterAtomicPause() {
-    DCHECK(!in_atomic_pause_);
-    in_atomic_pause_ = true;
-  }
-  void LeaveAtomicPause() {
-    DCHECK(in_atomic_pause_);
-    in_atomic_pause_ = false;
-  }
+
   bool InAtomicMarkingPause() const {
     return in_atomic_pause() && IsMarkingInProgress();
   }
@@ -438,7 +416,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return &FromObject(object)->Heap() == &Heap();
   }
 
-  int GcAge() const { return gc_age_; }
+  size_t GcAge() const { return gc_age_; }
 
   MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
@@ -464,6 +442,33 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   ThreadState();
   ~ThreadState() override;
 
+  void EnterNoAllocationScope() { no_allocation_count_++; }
+  void LeaveNoAllocationScope() { no_allocation_count_--; }
+
+  void EnterObjectResurrectionForbiddenScope() {
+    DCHECK(!object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = true;
+  }
+  void LeaveObjectResurrectionForbiddenScope() {
+    DCHECK(object_resurrection_forbidden_);
+    object_resurrection_forbidden_ = false;
+  }
+
+  void EnterAtomicPause() {
+    DCHECK(!in_atomic_pause_);
+    in_atomic_pause_ = true;
+  }
+  void LeaveAtomicPause() {
+    DCHECK(in_atomic_pause_);
+    in_atomic_pause_ = false;
+  }
+
+  void EnterGCForbiddenScope() { gc_forbidden_count_++; }
+  void LeaveGCForbiddenScope() {
+    DCHECK_GT(gc_forbidden_count_, 0u);
+    gc_forbidden_count_--;
+  }
+
   // The following methods are used to compose RunAtomicPause. Public users
   // should use the CollectGarbage entrypoint. Internal users should use these
   // methods to compose a full garbage collection.
@@ -486,8 +491,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
-
-  void UpdateStatisticsAfterSweeping();
 
   // The version is needed to be able to start incremental marking.
   void MarkPhasePrologue(BlinkGC::StackState,
@@ -541,16 +544,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void ReportMemoryToV8();
 
-  // Adds the given observer to the ThreadState's observer list. This doesn't
-  // take ownership of the argument. The argument must not be null. The argument
-  // must not be registered before calling this.
-  void AddObserver(BlinkGCObserver*);
-
-  // Removes the given observer from the ThreadState's observer list. This
-  // doesn't take ownership of the argument. The argument must not be null.
-  // The argument must be registered before calling this.
-  void RemoveObserver(BlinkGCObserver*);
-
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;
@@ -590,8 +583,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void* asan_fake_stack_;
 #endif
 
-  HashSet<BlinkGCObserver*> observers_;
-
   // PersistentNodes that are stored in static references;
   // references that either have to be cleared upon the thread
   // detaching from Oilpan and shutting down or references we
@@ -605,7 +596,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   size_t reported_memory_to_v8_;
 
-  int gc_age_ = 0;
+  size_t gc_age_ = 0;
 
   struct GCData {
     BlinkGC::StackState stack_state;
@@ -617,9 +608,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   CancelableTaskScheduler sweeper_scheduler_;
 
-  friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
+  friend class HeapAllocator;
   template <typename T>
   friend class PrefinalizerRegistration;
   friend class TestGCScope;

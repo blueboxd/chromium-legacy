@@ -154,8 +154,12 @@ bool CanvasResource::PrepareUnacceleratedTransferableResource(
   if (mailbox.IsZero())
     return false;
 
+  // For software compositing, the display compositor assumes an N32 format for
+  // the resource type and completely ignores the format set on the
+  // TransferableResource. Clients are expected to render in N32 format but use
+  // RGBA as the tagged format on resources.
   *out_resource = viz::TransferableResource::MakeSoftware(
-      mailbox, gfx::Size(Size()), color_params_.TransferableResourceFormat());
+      mailbox, gfx::Size(Size()), viz::RGBA_8888);
 
   out_resource->color_space = color_params_.GetSamplerGfxColorSpace();
 
@@ -571,8 +575,10 @@ CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
     SkFilterQuality filter_quality)
     : CanvasResource(std::move(provider), filter_quality, color_params),
       size_(size) {
+  // Software compositing lazily uses RGBA_8888 as the resource format
+  // everywhere but the content is expected to be rendered in N32 format.
   base::MappedReadOnlyRegion shm = viz::bitmap_allocation::AllocateSharedBitmap(
-      gfx::Size(Size()), ColorParams().TransferableResourceFormat());
+      gfx::Size(Size()), viz::RGBA_8888);
 
   if (!shm.IsValid())
     return;

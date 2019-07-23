@@ -45,8 +45,6 @@ class ASH_EXPORT HomeButton : public ShelfControlButton,
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
-  bool ShouldEventActivateButton(views::View* view,
-                                 const ui::Event& event) override;
 
   // Called when the availability of a long-press gesture may have changed, e.g.
   // when Assistant becomes enabled.

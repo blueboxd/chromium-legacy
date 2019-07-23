@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
@@ -37,6 +38,8 @@ NotificationSchedulerContext::NotificationSchedulerContext(
       background_task_coordinator_(std::make_unique<BackgroundTaskCoordinator>(
           std::move(background_task),
           config_.get(),
+          base::BindRepeating(&BackgroundTaskCoordinator::DefaultTimeRandomizer,
+                              config_->background_task_random_time_window),
           base::DefaultClock::GetInstance())) {}
 
 NotificationSchedulerContext::~NotificationSchedulerContext() = default;

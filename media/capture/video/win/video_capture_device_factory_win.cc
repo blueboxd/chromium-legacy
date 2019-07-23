@@ -92,7 +92,7 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // also https://crbug.com/924528
     "04ca:7047", "04ca:7048",
     // HP Elitebook 840 G1
-    "04f2:b3ed", "04f2:b3ca",
+    "04f2:b3ed", "04f2:b3ca", "05c8:035d",
     // RBG/IR camera for Windows Hello Face Auth. See https://crbug.com/984864.
     "13d3:5257"};
 

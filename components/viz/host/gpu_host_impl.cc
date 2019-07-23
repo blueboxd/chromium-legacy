@@ -87,35 +87,6 @@ FontRenderParams& GetFontRenderParams() {
 
 }  // namespace
 
-VizMainWrapper::VizMainWrapper(
-    mojo::PendingAssociatedRemote<mojom::VizMain> viz_main)
-    : viz_main_(std::move(viz_main)) {}
-
-VizMainWrapper::~VizMainWrapper() = default;
-
-void VizMainWrapper::CreateGpuService(
-    mojo::PendingReceiver<mojom::GpuService> receiver,
-    mojo::PendingRemote<mojom::GpuHost> gpu_host,
-    discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
-        discardable_memory_manager,
-    mojo::ScopedSharedBufferHandle activity_flags,
-    gfx::FontRenderParams::SubpixelRendering subpixel_rendering) {
-  viz_main_->CreateGpuService(std::move(receiver), std::move(gpu_host),
-                              std::move(discardable_memory_manager),
-                              std::move(activity_flags), subpixel_rendering);
-}
-
-#if defined(USE_VIZ_DEVTOOLS)
-void VizMainWrapper::CreateVizDevTools(mojom::VizDevToolsParamsPtr params) {
-  viz_main_->CreateVizDevTools(std::move(params));
-}
-#endif
-
-void VizMainWrapper::CreateFrameSinkManager(
-    mojom::FrameSinkManagerParamsPtr params) {
-  viz_main_->CreateFrameSinkManager(std::move(params));
-}
-
 GpuHostImpl::InitParams::InitParams() = default;
 
 GpuHostImpl::InitParams::InitParams(InitParams&&) = default;
@@ -123,10 +94,10 @@ GpuHostImpl::InitParams::InitParams(InitParams&&) = default;
 GpuHostImpl::InitParams::~InitParams() = default;
 
 GpuHostImpl::GpuHostImpl(Delegate* delegate,
-                         std::unique_ptr<VizMainWrapper> viz_main_ptr,
+                         mojo::PendingAssociatedRemote<mojom::VizMain> viz_main,
                          InitParams params)
     : delegate_(delegate),
-      viz_main_ptr_(std::move(viz_main_ptr)),
+      viz_main_(std::move(viz_main)),
       params_(std::move(params)),
       host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(delegate_);
@@ -137,11 +108,11 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
   delegate_->BindDiscardableMemoryRequest(std::move(discardable_request));
 
   DCHECK(GetFontRenderParams().Get());
-  viz_main_ptr_->CreateGpuService(
-      gpu_service_remote_.BindNewPipeAndPassReceiver(),
-      gpu_host_receiver_.BindNewPipeAndPassRemote(),
-      std::move(discardable_manager_ptr), activity_flags_.CloneHandle(),
-      GetFontRenderParams().Get()->subpixel_rendering);
+  viz_main_->CreateGpuService(gpu_service_remote_.BindNewPipeAndPassReceiver(),
+                              gpu_host_receiver_.BindNewPipeAndPassRemote(),
+                              std::move(discardable_manager_ptr),
+                              activity_flags_.CloneHandle(),
+                              GetFontRenderParams().Get()->subpixel_rendering);
 
 #if defined(USE_OZONE)
   InitOzone();
@@ -219,12 +190,12 @@ void GpuHostImpl::ConnectFrameSinkManager(
       params_.deadline_to_synchronize_surfaces.value_or(0u);
   params->frame_sink_manager = std::move(request);
   params->frame_sink_manager_client = std::move(client);
-  viz_main_ptr_->CreateFrameSinkManager(std::move(params));
+  viz_main_->CreateFrameSinkManager(std::move(params));
 }
 
 #if defined(USE_VIZ_DEVTOOLS)
 void GpuHostImpl::ConnectVizDevTools(mojom::VizDevToolsParamsPtr params) {
-  viz_main_ptr_->CreateVizDevTools(std::move(params));
+  viz_main_->CreateVizDevTools(std::move(params));
 }
 #endif
 

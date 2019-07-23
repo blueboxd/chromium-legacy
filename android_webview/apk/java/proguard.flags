@@ -57,22 +57,9 @@
 # android.net.ProxyProperties.
 -dontnote org.chromium.net.ProxyChangeListener$ProxyReceiver
 
-# Silence warnings about reflection used to check for onShow/HideCustomView.
-# This class is not really kept since it's in a library jar.
--keep class android.webkit.WebChromeClient {
-  void onShowCustomView(...);
-  void onHideCustomView();
-}
-
 -keep class org.chromium.android_webview.AwBrowserProcess {
     java.nio.channels.FileLock sExclusiveFileLock;
 }
-
-# Accessed via reflection but not present in all builds
--keep class com.android.webview.chromium.AwSafeBrowsingApiHandler {
-  AwSafeBrowsingApiHandler(...);
-}
--dontnote com.android.webview.chromium.AwSafeBrowsingApiHandler
 
 # We strip some unused resources when preprocessing the GMS client libs.
 -dontwarn com.google.android.gms.R**

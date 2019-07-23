@@ -75,6 +75,8 @@ void WebApksHandler::OnWebApkInfoRetrieved(
                       OptionalSkColorToString(webapk_info.background_color));
     result->SetDouble("lastUpdateCheckTimeMs",
                       webapk_info.last_update_check_time.ToJsTime());
+    result->SetDouble("lastUpdateCompletionTimeMs",
+                      webapk_info.last_update_completion_time.ToJsTime());
     result->SetBoolean("relaxUpdates", webapk_info.relax_updates);
     result->SetString("updateStatus", webapk_info.update_status);
     list.Append(std::move(result));

@@ -10,9 +10,9 @@
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/test/fakes/fake_store_kit_launcher.h"
+#import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/public/web_state/web_state_policy_decider.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 

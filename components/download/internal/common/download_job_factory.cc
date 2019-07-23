@@ -19,6 +19,57 @@
 namespace download {
 
 namespace {
+// Connection type of the download.
+enum class ConnectionType {
+  kHTTP = 0,
+  kHTTP2,
+  kQUIC,
+  kUnknown,
+};
+
+ConnectionType GetConnectionType(
+    net::HttpResponseInfo::ConnectionInfo connection_info) {
+  switch (connection_info) {
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1:
+      return ConnectionType::kHTTP;
+    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2:
+    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY3:
+    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_14:
+    case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2:
+      return ConnectionType::kHTTP2;
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_32:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_33:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_34:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_35:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_36:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_37:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_38:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_39:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_40:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_41:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_42:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_43:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_44:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_45:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_46:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_47:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_48:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_99:
+    case net::HttpResponseInfo::CONNECTION_INFO_QUIC_999:
+      return ConnectionType::kQUIC;
+    case net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN:
+      return ConnectionType::kUnknown;
+    case net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS:
+      NOTREACHED();
+      return ConnectionType::kUnknown;
+  }
+  NOTREACHED();
+  return ConnectionType::kUnknown;
+}
 
 // Returns if the download can be parallelized.
 bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
@@ -42,8 +93,14 @@ bool IsParallelizableDownload(const DownloadCreateInfo& create_info,
   bool satisfy_min_file_size =
       !download_item->GetReceivedSlices().empty() ||
       create_info.total_bytes >= GetMinSliceSizeConfig();
-  bool satisfy_connection_type = create_info.connection_info ==
-                                 net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
+  ConnectionType type = GetConnectionType(create_info.connection_info);
+  bool satisfy_connection_type =
+      (create_info.connection_info ==
+       net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1) ||
+      (type == ConnectionType::kHTTP2 &&
+       base::FeatureList::IsEnabled(features::kUseParallelRequestsForHTTP2)) ||
+      (type == ConnectionType::kQUIC &&
+       base::FeatureList::IsEnabled(features::kUseParallelRequestsForQUIC));
   bool http_get_method =
       create_info.method == "GET" && create_info.url().SchemeIsHTTPOrHTTPS();
   bool partial_response_success =

@@ -38,6 +38,16 @@ namespace ui {
 
 namespace {
 
+constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
+    /*needs_view_token=*/false,
+    /*custom_frame_pref_default=*/false,
+    /*use_system_title_bar=*/false,
+    /*requires_mojo=*/false,
+
+    // When the Ozone X11 backend is running, use a UI loop to grab Expose
+    // events. See GLSurfaceGLX and https://crbug.com/326995.
+    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_UI};
+
 // Singleton OzonePlatform implementation for X11 platform.
 class OzonePlatformX11 : public OzonePlatform {
  public:
@@ -104,6 +114,10 @@ class OzonePlatformX11 : public OzonePlatform {
 #endif
   }
 
+  const PlatformProperties& GetPlatformProperties() override {
+    return kX11PlatformProperties;
+  }
+
   void InitializeUI(const InitParams& params) override {
     InitializeCommon(params);
     CreatePlatformEventSource();
@@ -126,12 +140,6 @@ class OzonePlatformX11 : public OzonePlatform {
       CreatePlatformEventSource();
 
     surface_factory_ozone_ = std::make_unique<X11SurfaceFactory>();
-  }
-
-  base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
-    // When Ozone X11 backend is running use an UI loop to grab Expose events.
-    // See GLSurfaceGLX and https://crbug.com/326995.
-    return base::MessageLoop::TYPE_UI;
   }
 
  private:

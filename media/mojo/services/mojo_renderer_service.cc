@@ -159,9 +159,11 @@ void MojoRendererService::OnStatisticsUpdate(const PipelineStatistics& stats) {
   client_->OnStatisticsUpdate(stats);
 }
 
-void MojoRendererService::OnBufferingStateChange(BufferingState state) {
-  DVLOG(2) << __func__ << "(" << state << ")";
-  client_->OnBufferingStateChange(state);
+void MojoRendererService::OnBufferingStateChange(
+    BufferingState state,
+    BufferingStateChangeReason reason) {
+  DVLOG(2) << __func__ << "(" << state << ", " << reason << ")";
+  client_->OnBufferingStateChange(state, reason);
 }
 
 void MojoRendererService::OnWaiting(WaitingReason reason) {

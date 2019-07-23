@@ -6,7 +6,6 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_PERFETTO_TRACED_PROCESS_H_
 
 #include "base/component_export.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 
@@ -129,9 +128,6 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   std::unique_ptr<SystemProducer> system_producer_endpoint_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  // NOTE: Weak pointers must be invalidated before all other member
-  // variables.
-  base::WeakPtrFactory<PerfettoTracedProcess> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PerfettoTracedProcess);
 };
 }  // namespace tracing

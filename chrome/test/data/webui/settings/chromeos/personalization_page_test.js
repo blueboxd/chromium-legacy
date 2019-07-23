@@ -73,6 +73,10 @@ function createPersonalizationPage() {
 }
 
 suite('PersonalizationHandler', function() {
+  suiteSetup(function() {
+    testing.Test.disableAnimationsAndTransitions();
+  });
+
   setup(function() {
     personalizationBrowserProxy = new TestPersonalizationBrowserProxy();
     settings.PersonalizationBrowserProxyImpl.instance_ =
@@ -120,5 +124,12 @@ suite('PersonalizationHandler', function() {
               personalizationPage.$$('#wallpaperPolicyIndicator').hidden);
           assertTrue(personalizationPage.$$('#wallpaperButton').disabled);
         });
+  });
+
+  test('changePicture', function() {
+    const row = personalizationPage.$.changePictureRow;
+    assertTrue(!!row);
+    row.click();
+    assertEquals(settings.routes.CHANGE_PICTURE, settings.getCurrentRoute());
   });
 });

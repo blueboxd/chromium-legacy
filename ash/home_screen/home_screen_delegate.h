@@ -61,16 +61,6 @@ class HomeScreenDelegate {
   // the transition animation if provided.
   virtual base::Optional<base::TimeDelta> GetOptionalAnimationDuration() = 0;
 
-  // Returns whether shelf should be visible on home screen.
-  // Note: Visibility of the shelf and status area are independent, but the
-  // variant with shelf visible and status area hidden is currently unsupported.
-  virtual bool ShouldShowShelfOnHomeScreen() const = 0;
-
-  // Returns whether status area should be visible on home screen.
-  // Note: Visibility of the shelf and status area are independent, but the
-  // variant with shelf visible and status area hidden is currently unsupported.
-  virtual bool ShouldShowStatusAreaOnHomeScreen() const = 0;
-
   // Triggered when dragging launcher in tablet mode starts/proceeds/ends. They
   // cover both dragging launcher to show and hide.
   virtual void OnHomeLauncherDragStart() {}

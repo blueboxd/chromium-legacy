@@ -106,10 +106,10 @@ BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
-  const cc::Region& touch_event_handler_region =
-      layer->touch_action_region().region();
+  const cc::Region& touch_event_handler_regions =
+      layer->touch_action_region().GetAllRegions();
 
-  for (const gfx::Rect& rect : touch_event_handler_region) {
+  for (const gfx::Rect& rect : touch_event_handler_regions) {
     scroll_rects->emplace_back(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::TouchEventHandler));

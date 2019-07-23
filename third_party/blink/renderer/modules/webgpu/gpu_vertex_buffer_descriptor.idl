@@ -7,7 +7,7 @@
 dictionary GPUVertexBufferDescriptor {
     required unsigned long long stride;
     GPUInputStepMode stepMode = "vertex";
-    required sequence<GPUVertexAttributeDescriptor> attributes;
+    required sequence<GPUVertexAttributeDescriptor> attributeSet;
 };
 
 enum GPUInputStepMode {

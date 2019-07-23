@@ -54,7 +54,10 @@ class RevampedContextMenuHeaderCoordinator {
         if (!TextUtils.isEmpty(params.getLinkText())) {
             return params.getLinkText();
         }
-        return URLUtil.guessFileName(params.getSrcUrl(), null, null);
+        if (params.isImage() || params.isVideo() || params.isFile()) {
+            return URLUtil.guessFileName(params.getSrcUrl(), null, null);
+        }
+        return "";
     }
 
     private CharSequence getUrl(Activity activity, ContextMenuParams params) {

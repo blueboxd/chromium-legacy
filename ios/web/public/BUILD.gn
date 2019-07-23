@@ -6,10 +6,11 @@ import("//ios/build/config.gni")
 
 source_set("public") {
   public_deps = [
-    ":referrer",
+    ":ui",
     ":user_agent",
     ":web_state_types",
     "//ios/web/public/favicon",
+    "//ios/web/public/navigation",
     "//ios/web/public/thread",
     "//net",
     "//services/network/public/cpp",
@@ -25,20 +26,13 @@ source_set("public") {
 
   sources = [
     "browser_state.h",
-    "browser_url_rewriter.h",
     "java_script_dialog_callback.h",
     "java_script_dialog_presenter.h",
     "java_script_dialog_type.h",
-    "navigation_item.h",
-    "navigation_manager.h",
-    "reload_type.h",
     "service_manager_connection.h",
     "url_scheme_util.h",
-    "url_schemes.h",
     "url_schemes.mm",
     "web_client.h",
-    "web_state/navigation_context.h",
-    "web_state/page_display_state.h",
     "web_state/page_display_state.mm",
     "web_state/ui/crw_web_view_proxy.h",
     "web_state/ui/crw_web_view_scroll_view_proxy.h",
@@ -48,10 +42,7 @@ source_set("public") {
     "web_state/web_state_interface_provider.cc",
     "web_state/web_state_interface_provider.h",
     "web_state/web_state_observer_bridge.h",
-    "web_state/web_state_policy_decider.h",
-    "web_state/web_state_policy_decider_bridge.h",
     "web_state/web_state_user_data.h",
-    "web_view_creation_util.h",
   ]
 
   libs = [ "WebKit.framework" ]
@@ -63,8 +54,8 @@ source_set("public") {
 # deprecated.
 source_set("web_state_types") {
   deps = [
-    ":referrer",
     "//base",
+    "//ios/web/public/navigation",
     "//url",
   ]
   sources = [
@@ -89,14 +80,9 @@ source_set("user_agent") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-source_set("referrer") {
-  deps = [
-    "//base",
-    "//url",
-  ]
-
+source_set("ui") {
   sources = [
-    "referrer.h",
+    "web_state/page_display_state.h",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

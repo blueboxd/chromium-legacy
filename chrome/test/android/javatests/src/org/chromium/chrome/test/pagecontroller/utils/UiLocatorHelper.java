@@ -49,9 +49,18 @@ public class UiLocatorHelper {
     private final UiDevice mDevice;
     private long mTimeout;
 
+    /** Create a UiLocatorHelper with default timeout. */
     UiLocatorHelper() {
+        this(DEFAULT_TIMEOUT_MS);
+    }
+
+    /**
+     * Create a UiLocatorHelper with specified timeout.
+     * @param timeout Timeout in milliseconds.
+     */
+    UiLocatorHelper(long timeout) {
         mDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        mTimeout = DEFAULT_TIMEOUT_MS;
+        mTimeout = timeout;
     }
 
     /**
@@ -59,15 +68,6 @@ public class UiLocatorHelper {
      */
     public long getTimeout() {
         return mTimeout;
-    }
-
-    /**
-     * Set the timeout used for location operations.
-     * This is immutable outside package to reduce errors.
-     * @param timeout Timeout in milliseconds.
-     */
-    void setTimeout(long timeout) {
-        mTimeout = timeout;
     }
 
     /**

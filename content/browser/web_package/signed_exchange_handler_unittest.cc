@@ -68,7 +68,7 @@ constexpr base::StringPiece kDummySCTList(kDummySCTBytes,
                                           sizeof(kDummySCTBytes));
 
 class TestBrowserClient : public ContentBrowserClient {
-  bool CanIgnoreCertificateErrorIfNeeded() override { return true; }
+  bool CanAcceptUntrustedExchangesIfNeeded() override { return true; }
 };
 
 std::string GetTestFileContents(base::StringPiece name) {

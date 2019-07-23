@@ -5,7 +5,7 @@
 #include "ios/web/common/referrer_util.h"
 
 #include "base/stl_util.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"

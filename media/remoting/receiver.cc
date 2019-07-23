@@ -252,9 +252,15 @@ void Receiver::OnStatisticsUpdate(const PipelineStatistics& stats) {
   rpc_broker_->SendMessageToRemote(std::move(rpc));
 }
 
-void Receiver::OnBufferingStateChange(BufferingState state) {
+void Receiver::OnBufferingStateChange(BufferingState state,
+                                      BufferingStateChangeReason reason) {
   DVLOG(3) << __func__
            << ": Issues RPC_RC_ONBUFFERINGSTATECHANGE message: state=" << state;
+
+  // The |reason| is determined on the other side of the RPC in CourierRenderer.
+  // For now, there is no reason to provide this in the |message| below.
+  DCHECK_EQ(reason, BUFFERING_CHANGE_REASON_UNKNOWN);
+
   std::unique_ptr<pb::RpcMessage> rpc(new pb::RpcMessage());
   rpc->set_handle(remote_handle_);
   rpc->set_proc(pb::RpcMessage::RPC_RC_ONBUFFERINGSTATECHANGE);

@@ -137,6 +137,10 @@ class BASE_EXPORT ProcessMetrics {
   // measures such as placing DRAM in to self-refresh (also referred to as
   // auto-refresh), place interconnects into lower-power states etc"
   int GetPackageIdleWakeupsPerSecond();
+
+  // Returns "Energy Impact", a synthetic power estimation metric displayed by
+  // macOS in Activity Monitor and the battery menu.
+  int GetEnergyImpact();
 #endif
 
   // Retrieves accounting information for all I/O operations performed by the
@@ -226,6 +230,9 @@ class BASE_EXPORT ProcessMetrics {
   // And same thing for package idle exit wakeups.
   TimeTicks last_package_idle_wakeups_time_;
   uint64_t last_absolute_package_idle_wakeups_;
+  double last_energy_impact_;
+  // In mach_absolute_time units.
+  uint64_t last_energy_impact_time_;
 #endif
 
 #if !defined(OS_IOS)

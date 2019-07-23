@@ -67,7 +67,6 @@ Polymer({
         display: block;
         transition-duration: var(--iron-collapse-transition-duration, 300ms);
         /* Safari 10 needs this property prefixed to correctly apply the custom property */
-        -webkit-transition-duration: var(--iron-collapse-transition-duration, 300ms);
         overflow: visible;
       }
 

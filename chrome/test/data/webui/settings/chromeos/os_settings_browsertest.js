@@ -777,6 +777,37 @@ TEST_F('OSSettingsPrintingPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
+// eslint-disable-next-line no-var
+var OSSettingsLanguagesPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/os_languages_page/os_languages_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'fake_language_settings_private.js',
+      BROWSER_SETTINGS_PATH + 'test_languages_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
+      BROWSER_SETTINGS_PATH + 'test_util.js',
+      'fake_input_method_private.js',
+      'os_languages_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsLanguagesPageTest', 'LanguageMenu', function() {
+  mocha.grep(assert(os_languages_page_tests.TestNames.LanguageMenu)).run();
+});
+
+TEST_F('OSSettingsLanguagesPageTest', 'InputMethods', function() {
+  mocha.grep(assert(os_languages_page_tests.TestNames.InputMethods)).run();
+});
+
 // Tests for the Reset section.
 // eslint-disable-next-line no-var
 var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {

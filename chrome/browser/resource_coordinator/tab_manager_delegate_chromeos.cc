@@ -17,7 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/memory_pressure_monitor_chromeos.h"
-#include "base/memory/memory_pressure_monitor_notifying_chromeos.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"  // kNullProcessHandle.
@@ -242,7 +241,7 @@ int TabManagerDelegate::MemoryStat::LowMemoryMarginKB() {
   // A margin file can contain multiple values but the first one
   // represents the critical memory threshold.
   std::vector<int> margin_parts =
-      base::chromeos::MemoryPressureMonitorNotifying::GetMarginFileParts();
+      base::chromeos::MemoryPressureMonitor::GetMarginFileParts();
   if (!margin_parts.empty()) {
     return margin_parts[0] * 1024;
   }
@@ -452,22 +451,10 @@ void TabManagerDelegate::Observe(int type,
       // on top. So the longer the cleanup phase takes, the more tabs will
       // get discarded in parallel.
 
-      // TODO(bgeffon): Once the notifying version has become the standard
-      // this can be removed, the reason the check is here and the type safe
-      // versions exist is because a FakeMemoryPressureMonitor can be used on
-      // chromeos for testing and ScheduleEarlyCheck() is not part of the
-      // base::MemoryPressureMonitor interface.
-      auto* monitor_legacy = base::chromeos::MemoryPressureMonitor::Get();
-      if (monitor_legacy) {
-        monitor_legacy->ScheduleEarlyCheck();
-      } else {
-        auto* monitor_notifying =
-            base::chromeos::MemoryPressureMonitorNotifying::Get();
-        if (monitor_notifying) {
-          monitor_notifying->ScheduleEarlyCheck();
-        }
+      auto* monitor = base::chromeos::MemoryPressureMonitor::Get();
+      if (monitor) {
+        monitor->ScheduleEarlyCheck();
       }
-
       break;
     }
     case content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED: {

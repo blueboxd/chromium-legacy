@@ -342,7 +342,7 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   const LayoutBlock* container = layout_object_.ContainingBlock();
   if (!container)
     return false;
-  return container->IsLayoutNGMixin() || container->IsLayoutNGFlexibleBox();
+  return container->IsLayoutNGMixin();
 }
 
 const NGPhysicalFragment* NGPhysicalFragment::PostLayout() const {

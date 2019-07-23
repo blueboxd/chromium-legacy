@@ -27,6 +27,9 @@
   <message name="IDS_OS_SETTINGS_OPEN_WALLPAPER_APP" desc="Sub-label about opening the wallpaper app.">
     Open the wallpaper app
   </message>
+  <message name="IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE" desc="Label for row in settings page that shows the user image picker.">
+    Change account image
+  </message>
 
   <!-- Assistant section. -->
   <message name="IDS_OS_SETTINGS_ASSISTANT" desc="Name of the settings section for the Google Assistant.">

@@ -982,7 +982,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
     if (menu_item)
       over_empty_menu = true;
   }
-  MenuDelegate::DropPosition drop_position = MenuDelegate::DROP_NONE;
+  MenuDelegate::DropPosition drop_position = MenuDelegate::DropPosition::kNone;
   int drop_operation = ui::DragDropTypes::DRAG_NONE;
   if (menu_item) {
     gfx::Point menu_item_loc(event.location());
@@ -993,16 +993,16 @@ int MenuController::OnDragUpdated(SubmenuView* source,
       if (menu_item->HasSubmenu() &&
           (menu_item_loc.y() > kDropBetweenPixels &&
            menu_item_loc.y() < (menu_item_height - kDropBetweenPixels))) {
-        drop_position = MenuDelegate::DROP_ON;
+        drop_position = MenuDelegate::DropPosition::kOn;
       } else {
         drop_position = (menu_item_loc.y() < menu_item_height / 2)
-                            ? MenuDelegate::DROP_BEFORE
-                            : MenuDelegate::DROP_AFTER;
+                            ? MenuDelegate::DropPosition::kBefore
+                            : MenuDelegate::DropPosition::kAfter;
       }
       query_menu_item = menu_item;
     } else {
       query_menu_item = menu_item->GetParentMenuItem();
-      drop_position = MenuDelegate::DROP_ON;
+      drop_position = MenuDelegate::DropPosition::kOn;
     }
     drop_operation = menu_item->GetDelegate()->GetDropOperation(
         query_menu_item, event, &drop_position);
@@ -1011,7 +1011,7 @@ int MenuController::OnDragUpdated(SubmenuView* source,
     SetSelection(menu_item, menu_item->HasSubmenu() ? SELECTION_OPEN_SUBMENU
                                                     : SELECTION_DEFAULT);
 
-    if (drop_position == MenuDelegate::DROP_NONE ||
+    if (drop_position == MenuDelegate::DropPosition::kNone ||
         drop_operation == ui::DragDropTypes::DRAG_NONE)
       menu_item = nullptr;
   } else {
@@ -1027,7 +1027,7 @@ void MenuController::OnDragExited(SubmenuView* source) {
 
   if (drop_target_) {
     StopShowTimer();
-    SetDropMenuItem(nullptr, MenuDelegate::DROP_NONE);
+    SetDropMenuItem(nullptr, MenuDelegate::DropPosition::kNone);
   }
 }
 
@@ -1075,14 +1075,14 @@ void MenuController::OnDragEnteredScrollButton(SubmenuView* source,
   UpdateScrolling(part);
 
   // Do this to force the selection to hide.
-  SetDropMenuItem(source->GetMenuItemAt(0), MenuDelegate::DROP_NONE);
+  SetDropMenuItem(source->GetMenuItemAt(0), MenuDelegate::DropPosition::kNone);
 
   StopCancelAllTimer();
 }
 
 void MenuController::OnDragExitedScrollButton(SubmenuView* source) {
   StartCancelAllTimer();
-  SetDropMenuItem(nullptr, MenuDelegate::DROP_NONE);
+  SetDropMenuItem(nullptr, MenuDelegate::DropPosition::kNone);
   StopScrolling();
 }
 
@@ -2757,7 +2757,7 @@ void MenuController::SetDropMenuItem(MenuItemView* new_target,
 
   if (drop_target_) {
     drop_target_->GetParentMenuItem()->GetSubmenu()->SetDropMenuItem(
-        nullptr, MenuDelegate::DROP_NONE);
+        nullptr, MenuDelegate::DropPosition::kNone);
   }
   drop_target_ = new_target;
   drop_position_ = new_position;

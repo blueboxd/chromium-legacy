@@ -230,7 +230,8 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   void OnError(PipelineStatus status) override;
   void OnEnded() override;
   MOCK_METHOD1(OnMetadata, void(const PipelineMetadata&));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState, BufferingStateChangeReason));
   MOCK_METHOD0(OnDurationChange, void());
   MOCK_METHOD2(OnAddTextTrack,
                void(const TextTrackConfig& config,

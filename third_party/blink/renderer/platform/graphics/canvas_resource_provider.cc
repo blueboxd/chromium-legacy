@@ -466,11 +466,12 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
       bool is_origin_top_left,
       bool is_overlay_candidate)
-      : CanvasResourceProvider(kSharedImage,
-                               size,
-                               color_params,
-                               std::move(context_provider_wrapper),
-                               std::move(resource_dispatcher)),
+      : CanvasResourceProvider(
+            kSharedImage,
+            size,
+            CanvasColorParams(color_params, true /* force_rgba */),
+            std::move(context_provider_wrapper),
+            std::move(resource_dispatcher)),
         msaa_sample_count_(msaa_sample_count),
         is_origin_top_left_(is_origin_top_left),
         is_overlay_candidate_(is_overlay_candidate) {

@@ -108,12 +108,18 @@ class MetaBuildWrapper(object):
       subp.add_argument('-v', '--verbose', action='store_true',
                         help='verbose logging')
 
-    parser = argparse.ArgumentParser(prog='mb')
+    parser = argparse.ArgumentParser(
+      prog='mb', description='mb (meta-build) is a python wrapper around GN. '
+                             'See the user guide in '
+                             '//tools/mb/docs/user_guide.md for detailed usage '
+                             'instructions.')
+
     subps = parser.add_subparsers()
 
     subp = subps.add_parser('analyze',
-                            help='analyze whether changes to a set of files '
-                                 'will cause a set of binaries to be rebuilt.')
+                            description='Analyze whether changes to a set of '
+                                        'files will cause a set of binaries to '
+                                        'be rebuilt.')
     AddCommonOptions(subp)
     subp.add_argument('path',
                       help='path build was generated into.')
@@ -123,13 +129,13 @@ class MetaBuildWrapper(object):
     subp.add_argument('output_path',
                       help='path to a file containing the output arguments '
                            'as a JSON object.')
-    subp.add_argument('--json_output',
+    subp.add_argument('--json-output',
                       help='Write errors to json.output')
     subp.set_defaults(func=self.CmdAnalyze)
 
     subp = subps.add_parser('export',
-                            help='print out the expanded configuration for'
-                                 'each builder as a JSON object')
+                            description='Print out the expanded configuration '
+                            'for each builder as a JSON object.')
     subp.add_argument('-f', '--config-file', metavar='PATH',
                       default=self.default_config,
                       help='path to config file (default is %(default)s)')
@@ -138,29 +144,29 @@ class MetaBuildWrapper(object):
     subp.set_defaults(func=self.CmdExport)
 
     subp = subps.add_parser('gen',
-                            help='generate a new set of build files')
+                            description='Generate a new set of build files.')
     AddCommonOptions(subp)
     subp.add_argument('--swarming-targets-file',
                       help='save runtime dependencies for targets listed '
                            'in file.')
-    subp.add_argument('--json_output',
+    subp.add_argument('--json-output',
                       help='Write errors to json.output')
     subp.add_argument('path',
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
 
     subp = subps.add_parser('isolate-everything',
-                            help='generates a .isolate for all targets. '
-                                 'Requires that mb.py gen has already been '
-                                 'run.')
+                            description='Generates a .isolate for all targets. '
+                                        'Requires that mb.py gen has already '
+                                        'been run.')
     AddCommonOptions(subp)
     subp.set_defaults(func=self.CmdIsolateEverything)
     subp.add_argument('path',
                       help='path build was generated into')
 
     subp = subps.add_parser('isolate',
-                            help='generate the .isolate files for a given'
-                                 'binary')
+                            description='Generate the .isolate files for a '
+                                        'given binary.')
     AddCommonOptions(subp)
     subp.add_argument('--no-build', dest='build', default=True,
                       action='store_false',
@@ -174,8 +180,8 @@ class MetaBuildWrapper(object):
     subp.set_defaults(func=self.CmdIsolate)
 
     subp = subps.add_parser('lookup',
-                            help='look up the command for a given config or '
-                                 'builder')
+                            description='Look up the command for a given '
+                                        'config or builder.')
     AddCommonOptions(subp)
     subp.add_argument('--quiet', default=False, action='store_true',
                       help='Print out just the arguments, '
@@ -186,10 +192,7 @@ class MetaBuildWrapper(object):
     subp.set_defaults(func=self.CmdLookup)
 
     subp = subps.add_parser(
-        'run',
-        help='build and run the isolated version of a '
-             'binary',
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+      'run', formatter_class=argparse.RawDescriptionHelpFormatter)
     subp.description = (
         'Build, isolate, and run the given binary with the command line\n'
         'listed in the isolate. You may pass extra arguments after the\n'
@@ -234,15 +237,15 @@ class MetaBuildWrapper(object):
     subp.set_defaults(func=self.CmdRun)
 
     subp = subps.add_parser('validate',
-                            help='validate the config file')
+                            description='Validate the config file.')
     subp.add_argument('-f', '--config-file', metavar='PATH',
                       default=self.default_config,
                       help='path to config file (default is %(default)s)')
     subp.set_defaults(func=self.CmdValidate)
 
     subp = subps.add_parser('zip',
-                            help='generate a .zip containing the files needed '
-                                 'for a given binary')
+                            description='Generate a .zip containing the files '
+                                        'needed for a given binary.')
     AddCommonOptions(subp)
     subp.add_argument('--no-build', dest='build', default=True,
                       action='store_false',
@@ -834,7 +837,7 @@ class MetaBuildWrapper(object):
 
     ret, output, _ = self.Run(cmd)
     if ret:
-      if getattr(self.args, 'json_output', None) and output:
+      if self.args.json_output:
         # write errors to json.output
         self.WriteJSON({'output': output}, self.args.json_output)
       # If `gn gen` failed, we should exit early rather than trying to
@@ -1380,8 +1383,11 @@ class MetaBuildWrapper(object):
     try:
       self.WriteJSON(gn_inp, gn_input_path)
       cmd = self.GNCmd('analyze', build_path, gn_input_path, gn_output_path)
-      ret, _, _ = self.Run(cmd, force_verbose=True)
+      ret, output, _ = self.Run(cmd, force_verbose=True)
       if ret:
+        if self.args.json_output:
+          # write errors to json.output
+          self.WriteJSON({'output': output}, self.args.json_output)
         return ret
 
       gn_outp_str = self.ReadFile(gn_output_path)

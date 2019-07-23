@@ -92,11 +92,17 @@ def main_mac(options, args, results_collector):
   build_dir = build_directory.GetBuildOutputDirectory(SRC_DIR)
   target_dir = os.path.join(build_dir, options.target)
 
-  """Set DEVELOPER_DIR to the hermetic Xcode.app so 'size' will work."""
-  if not 'DEVELOPER_DIR' in os.environ:
-    xcode_path = os.path.join(SRC_DIR, 'build', 'mac_files', 'Xcode.app');
-    if os.path.exists(xcode_path):
-      os.environ['DEVELOPER_DIR'] = xcode_path
+  size_path = 'size'
+
+  # If there's a hermetic download of Xcode, directly invoke 'size' from it. The
+  # hermetic xcode binaries aren't a full Xcode install, so we can't modify
+  # DEVELOPER_DIR.
+  hermetic_size_path = os.path.join(
+      SRC_DIR, 'build', 'mac_files', 'xcode_binaries', 'Contents',
+      'Developer', 'Toolchains', 'XcodeDefault.xctoolchain', 'usr', 'bin',
+      'size')
+  if os.path.exists(hermetic_size_path):
+    size_path = hermetic_size_path
 
   result = 0
   # Work with either build type.
@@ -138,12 +144,12 @@ def main_mac(options, args, results_collector):
       }
 
       # Collect the segment info out of the App
-      result, stdout = run_process(result, ['size', chromium_executable])
+      result, stdout = run_process(result, [size_path, chromium_executable])
       print_dict['app_text'], print_dict['app_data'], print_dict['app_objc'] = \
           re.search(r'(\d+)\s+(\d+)\s+(\d+)', stdout).groups()
 
       # Collect the segment info out of the Framework
-      result, stdout = run_process(result, ['size',
+      result, stdout = run_process(result, [size_path,
                                             chromium_framework_executable])
       print_dict['framework_text'], print_dict['framework_data'], \
         print_dict['framework_objc'] = \

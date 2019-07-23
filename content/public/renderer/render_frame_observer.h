@@ -25,6 +25,7 @@
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
+#include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "v8/include/v8.h"
 
@@ -217,7 +218,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void FocusedElementChanged(const blink::WebElement& element) {}
 
   // Called when accessibility is enabled or disabled.
-  virtual void AccessibilityModeChanged() {}
+  virtual void AccessibilityModeChanged(const ui::AXMode& mode) {}
 
   // Called when script in the page calls window.print().
   virtual void ScriptedPrint(bool user_initiated) {}

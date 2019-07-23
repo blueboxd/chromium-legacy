@@ -14,6 +14,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
@@ -73,7 +74,6 @@ class MockClientSocketHandleFactory {
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
             SSLClientSocketContext(),
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,

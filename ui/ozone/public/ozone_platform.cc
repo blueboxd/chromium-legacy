@@ -111,10 +111,6 @@ OzonePlatform::GetInitializedHostProperties() {
   return host_properties;
 }
 
-base::MessageLoop::Type OzonePlatform::GetMessageLoopTypeForGpu() {
-  return base::MessageLoop::TYPE_DEFAULT;
-}
-
 void OzonePlatform::AddInterfaces(service_manager::BinderRegistry* registry) {}
 
 void OzonePlatform::AfterSandboxEntry() {}

@@ -8,7 +8,7 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"

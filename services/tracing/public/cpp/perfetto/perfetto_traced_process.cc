@@ -77,20 +77,18 @@ PerfettoTracedProcess::PerfettoTracedProcess()
     : PerfettoTracedProcess(MaybeSocket()) {}
 
 PerfettoTracedProcess::PerfettoTracedProcess(const char* system_socket)
-    : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())),
-      weak_ptr_factory_(this) {
+    : producer_client_(std::make_unique<ProducerClient>(GetTaskRunner())) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   // All communication with the system Perfetto service should occur on a single
   // sequence. To ensure we set up the socket correctly we construct the
   // |system_producer_endpoint_| on the task runner it will use.
   GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<PerfettoTracedProcess> weak_ptr,
-                        const char* socket) {
-                       weak_ptr->system_producer_endpoint_ =
+                     [](PerfettoTracedProcess* ptr, const char* socket) {
+                       ptr->system_producer_endpoint_ =
                            NewSystemProducer(GetTaskRunner(), socket);
                      },
-                     weak_ptr_factory_.GetWeakPtr(), system_socket));
+                     base::Unretained(this), system_socket));
 }
 
 PerfettoTracedProcess::~PerfettoTracedProcess() {}
@@ -153,7 +151,9 @@ void PerfettoTracedProcess::ResetTaskRunnerForTesting() {
 // static
 void PerfettoTracedProcess::ReconstructForTesting(const char* socket_name) {
   base::RunLoop finished_reconstruction_runloop;
-  GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
+  // The Get() call ensures that the construct has run and any required tasks
+  // have been completed before this lambda below is executed.
+  Get()->GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           [](base::OnceClosure on_finish, const char* socket_name) {

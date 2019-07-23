@@ -10,6 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_index_context.h"
+#include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 
 namespace content {
 
@@ -39,6 +40,9 @@ class CONTENT_EXPORT ContentIndexContextImpl
   void GetEntry(int64_t service_worker_registration_id,
                 const std::string& description_id,
                 GetEntryCallback callback) override;
+  void OnUserDeletedItem(int64_t service_worker_registration_id,
+                         const url::Origin& origin,
+                         const std::string& description_id) override;
 
  private:
   friend class base::DeleteHelper<ContentIndexContextImpl>;
@@ -48,6 +52,24 @@ class CONTENT_EXPORT ContentIndexContextImpl
 
   ~ContentIndexContextImpl() override;
 
+  // Called after a user-initiated delete.
+  void DidDeleteItem(int64_t service_worker_registration_id,
+                     const url::Origin& origin,
+                     const std::string& description_id,
+                     blink::mojom::ContentIndexError error);
+
+  void StartActiveWorkerForDispatch(
+      const std::string& description_id,
+      blink::ServiceWorkerStatusCode service_worker_status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+
+  void DeliverMessageToWorker(
+      scoped_refptr<ServiceWorkerVersion> service_worker,
+      scoped_refptr<ServiceWorkerRegistration> registration,
+      const std::string& description_id,
+      blink::ServiceWorkerStatusCode start_worker_status);
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   ContentIndexDatabase content_index_database_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexContextImpl);

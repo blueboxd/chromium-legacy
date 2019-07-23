@@ -196,8 +196,9 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
     // compositor in-process and connect HostFrameSinkManager to it.
     base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #if defined(USE_OZONE)
-    message_loop_type =
-        ui::OzonePlatform::GetInstance()->GetMessageLoopTypeForGpu();
+    message_loop_type = ui::OzonePlatform::GetInstance()
+                            ->GetPlatformProperties()
+                            .message_loop_type_for_gpu;
 #endif
     viz_compositor_thread_ =
         std::make_unique<viz::VizCompositorThreadRunner>(message_loop_type);

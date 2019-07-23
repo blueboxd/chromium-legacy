@@ -622,4 +622,46 @@ TEST_F(LayoutShiftTrackerTest, CompositedOverflowExpansion) {
   EXPECT_FLOAT_EQ(0.09 * (490.0 / 800.0), GetLayoutShiftTracker().Score());
 }
 
+TEST_F(LayoutShiftTrackerTest, CounterscrollAllowed) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #s {
+        overflow: scroll;
+        position: absolute;
+        left: 20px;
+        top: 20px;
+        width: 200px;
+        height: 200px;
+      }
+      #sp {
+        width: 170px;
+        height: 600px;
+      }
+      #ch {
+        position: relative;
+        background: yellow;
+        left: 10px;
+        top: 100px;
+        width: 150px;
+        height: 150px;
+      }
+    </style>
+    <div id="s">
+      <div id="sp">
+        <div id="ch"></div>
+      </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* scroller = GetDocument().getElementById("s");
+  Element* changer = GetDocument().getElementById("ch");
+
+  changer->setAttribute(html_names::kStyleAttr, AtomicString("top: 200px"));
+  scroller->setScrollTop(100.0);
+
+  UpdateAllLifecyclePhases();
+  EXPECT_FLOAT_EQ(0, GetLayoutShiftTracker().Score());
+}
+
 }  // namespace blink

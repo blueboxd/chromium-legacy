@@ -1386,6 +1386,42 @@ TEST_F(ChromeLauncherControllerExtendedSheflTest, ExtendedShef10Apps) {
       GetPinnedAppStatus());
 }
 
+TEST_F(ChromeLauncherControllerExtendedSheflTest, UpgradeFromDefault) {
+  InitLauncherController();
+  EXPECT_EQ("Chrome, Gmail, Doc, Youtube, Play Store", GetPinnedAppStatus());
+
+  // Upgrade happens only in case default layout is active.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kEnableExtendedShelfLayout,
+      {std::pair<std::string, std::string>("app_count", "10")});
+
+  // Trigger layout update, app_id does not matter.
+  extension_service_->AddExtension(extension1_.get());
+
+  EXPECT_EQ(
+      "Chrome, Gmail, Calendar, Doc, Sheets, Slides, Files, Camera, Photos, "
+      "Play Store",
+      GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerExtendedSheflTest, NoUpgradeFromNonDefault) {
+  InitLauncherController();
+  launcher_controller_->UnpinAppWithID(extension_misc::kYoutubeAppId);
+  EXPECT_EQ("Chrome, Gmail, Doc, Play Store", GetPinnedAppStatus());
+
+  // Upgrade does not happen due to default pin layout change.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kEnableExtendedShelfLayout,
+      {std::pair<std::string, std::string>("app_count", "10")});
+
+  // Trigger layout update, app_id does not matter.
+  extension_service_->AddExtension(extension1_.get());
+
+  EXPECT_EQ("Chrome, Gmail, Doc, Play Store", GetPinnedAppStatus());
+}
+
 TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   // Work on ARC disabled platform first.
   const std::string arc_app_id1 =

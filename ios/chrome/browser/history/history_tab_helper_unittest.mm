@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/web/public/navigation_item.h"
+#include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

@@ -43,7 +43,8 @@ constexpr OzonePlatform::PlatformProperties kScenicPlatformProperties{
     /*needs_view_token=*/true,
     /*custom_frame_pref_default=*/false,
     /*use_system_title_bar=*/false,
-    /*requires_mojo=*/true};
+    /*requires_mojo=*/true,
+    /*message_loop_type_for_gpu=*/base::MessageLoop::TYPE_IO};
 
 class ScenicPlatformEventSource : public ui::PlatformEventSource {
  public:
@@ -154,11 +155,6 @@ class OzonePlatformScenic
       surface_factory_ =
           std::make_unique<ScenicSurfaceFactory>(scenic_gpu_host_ptr_.get());
     }
-  }
-
-  base::MessageLoop::Type GetMessageLoopTypeForGpu() override {
-    // Scenic FIDL calls require async dispatcher.
-    return base::MessageLoop::TYPE_IO;
   }
 
   void AddInterfaces(service_manager::BinderRegistry* registry) override {

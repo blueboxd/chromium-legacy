@@ -100,7 +100,11 @@ const base::char16 AutocompleteMatch::kInvalidChars[] = {
   0
 };
 
+// static
 const char AutocompleteMatch::kEllipsis[] = "... ";
+
+// static
+size_t AutocompleteMatch::next_family_id_;
 
 AutocompleteMatch::AutocompleteMatch()
     : transition(ui::PAGE_TRANSITION_GENERATED) {}
@@ -118,6 +122,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
       relevance(match.relevance),
+      subrelevance(match.subrelevance),
       typed_count(match.typed_count),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
@@ -169,6 +174,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
   provider = match.provider;
   relevance = match.relevance;
+  subrelevance = match.subrelevance;
   typed_count = match.typed_count;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
@@ -592,11 +598,9 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
 
   // Special-case canonicalizing Docs URLs. This logic is self-contained and
   // will not participate in the TemplateURL canonicalization.
-  if (base::FeatureList::IsEnabled(omnibox::kDedupeGoogleDriveURLs)) {
-    GURL docs_url = DocumentProvider::GetURLForDeduping(url);
-    if (docs_url.is_valid())
-      return docs_url;
-  }
+  GURL docs_url = DocumentProvider::GetURLForDeduping(url);
+  if (docs_url.is_valid())
+    return docs_url;
 
   GURL stripped_destination_url = url;
 
@@ -735,6 +739,24 @@ void AutocompleteMatch::LogSearchEngineUsed(
   }
 }
 
+// static
+size_t AutocompleteMatch::GetNextFamilyID() {
+  next_family_id_ += FAMILY_SIZE;
+  // Avoid the default value. 0 means "no submatch", so no family can use it.
+  if (next_family_id_ == 0)
+    next_family_id_ += FAMILY_SIZE;
+  return next_family_id_;
+}
+
+// static
+bool AutocompleteMatch::IsSameFamily(size_t lhs, size_t rhs) {
+  return (lhs & FAMILY_SIZE_MASK) == (rhs & FAMILY_SIZE_MASK);
+}
+
+bool AutocompleteMatch::IsSubMatch() const {
+  return subrelevance & ~FAMILY_SIZE_MASK;
+}
+
 void AutocompleteMatch::ComputeStrippedDestinationURL(
     const AutocompleteInput& input,
     TemplateURLService* template_url_service) {
@@ -786,18 +808,13 @@ GURL AutocompleteMatch::ImageUrl() const {
 }
 
 AutocompleteMatch AutocompleteMatch::DerivePedalSuggestion(
-    OmniboxPedal* pedal) const {
+    OmniboxPedal* pedal) {
   AutocompleteMatch copy(*this);
   copy.pedal = pedal;
-  copy.relevance--;
-
-  // TODO(orinj): It may make more sense to start from a clean slate and
-  // apply only the bits of state relevant to the Pedal, rather than
-  // eliminating parts of an existing match that are no longer useful.
-  // But while Pedal suggestions are derived from triggering suggestions by
-  // copy, it is necessary to be careful that we don't inherit fields that
-  // might cause issues.
-  copy.allowed_to_be_default_match = false;
+  if (subrelevance == 0)
+    subrelevance = GetNextFamilyID();
+  copy.subrelevance = subrelevance + PEDAL_FAMILY_ID;
+  DCHECK(IsSameFamily(subrelevance, copy.subrelevance));
 
   copy.type = Type::PEDAL;
   copy.destination_url = copy.pedal->GetNavigationUrl();

@@ -136,7 +136,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void OnError(PipelineStatus error);
   void OnEnded();
   void OnMetadata(const PipelineMetadata& metadata);
-  void OnBufferingStateChange(BufferingState state);
+  void OnBufferingStateChange(BufferingState state,
+                              BufferingStateChangeReason reason);
   void OnDurationChange(base::TimeDelta duration);
   void OnWaiting(WaitingReason reason);
   void OnAudioConfigChange(const AudioDecoderConfig& config);

@@ -21,7 +21,7 @@
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"

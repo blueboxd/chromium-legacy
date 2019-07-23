@@ -707,8 +707,9 @@ void CommandBufferStub::UpdateActiveUrl() {
 
 void CommandBufferStub::MarkContextLost() {
   if (!command_buffer_ ||
-      command_buffer_->GetState().error == error::kLostContext)
+      command_buffer_->GetState().error == error::kLostContext) {
     return;
+  }
 
   command_buffer_->SetContextLostReason(error::kUnknown);
   if (decoder_context_)

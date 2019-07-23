@@ -17,6 +17,10 @@
 
 class SkBitmap;
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
 // Owned by the Storage Partition. This is used by the ContentIndexProvider to
@@ -39,11 +43,18 @@ class CONTENT_EXPORT ContentIndexContext {
                        const std::string& description_id,
                        base::OnceCallback<void(SkBitmap)> icon_callback) = 0;
 
+  // Must be called on the UI thread.
   virtual void GetAllEntries(GetAllEntriesCallback callback) = 0;
 
+  // Must be called on the UI thread.
   virtual void GetEntry(int64_t service_worker_registration_id,
                         const std::string& description_id,
                         GetEntryCallback callback) = 0;
+
+  // Called when a user deleted an item. Must be called on the UI thread.
+  virtual void OnUserDeletedItem(int64_t service_worker_registration_id,
+                                 const url::Origin& origin,
+                                 const std::string& description_id) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ContentIndexContext);
 };

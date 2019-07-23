@@ -257,22 +257,22 @@ int BookmarkMenuDelegate::GetDropOperation(
   size_t index_to_drop_at = size_t{drop_parent->GetIndexOf(node)};
   BookmarkModel* model = GetBookmarkModel();
   switch (*position) {
-    case views::MenuDelegate::DROP_AFTER:
+    case views::MenuDelegate::DropPosition::kAfter:
       if (node == model->other_node() || node == model->mobile_node()) {
         // Dropping after these nodes makes no sense.
-        *position = views::MenuDelegate::DROP_NONE;
+        *position = views::MenuDelegate::DropPosition::kNone;
       }
       index_to_drop_at++;
       break;
 
-    case views::MenuDelegate::DROP_BEFORE:
+    case views::MenuDelegate::DropPosition::kBefore:
       if (node == model->mobile_node()) {
         // Dropping before this node makes no sense.
-        *position = views::MenuDelegate::DROP_NONE;
+        *position = views::MenuDelegate::DropPosition::kNone;
       }
       break;
 
-    case views::MenuDelegate::DROP_ON:
+    case views::MenuDelegate::DropPosition::kOn:
       drop_parent = node;
       index_to_drop_at = node->children().size();
       break;
@@ -297,17 +297,17 @@ int BookmarkMenuDelegate::OnPerformDrop(
   DCHECK(drop_parent);
   size_t index_to_drop_at = size_t{drop_parent->GetIndexOf(drop_node)};
   switch (position) {
-    case views::MenuDelegate::DROP_AFTER:
+    case views::MenuDelegate::DropPosition::kAfter:
       index_to_drop_at++;
       break;
 
-    case views::MenuDelegate::DROP_ON:
+    case views::MenuDelegate::DropPosition::kOn:
       DCHECK(drop_node->is_folder());
       drop_parent = drop_node;
       index_to_drop_at = drop_node->children().size();
       break;
 
-    case views::MenuDelegate::DROP_BEFORE:
+    case views::MenuDelegate::DropPosition::kBefore:
       if (drop_node == model->other_node() ||
           drop_node == model->mobile_node()) {
         // This can happen with SHOW_PERMANENT_FOLDERS.

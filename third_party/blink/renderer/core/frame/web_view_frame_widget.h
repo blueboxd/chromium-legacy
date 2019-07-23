@@ -79,6 +79,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:
+  void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;

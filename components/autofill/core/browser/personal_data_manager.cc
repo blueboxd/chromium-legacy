@@ -353,9 +353,6 @@ void PersonalDataManager::OnSyncServiceInitialized(
 
     sync_service_ = sync_service;
 
-    UMA_HISTOGRAM_BOOLEAN(
-        "Autofill.ResetFullServerCards.SyncServiceNullOnInitialized",
-        !sync_service_);
     if (!sync_service_) {
       ResetFullServerCards();
       return;
@@ -367,9 +364,6 @@ void PersonalDataManager::OnSyncServiceInitialized(
         syncer::GetUploadToGoogleState(
             sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
         syncer::UploadState::NOT_ACTIVE;
-    UMA_HISTOGRAM_BOOLEAN(
-        "Autofill.ResetFullServerCards.SyncServiceNotActiveOnInitialized",
-        is_upload_not_active);
     if (is_upload_not_active) {
       ResetFullServerCards();
     }
@@ -846,18 +840,14 @@ void PersonalDataManager::ResetFullServerCard(const std::string& guid) {
 }
 
 void PersonalDataManager::ResetFullServerCards() {
-  size_t nb_cards_reset = 0;
   for (const auto& card : server_credit_cards_) {
     if (card->record_type() == CreditCard::FULL_SERVER_CARD) {
-      ++nb_cards_reset;
       CreditCard card_copy = *card;
       card_copy.set_record_type(CreditCard::MASKED_SERVER_CARD);
       card_copy.SetNumber(card->LastFourDigits());
       UpdateServerCreditCard(card_copy);
     }
   }
-  UMA_HISTOGRAM_COUNTS_100("Autofill.ResetFullServerCards.NumberOfCardsReset",
-                           nb_cards_reset);
 }
 
 void PersonalDataManager::ClearAllServerData() {

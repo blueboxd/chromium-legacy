@@ -652,9 +652,7 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     base::string16 original_url;
     std::string mimetype;
     if (result->GetString("originalUrl", &original_url)) {
-      GURL stripped_url = GURL(original_url);
-      if (base::FeatureList::IsEnabled(omnibox::kDedupeGoogleDriveURLs))
-        stripped_url = GetURLForDeduping(stripped_url);
+      GURL stripped_url = GetURLForDeduping(GURL(original_url));
       if (stripped_url.is_valid())
         match.stripped_destination_url = stripped_url;
     }

@@ -180,6 +180,11 @@ void SpellcheckService::StartRecordingMetrics(bool spellcheck_enabled) {
   metrics_ = std::make_unique<SpellCheckHostMetrics>();
   metrics_->RecordEnabledStats(spellcheck_enabled);
   OnUseSpellingServiceChanged();
+
+#if defined(OS_WIN)
+  RecordMissingLanguagePacksCount();
+  RecordHunspellUnsupportedLanguageCount(GetNormalizedAcceptLanguages());
+#endif  // defined(OS_WIN)
 }
 
 void SpellcheckService::InitForRenderer(
@@ -264,6 +269,10 @@ void SpellcheckService::LoadHunspellDictionaries() {
     hunspell_dictionaries_.back()->AddObserver(this);
     hunspell_dictionaries_.back()->Load();
   }
+
+#if defined(OS_WIN)
+  RecordMissingLanguagePacksCount();
+#endif  // defined(OS_WIN)
 }
 
 const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
@@ -383,16 +392,11 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
 }
 
 void SpellcheckService::OnAcceptLanguagesChanged() {
-  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
-  std::vector<std::string> accept_languages =
-      base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
-                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::transform(accept_languages.begin(), accept_languages.end(),
-                 accept_languages.begin(),
-                 &spellcheck::GetCorrespondingSpellCheckLanguage);
+  std::vector<std::string> accept_languages = GetNormalizedAcceptLanguages();
 
   StringListPrefMember dictionaries_pref;
-  dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries, prefs);
+  dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries,
+                         user_prefs::UserPrefs::Get(context_));
   std::vector<std::string> dictionaries = dictionaries_pref.GetValue();
   std::vector<std::string> filtered_dictionaries;
 
@@ -403,4 +407,46 @@ void SpellcheckService::OnAcceptLanguagesChanged() {
   }
 
   dictionaries_pref.SetValue(filtered_dictionaries);
+
+#if defined(OS_WIN)
+  RecordHunspellUnsupportedLanguageCount(accept_languages);
+#endif  // defined(OS_WIN)
 }
+
+std::vector<std::string> SpellcheckService::GetNormalizedAcceptLanguages()
+    const {
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+  std::vector<std::string> accept_languages =
+      base::SplitString(prefs->GetString(language::prefs::kAcceptLanguages),
+                        ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::transform(accept_languages.begin(), accept_languages.end(),
+                 accept_languages.begin(),
+                 &spellcheck::GetCorrespondingSpellCheckLanguage);
+  return accept_languages;
+}
+
+#if defined(OS_WIN)
+void SpellcheckService::RecordMissingLanguagePacksCount() {
+  if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
+      !hunspell_dictionaries_.empty()) {
+    std::vector<std::string> hunspell_locales;
+    for (auto& dict : hunspell_dictionaries_) {
+      hunspell_locales.push_back(dict->GetLanguage());
+    }
+    spellcheck_platform::RecordMissingLanguagePacksCount(
+        std::move(hunspell_locales), metrics_.get());
+  }
+}
+
+void SpellcheckService::RecordHunspellUnsupportedLanguageCount(
+    const std::vector<std::string>& accept_languages) {
+  if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
+      !accept_languages.empty()) {
+    metrics_->RecordHunspellUnsupportedLanguageCount(std::count_if(
+        accept_languages.begin(), accept_languages.end(),
+        [](const std::string& s) {
+          return spellcheck::GetCorrespondingSpellCheckLanguage(s).empty();
+        }));
+  }
+}
+#endif  // defined(OS_WIN)

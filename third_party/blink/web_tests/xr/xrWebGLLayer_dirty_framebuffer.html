@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
 
@@ -16,14 +18,10 @@ let testName = "A frame should be submitted if the base layer was written to "
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes =  ['immersive-vr'];
-
 let testFunction =
-  (session, fakeDeviceController, t) => new Promise((resolve, reject) => {
-  // Session must have a baseLayer or else frame requests will be ignored.
-  let webglLayer = new XRWebGLLayer(session, gl);
-  session.updateRenderState({ baseLayer: webglLayer });
-
+  (session, fakeDeviceController, t, sessionObjects) => new Promise((resolve, reject) => {
+  let gl = sessionObjects.gl;
+  let webglLayer = sessionObjects.glLayer;
   function onSkipFrame(time, xrFrame) {
     assert_equals(fakeDeviceController.getSubmitFrameCount(), 0);
     assert_equals(fakeDeviceController.getMissingFrameCount(), 0);
@@ -63,6 +61,6 @@ let testFunction =
 });
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  testName, testFunction, fakeDeviceInitParams, 'immersive-vr');
 
 </script>

@@ -110,6 +110,9 @@ Polymer({
       return;
     }
 
+    // Ensure focus-config was correctly specified as a Polymer property.
+    assert(this.focusConfig instanceof Map);
+
     let pathConfig = this.focusConfig.get(this.previousRoute_.path);
     if (pathConfig) {
       let handler;

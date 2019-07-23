@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"

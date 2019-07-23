@@ -345,7 +345,8 @@ void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
   NSPasteboard* pb = GetPasteboard();
   [pb addTypes:@[ NSTIFFPboardType ] owner:nil];
   NSData* tiff_data = [image TIFFRepresentation];
-  LOG_IF(ERROR, tiff_data == NULL) << "Failed to allocate image for clipboard";
+  LOG_IF(ERROR, tiff_data == nullptr)
+      << "Failed to allocate image for clipboard";
   if (tiff_data) {
     [pb setData:tiff_data forType:NSTIFFPboardType];
   }

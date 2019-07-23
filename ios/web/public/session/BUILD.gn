@@ -7,8 +7,8 @@ source_set("session") {
   deps = [
     "//base",
     "//ios/web/public",
-    "//ios/web/public:referrer",
     "//ios/web/public:user_agent",
+    "//ios/web/public/navigation",
     "//net",
     "//url",
   ]

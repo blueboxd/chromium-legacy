@@ -15,15 +15,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/rtp_dump_type.h"
 #include "chrome/browser/media/webrtc/webrtc_text_log_handler.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "chrome/common/media/webrtc_logging.mojom.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class WebRtcLogUploader;
 class WebRtcRtpDumpHandler;
-struct WebRtcLoggingMessageData;
 
 namespace content {
 class BrowserContext;
@@ -38,15 +40,16 @@ struct WebRtcLogPaths {
 typedef std::map<std::string, std::string> MetaDataMap;
 
 // WebRtcLoggingHandlerHost handles operations regarding the WebRTC logging:
-// - Opens a shared memory buffer that the handler in the render process
-//   writes to.
+// - Opens a connection to a WebRtcLoggingAgent that runs in the render process
+//   and generates log messages.
 // - Writes basic machine info to the log.
 // - Informs the handler in the render process when to stop logging.
-// - Closes the shared memory (and thereby discarding it) or triggers uploading
-//   of the log.
-// - Detects when channel, i.e. renderer, is going away and possibly triggers
-//   uploading the log.
-class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
+// - Closes the connection to the WebRtcLoggingAgent (and thereby discarding it)
+//   or triggers uploading of the log.
+// - Detects when the agent (e.g., because of a tab closure or crash) is going
+//   away and possibly triggers uploading the log.
+class WebRtcLoggingHandlerHost : public base::SupportsUserData::Data,
+                                 public chrome::mojom::WebRtcLoggingClient {
  public:
   typedef base::Callback<void(bool, const std::string&)> GenericDoneCallback;
   typedef base::Callback<void(bool, const std::string&, const std::string&)>
@@ -62,9 +65,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       void(bool, const std::string&, const std::string&)>
       StartEventLoggingCallback;
 
-  // Key used to attach the handler to the RenderProcessHost.
-  static const char kWebRtcLoggingHandlerHostKey[];
-
   // Upload failure reasons used for UMA stats. A failure reason can be one of
   // those listed here or a response code for the upload HTTP request. The
   // values in this list must be less than 100 and cannot be changed.
@@ -74,9 +74,10 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
     kNetworkError = 2,
   };
 
-  WebRtcLoggingHandlerHost(int render_process_id,
-                           content::BrowserContext* browser_context,
-                           WebRtcLogUploader* log_uploader);
+  static void AttachToRenderProcessHost(content::RenderProcessHost* host,
+                                        WebRtcLogUploader* log_uploader);
+  static WebRtcLoggingHandlerHost* FromRenderProcessHost(
+      content::RenderProcessHost* host);
 
   // Sets meta data that will be uploaded along with the log and also written
   // in the beginning of the log. Must be called on the IO thread before calling
@@ -161,20 +162,22 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                         const LogsDirectoryErrorCallback& error_callback);
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
- private:
-  friend class content::BrowserThread;
-  friend class base::DeleteHelper<WebRtcLoggingHandlerHost>;
+  // chrome::mojom::WebRtcLoggingClient methods:
+  void OnAddMessages(
+      std::vector<chrome::mojom::WebRtcLoggingMessagePtr> messages) override;
+  void OnStopped() override;
 
+  base::WeakPtr<WebRtcLoggingHandlerHost> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  WebRtcLoggingHandlerHost(int render_process_id,
+                           content::BrowserContext* browser_context,
+                           WebRtcLogUploader* log_uploader);
   ~WebRtcLoggingHandlerHost() override;
 
-  // BrowserMessageFilter implementation.
-  void OnChannelClosing() override;
-  void OnDestruct() const override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  // Handles log message requests from renderer process.
-  void OnAddLogMessages(const std::vector<WebRtcLoggingMessageData>& messages);
-  void OnLoggingStoppedInRenderer();
+  void OnAgentDisconnected();
 
   // Called after stopping RTP dumps.
   void StoreLogContinue(const std::string& log_id,
@@ -183,10 +186,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // Writes a formatted log |message| to the |circular_buffer_|.
   void LogToCircularBuffer(const std::string& message);
 
-  // Gets the log directory path for |browser_context_| and ensure it exists.
-  // Must be called on the FILE thread.
-  base::FilePath GetLogDirectoryAndEnsureExists();
-
   void TriggerUpload(const UploadDoneCallback& callback,
                      const base::FilePath& log_directory);
 
@@ -194,10 +193,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                            std::unique_ptr<WebRtcLogPaths> log_paths,
                            const GenericDoneCallback& done_callback,
                            const base::FilePath& directory);
-
-  void UploadStoredLogOnFileThread(const std::string& log_id,
-                                   int web_app_id,
-                                   const UploadDoneCallback& callback);
 
   // A helper for TriggerUpload to do the real work.
   void DoUploadLogAndRtpDumps(const base::FilePath& log_directory,
@@ -212,12 +207,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // A helper for starting RTP dump assuming the RTP dump handler has been
   // created.
   void DoStartRtpDump(RtpDumpType type, const GenericDoneCallback& callback);
-
-  // Adds the packet to the dump on IO thread.
-  void DumpRtpPacketOnIOThread(std::unique_ptr<uint8_t[]> packet_header,
-                               size_t header_length,
-                               size_t packet_length,
-                               bool incoming);
 
   bool ReleaseRtpDumps(WebRtcLogPaths* log_paths);
 
@@ -237,18 +226,27 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       const base::FilePath& logs_path);
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
+  static base::FilePath GetLogDirectoryAndEnsureExists(
+      const base::FilePath& browser_context_directory_path);
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  mojo::Receiver<chrome::mojom::WebRtcLoggingClient> receiver_;
+  mojo::Remote<chrome::mojom::WebRtcLoggingAgent> logging_agent_;
+
   // The render process ID this object belongs to.
   const int render_process_id_;
 
-  // The browser context directory path associated with our renderer process.
-  const base::FilePath browser_context_directory_path_;
+  // A callback that needs to be run from a blocking worker pool and returns
+  // the browser context directory path associated with our renderer process.
+  base::RepeatingCallback<base::FilePath(void)> log_directory_getter_;
 
   // Only accessed on the IO thread.
   bool upload_log_on_render_close_;
 
   // The text log handler owns the WebRtcLogBuffer object and keeps track of
   // the logging state. It is a scoped_refptr to allow posting tasks.
-  scoped_refptr<WebRtcTextLogHandler> text_log_handler_;
+  std::unique_ptr<WebRtcTextLogHandler> text_log_handler_;
 
   // The RTP dump handler responsible for creating the RTP header dump files.
   std::unique_ptr<WebRtcRtpDumpHandler> rtp_dump_handler_;
@@ -264,6 +262,8 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // "client" meta data key, if exists. 0 means undefined, and is the hash of
   // the empty string. Must only be accessed on the IO thread.
   int web_app_id_ = 0;
+
+  base::WeakPtrFactory<WebRtcLoggingHandlerHost> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
 };

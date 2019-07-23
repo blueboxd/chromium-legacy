@@ -218,11 +218,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool WakeOnWifiEnabled();
 // Returns true if memory pressure handling is enabled.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool MemoryPressureHandlingEnabled();
 
-// Returns thresholds for determining if the system is under memory pressure.
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-base::chromeos::MemoryPressureMonitor::MemoryPressureThresholds
-GetMemoryPressureThresholds();
-
 // Returns true if flags are set indicating that stored user keys are being
 // converted to GAIA IDs.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsGaiaIdMigrationStarted();

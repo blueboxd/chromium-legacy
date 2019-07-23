@@ -35,7 +35,6 @@ CommonConnectJobParams::CommonConnectJobParams(
     ProxyDelegate* proxy_delegate,
     const HttpUserAgentSettings* http_user_agent_settings,
     const SSLClientSocketContext& ssl_client_socket_context,
-    const SSLClientSocketContext& ssl_client_socket_context_privacy_mode,
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
     NetworkQualityEstimator* network_quality_estimator,
     NetLog* net_log,
@@ -50,8 +49,6 @@ CommonConnectJobParams::CommonConnectJobParams(
       proxy_delegate(proxy_delegate),
       http_user_agent_settings(http_user_agent_settings),
       ssl_client_socket_context(ssl_client_socket_context),
-      ssl_client_socket_context_privacy_mode(
-          ssl_client_socket_context_privacy_mode),
       socket_performance_watcher_factory(socket_performance_watcher_factory),
       network_quality_estimator(network_quality_estimator),
       net_log(net_log),

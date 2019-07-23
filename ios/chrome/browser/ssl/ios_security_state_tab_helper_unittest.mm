@@ -6,8 +6,8 @@
 
 #include "components/security_state/core/security_state.h"
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 

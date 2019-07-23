@@ -175,26 +175,14 @@ TEST(DataPackTest, LoadFromBufferV5) {
   EXPECT_EQ("this is id 4", data);
   ASSERT_TRUE(pack.HasResource(6));
   ASSERT_TRUE(pack.GetStringPiece(6, &data));
-
-  // Try reading zero-length data blobs, just in case.
-  ASSERT_TRUE(pack.GetStringPiece(1, &data));
-  EXPECT_EQ(0U, data.length());
+  ASSERT_TRUE(pack.HasResource(8));
+  ASSERT_TRUE(pack.GetStringPiece(8, &data));
   ASSERT_TRUE(pack.GetStringPiece(10, &data));
-  EXPECT_EQ("this is id 4", data);
+  ASSERT_EQ("this is id 4", data);
 
   // Try looking up an invalid key.
   ASSERT_FALSE(pack.HasResource(140));
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
-
-  bool is_gzipped;
-  ASSERT_TRUE(pack.IsGzipped(1, &is_gzipped));
-  ASSERT_FALSE(is_gzipped);
-  ASSERT_TRUE(pack.IsGzipped(4, &is_gzipped));
-  ASSERT_FALSE(is_gzipped);
-  ASSERT_TRUE(pack.IsGzipped(6, &is_gzipped));
-  ASSERT_TRUE(is_gzipped);
-  ASSERT_TRUE(pack.IsGzipped(10, &is_gzipped));
-  ASSERT_FALSE(is_gzipped);
 }
 
 INSTANTIATE_TEST_SUITE_P(WriteBINARY,

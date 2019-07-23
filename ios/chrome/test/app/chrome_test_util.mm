@@ -26,10 +26,10 @@
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
 #import "ios/web/public/test/native_controller_test_util.h"
-#import "ios/web/public/web_state/navigation_context.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

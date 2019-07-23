@@ -4,6 +4,9 @@
 
 #include "chrome/browser/content_index/content_index_provider_impl.h"
 
+#include <memory>
+
+#include "base/barrier_closure.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
@@ -96,7 +99,7 @@ OfflineItem EntryToOfflineItem(const content::ContentIndexEntry& entry) {
   item.description = entry.description->description;
   item.filter = CategoryToFilter(entry.description->category);
   item.is_transient = false;
-  item.is_suggested = true;
+  item.is_suggested = false;
   item.creation_time = entry.registration_time;
   item.is_openable = true;
   item.state = offline_items_collection::OfflineItemState::COMPLETE;
@@ -105,6 +108,27 @@ OfflineItem EntryToOfflineItem(const content::ContentIndexEntry& entry) {
   item.page_url = entry.launch_url;
 
   return item;
+}
+
+void DidGetAllEntries(base::OnceClosure done_closure,
+                      ContentIndexProviderImpl::OfflineItemList* item_list,
+                      blink::mojom::ContentIndexError error,
+                      std::vector<content::ContentIndexEntry> entries) {
+  if (error != blink::mojom::ContentIndexError::NONE) {
+    std::move(done_closure).Run();
+    return;
+  }
+
+  for (const auto& entry : entries)
+    item_list->push_back(EntryToOfflineItem(entry));
+
+  std::move(done_closure).Run();
+}
+
+void DidGetAllEntriesAcrossStorageParitions(
+    std::unique_ptr<ContentIndexProviderImpl::OfflineItemList> item_list,
+    ContentIndexProviderImpl::MultipleItemCallback callback) {
+  std::move(callback).Run(*item_list);
 }
 
 }  // namespace
@@ -131,23 +155,14 @@ void ContentIndexProviderImpl::OnContentAdded(
     content::ContentIndexEntry entry) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::string entry_key = EntryKey(entry);
-  auto offline_item = EntryToOfflineItem(entry);
+  OfflineItemList items(1, EntryToOfflineItem(entry));
 
-  bool is_update = entries_.erase(entry_key);
+  // Delete the entry before adding it just in case the ID was overwritten.
+  for (auto& observer : observers_)
+    observer.OnItemRemoved(items[0].id);
 
-  if (is_update) {
-    offline_items_collection::UpdateDelta delta;
-    delta.visuals_changed = true;
-    for (auto& observer : observers_)
-      observer.OnItemUpdated(offline_item, delta);
-  } else {
-    OfflineItemList items(1, offline_item);
-    for (auto& observer : observers_)
-      observer.OnItemsAdded(items);
-  }
-
-  entries_.emplace(std::move(entry_key), std::move(offline_item));
+  for (auto& observer : observers_)
+    observer.OnItemsAdded(items);
 }
 
 void ContentIndexProviderImpl::OnContentDeleted(
@@ -158,37 +173,58 @@ void ContentIndexProviderImpl::OnContentDeleted(
 
   std::string entry_key =
       EntryKey(service_worker_registration_id, origin, description_id);
-  auto did_erase = entries_.erase(entry_key);
-
-  if (did_erase) {
-    ContentId id(kProviderNamespace, entry_key);
-    for (auto& observer : observers_)
-      observer.OnItemRemoved(id);
-  }
+  ContentId id(kProviderNamespace, entry_key);
+  for (auto& observer : observers_)
+    observer.OnItemRemoved(id);
 }
 
 void ContentIndexProviderImpl::OpenItem(LaunchLocation location,
                                         const ContentId& id) {
-  auto it = entries_.find(id.id);
-  if (it == entries_.end())
+  auto components = GetEntryKeyComponents(id.id);
+
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, components.origin.GetURL(), /* can_create= */ false);
+
+  if (!storage_partition || !storage_partition->GetContentIndexContext())
+    return;
+
+  storage_partition->GetContentIndexContext()->GetEntry(
+      components.service_worker_registration_id, components.description_id,
+      base::BindOnce(&ContentIndexProviderImpl::DidGetEntryToOpen,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ContentIndexProviderImpl::DidGetEntryToOpen(
+    base::Optional<content::ContentIndexEntry> entry) {
+  if (!entry)
     return;
 
 #if defined(OS_ANDROID)
-  content::OpenURLParams params(it->second.page_url, content::Referrer(),
+  content::OpenURLParams params(entry->launch_url, content::Referrer(),
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 /* is_renderer_initiated= */ false);
   ServiceTabLauncher::GetInstance()->LaunchTab(profile_, params,
                                                base::DoNothing());
 #else
-  NavigateParams nav_params(profile_, it->second.page_url,
+  NavigateParams nav_params(profile_, entry->launch_url,
                             ui::PAGE_TRANSITION_LINK);
   Navigate(&nav_params);
 #endif
 }
 
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
-  NOTIMPLEMENTED();
+  auto components = GetEntryKeyComponents(id.id);
+
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, components.origin.GetURL(), /* can_create= */ false);
+
+  if (!storage_partition || !storage_partition->GetContentIndexContext())
+    return;
+
+  storage_partition->GetContentIndexContext()->OnUserDeletedItem(
+      components.service_worker_registration_id, components.origin,
+      components.description_id);
 }
 
 void ContentIndexProviderImpl::CancelDownload(const ContentId& id) {
@@ -206,23 +242,63 @@ void ContentIndexProviderImpl::ResumeDownload(const ContentId& id,
 
 void ContentIndexProviderImpl::GetItemById(const ContentId& id,
                                            SingleItemCallback callback) {
-  auto it = entries_.find(id.id);
-  if (it == entries_.end())
-    return;
+  auto components = GetEntryKeyComponents(id.id);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), it->second));
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, components.origin.GetURL(), /* can_create= */ false);
+
+  if (!storage_partition || !storage_partition->GetContentIndexContext()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+    return;
+  }
+
+  storage_partition->GetContentIndexContext()->GetEntry(
+      components.service_worker_registration_id, components.description_id,
+      base::BindOnce(
+          [](SingleItemCallback callback,
+             base::Optional<content::ContentIndexEntry> entry) {
+            if (!entry)
+              std::move(callback).Run(base::nullopt);
+            else
+              std::move(callback).Run(EntryToOfflineItem(*entry));
+          },
+          std::move(callback)));
 }
 
 void ContentIndexProviderImpl::GetAllItems(MultipleItemCallback callback) {
-  OfflineItemList list;
-  for (const auto& entry : entries_)
-    list.push_back(entry.second);
+  // Get the number of Storage Paritions.
+  std::vector<content::StoragePartition*> storage_paritions;
+  content::BrowserContext::ForEachStoragePartition(
+      profile_,
+      base::BindRepeating(
+          [](std::vector<content::StoragePartition*>* storage_paritions,
+             content::StoragePartition* storage_partition) {
+            storage_paritions->push_back(storage_partition);
+          },
+          &storage_paritions));
+  DCHECK(!storage_paritions.empty());
 
-  // TODO(crbug.com/973844): Consider fetching these from the DB rather than
-  // storing them in memory.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(list)));
+  auto item_list = std::make_unique<OfflineItemList>();
+  OfflineItemList* item_list_ptr = item_list.get();
+
+  // Get the all entries from every partition.
+  auto barrier_closure = base::BarrierClosure(
+      storage_paritions.size(),
+      base::BindOnce(&DidGetAllEntriesAcrossStorageParitions,
+                     std::move(item_list), std::move(callback)));
+
+  for (auto* storage_partition : storage_paritions) {
+    if (!storage_partition || !storage_partition->GetContentIndexContext()) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
+      continue;
+    }
+
+    // |item_list_ptr| is safe to use since it is owned by the barrier
+    // closure.
+    storage_partition->GetContentIndexContext()->GetAllEntries(
+        base::BindOnce(&DidGetAllEntries, barrier_closure, item_list_ptr));
+  }
 }
 
 void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,

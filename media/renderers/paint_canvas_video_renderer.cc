@@ -159,22 +159,6 @@ YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
                           &yuv_textures_info[i].minFilter);
     gl->GetTexParameteriv(mailbox_holder.texture_target, GL_TEXTURE_MAG_FILTER,
                           &yuv_textures_info[i].magFilter);
-    // TODO(dcastagna): avoid this copy once Skia supports native textures
-    // with a GL_TEXTURE_RECTANGLE_ARB texture target.
-    // crbug.com/505026
-    if (mailbox_holder.texture_target == GL_TEXTURE_RECTANGLE_ARB) {
-      unsigned texture_copy = 0;
-      gl->GenTextures(1, &texture_copy);
-      DCHECK(texture_copy);
-      gl->BindTexture(GL_TEXTURE_2D, texture_copy);
-      gl->CopyTextureCHROMIUM(yuv_textures_info[i].texture.fID, 0,
-                              GL_TEXTURE_2D, texture_copy, 0, GL_RGB,
-                              GL_UNSIGNED_BYTE, false, true, false);
-
-      gl->DeleteTextures(1, &yuv_textures_info[i].texture.fID);
-      yuv_textures_info[i].texture.fID = texture_copy;
-      yuv_textures_info[i].texture.fTarget = GL_TEXTURE_2D;
-    }
   }
 
   return yuv_textures_info;
@@ -288,8 +272,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
 sk_sp<SkImage> NewSkImageFromVideoFrameNative(
     VideoFrame* video_frame,
     viz::ContextProvider* context_provider,
-    bool allow_wrap_texture,
-    bool* wrapped_video_frame_texture) {
+    bool wrap_texture) {
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
@@ -311,18 +294,12 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(
       gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
   unsigned source_texture = 0;
   gfx::ColorSpace color_space_for_skia;
-  *wrapped_video_frame_texture =
-      mailbox_holder.texture_target == GL_TEXTURE_2D && allow_wrap_texture;
-  if (*wrapped_video_frame_texture) {
+  if (wrap_texture) {
     // Fast path where we can avoid a copy, by having last_image_ directly wrap
     // the VideoFrame texture.
     source_texture = frame_texture;
     color_space_for_skia = video_frame->ColorSpace();
   } else {
-    // TODO(dcastagna): At the moment Skia doesn't support targets different
-    // than GL_TEXTURE_2D.  Avoid this copy once
-    // https://code.google.com/p/skia/issues/detail?id=3868 is addressed, when
-    // we allow wrapping.
     gl->GenTextures(1, &source_texture);
     DCHECK(source_texture);
     gl->BindTexture(GL_TEXTURE_2D, source_texture);
@@ -1526,8 +1503,8 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
             video_frame.get(), context_provider);
       } else {
         cache_->source_image = NewSkImageFromVideoFrameNative(
-            video_frame.get(), context_provider, allow_wrap_texture,
-            &cache_->wraps_video_frame_texture);
+            video_frame.get(), context_provider, allow_wrap_texture);
+        cache_->wraps_video_frame_texture = allow_wrap_texture;
       }
       if (!cache_->source_image) {
         // Couldn't create the SkImage.

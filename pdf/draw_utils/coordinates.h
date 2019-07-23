@@ -5,6 +5,8 @@
 #ifndef PDF_DRAW_UTILS_COORDINATES_H_
 #define PDF_DRAW_UTILS_COORDINATES_H_
 
+#include "stddef.h"
+
 #include "ppapi/cpp/rect.h"
 
 namespace pp {
@@ -28,6 +30,15 @@ struct PageInsetSizes {
 // width and |doc_size|'s width. Also adds the height of |rect_size| to
 // |doc_size|'s height.
 void ExpandDocumentSize(const pp::Size& rect_size, pp::Size* doc_size);
+
+// Given |page_index|, and |num_of_pages|, return the configuration of
+// |single_view_insets| and |horizontal_separator| for the current page in
+// two-up view.
+PageInsetSizes GetPageInsetsForTwoUpView(
+    size_t page_index,
+    size_t num_of_pages,
+    const PageInsetSizes& single_view_insets,
+    int horizontal_separator);
 
 // Given |page_rect| in document coordinates, |inset_sizes|, and
 // |bottom_separator|, return a pp::Rect object representing the gap on the

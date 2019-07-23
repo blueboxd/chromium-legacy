@@ -1456,10 +1456,7 @@ void DesktopWindowTreeHostX11::Relayout() {
 
 bool DesktopWindowTreeHostX11::CanDispatchEvent(
     const ui::PlatformEvent& event) {
-  auto xwindow = x11_window_->window();
-  return event->xany.window == xwindow ||
-         (event->type == GenericEvent &&
-          static_cast<XIDeviceEvent*>(event->xcookie.data)->event == xwindow);
+  return x11_window_->IsTargetedBy(*event);
 }
 
 uint32_t DesktopWindowTreeHostX11::DispatchEvent(

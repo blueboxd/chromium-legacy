@@ -53,6 +53,11 @@ const base::Feature kUseParallelRequestsForUnknwonRangeSupport{
     "UseParallelRequestForUnknownRangeSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseParallelRequestsForHTTP2{
+    "kUseParallelRequestsForHTTP2", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUseParallelRequestsForQUIC{
+    "kUseParallelRequestsForQUIC", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
 }  // namespace download

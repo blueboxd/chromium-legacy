@@ -1,14 +1,5 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
 
-# http://crbug.com/978617
--DiceBrowserTest.EnableSyncAfterToken
--DiceBrowserTest.EnableSyncBeforeToken
--DiceBrowserTest.Reauth
--DiceBrowserTest.Signin
--DiceBrowserTest.SignoutAllAccounts
--DiceBrowserTest.SignoutMainAccount
--DiceBrowserTest.SignoutSecondaryAccount
-
 # http://crbug.com/824854
 -ChromeAcceptHeaderTest.Check
 -SignedExchangePageLoadMetricsBrowserTest.UkmSignedExchangeMetric

@@ -1134,6 +1134,11 @@
       'mac-dummy-rel',
     ],
     'modifications': {
+      'Linux Tests': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+      },
       'Linux Tests Code Coverage': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
@@ -1230,6 +1235,11 @@
       'mac-dummy-rel',
     ],
     'modifications': {
+      'Linux Tests': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
+      },
       'Linux Tests Code Coverage': {
         "args": [
           "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
@@ -1846,6 +1856,9 @@
         },
       },
       'Linux Tests': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+        ],
         'swarming': {
           'shards': 6,
         },

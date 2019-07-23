@@ -870,9 +870,7 @@ bool GpuProcessHost::Init() {
   params.main_thread_task_runner =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
-      this,
-      std::make_unique<viz::VizMainWrapper>(std::move(viz_main_pending_remote)),
-      std::move(params));
+      this, std::move(viz_main_pending_remote), std::move(params));
 
 #if defined(USE_VIZ_DEVTOOLS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

@@ -10,7 +10,7 @@
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/public/deprecated/crw_native_content.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
-#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/controller/crw_legacy_native_content_controller_delegate.h"
 #import "ios/web/web_state/web_state_impl.h"

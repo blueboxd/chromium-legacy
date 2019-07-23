@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -57,8 +56,11 @@ class ImageDownloaderBase : public ContextLifecycleObserver {
                      MultiResolutionImageResourceFetcher* fetcher,
                      const WTF::Vector<SkBitmap>& images);
 
+  typedef WTF::Vector<std::unique_ptr<MultiResolutionImageResourceFetcher>>
+      ImageResourceFetcherList;
+
   // ImageResourceFetchers schedule via FetchImage.
-  HeapVector<Member<MultiResolutionImageResourceFetcher>> image_fetchers_;
+  ImageResourceFetcherList image_fetchers_;
 
   Member<LocalFrame> frame_;
 

@@ -14,6 +14,7 @@ source_set("static_content") {
     "//base",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/url_loading",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public/deprecated",
     "//net",
     "//ui/base",

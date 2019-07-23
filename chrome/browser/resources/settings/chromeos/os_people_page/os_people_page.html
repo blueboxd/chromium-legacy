@@ -1,6 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -8,7 +7,6 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
@@ -16,7 +14,6 @@
 <link rel="import" href="../../icons.html">
 <link rel="import" href="../../people_page/account_manager.html">
 <link rel="import" href="../../people_page/account_manager_browser_proxy.html">
-<link rel="import" href="../../people_page/change_picture.html">
 <link rel="import" href="../../people_page/fingerprint_list.html">
 <link rel="import" href="../../people_page/kerberos_accounts.html">
 <link rel="import" href="../../people_page/lock_screen.html">
@@ -100,11 +97,8 @@
       <div route-path="default">
           <div class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
-              <div id="profile-icon" on-click="onProfileIconTap_" actionable
-                  style="background-image: [[getIconImageSet_(
-                      profileIconUrl_)]]">
-              </div>
-              <div class="middle two-line no-min-width"
+              <!-- Does not use <cr-link-row> due to custom aria label. -->
+              <div class="start two-line no-min-width"
                   on-click="onAccountManagerTap_"
                   actionable>
                 <div class="flex text-elide settings-box-text">
@@ -234,13 +228,6 @@
             page-title="$i18n{manageOtherPeople}">
           <settings-users-page prefs="{{prefs}}">
           </settings-users-page>
-        </settings-subpage>
-      </template>
-      <template is="dom-if" route-path="/changePicture">
-        <settings-subpage
-          associated-control="[[$$('#profile-icon')]]"
-          page-title="$i18n{changePictureTitle}">
-          <settings-change-picture></settings-change-picture>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/accountManager">

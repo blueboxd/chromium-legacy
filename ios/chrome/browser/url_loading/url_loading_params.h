@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_URL_LOADING_URL_LOADING_PARAMS_H_
 
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/window_open_disposition.h"
 
 // Enum of ways of changing loading behavior, that can be passed around

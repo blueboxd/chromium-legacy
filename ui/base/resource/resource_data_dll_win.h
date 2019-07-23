@@ -21,7 +21,6 @@ class ResourceDataDLL : public ResourceHandle {
 
   // ResourceHandle implementation:
   bool HasResource(uint16_t resource_id) const override;
-  bool IsGzipped(uint16_t resource_id, bool* is_gzipped) const override;
   bool GetStringPiece(uint16_t resource_id,
                       base::StringPiece* data) const override;
   base::RefCountedStaticMemory* GetStaticMemory(

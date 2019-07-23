@@ -229,34 +229,17 @@ class LayerTreeHostBlendingPixelTest
 
     CreateBlendingColorLayers(kRootWidth, kRootHeight, background.get(), flags);
 
-    this->force_antialiasing_ = (flags & kUseAntialiasing);
-    this->force_blending_with_shaders_ = (flags & kForceShaders);
+    force_antialiasing_ = (flags & kUseAntialiasing);
+    force_blending_with_shaders_ = (flags & kForceShaders);
 
-    if ((flags & kUseAntialiasing) && (renderer_type() == RENDERER_GL)) {
+    if ((renderer_type() == RENDERER_GL && force_antialiasing_) ||
+        renderer_type() == RENDERER_SKIA_VK) {
       // Blending results might differ with one pixel.
-      // Don't allow large errors here, only off by ones.
-      // However, large error still has to be specified to satisfy
-      // the pixel comparator so set it equivalent to small errors.
+      float percentage_pixels_error = 35.f;
+      float percentage_pixels_small_error = 0.f;
+      float average_error_allowed_in_bad_pixels = 1.f;
       int large_error_allowed = 1;
-      int small_error_allowed = 1;
-      float percentage_pixels_small_error = 35.0f;
-      float percentage_pixels_error = 35.0f;
-      // The average error is still close to 1.
-      float average_error_allowed_in_bad_pixels = 1.4f;
-
-      pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-          false,  // discard_alpha
-          percentage_pixels_error, percentage_pixels_small_error,
-          average_error_allowed_in_bad_pixels, large_error_allowed,
-          small_error_allowed);
-    } else if (renderer_type() == RENDERER_SKIA_VK) {
-      // TODO(penghuang): maybe need a new baseline for vulkan.
-      // https://crbug.com/963446
-      int large_error_allowed = 5;
-      int small_error_allowed = 5;
-      float percentage_pixels_small_error = 100.0f;
-      float percentage_pixels_error = 100.0f;
-      float average_error_allowed_in_bad_pixels = 2.6f;
+      int small_error_allowed = 0;
 
       pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
           false,  // discard_alpha
@@ -386,22 +369,6 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
   paint.setBlendMode(current_blend_mode());
   paint.setColor(kCSSGreen);
   canvas.drawRect(SkRect::MakeWH(kRootWidth, kRootHeight), paint);
-
-  if (renderer_type() == RENDERER_SKIA_VK) {
-    // TODO(penghuang): maybe need a new baseline for vulkan.
-    // https://crbug.com/963446
-    int large_error_allowed = 2;
-    int small_error_allowed = 2;
-    float percentage_pixels_small_error = 100.0f;
-    float percentage_pixels_error = 100.0f;
-    float average_error_allowed_in_bad_pixels = 2.6f;
-
-    pixel_comparator_ = std::make_unique<FuzzyPixelComparator>(
-        false,  // discard_alpha
-        percentage_pixels_error, percentage_pixels_small_error,
-        average_error_allowed_in_bad_pixels, large_error_allowed,
-        small_error_allowed);
-  }
 
   RunPixelResourceTest(root, expected);
 }

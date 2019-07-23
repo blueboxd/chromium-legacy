@@ -114,7 +114,6 @@ VizMainImpl::~VizMainImpl() {
   // compositor is destroyed, close the binding, so that the gpu service doesn't
   // need to process commands from the host as it is shutting down.
   receiver_.reset();
-  associated_receiver_.reset();
 
   // If the VizCompositorThread was started then this will block until the
   // thread has been shutdown. All RootCompositorFrameSinks must be destroyed
@@ -130,13 +129,9 @@ void VizMainImpl::SetLogMessagesForHost(LogMessages log_messages) {
   log_messages_ = std::move(log_messages);
 }
 
-void VizMainImpl::Bind(mojo::PendingReceiver<mojom::VizMain> pending_receiver) {
-  receiver_.Bind(std::move(pending_receiver));
-}
-
 void VizMainImpl::BindAssociated(
     mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver) {
-  associated_receiver_.Bind(std::move(pending_receiver));
+  receiver_.Bind(std::move(pending_receiver));
 }
 
 #if defined(USE_OZONE)
@@ -282,7 +277,6 @@ void VizMainImpl::ExitProcess() {
 
   // Close mojom::VizMain bindings first so the browser can't try to reconnect.
   receiver_.reset();
-  associated_receiver_.reset();
 
   if (viz_compositor_thread_runner_) {
     // OOP-D requires destroying RootCompositorFrameSinkImpls on the compositor

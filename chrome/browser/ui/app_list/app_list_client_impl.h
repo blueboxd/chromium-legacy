@@ -7,8 +7,11 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -19,6 +22,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/app_launch_event_logger.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/search/logging/search_ranking_event_logger.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -84,12 +88,17 @@ class AppListClientImpl
       override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visible) override;
+  void NotifySearchResultsForLogging(
+      const base::string16& trimmed_query,
+      const ash::SearchResultIdWithPositionIndices& results,
+      int position_index) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;
 
   // AppListControllerDelegate overrides:
   void DismissView() override;
+  aura::Window* GetAppListWindow() override;
   int64_t GetAppListDisplayId() override;
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   bool IsAppPinned(const std::string& app_id) override;
@@ -184,6 +193,7 @@ class AppListClientImpl
   bool app_list_visible_ = false;
 
   app_list::AppLaunchEventLogger app_launch_event_logger_;
+  app_list::SearchRankingEventLogger search_ranking_event_logger_;
 
   base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_{this};
 

@@ -38,13 +38,16 @@ class CrostiniExportImportNotification
                                    const base::FilePath& path);
   virtual ~CrostiniExportImportNotification();
 
-  void UpdateStatus(Status status, int progress_percent);
-  void set_message_failed(const base::string16& message) {
-    message_failed_ = message;
-  }
+  void SetStatusRunning(int progress_percent);
+  void SetStatusDone();
+  void SetStatusFailed();
+  void SetStatusFailedArchitectureMismatch(
+      const std::string& architecture_container,
+      const std::string& architecture_device);
+  void SetStatusFailedInsufficientSpace(uint64_t additional_required_space);
 
+  Status get_status() const { return status_; }
   // Getters for testing.
-  Status get_status() { return status_; }
   message_center::Notification* get_notification() {
     return notification_.get();
   }
@@ -55,6 +58,8 @@ class CrostiniExportImportNotification
              const base::Optional<base::string16>& reply) override;
 
  private:
+  void SetStatusFailed(const base::string16& message);
+
   Profile* profile_;
   // These notifications are owned by the export service.
   CrostiniExportImport* service_;
@@ -63,11 +68,6 @@ class CrostiniExportImportNotification
   Status status_ = Status::RUNNING;
   // Time when the operation started.  Used for estimating time remaining.
   base::TimeTicks started_ = base::TimeTicks::Now();
-  base::string16 title_running_;
-  base::string16 title_done_;
-  base::string16 message_done_;
-  base::string16 title_failed_;
-  base::string16 message_failed_;
   std::unique_ptr<message_center::Notification> notification_;
   bool closed_ = false;
   base::WeakPtrFactory<CrostiniExportImportNotification> weak_ptr_factory_;

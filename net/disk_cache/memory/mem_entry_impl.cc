@@ -412,10 +412,14 @@ int MemEntryImpl::InternalReadSparseData(int64_t offset,
   if (!InitSparseInfo())
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
 
-  // Check that offset + buf_len does not overflow. This ensures that
-  // offset + io_buf->BytesConsumed() never overflows below.
-  if (offset < 0 || buf_len < 0 || !base::CheckAdd(offset, buf_len).IsValid())
+  if (offset < 0 || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
+
+  // Ensure that offset + buf_len does not overflow. This ensures that
+  // offset + io_buf->BytesConsumed() never overflows below.
+  // The result of std::min is guaranteed to fit into int since buf_len did.
+  buf_len = std::min(static_cast<int64_t>(buf_len),
+                     std::numeric_limits<int64_t>::max() - offset);
 
   // We will keep using this buffer and adjust the offset in this buffer.
   scoped_refptr<net::DrainableIOBuffer> io_buf =
@@ -548,7 +552,12 @@ int MemEntryImpl::InternalGetAvailableRange(int64_t offset,
   if (offset < 0 || len < 0 || !start)
     return net::ERR_INVALID_ARGUMENT;
 
-  // If offset + len overflows, this will just be the empty interval.
+  // Truncate |len| to make sure that |offset + len| does not overflow.
+  // This is OK since one can't write that far anyway.
+  // The result of std::min is guaranteed to fit into int since |len| did.
+  len = std::min(static_cast<int64_t>(len),
+                 std::numeric_limits<int64_t>::max() - offset);
+
   net::Interval<int64_t> requested(offset, offset + len);
 
   // Find the first relevant child, if any --- may have to skip over

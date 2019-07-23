@@ -645,7 +645,7 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
   }
 
   if (sweep_completed) {
-    PostSweep();
+    NotifySweepDone();
   }
 }
 
@@ -892,7 +892,7 @@ void ThreadState::AtomicPauseEpilogue() {
   if (!IsSweepingInProgress()) {
     // Sweeping was finished during the atomic pause. Update statistics needs to
     // run outside of the top-most stats scope.
-    UpdateStatisticsAfterSweeping();
+    PostSweep();
   }
 }
 
@@ -927,7 +927,7 @@ void ThreadState::CompleteSweep() {
     if (!was_in_atomic_pause)
       LeaveAtomicPause();
   }
-  PostSweep();
+  NotifySweepDone();
 }
 
 void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
@@ -941,15 +941,6 @@ void ThreadState::SynchronizeAndFinishConcurrentSweeping() {
   // Concurrent sweepers may perform some work at the last stage (e.g.
   // sweeping the last page and preparing finalizers).
   Heap().InvokeFinalizersOnSweptPages();
-}
-
-BlinkGCObserver::BlinkGCObserver(ThreadState* thread_state)
-    : thread_state_(thread_state) {
-  thread_state_->AddObserver(this);
-}
-
-BlinkGCObserver::~BlinkGCObserver() {
-  thread_state_->RemoveObserver(this);
 }
 
 namespace {
@@ -1020,7 +1011,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForIncrementalMarking",
                       event.incremental_marking_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForMarking", event.marking_time());
-  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8_);
+  UMA_HISTOGRAM_TIMES("BlinkGC.TimeForNestedInV8", event.gc_nested_in_v8);
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingForeground",
                       event.foreground_sweeping_time());
   UMA_HISTOGRAM_TIMES("BlinkGC.TimeForSweepingBackground",
@@ -1119,30 +1110,26 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
 }  // namespace
 
-void ThreadState::UpdateStatisticsAfterSweeping() {
+void ThreadState::NotifySweepDone() {
+  DCHECK(CheckThread());
+  SetGCPhase(GCPhase::kNone);
+  if (!in_atomic_pause()) {
+    PostSweep();
+  }
+}
+
+void ThreadState::PostSweep() {
+  DCHECK(!in_atomic_pause());
   DCHECK(!IsSweepingInProgress());
-  DCHECK(Heap().stats_collector()->is_started());
+
+  gc_age_++;
+
   Heap().stats_collector()->NotifySweepingCompleted();
+
   if (IsMainThread())
     UpdateHistograms(Heap().stats_collector()->previous());
   // Emit trace counters for all threads.
   UpdateTraceCounters(*Heap().stats_collector());
-}
-
-void ThreadState::PostSweep() {
-  DCHECK(CheckThread());
-
-  SetGCPhase(GCPhase::kNone);
-
-  gc_age_++;
-
-  for (auto* const observer : observers_)
-    observer->OnCompleteSweepDone();
-
-  if (!in_atomic_pause()) {
-    // Immediately update the statistics if running outside of the atomic pause.
-    UpdateStatisticsAfterSweeping();
-  }
 }
 
 void ThreadState::SafePoint(BlinkGC::StackState stack_state) {
@@ -1164,18 +1151,6 @@ void ThreadState::PushRegistersAndVisitStack() {
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
   PushAllRegisters(this, DidPushRegisters);
   VisitStack(static_cast<MarkingVisitor*>(CurrentVisitor()));
-}
-
-void ThreadState::AddObserver(BlinkGCObserver* observer) {
-  DCHECK(observer);
-  DCHECK(!observers_.Contains(observer));
-  observers_.insert(observer);
-}
-
-void ThreadState::RemoveObserver(BlinkGCObserver* observer) {
-  DCHECK(observer);
-  DCHECK(observers_.Contains(observer));
-  observers_.erase(observer);
 }
 
 void ThreadState::ReportMemoryToV8() {
@@ -1287,7 +1262,7 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   DCHECK(!IsMarkingInProgress());
   CompleteSweep();
   DCHECK(!IsSweepingInProgress());
-  Heap().stats_collector()->NotifyMarkingStarted(reason);
+  Heap().stats_collector()->NotifyMarkingStarted(reason, gc_age_);
   {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(),
@@ -1402,7 +1377,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
-    Heap().stats_collector()->NotifyMarkingStarted(reason);
+    Heap().stats_collector()->NotifyMarkingStarted(reason, gc_age_);
     RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
@@ -1723,6 +1698,15 @@ void ThreadState::UpdateIncrementalMarkingStepDuration() {
     next_incremental_marking_step_duration_ *= ratio;
   }
   previous_incremental_marking_time_left_ = time_left;
+}
+
+HeapObserver::HeapObserver(ThreadState* thread_state)
+    : thread_state_(thread_state) {
+  thread_state_->Heap().stats_collector()->RegisterObserver(this);
+}
+
+HeapObserver::~HeapObserver() {
+  thread_state_->Heap().stats_collector()->UnregisterObserver(this);
 }
 
 }  // namespace blink

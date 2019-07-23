@@ -56,7 +56,7 @@ class MediaController::ImageObserverHolder {
     }
 
     DCHECK(owner_->session_->ipc());
-    owner_->session_->ipc()->GetMediaImageBitmap(
+    owner_->session_->GetMediaImageBitmap(
         *image, minimum_size_px_, desired_size_px_,
         base::BindOnce(&MediaController::ImageObserverHolder::OnImage,
                        weak_ptr_factory_.GetWeakPtr()));

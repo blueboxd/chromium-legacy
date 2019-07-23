@@ -43,6 +43,7 @@
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/service/context_url.h"
+#include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -86,7 +87,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       public GpuControl,
       public CommandBufferServiceClient,
       public DecoderClient,
-      public ImageTransportSurfaceDelegate {
+      public ImageTransportSurfaceDelegate,
+      public DisplayContext {
  public:
   InProcessCommandBuffer(CommandBufferTaskExecutor* task_executor,
                          const GURL& active_url);
@@ -151,6 +153,9 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // CommandBufferServiceClient implementation (called on gpu thread):
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
   void OnParseError() override;
+
+  // DisplayContext implementation (called on gpu thread):
+  void MarkContextLost() override;
 
   // DecoderClient implementation (called on gpu thread):
   void OnConsoleMessage(int32_t id, const std::string& message) override;

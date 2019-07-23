@@ -12,6 +12,7 @@ source_set("fakes") {
     "//ios/web/js_messaging",
     "//ios/web/navigation:core",
     "//ios/web/public/deprecated",
+    "//ios/web/public/deprecated:deprecated_navigation_util",
     "//ios/web/public/download",
     "//ios/web/public/find_in_page",
     "//ios/web/public/js_messaging",

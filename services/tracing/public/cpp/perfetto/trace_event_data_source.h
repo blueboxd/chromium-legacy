@@ -169,6 +169,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   static constexpr uint32_t kFirstSessionID = 1;
   std::atomic<uint32_t> session_id_{kInvalidSessionID};
 
+  // To avoid lock-order inversion, this lock should not be held while making
+  // calls to mojo interfaces or posting tasks, or calling any other code path
+  // that may acquire another lock that may also be held while emitting a trace
+  // event (crbug.com/986248).
   base::Lock lock_;  // Protects subsequent members.
   uint32_t target_buffer_ = 0;
   // We own the registry during startup, but transfer its ownership to the

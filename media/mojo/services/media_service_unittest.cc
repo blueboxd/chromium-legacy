@@ -99,7 +99,8 @@ class MockRendererClient : public mojom::RendererClient {
                void(base::TimeDelta time,
                     base::TimeDelta max_time,
                     base::TimeTicks capture_time));
-  MOCK_METHOD1(OnBufferingStateChange, void(BufferingState state));
+  MOCK_METHOD2(OnBufferingStateChange,
+               void(BufferingState state, BufferingStateChangeReason reason));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));

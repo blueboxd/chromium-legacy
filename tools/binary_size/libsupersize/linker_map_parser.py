@@ -130,11 +130,11 @@ class MapFileParserGold(object):
     return parts
 
   def _ParseCommonSymbols(self):
-# Common symbol       size              file
-#
-# ff_cos_131072       0x40000           obj/third_party/<snip>
-# ff_cos_131072_fixed
-#                     0x20000           obj/third_party/<snip>
+    # Common symbol       size              file
+    #
+    # ff_cos_131072       0x40000           obj/third_party/<snip>
+    # ff_cos_131072_fixed
+    #                     0x20000           obj/third_party/<snip>
     ret = []
     next(self._lines)  # Skip past blank line
 
@@ -150,33 +150,33 @@ class MapFileParserGold(object):
     return ret
 
   def _ParseSections(self):
-# .text           0x0028c600  0x22d3468
-#  .text.startup._GLOBAL__sub_I_bbr_sender.cc
-#                 0x0028c600       0x38 obj/net/net/bbr_sender.o
-#  .text._reset   0x00339d00       0xf0 obj/third_party/icu/icuuc/ucnv.o
-#  ** fill        0x0255fb00   0x02
-#  .text._ZN4base8AutoLockD2Ev
-#                 0x00290710        0xe obj/net/net/file_name.o
-#                 0x00290711                base::AutoLock::~AutoLock()
-#                 0x00290711                base::AutoLock::~AutoLock()
-# .text._ZNK5blink15LayoutBlockFlow31mustSeparateMarginAfterForChildERK...
-#                 0xffffffffffffffff       0x46 obj/...
-#                 0x006808e1                blink::LayoutBlockFlow::...
-# .text.OUTLINED_FUNCTION_0
-#                 0x002a2000       0x20 obj/net/net/tag.o
-# .bss
-#  .bss._ZGVZN11GrProcessor11initClassIDI10LightingFPEEvvE8kClassID
-#                 0x02d4b294        0x4 obj/skia/skia/SkLightingShader.o
-#                 0x02d4b294   guard variable for void GrProcessor::initClassID
-# .data           0x0028c600  0x22d3468
-#  .data.rel.ro._ZTVN3gvr7android19ScopedJavaGlobalRefIP12_jfloatArrayEE
-#                 0x02d1e668       0x10 ../../third_party/.../libfoo.a(bar.o)
-#                 0x02d1e668   vtable for gvr::android::GlobalRef<_jfloatArray*>
-#  ** merge strings
-#                 0x0255fb00   0x1f2424
-#  ** merge constants
-#                 0x0255fb00   0x8
-# ** common       0x02db5700   0x13ab48
+    # .text           0x0028c600  0x22d3468
+    #  .text.startup._GLOBAL__sub_I_bbr_sender.cc
+    #                 0x0028c600       0x38 obj/net/net/bbr_sender.o
+    #  .text._reset   0x00339d00       0xf0 obj/third_party/icu/icuuc/ucnv.o
+    #  ** fill        0x0255fb00   0x02
+    #  .text._ZN4base8AutoLockD2Ev
+    #                 0x00290710        0xe obj/net/net/file_name.o
+    #                 0x00290711                base::AutoLock::~AutoLock()
+    #                 0x00290711                base::AutoLock::~AutoLock()
+    # .text._ZNK5blink15LayoutBlockFlow31mustSeparateMarginAfterForChildERK...
+    #                 0xffffffffffffffff       0x46 obj/...
+    #                 0x006808e1                blink::LayoutBlockFlow::...
+    # .text.OUTLINED_FUNCTION_0
+    #                 0x002a2000       0x20 obj/net/net/tag.o
+    # .bss
+    #  .bss._ZGVZN11GrProcessor11initClassIDI10LightingFPEEvvE8kClassID
+    #                 0x02d4b294        0x4 obj/skia/skia/SkLightingShader.o
+    #                 0x02d4b294   guard variable for void GrProcessor::ini...
+    # .data           0x0028c600  0x22d3468
+    #  .data.rel.ro._ZTVN3gvr7android19ScopedJavaGlobalRefIP12_jfloatArrayEE
+    #                 0x02d1e668       0x10 ../third_party/.../libfoo.a(bar.o)
+    #                 0x02d1e668   vtable for gvr::android::GlobalRef<_jflo...
+    #  ** merge strings
+    #                 0x0255fb00   0x1f2424
+    #  ** merge constants
+    #                 0x0255fb00   0x8
+    # ** common       0x02db5700   0x13ab48
     syms = self._symbols
     while True:
       line = self._SkipToLineWithPrefix('.')
@@ -192,12 +192,11 @@ class MapFileParserGold(object):
         section_address = int(section_address_str[2:], 16)
         section_size = int(section_size_str[2:], 16)
         self._section_sizes[section_name] = section_size
-        if (section_name in (models.SECTION_BSS,
-                             models.SECTION_RODATA,
-                             models.SECTION_TEXT) or
-            section_name.startswith(models.SECTION_DATA)):
+        if (section_name in models.BSS_SECTIONS
+            or section_name in (models.SECTION_RODATA, models.SECTION_TEXT)
+            or section_name.startswith(models.SECTION_DATA)):
           logging.info('Parsing %s', section_name)
-          if section_name == models.SECTION_BSS:
+          if section_name in models.BSS_SECTIONS:
             # Common symbols have no address.
             syms.extend(self._common_symbols)
           prefix_len = len(section_name) + 1  # + 1 for the trailing .
@@ -430,37 +429,37 @@ class MapFileParserLld(object):
     Returns:
       A tuple of (section_sizes, symbols).
     """
-# Newest format:
-#     VMA      LMA     Size Align Out     In      Symbol
-#     194      194       13     1 .interp
-#     194      194       13     1         <internal>:(.interp)
-#     1a8      1a8     22d8     4 .ARM.exidx
-#     1b0      1b0        8     4         obj/sandbox/syscall.o:(.ARM.exidx)
-#     400      400   123400    64 .text
-#     600      600       14     4         obj/...:(.text.OUTLINED_FUNCTION_0)
-#     600      600        0     1                 $x.3
-#     600      600       14     1                 OUTLINED_FUNCTION_0
-#  123800   123800    20000   256 .rodata
-#  123800   123800       4      4         ...:o:(.rodata._ZN3fooE.llvm.1234)
-#  123800   123800       4      1                 foo (.llvm.1234)
-#  123804   123804       4      4         ...:o:(.rodata.bar.llvm.1234)
-#  123804   123804       4      1                 bar.llvm.1234
-# Older format:
-# Address          Size             Align Out     In      Symbol
-# 00000000002002a8 000000000000001c     1 .interp
-# 00000000002002a8 000000000000001c     1         <internal>:(.interp)
-# ...
-# 0000000000201000 0000000000000202    16 .text
-# 0000000000201000 000000000000002a     1         /[...]/crt1.o:(.text)
-# 0000000000201000 0000000000000000     0                 _start
-# 000000000020102a 0000000000000000     1         /[...]/crti.o:(.text)
-# 0000000000201030 00000000000000bd    16         /[...]/crtbegin.o:(.text)
-# 0000000000201030 0000000000000000     0                 deregister_tm_clones
-# 0000000000201060 0000000000000000     0                 register_tm_clones
-# 00000000002010a0 0000000000000000     0                 __do_global_dtors_aux
-# 00000000002010c0 0000000000000000     0                 frame_dummy
-# 00000000002010ed 0000000000000071     1         a.o:(.text)
-# 00000000002010ed 0000000000000071     0                 main
+    # Newest format:
+    #     VMA      LMA     Size Align Out     In      Symbol
+    #     194      194       13     1 .interp
+    #     194      194       13     1         <internal>:(.interp)
+    #     1a8      1a8     22d8     4 .ARM.exidx
+    #     1b0      1b0        8     4         obj/sandbox/syscall.o:(.ARM.exidx)
+    #     400      400   123400    64 .text
+    #     600      600       14     4         ...:(.text.OUTLINED_FUNCTION_0)
+    #     600      600        0     1                 $x.3
+    #     600      600       14     1                 OUTLINED_FUNCTION_0
+    #  123800   123800    20000   256 .rodata
+    #  123800   123800       4      4         ...:o:(.rodata._ZN3fooE.llvm.1234)
+    #  123800   123800       4      1                 foo (.llvm.1234)
+    #  123804   123804       4      4         ...:o:(.rodata.bar.llvm.1234)
+    #  123804   123804       4      1                 bar.llvm.1234
+    # Older format:
+    # Address          Size             Align Out     In      Symbol
+    # 00000000002002a8 000000000000001c     1 .interp
+    # 00000000002002a8 000000000000001c     1         <internal>:(.interp)
+    # ...
+    # 0000000000201000 0000000000000202    16 .text
+    # 0000000000201000 000000000000002a     1         /[...]/crt1.o:(.text)
+    # 0000000000201000 0000000000000000     0                 _start
+    # 000000000020102a 0000000000000000     1         /[...]/crti.o:(.text)
+    # 0000000000201030 00000000000000bd    16         /[...]/crtbegin.o:(.text)
+    # 0000000000201030 0000000000000000     0             deregister_tm_clones
+    # 0000000000201060 0000000000000000     0             register_tm_clones
+    # 00000000002010a0 0000000000000000     0             __do_global_dtors_aux
+    # 00000000002010c0 0000000000000000     0             frame_dummy
+    # 00000000002010ed 0000000000000071     1         a.o:(.text)
+    # 00000000002010ed 0000000000000071     0             main
     syms = []
     cur_section = None
     cur_section_is_useful = False
@@ -499,11 +498,10 @@ class MapFileParserLld(object):
         cur_section = tok
         # E.g., Want to convert "(.text._name)" -> "_name" later.
         mangled_start_idx = len(cur_section) + 2
-        cur_section_is_useful = (
-            cur_section in (models.SECTION_BSS,
-                            models.SECTION_RODATA,
-                            models.SECTION_TEXT) or
-            cur_section.startswith(models.SECTION_DATA))
+        cur_section_is_useful = (cur_section in models.BSS_SECTIONS
+                                 or cur_section in (models.SECTION_RODATA,
+                                                    models.SECTION_TEXT)
+                                 or cur_section.startswith(models.SECTION_DATA))
 
       elif cur_section_is_useful:
         # Level 2 data match the "In" column. They specify object paths and

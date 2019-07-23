@@ -38,6 +38,9 @@ class ShelfViewTestAPI {
   // because the home button is not a ShelfAppButton.
   ShelfAppButton* GetButton(int index);
 
+  // Adds a new item of the given type to the view.
+  ShelfID AddItem(ShelfItemType type);
+
   // Retrieve the view at |index|.
   views::View* GetViewAt(int index);
 
@@ -99,6 +102,7 @@ class ShelfViewTestAPI {
 
  private:
   ShelfView* shelf_view_;
+  int id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTestAPI);
 };

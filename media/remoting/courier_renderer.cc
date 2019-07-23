@@ -577,16 +577,20 @@ void CourierRenderer::OnBufferingStateChange(
           << message->rendererclient_onbufferingstatechange_rpc().state();
   base::Optional<BufferingState> state = ToMediaBufferingState(
       message->rendererclient_onbufferingstatechange_rpc().state());
+  BufferingStateChangeReason reason = BUFFERING_CHANGE_REASON_UNKNOWN;
   if (!state.has_value())
     return;
   if (state == BufferingState::BUFFERING_HAVE_NOTHING) {
     receiver_is_blocked_on_local_demuxers_ = IsWaitingForDataFromDemuxers();
+    reason = receiver_is_blocked_on_local_demuxers_
+                 ? DEMUXER_UNDERFLOW
+                 : REMOTING_NETWORK_CONGESTION;
   } else if (receiver_is_blocked_on_local_demuxers_) {
     receiver_is_blocked_on_local_demuxers_ = false;
     ResetMeasurements();
   }
 
-  client_->OnBufferingStateChange(state.value());
+  client_->OnBufferingStateChange(state.value(), reason);
 }
 
 void CourierRenderer::OnAudioConfigChange(

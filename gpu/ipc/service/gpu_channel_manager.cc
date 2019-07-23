@@ -471,7 +471,7 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   if (gl::GLContext::LosesAllContextsOnContextLost() ||
       (shared_context_state_ &&
        shared_context_state_->use_virtualized_gl_contexts())) {
-    LoseAllContexts();
+    delegate_->LoseAllContexts();
   }
 }
 

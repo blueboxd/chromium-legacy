@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #include "net/url_request/url_request.h"
 
 class GURL;

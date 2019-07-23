@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/com_init_util.h"
 #include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
 #include "components/spellcheck/common/spellcheck_common.h"
@@ -52,6 +53,10 @@ class WindowsSpellChecker {
   void RemoveWordForAllLanguages(const base::string16& word);
 
   void IgnoreWordForAllLanguages(const base::string16& word);
+
+  void RecordMissingLanguagePacksCount(
+      const std::vector<std::string> spellcheck_locales,
+      SpellCheckHostMetrics* metrics);
 
  private:
   void CreateSpellCheckerFactoryInBackgroundThread();
@@ -103,6 +108,13 @@ class WindowsSpellChecker {
   // Returns the ISpellChecker pointer for given language |lang_tag|.
   Microsoft::WRL::ComPtr<ISpellChecker> GetSpellChecker(
       const std::string& lang_tag);
+
+  // Records how many user spellcheck languages are currently not supported by
+  // the Windows OS spellchecker due to missing language packs. Must run on the
+  // background thread.
+  void RecordMissingLanguagePacksCountInBackgroundThread(
+      const std::vector<std::string> spellcheck_locales,
+      SpellCheckHostMetrics* metrics);
 
   // Spellchecker objects are owned by WindowsSpellChecker class.
   Microsoft::WRL::ComPtr<ISpellCheckerFactory> spell_checker_factory_;
@@ -190,11 +202,22 @@ void WindowsSpellChecker::IgnoreWordForAllLanguages(
           weak_ptr_factory_.GetWeakPtr(), word));
 }
 
+void WindowsSpellChecker::RecordMissingLanguagePacksCount(
+    const std::vector<std::string> spellcheck_locales,
+    SpellCheckHostMetrics* metrics) {
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WindowsSpellChecker::
+                         RecordMissingLanguagePacksCountInBackgroundThread,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(spellcheck_locales), metrics));
+}
+
 void WindowsSpellChecker::CreateSpellCheckerFactoryInBackgroundThread() {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
-  DCHECK(SUCCEEDED(::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)));
+  base::win::AssertComApartmentType(base::win::ComApartmentType::STA);
 
-  if (!spellcheck::UseBrowserSpellChecker() ||
+  if (!spellcheck::WindowsVersionSupportsSpellchecker() ||
       FAILED(::CoCreateInstance(__uuidof(::SpellCheckerFactory), nullptr,
                                 (CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER),
                                 IID_PPV_ARGS(&spell_checker_factory_)))) {
@@ -400,6 +423,18 @@ Microsoft::WRL::ComPtr<ISpellChecker> WindowsSpellChecker::GetSpellChecker(
   return spell_checker_map_.find(lang_tag)->second;
 }
 
+void WindowsSpellChecker::RecordMissingLanguagePacksCountInBackgroundThread(
+    const std::vector<std::string> spellcheck_locales,
+    SpellCheckHostMetrics* metrics) {
+  DCHECK(!main_task_runner_->BelongsToCurrentThread());
+  DCHECK(metrics);
+  metrics->RecordMissingLanguagePacksCount(
+      std::count_if(spellcheck_locales.begin(), spellcheck_locales.end(),
+                    [this](const std::string& s) {
+                      return !this->IsLanguageSupportedInBackgroundThread(s);
+                    }));
+}
+
 // Create WindowsSpellChecker class with static storage duration that is only
 // constructed on first access and never invokes the destructor.
 std::unique_ptr<WindowsSpellChecker>& GetWindowsSpellChecker() {
@@ -485,4 +520,12 @@ void UpdateSpellingPanelWithMisspelledWord(const base::string16& word) {
   // Not implemented since Windows doesn't have spelling panel like Mac
 }
 
+void RecordMissingLanguagePacksCount(
+    const std::vector<std::string> spellcheck_locales,
+    SpellCheckHostMetrics* metrics) {
+  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
+    GetWindowsSpellChecker()->RecordMissingLanguagePacksCount(
+        std::move(spellcheck_locales), metrics);
+  }
+}
 }  // namespace spellcheck_platform

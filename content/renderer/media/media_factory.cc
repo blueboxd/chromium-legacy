@@ -64,10 +64,16 @@
 #include "content/renderer/media/media_interface_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_CDM)
+#if defined(OS_FUCHSIA)
+#include "media/cdm/fuchsia/fuchsia_cdm_factory.h"
+#elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
 #else
 #include "media/cdm/default_cdm_factory.h"
+#endif
+
+#if defined(OS_FUCHSIA) && BUILDFLAG(ENABLE_MOJO_CDM)
+#error "MojoCdm should be disabled for Fuchsia."
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
@@ -602,10 +608,13 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
   if (cdm_factory_)
     return cdm_factory_.get();
 
-#if BUILDFLAG(ENABLE_MOJO_CDM)
-  cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceFactory()));
+#if defined(OS_FUCHSIA)
+  cdm_factory_ = std::make_unique<media::FuchsiaCdmFactory>();
+#elif BUILDFLAG(ENABLE_MOJO_CDM)
+  cdm_factory_ =
+      std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());
 #else
-  cdm_factory_.reset(new media::DefaultCdmFactory());
+  cdm_factory_ = std::make_unique<media::DefaultCdmFactory>();
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
   return cdm_factory_.get();

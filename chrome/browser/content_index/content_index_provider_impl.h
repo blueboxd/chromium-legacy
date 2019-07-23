@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CONTENT_INDEX_CONTENT_INDEX_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_CONTENT_INDEX_CONTENT_INDEX_PROVIDER_IMPL_H_
 
-#include <map>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -67,10 +67,10 @@ class ContentIndexProviderImpl
   void DidGetIcon(const offline_items_collection::ContentId& id,
                   VisualsCallback callback,
                   SkBitmap icon);
+  void DidGetEntryToOpen(base::Optional<content::ContentIndexEntry> entry);
 
   Profile* profile_;
   offline_items_collection::OfflineContentAggregator* aggregator_;
-  std::map<std::string, offline_items_collection::OfflineItem> entries_;
   base::ObserverList<Observer>::Unchecked observers_;
   base::WeakPtrFactory<ContentIndexProviderImpl> weak_ptr_factory_;
 

@@ -91,17 +91,22 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // in PlatformWindowInitProperties when creating a window.
     bool needs_view_token = false;
 
-    // Determine whether we should default to native decorations or the custom
+    // Determines whether we should default to native decorations or the custom
     // frame based on the currently-running window manager.
     bool custom_frame_pref_default = false;
 
-    // Determine whether switching between system and custom frames is
+    // Determines whether switching between system and custom frames is
     // supported.
     bool use_system_title_bar = false;
 
     // Determines if the platform requires mojo communication for the IPC.
     // Currently used only by the Ozone/Wayland platform.
     bool requires_mojo = false;
+
+    // Determines the type of message loop that should be used for GPU service
+    // and display compositor threads in the GPU process.
+    base::MessageLoop::Type message_loop_type_for_gpu =
+        base::MessageLoop::TYPE_DEFAULT;
   };
 
   // Properties available in the host process after initialization.
@@ -112,10 +117,10 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     bool supports_overlays = false;
   };
 
-  // Ensures the OzonePlatform instance without doing any initialization.
-  // No-op in case the instance is already created.
-  // This is useful in order call virtual methods that depend on the ozone
-  // platform selected at runtime, e.g. ::GetMessageLoopTypeForGpu.
+  // Ensures that the OzonePlatform instance exists, without doing any
+  // initialization. No-op in case the instance is already created. This is
+  // useful in order to call virtual methods that depend on the Ozone platform
+  // selected at runtime, e.g. IsNativePixmapConfigSupported().
   static OzonePlatform* EnsureInstance();
 
   // Initializes the subsystems/resources necessary for the UI process (e.g.
@@ -162,10 +167,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // Returns a struct that contains properties available in the host process
   // after InitializeForUI() runs.
   virtual const InitializedHostProperties& GetInitializedHostProperties();
-
-  // Returns the message loop type required for OzonePlatform instance that
-  // will be initialized for the GPU process.
-  virtual base::MessageLoop::Type GetMessageLoopTypeForGpu();
 
   // Ozone platform implementations may also choose to expose mojo interfaces to
   // internal functionality. Embedders wishing to take advantage of ozone mojo

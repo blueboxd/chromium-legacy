@@ -82,13 +82,13 @@ function renderTemplate(experimentalFeaturesData) {
 
   var smallScreenCheck = window.matchMedia('(max-width: 480px)');
   // Toggling of experiment description overflow content on smaller screens.
-  elements = document.querySelectorAll('.experiment .flex:first-child');
-  for (var i = 0; i < elements.length; ++i) {
-    elements[i].onclick = function(e) {
-      if (smallScreenCheck.matches) {
+  if(smallScreenCheck.matches){
+    elements = document.querySelectorAll('.experiment .flex:first-child');
+    for (var i = 0; i < elements.length; ++i) {
+      elements[i].onclick = function(e) {
         this.classList.toggle('expand');
-      }
-    };
+      };
+    }
   }
 
   $('experiment-reset-all').onclick = resetAllFlags;

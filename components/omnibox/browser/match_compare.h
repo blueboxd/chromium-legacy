@@ -32,12 +32,19 @@ class CompareWithDemoteByType {
     // Compute demoted relevance scores for each match.
     const int demoted_relevance1 = GetDemotedRelevance(elem1);
     const int demoted_relevance2 = GetDemotedRelevance(elem2);
+    if (demoted_relevance1 != demoted_relevance2) {
+      // Greater relevance should come first.
+      return demoted_relevance1 > demoted_relevance2;
+    }
+    // "Paired" suggestions should follow each other, lower first.
+    // Even if subrelevances don't match, we must compare them to maintain
+    // ordering.
+    if (elem1.subrelevance != elem2.subrelevance)
+      return elem1.subrelevance < elem2.subrelevance;
     // For equal-relevance matches, we sort alphabetically, so that providers
     // who return multiple elements at the same priority get a "stable" sort
     // across multiple updates.
-    return (demoted_relevance1 == demoted_relevance2)
-               ? (elem1.contents < elem2.contents)
-               : (demoted_relevance1 > demoted_relevance2);
+    return elem1.contents < elem2.contents;
   }
 
  private:

@@ -19,6 +19,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
+#include "base/task/common/scoped_defer_task_posting.h"
 #include "base/trace_event/trace_event.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
@@ -413,6 +414,11 @@ void TraceEventDataSource::ClearIncrementalState() {
 
 ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
     bool thread_will_flush) {
+  // The call to CreateTraceWriter() below posts a task which is not allowed
+  // while holding |lock_|. Since we have to call it while holding |lock_|, we
+  // defer the task posting until after the lock is released.
+  base::ScopedDeferTaskPosting defer_task_posting;
+
   base::AutoLock lock(lock_);
   // |startup_writer_registry_| only exists during startup tracing before we
   // connect to the service. |producer_| is reset when tracing is
@@ -534,20 +540,22 @@ void TraceEventDataSource::FlushCurrentThread() {
 
 void TraceEventDataSource::ReturnTraceWriter(
     std::unique_ptr<perfetto::StartupTraceWriter> trace_writer) {
-  // Prevent concurrent binding of the registry.
-  base::AutoLock lock(lock_);
+  {
+    // Prevent concurrent binding of the registry.
+    base::AutoLock lock(lock_);
 
-  // If we don't have a task runner yet, we must be attempting to return a
-  // writer before the (very first) registry was bound. We cannot create the
-  // task runner safely in this case, because the thread pool may not have been
-  // brought up yet.
-  if (!PerfettoTracedProcess::GetTaskRunner()->HasTaskRunner()) {
-    DCHECK(startup_writer_registry_);
-    // It's safe to call ReturnToRegistry on the current sequence, as it won't
-    // destroy the writer since the registry was not bound yet. Will keep
-    // |trace_writer| alive until the registry is bound later.
-    perfetto::StartupTraceWriter::ReturnToRegistry(std::move(trace_writer));
-    return;
+    // If we don't have a task runner yet, we must be attempting to return a
+    // writer before the (very first) registry was bound. We cannot create the
+    // task runner safely in this case, because the thread pool may not have
+    // been brought up yet.
+    if (!PerfettoTracedProcess::GetTaskRunner()->HasTaskRunner()) {
+      DCHECK(startup_writer_registry_);
+      // It's safe to call ReturnToRegistry on the current sequence, as it won't
+      // destroy the writer since the registry was not bound yet. Will keep
+      // |trace_writer| alive until the registry is bound later.
+      perfetto::StartupTraceWriter::ReturnToRegistry(std::move(trace_writer));
+      return;
+    }
   }
 
   // Return the TraceWriter on the sequence that Perfetto runs on. Needed as the

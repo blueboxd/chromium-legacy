@@ -80,11 +80,11 @@ class ConfirmPasswordChangeUI : public ui::WebDialogUI {
 // System dialog wrapping chrome://urgent-password-expiry-notification
 class UrgentPasswordExpiryNotificationDialog : public SystemWebDialogDelegate {
  public:
-  static void Show(int less_than_n_days);
+  static void Show();
   static void Dismiss();
 
  protected:
-  explicit UrgentPasswordExpiryNotificationDialog(int less_than_n_days);
+  UrgentPasswordExpiryNotificationDialog();
   ~UrgentPasswordExpiryNotificationDialog() override;
 
   // ui::WebDialogDelegate:

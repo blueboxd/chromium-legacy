@@ -10,6 +10,7 @@ source_set("security") {
   deps = [
     "//base",
     "//ios/web/common",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/js_messaging",
     "//ios/web/navigation:core",
     "//ios/web/navigation:navigation_manager_util",

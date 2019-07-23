@@ -89,7 +89,6 @@ class X11WindowOzone : public PlatformWindow,
 
   void Init(const PlatformWindowInitProperties& params);
   void SetWidget(XID xwindow);
-  bool IsEventForXWindow(const XEvent& xev) const;
   void RemoveFromWindowManager();
 
   PlatformWindowDelegate* const delegate_;

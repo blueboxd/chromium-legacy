@@ -178,6 +178,7 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
   DCHECK(config);
   DCHECK(io_data);
   DCHECK(config_service_url_.is_valid());
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -414,6 +415,8 @@ void DataReductionProxyConfigServiceClient::OnURLLoadComplete(
 
 void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!params::IsIncludedInHoldbackFieldTrial());
+
   CreateClientConfigRequest request;
   std::string serialized_request;
 #if defined(OS_ANDROID)

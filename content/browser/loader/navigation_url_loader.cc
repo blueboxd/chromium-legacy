@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
@@ -29,7 +28,9 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     AppCacheNavigationHandle* appcache_handle,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    NavigationURLLoaderDelegate* delegate) {
+    NavigationURLLoaderDelegate* delegate,
+    std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+        initial_interceptors) {
   if (g_loader_factory) {
     return g_loader_factory->CreateLoader(
         resource_context, storage_partition, std::move(request_info),
@@ -40,7 +41,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
       std::move(request_info), std::move(navigation_ui_data),
       service_worker_handle, appcache_handle,
       std::move(prefetched_signed_exchange_cache), delegate,
-      std::vector<std::unique_ptr<NavigationLoaderInterceptor>>());
+      std::move(initial_interceptors));
 }
 
 void NavigationURLLoader::SetFactoryForTesting(

@@ -44,8 +44,10 @@ KeyedService* CreateNotificationScheduleService(
         background_task_scheduler,
     std::unique_ptr<DisplayAgent> display_agent,
     leveldb_proto::ProtoDatabaseProvider* db_provider,
-    const base::FilePath& storage_dir) {
-  if (!base::FeatureList::IsEnabled(features::kNotificationScheduleService))
+    const base::FilePath& storage_dir,
+    bool off_the_record) {
+  if (!base::FeatureList::IsEnabled(features::kNotificationScheduleService) ||
+      off_the_record)
     return static_cast<KeyedService*>(new NoopNotificationScheduleService());
 
   auto config = SchedulerConfig::Create();

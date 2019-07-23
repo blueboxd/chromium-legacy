@@ -35,6 +35,7 @@ struct WebApkInfo {
              base::Optional<SkColor> theme_color,
              base::Optional<SkColor> background_color,
              base::Time last_update_check_time,
+             base::Time last_update_completion_time,
              bool relax_updates,
              std::string update_status);
   ~WebApkInfo();
@@ -69,6 +70,7 @@ struct WebApkInfo {
   base::Optional<SkColor> theme_color;
   base::Optional<SkColor> background_color;
   base::Time last_update_check_time;
+  base::Time last_update_completion_time;
   bool relax_updates;
 
   // Update Status of the WebAPK.

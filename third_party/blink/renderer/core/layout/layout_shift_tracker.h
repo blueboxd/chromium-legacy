@@ -40,7 +40,7 @@ class CORE_EXPORT LayoutShiftTracker {
                                   FloatRect new_layer_rect);
   void NotifyPrePaintFinished();
   void NotifyInput(const WebInputEvent&);
-  void NotifyScroll(ScrollType);
+  void NotifyScroll(ScrollType, ScrollOffset delta);
   void NotifyViewportSizeChanged();
   bool HadRecentInput();
   bool IsActive();
@@ -103,7 +103,13 @@ class CORE_EXPORT LayoutShiftTracker {
   // frames.
   float overall_max_distance_;
 
-  // Whether either a user input or document scroll have been observed.
+  // Sum of all scroll deltas that occurred in the current animation frame.
+  ScrollOffset frame_scroll_delta_;
+
+  // Whether either a user input or document scroll have been observed during
+  // the session. (This is only tracked so UkmPageLoadMetricsObserver to report
+  // LayoutStability.JankScore.MainFrame.BeforeInputOrScroll. It's not related
+  // to input exclusion or the LayoutShift::had_recent_input_ bit.)
   bool observed_input_or_scroll_;
 
   // Most recent timestamp of a user input event that has been observed.

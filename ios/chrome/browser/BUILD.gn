@@ -141,6 +141,7 @@ source_set("browser") {
     "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
     "//ios/web/common",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public",
     "//net",
     "//rlz/buildflags",

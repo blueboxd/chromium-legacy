@@ -64,15 +64,16 @@ class GattBatteryPollerTest : public testing::Test {
   ~GattBatteryPollerTest() override = default;
 
   void SetUp() override {
+    mock_adapter_ =
+        base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
+
     mock_device_ = std::make_unique<NiceMock<device::MockBluetoothDevice>>(
         mock_adapter_.get(), 0 /* bluetooth_class */, "device_name",
         kDeviceAddress, true /* paired */, true /* connected */);
     ASSERT_FALSE(mock_device_->battery_percentage());
-
-    mock_adapter_ =
-        base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
     ON_CALL(*mock_adapter_, GetDevice(kDeviceAddress))
         .WillByDefault(Return(mock_device_.get()));
+
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
 
     fake_gatt_battery_fetcher_factory_ =

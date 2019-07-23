@@ -27,7 +27,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnForegrounded() override;
   void OnInitComplete() override;
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
-  bool IsGpuHangDetected() override;
+  bool IsGpuHangDetectedForTesting() override;
+  void WaitForPowerObserverAddedForTesting() override;
 
   // Implements base::Thread.
   void Init() override;
@@ -85,6 +86,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Chrome is running on the background on Android. Gpu is probably very slow
   // or stalled.
   bool is_backgrounded_ = false;
+
+  // Whether the watchdog thread has been called and added to the power monitor
+  // observer.
+  bool is_add_power_observer_called_ = false;
+  bool is_power_observer_added_ = false;
 
   // For gpu testing only.
   const bool is_test_mode_;

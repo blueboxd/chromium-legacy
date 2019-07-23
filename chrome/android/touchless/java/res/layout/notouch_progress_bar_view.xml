@@ -24,6 +24,7 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:ellipsize="start"
-        android:singleLine="true" />
+        android:singleLine="true"
+        android:textDirection="ltr"/>
 
 </FrameLayout>

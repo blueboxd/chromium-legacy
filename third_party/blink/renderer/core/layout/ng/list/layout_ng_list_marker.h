@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow_mixin.h"
 
 namespace blink {
 
@@ -15,7 +15,7 @@ class Document;
 
 // A LayoutObject subclass for outside-positioned list markers in LayoutNG.
 class CORE_EXPORT LayoutNGListMarker final
-    : public LayoutNGMixin<LayoutBlockFlow> {
+    : public LayoutNGBlockFlowMixin<LayoutBlockFlow> {
  public:
   explicit LayoutNGListMarker(Element*);
   static LayoutNGListMarker* CreateAnonymous(Document*);

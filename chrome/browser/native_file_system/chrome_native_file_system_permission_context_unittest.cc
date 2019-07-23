@@ -147,10 +147,10 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
   base::ScopedPathOverride home_override(base::DIR_HOME, home_dir, true, true);
 
   // Home directory itself should not be allowed.
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(context.get(), {home_dir}));
   // Parent of home directory should also not be allowed.
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(context.get(),
                                                 {temp_dir_.GetPath()}));
   // Paths inside home directory should be allowed.
@@ -168,14 +168,14 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
   base::ScopedPathOverride app_override(chrome::DIR_APP, app_dir, true, true);
 
   // App directory itself should not be allowed.
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(context.get(), {app_dir}));
   // Parent of App directory should also not be allowed.
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(context.get(),
                                                 {temp_dir_.GetPath()}));
   // Paths inside App directory should also not be allowed.
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(context.get(),
                                                 {app_dir.AppendASCII("foo")}));
 }
@@ -189,11 +189,11 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
   base::ScopedPathOverride home_override(base::DIR_HOME, home_dir, true, true);
 
   // ~/.ssh should be blocked
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(
                 context.get(), {home_dir.AppendASCII(".ssh")}));
   // And anything inside ~/.ssh should also be blocked
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(
                 context.get(), {home_dir.AppendASCII(".ssh/id_rsa")}));
 }
@@ -207,12 +207,12 @@ TEST_F(ChromeNativeFileSystemPermissionContextTest,
       base::MakeRefCounted<ChromeNativeFileSystemPermissionContext>(nullptr);
 
   // /dev should be blocked.
-  EXPECT_EQ(SensitiveDirectoryResult::kTryAgain,
+  EXPECT_EQ(SensitiveDirectoryResult::kAbort,
             ConfirmSensitiveDirectoryAccessSync(
                 context.get(), {base::FilePath(FILE_PATH_LITERAL("/dev"))}));
   // As well as children of /dev.
   EXPECT_EQ(
-      SensitiveDirectoryResult::kTryAgain,
+      SensitiveDirectoryResult::kAbort,
       ConfirmSensitiveDirectoryAccessSync(
           context.get(), {base::FilePath(FILE_PATH_LITERAL("/dev/foo"))}));
 #endif

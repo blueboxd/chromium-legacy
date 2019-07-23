@@ -1654,6 +1654,12 @@ std::string SSLClientSocketImpl::GetSessionCacheKey(
   }
   ret.push_back('/');
   ret += host_and_port_.ToString();
+  ret.push_back('/');
+  if (ssl_config_.privacy_mode == PRIVACY_MODE_ENABLED) {
+    ret.push_back('1');
+  } else {
+    ret.push_back('0');
+  }
   if (base::FeatureList::IsEnabled(
           features::kPartitionSSLSessionsByNetworkIsolationKey)) {
     ret += '/' + ssl_config_.network_isolation_key.ToString();

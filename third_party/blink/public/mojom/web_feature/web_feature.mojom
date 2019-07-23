@@ -2353,6 +2353,7 @@ enum WebFeature {
   kCSSValueAppearanceMeterForOthersRendered = 2967,
   kSVGSMILDiscardElementParsed = 2968,
   kSVGSMILDiscardElementTriggered = 2969,
+  kLinkHeaderStylesheet = 2970,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

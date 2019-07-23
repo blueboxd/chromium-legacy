@@ -59,7 +59,9 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
   // if experiment is enabled, otherwise fallback to ~66% for chromeOS and
   // ~33% otherwise.
   const double kTemporaryPoolSizeRatio =
-      features::kExperimentalPoolSizeRatio.Get();
+      base::FeatureList::IsEnabled(features::kQuotaUnlimitedPoolSize)
+          ? 1.0
+          : features::kExperimentalPoolSizeRatio.Get();
 
   // The amount of the device's storage the browser attempts to
   // keep free. If there is less than this amount of storage free
@@ -94,7 +96,10 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
 
   // Determines the portion of the temp pool that can be
   // utilized by a single host (ie. 5 for 20%).
-  const double kPerHostTemporaryRatio = features::kPerHostRatio.Get();
+  const double kPerHostTemporaryRatio =
+      base::FeatureList::IsEnabled(features::kQuotaUnlimitedPoolSize)
+          ? 1.0
+          : features::kPerHostRatio.Get();
 
   // SessionOnly (or ephemeral) origins are allotted a fraction of what
   // normal origins are provided, and the amount is capped to a hard limit.

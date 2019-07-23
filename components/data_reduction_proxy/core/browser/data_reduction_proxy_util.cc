@@ -18,8 +18,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/proxy_resolution/proxy_config.h"
-#include "net/proxy_resolution/proxy_info.h"
 
 #if defined(USE_GOOGLE_API_KEYS)
 #include "google_apis/google_api_keys.h"
@@ -121,26 +119,6 @@ GURL AddApiKeyToUrl(const GURL& url) {
   }
 #endif
   return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
-}
-
-bool EligibleForDataReductionProxy(const net::ProxyInfo& proxy_info,
-                                   const GURL& url,
-                                   const std::string& method) {
-  return proxy_info.is_direct() && proxy_info.proxy_list().size() == 1 &&
-         !url.SchemeIsWSOrWSS() && net::HttpUtil::IsMethodIdempotent(method);
-}
-
-bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
-                                 const net::ProxyRetryInfoMap& proxy_retry_info,
-                                 const GURL& url,
-                                 net::ProxyInfo* data_reduction_proxy_info) {
-  DCHECK(data_reduction_proxy_info);
-  if (proxy_config.proxy_rules().empty())
-    return false;
-  proxy_config.proxy_rules().Apply(url, data_reduction_proxy_info);
-  data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);
-  return !data_reduction_proxy_info->is_empty() &&
-         !data_reduction_proxy_info->proxy_server().is_direct();
 }
 
 const char* GetSiteBreakdownOtherHostName() {

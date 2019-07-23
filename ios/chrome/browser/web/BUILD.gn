@@ -305,7 +305,7 @@ source_set("unit_tests_internal") {
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/web",
     "//ios/chrome/test/fakes",
-    "//ios/web",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net",
@@ -413,7 +413,7 @@ source_set("perf_tests") {
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/test/base:perf_test_support",
-    "//ios/web",
+    "//ios/web/common:web_view_creation_util",
     "//ios/web/public/test",
   ]
   libs = [ "WebKit.framework" ]

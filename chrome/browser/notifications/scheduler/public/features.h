@@ -14,6 +14,15 @@ namespace features {
 extern const base::Feature kNotificationScheduleService;
 
 }  // namespace features
+
+namespace switches {
+
+// The switch to immediately run notification scheduler background task to show
+// notification.
+extern const char kNotificationSchedulerImmediateBackgroundTask[];
+
+}  // namespace switches
+
 }  // namespace notifications
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_SCHEDULER_PUBLIC_FEATURES_H_

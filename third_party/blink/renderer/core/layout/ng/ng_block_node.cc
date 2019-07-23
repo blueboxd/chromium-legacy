@@ -669,7 +669,7 @@ bool NGBlockNode::CanUseNewLayout(const LayoutBox& box) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
   if (box.ForceLegacyLayout())
     return false;
-  return box.IsLayoutNGMixin() || box.IsLayoutNGFlexibleBox();
+  return box.IsLayoutNGMixin();
 }
 
 bool NGBlockNode::CanUseNewLayout() const {

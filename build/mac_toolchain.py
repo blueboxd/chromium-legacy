@@ -152,8 +152,16 @@ def InstallXcodeBinaries():
   args = [
       'cipd', 'ensure', '-root', binaries_root, '-ensure-file', '-'
   ]
-  p = subprocess.Popen(args, stdin=subprocess.PIPE)
-  p.communicate(input=MAC_BINARIES_LABEL + ' ' + MAC_BINARIES_TAG)
+  p = subprocess.Popen(
+      args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE)
+  stdout, stderr = p.communicate(
+      input=MAC_BINARIES_LABEL + ' ' + MAC_BINARIES_TAG)
+  if p.returncode != 0:
+    print(stdout)
+    print(stderr)
+    RequestCipdAuthentication()
+    return 1
 
   # Accept the license for this version of Xcode if it's newer than the
   # currently accepted version.
@@ -177,7 +185,7 @@ def InstallXcodeBinaries():
       should_overwrite_license = False
 
   if not should_overwrite_license:
-    return
+    return 0
 
   # Use puppet's sudoers script to accept the license if its available.
   license_accept_script = '/usr/local/bin/xcode_accept_license.py'
@@ -185,7 +193,7 @@ def InstallXcodeBinaries():
     args = ['sudo', license_accept_script, '--xcode_version',
             cipd_xcode_version, '--license-version', cipd_license_version]
     subprocess.call(args)
-    return
+    return 0
 
   # Otherwise manually accept the license. This will prompt for sudo.
   print('Accepting new Xcode license. Requires sudo.')
@@ -198,6 +206,8 @@ def InstallXcodeBinaries():
   subprocess.call(args)
   args = ['sudo', 'plutil', '-convert', 'xml1', current_license_path]
   subprocess.call(args)
+
+  return 0
 
 
 def main():
@@ -227,9 +237,7 @@ def main():
   if not success:
     return 1
 
-  InstallXcodeBinaries()
-
-  return 0
+  return InstallXcodeBinaries()
 
 
 if __name__ == '__main__':

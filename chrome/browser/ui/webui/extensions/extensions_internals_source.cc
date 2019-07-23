@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,6 +24,9 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace {
 
@@ -116,6 +120,14 @@ base::Value CreationFlagsToList(int creation_flags) {
 }
 
 // The JSON we generate looks like this:
+// Note:
+// - tab_specific permissions can have 0 or more DICT entries with each tab id
+// pointing to the api, explicit_host, manifest and scriptable_host permission
+// lists.
+// - In some cases manifest or api permissions rather than just being a STRING
+// can be a DICT with the name keying a more complex object with detailed
+// information. This is the case for subclasses of ManifestPermission and
+// APIPermission which override the ToValue function.
 //
 // [ {
 //    "creation_flags": [ "ALLOW_FILE_ACCESS", "FROM_WEBSTORE" ],
@@ -139,6 +151,33 @@ base::Value CreationFlagsToList(int creation_flags) {
 //    "manifest_version": 2,
 //    "name": "Earth View from Google Earth",
 //    "path": "/user/Extensions/bhloflhklmhfpedakmangadcdofhnnoh/2.18.5_0",
+//    "permissions": {
+//       "active": {
+//          "api": [ ],
+//          "explicit_hosts": [ ],
+//          "manifest": [ ],
+//          "scriptable_hosts": [ ]
+//       },
+//       "optional": {
+//          "api": [ ],
+//          "explicit_hosts": [ ],
+//          "manifest": [ ],
+//          "scriptable_hosts": [ ]
+//       },
+//       "tab_specific": {
+//          "4": {
+//             "api": [ ],
+//             "explicit_hosts": [ ],
+//             "manifest": [ ],
+//             "scriptable_hosts": [ ]
+//          }
+//       },
+//       "withheld": {
+//          "api": [ ],
+//          "explicit_hosts": [ ],
+//          "manifest": [ ],
+//          "scriptable_hosts": [ ]
+//       },
 //    "type": "TYPE_EXTENSION",
 //    "version": "2.18.5"
 // } ]
@@ -169,6 +208,37 @@ base::Value CreationFlagsToList(int creation_flags) {
 //    "manifest_version": INT
 //    "name": STRING
 //    "path": STRING
+//    "permissions": DICT
+//      "active": DICT
+//        "api": LIST
+//          STRING
+//          (see note above for edge cases on all "api" and "manfest" entries)
+//        "explicit_hosts": LIST
+//          STRING
+//        "manifest": LIST
+//          STRING
+//        "scriptable_hosts": LIST
+//          STRING
+//      "optional": DICT
+//        "api": LIST
+//          STRING
+//        "explicit_hosts": LIST
+//          STRING
+//        "manifest": LIST
+//          STRING
+//        "scriptable_hosts": LIST
+//          STRING
+//      "tab_specific": DICT
+//        (see note above for details)
+//      "withheld": DICT
+//        "api": LIST
+//          STRING
+//        "explicit_hosts": LIST
+//          STRING
+//        "manifest": LIST
+//          STRING
+//        "scriptable_hosts": LIST
+//          STRING
 //    "type": STRING
 //    "version": STRING
 
@@ -190,6 +260,15 @@ constexpr base::StringPiece kListenerUrlKey = "url";
 constexpr base::StringPiece kLocationKey = "location";
 constexpr base::StringPiece kManifestVersionKey = "manifest_version";
 constexpr base::StringPiece kPathKey = "path";
+constexpr base::StringPiece kPermissionsKey = "permissions";
+constexpr base::StringPiece kPermissionsActiveKey = "active";
+constexpr base::StringPiece kPermissionsOptionalKey = "optional";
+constexpr base::StringPiece kPermissionsTabSpecificKey = "tab_specific";
+constexpr base::StringPiece kPermissionsWithheldKey = "withheld";
+constexpr base::StringPiece kPermissionsApiKey = "api";
+constexpr base::StringPiece kPermissionsManifestKey = "manifest";
+constexpr base::StringPiece kPermissionsExplicitHostsKey = "explicit_hosts";
+constexpr base::StringPiece kPermissionsScriptableHostsKey = "scriptable_hosts";
 constexpr base::StringPiece kTypeKey = "type";
 
 base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
@@ -211,6 +290,75 @@ base::Value FormatKeepaliveData(extensions::ProcessManager* process_manager,
   }
   keepalive_data.SetKey(kActivitesKey, std::move(activities_data));
   return keepalive_data;
+}
+
+// Formats API and Manifest permissions, which can have details that we add as a
+// dictionary rather than just the string name
+template <typename T>
+base::Value FormatDetailedPermissionSet(const T& permissions) {
+  base::Value value_list(base::Value::Type::LIST);
+  value_list.GetList().reserve(permissions.size());
+  for (const auto& permission : permissions) {
+    std::unique_ptr<base::Value> detail(permission->ToValue());
+    if (detail) {
+      base::Value tmp(base::Value::Type::DICTIONARY);
+      tmp.SetKey(permission->name(),
+                 base::Value::FromUniquePtrValue(std::move(detail)));
+      value_list.GetList().push_back(std::move(tmp));
+    } else {
+      value_list.GetList().push_back(base::Value(permission->name()));
+    }
+  }
+  return value_list;
+}
+
+base::Value FormatPermissionSet(
+    const extensions::PermissionSet& permission_set) {
+  base::Value value(base::Value::Type::DICTIONARY);
+
+  value.SetKey(kPermissionsExplicitHostsKey,
+               base::Value::FromUniquePtrValue(
+                   permission_set.explicit_hosts().ToValue()));
+  value.SetKey(kPermissionsScriptableHostsKey,
+               base::Value::FromUniquePtrValue(
+                   permission_set.scriptable_hosts().ToValue()));
+  value.SetKey(
+      kPermissionsManifestKey,
+      FormatDetailedPermissionSet(permission_set.manifest_permissions()));
+  value.SetKey(kPermissionsApiKey,
+               FormatDetailedPermissionSet(permission_set.apis()));
+
+  return value;
+}
+
+base::Value FormatPermissionsData(const extensions::Extension& extension) {
+  const extensions::PermissionsData& permissions =
+      *extension.permissions_data();
+  base::Value permissions_data(base::Value::Type::DICTIONARY);
+
+  const extensions::PermissionSet& active_permissions =
+      permissions.active_permissions();
+  permissions_data.SetKey(kPermissionsActiveKey,
+                          FormatPermissionSet(active_permissions));
+
+  const extensions::PermissionSet& withheld_permissions =
+      permissions.withheld_permissions();
+  permissions_data.SetKey(kPermissionsWithheldKey,
+                          FormatPermissionSet(withheld_permissions));
+
+  base::Value tab_specific(base::Value::Type::DICTIONARY);
+  for (const auto& tab : permissions.tab_specific_permissions()) {
+    tab_specific.SetKey(base::NumberToString(tab.first),
+                        FormatPermissionSet(*tab.second));
+  }
+  permissions_data.SetKey(kPermissionsTabSpecificKey, std::move(tab_specific));
+
+  const extensions::PermissionSet& optional_permissions =
+      extensions::PermissionsParser::GetOptionalPermissions(&extension);
+  permissions_data.SetKey(kPermissionsOptionalKey,
+                          FormatPermissionSet(optional_permissions));
+
+  return permissions_data;
 }
 
 void AddEventListenerData(extensions::EventRouter* event_router,
@@ -319,6 +467,7 @@ std::string ExtensionsInternalsSource::WriteToString() const {
                           base::Value(TypeToString(extension->GetType())));
     extension_data.SetKey(kInternalsVersionKey,
                           base::Value(extension->GetVersionForDisplay()));
+    extension_data.SetKey(kPermissionsKey, FormatPermissionsData(*extension));
     data.GetList().push_back(std::move(extension_data));
   }
 

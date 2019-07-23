@@ -284,6 +284,7 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/common:splash_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
+    "//chrome/browser/android/thin_webview:factory_java",
     "//chrome/lib/image_fetcher/public/android:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//chrome/lib/ui/widget/public/android:java",

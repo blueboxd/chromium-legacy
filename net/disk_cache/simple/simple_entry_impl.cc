@@ -561,6 +561,12 @@ int SimpleEntryImpl::ReadSparseData(int64_t offset,
     return net::ERR_INVALID_ARGUMENT;
   }
 
+  // Truncate |buf_len| to make sure that |offset + buf_len| does not overflow.
+  // This is OK since one can't write that far anyway.
+  // The result of std::min is guaranteed to fit into int since |buf_len| did.
+  buf_len = std::min(static_cast<int64_t>(buf_len),
+                     std::numeric_limits<int64_t>::max() - offset);
+
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::ReadSparseOperation(
       this, offset, buf_len, buf, std::move(callback)));
@@ -579,7 +585,7 @@ int SimpleEntryImpl::WriteSparseData(int64_t offset,
         net::NetLogEventPhase::NONE, offset, buf_len);
   }
 
-  if (offset < 0 || buf_len < 0) {
+  if (offset < 0 || buf_len < 0 || !base::CheckAdd(offset, buf_len).IsValid()) {
     if (net_log_.IsCapturing()) {
       NetLogReadWriteComplete(
           net_log_, net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_SPARSE_END,
@@ -601,6 +607,12 @@ int SimpleEntryImpl::GetAvailableRange(int64_t offset,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (offset < 0 || len < 0)
     return net::ERR_INVALID_ARGUMENT;
+
+  // Truncate |len| to make sure that |offset + len| does not overflow.
+  // This is OK since one can't write that far anyway.
+  // The result of std::min is guaranteed to fit into int since |len| did.
+  len = std::min(static_cast<int64_t>(len),
+                 std::numeric_limits<int64_t>::max() - offset);
 
   ScopedOperationRunner operation_runner(this);
   pending_operations_.push(SimpleEntryOperation::GetAvailableRangeOperation(
@@ -1045,6 +1057,7 @@ int SimpleEntryImpl::ReadDataInternal(bool sync_possible,
     return PostToCallbackIfNeeded(sync_possible, std::move(callback), 0);
   }
 
+  // Truncate read to not go past end of stream.
   buf_len = std::min(buf_len, GetDataSize(stream_index) - offset);
 
   // Since stream 0 data is kept in memory, it is read immediately.

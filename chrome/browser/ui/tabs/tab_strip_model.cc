@@ -1486,8 +1486,9 @@ int TabStripModel::InsertWebContentsAtImpl(
     }
     data->set_opener(active_contents);
   }
+  data->set_group(group);
   if (group.has_value())
-    data->set_group(group);
+    group_data_[group.value()]->TabAdded();
 
   // TODO(gbillock): Ask the modal dialog manager whether the WebContents should
   // be blocked, or just let the modal dialog manager make the blocking call
@@ -1840,8 +1841,9 @@ void TabStripModel::MoveAndSetGroup(int index,
   // is not possible right now.
   if (index != new_index)
     MoveWebContentsAtImpl(index, new_index, false);
-  WebContentsData* contents_data = contents_data_[new_index].get();
-  contents_data->set_group(new_group);
+  contents_data_[new_index]->set_group(new_group);
+  if (new_group.has_value())
+    group_data_[new_group.value()]->TabAdded();
 
   NotifyGroupChange(new_index, old_group, new_group);
 }
@@ -1868,15 +1870,11 @@ base::Optional<TabGroupId> TabStripModel::UngroupTab(int index) {
     return base::nullopt;
 
   contents_data_[index]->set_group(base::nullopt);
-
+  TabGroupData* group_data = group_data_[group.value()].get();
+  group_data->TabRemoved();
   // Delete the group if we just ungrouped the last tab in that group.
-  if ((!ContainsIndex(index + 1) || GetTabGroupForTab(index + 1) != group) &&
-      (!ContainsIndex(index - 1) || GetTabGroupForTab(index - 1) != group)) {
-    DCHECK(!std::any_of(
-        contents_data_.cbegin(), contents_data_.cend(),
-        [group](const auto& datum) { return datum->group() == group; }));
+  if (group_data->empty())
     group_data_.erase(group.value());
-  }
   return group;
 }
 

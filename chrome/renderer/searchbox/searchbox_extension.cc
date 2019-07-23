@@ -1040,6 +1040,7 @@ void NewTabPageBindings::ToggleMostVisitedOrCustomLinks() {
   if (!search_box)
     return;
   search_box->ToggleMostVisitedOrCustomLinks();
+  search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE);
 }
 
 // static
@@ -1048,6 +1049,8 @@ void NewTabPageBindings::ToggleShortcutsVisibility(bool do_notify) {
   if (!search_box)
     return;
   search_box->ToggleShortcutsVisibility(do_notify);
+  search_box->LogEvent(
+      NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY);
 }
 
 // static

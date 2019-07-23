@@ -12,6 +12,7 @@
 #include "ash/app_list/views/search_result_view.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "ui/views/view.h"
 
 namespace app_list {
@@ -65,6 +66,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   // Overridden from views::View:
   void Layout() override;
   int GetHeightForWidth(int w) const override;
+  // Log the set of recommendations (impression) that were shown to the user
+  // after a priod of time.
+  void LogImpressions();
 
   AppListMainView* main_view_;          // Owned by views hierarchy.
   AppListViewDelegate* view_delegate_;  // Not owned.
@@ -72,6 +76,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   views::View* results_container_;
 
   std::vector<SearchResultView*> search_result_views_;  // Not owned.
+
+  // Used for logging impression shown to users.
+  base::OneShotTimer impression_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };

@@ -104,6 +104,13 @@ source_set("cdm") {
       ]
     }
   }
+
+  if (is_fuchsia) {
+    sources += [
+      "fuchsia/fuchsia_cdm_factory.cc",
+      "fuchsia/fuchsia_cdm_factory.h",
+    ]
+  }
 }
 
 static_library("cdm_paths") {

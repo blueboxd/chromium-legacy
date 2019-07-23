@@ -98,7 +98,8 @@ void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {
   // changes here might be surprising, but the same signals are sent from
   // MediaPlayerRenderer::StartPlayingFrom(), and it has been working mostly
   // smoothly for all HLS playback.
-  client_->OnBufferingStateChange(media::BUFFERING_HAVE_ENOUGH);
+  client_->OnBufferingStateChange(media::BUFFERING_HAVE_ENOUGH,
+                                  media::BUFFERING_CHANGE_REASON_UNKNOWN);
 }
 
 void FlingingRenderer::SetPlaybackRate(double playback_rate) {

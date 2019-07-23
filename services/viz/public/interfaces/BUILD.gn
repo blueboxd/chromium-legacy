@@ -40,7 +40,6 @@ mojom("interfaces") {
   ]
 
   public_deps = [
-    ":constants",
     "//gpu/ipc/common:interfaces",
     "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
@@ -53,10 +52,4 @@ mojom("interfaces") {
   if (is_chromeos) {
     public_deps += [ "//components/chromeos_camera/common" ]
   }
-}
-
-mojom("constants") {
-  sources = [
-    "constants.mojom",
-  ]
 }

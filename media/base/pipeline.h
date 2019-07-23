@@ -48,8 +48,9 @@ class MEDIA_EXPORT Pipeline {
     virtual void OnMetadata(const PipelineMetadata& metadata) = 0;
 
     // Executed whenever there are changes in the buffering state of the
-    // pipeline.
-    virtual void OnBufferingStateChange(BufferingState state) = 0;
+    // pipeline. |reason| indicates the cause of the state change, when known.
+    virtual void OnBufferingStateChange(BufferingState state,
+                                        BufferingStateChangeReason reason) = 0;
 
     // Executed whenever the presentation duration changes.
     virtual void OnDurationChange() = 0;

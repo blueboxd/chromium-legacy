@@ -1538,11 +1538,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::OriginPolicyState error_reason,
       content::NavigationHandle* navigation_handle);
 
-  // Returns true if it is OK to ignore errors for certificates specified by the
-  // --ignore-certificate-errors-spki-list command line flag. The embedder may
-  // perform additional checks, such as requiring --user-data-dir flag too to
-  // make sure that insecure contents will not persist accidentally.
-  virtual bool CanIgnoreCertificateErrorIfNeeded();
+  // Returns true if it is OK to accept untrusted exchanges, such as expired
+  // signed exchanges, and unsigned bundled exchanges.
+  // The embedder may require --user-data-dir flag and so on to accept it in
+  // order to make sure that insecure contents will not persist accidentally.
+  virtual bool CanAcceptUntrustedExchangesIfNeeded();
 
   // Called on every request completion to update the data use when network
   // service is enabled.

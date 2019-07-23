@@ -8,12 +8,16 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(USE_UDEV)
 #include "device/udev_linux/scoped_udev.h"
+#endif
 
 namespace extensions {
 // TODO(haven): Udev code may be duplicated in the Chrome codebase.
 // https://code.google.com/p/chromium/issues/detail?id=284898
 
+#if defined(USE_UDEV)
 // Returns the integer contained in |attr|.  Returns 0 on error.
 static uint64_t get_int_attr(const char* attr) {
   uint64_t result = 0;
@@ -41,10 +45,12 @@ static int get_device_blk_size(const std::string& path) {
 
   return blk_size;
 }
+#endif  // defined(USE_UDEV)
 
 // static
 scoped_refptr<StorageDeviceList>
 RemovableStorageProvider::PopulateDeviceList() {
+#if defined(USE_UDEV)
   device::ScopedUdevPtr udev(device::udev_new());
   if (!udev) {
     DLOG(ERROR) << "Can't create udev";
@@ -109,6 +115,9 @@ RemovableStorageProvider::PopulateDeviceList() {
   }
 
   return device_list;
+#else
+  return nullptr;
+#endif  // defined(USE_UDEV)
 }
 
 }  // namespace extensions

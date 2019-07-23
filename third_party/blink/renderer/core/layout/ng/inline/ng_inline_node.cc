@@ -683,6 +683,10 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
                                          direction)) {
           break;
         }
+        // Break shaping at ZWNJ so that it prevents kerning. ZWNJ is always at
+        // the beginning of an item for this purpose; see NGInlineItemsBuilder.
+        if (text_content[item.StartOffset()] == kZeroWidthNonJoinerCharacter)
+          break;
         end_offset = item.EndOffset();
         num_text_items++;
       } else if (item.Type() == NGInlineItem::kOpenTag) {

@@ -67,9 +67,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   void BindDevToolsAgent(
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
-  void UpdateSubresourceLoaderFactories(
-      std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-          subresource_loader_factories) override;
 
   // Handler of connection error bound to |binding_|.
   void OnError();

@@ -168,6 +168,17 @@ void AudioFocusRequest::PerformUIAction(mojom::MediaSessionAction action) {
   }
 }
 
+void AudioFocusRequest::GetMediaImageBitmap(
+    const MediaImage& image,
+    int minimum_size_px,
+    int desired_size_px,
+    GetMediaImageBitmapCallback callback) {
+  session_->GetMediaImageBitmap(
+      image, minimum_size_px, desired_size_px,
+      base::BindOnce(&AudioFocusRequest::OnImageDownloaded,
+                     base::Unretained(this), std::move(callback)));
+}
+
 void AudioFocusRequest::SetSessionInfo(
     mojom::MediaSessionInfoPtr session_info) {
   bool is_controllable_changed =
@@ -195,6 +206,11 @@ void AudioFocusRequest::OnConnectionError() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&AudioFocusManager::AbandonAudioFocusInternal,
                                 owner_, id_));
+}
+
+void AudioFocusRequest::OnImageDownloaded(GetMediaImageBitmapCallback callback,
+                                          const SkBitmap& bitmap) {
+  std::move(callback).Run(bitmap);
 }
 
 }  // namespace media_session

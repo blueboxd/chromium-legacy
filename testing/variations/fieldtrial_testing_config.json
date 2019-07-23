@@ -1803,6 +1803,21 @@
             ]
         }
     ],
+    "DistinctModuleDatabaseSequence": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DistinctModuleDatabaseSequence"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadHomeMoreButton": [
         {
             "platforms": [
@@ -2818,6 +2833,7 @@
                     "params": {
                         "automatic-lazy-load-frames-enabled": "true",
                         "automatic-lazy-load-images-enabled": "true",
+                        "enable-lazy-load-images-metadata-fetch": "false",
                         "restrict-lazy-load-frames-to-data-saver-only": "true",
                         "restrict-lazy-load-images-to-data-saver-only": "true"
                     },

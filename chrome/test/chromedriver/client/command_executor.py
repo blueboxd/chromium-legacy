@@ -170,6 +170,9 @@ class Command(object):
       _Method.POST, '/session/:sessionId/reporting/generate_test_report')
   ADD_VIRTUAL_AUTHENTICATOR = (
       _Method.POST, '/session/:sessionId/webauthn/authenticator')
+  REMOVE_VIRTUAL_AUTHENTICATOR = (
+      _Method.DELETE,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')

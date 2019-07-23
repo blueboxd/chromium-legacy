@@ -127,7 +127,13 @@ enum NTPLoggingEventType {
   // A promo link was clicked.
   NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED = 61,
 
-  NTP_EVENT_TYPE_LAST = NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED
+  // The shortcut type displayed (i.e. Most Visited or custom links) was
+  // changed.
+  NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE = 62,
+  // The visibility of shortcuts was changed.
+  NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY = 63,
+
+  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY
 };
 
 // The different types of events that are logged for NTP search suggestions,

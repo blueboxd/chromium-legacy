@@ -960,7 +960,7 @@ TEST_F(PipelineIntegrationTest, ReinitRenderersWhileAudioTrackIsDisabled) {
   ASSERT_TRUE(Suspend());
   ASSERT_TRUE(Resume(TimestampMs(100)));
   // Now re-enable the audio track, playback should continue successfully.
-  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH)).Times(1);
+  EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _)).Times(1);
   track_ids.push_back(MediaTrack::Id("2"));
   OnEnabledAudioTracksChanged(track_ids);
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(TimestampMs(200)));

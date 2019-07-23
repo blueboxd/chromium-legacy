@@ -13,9 +13,9 @@
 #include "ios/chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/web/public/favicon/favicon_status.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
-#import "ios/web/public/web_state/navigation_context.h"
+#import "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 

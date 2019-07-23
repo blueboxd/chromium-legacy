@@ -741,13 +741,20 @@ HttpHandler::HttpHandler(
 
       // Extension for WebAuthn API:
       // TODO(nsatragno): Update the link to the official spec once it lands.
-      // https://github.com/nsatragno/webauthn/pull/1/files
+      // https://github.com/w3c/webauthn/pull/1256
       CommandMapping(kPost, "session/:sessionId/webauthn/authenticator",
                      WrapToCommand("AddVirtualAuthenticator",
                                    base::BindRepeating(
                                        &ExecuteWebAuthnCommand,
                                        base::BindRepeating(
                                            &ExecuteAddVirtualAuthenticator)))),
+      CommandMapping(
+          kDelete, "session/:sessionId/webauthn/authenticator/:authenticatorId",
+          WrapToCommand(
+              "RemoveVirtualAuthenticator",
+              base::BindRepeating(
+                  &ExecuteWebAuthnCommand,
+                  base::BindRepeating(&ExecuteRemoveVirtualAuthenticator)))),
 
       //
       // Non-standard extension commands

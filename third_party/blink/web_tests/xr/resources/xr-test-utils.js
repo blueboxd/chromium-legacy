@@ -2,14 +2,40 @@
 // performs tests. If func returns a promise, test will only pass if the promise
 // resolves.
 function xr_session_promise_test(
-    name, func, deviceOptions, sessionModes, properties) {
-  if (document.getElementById('webgl-canvas') ||
-      document.getElementById('webgl2-canvas')) {
-    webglCanvasSetup();
-  }
+    name, func, deviceOptions, sessionMode, sessionInit, properties) {
+  let testSession = null;
+  let sessionObjects = {};
 
+  const webglCanvas = document.getElementsByTagName('canvas')[0];
+  // We can't use assert_true here because it causes the wpt testharness to treat
+  // this as a test page and not as a test.
+  if (!webglCanvas) {
+    promise_test(async (t) => {
+      Promise.reject('xr_session_promise_test requires a canvas on the page!');
+    }, name, properties);
+  }
+  let gl = webglCanvas.getContext('webgl', {alpha: false, antialias: false});
+  sessionObjects.gl = gl;
   promise_test((t) => {
     let fakeDeviceController;
+
+    // Ensure that any pending sessions are ended and devices are
+    // disconnected when done. This needs to use a cleanup function to
+    // ensure proper sequencing. If this were done in a .then() for the
+    // success case, a test that expected failure would already be marked
+    // done at the time that runs, and the shutdown would interfere with
+    // the next test which may have started already.
+    t.add_cleanup(async() => {
+      if (testSession) {
+        // TODO(bajones): Throwing an error when a session is
+        // already ended is not defined by the spec. This
+        // should be defined or removed.
+        await testSession.end().catch(() => {});
+      }
+
+      await navigator.xr.test.disconnectAllDevices();
+    });
+
     return navigator.xr.test.simulateDeviceConnection(deviceOptions)
         .then((controller) => {
           fakeDeviceController = controller;
@@ -21,64 +47,33 @@ function xr_session_promise_test(
           }
         })
         .then(() => new Promise((resolve, reject) => {
-          // Run the test with each of sessionModes from the array one
-          // at a time.
-          function nextSessionTest(i) {
-            // Check if it's time to break the loop.
-            if (i == sessionModes.length) {
-              if (sessionModes.length == 0) {
-                reject('No modes specified. Test did not run.');
-              } else {
-                resolve();
-              }
-              return;
-            }
-
             // Perform the session request in a user gesture.
-            runWithUserGesture(() => {
-              let nextMode = sessionModes[i];
-              let testSession = null;
-              navigator.xr.requestSession(nextMode)
+            navigator.xr.test.simulateUserActivation(() => {
+              navigator.xr.requestSession(sessionMode, sessionInit || {})
                   .then((session) => {
                     testSession = session;
-                    testSession.mode = nextMode;
-                    return func(session, fakeDeviceController, t);
+                    session.mode = sessionMode;
+                    let glLayer = new XRWebGLLayer(session, gl, {
+                      compositionDisabled: session.mode == 'inline'
+                    });
+                    sessionObjects.glLayer = glLayer;
+                    // Session must have a baseLayer or frame requests
+                    // will be ignored.
+                    session.updateRenderState({
+                        baseLayer: glLayer
+                    });
+                    resolve(func(session, fakeDeviceController, t, sessionObjects));
                   })
-                  .then(() => {
-                    // End the session. Silence any errors generated if the
-                    // session was already ended.
-                    // TODO(bajones): Throwing an error when a session is
-                    // already ended is not defined by the spec. This
-                    // should be defined or removed.
-                    testSession.end().catch(() => {});
-                  })
-                  .then(() => nextSessionTest(++i))
                   .catch((err) => {
-                    reject(
-                        `Test failed while running with the following XRSessionMode:
-                        ${nextMode} ${err}`);
+                    reject('Session with params ' +
+                      JSON.stringify(sessionMode) +
+                        ' was rejected on device ' +
+                        JSON.stringify(fakeDeviceInit) +
+                        ' with error: ' + err);
                   });
             });
-          }
-
-          nextSessionTest(0);
         }));
   }, name, properties);
-}
-
-let webglCanvas, gl;
-function webglCanvasSetup() {
-  let webgl2 = false;
-  webglCanvas = document.getElementById('webgl-canvas');
-  if (!webglCanvas) {
-    webglCanvas = document.getElementById('webgl2-canvas');
-    webgl2 = true;
-  }
-  let glAttributes = {
-    alpha: false,
-    antialias: false,
-  };
-  gl = webglCanvas.getContext(webgl2 ? 'webgl2' : 'webgl', glAttributes);
 }
 
 function perspectiveFromFieldOfView(fov, near, far) {
@@ -212,13 +207,4 @@ function assert_matrices_significantly_not_equal(
 
     assert_unreached(error_message);
   }
-}
-
-function runWithUserGesture(fn) {
-  function thunk() {
-    document.removeEventListener('keypress', thunk, false);
-    fn()
-  }
-  document.addEventListener('keypress', thunk, false);
-  eventSender.keyDown(' ', []);
 }

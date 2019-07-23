@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "ios/web/public/deprecated/navigation_item_list.h"
-#import "ios/web/public/navigation_item.h"
-#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 
 namespace web {

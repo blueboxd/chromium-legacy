@@ -113,6 +113,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget implementation.
+  void DidDetachLocalFrameTree() override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
   bool ScrollFocusedEditableElementIntoView() override;
 
@@ -154,7 +155,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   HitTestResult HitTestResultForRootFramePos(
       const PhysicalOffset& pos_in_root_frame);
 
-  void SetIsAcceleratedCompositingActive(bool);
   void UpdateLayerTreeViewport();
 
   // PageWidgetEventHandler functions

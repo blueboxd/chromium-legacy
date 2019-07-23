@@ -128,7 +128,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
         WriteHTML(&(params[0].front()), params[0].size(),
                   &(params[1].front()), params[1].size());
       } else if (params.size() == 1) {
-        WriteHTML(&(params[0].front()), params[0].size(), NULL, 0);
+        WriteHTML(&(params[0].front()), params[0].size(), nullptr, 0);
       }
       break;
 

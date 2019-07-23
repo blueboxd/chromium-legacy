@@ -193,8 +193,6 @@ class ASH_EXPORT ShelfView : public views::View,
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
-  bool ShouldEventActivateButton(views::View* view,
-                                 const ui::Event& event) override;
 
   // Overridden from FocusTraversable:
   views::FocusSearch* GetFocusSearch() override;
@@ -214,6 +212,11 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Overridden from VirtualKeyboardModel::Observer:
   void OnVirtualKeyboardVisibilityChanged() override;
+
+  // Returns true if |event| on the shelf item is going to activate the
+  // ShelfItem associated with |view|. Used to determine whether a pending ink
+  // drop should be shown or not.
+  bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
 
   void CreateDragIconProxyByLocationWithNoAnimation(
       const gfx::Point& origin_in_screen_coordinates,
@@ -314,6 +317,9 @@ class ASH_EXPORT ShelfView : public views::View,
       return std::max(0, last_visible_index_ - first_visible_index_ + 1);
     else
       return std::max(0, last_visible_index_ + 1);
+  }
+  views::View* first_visible_button_for_testing() {
+    return view_model_->view_at(first_visible_index());
   }
   ShelfWidget* shelf_widget() const { return shelf_->shelf_widget(); }
   OverflowBubble* overflow_bubble() { return overflow_bubble_.get(); }

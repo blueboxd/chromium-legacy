@@ -643,6 +643,7 @@ public class BottomSheet
                 }
 
                 if (!mGestureDetector.isScrolling()) {
+                    cancelAnimation();
 
                     // This onLayoutChange() will be called after the user enters fullscreen video
                     // mode. Ensure the sheet state is reset to peek so that the sheet does not
@@ -651,7 +652,6 @@ public class BottomSheet
                             && mFullscreenManager.getPersistentFullscreenMode() && isSheetOpen()) {
                         setSheetState(SheetState.PEEK, false);
                     } else {
-                        if (isRunningSettleAnimation()) return;
                         setSheetState(mCurrentState, false);
                     }
                 }
@@ -1153,16 +1153,8 @@ public class BottomSheet
             // If the toolbar is not laid out yet and has a fixed height layout parameter, we assume
             // that the toolbar will have this height in the future.
             ViewGroup.LayoutParams layoutParams = toolbarView.getLayoutParams();
-            if (layoutParams != null) {
-                if (layoutParams.height > 0) {
-                    toolbarHeight = layoutParams.height;
-                } else {
-                    toolbarView.measure(
-                            MeasureSpec.makeMeasureSpec((int) mContainerWidth, MeasureSpec.EXACTLY),
-                            MeasureSpec.makeMeasureSpec(
-                                    (int) mContainerHeight, MeasureSpec.AT_MOST));
-                    toolbarHeight = toolbarView.getMeasuredHeight();
-                }
+            if (layoutParams != null && layoutParams.height > 0) {
+                toolbarHeight = layoutParams.height;
             }
         }
         return (toolbarHeight + mToolbarShadowHeight) / mContainerHeight;
@@ -1271,9 +1263,6 @@ public class BottomSheet
     public void setSheetState(
             @SheetState int state, boolean animate, @StateChangeReason int reason) {
         assert state != SheetState.SCROLLING && state != SheetState.NONE;
-
-        // No-op if we're already animating toward the requested state.
-        if (state == mCurrentState && animate && isRunningSettleAnimation()) return;
 
         if (state == SheetState.HALF && shouldSkipHalfState()) {
             state = SheetState.FULL;
@@ -1597,7 +1586,9 @@ public class BottomSheet
 
         // The SCROLLING state is used when animating the sheet height or when the user is swiping
         // the sheet. If it is the latter, we should not change the sheet height.
-        if (animate && isRunningSettleAnimation()) return;
+        cancelAnimation();
+        if (mCurrentState == SheetState.SCROLLING) return;
+
         setSheetState(mCurrentState, animate);
     }
 

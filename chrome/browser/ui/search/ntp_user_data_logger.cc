@@ -87,17 +87,36 @@ enum VoiceError {
   VOICE_ERROR_MAX
 };
 
-// Logs BackgroundCustomization availability on the NTP,
+// Logs BackgroundCustomization availability on the NTP.
 void LogBackgroundCustomizationAvailability(
     BackgroundCustomization availability) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizationAvailability.Backgrounds",
                             availability);
 }
 
-// Logs ShortcutCustomization availability on the NTP,
+// Logs ShortcutCustomization availability on the NTP.
 void LogShortcutCustomizationAvailability(ShortcutCustomization availability) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizationAvailability.Shortcuts",
                             availability);
+}
+
+// Logs CustomizedShortcutSettings on the NTP.
+void LogCustomizedShortcutSettings(std::pair<bool, bool> settings) {
+  bool using_most_visited = settings.first;
+  bool is_visible = settings.second;
+
+  CustomizedShortcutSettings setting;
+  if (is_visible && using_most_visited) {
+    setting =
+        CustomizedShortcutSettings::CUSTOMIZED_SHORTCUT_SETTINGS_MOST_VISITED;
+  } else if (is_visible && !using_most_visited) {
+    setting =
+        CustomizedShortcutSettings::CUSTOMIZED_SHORTCUT_SETTINGS_CUSTOM_LINKS;
+  } else {
+    setting = CustomizedShortcutSettings::CUSTOMIZED_SHORTCUT_SETTINGS_HIDDEN;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizedShortcuts", setting);
 }
 
 // Converts |NTPLoggingEventType| to a |CustomizedFeature|.
@@ -202,6 +221,11 @@ CustomizeShortcutAction LoggingEventToCustomizeShortcutAction(
       return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_UNDO;
     case NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL:
       return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_RESTORE_ALL;
+    case NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE:
+      return CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_TOGGLE_TYPE;
+    case NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY:
+      return CustomizeShortcutAction::
+          CUSTOMIZE_SHORTCUT_ACTION_TOGGLE_VISIBILITY;
     default:
       break;
   }
@@ -422,6 +446,8 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_CUSTOMIZE_SHORTCUT_DONE:
     case NTP_CUSTOMIZE_SHORTCUT_UNDO:
     case NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL:
+    case NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE:
+    case NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY:
       UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizeShortcutAction",
                                 LoggingEventToCustomizeShortcutAction(event));
       break;
@@ -507,6 +533,18 @@ bool NTPUserDataLogger::CustomBackgroundIsConfigured() const {
   return instant_service->IsCustomBackgroundSet();
 }
 
+bool NTPUserDataLogger::AreShortcutsCustomized() const {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  return instant_service->AreShortcutsCustomized();
+}
+
+std::pair<bool, bool> NTPUserDataLogger::GetCurrentShortcutSettings() const {
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile_);
+  return instant_service->GetCurrentShortcutSettings();
+}
+
 void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // We only send statistics once per page.
   if (has_emitted_) {
@@ -575,26 +613,29 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     LogBackgroundCustomizationAvailability(
         BackgroundCustomization::
             BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-  } else {
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
-  }
-
-  if (!is_google) {
-    // TODO(crbug.com/869931): This is only emitted upon search engine change.
     LogShortcutCustomizationAvailability(
         ShortcutCustomization::
             SHORTCUT_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
   } else {
+    LogBackgroundCustomizationAvailability(
+        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
     LogShortcutCustomizationAvailability(
         ShortcutCustomization::SHORTCUT_CUSTOMIZATION_AVAILABLE);
+    LogCustomizedShortcutSettings(GetCurrentShortcutSettings());
+
+    if (AreShortcutsCustomized()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "NewTabPage.Customized",
+          LoggingEventToCustomizedFeature(NTP_SHORTCUT_CUSTOMIZED));
+    }
+
+    if (CustomBackgroundIsConfigured()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "NewTabPage.Customized",
+          LoggingEventToCustomizedFeature(NTP_BACKGROUND_CUSTOMIZED));
+    }
   }
 
-  if (CustomBackgroundIsConfigured()) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "NewTabPage.Customized",
-        LoggingEventToCustomizedFeature(NTP_BACKGROUND_CUSTOMIZED));
-  }
   has_emitted_ = true;
   during_startup_ = false;
 }

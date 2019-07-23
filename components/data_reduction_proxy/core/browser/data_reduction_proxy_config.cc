@@ -42,7 +42,6 @@
 #include "net/base/proxy_server.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
@@ -215,15 +214,17 @@ void DataReductionProxyConfig::InitializeOnIOThread(
   network_properties_manager_ = manager;
   network_properties_manager_->ResetWarmupURLFetchMetrics();
 
-  secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
-  warmup_url_fetcher_.reset(new WarmupURLFetcher(
-      create_custom_proxy_config_callback,
-      base::BindRepeating(
-          &DataReductionProxyConfig::HandleWarmupFetcherResponse,
-          base::Unretained(this)),
-      base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
-                          base::Unretained(this)),
-      ui_task_runner_, user_agent));
+  if (!params::IsIncludedInHoldbackFieldTrial()) {
+    secure_proxy_checker_.reset(new SecureProxyChecker(url_loader_factory));
+    warmup_url_fetcher_.reset(new WarmupURLFetcher(
+        create_custom_proxy_config_callback,
+        base::BindRepeating(
+            &DataReductionProxyConfig::HandleWarmupFetcherResponse,
+            base::Unretained(this)),
+        base::BindRepeating(&DataReductionProxyConfig::GetHttpRttEstimate,
+                            base::Unretained(this)),
+        ui_task_runner_, user_agent));
+  }
 
   AddDefaultProxyBypassRules();
 
@@ -647,11 +648,17 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
 
 void DataReductionProxyConfig::SecureProxyCheck(
     SecureProxyCheckerCallback fetcher_callback) {
+  if (params::IsIncludedInHoldbackFieldTrial())
+    return;
+
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(fetcher_callback);
 }
 
 void DataReductionProxyConfig::FetchWarmupProbeURL() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (params::IsIncludedInHoldbackFieldTrial())
+    return;
 
   if (!enabled_by_user_) {
     RecordWarmupURLFetchAttemptEvent(
@@ -753,6 +760,9 @@ DataReductionProxyConfig::GetNetworkPropertiesManager() const {
 
 bool DataReductionProxyConfig::IsFetchInFlight() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!warmup_url_fetcher_)
+    return false;
   return warmup_url_fetcher_->IsFetchInFlight();
 }
 

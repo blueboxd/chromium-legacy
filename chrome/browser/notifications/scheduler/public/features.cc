@@ -11,4 +11,12 @@ const base::Feature kNotificationScheduleService{
     "NotificationScheduleService", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
+
+namespace switches {
+
+const char kNotificationSchedulerImmediateBackgroundTask[] =
+    "notification-scheduler-immediate-background-task";
+
+}  // namespace switches
+
 }  // namespace notifications

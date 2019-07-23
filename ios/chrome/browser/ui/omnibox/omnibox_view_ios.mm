@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#include "ios/web/public/referrer.h"
+#include "ios/web/public/navigation/referrer.h"
 #import "net/base/mac/url_conversions.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/page_transition_types.h"

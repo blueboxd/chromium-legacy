@@ -3167,3 +3167,32 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   EXPECT_EQ(gfx::Size(25, 25), window_size);
   EXPECT_EQ(gfx::Size(25, 25), overlay_window->GetMaximumSize());
 }
+
+// Tests that play/pause video playback is toggled if there are no focus
+// afforfances on the Picture-in-Picture window buttons when user hits space
+// keyboard key.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       SpaceKeyTogglePlayPause) {
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  ASSERT_TRUE(
+      content::ExecuteScript(active_web_contents, "addPauseEventListener();"));
+
+  OverlayWindowViews* overlay_window = static_cast<OverlayWindowViews*>(
+      window_controller()->GetWindowForTesting());
+  ASSERT_TRUE(overlay_window);
+  ASSERT_FALSE(overlay_window->GetFocusManager()->GetFocusedView());
+
+  ui::KeyEvent space_key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_SPACE,
+                                 ui::DomCode::SPACE, ui::EF_NONE);
+  overlay_window->OnKeyEvent(&space_key_pressed);
+
+  base::string16 expected_title = base::ASCIIToUTF16("pause");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}

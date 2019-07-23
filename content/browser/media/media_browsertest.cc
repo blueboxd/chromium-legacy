@@ -280,7 +280,13 @@ IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlacOgg) {
   PlayVideo("bear-flac.ogg", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavAlaw) {
+// Flaky on Linux. See https://crbug.com/979259
+#if defined(OS_LINUX)
+#define MAYBE_VideoBearWavAlaw DISABLED_VideoBearWavAlaw
+#else
+#define MAYBE_VideoBearWavAlaw VideoBearWavAlaw
+#endif
+IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearWavAlaw) {
   PlayAudio("bear_alaw.wav", GetParam());
 }
 

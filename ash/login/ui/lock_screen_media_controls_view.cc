@@ -52,10 +52,11 @@ constexpr int kArtworkViewWidth = 270;
 constexpr int kArtworkViewHeight = 200;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(45, 45);
 constexpr int kPlayPauseIconSize = 32;
-constexpr int kMediaButtonIconSize = 18;
+constexpr int kChangeTrackIconSize = 16;
+constexpr int kSeekingIconsSize = 28;
 constexpr gfx::Size kMediaControlsButtonRowSize =
     gfx::Size(270, kMediaButtonSize.height());
-constexpr int kMediaButtonRowSeparator = 20;
+constexpr int kMediaButtonRowSeparator = 10;
 
 // How long to wait (in milliseconds) for a new media session to begin.
 constexpr base::TimeDelta kNextMediaDelay =
@@ -92,10 +93,12 @@ const gfx::VectorIcon& GetVectorIconForMediaAction(MediaSessionAction action) {
       return kLockScreenNextTrackIcon;
     case MediaSessionAction::kPlay:
       return kLockScreenPlayIcon;
+    case MediaSessionAction::kSeekBackward:
+      return kLockScreenSeekBackwardIcon;
+    case MediaSessionAction::kSeekForward:
+      return kLockScreenSeekForwardIcon;
 
     // The following actions are not yet supported on the controls.
-    case MediaSessionAction::kSeekBackward:
-    case MediaSessionAction::kSeekForward:
     case MediaSessionAction::kStop:
     case MediaSessionAction::kSkipAd:
     case MediaSessionAction::kSeekTo:
@@ -159,9 +162,14 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   button_row_ = AddChildView(std::move(button_row));
 
   CreateMediaButton(
-      MediaSessionAction::kPreviousTrack,
+      kChangeTrackIconSize, MediaSessionAction::kPreviousTrack,
       l10n_util::GetStringUTF16(
           IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_PREVIOUS_TRACK));
+
+  CreateMediaButton(
+      kSeekingIconsSize, MediaSessionAction::kSeekBackward,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_BACKWARD));
 
   // |play_pause_button_| toggles playback. If the current media is playing, the
   // tag will be |MediaSessionAction::kPause|. If the current media is paused,
@@ -186,7 +194,12 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       GetVectorIconForMediaAction(MediaSessionAction::kPlay),
       kPlayPauseIconSize, kMediaButtonColor);
 
-  CreateMediaButton(MediaSessionAction::kNextTrack,
+  CreateMediaButton(
+      kSeekingIconsSize, MediaSessionAction::kSeekForward,
+      l10n_util::GetStringUTF16(
+          IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_SEEK_FORWARD));
+
+  CreateMediaButton(kChangeTrackIconSize, MediaSessionAction::kNextTrack,
                     l10n_util::GetStringUTF16(
                         IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACTION_NEXT_TRACK));
 
@@ -363,6 +376,7 @@ void LockScreenMediaControlsView::FlushForTesting() {
 }
 
 void LockScreenMediaControlsView::CreateMediaButton(
+    int size,
     MediaSessionAction action,
     const base::string16& accessible_name) {
   auto button = views::CreateVectorImageButton(this);
@@ -372,8 +386,8 @@ void LockScreenMediaControlsView::CreateMediaButton(
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
   views::SetImageFromVectorIcon(button.get(),
-                                GetVectorIconForMediaAction(action),
-                                kMediaButtonIconSize, kMediaButtonColor);
+                                GetVectorIconForMediaAction(action), size,
+                                kMediaButtonColor);
 
   button_row_->AddChildView(std::move(button));
 }

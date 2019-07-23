@@ -73,7 +73,7 @@ Polymer({
    * @param {MouseEvent} e click event.
    */
   urlClickHandler: function(e) {
-    if (!e.target.localName == 'a') {
+    if (e.target.localName !== 'a') {
       return;
     }
     e.preventDefault();

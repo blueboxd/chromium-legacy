@@ -11,6 +11,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
@@ -69,6 +70,7 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/filename_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -657,6 +659,23 @@ NavigationRequest::NavigationRequest(
                            "frame_tree_node",
                            frame_tree_node_->frame_tree_node_id(), "url",
                            common_params_.url.possibly_invalid_spec());
+
+  // Setup for navigation to the BundledExchanges.
+  if (GetContentClient()->browser()->CanAcceptUntrustedExchangesIfNeeded() &&
+      common_params_.url.SchemeIsFile() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTrustableBundledExchangesFile)) {
+    // A user intends navigation to the BundledExchanges for testing.
+    const base::FilePath specified_path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            switches::kTrustableBundledExchangesFile);
+    base::FilePath url_path;
+    if (net::FileURLToFilePath(common_params_.url, &url_path) &&
+        url_path == specified_path) {
+      bundled_exchanges_factory_ = std::make_unique<BundledExchangesFactory>(
+          BundledExchangesSource(specified_path));
+    }
+  }
 
   // Sanitize the referrer.
   common_params_.referrer =
@@ -1718,6 +1737,9 @@ void NavigationRequest::OnStartChecksComplete(
   headers.MergeFrom(navigation_handle_->TakeModifiedRequestHeaders());
   begin_params_->headers = headers.ToString();
 
+  std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptor;
+  if (bundled_exchanges_factory_)
+    interceptor.push_back(bundled_exchanges_factory_->CreateInterceptor());
   loader_ = NavigationURLLoader::Create(
       browser_context, browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
@@ -1736,7 +1758,8 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->devtools_frame_token()),
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(), appcache_handle_.get(),
-      std::move(prefetched_signed_exchange_cache_), this);
+      std::move(prefetched_signed_exchange_cache_), this,
+      std::move(interceptor));
   DCHECK(!render_frame_host_);
 }
 
@@ -2024,7 +2047,8 @@ void NavigationRequest::CommitNavigation() {
       std::move(response_body_), std::move(url_loader_client_endpoints_),
       is_view_source_, std::move(subresource_loader_params_),
       std::move(subresource_overrides_),
-      std::move(service_worker_provider_info), devtools_navigation_token_);
+      std::move(service_worker_provider_info), devtools_navigation_token_,
+      std::move(bundled_exchanges_factory_));
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up

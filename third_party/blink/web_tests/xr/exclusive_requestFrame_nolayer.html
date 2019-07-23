@@ -1,32 +1,43 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
-let testName = "XRSession requestAnimationFrame must fail if the session has "
-  + "no baseLayer";
+let immersiveTestName = "XRSession requestAnimationFrame must fail if the session has "
+  + "no baseLayer for immersive";
+
+let nonImmersiveTestName = "XRSession requestAnimationFrame must fail if the session has "
+  + "no baseLayer for non immersive";
 
 let fakeDeviceInitParams = TRACKED_IMMERSIVE_DEVICE;
 
-let requestSessionModes = [
-  'immersive-vr',
-  'inline'
-];
+let testFunction = (session, controller, t, sessionObjects) => new Promise((resolve, reject) => {
+  // Clear the base layer that the boilerplate sets.  This ensures that the rAF
+  // won't fire.  If the fire *does* fire, it will fail because the baseLayer
+  // won't match the new baselayer we later create.
+  session.updateRenderState({
+    baseLayer: null
+  });
+  let webglCanvas = document.getElementsByTagName('canvas')[0];
+  let gl = sessionObjects.gl;
 
-let testFunction = (session) => new Promise((resolve, reject) => {
   // Session must have a baseLayer or frame requests will be ignored.
   let webglLayer = new XRWebGLLayer(session, gl, {
       compositionDisabled: session.mode == 'inline' });
 
   function onEarlyFrame(time, vrFrame) {
     // We shouldn't be allowed to reach this callback with no baseLayer
-    assert_equals(session.renderState.baseLayer, webglLayer);
+    t.step(() => {
+      assert_equals(session.renderState.baseLayer, webglLayer);
+    });
     resolve();
   }
 
@@ -46,6 +57,8 @@ let testFunction = (session) => new Promise((resolve, reject) => {
 });
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  immersiveTestName, testFunction, fakeDeviceInitParams, 'immersive-vr');
+xr_session_promise_test(
+  nonImmersiveTestName, testFunction, fakeDeviceInitParams, 'inline');
 
 </script>

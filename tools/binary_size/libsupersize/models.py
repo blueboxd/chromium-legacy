@@ -50,6 +50,7 @@ METADATA_TOOL_PREFIX = 'tool_prefix'  # Path relative to SRC_ROOT.
 
 # New sections should also be added to the SuperSize UI.
 SECTION_BSS = '.bss'
+SECTION_BSS_REL_RO = '.bss.rel.ro'
 SECTION_DATA = '.data'
 SECTION_DATA_REL_RO = '.data.rel.ro'
 SECTION_DATA_REL_RO_LOCAL = '.data.rel.ro.local'
@@ -58,6 +59,7 @@ SECTION_DEX_METHOD = '.dex.method'
 SECTION_OTHER = '.other'
 SECTION_PAK_NONTRANSLATED = '.pak.nontranslated'
 SECTION_PAK_TRANSLATIONS = '.pak.translations'
+SECTION_PART_END = '.part.end'
 SECTION_RODATA = '.rodata'
 SECTION_TEXT = '.text'
 # Used by SymbolGroup when they contain a mix of sections.
@@ -71,11 +73,18 @@ DEX_SECTIONS = (
 )
 NATIVE_SECTIONS = (
     SECTION_BSS,
+    SECTION_BSS_REL_RO,
     SECTION_DATA,
     SECTION_DATA_REL_RO,
     SECTION_DATA_REL_RO_LOCAL,
+    SECTION_PART_END,
     SECTION_RODATA,
     SECTION_TEXT,
+)
+BSS_SECTIONS = (
+    SECTION_BSS,
+    SECTION_BSS_REL_RO,
+    SECTION_PART_END,
 )
 PAK_SECTIONS = (
     SECTION_PAK_NONTRANSLATED,
@@ -84,12 +93,14 @@ PAK_SECTIONS = (
 
 SECTION_NAME_TO_SECTION = {
     SECTION_BSS: 'b',
+    SECTION_BSS_REL_RO: 'b',
     SECTION_DATA: 'd',
     SECTION_DATA_REL_RO_LOCAL: 'R',
     SECTION_DATA_REL_RO: 'R',
     SECTION_DEX: 'x',
     SECTION_DEX_METHOD: 'm',
     SECTION_OTHER: 'o',
+    SECTION_PART_END: 'b',
     SECTION_PAK_NONTRANSLATED: 'P',
     SECTION_PAK_TRANSLATIONS: 'p',
     SECTION_RODATA: 'r',
@@ -320,7 +331,7 @@ class BaseSymbol(object):
     return '{%s}' % ','.join(parts)
 
   def IsBss(self):
-    return self.section_name == SECTION_BSS
+    return self.section_name in BSS_SECTIONS
 
   def IsDex(self):
     return self.section_name in DEX_SECTIONS

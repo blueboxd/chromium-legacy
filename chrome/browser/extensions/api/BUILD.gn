@@ -21,6 +21,7 @@ function_registration("api_registration") {
 
   deps = [
     # Different APIs include headers from these targets.
+    "//chrome/common:mojo_bindings",
     "//content/public/browser",
     "//extensions/browser",
 

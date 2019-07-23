@@ -16,9 +16,14 @@ extern const base::Feature kSpellingServiceRestApi;
 
 #if defined(OS_WIN)
 extern const base::Feature kWinUseBrowserSpellChecker;
-#endif
+#endif  // defined(OS_WIN)
 
 bool UseBrowserSpellChecker();
+
+#if defined(OS_WIN)
+bool WindowsVersionSupportsSpellchecker();
+#endif  // defined(OS_WIN)
+
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_ANDROID)

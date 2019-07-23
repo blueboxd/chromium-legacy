@@ -785,6 +785,7 @@ public class ShortcutHelper {
         List<Long> themeColors = new ArrayList<>();
         List<Long> backgroundColors = new ArrayList<>();
         List<Long> lastUpdateCheckTimesMs = new ArrayList<>();
+        List<Long> lastUpdateCompletionTimeMs = new ArrayList<>();
         List<Boolean> relaxUpdates = new ArrayList<>();
         List<String> updateStatuses = new ArrayList<>();
 
@@ -816,15 +817,19 @@ public class ShortcutHelper {
                     WebappDataStorage storage =
                             WebappRegistry.getInstance().getWebappDataStorage(webApkInfo.id());
                     long lastUpdateCheckTimeMsForStorage = 0;
+                    long lastUpdateCompletionTimeMsInStorage = 0;
                     boolean relaxUpdatesForStorage = false;
                     String updateStatus = WebappDataStorage.NOT_UPDATABLE;
                     if (storage != null) {
                         lastUpdateCheckTimeMsForStorage =
                                 storage.getLastCheckForWebManifestUpdateTimeMs();
+                        lastUpdateCompletionTimeMsInStorage =
+                                storage.getLastWebApkUpdateRequestCompletionTimeMs();
                         relaxUpdatesForStorage = storage.shouldRelaxUpdates();
                         updateStatus = storage.getUpdateStatus();
                     }
                     lastUpdateCheckTimesMs.add(lastUpdateCheckTimeMsForStorage);
+                    lastUpdateCompletionTimeMs.add(lastUpdateCompletionTimeMsInStorage);
                     relaxUpdates.add(relaxUpdatesForStorage);
                     updateStatuses.add(updateStatus);
                 }
@@ -841,6 +846,7 @@ public class ShortcutHelper {
                 CollectionUtil.longListToLongArray(themeColors),
                 CollectionUtil.longListToLongArray(backgroundColors),
                 CollectionUtil.longListToLongArray(lastUpdateCheckTimesMs),
+                CollectionUtil.longListToLongArray(lastUpdateCompletionTimeMs),
                 CollectionUtil.booleanListToBooleanArray(relaxUpdates),
                 updateStatuses.toArray(new String[0]));
     }
@@ -858,6 +864,6 @@ public class ShortcutHelper {
             String[] shortNames, String[] packageNames, String[] ids, int[] shellApkVersions,
             int[] versionCodes, String[] uris, String[] scopes, String[] manifestUrls,
             String[] manifestStartUrls, int[] displayModes, int[] orientations, long[] themeColors,
-            long[] backgroundColors, long[] lastUpdateCheckTimesMs, boolean[] relaxUpdates,
-            String[] updateStatuses);
+            long[] backgroundColors, long[] lastUpdateCheckTimesMs,
+            long[] lastUpdateCompletionTimeMs, boolean[] relaxUpdates, String[] updateStatuses);
 }

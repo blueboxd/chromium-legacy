@@ -8,7 +8,6 @@
 
 #include "base/strings/string_piece.h"
 #include "components/grit/components_resources.h"
-#include "third_party/brotli/include/brotli/decode.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_ANDROID)
@@ -19,29 +18,9 @@
 namespace about_ui {
 
 std::string GetCredits(bool include_scripts) {
-  std::string response;
-  base::StringPiece raw_response =
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+  std::string response =
+      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
           IDR_ABOUT_UI_CREDITS_HTML);
-  const uint8_t* next_encoded_byte =
-      reinterpret_cast<const uint8_t*>(raw_response.data());
-  size_t input_size_remaining = raw_response.size();
-  BrotliDecoderState* decoder = BrotliDecoderCreateInstance(
-      nullptr /* no custom allocator */, nullptr /* no custom deallocator */,
-      nullptr /* no custom memory handle */);
-  CHECK(!!decoder);
-  while (!BrotliDecoderIsFinished(decoder)) {
-    size_t output_size_remaining = 0;
-    CHECK(BrotliDecoderDecompressStream(
-              decoder, &input_size_remaining, &next_encoded_byte,
-              &output_size_remaining, nullptr,
-              nullptr) != BROTLI_DECODER_RESULT_ERROR);
-    const uint8_t* output_buffer =
-        BrotliDecoderTakeOutput(decoder, &output_size_remaining);
-    response.insert(response.end(), output_buffer,
-                    output_buffer + output_size_remaining);
-  }
-  BrotliDecoderDestroyInstance(decoder);
   if (include_scripts) {
     response +=
         "\n<script src=\"chrome://resources/js/cr.js\"></script>\n"

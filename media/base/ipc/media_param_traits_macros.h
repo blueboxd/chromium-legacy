@@ -60,6 +60,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
 IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
                           media::BufferingState::BUFFERING_STATE_MAX)
 
+IPC_ENUM_TRAITS_MAX_VALUE(
+    media::BufferingStateChangeReason,
+    media::BufferingStateChangeReason::BUFFERING_STATE_CHANGE_REASON_MAX)
+
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
                           media::CdmMessageType::MESSAGE_TYPE_MAX)
 

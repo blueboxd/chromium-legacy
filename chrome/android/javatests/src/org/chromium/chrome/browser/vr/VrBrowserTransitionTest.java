@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -64,6 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
+@MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // VR is only supported on L+.
 public class VrBrowserTransitionTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -129,8 +130,6 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @MediumTest
-    @DisableIf.
-    Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "https://crbug.com/984943")
     public void test2dtoVrShellNfcUnsupported() {
         enterVrShellNfc(false /* supported */);
     }
@@ -198,8 +197,6 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @MediumTest
-    @DisableIf.
-    Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "https://crbug.com/984943")
     public void test2dtoVrShellto2dUnsupported() {
         enterExitVrShell(false /* supported */);
     }

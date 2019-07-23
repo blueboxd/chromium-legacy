@@ -226,55 +226,8 @@ bool VulkanInstance::Initialize(
   }
 #endif
 
-  if (!vulkan_function_pointers->BindInstanceFunctionPointers(vk_instance_))
-    return false;
-
-  if (!vulkan_function_pointers->BindPhysicalDeviceFunctionPointers(
-          vk_instance_))
-    return false;
-
-  if (gfx::HasExtension(enabled_extensions_, VK_KHR_SURFACE_EXTENSION_NAME)) {
-    vkDestroySurfaceKHR = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
-        vkGetInstanceProcAddr(vk_instance_, "vkDestroySurfaceKHR"));
-    if (!vkDestroySurfaceKHR)
-      return false;
-
-#if defined(USE_X11)
-    vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
-        vkGetInstanceProcAddr(vk_instance_, "vkCreateXlibSurfaceKHR"));
-    if (!vkCreateXlibSurfaceKHR)
-      return false;
-    vkGetPhysicalDeviceXlibPresentationSupportKHR =
-        reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
-            vkGetInstanceProcAddr(
-                vk_instance_, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
-    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR)
-      return false;
-#endif
-
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
-        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
-    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHR)
-      return false;
-
-    vkGetPhysicalDeviceSurfaceFormatsKHR =
-        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkGetPhysicalDeviceSurfaceFormatsKHR"));
-    if (!vkGetPhysicalDeviceSurfaceFormatsKHR)
-      return false;
-
-    vkGetPhysicalDeviceSurfaceSupportKHR =
-        reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
-            vkGetInstanceProcAddr(vk_instance_,
-                                  "vkGetPhysicalDeviceSurfaceSupportKHR"));
-    if (!vkGetPhysicalDeviceSurfaceSupportKHR)
-      return false;
-  }
-
-  return true;
+  return vulkan_function_pointers->BindInstanceFunctionPointers(
+      vk_instance_, api_version_, enabled_extensions_);
 }
 
 void VulkanInstance::Destroy() {

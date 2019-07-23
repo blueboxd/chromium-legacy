@@ -8,7 +8,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.touchless.TouchlessUrlUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -165,7 +165,7 @@ public class ProgressBarMediator {
             if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) return;
 
             mModel.set(ProgressBarProperties.URL,
-                    UrlUtilities.getDomainAndRegistry(tab.getUrl(), false));
+                    TouchlessUrlUtilities.getUrlForDisplay(tab.getUrl()));
         }
     }
 }

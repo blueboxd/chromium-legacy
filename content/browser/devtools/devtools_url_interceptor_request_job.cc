@@ -18,6 +18,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_element_reader.h"
 #include "net/cert/cert_status_flags.h"

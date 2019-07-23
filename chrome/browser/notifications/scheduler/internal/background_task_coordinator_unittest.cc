@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
@@ -58,6 +59,10 @@ class MockNotificationBackgroundTaskScheduler
   DISALLOW_COPY_AND_ASSIGN(MockNotificationBackgroundTaskScheduler);
 };
 
+base::TimeDelta NoopTimeRandomizer(const base::TimeDelta& time_window) {
+  return base::TimeDelta();
+}
+
 struct TestData {
   // Impression data as the input.
   std::vector<test::ImpressionTestData> impression_test_data;
@@ -87,7 +92,8 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
         std::make_unique<MockNotificationBackgroundTaskScheduler>();
     background_task_ = background_task.get();
     coordinator_ = std::make_unique<BackgroundTaskCoordinator>(
-        std::move(background_task), &config_, &clock_);
+        std::move(background_task), &config_,
+        base::BindRepeating(&NoopTimeRandomizer, base::TimeDelta()), &clock_);
   }
 
   MockNotificationBackgroundTaskScheduler* background_task() {
@@ -334,6 +340,16 @@ TEST_F(BackgroundTaskCoordinatorTest, ScheduleNewNotification) {
   TestScheduleNewNotification("04/25/20 01:00:00 AM", "04/25/20 06:00:00 AM");
   TestScheduleNewNotification("04/25/20 07:00:00 AM", "04/25/20 18:00:00 PM");
   TestScheduleNewNotification("04/25/20 18:30:00 PM", "04/26/20 06:00:00 AM");
+}
+
+// Test to verify the default time randomizer.
+TEST_F(BackgroundTaskCoordinatorTest, DefaultTimeRandomizer) {
+  EXPECT_EQ(BackgroundTaskCoordinator::DefaultTimeRandomizer(base::TimeDelta()),
+            base::TimeDelta());
+  auto time_window = base::TimeDelta::FromHours(1);
+  auto delta = BackgroundTaskCoordinator::DefaultTimeRandomizer(time_window);
+  EXPECT_LT(delta, time_window);
+  EXPECT_GE(delta, base::TimeDelta());
 }
 
 }  // namespace

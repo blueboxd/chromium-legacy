@@ -66,7 +66,10 @@ EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {}
 
 KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  EasyUnlockService* service = NULL;
+  EasyUnlockService* service = nullptr;
+
+  if (!context)
+    return nullptr;
 
   if (!IsFeatureAllowed(context))
     return nullptr;
@@ -78,7 +81,7 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
 
   if (ProfileHelper::IsSigninProfile(Profile::FromBrowserContext(context))) {
     if (!context->IsOffTheRecord())
-      return NULL;
+      return nullptr;
 
     service = new EasyUnlockServiceSignin(
         Profile::FromBrowserContext(context),
@@ -113,7 +116,7 @@ content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
     return chrome::GetBrowserContextOwnInstanceInIncognito(context);
   }
 
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return context->IsOffTheRecord() ? nullptr : context;
 }
 
 bool EasyUnlockServiceFactory::ServiceIsCreatedWithBrowserContext() const {

@@ -244,7 +244,8 @@ customize.richerPicker_selectedSubmenu = {
  */
 customize.selectedOptions = {
   background: null,  // Contains the background image tile.
-  backgroundId: '',  // The id of the selected background image tile.
+  // The data associated with a currently selected background.
+  backgroundData: null,
   // Contains the selected shortcut type's DOM element, i.e. either custom links
   // or most visited.
   shortcutType: null,
@@ -934,7 +935,13 @@ customize.richerPicker_selectBackgroundTile = function(tile) {
   }
 
   customize.selectedOptions.background = tile;
-  customize.selectedOptions.backgroundId = tile.id;
+  customize.selectedOptions.backgroundData = {
+    id: tile.id,
+    url: tile.dataset.url,
+    attr1: tile.dataset.attributionLine1,
+    attr2: tile.dataset.attributionLine2,
+    attrUrl: tile.dataset.attributionActionUrl,
+  };
   customize.richerPicker_applySelectedState(tile);
   customize.richerPicker_maybeToggleDone();
   customize.richerPicker_previewImage(tile);
@@ -950,7 +957,7 @@ customize.richerPicker_deselectBackgroundTile = function(tile) {
     return;
   }
   customize.selectedOptions.background = null;
-  customize.selectedOptions.backgroundId = null;
+  customize.selectedOptions.backgroundData = null;
   customize.richerPicker_removeSelectedState(tile);
   customize.richerPicker_maybeToggleDone();
   customize.richerPicker_unpreviewImage();
@@ -1180,9 +1187,11 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
   }
 
   // If an image tile was previously selected re-select it now.
-  const selected = $(customize.selectedOptions.backgroundId);
-  if (selected) {
-    customize.richerPicker_selectBackgroundTile(selected);
+  if (customize.selectedOptions.backgroundData) {
+    const selected = $(customize.selectedOptions.backgroundData.id);
+    if (selected) {
+      customize.richerPicker_selectBackgroundTile(selected);
+    }
   }
 
 
@@ -1318,7 +1327,7 @@ customize.richerPicker_resetSelectedOptions = function() {
   customize.richerPicker_deselectBackgroundTile(
       customize.selectedOptions.background);
   customize.selectedOptions.background = null;
-  customize.selectedOptions.backgroundId = null;
+  customize.selectedOptions.backgroundData = null;
 
   // Reset color selection.
   customize.richerPicker_removeSelectedState(customize.selectedOptions.color);
@@ -1380,12 +1389,12 @@ customize.richerPicker_cancelCustomization = function() {
  * picker.
  */
 customize.richerPicker_applyCustomization = function() {
-  if (customize.selectedOptions.background) {
+  if (customize.selectedOptions.backgroundData) {
     customize.setBackground(
-        customize.selectedOptions.background.dataset.url,
-        customize.selectedOptions.background.dataset.attributionLine1,
-        customize.selectedOptions.background.dataset.attributionLine2,
-        customize.selectedOptions.background.dataset.attributionActionUrl);
+        customize.selectedOptions.backgroundData.url,
+        customize.selectedOptions.backgroundData.attr1,
+        customize.selectedOptions.backgroundData.attr2,
+        customize.selectedOptions.backgroundData.attrUrl);
   }
   if (customize.richerPicker_isShortcutOptionSelected()) {
     customize.richerPicker_setShortcutOptions();

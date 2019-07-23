@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
-<canvas id="webgl-canvas"></canvas>
+<canvas />
 
 <script>
 let testName = "inlineVerticalFieldOfView is set appropriately on inline sessions";
 
 let fakeDeviceInitParams = VALID_NON_IMMERSIVE_DEVICE;
-
-let requestSessionModes = [ 'inline' ];
 
 // These are the numbers that we expect chrome to clamp to.
 let minFOV = 0.01;
@@ -26,11 +26,6 @@ function assertApproximatelyEqual(a, b, step, epsilon = FLOAT_EPSILON) {
 }
 
 let testFunction = function(session, fakeDeviceController, t) {
-  // Session must have a baseLayer or frame requests will be ignored.
-  session.updateRenderState({
-    baseLayer: new XRWebGLLayer(session, gl, { compositionDisabled: true })
-  });
-
   // Helper method because the renderState does not (per the spec) get updated
   // until the next rAF after it was updated, so this method returns a promise
   // which will resolve when the updated state should be applied.
@@ -89,6 +84,6 @@ let testFunction = function(session, fakeDeviceController, t) {
 };
 
 xr_session_promise_test(
-  testName, testFunction, fakeDeviceInitParams, requestSessionModes);
+  testName, testFunction, fakeDeviceInitParams, 'inline');
 
 </script>

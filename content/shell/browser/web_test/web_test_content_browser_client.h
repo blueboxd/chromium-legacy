@@ -72,7 +72,7 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
                        bool user_gesture,
                        bool opener_suppressed,
                        bool* no_javascript_access) override;
-  bool CanIgnoreCertificateErrorIfNeeded() override;
+  bool CanAcceptUntrustedExchangesIfNeeded() override;
 
   // ShellContentBrowserClient overrides.
   void ExposeInterfacesToFrame(

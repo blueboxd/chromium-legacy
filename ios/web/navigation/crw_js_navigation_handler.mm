@@ -36,7 +36,10 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 }  // namespace
 
-@interface CRWJSNavigationHandler ()
+@interface CRWJSNavigationHandler () {
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> _subscription;
+}
 
 @property(nonatomic, weak) id<CRWJSNavigationHandlerDelegate> delegate;
 
@@ -92,7 +95,7 @@ GURL URLEscapedForHistory(const GURL& url) {
       }
     };
 
-    self.webStateImpl->AddScriptCommandCallback(
+    _subscription = self.webStateImpl->AddScriptCommandCallback(
         base::BindRepeating(navigationStateCallback), kCommandPrefix);
   }
   return self;
@@ -100,7 +103,6 @@ GURL URLEscapedForHistory(const GURL& url) {
 
 - (void)close {
   self.beingDestroyed = YES;
-  self.webStateImpl->RemoveScriptCommandCallback(kCommandPrefix);
 }
 
 - (NSString*)javaScriptToReplaceWebViewURL:(const GURL&)URL

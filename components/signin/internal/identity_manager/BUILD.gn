@@ -24,6 +24,8 @@ source_set("identity_manager") {
     "gaia_cookie_manager_service.h",
     "mutable_profile_oauth2_token_service_delegate.cc",
     "mutable_profile_oauth2_token_service_delegate.h",
+    "oauth2_token_service_delegate.cc",
+    "oauth2_token_service_delegate.h",
     "oauth2_token_service_delegate_android.cc",
     "oauth2_token_service_delegate_android.h",
     "oauth_multilogin_helper.cc",
@@ -116,6 +118,7 @@ source_set("unit_tests") {
     "gaia_cookie_manager_service_unittest.cc",
     "mutable_profile_oauth2_token_service_delegate_unittest.cc",
     "oauth2_token_service_delegate_android_unittest.cc",
+    "oauth2_token_service_delegate_unittest.cc",
     "oauth_multilogin_helper_unittest.cc",
     "oauth_multilogin_token_fetcher_unittest.cc",
     "primary_account_manager_unittest.cc",
@@ -144,7 +147,6 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//components/webdata/common",
     "//google_apis",
-    "//google_apis:test_support",
     "//net",
     "//net:test_support",
     "//services/network:test_support",
@@ -172,6 +174,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_oauth2_token_service_delegate.cc",
+    "fake_oauth2_token_service_delegate.h",
     "fake_profile_oauth2_token_service.cc",
     "fake_profile_oauth2_token_service.h",
   ]

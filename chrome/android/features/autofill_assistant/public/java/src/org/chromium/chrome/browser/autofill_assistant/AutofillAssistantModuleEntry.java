@@ -4,10 +4,13 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.module_installer.ModuleInterface;
 import org.chromium.content_public.browser.WebContents;
 
@@ -29,4 +32,16 @@ interface AutofillAssistantModuleEntry {
     void start(@NonNull Tab tab, @NonNull WebContents webContents, boolean skipOnboarding,
             String initialUrl, Map<String, String> parameters, String experimentIds,
             Bundle intentExtras);
+    /**
+     * Returns a {@link AutofillAssistantActionHandler} instance tied to the activity owning the
+     * given bottom sheet, and scrim view.
+     *
+     * @param context activity context
+     * @param bottomSheetController bottom sheet controller instance of the activity
+     * @param scrimView scrim view of the activity
+     * @param getCurrentTab a way to get the activity's current tab, if there is any
+     */
+    AutofillAssistantActionHandler createActionHandler(Context context,
+            BottomSheetController bottomSheetController, ScrimView scrimView,
+            GetCurrentTab getCurrentTab);
 }

@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/resolver/css_property_priority.h"
 #include "third_party/blink/renderer/core/css/resolver/matched_properties_cache.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/selector_checker.h"
 #include "third_party/blink/renderer/core/css/selector_filter.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -234,9 +235,30 @@ class CORE_EXPORT StyleResolver final
                                           const CacheSuccess&,
                                           bool& apply_inherited_only,
                                           NeedsApplyPass&);
+  void ApplyMatchedLowPriorityProperties(StyleResolverState&,
+                                         const MatchResult&,
+                                         const CacheSuccess&,
+                                         bool& apply_inherited_only,
+                                         NeedsApplyPass&);
   void ApplyMatchedProperties(StyleResolverState&,
                               const MatchResult&,
                               const Element* animating_element);
+
+  void CascadeAndApplyMatchedProperties(StyleResolverState&,
+                                        const MatchResult&,
+                                        const Element* animating_element);
+  void CascadeMatchResult(StyleResolverState&,
+                          StyleCascade&,
+                          const MatchResult&);
+  void CascadeRange(StyleResolverState&,
+                    StyleCascade&,
+                    const MatchedPropertiesRange&,
+                    StyleCascade::Origin);
+  void CascadeTransitions(StyleResolverState&, StyleCascade&);
+  void CascadeAnimations(StyleResolverState&, StyleCascade&);
+  void CascadeInterpolations(StyleCascade&,
+                             const ActiveInterpolationsMap&,
+                             StyleCascade::Origin);
 
   void CalculateAnimationUpdate(StyleResolverState&,
                                 const Element* animating_element);

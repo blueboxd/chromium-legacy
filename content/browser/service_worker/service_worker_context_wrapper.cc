@@ -23,7 +23,9 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -206,6 +208,15 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
   // Add this object as an observer of the wrapped |context_core_|. This lets us
   // forward observer methods to observers outside of content.
   core_observer_list_->AddObserver(this);
+
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    watcher_ = base::MakeRefCounted<ServiceWorkerContextWatcher>(
+        this,
+        base::BindRepeating(&ServiceWorkerContextWrapper::OnRegistrationUpdated,
+                            base::Unretained(this)),
+        base::DoNothing(), base::DoNothing());
+    watcher_->Start();
+  }
 }
 
 void ServiceWorkerContextWrapper::Init(
@@ -240,6 +251,10 @@ void ServiceWorkerContextWrapper::Shutdown() {
 
   storage_partition_ = nullptr;
   process_manager_->Shutdown();
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    watcher_->Stop();
+    watcher_ = nullptr;
+  }
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ServiceWorkerContextWrapper::ShutdownOnIO, this));
@@ -1525,6 +1540,35 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo> ServiceWorkerContextWrapper::
   }
 
   return factory_bundle;
+}
+
+bool ServiceWorkerContextWrapper::HasRegistrationForOrigin(
+    const GURL& origin) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
+  return !registrations_initialized_ ||
+         registrations_for_origin_.find(origin) !=
+             registrations_for_origin_.end();
+}
+
+void ServiceWorkerContextWrapper::OnRegistrationUpdated(
+    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // The first call will initialize stored registrations.
+  registrations_initialized_ = true;
+
+  for (const auto& registration : registrations) {
+    GURL origin = registration.scope.GetOrigin();
+    int64_t registration_id = registration.registration_id;
+    if (registration.delete_flag == ServiceWorkerRegistrationInfo::IS_DELETED) {
+      auto& registration_ids = registrations_for_origin_[origin];
+      registration_ids.erase(registration_id);
+      if (registration_ids.empty())
+        registrations_for_origin_.erase(origin);
+    } else {
+      registrations_for_origin_[origin].insert(registration_id);
+    }
+  }
 }
 
 }  // namespace content

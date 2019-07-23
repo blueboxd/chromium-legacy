@@ -39,7 +39,8 @@ void DeskSwitchAnimationWaiter::OnDeskSwitchAnimationFinished() {
 void ActivateDesk(const Desk* desk) {
   ASSERT_FALSE(desk->is_active());
   DeskSwitchAnimationWaiter waiter;
-  DesksController::Get()->ActivateDesk(desk);
+  DesksController::Get()->ActivateDesk(desk,
+                                       DesksSwitchSource::kMiniViewButton);
   waiter.Wait();
   ASSERT_TRUE(desk->is_active());
 }

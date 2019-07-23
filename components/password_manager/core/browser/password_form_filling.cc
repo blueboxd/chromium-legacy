@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
@@ -149,11 +150,6 @@ LikelyFormFilling SendFillInformationToRenderer(
       base::FeatureList::IsEnabled(features::kFillOnAccountSelectHttp) &&
       !client->IsMainFrameSecure();
 
-  // Suppress autofilling on Android in case the Touch To Fill feature is
-  // enabled.
-  const bool enable_touch_to_fill =
-      base::FeatureList::IsEnabled(features::kTouchToFillAndroid);
-
   // Proceed to autofill.
   // Note that we provide the choices but don't actually prefill a value if:
   // (1) we are in Incognito mode, or
@@ -177,7 +173,7 @@ LikelyFormFilling SendFillInformationToRenderer(
     wait_for_username_reason = WaitForUsernameReason::kFormNotGoodForFilling;
   } else if (enable_foas_on_http) {
     wait_for_username_reason = WaitForUsernameReason::kFoasOnHTTP;
-  } else if (enable_touch_to_fill) {
+  } else if (autofill::IsTouchToFillEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kTouchToFill;
   }
 

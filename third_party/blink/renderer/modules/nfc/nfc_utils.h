@@ -7,40 +7,38 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_message.h"
+#include "third_party/blink/renderer/modules/nfc/ndef_record.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
-                                        const NDEFRecord* record);
+                                        const NDEFRecordInit* record);
 
 ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
-                                       const NDEFRecord* record);
+                                       const NDEFRecordInit* record);
 
 ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
-                                        const NDEFRecord* record);
+                                        const NDEFRecordInit* record);
 
 ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
-                                          const NDEFRecord* record);
+                                          const NDEFRecordInit* record);
 
 ScriptPromise RejectIfInvalidNDEFRecord(ScriptState* script_state,
-                                        const NDEFRecord* record);
+                                        const NDEFRecordInit* record);
 
 ScriptPromise RejectIfInvalidNDEFRecordArray(
     ScriptState* script_state,
-    const HeapVector<Member<NDEFRecord>>& records);
+    const HeapVector<Member<NDEFRecordInit>>& records);
 
 ScriptPromise RejectIfInvalidNDEFMessageSource(
     ScriptState* script_state,
     const NDEFMessageSource& push_message);
 
-NDEFRecordData BuildRecordData(
-    ScriptState* script_state,
-    const device::mojom::blink::NDEFRecordPtr& record);
-
 device::mojom::blink::NDEFRecordType DeduceRecordTypeFromDataType(
-    const blink::NDEFRecord* record);
+    const blink::NDEFRecordInit* record);
 
 size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessagePtr& message);
 
@@ -58,14 +56,6 @@ device::mojom::blink::NDEFRecordType StringToNDEFRecordType(
 
 device::mojom::blink::NFCPushTarget StringToNFCPushTarget(
     const WTF::String& target);
-
-NDEFRecord* MojoToBlinkNDEFRecord(
-    ScriptState* script_state,
-    const device::mojom::blink::NDEFRecordPtr& record);
-
-NDEFMessage* MojoToBlinkNDEFMessage(
-    ScriptState* script_state,
-    const device::mojom::blink::NDEFMessagePtr& message);
 
 }  // namespace blink
 

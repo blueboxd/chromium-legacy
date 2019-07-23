@@ -38,12 +38,12 @@ class ClientAndroid : public Client,
   // Returns the corresponding Java AutofillAssistantClient.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
-  void Start(JNIEnv* env,
+  bool Start(JNIEnv* env,
              const base::android::JavaParamRef<jobject>& jcaller,
              const base::android::JavaParamRef<jstring>& jinitial_url,
              const base::android::JavaParamRef<jstring>& jexperiment_ids,
-             const base::android::JavaParamRef<jobjectArray>& parameterNames,
-             const base::android::JavaParamRef<jobjectArray>& parameterValues,
+             const base::android::JavaParamRef<jobjectArray>& parameter_names,
+             const base::android::JavaParamRef<jobjectArray>& parameter_values,
              const base::android::JavaParamRef<jobject>& joverlay_coordinator,
              jlong jservice);
   void DestroyUI(JNIEnv* env,
@@ -60,6 +60,23 @@ class ClientAndroid : public Client,
                      const base::android::JavaParamRef<jobject>& jcaller,
                      jboolean success,
                      const base::android::JavaParamRef<jstring>& access_token);
+
+  void ListDirectActions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobjectArray>& jargument_names,
+      const base::android::JavaParamRef<jobjectArray>& jargument_values,
+      const base::android::JavaParamRef<jobject>& jcallback);
+
+  bool PerformDirectAction(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      const base::android::JavaParamRef<jstring>& jaction_id,
+      const base::android::JavaParamRef<jstring>& jexperiment_ids,
+      const base::android::JavaParamRef<jobjectArray>& jargument_names,
+      const base::android::JavaParamRef<jobjectArray>& jargument_values,
+      const base::android::JavaParamRef<jobject>& joverlay_coordinator);
 
   // Overrides Client
   void AttachUI() override;
@@ -87,6 +104,7 @@ class ClientAndroid : public Client,
   void AttachUI(
       const base::android::JavaParamRef<jobject>& joverlay_coordinator);
   bool NeedsUI();
+  void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

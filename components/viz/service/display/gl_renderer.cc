@@ -295,6 +295,8 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   float backdrop_filter_quality = 1.0;
   // Whether the original background texture is needed for the mask.
   bool mask_for_background = false;
+
+  bool apply_shader_based_rounded_corner = true;
 };
 
 class GLRenderer::ScopedUseGrContext {
@@ -1406,7 +1408,8 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
           tex_coord_precision, sampler_type, shader_blend_mode,
           params->use_aa ? USE_AA : NO_AA, mask_mode, mask_for_background,
           params->use_color_matrix, tint_gl_composited_content_,
-          ShouldApplyRoundedCorner(params->quad)),
+          params->apply_shader_based_rounded_corner &&
+              ShouldApplyRoundedCorner(params->quad)),
       params->contents_and_bypass_color_space, target_color_space);
 }
 
@@ -3570,6 +3573,12 @@ void GLRenderer::CopyRenderPassDrawQuadToOverlayResource(
 
   UpdateRPDQTexturesForSampling(&params);
   UpdateRPDQBlendMode(&params);
+  // The code in this method (CopyRenderPassDrawQuadToOverlayResource) is
+  // only called when we are drawing for the purpose of copying to
+  // a CALayerOverlay. In such cases, the CALayerOverlay applies rounded
+  // corners via CALayer parameters, so the shader-based rounded corners
+  // should be disabled here.
+  params.apply_shader_based_rounded_corner = false;
   ChooseRPDQProgram(&params, (*overlay_texture)->texture.color_space());
   UpdateRPDQUniforms(&params);
 

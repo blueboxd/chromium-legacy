@@ -1,7 +1,4 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
 
-# http://crbug.com/824854
--ChromeAcceptHeaderTest.Check
--SignedExchangePageLoadMetricsBrowserTest.UkmSignedExchangeMetric
--SignedExchangePolicyBrowserTest.BlackList
--SignedExchangePolicyTest.SignedExchangeEnabled
+# https://crbug.com/978617
+-GcmApiTest.*

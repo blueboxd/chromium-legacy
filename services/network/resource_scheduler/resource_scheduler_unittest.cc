@@ -811,12 +811,12 @@ TEST_F(ResourceSchedulerTest,
           true,
       },
       {
-          "Field trial param not set",
+          "Field trial param not set, default params used",
           1u,
           net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
           true,
           false,
-          true,
+          false,
       },
   };
 
@@ -850,7 +850,8 @@ TEST_F(ResourceSchedulerTest,
     // (COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(""));
     std::unique_ptr<TestRequest> lows = (NewBrowserRequestWithAnnotationTag(
         url.c_str(), net::LOWEST, tag));  //"metrics_report_uma"));
-    EXPECT_EQ(test.expected_browser_initiated_traffic_started, lows->started());
+    EXPECT_EQ(test.expected_browser_initiated_traffic_started, lows->started())
+        << " test_case=" << test.test_case;
   }
 }
 

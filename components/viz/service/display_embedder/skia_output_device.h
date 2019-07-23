@@ -19,6 +19,7 @@ class SkSurface;
 
 namespace gfx {
 class ColorSpace;
+class GpuFence;
 class Rect;
 class Size;
 struct PresentationFeedback;
@@ -74,6 +75,9 @@ class SkiaOutputDevice {
   virtual void PostSubBuffer(const gfx::Rect& rect,
                              BufferPresentedCallback feedback,
                              std::vector<ui::LatencyInfo> latency_info);
+
+  virtual gl::GLImage* GetOverlayImage();
+  virtual std::unique_ptr<gfx::GpuFence> SubmitOverlayGpuFence();
 
   // Set the rectangle that will be drawn into on the surface.
   virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);

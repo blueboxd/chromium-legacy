@@ -3813,11 +3813,9 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerURLLoaderThrottleTest,
   ASSERT_TRUE(dict);
 
   // Default headers are present.
-  std::string expect_accept(network::kFrameAcceptHeader);
-  // See http://crbug.com/824854.
-  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled())
-    expect_accept += std::string(kAcceptHeaderSignedExchangeSuffix);
-  EXPECT_TRUE(CheckHeader(*dict, "accept", expect_accept));
+  EXPECT_TRUE(CheckHeader(*dict, "accept",
+                          std::string(network::kFrameAcceptHeader) +
+                              std::string(kAcceptHeaderSignedExchangeSuffix)));
 
   // Injected headers are present.
   EXPECT_TRUE(CheckHeader(*dict, "x-injected", "injected value"));

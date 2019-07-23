@@ -96,7 +96,6 @@ source_set("browser") {
     "//components/search_provider_logos",
     "//components/security_state/core",
     "//components/send_tab_to_self",
-    "//components/signin/core/browser",
     "//components/strings",
     "//components/sync",
     "//components/translate/core/browser",

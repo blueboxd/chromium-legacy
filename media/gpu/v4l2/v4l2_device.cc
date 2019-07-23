@@ -1177,9 +1177,6 @@ uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
     case V4L2_PIX_FMT_RGB32:
       return DRM_FORMAT_ARGB8888;
 
-    case V4L2_PIX_FMT_MT21C:
-      return DRM_FORMAT_MT21;
-
     default:
       DVLOGF(1) << "Unrecognized format " << FourccToString(format);
       return 0;

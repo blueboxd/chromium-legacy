@@ -143,7 +143,7 @@
         _JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
             [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
         [_JSSuggestionManager
-            setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+            setWebFramesManager:webState->GetWebFramesManager()];
         FormSuggestionTabHelper* tabHelper =
             FormSuggestionTabHelper::FromWebState(webState);
         if (tabHelper) {
@@ -441,7 +441,7 @@
     self.JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
         [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
     [self.JSSuggestionManager
-        setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+        setWebFramesManager:webState->GetWebFramesManager()];
     FormSuggestionTabHelper* tabHelper =
         FormSuggestionTabHelper::FromWebState(webState);
     if (tabHelper) {

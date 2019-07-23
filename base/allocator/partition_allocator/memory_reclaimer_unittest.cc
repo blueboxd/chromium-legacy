@@ -73,15 +73,20 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
   EXPECT_TRUE(task_environment_.NextTaskIsDelayed());
 }
 
-TEST_F(PartitionAllocMemoryReclaimerTest, IsDisabledByDefault) {
+TEST_F(PartitionAllocMemoryReclaimerTest, IsEnabledByDefault) {
+  StartReclaimer();
+  EXPECT_EQ(2u, task_environment_.GetPendingMainThreadTaskCount());
+}
+
+TEST_F(PartitionAllocMemoryReclaimerTest, CanBeDisabled) {
+  test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      internal::kPartitionAllocPeriodicDecommit);
   StartReclaimer();
   EXPECT_EQ(0u, task_environment_.GetPendingMainThreadTaskCount());
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      internal::kPartitionAllocPeriodicDecommit);
   PartitionRootGeneric* root = allocator_->root();
 
   size_t committed_initially = root->total_size_of_committed_pages;
@@ -99,9 +104,6 @@ TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
-  StartReclaimer();
-  EXPECT_EQ(0u, task_environment_.GetPendingMainThreadTaskCount());
-
   PartitionRootGeneric* root = allocator_->root();
   size_t committed_initially = root->total_size_of_committed_pages;
 
@@ -116,66 +118,32 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
     EXPECT_LT(committed_after, committed_before);
     EXPECT_LE(committed_initially, committed_after);
   }
-
-  // |Reclaim()| is always enabled.
-  {
-    test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        internal::kPartitionAllocPeriodicDecommit);
-
-    AllocateAndFree();
-
-    size_t committed_before = root->total_size_of_committed_pages;
-    EXPECT_GT(committed_before, committed_initially);
-    PartitionAllocMemoryReclaimer::Instance()->Reclaim();
-    size_t committed_after = root->total_size_of_committed_pages;
-
-    EXPECT_LT(committed_after, committed_before);
-    EXPECT_LE(committed_initially, committed_after);
-  }
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, DeprecatedReclaim) {
-  StartReclaimer();
-  EXPECT_EQ(0u, task_environment_.GetPendingMainThreadTaskCount());
   PartitionRootGeneric* root = allocator_->root();
 
+  // Deprecated reclaim is disabled by default.
   {
-    // Deprecated reclaim enabled by default.
+    AllocateAndFree();
+    size_t committed_before = root->total_size_of_committed_pages;
+    PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
+    size_t committed_after = root->total_size_of_committed_pages;
+    EXPECT_EQ(committed_after, committed_before);
+
+    PartitionAllocMemoryReclaimer::Instance()->Reclaim();
+  }
+
+  // Deprecated reclaim works when periodic reclaim is disabled.
+  {
+    test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitAndDisableFeature(
+        internal::kPartitionAllocPeriodicDecommit);
     AllocateAndFree();
     size_t committed_before = root->total_size_of_committed_pages;
     PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
     size_t committed_after = root->total_size_of_committed_pages;
     EXPECT_LT(committed_after, committed_before);
-  }
-
-  // Either of the features disables deprecated reclaim.
-  {
-    test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        internal::kPartitionAllocPeriodicDecommit);
-
-    AllocateAndFree();
-    size_t committed_before = root->total_size_of_committed_pages;
-    PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
-    size_t committed_after = root->total_size_of_committed_pages;
-    EXPECT_EQ(committed_after, committed_before);
-
-    PartitionAllocMemoryReclaimer::Instance()->Reclaim();
-  }
-
-  {
-    test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        internal::kNoPartitionAllocDecommit);
-
-    AllocateAndFree();
-    size_t committed_before = root->total_size_of_committed_pages;
-    PartitionAllocMemoryReclaimer::Instance()->DeprecatedReclaim();
-    size_t committed_after = root->total_size_of_committed_pages;
-    EXPECT_EQ(committed_after, committed_before);
-
-    PartitionAllocMemoryReclaimer::Instance()->Reclaim();
   }
 }
 
@@ -185,9 +153,6 @@ TEST_F(PartitionAllocMemoryReclaimerTest, StatsRecording) {
     return;
 
   HistogramTester histogram_tester;
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      internal::kPartitionAllocPeriodicDecommit);
   StartReclaimer();
   EXPECT_EQ(GetExpectedTasksCount(),
             task_environment_.GetPendingMainThreadTaskCount());

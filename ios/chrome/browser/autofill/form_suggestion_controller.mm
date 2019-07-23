@@ -131,8 +131,7 @@ AutofillSuggestionState::AutofillSuggestionState(
       base::mac::ObjCCast<JsSuggestionManager>(
           [webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
-  [jsSuggestionManager
-      setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+  [jsSuggestionManager setWebFramesManager:webState->GetWebFramesManager()];
   return [self initWithWebState:webState
                       providers:providers
             JsSuggestionManager:jsSuggestionManager];

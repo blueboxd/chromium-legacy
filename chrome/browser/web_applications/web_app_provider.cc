@@ -49,6 +49,10 @@ namespace web_app {
 
 namespace {
 
+#define DCHECK_IS_CONNECTED()                                          \
+  DCHECK(connected_) << "Attempted to access Web App subsystem while " \
+                        "WebAppProvider is not connected."
+
 void OnExternalWebAppsSynchronized(
     std::map<GURL, InstallResultCode> install_results,
     std::map<GURL, bool> uninstall_results) {
@@ -89,31 +93,36 @@ WebAppProvider::WebAppProvider(Profile* profile) : profile_(profile) {
 
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::Source<Profile>(profile_));
-
-  ConnectSubsystems();
 }
 
 WebAppProvider::~WebAppProvider() = default;
 
-void WebAppProvider::StartRegistry() {
+void WebAppProvider::Start() {
+  CHECK(!started_);
+
+  ConnectSubsystems();
   started_ = true;
-  registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
-                                  weak_ptr_factory_.GetWeakPtr()));
+
+  StartImpl();
 }
 
 AppRegistrar& WebAppProvider::registrar() {
+  DCHECK_IS_CONNECTED();
   return *registrar_;
 }
 
 InstallManager& WebAppProvider::install_manager() {
+  DCHECK_IS_CONNECTED();
   return *install_manager_;
 }
 
 PendingAppManager& WebAppProvider::pending_app_manager() {
+  DCHECK_IS_CONNECTED();
   return *pending_app_manager_;
 }
 
 WebAppPolicyManager* WebAppProvider::policy_manager() {
+  DCHECK_IS_CONNECTED();
   return web_app_policy_manager_.get();
 }
 
@@ -123,6 +132,7 @@ WebAppUiManager& WebAppProvider::ui_manager() {
 }
 
 SystemWebAppManager& WebAppProvider::system_web_app_manager() {
+  DCHECK_IS_CONNECTED();
   return *system_web_app_manager_;
 }
 
@@ -142,6 +152,10 @@ void WebAppProvider::Shutdown() {
   database_.reset();
   database_factory_.reset();
   audio_focus_id_map_.reset();
+}
+
+void WebAppProvider::StartImpl() {
+  StartRegistry();
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
@@ -187,17 +201,23 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
 
 void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
+
   install_manager_->SetSubsystems(registrar_.get(), install_finalizer_.get());
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    // TODO(crbug.com/877898): Port all other managers to support BMO.
-    return;
+  // TODO(crbug.com/877898): Port all other managers to support BMO.
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
+                                        install_finalizer_.get());
+    web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
+    system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
+                                           registrar_.get(), ui_manager_.get());
   }
 
-  pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
-                                      install_finalizer_.get());
-  web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
-  system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
-                                         registrar_.get(), ui_manager_.get());
+  connected_ = true;
+}
+
+void WebAppProvider::StartRegistry() {
+  registrar_->Init(base::BindOnce(&WebAppProvider::OnRegistryReady,
+                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppProvider::OnRegistryReady() {

@@ -339,6 +339,9 @@ android_library("cronet_impl_platform_base_java") {
 android_library("cronet_impl_fake_base_java") {
   java_files = [
     "fake/java/org/chromium/net/test/FakeUrlResponse.java",
+    "fake/java/org/chromium/net/test/FakeCronetController.java",
+    "fake/java/org/chromium/net/test/FakeCronetEngine.java",
+    "fake/java/org/chromium/net/test/FakeCronetProvider.java",
     "fake/java/org/chromium/net/test/ResponseMatcher.java",
     "fake/java/org/chromium/net/test/UrlResponseMatcher.java",
   ]
@@ -354,6 +357,9 @@ android_library("cronet_fake_javatests") {
   testonly = true
   java_files = [
     "fake/javatests/org/chromium/net/test/FakeUrlResponseTest.java",
+    "fake/javatests/org/chromium/net/test/FakeCronetProviderTest.java",
+    "fake/javatests/org/chromium/net/test/FakeCronetEngineTest.java",
+    "fake/javatests/org/chromium/net/test/FakeCronetControllerTest.java",
     "fake/javatests/org/chromium/net/test/UrlResponseMatcherTest.java",
   ]
 
@@ -361,6 +367,7 @@ android_library("cronet_fake_javatests") {
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
     ":cronet_impl_fake_base_java",
+    ":cronet_impl_platform_base_java",
     "//base:base_java_test_support",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_support_test_runner:runner_java",

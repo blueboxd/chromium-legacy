@@ -283,7 +283,7 @@
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/histogram.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/document_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -323,10 +323,10 @@ namespace blink {
 
 using namespace html_names;
 
-class DocumentOutliveTimeReporter : public HeapObserver {
+class DocumentOutliveTimeReporter : public BlinkGCObserver {
  public:
   explicit DocumentOutliveTimeReporter(Document* document)
-      : HeapObserver(ThreadState::Current()), document_(document) {}
+      : BlinkGCObserver(ThreadState::Current()), document_(document) {}
 
   ~DocumentOutliveTimeReporter() override {
     // As not all documents are destroyed before the process dies, this might
@@ -336,14 +336,12 @@ class DocumentOutliveTimeReporter : public HeapObserver {
         GetOutliveTimeCount() + 1, 101);
   }
 
-  void GCFinished(const ThreadHeapStatsCollector::Event& event) override {
+  void OnCompleteSweepDone() override {
     enum GCCount {
       kGCCount5,
       kGCCount10,
       kGCCountMax,
     };
-
-    last_recorded_gc_age_ = event.gc_age;
 
     // There are some cases that a document can live after shutting down because
     // the document can still be referenced (e.g. a document opened via
@@ -356,7 +354,7 @@ class DocumentOutliveTimeReporter : public HeapObserver {
               document_->domWindow())) {
         return;
       }
-      gc_age_when_document_detached_ = last_recorded_gc_age_;
+      gc_age_when_document_detached_ = ThreadState::Current()->GcAge();
     }
 
     int outlive_time_count = GetOutliveTimeCount();
@@ -379,15 +377,13 @@ class DocumentOutliveTimeReporter : public HeapObserver {
 
  private:
   int GetOutliveTimeCount() const {
-    return gc_age_when_document_detached_
-               ? static_cast<int>(last_recorded_gc_age_ -
-                                  gc_age_when_document_detached_)
-               : 0;
+    if (!gc_age_when_document_detached_)
+      return 0;
+    return ThreadState::Current()->GcAge() - gc_age_when_document_detached_;
   }
 
   WeakPersistent<Document> document_;
-  size_t last_recorded_gc_age_ = 0;
-  size_t gc_age_when_document_detached_ = 0;
+  int gc_age_when_document_detached_ = 0;
 };
 
 static const unsigned kCMaxWriteRecursionDepth = 21;

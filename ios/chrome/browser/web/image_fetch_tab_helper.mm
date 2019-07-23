@@ -67,7 +67,7 @@ ImageFetchTabHelper::ImageFetchTabHelper(web::WebState* web_state)
   web_state->AddObserver(this);
   // BindRepeating cannot work on WeakPtr and function with return value, use
   // lambda as mediator.
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::BindRepeating(&ImageFetchTabHelper::OnJsMessage,
                           weak_ptr_factory_.GetWeakPtr()),
       kCommandPrefix);
@@ -87,7 +87,6 @@ void ImageFetchTabHelper::DidStartNavigation(
 }
 
 void ImageFetchTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveScriptCommandCallback(kCommandPrefix);
   for (auto&& pair : js_callbacks_)
     std::move(pair.second).Run(nullptr);
   web_state->RemoveObserver(this);

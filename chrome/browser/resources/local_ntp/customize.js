@@ -1194,8 +1194,11 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     }
   }
 
-
-  $(customize.IDS.TILES).focus();
+  if (configData.richerPicker) {
+    $(customize.IDS.BACKGROUNDS_IMAGE_MENU).focus();
+  } else {
+    $(customize.IDS.TILES).focus();
+  }
 };
 
 /**
@@ -1871,7 +1874,12 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
   richerPicker.onkeydown = function(event) {
     richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
 
-    if (event.keyCode === customize.KEYCODES.ESC ||
+    if (event.keyCode === customize.KEYCODES.BACKSPACE &&
+        customize.richerPicker_selectedSubmenu.menu.id ===
+            customize.IDS.BACKGROUNDS_IMAGE_MENU) {
+      backInteraction(event);
+    } else if (
+        event.keyCode === customize.KEYCODES.ESC ||
         event.keyCode === customize.KEYCODES.BACKSPACE) {
       customize.richerPicker_cancelCustomization();
     }

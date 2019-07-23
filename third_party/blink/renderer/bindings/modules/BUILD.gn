@@ -38,6 +38,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/mediastream/media_stream_event.idl",
     "//third_party/blink/renderer/modules/mediastream/media_stream_track_event.idl",
     "//third_party/blink/renderer/modules/nfc/nfc_error_event.idl",
+    "//third_party/blink/renderer/modules/nfc/nfc_reading_event.idl",
     "//third_party/blink/renderer/modules/notifications/notification_event.idl",
     "//third_party/blink/renderer/modules/payments/abort_payment_event.idl",
     "//third_party/blink/renderer/modules/payments/can_make_payment_event.idl",
@@ -60,7 +61,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/service_worker/extendable_message_event.idl",
     "//third_party/blink/renderer/modules/service_worker/fetch_event.idl",
     "//third_party/blink/renderer/modules/service_worker/install_event.idl",
-    "//third_party/blink/renderer/modules/speech/speech_recognition_error.idl",
+    "//third_party/blink/renderer/modules/speech/speech_recognition_error_event.idl",
     "//third_party/blink/renderer/modules/speech/speech_recognition_event.idl",
     "//third_party/blink/renderer/modules/speech/speech_synthesis_error_event.idl",
     "//third_party/blink/renderer/modules/speech/speech_synthesis_event.idl",
@@ -168,13 +169,4 @@ source_set("generated") {
     "//third_party/blink/renderer/platform/wtf",
     "//v8",
   ]
-}
-
-generate_web_idl_collection("modules_web_idl_collection") {
-  # |sources| contains all IDL files under modules/.
-  sources = modules_definition_idl_files + modules_static_interface_idl_files +
-            modules_static_dependency_idl_files
-  output = "web_idl_collection_for_modules.pickle"
-  component = "modules"
-  output_dir = bindings_modules_output_dir
 }

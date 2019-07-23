@@ -66,9 +66,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    DCHECK(profile()->AsTestingProfile());
-    auto* provider = static_cast<web_app::TestWebAppProvider*>(
-        web_app::WebAppProvider::Get(profile()));
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
 
     auto test_app_registrar = std::make_unique<TestAppRegistrar>();
     test_app_registrar_ = test_app_registrar.get();
@@ -87,6 +85,8 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
     auto ui_manager = std::make_unique<TestWebAppUiManager>();
     ui_manager_ = ui_manager.get();
     provider->SetWebAppUiManager(std::move(ui_manager));
+
+    provider->Start();
   }
 
   void SimulatePreviouslyInstalledApp(GURL url,

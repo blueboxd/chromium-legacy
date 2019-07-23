@@ -262,6 +262,29 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  struct v4l2_requestbuffers reqbufs;
+  memset(&reqbufs, 0, sizeof(reqbufs));
+  reqbufs.count = 0;
+  reqbufs.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  reqbufs.memory = V4L2_MEMORY_MMAP;
+  IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
+  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
+    supports_requests_ = true;
+    VLOGF(1) << "Using request API";
+    DCHECK(!media_fd_.is_valid());
+    // Let's try to open the media device
+    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
+    // integration.
+    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
+    if (media_fd < 0) {
+      VPLOGF(1) << "Failed to open media device: ";
+      NOTIFY_ERROR(PLATFORM_FAILURE);
+    }
+    media_fd_ = base::ScopedFD(media_fd);
+  } else {
+    VLOGF(1) << "Using config store";
+  }
+
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
         std::make_unique<V4L2H264Accelerator>(this, device_.get())));
@@ -370,6 +393,8 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
   DestroyInputBuffers();
   DestroyOutputs(false);
 
+  media_fd_.reset();
+
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 
@@ -463,26 +488,6 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
   if (reqbufs.count < kNumInputBuffers) {
     VLOGF(1) << "Could not allocate enough output buffers";
     return false;
-  }
-
-  // Open media device if we are discovering that we support requests.
-  supports_requests_ =
-      static_cast<bool>(reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS);
-  if (supports_requests_) {
-    VLOGF(2) << "Using request API";
-    DCHECK(!media_fd_.is_valid());
-    // Let's try to open the media device
-    // TODO(crbug.com/985230): remove this hardcoding, replace with V4L2Device
-    // integration.
-    int media_fd = open("/dev/media-dec0", O_RDWR, 0);
-    if (media_fd < 0) {
-      VPLOGF(1) << "Failed to open media device: ";
-      NOTIFY_ERROR(PLATFORM_FAILURE);
-    }
-    media_fd_ = base::ScopedFD(media_fd);
-
-  } else {
-    VLOGF(2) << "Using config store";
   }
 
   input_buffer_map_.resize(reqbufs.count);
@@ -617,8 +622,6 @@ void V4L2SliceVideoDecodeAccelerator::DestroyInputBuffers() {
 
   input_buffer_map_.clear();
   free_input_buffers_.clear();
-
-  media_fd_.reset();
 }
 
 void V4L2SliceVideoDecodeAccelerator::DismissPictures(

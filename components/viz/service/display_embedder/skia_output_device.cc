@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace viz {
@@ -79,5 +80,13 @@ void SkiaOutputDevice::FinishSwapBuffers(
 
 void SkiaOutputDevice::EnsureBackbuffer() {}
 void SkiaOutputDevice::DiscardBackbuffer() {}
+
+gl::GLImage* SkiaOutputDevice::GetOverlayImage() {
+  return nullptr;
+}
+
+std::unique_ptr<gfx::GpuFence> SkiaOutputDevice::SubmitOverlayGpuFence() {
+  return nullptr;
+}
 
 }  // namespace viz

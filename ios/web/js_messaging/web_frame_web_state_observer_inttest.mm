@@ -7,9 +7,8 @@
 #include "base/ios/ios_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
-#include "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -52,15 +51,14 @@ bool IsMainFrame(web::WebFrame* frame) {
 // Verifies that the web frame passed to the observer is the main frame.
 ACTION_P(VerifyMainWebFrame, web_state) {
   EXPECT_EQ(web_state, arg0);
-  EXPECT_EQ(web::GetMainWebFrame(web_state), arg1);
+  EXPECT_EQ(web_state->GetWebFramesManager()->GetMainWebFrame(), arg1);
 }
 
 // Verifies that the web frame passed to the observer is a child frame.
 ACTION_P(VerifyChildWebFrame, web_state) {
   EXPECT_EQ(web_state, arg0);
 
-  web::WebFramesManagerImpl* manager =
-      web::WebFramesManagerImpl::FromWebState(web_state);
+  web::WebFramesManager* manager = web_state->GetWebFramesManager();
   auto frames = manager->GetAllWebFrames();
   EXPECT_TRUE(frames.end() != std::find(frames.begin(), frames.end(), arg1));
   EXPECT_NE(manager->GetMainWebFrame(), arg1);

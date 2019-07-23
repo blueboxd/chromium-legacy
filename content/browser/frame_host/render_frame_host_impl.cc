@@ -2921,7 +2921,8 @@ void RenderFrameHostImpl::RequestTextSurroundingSelection(
     TextSurroundingSelectionCallback callback,
     int max_length) {
   DCHECK(!callback.is_null());
-  frame_->GetTextSurroundingSelection(max_length, std::move(callback));
+  GetSurroundingText()->GetTextSurroundingSelection(max_length,
+                                                    std::move(callback));
 }
 
 void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
@@ -5144,15 +5145,23 @@ void RenderFrameHostImpl::CommitNavigation(
       auto* storage_partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(
               GetSiteInstance()->GetBrowserContext(), GetSiteInstance()));
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(
-              &PrefetchURLLoaderService::GetFactory,
-              storage_partition->GetPrefetchURLLoaderService(),
-              prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
-              frame_tree_node_->frame_tree_node_id(),
-              std::move(factory_bundle_for_prefetch),
-              EnsurePrefetchedSignedExchangeCache()));
+      if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+        storage_partition->GetPrefetchURLLoaderService()->GetFactory(
+            prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
+            frame_tree_node_->frame_tree_node_id(),
+            std::move(factory_bundle_for_prefetch),
+            EnsurePrefetchedSignedExchangeCache());
+      } else {
+        base::PostTaskWithTraits(
+            FROM_HERE, {BrowserThread::IO},
+            base::BindOnce(
+                &PrefetchURLLoaderService::GetFactory,
+                storage_partition->GetPrefetchURLLoaderService(),
+                prefetch_loader_factory.InitWithNewPipeAndPassReceiver(),
+                frame_tree_node_->frame_tree_node_id(),
+                std::move(factory_bundle_for_prefetch),
+                EnsurePrefetchedSignedExchangeCache()));
+      }
     }
 
     mojom::NavigationClient* navigation_client = nullptr;
@@ -5480,6 +5489,14 @@ RenderFrameHostImpl::GetFindInPage() {
       !find_in_page_.is_connected())
     GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
   return find_in_page_;
+}
+
+const mojo::AssociatedRemote<blink::mojom::SurroundingText>&
+RenderFrameHostImpl::GetSurroundingText() {
+  if (!surrounding_text_ || !surrounding_text_.is_bound() ||
+      !surrounding_text_.is_connected())
+    GetRemoteAssociatedInterfaces()->GetInterface(&surrounding_text_);
+  return surrounding_text_;
 }
 
 void RenderFrameHostImpl::ResetLoadingState() {

@@ -54,13 +54,11 @@ void JsSuggestionManagerTest::SetUp() {
   ChromeWebTest::SetUp();
   manager_ = [[JsSuggestionManager alloc]
       initWithReceiver:web_state()->GetJSInjectionReceiver()];
-  [manager_
-      setWebFramesManager:web::WebFramesManager::FromWebState(web_state())];
+  [manager_ setWebFramesManager:web_state()->GetWebFramesManager()];
 }
 
 NSString* JsSuggestionManagerTest::GetFrameIdForMainFrame() {
-  web::WebFramesManager* manager =
-      web::WebFramesManager::FromWebState(web_state());
+  web::WebFramesManager* manager = web_state()->GetWebFramesManager();
   return base::SysUTF8ToNSString(manager->GetMainWebFrame()->GetFrameId());
 }
 

@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 from .argument import Argument
+from .ast_group import AstGroup
 from .attribute import Attribute
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
-from .collection import Collection
 from .common import DebugInfo
+from .common import Location
 from .constant import Constant
 from .dictionary import Dictionary
 from .dictionary import DictionaryMember
@@ -46,12 +47,12 @@ def load_and_register_idl_definitions(filepaths, register_ir,
     assert callable(register_ir)
 
     for filepath in filepaths:
-        asts_per_component = Collection.load_from_file(filepath)
+        asts_per_component = AstGroup.read_from_file(filepath)
         component = asts_per_component.component
         builder = _IRBuilder(component, create_ref_to_idl_type,
                              create_ref_to_idl_def, idl_type_factory)
 
-        for file_node in asts_per_component.asts:
+        for file_node in asts_per_component:
             assert file_node.GetClass() == 'File'
             for top_level_node in file_node.GetChildren():
                 register_ir(builder.build_top_level_def(top_level_node))
@@ -317,7 +318,7 @@ class _IRBuilder(object):
 
     def _build_debug_info(self, node):
         return DebugInfo(
-            location=DebugInfo.Location(
+            location=Location(
                 filepath=node.GetProperty('FILENAME'),
                 line_number=node.GetProperty('LINENO'),
                 column_number=node.GetProperty('POSITION')))

@@ -90,6 +90,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
+  void ScheduleOverlays(OverlayCandidateList overlays) override;
+
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,
                                  ResourceFormat format,
@@ -160,6 +162,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   std::unique_ptr<SkiaOutputSurfaceDependency> dependency_;
   const bool is_using_vulkan_;
   UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  bool is_displayed_as_overlay_ = false;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;
   SkSurfaceCharacterization characterization_;

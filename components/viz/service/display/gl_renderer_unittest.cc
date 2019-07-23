@@ -3148,6 +3148,9 @@ class MockCALayerGLES2Interface : public TestGLES2Interface {
                     GLuint filter));
   MOCK_METHOD2(ScheduleCALayerInUseQueryCHROMIUM,
                void(GLsizei count, const GLuint* textures));
+  MOCK_METHOD5(
+      Uniform4f,
+      void(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w));
 };
 
 class CALayerGLRendererTest : public GLRendererTest {
@@ -3295,11 +3298,15 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
   gfx::Size viewport_size(10, 10);
 
   for (size_t subtest = 0; subtest < 3; ++subtest) {
+    RenderPass* child_pass =
+        cc::AddRenderPass(&render_passes_in_draw_order_, 1, gfx::Rect(250, 250),
+                          gfx::Transform(), cc::FilterOperations());
+
     RenderPassId root_pass_id = 1;
     RenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    auto* quad = cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
+    auto* quad = cc::AddRenderPassQuad(root_pass, child_pass);
     SharedQuadState* sqs =
         const_cast<SharedQuadState*>(quad->shared_quad_state);
 
@@ -3313,6 +3320,7 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
       case 0:
         // Subtest 0 is a simple round rect that matches the clip rect, and
         // should be handled by CALayers.
+        EXPECT_CALL(gl(), Uniform4f(_, _, _, _, _)).Times(1);
         EXPECT_CALL(gl(), ScheduleCALayerSharedStateCHROMIUM(_, _, _, _, _, _))
             .Times(1);
         EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
@@ -3321,12 +3329,17 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
         // Subtest 1 doesn't match clip and rounded rect, but we can still
         // use CALayers.
         sqs->clip_rect = gfx::Rect(3, 3, 4, 4);
+        EXPECT_CALL(gl(), Uniform4f(_, _, _, _, _)).Times(1);
         EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(1);
         break;
       case 2:
         // Subtest 2 has a non-simple rounded rect.
         sqs->rounded_corner_bounds.SetCornerRadii(
             gfx::RRectF::Corner::kUpperLeft, 1, 1);
+        // Called 2 extra times in order to set up the rounded corner
+        // parameters in the shader, because the CALayer is not handling
+        // the rounded corners.
+        EXPECT_CALL(gl(), Uniform4f(_, _, _, _, _)).Times(3);
         EXPECT_CALL(gl(), ScheduleCALayerCHROMIUM(_, _, _, _, _, _)).Times(0);
         break;
     }

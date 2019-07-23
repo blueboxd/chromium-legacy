@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "components/prefs/testing_pref_service.h"
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"

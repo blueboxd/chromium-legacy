@@ -20,15 +20,13 @@ namespace web {
 
 JsWindowErrorManager::JsWindowErrorManager(WebState* web_state)
     : web_state_impl_(web_state) {
-  web_state_impl_->AddScriptCommandCallback(
+  subscription_ = web_state_impl_->AddScriptCommandCallback(
       base::BindRepeating(&JsWindowErrorManager::OnJsMessage,
                           base::Unretained(this)),
       kCommandPrefix);
 }
 
-JsWindowErrorManager::~JsWindowErrorManager() {
-  web_state_impl_->RemoveScriptCommandCallback(kCommandPrefix);
-}
+JsWindowErrorManager::~JsWindowErrorManager() {}
 
 void JsWindowErrorManager::OnJsMessage(const base::DictionaryValue& message,
                                        const GURL& page_url,

@@ -112,15 +112,14 @@ void RecordTokenChanged(const std::string& existing_token,
   DCHECK(!new_token.empty());
   TokenStateTransition transition = TokenStateTransition::kCount;
   if (existing_token.empty()) {
-    transition = (new_token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
+    transition = (new_token == GaiaConstants::kInvalidRefreshToken)
                      ? TokenStateTransition::kNoneToInvalid
                      : TokenStateTransition::kNoneToRegular;
-  } else if (existing_token ==
-             OAuth2TokenServiceDelegate::kInvalidRefreshToken) {
+  } else if (existing_token == GaiaConstants::kInvalidRefreshToken) {
     transition = TokenStateTransition::kInvalidToRegular;
   } else {
     // Existing token is a regular token.
-    transition = (new_token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
+    transition = (new_token == GaiaConstants::kInvalidRefreshToken)
                      ? TokenStateTransition::kRegularToInvalid
                      : TokenStateTransition::kRegularToRegular;
   }
@@ -130,18 +129,16 @@ void RecordTokenChanged(const std::string& existing_token,
 
 // Record metrics when a token was loaded.
 void RecordTokenLoaded(const std::string& token) {
-  RecordTokenStateTransition(
-      (token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
-          ? TokenStateTransition::kLoadInvalid
-          : TokenStateTransition::kLoadRegular);
+  RecordTokenStateTransition((token == GaiaConstants::kInvalidRefreshToken)
+                                 ? TokenStateTransition::kLoadInvalid
+                                 : TokenStateTransition::kLoadRegular);
 }
 
 // Record metrics when a token was revoked.
 void RecordTokenRevoked(const std::string& token) {
-  RecordTokenStateTransition(
-      (token == OAuth2TokenServiceDelegate::kInvalidRefreshToken)
-          ? TokenStateTransition::kInvalidToNone
-          : TokenStateTransition::kRegularToNone);
+  RecordTokenStateTransition((token == GaiaConstants::kInvalidRefreshToken)
+                                 ? TokenStateTransition::kInvalidToNone
+                                 : TokenStateTransition::kRegularToNone);
 }
 
 std::string ApplyAccountIdPrefix(const std::string& account_id) {
@@ -160,21 +157,22 @@ CoreAccountId RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
   return CoreAccountId(prefixed_account_id.substr(kAccountIdPrefixLength));
 }
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
-LoadCredentialsStateFromTokenResult(TokenServiceTable::Result token_result) {
+signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
+    TokenServiceTable::Result token_result) {
   switch (token_result) {
     case TokenServiceTable::TOKEN_DB_RESULT_SQL_INVALID_STATEMENT:
     case TokenServiceTable::TOKEN_DB_RESULT_BAD_ENTRY:
-      return OAuth2TokenServiceDelegate::
+      return signin::LoadCredentialsState::
           LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS;
     case TokenServiceTable::TOKEN_DB_RESULT_DECRYPT_ERROR:
-      return OAuth2TokenServiceDelegate::
+      return signin::LoadCredentialsState::
           LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS;
     case TokenServiceTable::TOKEN_DB_RESULT_SUCCESS:
-      return OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
+      return signin::LoadCredentialsState::
+          LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
   }
   NOTREACHED();
-  return OAuth2TokenServiceDelegate::
+  return signin::LoadCredentialsState::
       LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS;
 }
 
@@ -492,19 +490,22 @@ void MutableProfileOAuth2TokenServiceDelegate::InvalidateTokenForMultilogin(
 
 void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const CoreAccountId& primary_account_id) {
-  if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {
+  if (load_credentials_state() ==
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS) {
     VLOG(1) << "Load credentials operation already in progress";
     return;
   }
 
-  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
 
 #if defined(OS_CHROMEOS)
   // TODO(sinhak): Remove this ifdef block after Account Manager is switched on.
   // ChromeOS OOBE loads credentials without a primary account and expects this
   // to be a no-op. See http://crbug.com/891818
   if (primary_account_id.empty()) {
-    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+    set_load_credentials_state(
+        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FinishLoadingCredentials();
     return;
   }
@@ -520,7 +521,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
   if (!token_web_data_) {
     // This case only exists in unit tests that do not care about loading
     // credentials.
-    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
+    set_load_credentials_state(
+        signin::LoadCredentialsState::
+            LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
     FinishLoadingCredentials();
     return;
   }
@@ -557,7 +560,8 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
         token_result->GetValue().db_result));
   } else {
     set_load_credentials_state(
-        LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED);
+        signin::LoadCredentialsState::
+            LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED);
   }
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the
@@ -565,11 +569,14 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   // while this profile is connected to an account.
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
-    if (load_credentials_state() == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+    if (load_credentials_state() ==
+        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
       set_load_credentials_state(
-          LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT);
+          signin::LoadCredentialsState::
+              LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT);
     }
-    AddAccountStatus(loading_primary_account_id_, kInvalidRefreshToken,
+    AddAccountStatus(loading_primary_account_id_,
+                     GaiaConstants::kInvalidRefreshToken,
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_MISSING));
@@ -696,7 +703,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
         if (load_account && revoke_all_tokens_on_load_) {
           if (account_id == loading_primary_account_id_) {
             RevokeCredentialsOnServer(refresh_token);
-            refresh_token = kInvalidRefreshToken;
+            refresh_token = GaiaConstants::kInvalidRefreshToken;
             PersistCredentials(account_id, refresh_token);
           } else {
             load_account = false;
@@ -757,7 +764,8 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
-  bool is_refresh_token_invalidated = refresh_token == kInvalidRefreshToken;
+  bool is_refresh_token_invalidated =
+      refresh_token == GaiaConstants::kInvalidRefreshToken;
   GoogleServiceAuthError error =
       is_refresh_token_invalidated
           ? GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -816,13 +824,15 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   VLOG(1) << "MutablePO2TS::RevokeAllCredentials";
 
   ScopedBatchChange batch(this);
-  if (load_credentials_state() == LOAD_CREDENTIALS_IN_PROGRESS) {
+  if (load_credentials_state() ==
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS) {
     VLOG(1) << "MutablePO2TS::RevokeAllCredentials before tokens are loaded.";
     // If |RevokeAllCredentials| is called while credentials are being loaded,
     // then the load must be cancelled and the load credentials state updated.
     DCHECK_NE(0, web_data_service_request_);
     CancelWebTokenFetch();
-    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+    set_load_credentials_state(
+        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FinishLoadingCredentials();
   }
 
@@ -859,7 +869,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
   DCHECK(!refresh_token.empty());
 
-  if (refresh_token == kInvalidRefreshToken)
+  if (refresh_token == GaiaConstants::kInvalidRefreshToken)
     return;
 
   // Keep track or all server revoke requests.  This way they can be deleted
@@ -877,7 +887,7 @@ void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::ExtractCredentials(
-    OAuth2TokenService* to_service,
+    ProfileOAuth2TokenService* to_service,
     const CoreAccountId& account_id) {
   static_cast<ProfileOAuth2TokenService*>(to_service)
       ->UpdateCredentials(account_id, GetRefreshToken(account_id),

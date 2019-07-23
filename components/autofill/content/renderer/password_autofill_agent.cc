@@ -955,8 +955,8 @@ bool PasswordAutofillAgent::IsUsernameOrPasswordField(
   return (password_form->username_element == element.NameForAutofill().Utf16());
 }
 
-bool PasswordAutofillAgent::HasFillData(
-    const WebFormControlElement& control_element) const {
+bool PasswordAutofillAgent::TryToShowTouchToFill(
+    const WebFormControlElement& control_element) {
   const WebInputElement* element = ToWebInputElement(&control_element);
   return element && (base::Contains(web_input_to_password_info_, *element) ||
                      base::Contains(password_to_username_, *element));

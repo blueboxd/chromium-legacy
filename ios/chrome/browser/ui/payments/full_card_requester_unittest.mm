@@ -20,9 +20,9 @@
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/test/scoped_key_window.h"
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
-#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
+#import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -71,9 +71,14 @@ class PaymentRequestFullCardRequesterTest : public PaymentRequestUnitTestBase,
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state()->SetJSInjectionReceiver(injectionReceiver);
 
-    web_state()->CreateWebFramesManager();
-    auto main_frame = std::make_unique<web::FakeWebFrame>("main", true, GURL());
-    web_state()->AddWebFrame(std::move(main_frame));
+    auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
+    auto main_frame = std::make_unique<web::FakeWebFrame>(
+        /*frame_id=*/"main", /*is_main_frame=*/true,
+        /*security_origin=*/GURL());
+    frames_manager->AddWebFrame(std::move(main_frame));
+    web_state()->SetWebFramesManager(std::move(frames_manager));
+    web_state()->OnWebFrameDidBecomeAvailable(
+        web_state()->GetWebFramesManager()->GetMainWebFrame());
 
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()
@@ -112,7 +117,8 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
   FullCardRequester full_card_requester(base_view_controller, browser_state());
 
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
   autofill::AutofillManager* autofill_manager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state(),
                                                            main_frame)

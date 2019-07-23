@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -24,15 +23,13 @@
 namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
-    SkiaOutputSurfaceDependency* deps,
+    scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
-      dependency_(deps),
-      feature_info_(feature_info) {
-  gl_surface_ = dependency_->CreateGLSurface(weak_ptr_factory_.GetWeakPtr());
-}
+      feature_info_(feature_info),
+      gl_surface_(gl_surface) {}
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
                                     gl::GLContext* gl_context) {
@@ -179,8 +176,7 @@ void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
 void SkiaOutputDeviceGL::DidCreateAcceleratedSurfaceChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
-  dependency_->DidCreateAcceleratedSurfaceChildWindow(parent_window,
-                                                      child_window);
+  NOTREACHED();
 }
 #endif
 

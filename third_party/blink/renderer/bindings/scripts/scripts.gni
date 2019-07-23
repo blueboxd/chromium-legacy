@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
 import("//third_party/blink/renderer/core/core_idl_files.gni")
 import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 
 bindings_scripts_dir = get_path_info(".", "abspath")
-bindings_scripts_output_dir =
-    "$root_gen_dir/third_party/blink/renderer/bindings/scripts"
+bindings_scripts_output_dir = get_path_info(".", "gen_dir")
 
 jinja_module_files = [
   "//third_party/jinja2/__init__.py",
@@ -56,37 +56,6 @@ idl_compiler_files = get_path_info(
           "//third_party/blink/renderer/build/scripts/blinkbuild/name_style_converter.py",
         ],
         "abspath")
-
-web_idl_scripts = get_path_info([
-                                  "web_idl/argument.py",
-                                  "web_idl/attribute.py",
-                                  "web_idl/callback_function.py",
-                                  "web_idl/callback_interface.py",
-                                  "web_idl/collection.py",
-                                  "web_idl/collector.py",
-                                  "web_idl/common.py",
-                                  "web_idl/constant.py",
-                                  "web_idl/constructor.py",
-                                  "web_idl/database.py",
-                                  "web_idl/dictionary.py",
-                                  "web_idl/enumeration.py",
-                                  "web_idl/exposure.py",
-                                  "web_idl/extended_attribute.py",
-                                  "web_idl/identifier_ir_map.py",
-                                  "web_idl/idl_compiler.py",
-                                  "web_idl/idl_member.py",
-                                  "web_idl/idl_type.py",
-                                  "web_idl/includes.py",
-                                  "web_idl/interface.py",
-                                  "web_idl/ir_builder.py",
-                                  "web_idl/namespace.py",
-                                  "web_idl/operation.py",
-                                  "web_idl/reference.py",
-                                  "web_idl/typedef.py",
-                                  "web_idl/user_defined_type.py",
-                                  "web_idl/values.py",
-                                ],
-                                "abspath")
 
 # Calls the compute_interfaces_info_individual script.
 #
@@ -503,36 +472,5 @@ template("generate_origin_trial_features") {
 
     deps = [ "//third_party/blink/renderer/bindings:interfaces_info" ] +
            invoker.deps
-  }
-}
-
-template("generate_web_idl_collection") {
-  action(target_name) {
-    script = "${bindings_scripts_dir}/generate_web_idl_collection.py"
-    output_dir = invoker.output_dir
-    output_file_name = invoker.output
-    output_path = "${output_dir}/${output_file_name}"
-    inputs = [
-               script,
-               "${bindings_scripts_dir}/web_idl/collection.py",
-               "${bindings_scripts_dir}/web_idl/collector.py",
-             ] + idl_lexer_parser_files + invoker.sources
-    outputs = [
-      output_path,
-    ]
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-
-    # List input file names in a temporary file.
-    response_file_contents = rebase_path(invoker.sources, root_build_dir)
-    args = [
-      "--idl-list-file",
-      "{{response_file_name}}",
-      "--component",
-      invoker.component,
-      "--output",
-      rebase_path(output_path, root_build_dir),
-    ]
   }
 }

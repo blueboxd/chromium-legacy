@@ -5,6 +5,7 @@
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 
 #include <memory>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -111,7 +112,11 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   // Handles presentation of JavaScript dialogs.
   std::unique_ptr<ios_web_view::WebViewJavaScriptDialogPresenter>
       _javaScriptDialogPresenter;
-  std::map<std::string, web::WebState::ScriptCommandCallback>
+  // Stores the script command callbacks with subscriptions.
+  std::unordered_map<
+      std::string,
+      std::pair<web::WebState::ScriptCommandCallback,
+                std::unique_ptr<web::WebState::ScriptCommandSubscription>>>
       _scriptCommandCallbacks;
   CRWSessionStorage* _cachedSessionStorage;
 }
@@ -298,10 +303,6 @@ static NSString* gUserAgentProduct = nil;
 - (void)webStateDestroyed:(web::WebState*)webState {
   webState->RemoveObserver(_webStateObserver.get());
   _webStateObserver.reset();
-  for (const auto& pair : _scriptCommandCallbacks) {
-    webState->RemoveScriptCommandCallback(pair.first);
-  }
-  _scriptCommandCallbacks.clear();
 }
 
 - (void)webState:(web::WebState*)webState
@@ -499,13 +500,14 @@ static NSString* gUserAgentProduct = nil;
       });
 
   std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);
-  _webState->AddScriptCommandCallback(callback, stdCommandPrefix);
-  _scriptCommandCallbacks[stdCommandPrefix] = callback;
+  auto subscription =
+      _webState->AddScriptCommandCallback(callback, stdCommandPrefix);
+  _scriptCommandCallbacks[stdCommandPrefix] = {callback,
+                                               std::move(subscription)};
 }
 
 - (void)removeScriptCommandHandlerForCommandPrefix:(NSString*)commandPrefix {
   std::string stdCommandPrefix = base::SysNSStringToUTF8(commandPrefix);
-  _webState->RemoveScriptCommandCallback(stdCommandPrefix);
   _scriptCommandCallbacks.erase(stdCommandPrefix);
 }
 
@@ -553,9 +555,7 @@ static NSString* gUserAgentProduct = nil;
       base::mac::ObjCCastStrict<JsSuggestionManager>(
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(_webState.get());
-  [JSSuggestionManager setWebFramesManager:framesManager];
+  [JSSuggestionManager setWebFramesManager:_webState->GetWebFramesManager()];
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager
@@ -608,9 +608,6 @@ static NSString* gUserAgentProduct = nil;
     if (_webStateObserver) {
       _webState->RemoveObserver(_webStateObserver.get());
     }
-    for (const auto& pair : _scriptCommandCallbacks) {
-      _webState->RemoveScriptCommandCallback(pair.first);
-    }
     WebViewHolder::RemoveFromWebState(_webState.get());
     if (_webState->GetView().superview == self) {
       // The web view provided by the old |_webState| has been added as a
@@ -653,8 +650,9 @@ static NSString* gUserAgentProduct = nil;
       std::make_unique<ios_web_view::WebViewJavaScriptDialogPresenter>(self,
                                                                        nullptr);
 
-  for (const auto& pair : _scriptCommandCallbacks) {
-    _webState->AddScriptCommandCallback(pair.second, pair.first);
+  for (auto& pair : _scriptCommandCallbacks) {
+    pair.second.second =
+        _webState->AddScriptCommandCallback(pair.second.first, pair.first);
   }
 
   _webState->GetWebViewProxy().allowsBackForwardNavigationGestures =

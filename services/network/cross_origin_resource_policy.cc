@@ -6,9 +6,11 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/initiator_lock_compatibility.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -40,6 +42,11 @@ CrossOriginResourcePolicy::ParsedHeader ParseHeader(
 
   if (header_value == "same-site")
     return CrossOriginResourcePolicy::kSameSite;
+
+  if (base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy) &&
+      header_value == "cross-origin") {
+    return CrossOriginResourcePolicy::kCrossOrigin;
+  }
 
   // TODO(lukasza): Once https://github.com/whatwg/fetch/issues/760 gets
   // resolved, add support for parsing specific origins.
@@ -100,7 +107,8 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
     const base::Optional<url::Origin>& request_initiator,
     const ResourceResponseInfo& response,
     mojom::RequestMode request_mode,
-    base::Optional<url::Origin> request_initiator_site_lock) {
+    base::Optional<url::Origin> request_initiator_site_lock,
+    mojom::CrossOriginEmbedderPolicy embedder_policy) {
   // From https://fetch.spec.whatwg.org/#cross-origin-resource-policy-header:
   // > 1. If request’s mode is not "no-cors", then return allowed.
   if (request_mode != mojom::RequestMode::kNoCors)
@@ -114,7 +122,16 @@ CrossOriginResourcePolicy::VerificationResult CrossOriginResourcePolicy::Verify(
   // 2 and 3 from the spec), to return early if there was no header (before
   // slightly more expensive steps needed to extract the origins below).
   ParsedHeader policy = ParseHeader(response.headers.get());
-  if (policy == kNoHeader || policy == kParsingError) {
+
+  // COEP https://mikewest.github.io/corpp/#corp-check
+  if ((policy == kNoHeader || policy == kParsingError) &&
+      embedder_policy == mojom::CrossOriginEmbedderPolicy::kRequireCorp) {
+    DCHECK(base::FeatureList::IsEnabled(features::kCrossOriginEmbedderPolicy));
+    policy = kSameOrigin;
+  }
+
+  if (policy == kNoHeader || policy == kParsingError ||
+      policy == kCrossOrigin) {
     // The algorithm only returns kBlock from steps 4 and 6, when policy is
     // either kSameOrigin or kSameSite.  For other policy values we can
     // immediately execute step 7 and return kAllow.

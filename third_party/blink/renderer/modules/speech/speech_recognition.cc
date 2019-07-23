@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
-#include "third_party/blink/renderer/modules/speech/speech_recognition_error.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_error_event.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -141,7 +141,7 @@ void SpeechRecognition::ErrorOccurred(
     DispatchEvent(*SpeechRecognitionEvent::CreateNoMatch(nullptr));
   } else {
     // TODO(primiano): message?
-    DispatchEvent(*SpeechRecognitionError::Create(error->code, String()));
+    DispatchEvent(*SpeechRecognitionErrorEvent::Create(error->code, String()));
   }
 }
 

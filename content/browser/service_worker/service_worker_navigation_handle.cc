@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -16,7 +17,8 @@
 namespace content {
 
 ServiceWorkerNavigationHandle::ServiceWorkerNavigationHandle(
-    ServiceWorkerContextWrapper* context_wrapper) {
+    ServiceWorkerContextWrapper* context_wrapper)
+    : context_wrapper_(context_wrapper) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   core_ = new ServiceWorkerNavigationHandleCore(weak_factory_.GetWeakPtr(),
                                                 context_wrapper);

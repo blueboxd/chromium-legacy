@@ -747,7 +747,7 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   const GURL kUrl1("http://foo");
   bool is_called_1 = false;
   web::FakeWebFrame main_frame("main", true, GURL());
-  web_state_->AddScriptCommandCallback(
+  auto subscription_1 = web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_1, &value_1, kUrl1,
                           /*expected_user_is_interacting*/ false, &main_frame),
       kPrefix1);
@@ -758,7 +758,7 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   value_2.SetString("c", "d");
   const GURL kUrl2("http://bar");
   bool is_called_2 = false;
-  web_state_->AddScriptCommandCallback(
+  auto subscription_2 = web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_2, &value_2, kUrl2,
                           /*expected_user_is_interacting*/ false, &main_frame),
       kPrefix2);
@@ -770,7 +770,7 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   const GURL kUrl3("http://iframe");
   bool is_called_3 = false;
   web::FakeWebFrame subframe("subframe", false, GURL());
-  web_state_->AddScriptCommandCallback(
+  auto subscription_3 = web_state_->AddScriptCommandCallback(
       base::BindRepeating(&HandleScriptCommand, &is_called_3, &value_3, kUrl3,
                           /*expected_user_is_interacting*/ false, &subframe),
       kPrefix3);
@@ -812,7 +812,7 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   is_called_3 = false;
 
   // Remove the callback and check it is no longer called.
-  web_state_->RemoveScriptCommandCallback(kPrefix1);
+  subscription_1.reset();
   web_state_->OnScriptCommandReceived(kCommand1, value_1, kUrl1,
                                       /*user_is_interacting*/ false,
                                       /*sender_frame*/ &main_frame);
@@ -827,9 +827,6 @@ TEST_P(WebStateImplTest, ScriptCommand) {
   EXPECT_FALSE(is_called_1);
   EXPECT_TRUE(is_called_2);
   EXPECT_FALSE(is_called_3);
-
-  web_state_->RemoveScriptCommandCallback(kPrefix2);
-  web_state_->RemoveScriptCommandCallback(kPrefix3);
 }
 
 // Tests that WebState::CreateParams::created_with_opener is translated to

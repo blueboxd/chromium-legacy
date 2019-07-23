@@ -798,7 +798,8 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), response->head,
-          request_mode_, factory_params_->request_initiator_site_lock)) {
+          request_mode_, factory_params_->request_initiator_site_lock,
+          factory_params_->cross_origin_embedder_policy)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;
@@ -957,7 +958,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
   if (CrossOriginResourcePolicy::kBlock ==
       CrossOriginResourcePolicy::Verify(
           url_request_->url(), url_request_->initiator(), response_->head,
-          request_mode_, factory_params_->request_initiator_site_lock)) {
+          request_mode_, factory_params_->request_initiator_site_lock,
+          factory_params_->cross_origin_embedder_policy)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false);
     DeleteSelf();
     return;

@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "build/build_config.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
@@ -254,6 +256,7 @@ TEST_F(PasswordFormFillingTest, FillingOnHttp) {
   }
 }
 
+#if defined(OS_ANDROID)
 TEST_F(PasswordFormFillingTest, TouchToFill) {
   std::map<base::string16, const autofill::PasswordForm*> best_matches;
   best_matches.emplace(saved_match_.username_value, &saved_match_);
@@ -262,7 +265,7 @@ TEST_F(PasswordFormFillingTest, TouchToFill) {
     SCOPED_TRACE(testing::Message() << "Enable Touch To Fill: "
                                     << std::boolalpha << enable_touch_to_fill);
     base::test::ScopedFeatureList features;
-    features.InitWithFeatureState(features::kTouchToFillAndroid,
+    features.InitWithFeatureState(autofill::features::kTouchToFillAndroid,
                                   enable_touch_to_fill);
 
     LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -274,5 +277,6 @@ TEST_F(PasswordFormFillingTest, TouchToFill) {
               likely_form_filling);
   }
 }
+#endif
 
 }  // namespace password_manager

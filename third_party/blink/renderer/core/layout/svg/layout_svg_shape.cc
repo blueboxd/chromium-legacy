@@ -235,7 +235,7 @@ static inline bool TransformDependsOnReferenceBox(const ComputedStyle& style) {
 }
 
 bool LayoutSVGShape::UpdateLocalTransform() {
-  SVGGraphicsElement* graphics_element = ToSVGGraphicsElement(GetElement());
+  auto* graphics_element = To<SVGGraphicsElement>(GetElement());
   if (graphics_element->HasTransform(SVGElement::kIncludeMotionTransform)) {
     local_transform_.SetTransform(graphics_element->CalculateTransform(
         SVGElement::kIncludeMotionTransform));

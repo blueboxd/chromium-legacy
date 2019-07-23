@@ -24,7 +24,6 @@ source_set("cells") {
   ]
   deps = [
     "//base",
-    "//components/signin/core/browser",
     "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
@@ -59,7 +58,6 @@ source_set("unit_tests") {
     "//components/consent_auditor",
     "//components/consent_auditor:test_support",
     "//components/pref_registry",
-    "//components/signin/core/browser:browser",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/unified_consent",

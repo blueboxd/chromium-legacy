@@ -37,15 +37,18 @@ bool ContainsWebFrame(std::set<web::WebFrame*> frames,
 
 namespace web {
 
-class WebFramesManagerImplTest : public PlatformTest {
+class WebFramesManagerImplTest : public PlatformTest,
+                                 public WebFramesManagerDelegate {
  protected:
-  WebFramesManagerImplTest() {
-    WebFramesManagerImpl::CreateForWebState(&test_web_state_);
-    frames_manager_ = WebFramesManagerImpl::FromWebState(&test_web_state_);
-  }
+  WebFramesManagerImplTest() : frames_manager_(*this) {}
+
+  // WebFramesManagerDelegate.
+  void OnWebFrameAvailable(WebFrame* frame) override {}
+  void OnWebFrameUnavailable(WebFrame* frame) override {}
+  WebState* GetWebState() override { return &test_web_state_; }
 
   TestWebState test_web_state_;
-  WebFramesManagerImpl* frames_manager_ = nullptr;
+  WebFramesManagerImpl frames_manager_;
 };
 
 // Tests that the WebFrame for the main frame is returned.
@@ -55,17 +58,17 @@ TEST_F(WebFramesManagerImplTest, GetMainWebFrame) {
       "web_frame", /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* web_frame_ptr = web_frame.get();
 
-  frames_manager_->AddFrame(std::move(web_frame));
+  frames_manager_.AddFrame(std::move(web_frame));
 
-  EXPECT_EQ(web_frame_ptr, frames_manager_->GetMainWebFrame());
-  auto frames = frames_manager_->GetAllWebFrames();
+  EXPECT_EQ(web_frame_ptr, frames_manager_.GetMainWebFrame());
+  auto frames = frames_manager_.GetAllWebFrames();
   EXPECT_EQ(1ul, frames.size());
   EXPECT_TRUE(ContainsWebFrame(frames, web_frame_ptr));
 }
 
 // Tests that the WebFrame returns null if no main frame is known.
 TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
-  EXPECT_EQ(nullptr, frames_manager_->GetMainWebFrame());
+  EXPECT_EQ(nullptr, frames_manager_.GetMainWebFrame());
 
   GURL security_origin;
   const std::string web_frame_frame_id = "web_frame";
@@ -73,11 +76,11 @@ TEST_F(WebFramesManagerImplTest, NoMainWebFrame) {
       std::make_unique<WebFrameImpl>(web_frame_frame_id, /*is_main_frame=*/true,
                                      security_origin, &test_web_state_);
 
-  frames_manager_->AddFrame(std::move(web_frame));
-  frames_manager_->RemoveFrameWithId(web_frame_frame_id);
+  frames_manager_.AddFrame(std::move(web_frame));
+  frames_manager_.RemoveFrameWithId(web_frame_frame_id);
 
-  EXPECT_EQ(nullptr, frames_manager_->GetMainWebFrame());
-  EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
+  EXPECT_EQ(nullptr, frames_manager_.GetMainWebFrame());
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
 }
 
 // Tests that the WebFramesManagerImpl returns a list of all current WebFrame
@@ -88,15 +91,15 @@ TEST_F(WebFramesManagerImplTest, AddFrames) {
       "main_web_frame",
       /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
-  frames_manager_->AddFrame(std::move(main_web_frame));
+  frames_manager_.AddFrame(std::move(main_web_frame));
 
   auto child_web_frame = std::make_unique<WebFrameImpl>(
       "child_web_frame",
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   WebFrameImpl* child_web_frame_ptr = child_web_frame.get();
-  frames_manager_->AddFrame(std::move(child_web_frame));
+  frames_manager_.AddFrame(std::move(child_web_frame));
 
-  auto frames = frames_manager_->GetAllWebFrames();
+  auto frames = frames_manager_.GetAllWebFrames();
   EXPECT_EQ(2ul, frames.size());
   EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
   EXPECT_TRUE(ContainsWebFrame(frames, child_web_frame_ptr));
@@ -109,23 +112,23 @@ TEST_F(WebFramesManagerImplTest, RemoveFrame) {
       "main_web_frame",
       /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
-  frames_manager_->AddFrame(std::move(main_web_frame));
+  frames_manager_.AddFrame(std::move(main_web_frame));
 
   const std::string child_web_frame_1_frame_id = "child_web_frame_1_frame_id";
   auto child_web_frame_1 = std::make_unique<WebFrameImpl>(
       child_web_frame_1_frame_id,
       /*is_main_frame=*/false, security_origin, &test_web_state_);
-  frames_manager_->AddFrame(std::move(child_web_frame_1));
+  frames_manager_.AddFrame(std::move(child_web_frame_1));
 
   auto child_web_frame_2 = std::make_unique<WebFrameImpl>(
       "child_web_frame_2",
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   WebFrameImpl* child_web_frame_2_ptr = child_web_frame_2.get();
-  frames_manager_->AddFrame(std::move(child_web_frame_2));
+  frames_manager_.AddFrame(std::move(child_web_frame_2));
 
-  frames_manager_->RemoveFrameWithId(child_web_frame_1_frame_id);
+  frames_manager_.RemoveFrameWithId(child_web_frame_1_frame_id);
 
-  auto frames = frames_manager_->GetAllWebFrames();
+  auto frames = frames_manager_.GetAllWebFrames();
   EXPECT_EQ(2ul, frames.size());
   EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
   EXPECT_TRUE(ContainsWebFrame(frames, child_web_frame_2_ptr));
@@ -134,17 +137,17 @@ TEST_F(WebFramesManagerImplTest, RemoveFrame) {
 // Tests that all frames are removed after a call to |RemoveAllFrames|.
 TEST_F(WebFramesManagerImplTest, RemoveAllFrames) {
   GURL security_origin;
-  frames_manager_->AddFrame(std::make_unique<WebFrameImpl>(
+  frames_manager_.AddFrame(std::make_unique<WebFrameImpl>(
       "main_web_frame",
       /*is_main_frame=*/true, security_origin, &test_web_state_));
-  frames_manager_->AddFrame(std::make_unique<WebFrameImpl>(
+  frames_manager_.AddFrame(std::make_unique<WebFrameImpl>(
       "web_frame",
       /*is_main_frame=*/false, security_origin, &test_web_state_));
 
-  ASSERT_EQ(2ul, frames_manager_->GetAllWebFrames().size());
-  frames_manager_->RemoveAllWebFrames();
-  EXPECT_EQ(nullptr, frames_manager_->GetMainWebFrame());
-  EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
+  ASSERT_EQ(2ul, frames_manager_.GetAllWebFrames().size());
+  frames_manager_.RemoveAllWebFrames();
+  EXPECT_EQ(nullptr, frames_manager_.GetMainWebFrame());
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
 }
 
 // Tests that the WebFramesManagerImpl correctly ignores attempted removal of an
@@ -157,15 +160,15 @@ TEST_F(WebFramesManagerImplTest, RemoveNonexistantFrame) {
       /*is_main_frame=*/true, security_origin, &test_web_state_);
   WebFrameImpl* main_web_frame_ptr = main_web_frame.get();
 
-  frames_manager_->AddFrame(std::move(main_web_frame));
-  auto frames = frames_manager_->GetAllWebFrames();
+  frames_manager_.AddFrame(std::move(main_web_frame));
+  auto frames = frames_manager_.GetAllWebFrames();
   EXPECT_EQ(1ul, frames.size());
   EXPECT_TRUE(ContainsWebFrame(frames, main_web_frame_ptr));
 
-  frames_manager_->RemoveFrameWithId(main_web_frame_frame_id);
-  EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
-  frames_manager_->RemoveFrameWithId(main_web_frame_frame_id);
-  EXPECT_EQ(0ul, frames_manager_->GetAllWebFrames().size());
+  frames_manager_.RemoveFrameWithId(main_web_frame_frame_id);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
+  frames_manager_.RemoveFrameWithId(main_web_frame_frame_id);
+  EXPECT_EQ(0ul, frames_manager_.GetAllWebFrames().size());
 }
 
 // Tests that a WebFrame is correctly returned by its frame id.
@@ -177,10 +180,10 @@ TEST_F(WebFramesManagerImplTest, GetFrameWithId) {
       web_frame_frame_id,
       /*is_main_frame=*/false, security_origin, &test_web_state_);
   WebFrameImpl* web_frame_ptr = web_frame.get();
-  frames_manager_->AddFrame(std::move(web_frame));
+  frames_manager_.AddFrame(std::move(web_frame));
 
-  EXPECT_EQ(web_frame_ptr, frames_manager_->GetFrameWithId(web_frame_frame_id));
-  EXPECT_EQ(nullptr, frames_manager_->GetFrameWithId("invalid_id"));
+  EXPECT_EQ(web_frame_ptr, frames_manager_.GetFrameWithId(web_frame_frame_id));
+  EXPECT_EQ(nullptr, frames_manager_.GetFrameWithId("invalid_id"));
 }
 
 // Tests that WebFramesManagerImpl will unregister callbacks for previous
@@ -236,7 +239,7 @@ TEST_F(WebFramesManagerImplTest, OnWebViewUpdated) {
   // Test begin!
 
   // Tell the manager to change from nil to |web_view_1|.
-  frames_manager_->OnWebViewUpdated(nil, web_view_1, router);
+  frames_manager_.OnWebViewUpdated(nil, web_view_1, router);
 
   // Send the "FrameBecameAvailable" to |router|.
   [(id<WKScriptMessageHandler>)router
@@ -244,8 +247,8 @@ TEST_F(WebFramesManagerImplTest, OnWebViewUpdated) {
       didReceiveScriptMessage:available_message];
 
   // Check that the WebFrame for main frame is created.
-  ASSERT_EQ(1UL, frames_manager_->GetAllWebFrames().size());
-  WebFrame* main_frame = frames_manager_->GetMainWebFrame();
+  ASSERT_EQ(1UL, frames_manager_.GetAllWebFrames().size());
+  WebFrame* main_frame = frames_manager_.GetMainWebFrame();
   ASSERT_TRUE(main_frame);
   EXPECT_EQ(kFrameId, main_frame->GetFrameId());
   EXPECT_TRUE(main_frame->IsMainFrame());
@@ -257,11 +260,11 @@ TEST_F(WebFramesManagerImplTest, OnWebViewUpdated) {
       didReceiveScriptMessage:unavailable_message];
 
   // Check that the WebFrame for main frame is removed.
-  ASSERT_EQ(0UL, frames_manager_->GetAllWebFrames().size());
-  ASSERT_FALSE(frames_manager_->GetMainWebFrame());
+  ASSERT_EQ(0UL, frames_manager_.GetAllWebFrames().size());
+  ASSERT_FALSE(frames_manager_.GetMainWebFrame());
 
   // Tell the manager to change from |web_view_1| to |web_view_2|.
-  frames_manager_->OnWebViewUpdated(web_view_1, web_view_2, router);
+  frames_manager_.OnWebViewUpdated(web_view_1, web_view_2, router);
 
   // Send the "FrameBecameAvailable" of |web_view_1| to |router| again.
   [(id<WKScriptMessageHandler>)router
@@ -270,8 +273,8 @@ TEST_F(WebFramesManagerImplTest, OnWebViewUpdated) {
 
   // Check that WebFramesManagerImpl doesn't reply JS messages from previous
   // WKWebView.
-  ASSERT_EQ(0UL, frames_manager_->GetAllWebFrames().size());
-  ASSERT_FALSE(frames_manager_->GetMainWebFrame());
+  ASSERT_EQ(0UL, frames_manager_.GetAllWebFrames().size());
+  ASSERT_FALSE(frames_manager_.GetMainWebFrame());
 }
 
 }  // namespace web

@@ -461,6 +461,11 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
                 [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
       clip_and_sorting_rounded_layer =
           [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+
+      // Under a 2.0 scale factor, the corner-radius should be halved.
+      EXPECT_EQ(properties.rounded_corner_bounds.GetSimpleRadius() / 2.0f,
+                [clip_and_sorting_rounded_layer cornerRadius]);
+
       EXPECT_EQ(1u, [[clip_and_sorting_rounded_layer sublayers] count]);
       EXPECT_NE(transform_layer,
                 [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
@@ -566,7 +571,8 @@ class CALayerTreePropertyUpdatesTest : public CALayerTreeTest {
       EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
       EXPECT_EQ(clip_and_sorting_rounded_layer,
                 [[clip_and_sorting_layer sublayers] objectAtIndex:0]);
-      EXPECT_EQ(properties.rounded_corner_bounds.GetSimpleRadius(),
+      // Under a 2.0 scale factor, the corer-radius should be halved.
+      EXPECT_EQ(properties.rounded_corner_bounds.GetSimpleRadius() / 2.0f,
                 [clip_and_sorting_rounded_layer cornerRadius]);
       EXPECT_TRUE([clip_and_sorting_rounded_layer masksToBounds]);
       EXPECT_EQ(transform_layer,

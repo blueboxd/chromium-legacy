@@ -1270,9 +1270,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // It is also used for correctly sizing absolutely positioned elements
   // (point 3 above).
   LayoutObject* Container(AncestorSkipInfo* = nullptr) const;
-  // Finds the container as if this object is fixed-position.
-  LayoutObject* ContainerForAbsolutePosition(AncestorSkipInfo* = nullptr) const;
   // Finds the container as if this object is absolute-position.
+  LayoutObject* ContainerForAbsolutePosition(AncestorSkipInfo* = nullptr) const;
+  // Finds the container as if this object is fixed-position.
   LayoutObject* ContainerForFixedPosition(AncestorSkipInfo* = nullptr) const;
 
   bool CanContainOutOfFlowPositionedElement(EPosition position) const {

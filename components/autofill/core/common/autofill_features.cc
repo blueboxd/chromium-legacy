@@ -208,6 +208,11 @@ const base::Feature kAutofillManualFallbackAndroid{
 // Controls whether to use modernized style for the Autofill dropdown.
 const base::Feature kAutofillRefreshStyleAndroid{
     "AutofillRefreshStyleAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables the touch to fill feature for Android.
+const base::Feature kTouchToFillAndroid = {"TouchToFillAndroid",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

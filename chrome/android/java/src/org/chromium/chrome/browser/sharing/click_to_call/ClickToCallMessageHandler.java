@@ -16,6 +16,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
@@ -49,6 +50,8 @@ public class ClickToCallMessageHandler {
             }
             dialIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             ContextUtils.getApplicationContext().startActivity(dialIntent);
+            new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialIntent")
+                    .record(TextUtils.isEmpty(phoneNumber));
         }
     }
 

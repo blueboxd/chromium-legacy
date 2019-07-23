@@ -46,15 +46,22 @@ struct CORE_EXPORT MatchedProperties {
 
   Member<CSSPropertyValueSet> properties;
 
-  union {
-    struct {
-      unsigned link_match_type : 2;
-      unsigned valid_property_filter : 2;
-    } types_;
-    // Used to make sure all memory is zero-initialized since we compute the
-    // hash over the bytes of this object.
-    void* possibly_padded_member;
-  };
+  struct {
+    unsigned link_match_type : 2;
+    unsigned valid_property_filter : 2;
+    // This is approximately equivalent to the 'shadow-including tree order'.
+    // It can be used to evaluate the 'Shadow Tree' criteria. Note that the
+    // number stored here is 'local' to each origin (user, author), and is
+    // not used at all for the UA origin. Hence, it is not possible to compare
+    // tree_orders from two different origins.
+    //
+    // Note also that the tree_order will start at ~0u and then decrease.
+    // This is because we currently store the matched properties in reverse
+    // order.
+    //
+    // https://drafts.csswg.org/css-scoping/#shadow-cascading
+    uint16_t tree_order;
+  } types_;
 };
 
 }  // namespace blink
@@ -149,6 +156,7 @@ class CORE_EXPORT MatchResult {
   Vector<unsigned, 16> author_range_ends_;
   unsigned ua_range_end_ = 0;
   bool is_cacheable_ = true;
+  uint16_t current_tree_order_ = 0;
   DISALLOW_COPY_AND_ASSIGN(MatchResult);
 };
 

@@ -451,13 +451,6 @@ class GTestTest(RemoteTest):
               vpython_spec_path),
       ])
 
-    # Load vivid before running capture_unittests
-    # TODO(crbug.com/904730): Once we start loading vivid in init service,
-    # we can remove this code.
-    if self._test_exe == 'capture_unittests':
-      device_test_script_contents.append(
-          'echo "test0000" | sudo -S modprobe vivid n_devs=1 node_types=0x1')
-
     test_invocation = (
         './%s --test-launcher-shard-index=%d '
         '--test-launcher-total-shards=%d' % (

@@ -166,14 +166,15 @@ div.splitter {
   text-overflow: ellipsis;
 }
 
-.tree-item > .ejectable {
+#directory-tree .tree-item > .tree-row.ejectable {
   position: inherit;
 }
 
-.ejectable > span.label {
+#directory-tree .tree-row.ejectable > .label {
   left: 48px;
   position: absolute;
-  width: calc(100% - 48px - 40px);
+  right: 48px;
+  width: calc(100% - 48px - 40px - 3px);
 }
 
 #directory-tree .tree-row .rename-placeholder {
@@ -227,8 +228,9 @@ div.splitter {
   cursor: pointer;
   flex: none;
   height: 40px;
+  left: calc(100% - 40px - 3px);
   position: absolute;
-  right: 0;
+  right: calc(100% - 40px - 3px);
   width: 40px;
   z-index: 1;  /* Make sure the icon is on upper layer than paper-ripple. */
 }

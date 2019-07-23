@@ -270,7 +270,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   bool is_shutdown() const { return is_shutdown_; }
 
   // Creates a new request ID for browser initiated requests. See the comments
-  // of |request_id_| for the details. Must be called on the IO thread.
+  // of |request_id_| for the details. Can be called on any thread.
   int MakeRequestID();
 
   // Creates a new global request ID for browser initiated requests. The ID
@@ -638,7 +638,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // uninitialized variables.) This way, we no longer have the unlikely (but
   // observed in the real world!) event where we have two requests with the same
   // request_id_.
-  int request_id_;
+  std::atomic_int request_id_{-1};
 
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;

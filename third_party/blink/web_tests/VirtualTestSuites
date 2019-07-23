@@ -775,21 +775,6 @@
              "--disable-blink-features=RestrictAutomaticLazyFrameLoadingToDataSaver,RestrictAutomaticLazyImageLoadingToDataSaver"]
   },
   {
-    "prefix": "display-lock",
-    "base": "wpt_internal/display-lock",
-    "args": ["--enable-blink-features=DisplayLocking"]
-  },
-  {
-    "prefix": "display-lock",
-    "base": "http/tests/devtools/elements/highlight",
-    "args": ["--enable-blink-features=DisplayLocking"]
-  },
-  {
-    "prefix": "display-lock",
-    "base": "inspector-protocol/css",
-    "args": ["--enable-blink-features=DisplayLocking"]
-  },
-  {
     "prefix" : "autoupgrade-optionally-blockable-mixed-content",
     "base": "http/tests/mixed-autoupgrade/optionally",
     "args": ["--enable-features=AutoupgradeMixedContent<AU",
@@ -1141,6 +1126,56 @@
     "prefix": "force-defer-script",
     "base": "defer-script",
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "animations/custom-properties",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "animations/interpolation",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-cascade",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-paint-api",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-properties-values-api",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-scoping",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-typed-om",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-variables",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "external/wpt/css/css-forced-colors-adjust",
+    "args": ["--enable-blink-features=CSSCascade"]
+  },
+  {
+    "prefix": "cascade",
+    "base": "fast/css/variables",
+    "args": ["--enable-blink-features=CSSCascade"]
   },
   {
     "prefix": "at-property",

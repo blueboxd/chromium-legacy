@@ -20,6 +20,7 @@
 .note.android.ident      152
 .note.crashpad.info      28
 .note.gnu.build-id       36
+.part.end                4096
 .plt                     6096
 .rel.dyn                 184789
 .rel.plt                 3032
@@ -124,3 +125,4 @@
 .bss@2f56000(size_without_padding=4,padding=0,full_name=WebRtcSpl_CrossCorrelation,object_path=,source_path=,flags={},num_aliases=1,component=)
 .bss@2f56004(size_without_padding=4,padding=0,full_name=WebRtcSpl_DownsampleFast,object_path=,source_path=,flags={},num_aliases=1,component=)
 .bss@2f56008(size_without_padding=4,padding=0,full_name=WebRtcSpl_MaxAbsValueW16,object_path=,source_path=,flags={},num_aliases=1,component=)
+.part.end@0(size_without_padding=4096,padding=0,full_name=** ,object_path=,source_path=,flags={},num_aliases=1,component=)

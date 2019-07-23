@@ -84,6 +84,15 @@ void BuiltInChromeOsApps::Initialize(
   profile_ = profile;
 }
 
+bool BuiltInChromeOsApps::hide_settings_app_for_testing_ = false;
+
+// static
+bool BuiltInChromeOsApps::SetHideSettingsAppForTesting(bool hide) {
+  bool old_value = hide_settings_app_for_testing_;
+  hide_settings_app_for_testing_ = hide;
+  return old_value;
+}
+
 void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
                                   apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
@@ -103,6 +112,11 @@ void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
 
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
+        if (hide_settings_app_for_testing_ &&
+            (internal_app.internal_app_name ==
+             app_list::InternalAppName::kSettings)) {
+          app->show_in_search = apps::mojom::OptionalBool::kFalse;
+        }
         apps.push_back(std::move(app));
       }
     }

@@ -9,6 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/origin.h"
 
 class GURL;
@@ -41,13 +42,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginResourcePolicy {
       const base::Optional<url::Origin>& request_initiator,
       const ResourceResponseInfo& response,
       mojom::RequestMode request_mode,
-      base::Optional<url::Origin> request_initiator_site_lock);
+      base::Optional<url::Origin> request_initiator_site_lock,
+      mojom::CrossOriginEmbedderPolicy embedder_policy);
 
   // Parsing of the Cross-Origin-Resource-Policy http response header.
   enum ParsedHeader {
     kNoHeader,
     kSameOrigin,
     kSameSite,
+    kCrossOrigin,
     kParsingError,
   };
   static ParsedHeader ParseHeaderForTesting(

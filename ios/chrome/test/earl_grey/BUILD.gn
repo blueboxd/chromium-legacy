@@ -219,8 +219,8 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/browser",
     "//components/payments/core:core",
-    "//components/signin/core/browser",
     "//components/strings",
     "//components/sync/base",
     "//components/translate/core/browser",
@@ -322,8 +322,8 @@ source_set("eg_app_support+eg2") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/browser",
     "//components/payments/core:core",
-    "//components/signin/core/browser",
     "//components/strings",
     "//components/sync/base",
     "//components/translate/core/browser",

@@ -90,7 +90,9 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # Disabled on Mac 10.12 (Sierra) due to it not getting a stack trace to
   # symbolize from the second crash.
-  @decorators.Disabled('chromeos', 'android', 'win7', 'sierra', 'linux')
+  # Test is flaky on 10.13 (HighSierra). See https://crbug.com/986644.
+  @decorators.Disabled('chromeos', 'android', 'win7', 'sierra', 'linux',
+                       'highsierra')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')

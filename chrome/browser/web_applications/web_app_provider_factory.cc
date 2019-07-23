@@ -30,7 +30,6 @@ WebAppProviderFactory::WebAppProviderFactory()
           "WebAppProvider",
           BrowserContextDependencyManager::GetInstance()) {
   WebAppProviderBaseFactory::SetInstance(this);
-
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
@@ -43,7 +42,7 @@ KeyedService* WebAppProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   WebAppProvider* provider = new WebAppProvider(profile);
-  provider->StartRegistry();
+  provider->Start();
   return provider;
 }
 

@@ -323,7 +323,7 @@ bool SVGSVGElement::CheckIntersectionOrEnclosure(
     return false;
 
   AffineTransform ctm =
-      ToSVGGraphicsElement(element).ComputeCTM(kAncestorScope, this);
+      To<SVGGraphicsElement>(element).ComputeCTM(kAncestorScope, this);
   FloatRect mapped_repaint_rect =
       ctm.MapRect(layout_object->VisualRectInLocalSVGCoordinates());
 

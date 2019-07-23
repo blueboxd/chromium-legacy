@@ -62,7 +62,7 @@ class DatabaseBody(object):
         self._defs[kind][user_defined_type.identifier] = user_defined_type
 
     def find_by_identifier(self, identifier):
-        for defs_per_kind in self._defs:
+        for defs_per_kind in self._defs.itervalues():
             if identifier in defs_per_kind:
                 return defs_per_kind[identifier]
         raise KeyError(identifier)

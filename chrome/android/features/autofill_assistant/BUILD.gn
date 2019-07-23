@@ -73,6 +73,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantClient.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantModuleEntryImpl.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionHandlerImpl.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantServiceInjector.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/BottomSheetUtils.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/EditDistance.java",
@@ -180,6 +181,7 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantActionsCarouselUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantAutostartTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDetailsUiTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDirectActionHandlerTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantHeaderUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantOverlayUiTest.java",
@@ -188,6 +190,7 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AssistantOnboardingCoordinatorTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/TestingAutofillAssistantModuleEntryProvider.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/EditDistanceTest.java",
   ]
 
@@ -200,6 +203,7 @@ android_library("test_java") {
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_util_java",
     "//chrome/lib/image_fetcher/public/android:java",
+    "//chrome/test/android:chrome_java_test_support",
     "//components/autofill_assistant/browser:proto_java",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",

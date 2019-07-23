@@ -86,8 +86,6 @@ static_library("test_support") {
     "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/history/core/browser",
-    "//components/signin/core/browser",
-    "//components/signin/public/base:test_support",
     "//components/sync",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",

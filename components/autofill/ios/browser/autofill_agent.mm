@@ -589,11 +589,11 @@ autofillManagerFromWebState:(web::WebState*)webState
     return;
   }
   // Check that the main frame has already been processed.
-  if (!web::GetMainWebFrame(webState)) {
+  if (!webState->GetWebFramesManager()->GetMainWebFrame()) {
     return;
   }
   if (!autofill::AutofillDriverIOS::FromWebStateAndWebFrame(
-           webState, web::GetMainWebFrame(webState))
+           webState, webState->GetWebFramesManager()->GetMainWebFrame())
            ->is_processed()) {
     return;
   }
@@ -624,9 +624,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 #pragma mark - Private methods
 
 - (void)processPage:(web::WebState*)webState {
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(webState);
-  DCHECK(framesManager);
+  web::WebFramesManager* framesManager = webState->GetWebFramesManager();
   if (!framesManager->GetMainWebFrame()) {
     return;
   }

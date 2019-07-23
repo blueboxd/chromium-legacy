@@ -74,7 +74,6 @@ class WebLayerTreeView {
   virtual void ForceRecalculateRasterScales() {}
 
   // Input properties ---------------------------------------------------
-  virtual void UpdateEventRectsForSubframeIfNecessary() {}
   virtual void SetHaveScrollEventHandlers(bool) {}
 
   // Returns the FrameSinkId of the widget associated with this layer tree view.

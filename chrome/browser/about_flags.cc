@@ -4109,7 +4109,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"touch-to-fill", flag_descriptions::kTouchToFillAndroidName,
      flag_descriptions::kTouchToFillAndroidDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(password_manager::features::kTouchToFillAndroid)},
+     FEATURE_VALUE_TYPE(autofill::features::kTouchToFillAndroid)},
 #endif  // defined(OS_ANDROID)
 
     {"enable-sync-uss-nigori", flag_descriptions::kEnableSyncUSSNigoriName,

@@ -6,11 +6,4 @@ Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.ht
 Bug(none) virtual/not-omt-sw-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
 Bug(none) virtual/omt-worker-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
 
-# signed exchange
-Bug(none) external/wpt/signed-exchange [ Skip ]
-Bug(none) virtual/sxg-subresource [ Skip ]
-Bug(none) virtual/sxg-with-network-service [ Skip ]
-Bug(none) http/tests/devtools/sxg [ Skip ]
-Bug(none) http/tests/loading/sxg [ Skip ]
-
 Bug(none) http/tests/misc/xhtml.php [ Failure ]

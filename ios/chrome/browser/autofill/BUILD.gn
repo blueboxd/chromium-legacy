@@ -115,7 +115,6 @@ source_set("autofill_internal") {
     "//components/infobars/core",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/signin/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

@@ -5,8 +5,8 @@
 #include "base/ios/ios_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ios/web/common/features.h"
-#include "ios/web/js_messaging/web_frames_manager_impl.h"
 #include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -88,8 +88,7 @@ class WebFramesManagerTest
 
 // Tests that the WebFramesManager correctly adds a WebFrame for a webpage.
 TEST_P(WebFramesManagerTest, SingleWebFrame) {
-  WebFramesManagerImpl* frames_manager =
-      WebFramesManagerImpl::FromWebState(web_state());
+  WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   GURL url = test_server_->GetURL("/echo");
   ASSERT_TRUE(LoadUrl(url));
@@ -106,8 +105,7 @@ TEST_P(WebFramesManagerTest, SingleWebFrame) {
 // Tests that the WebFramesManager correctly adds a unique WebFrame after a
 // webpage navigates back.
 TEST_P(WebFramesManagerTest, SingleWebFrameBack) {
-  WebFramesManagerImpl* frames_manager =
-      WebFramesManagerImpl::FromWebState(web_state());
+  WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   // Load first page.
   GURL url = test_server_->GetURL("/echo");
@@ -143,8 +141,7 @@ TEST_P(WebFramesManagerTest, SingleWebFrameBack) {
 // Tests that the WebFramesManager correctly adds a unique WebFrame after a
 // webpage navigates back from a clicked link.
 TEST_P(WebFramesManagerTest, SingleWebFrameLinkNavigationBackForward) {
-  WebFramesManagerImpl* frames_manager =
-      WebFramesManagerImpl::FromWebState(web_state());
+  WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   // Load page with links.
   GURL url = test_server_->GetURL(kLinksPageURL);
@@ -193,8 +190,7 @@ TEST_P(WebFramesManagerTest, SingleWebFrameLinkNavigationBackForward) {
 // Tests that the WebFramesManager correctly adds a unique WebFrame after a
 // webpage navigates back from a clicked same page link.
 TEST_P(WebFramesManagerTest, SingleWebFrameSamePageNavigationBackForward) {
-  WebFramesManagerImpl* frames_manager =
-      WebFramesManagerImpl::FromWebState(web_state());
+  WebFramesManager* frames_manager = web_state()->GetWebFramesManager();
 
   GURL url = test_server_->GetURL(kLinksPageURL);
   ASSERT_TRUE(LoadUrl(url));

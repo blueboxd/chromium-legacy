@@ -170,7 +170,7 @@ TEST_P(WebStateTest, OverridingWebKitObject) {
         /*interacted*/ bool, /*is_main_frame*/ web::WebFrame*) {
         message_received = true;
       });
-  web_state()->AddScriptCommandCallback(callback, "test");
+  auto subscription = web_state()->AddScriptCommandCallback(callback, "test");
 
   // Load the page which overrides window.webkit object and wait until the
   // test message is received.
@@ -183,7 +183,6 @@ TEST_P(WebStateTest, OverridingWebKitObject) {
   WaitForCondition(^{
     return message_received;
   });
-  web_state()->RemoveScriptCommandCallback("test");
 }
 
 // Tests that reload with web::ReloadType::NORMAL is no-op when navigation
@@ -268,7 +267,7 @@ TEST_P(WebStateTest, MessageFromMainFrame) {
         message_from_main_frame = sender_frame->IsMainFrame();
         message_value = value.Clone();
       });
-  web_state()->AddScriptCommandCallback(callback, "test");
+  auto subscription = web_state()->AddScriptCommandCallback(callback, "test");
 
   ASSERT_TRUE(LoadHtml(
       "<script>"
@@ -278,7 +277,6 @@ TEST_P(WebStateTest, MessageFromMainFrame) {
   WaitForCondition(^{
     return message_received;
   });
-  web_state()->RemoveScriptCommandCallback("test");
   EXPECT_TRUE(message_from_main_frame);
   EXPECT_TRUE(message_value.is_dict());
   EXPECT_EQ(message_value.DictSize(), size_t(1));
@@ -302,7 +300,7 @@ TEST_P(WebStateTest, MessageFromIFrame) {
         message_from_main_frame = sender_frame->IsMainFrame();
         message_value = value.Clone();
       });
-  web_state()->AddScriptCommandCallback(callback, "test");
+  auto subscription = web_state()->AddScriptCommandCallback(callback, "test");
 
   ASSERT_TRUE(LoadHtml(
       "<iframe srcdoc='"
@@ -314,7 +312,6 @@ TEST_P(WebStateTest, MessageFromIFrame) {
   WaitForCondition(^{
     return message_received;
   });
-  web_state()->RemoveScriptCommandCallback("test");
   EXPECT_FALSE(message_from_main_frame);
   EXPECT_TRUE(message_value.is_dict());
   EXPECT_EQ(message_value.DictSize(), size_t(1));

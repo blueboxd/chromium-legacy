@@ -6,7 +6,6 @@
 
 #include "base/hash/hash.h"
 #include "components/grit/components_resources.h"
-#include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

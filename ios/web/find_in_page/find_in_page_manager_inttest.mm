@@ -5,7 +5,7 @@
 #import "base/test/ios/wait_util.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/web/public/find_in_page/find_in_page_manager.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_find_in_page_manager_delegate.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -76,7 +76,7 @@ TEST_F(FindInPageManagerTest, FindMatchInMainFrame) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"Main frame text",
@@ -97,7 +97,7 @@ TEST_F(FindInPageManagerTest, FindMatchInMainFrameAndIFrame) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
@@ -117,7 +117,7 @@ TEST_F(FindInPageManagerTest, FindNoMatch) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"foobar", FindInPageOptions::FindInPageSearch);
@@ -137,7 +137,7 @@ TEST_F(FindInPageManagerTest, FindForwardIterateThroughAllMatches) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
@@ -166,7 +166,7 @@ TEST_F(FindInPageManagerTest, FindBackwardsIterateThroughAllMatches) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"frame", FindInPageOptions::FindInPageSearch);
@@ -194,7 +194,7 @@ TEST_F(FindInPageManagerTest, FindIterateThroughIframeMatches) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"iframe", FindInPageOptions::FindInPageSearch);
@@ -219,7 +219,7 @@ TEST_F(FindInPageManagerTest, FindIterationWithNullQuery) {
       net::EscapeQueryParamValue(kFindInPageIFrameUrl, /*use_plus=*/true);
   test::LoadUrl(web_state(), test_server_.GetURL(url_spec));
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return GetAllWebFrames(web_state()).size() == 2;
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
   }));
 
   GetFindInPageManager()->Find(@"iframe", FindInPageOptions::FindInPageSearch);

@@ -206,8 +206,9 @@ void OnGetWebApplicationInfo(
     return;
   }
 
-  WebappInstallSource metrics_install_source =
-      web_app::ConvertOptionsToMetricsInstallSource(install_options);
+  WebappInstallSource install_source =
+      web_app::ConvertExternalInstallSourceToInstallSource(
+          install_options.install_source);
 
   Profile* profile = Profile::FromBrowserContext(
       install_task->web_contents()->GetBrowserContext());
@@ -215,7 +216,7 @@ void OnGetWebApplicationInfo(
 
   auto bookmark_app_helper = install_manager->bookmark_app_helper_factory().Run(
       profile, std::move(web_app_info), install_task->web_contents(),
-      metrics_install_source);
+      install_source);
 
   BookmarkAppHelper* helper_ptr = bookmark_app_helper.get();
   SetBookmarkAppHelperOptions(install_options, bookmark_app_helper.get());

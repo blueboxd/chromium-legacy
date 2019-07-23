@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"  // for FALLTHROUGH;
+#include "base/debug/crash_logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -442,6 +443,20 @@ void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {
 bool RestrictedCookieManager::ValidateAccessToCookiesAt(const GURL& url) {
   if (origin_.IsSameOriginWith(url::Origin::Create(url)))
     return true;
+
+  // TODO(https://crbug.com/983090): Remove the crash keys once fixed.
+  static base::debug::CrashKeyString* bound_origin =
+      base::debug::AllocateCrashKeyString(
+          "restricted_cookie_manager_bound_origin",
+          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(bound_origin, origin_.GetDebugString());
+
+  static base::debug::CrashKeyString* url_origin =
+      base::debug::AllocateCrashKeyString(
+          "restricted_cookie_manager_url_origin",
+          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(url_origin,
+                                 url::Origin::Create(url).GetDebugString());
 
   mojo::ReportBadMessage("Incorrect url origin");
   return false;

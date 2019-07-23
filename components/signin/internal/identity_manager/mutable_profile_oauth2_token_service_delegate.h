@@ -13,11 +13,11 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
@@ -69,7 +69,7 @@ class MutableProfileOAuth2TokenServiceDelegate
                          const std::string& refresh_token) override;
   void RevokeAllCredentials() override;
   void RevokeCredentials(const CoreAccountId& account_id) override;
-  void ExtractCredentials(OAuth2TokenService* to_service,
+  void ExtractCredentials(ProfileOAuth2TokenService* to_service,
                           const CoreAccountId& account_id) override;
   void Shutdown() override;
 

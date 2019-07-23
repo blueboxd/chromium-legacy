@@ -14,7 +14,6 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/common/web_application_info.h"
@@ -204,28 +203,28 @@ void RecordAppBanner(content::WebContents* contents, const GURL& app_url) {
       base::Time::Now());
 }
 
-WebappInstallSource ConvertOptionsToMetricsInstallSource(
-    const ExternalInstallOptions& options) {
-  auto metrics_install_source = WebappInstallSource::COUNT;
-  switch (options.install_source) {
+WebappInstallSource ConvertExternalInstallSourceToInstallSource(
+    ExternalInstallSource external_install_source) {
+  WebappInstallSource install_source;
+  switch (external_install_source) {
     case ExternalInstallSource::kInternalDefault:
-      metrics_install_source = WebappInstallSource::INTERNAL_DEFAULT;
+      install_source = WebappInstallSource::INTERNAL_DEFAULT;
       break;
     case ExternalInstallSource::kExternalDefault:
-      metrics_install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+      install_source = WebappInstallSource::EXTERNAL_DEFAULT;
       break;
     case ExternalInstallSource::kExternalPolicy:
-      metrics_install_source = WebappInstallSource::EXTERNAL_POLICY;
+      install_source = WebappInstallSource::EXTERNAL_POLICY;
       break;
     case ExternalInstallSource::kSystemInstalled:
-      metrics_install_source = WebappInstallSource::SYSTEM_DEFAULT;
+      install_source = WebappInstallSource::SYSTEM_DEFAULT;
       break;
     case ExternalInstallSource::kArc:
-      metrics_install_source = WebappInstallSource::ARC;
+      install_source = WebappInstallSource::ARC;
       break;
   }
 
-  return metrics_install_source;
+  return install_source;
 }
 
 void RecordExternalAppInstallResultCode(

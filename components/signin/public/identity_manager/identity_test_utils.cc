@@ -10,13 +10,14 @@
 #include "build/build_config.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "google_apis/gaia/gaia_constants.h"
 
 #if defined(OS_ANDROID)
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
@@ -245,11 +246,11 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,
                                       const std::string& account_id) {
-  UpdateRefreshTokenForAccount(
-      identity_manager->GetTokenService(),
+  UpdateRefreshTokenForAccount(identity_manager->GetTokenService(),
 
-      identity_manager->GetAccountTrackerService(), identity_manager,
-      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+                               identity_manager->GetAccountTrackerService(),
+                               identity_manager, account_id,
+                               GaiaConstants::kInvalidRefreshToken);
 }
 
 void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,

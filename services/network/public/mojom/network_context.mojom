@@ -455,6 +455,12 @@ struct SignedExchangeReport {
 const uint32 kBrowserProcessId = 0;
 const uint32 kInvalidProcessId = 0xffffffff;
 
+// https://mikewest.github.io/corpp/#integration-html
+enum CrossOriginEmbedderPolicy {
+  kNone,
+  kRequireCorp,
+};
+
 struct URLLoaderFactoryParams {
   // Process requesting the URLLoaderFactory.
   // Set to kBrowserProcessId to indicate the browser process.
@@ -473,6 +479,11 @@ struct URLLoaderFactoryParams {
   // True if web related security (e.g., CORS) should be disabled. This is
   // mainly used by people testing their sites, via a command line switch.
   bool disable_web_security = false;
+
+  // https://mikewest.github.io/corpp/#integration-html
+  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
+  CrossOriginEmbedderPolicy cross_origin_embedder_policy =
+      CrossOriginEmbedderPolicy.kNone;
 
   // If this is set, requests with the kURLLoadOptionUseHeaderClient option will
   // callback to the |header_client|, allowing the Cookie/Referrer request

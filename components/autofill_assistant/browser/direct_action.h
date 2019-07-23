@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DIRECT_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_DIRECT_ACTION_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -27,7 +28,7 @@ struct DirectAction {
   bool empty() const { return names.empty(); }
 
   // Names of the direct action under which this action is available. Optional.
-  std::vector<std::string> names;
+  std::set<std::string> names;
 
   // Arguments that must be set to run the direct action.
   std::vector<std::string> required_arguments;

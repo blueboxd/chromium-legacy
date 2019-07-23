@@ -236,7 +236,7 @@ void DesksBarView::ButtonPressed(views::Button* sender,
   auto* controller = DesksController::Get();
   if (sender == new_desk_button_) {
     if (controller->CanCreateDesks()) {
-      controller->NewDesk();
+      controller->NewDesk(DesksCreationRemovalSource::kButton);
       UpdateNewDeskButtonState();
     }
     return;
@@ -244,7 +244,8 @@ void DesksBarView::ButtonPressed(views::Button* sender,
 
   for (auto& mini_view : mini_views_) {
     if (mini_view.get() == sender) {
-      controller->ActivateDesk(mini_view->desk());
+      controller->ActivateDesk(mini_view->desk(),
+                               DesksSwitchSource::kMiniViewButton);
       return;
     }
   }

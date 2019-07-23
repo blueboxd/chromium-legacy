@@ -41,6 +41,9 @@ class PrintTabHelper : public web::WebStateObserver,
 
   __weak id<WebStatePrinter> printer_;
 
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
+
   WEB_STATE_USER_DATA_KEY_DECL();
 
   DISALLOW_COPY_AND_ASSIGN(PrintTabHelper);

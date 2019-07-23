@@ -11,7 +11,6 @@
 
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
-#include "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 
@@ -22,6 +21,11 @@
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
+
+namespace signin_metrics {
+enum class AccessPoint;
+enum class PromoAction;
+}
 
 using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 

@@ -204,7 +204,8 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebFormControlElement& element) override;
   void SelectControlDidChange(
       const blink::WebFormControlElement& element) override;
-  bool HasFillData(const blink::WebFormControlElement& element) const override;
+  bool TryToShowTouchToFill(
+      const blink::WebFormControlElement& element) override;
 
   void HandleFocusChangeComplete();
 

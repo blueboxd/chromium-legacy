@@ -334,6 +334,11 @@ const CGFloat kButtonTrailingSpacing = 10;
   [self.leadingButton displayBadge:display animated:animated];
 }
 
+- (void)enableTrailingButton:(BOOL)enabled {
+  self.trailingButton.enabled = enabled;
+  [self updateAccessibility];
+}
+
 #pragma mark - UIResponder
 
 // This is needed for UIMenu
@@ -379,6 +384,12 @@ const CGFloat kButtonTrailingSpacing = 10;
   } else {
     self.locationButton.accessibilityValue =
         [NSString stringWithFormat:@"%@", self.locationLabel.text];
+  }
+
+  if (self.trailingButton.enabled) {
+    [self.accessibleElements addObject:self.trailingButton];
+  } else {
+    [self.accessibleElements removeObject:self.trailingButton];
   }
 }
 

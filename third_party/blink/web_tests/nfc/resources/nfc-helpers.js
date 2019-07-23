@@ -106,7 +106,7 @@ function toMojoNDEFCompatibility(compatibility) {
   return device.mojom.NDEFCompatibility.ANY;
 }
 
-// Converts between NDEFMessage https://w3c.github.io/web-nfc/#dom-ndefmessage
+// Converts between NDEFMessageInit https://w3c.github.io/web-nfc/#dom-ndefmessage
 // and mojom.NDEFMessage structure, so that nfc.watch function can be tested.
 function toMojoNDEFMessage(message) {
   let ndefMessage = new device.mojom.NDEFMessage();
@@ -141,8 +141,8 @@ function toByteArray(data) {
   return byteArray;
 }
 
-// Compares NDEFMessage that was provided to the API
-// (e.g. navigator.nfc.push), and NDEFMessage that was received by the
+// Compares NDEFMessageSource that was provided to the API
+// (e.g. navigator.nfc.push), and mojom NDEFMessage that was received by the
 // mock NFC service.
 function assertNDEFMessagesEqual(providedMessage, receivedMessage) {
   // If simple data type is passed, e.g. String or ArrayBuffer, convert it
@@ -173,7 +173,6 @@ function assertWebNDEFMessagesEqual(a, b) {
     let recordB = b.records[i];
     assert_equals(recordA.recordType, recordB.recordType);
     assert_equals(recordA.mediaType, recordB.mediaType);
-
     if (recordA.data instanceof ArrayBuffer) {
       assert_array_equals(new Uint8Array(recordA.data),
           new Uint8Array(recordB.data));

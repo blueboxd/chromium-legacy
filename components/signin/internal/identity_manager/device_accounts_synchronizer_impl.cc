@@ -5,7 +5,7 @@
 #include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
 
 #include "base/logging.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 
 namespace identity {
 

@@ -17,14 +17,14 @@ class Proxy(object):
         """
         Creates a new proxy to |target_object|.
 
-        Keyword arguments:
-        target_object -- The object to which attribute access is proxied.  This
-            can be set later by set_target_object.
-        target_attrs -- None or list of attribute names to be proxied.  If None,
-            all the attribute access is proxied.
-        target_attrs_with_priority -- None or list of attribute names to be
-            unconditionally proxied with priority over attributes defined on
-            |self|.  If None, no attribute has priority over own attributes.
+        Args:
+            target_object: The object to which attribute access is proxied.
+                This can be set later by set_target_object.
+            target_attrs: None or list of attribute names to be proxied.  If
+                None, all the attribute access is proxied.
+            target_attrs_with_priority: None or list of attribute names to be
+                unconditionally proxied with priority over attributes defined on
+                |self|.  If None, no attribute has priority over own attributes.
         """
         if target_attrs is not None:
             assert isinstance(target_attrs, (list, set, tuple))
@@ -36,7 +36,7 @@ class Proxy(object):
     def __getattr__(self, attribute):
         target_object = object.__getattribute__(self, '_target_object')
         target_attrs = object.__getattribute__(self, '_target_attrs')
-        assert target_object
+        assert target_object is not None
         if target_attrs is None or attribute in target_attrs:
             return getattr(target_object, attribute)
         raise AttributeError
@@ -80,7 +80,7 @@ class Proxy(object):
 
     @property
     def target_object(self):
-        assert self._target_object
+        assert self._target_object is not None
         return self._target_object
 
 
@@ -151,4 +151,4 @@ class RefByIdFactory(object):
         assert callable(callback)
         self._is_frozen = True
         for ref in self._references:
-            resolver(ref)
+            callback(ref)

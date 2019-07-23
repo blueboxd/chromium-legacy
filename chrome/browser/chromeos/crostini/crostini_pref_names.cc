@@ -33,6 +33,11 @@ const char kUserCrostiniAllowedByPolicy[] = "crostini.user_allowed_by_policy";
 // the crostini export / import UI.
 const char kUserCrostiniExportImportUIAllowedByPolicy[] =
     "crostini.user_export_import_ui_allowed_by_policy";
+// A boolean preference representing a user level enterprise policy to allow
+// Crostini root access.
+// TODO(https://crbug.com/983998): The features that have to be implemented.
+const char kUserCrostiniRootAccessAllowedByPolicy[] =
+    "crostini.user_root_access_allowed_by_policy";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -81,6 +86,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kUserCrostiniAllowedByPolicy, true);
   registry->RegisterBooleanPref(kUserCrostiniExportImportUIAllowedByPolicy,
                                 true);
+  registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
 }
 
 }  // namespace prefs

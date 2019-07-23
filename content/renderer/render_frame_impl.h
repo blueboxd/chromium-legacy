@@ -529,9 +529,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void ResumeBlockedRequests() override;
   void CancelBlockedRequests() override;
   void SetLifecycleState(blink::mojom::FrameLifecycleState state) override;
-  void GetTextSurroundingSelection(
-      uint32_t max_length,
-      GetTextSurroundingSelectionCallback callback) override;
 
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(

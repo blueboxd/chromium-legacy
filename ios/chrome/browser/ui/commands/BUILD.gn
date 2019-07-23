@@ -4,6 +4,7 @@
 
 source_set("commands") {
   configs += [ "//build/config/compiler:enable_arc" ]
+
   sources = [
     "activity_service_commands.h",
     "application_commands.h",
@@ -30,14 +31,18 @@ source_set("commands") {
     "snackbar_commands.h",
     "toolbar_commands.h",
   ]
+
   deps = [
-    "//base",
-    "//components/browsing_data/core",
-    "//components/signin/core/browser",
-    "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
     "//ios/web",
     "//net",
     "//url",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/browsing_data/core",
+    "//components/signin/public/base",
+    "//ios/chrome/browser/browsing_data:browsing_data_remove_mask",
   ]
 }
 

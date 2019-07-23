@@ -662,7 +662,8 @@ void CARendererLayerTree::ClipAndSortingLayer::CommitToCA(
                                    -dip_rounded_corner_bounds.y(), 0)];
 
       [rounded_corner_ca_layer
-          setCornerRadius:rounded_corner_bounds.GetSimpleRadius()];
+          setCornerRadius:rounded_corner_bounds.GetSimpleRadius() /
+                          scale_factor];
     }
   } else {
     [rounded_corner_ca_layer setMasksToBounds:false];

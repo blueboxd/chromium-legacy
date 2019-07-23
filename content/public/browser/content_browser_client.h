@@ -575,7 +575,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // loaded. This is called on the IO thread.
   // Relying on ResourceContext to access preferences on IO thread until we move
   // the call sites out of the IO thread. See crbug.com/908955 for more context.
-  virtual bool AllowSignedExchange(ResourceContext* context);
+  virtual bool AllowSignedExchangeOnIO(ResourceContext* context);
+  // Same as above but called on UI thread.
+  virtual bool AllowSignedExchange(BrowserContext* context);
 
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 

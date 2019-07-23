@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -554,6 +555,9 @@ class DiskMountManagerImpl : public DiskMountManager,
                              const std::string& label) {
     DiskMap::const_iterator disk = disks_.find(device_path);
     DCHECK(disk != disks_.end() && disk->second->mount_path().empty());
+
+    base::UmaHistogramEnumeration("FileBrowser.FormatFileSystemType",
+                                  filesystem);
 
     const std::string filesystem_str = FormatFileSystemTypeToString(filesystem);
     pending_format_changes_[device_path] = {filesystem_str, label};

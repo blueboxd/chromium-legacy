@@ -14,7 +14,7 @@ DirectAction::~DirectAction() = default;
 
 DirectAction::DirectAction(const DirectActionProto& proto) {
   for (const std::string& name : proto.names()) {
-    names.emplace_back(name);
+    names.insert(name);
   }
   for (const std::string& argument : proto.required_arguments()) {
     required_arguments.emplace_back(argument);

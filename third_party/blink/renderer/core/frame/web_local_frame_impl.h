@@ -65,6 +65,7 @@ class IntSize;
 class LocalFrameClientImpl;
 class ResourceError;
 class ScrollableArea;
+class SurroundingTextImpl;
 class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
@@ -304,7 +305,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                             WebString& clip_html,
                             WebRect& clip_rect) override;
   void AdvanceFocusInForm(WebFocusType) override;
-  bool CanFocusedFieldBeAutofilled() const override;
+  bool TryToShowTouchToFillForFocusedElement() override;
   void PerformMediaPlayerAction(const WebPoint&,
                                 const WebMediaPlayerAction&) override;
   void OnPortalActivated(const base::UnguessableToken& portal_token,
@@ -505,6 +506,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebContentSettingsClient* content_settings_client_ = nullptr;
 
   Member<FindInPage> find_in_page_;
+  Member<SurroundingTextImpl> surrounding_text_impl_;
 
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().

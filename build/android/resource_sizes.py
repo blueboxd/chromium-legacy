@@ -18,7 +18,6 @@ import logging
 import os
 import posixpath
 import re
-import struct
 import sys
 import tempfile
 import zipfile
@@ -47,50 +46,13 @@ with host_paths.SysPath(host_paths.TRACING_PATH):
 
 with host_paths.SysPath(_BUILD_UTILS_PATH, 0):
   from util import build_utils # pylint: disable=import-error
+  from util import zipalign  # pylint: disable=import-error
 
 with host_paths.SysPath(_APK_PATCH_SIZE_ESTIMATOR_PATH):
   import apk_patch_size_estimator # pylint: disable=import-error
 
 
-# Python had a bug in zipinfo parsing that triggers on ChromeModern.apk
-# https://bugs.python.org/issue14315
-def _PatchedDecodeExtra(self):
-  # Try to decode the extra field.
-  extra = self.extra
-  unpack = struct.unpack
-  while len(extra) >= 4:
-    tp, ln = unpack('<HH', extra[:4])
-    if tp == 1:
-      if ln >= 24:
-        counts = unpack('<QQQ', extra[4:28])
-      elif ln == 16:
-        counts = unpack('<QQ', extra[4:20])
-      elif ln == 8:
-        counts = unpack('<Q', extra[4:12])
-      elif ln == 0:
-        counts = ()
-      else:
-        raise RuntimeError, "Corrupt extra field %s"%(ln,)
-
-      idx = 0
-
-      # ZIP64 extension (large files and/or large archives)
-      if self.file_size in (0xffffffffffffffffL, 0xffffffffL):
-        self.file_size = counts[idx]
-        idx += 1
-
-      if self.compress_size == 0xFFFFFFFFL:
-        self.compress_size = counts[idx]
-        idx += 1
-
-      if self.header_offset == 0xffffffffL:
-        self.header_offset = counts[idx]
-        idx += 1
-
-    extra = extra[ln + 4:]
-
-zipfile.ZipInfo._decodeExtra = (  # pylint: disable=protected-access
-    _PatchedDecodeExtra)
+zipalign.ApplyZipFileZipAlignFix()
 
 # Captures an entire config from aapt output.
 _AAPT_CONFIG_PATTERN = r'config %s:(.*?)config [a-zA-Z-]+:'

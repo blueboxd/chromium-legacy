@@ -5,7 +5,6 @@
 #import "ios/web/favicon/favicon_manager.h"
 
 #import "ios/web/favicon/favicon_util.h"
-#import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,14 +18,12 @@ namespace web {
 
 FaviconManager::FaviconManager(WebStateImpl* web_state)
     : web_state_impl_(web_state) {
-  web_state_impl_->AddScriptCommandCallback(
+  subscription_ = web_state_impl_->AddScriptCommandCallback(
       base::BindRepeating(&FaviconManager::OnJsMessage, base::Unretained(this)),
       kCommandPrefix);
 }
 
-FaviconManager::~FaviconManager() {
-  web_state_impl_->RemoveScriptCommandCallback(kCommandPrefix);
-}
+FaviconManager::~FaviconManager() {}
 
 void FaviconManager::OnJsMessage(const base::DictionaryValue& message,
                                  const GURL& page_url,

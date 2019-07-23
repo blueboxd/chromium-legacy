@@ -8,7 +8,6 @@
 #import "components/autofill/ios/form_util/form_activity_observer.h"
 #import "components/autofill/ios/form_util/test_form_activity_observer.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/fakes/test_web_state_observer_util.h"
@@ -69,9 +68,10 @@ TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^bool {
-        return web::GetMainWebFrame(web_state()) != nullptr;
+        return web_state()->GetWebFramesManager()->GetMainWebFrame() != nullptr;
       }));
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
 
   ExecuteJavaScript(@"document.getElementById('submit').click();");
   ASSERT_TRUE(observer_->submit_document_info());
@@ -101,9 +101,10 @@ TEST_F(FormActivityTabHelperTest, TestFormSubmittedHook) {
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^bool {
-        return web::GetMainWebFrame(web_state()) != nullptr;
+        return web_state()->GetWebFramesManager()->GetMainWebFrame() != nullptr;
       }));
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
 
   ExecuteJavaScript(@"document.getElementById('form').submit();");
   ASSERT_TRUE(observer_->submit_document_info());
@@ -125,9 +126,10 @@ TEST_F(FormActivityTabHelperTest, TestObserverFormActivityFrameMessaging) {
        "</form>");
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^bool {
-        return web::GetMainWebFrame(web_state()) != nullptr;
+        return web_state()->GetWebFramesManager()->GetMainWebFrame() != nullptr;
       }));
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
   ASSERT_FALSE(observer_->form_activity_info());
   // First call will set document.activeElement (which is usually set by user
   // action. Second call will trigger the message.

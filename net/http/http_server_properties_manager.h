@@ -146,33 +146,6 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void ScheduleUpdateCacheForTesting();
 
  protected:
-  // The location where ScheduleUpdatePrefs was called.
-  // Must be kept up to date with HttpServerPropertiesUpdatePrefsLocation in
-  // histograms.xml.
-  enum Location {
-    SUPPORTS_SPDY = 0,
-    HTTP_11_REQUIRED = 1,
-    SET_ALTERNATIVE_SERVICES = 2,
-    MARK_ALTERNATIVE_SERVICE_BROKEN = 3,
-    MARK_ALTERNATIVE_SERVICE_RECENTLY_BROKEN = 4,
-    CONFIRM_ALTERNATIVE_SERVICE = 5,
-    CLEAR_ALTERNATIVE_SERVICE = 6,
-    // deprecated: SET_SPDY_SETTING = 7,
-    // deprecated: CLEAR_SPDY_SETTINGS = 8,
-    // deprecated: CLEAR_ALL_SPDY_SETTINGS = 9,
-    SET_SUPPORTS_QUIC = 10,
-    SET_SERVER_NETWORK_STATS = 11,
-    DETECTED_CORRUPTED_PREFS = 12,
-    SET_QUIC_SERVER_INFO = 13,
-    CLEAR_SERVER_NETWORK_STATS = 14,
-    MARK_ALTERNATIVE_SERVICE_BROKEN_UNTIL_DEFAULT_NETWORK_CHANGES = 15,
-    ON_DEFAULT_NETWORK_CHANGED = 16,
-    NUM_LOCATIONS = 17,
-  };
-
-  // --------------------
-  // SPDY related methods
-
   // These are used to delay updating of the cached data in
   // |http_server_properties_impl_| while the preferences are changing, and
   // execute only one update per simultaneous prefs changes.
@@ -186,7 +159,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   // |http_server_properties_impl_| is changing, and execute only one update per
   // simultaneous changes.
   // |location| specifies where this method is called from.
-  void ScheduleUpdatePrefs(Location location);
+  void ScheduleUpdatePrefs();
 
   // Update prefs::kHttpServerProperties in preferences with the cached data
   // from |http_server_properties_impl_|. Invokes |callback| when changes have

@@ -265,10 +265,8 @@ void NFC::OnWatch(const Vector<uint32_t>& ids,
           callback->CallbackRelevantScriptStateOrReportError("NFC", "watch");
       if (!script_state)
         continue;
-      ScriptState::Scope scope(script_state);
-      const NDEFMessage* ndef_message =
-          MojoToBlinkNDEFMessage(script_state, message);
-      callback->InvokeAndReportException(nullptr, ndef_message);
+      callback->InvokeAndReportException(
+          nullptr, MakeGarbageCollected<NDEFMessage>(message));
     }
   }
 }

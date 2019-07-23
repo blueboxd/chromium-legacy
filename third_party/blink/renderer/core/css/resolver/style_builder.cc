@@ -109,11 +109,6 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
       is_initial = true;
   }
 
-  // CSSPropertyID::kVariable currently handles initial/inherit inside
-  // ApplyValue.
-  DCHECK(id != CSSPropertyID::kVariable || !is_initial);
-  DCHECK(id != CSSPropertyID::kVariable || !is_inherit);
-
   if (is_initial)
     To<Longhand>(property).ApplyInitial(state);
   else if (is_inherit)

@@ -993,6 +993,7 @@
         'CrostiniAllowed',
         'DeviceUnaffiliatedCrostiniAllowed',
         'CrostiniExportImportUIAllowed',
+        'CrostiniRootAccessAllowed',
       ]
     },
     {
@@ -13378,6 +13379,25 @@
       'desc': '''If the policy is set to false, the export / import UI will not be available to users, however it is still possible to use 'lxc' commands directly in the virtual machine to export and import container images.''',
     },
     {
+      'name': 'CrostiniRootAccessAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:77-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 576,
+      'caption': '''User is allowed to have root access to Crostini containers''',
+      'tags': ['system-security'],
+      'desc': '''Allow this user root access to Crostini containers.
+
+      If the policy is set to true of left unset root access to Crostini containers will be granted to the user.
+      If the policy is set to false, root access to both existing and new Crostini containers will not be granted to the user.''',
+    },
+    {
       'name': 'SafeBrowsingWhitelistDomains',
       'type': 'list',
       'schema': {
@@ -17049,6 +17069,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 575,
+  'highest_id_currently_used': 576,
   'highest_atomic_group_id_currently_used': 37
 }

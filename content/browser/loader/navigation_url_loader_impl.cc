@@ -518,7 +518,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         base::Unretained(appcache_handle_core));
 
     StartInternal(request_info_.get(),
-                  /*service_worker_navigation_handle=*/nullptr,
                   service_worker_navigation_handle_core,
                   /*appcache_handle_core=*/nullptr,
                   std::move(prefetched_signed_exchange_cache),
@@ -555,6 +554,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     web_contents_getter_ = base::BindRepeating(
         &WebContents::FromFrameTreeNodeId, frame_tree_node_id_);
     navigation_ui_data_ = std::move(navigation_ui_data);
+    service_worker_navigation_handle_ = service_worker_navigation_handle;
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
@@ -586,13 +586,12 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       CHECK(result && blob_handles_.empty());
     }
 
-    StartInternal(request_info.get(), service_worker_navigation_handle,
-                  service_worker_navigation_handle_core, appcache_handle_core,
-                  std::move(prefetched_signed_exchange_cache),
-                  std::move(signed_exchange_prefetch_metric_recorder),
-                  std::move(factory_for_webui),
-                  nullptr /* url_request_context_getter */,
-                  std::move(accept_langs));
+    StartInternal(
+        request_info.get(), service_worker_navigation_handle_core,
+        appcache_handle_core, std::move(prefetched_signed_exchange_cache),
+        std::move(signed_exchange_prefetch_metric_recorder),
+        std::move(factory_for_webui), nullptr /* url_request_context_getter */,
+        std::move(accept_langs));
   }
 
   // Common setup routines, called by both StartWithoutNetworkService() and
@@ -608,8 +607,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // shipped.
   void StartInternal(
       NavigationRequestInfo* request_info,
-      ServiceWorkerNavigationHandle*
-          service_worker_navigation_handle /* ui thread only */,
       ServiceWorkerNavigationHandleCore*
           service_worker_navigation_handle_core /* io thread only */,
       AppCacheNavigationHandleCore* appcache_handle_core,
@@ -623,9 +620,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     DCHECK_CURRENTLY_ON(GetLoaderRequestControllerThreadID());
 
     std::string accept_value = network::kFrameAcceptHeader;
-    // TODO(http://crbug.com/824840): Make this work on UI thread.
-    if (!IsNavigationLoaderOnUIEnabled()) {
+    if (IsNavigationLoaderOnUIEnabled()) {
       if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+              browser_context_)) {
+        accept_value.append(kAcceptHeaderSignedExchangeSuffix);
+      }
+    } else {
+      if (signed_exchange_utils::IsSignedExchangeHandlingEnabledOnIO(
               resource_context_)) {
         accept_value.append(kAcceptHeaderSignedExchangeSuffix);
       }
@@ -662,8 +663,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     if (IsNavigationLoaderOnUIEnabled()) {
-      CreateInterceptorsForUI(request_info, service_worker_navigation_handle,
-                              appcache_handle_core);
+      CreateInterceptorsForUI(
+          request_info, appcache_handle_core, prefetched_signed_exchange_cache,
+          signed_exchange_prefetch_metric_recorder, accept_langs);
     } else {
       CreateInterceptorsForIO(
           request_info, service_worker_navigation_handle_core,
@@ -694,13 +696,28 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void CreateInterceptorsForUI(
       NavigationRequestInfo* request_info,
-      ServiceWorkerNavigationHandle* service_worker_navigation_handle,
-      AppCacheNavigationHandleCore* appcache_handle_core) {
+      AppCacheNavigationHandleCore* appcache_handle_core,
+      scoped_refptr<PrefetchedSignedExchangeCache>
+          prefetched_signed_exchange_cache,
+      scoped_refptr<SignedExchangePrefetchMetricRecorder>
+          signed_exchange_prefetch_metric_recorder,
+      const std::string& accept_langs) {
+    if (prefetched_signed_exchange_cache) {
+      std::unique_ptr<NavigationLoaderInterceptor>
+          prefetched_signed_exchange_interceptor =
+              prefetched_signed_exchange_cache->MaybeCreateInterceptor(
+                  request_info->common_params.url);
+      if (prefetched_signed_exchange_interceptor) {
+        interceptors_.push_back(
+            std::move(prefetched_signed_exchange_interceptor));
+      }
+    }
+
     // Set up an interceptor for service workers.
-    if (service_worker_navigation_handle) {
+    if (service_worker_navigation_handle_) {
       std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::CreateForNavigationUI(
-              resource_request_->url, service_worker_navigation_handle,
+              resource_request_->url, service_worker_navigation_handle_,
               *request_info);
       // The interceptor may not be created in certain cases (e.g., the origin
       // is not secure).
@@ -717,6 +734,15 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               *resource_request_, appcache_handle_core->host()->GetWeakPtr());
       if (appcache_interceptor)
         interceptors_.push_back(std::move(appcache_interceptor));
+    }
+
+    // Set-up an interceptor for SignedExchange handling if it is enabled.
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+            browser_context_)) {
+      interceptors_.push_back(CreateSignedExchangeRequestHandler(
+          *request_info, network_loader_factory_,
+          std::move(signed_exchange_prefetch_metric_recorder),
+          std::move(accept_langs)));
     }
 
     // See if embedders want to add interceptors.
@@ -745,7 +771,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       net::URLRequestContextGetter* url_request_context_getter,
-      std::string accept_langs) {
+      const std::string& accept_langs) {
     DCHECK(!IsNavigationLoaderOnUIEnabled());
     if (prefetched_signed_exchange_cache) {
       std::unique_ptr<NavigationLoaderInterceptor>
@@ -783,7 +809,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     }
 
     // Set-up an interceptor for SignedExchange handling if it is enabled.
-    if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+    if (signed_exchange_utils::IsSignedExchangeHandlingEnabledOnIO(
             resource_context_)) {
       auto network_loader_factory = network_loader_factory_;
       if (!network_loader_factory) {
@@ -1449,16 +1475,31 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               new_interceptors;
           new_interceptors.push_back(std::move(interceptors_[i]));
           new_interceptors.swap(interceptors_);
+          // Reset the state of ServiceWorkerProviderHost.
+          // Currently we don't support Service Worker in Signed Exchange
+          // pages. The page will not be controlled by service workers. And
+          // Service Worker related APIs will fail with NoDocumentURL error.
+          // TODO(crbug/898733): Support SignedExchange loading and Service
+          // Worker integration.
           if (service_worker_provider_host_) {
-            // Reset the state of ServiceWorkerProviderHost.
-            // Currently we don't support Service Worker in Signed Exchange
-            // pages. The page will not be controlled by service workers. And
-            // Service Worker related APIs will fail with NoDocumentURL error.
-            // TODO(crbug/898733): Support SignedExchange loading and Service
-            // Worker integration.
+            DCHECK(!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
             service_worker_provider_host_->SetControllerRegistration(
                 nullptr, false /* notify_controllerchange */);
             service_worker_provider_host_->UpdateUrls(GURL(), GURL());
+          } else if (service_worker_navigation_handle_) {
+            DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
+            base::PostTaskWithTraits(
+                FROM_HERE, {BrowserThread::IO},
+                base::BindOnce(
+                    [](base::WeakPtr<ServiceWorkerProviderHost> host) {
+                      if (host) {
+                        host->SetControllerRegistration(
+                            nullptr, false /* notify_controllerchange */);
+                        host->UpdateUrls(GURL(), GURL());
+                      }
+                    },
+                    service_worker_navigation_handle_->core()
+                        ->provider_host()));
           }
         }
         return true;
@@ -1597,6 +1638,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // Used to reset the state of ServiceWorkerProviderHost when
   // SignedExchangeRequestHandler will handle the response.
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
+  ServiceWorkerNavigationHandle* service_worker_navigation_handle_ = nullptr;
 
   // Counts the time overhead of all the hops from the UI to the IO threads.
   base::TimeDelta ui_to_io_time_;
@@ -1936,6 +1978,14 @@ BrowserThread::ID
 NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID() {
   return IsNavigationLoaderOnUIEnabled() ? BrowserThread::UI
                                          : BrowserThread::IO;
+}
+
+// static
+void NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
+    const base::Location& from_here,
+    base::OnceClosure task) {
+  RunOrPostTaskIfNecessary(from_here, GetLoaderRequestControllerThreadID(),
+                           std::move(task));
 }
 
 void NavigationURLLoaderImpl::OnRequestStarted(base::TimeTicks timestamp) {

@@ -23,8 +23,8 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
@@ -74,7 +74,7 @@ const char AccountManager::kActiveDirectoryDummyToken[] = "dummy_ad_token";
 
 // static
 const char* const AccountManager::kInvalidToken =
-    OAuth2TokenServiceDelegate::kInvalidRefreshToken;
+    GaiaConstants::kInvalidRefreshToken;
 
 class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
  public:

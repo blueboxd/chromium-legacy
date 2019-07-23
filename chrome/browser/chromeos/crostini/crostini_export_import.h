@@ -82,10 +82,6 @@ class CrostiniExportImport : public KeyedService,
                        base::FilePath path,
                        CrostiniManager::CrostiniResultCallback callback);
 
-  // Called by the notification when it is closed so it can be destroyed.
-  void NotificationCompleted(
-      const CrostiniExportImportNotification& notification);
-
   CrostiniExportImportNotification* GetNotificationForTesting(
       ContainerId container_id);
 
@@ -160,10 +156,12 @@ class CrostiniExportImport : public KeyedService,
 
   std::string GetUniqueNotificationId();
 
+  CrostiniExportImportNotification& RemoveNotification(
+      std::map<ContainerId, CrostiniExportImportNotification*>::iterator it);
+
   Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
-  std::map<ContainerId, std::unique_ptr<CrostiniExportImportNotification>>
-      notifications_;
+  std::map<ContainerId, CrostiniExportImportNotification*> notifications_;
   // Notifications must have unique-per-profile identifiers.
   // A non-static member on a profile-keyed-service will suffice.
   int next_notification_id_;

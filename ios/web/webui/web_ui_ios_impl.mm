@@ -10,11 +10,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
-#import "ios/web/web_state/web_state_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,15 +45,14 @@ base::string16 WebUIIOS::GetJavascriptCall(
          base::char16(')') + base::char16(';');
 }
 
-WebUIIOSImpl::WebUIIOSImpl(WebStateImpl* web_state) : web_state_(web_state) {
+WebUIIOSImpl::WebUIIOSImpl(WebState* web_state) : web_state_(web_state) {
   DCHECK(web_state);
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::BindRepeating(&WebUIIOSImpl::OnJsMessage, base::Unretained(this)),
       kCommandPrefix);
 }
 
 WebUIIOSImpl::~WebUIIOSImpl() {
-  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
   controller_.reset();
 }
 

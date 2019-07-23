@@ -192,12 +192,14 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
       });
 
   __block BOOL webStateFound = NO;
+  __block std::unique_ptr<web::WebState::ScriptCommandSubscription>
+      subscription;
   grey_dispatch_sync_on_main_thread(^{
     web::WebState* webState = GetWebStateWithId(tabID);
     if (!webState)
       return;
     webStateFound = YES;
-    webState->AddScriptCommandCallback(callback, command);
+    subscription = webState->AddScriptCommandCallback(callback, command);
     webState->ExecuteJavaScript(
         base::UTF8ToUTF16(scriptFunctionWithCompletionHandler));
   });
@@ -211,12 +213,6 @@ int GetIndexOfWebStateWithId(NSString* tab_id) {
       scriptExecutionComplete = messageValue.has_value();
     });
     return scriptExecutionComplete;
-  });
-
-  grey_dispatch_sync_on_main_thread(^{
-    web::WebState* webState = GetWebStateWithId(tabID);
-    if (webState)
-      webState->RemoveScriptCommandCallback(command);
   });
 
   if (!success)

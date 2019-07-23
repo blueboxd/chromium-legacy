@@ -309,7 +309,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _certVerificationController = [[CRWCertVerificationController alloc]
         initWithBrowserState:browserState];
     web::BrowsingDataRemover::FromBrowserState(browserState)->AddObserver(self);
-    web::WebFramesManagerImpl::CreateForWebState(_webStateImpl);
     web::FindInPageManagerImpl::CreateForWebState(_webStateImpl);
     _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
     _jsWindowErrorManager =
@@ -421,8 +420,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 
   CRWWKScriptMessageRouter* messageRouter =
       [self webViewConfigurationProvider].GetScriptMessageRouter();
-  web::WebFramesManagerImpl::FromWebState(self.webStateImpl)
-      ->OnWebViewUpdated(_webView, webView, messageRouter);
+  self.webStateImpl->GetWebFramesManagerImpl().OnWebViewUpdated(
+      _webView, webView, messageRouter);
 
   if (_webView) {
     // TODO(crbug.com/956516): Use removeScriptMessageHandlerForName:webView:
@@ -598,8 +597,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self.UIHandler close];
   [self.JSNavigationHandler close];
   [self.requestController close];
-  _faviconManager.reset();
-  _jsWindowErrorManager.reset();
   self.swipeRecognizerProvider = nil;
   [self.legacyNativeController close];
   [self.requestController close];

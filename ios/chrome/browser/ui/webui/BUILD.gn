@@ -91,9 +91,7 @@ source_set("webui_internal") {
   ]
   deps = [
     ":webui",
-    "//base",
     "//components/resources",
-    "//components/signin/core/browser",
     "//components/signin/public/identity_manager",
     "//ios/chrome/app/resources:ios_resources",
     "//ios/chrome/browser",
@@ -104,8 +102,13 @@ source_set("webui_internal") {
     "//ios/chrome/browser/ui/webui/net_export",
     "//ios/chrome/browser/ui/webui/sync_internals",
     "//ios/chrome/browser/ui/webui/translate_internals",
-    "//ios/web/public/webui",
     "//url",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/signin/core/browser",
+    "//ios/web/public/webui",
   ]
 }
 

@@ -146,6 +146,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorEndpointParamTest,
                            ProfileAlreadyConnected);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable, TableRowTest);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestTable,
+                           InconsistencyReasonLogging);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestDiceMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMirrorMultilogin, TableRowTest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTestMiceMultilogin, TableRowTest);

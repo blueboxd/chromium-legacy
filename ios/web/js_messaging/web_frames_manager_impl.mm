@@ -10,7 +10,7 @@
 #include "crypto/symmetric_key.h"
 #import "ios/web/js_messaging/crw_wk_script_message_router.h"
 #include "ios/web/js_messaging/web_frame_impl.h"
-#import "ios/web/web_state/web_state_impl.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_view/wk_security_origin_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,26 +26,12 @@ NSString* const kFrameBecameUnavailableMessageName = @"FrameBecameUnavailable";
 
 namespace web {
 
-// static
-void WebFramesManagerImpl::CreateForWebState(WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state))
-    web_state->SetUserData(
-        UserDataKey(), base::WrapUnique(new WebFramesManagerImpl(web_state)));
-}
-
-// static
-WebFramesManagerImpl* WebFramesManagerImpl::FromWebState(WebState* web_state) {
-  return static_cast<WebFramesManagerImpl*>(
-      WebFramesManager::FromWebState(web_state));
-}
+WebFramesManagerImpl::WebFramesManagerImpl(WebFramesManagerDelegate& delegate)
+    : delegate_(delegate) {}
 
 WebFramesManagerImpl::~WebFramesManagerImpl() {
   RemoveAllWebFrames();
 }
-
-WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state)
-    : web_state_(web_state) {}
 
 void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
   DCHECK(frame);
@@ -106,7 +92,7 @@ WebFrame* WebFramesManagerImpl::GetMainWebFrame() {
 }
 
 void WebFramesManagerImpl::RegisterExistingFrames() {
-  web_state_->ExecuteJavaScript(
+  delegate_.GetWebState()->ExecuteJavaScript(
       base::UTF8ToUTF16("__gCrWeb.message.getExistingFrames();"));
 }
 
@@ -138,7 +124,7 @@ void WebFramesManagerImpl::OnWebViewUpdated(
                         webView:new_web_view];
     [message_router
         setScriptMessageHandler:^(WKScriptMessage* message) {
-          DCHECK(!web_state_->IsBeingDestroyed());
+          DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
           this->OnFrameBecameUnavailable(message);
         }
                            name:kFrameBecameUnavailableMessageName
@@ -147,7 +133,7 @@ void WebFramesManagerImpl::OnWebViewUpdated(
 }
 
 void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
-  DCHECK(!web_state_->IsBeingDestroyed());
+  DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
   // Validate all expected message components because any frame could falsify
   // this message.
   if (![message.body isKindOfClass:[NSDictionary class]] ||
@@ -173,7 +159,7 @@ void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
 
     auto new_frame = std::make_unique<web::WebFrameImpl>(
         frame_id, message.frameInfo.mainFrame, message_frame_origin,
-        web_state_);
+        delegate_.GetWebState());
     if (frame_key) {
       new_frame->SetEncryptionKey(std::move(frame_key));
     }
@@ -186,13 +172,12 @@ void WebFramesManagerImpl::OnFrameBecameAvailable(WKScriptMessage* message) {
     }
 
     AddFrame(std::move(new_frame));
-    static_cast<WebStateImpl*>(web_state_)
-        ->OnWebFrameAvailable(GetFrameWithId(frame_id));
+    delegate_.OnWebFrameAvailable(GetFrameWithId(frame_id));
   }
 }
 
 void WebFramesManagerImpl::OnFrameBecameUnavailable(WKScriptMessage* message) {
-  DCHECK(!web_state_->IsBeingDestroyed());
+  DCHECK(!delegate_.GetWebState()->IsBeingDestroyed());
   if (![message.body isKindOfClass:[NSString class]]) {
     // WebController is being destroyed or message is invalid.
     return;
@@ -200,10 +185,9 @@ void WebFramesManagerImpl::OnFrameBecameUnavailable(WKScriptMessage* message) {
   std::string frame_id = base::SysNSStringToUTF8(message.body);
   WebFrame* frame = GetFrameWithId(frame_id);
   if (frame) {
-    static_cast<WebStateImpl*>(web_state_)->OnWebFrameUnavailable(frame);
+    delegate_.OnWebFrameUnavailable(frame);
     RemoveFrameWithId(frame_id);
   }
 }
-WEB_STATE_USER_DATA_KEY_IMPL(WebFramesManager)
 
 }  // namespace

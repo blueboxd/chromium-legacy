@@ -255,7 +255,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 - (void)setShareButtonEnabled:(BOOL)enabled {
   _shareButtonEnabled = enabled;
   if (self.trailingButtonState == kShareButton) {
-    self.locationBarSteadyView.trailingButton.enabled = enabled;
+    [self.locationBarSteadyView enableTrailingButton:enabled];
   }
 }
 
@@ -399,8 +399,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
-      self.locationBarSteadyView.trailingButton.enabled =
-          self.shareButtonEnabled;
+      [self.locationBarSteadyView enableTrailingButton:self.shareButtonEnabled];
       break;
     };
     case kVoiceSearchButton: {
@@ -419,7 +418,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
           forState:UIControlStateNormal];
       self.locationBarSteadyView.trailingButton.accessibilityLabel =
           l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_VOICE_SEARCH);
-      self.locationBarSteadyView.trailingButton.enabled = YES;
+      [self.locationBarSteadyView enableTrailingButton:YES];
     }
   }
 }

@@ -22,6 +22,7 @@ source_set("identity_manager") {
     "identity_manager_builder.h",
     "identity_utils.cc",
     "identity_utils.h",
+    "load_credentials_state.h",
     "primary_account_access_token_fetcher.cc",
     "primary_account_access_token_fetcher.h",
     "primary_account_mutator.h",

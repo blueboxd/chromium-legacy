@@ -11,6 +11,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/locale_utils.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial_params.h"
@@ -52,10 +53,10 @@ const char* const kDefaultAutofillAssistantServerUrl =
     "https://automate-pa.googleapis.com";
 
 // Fills a map from two Java arrays of strings of the same length.
-void FillParametersFromJava(JNIEnv* env,
-                            const JavaRef<jobjectArray>& names,
-                            const JavaRef<jobjectArray>& values,
-                            std::map<std::string, std::string>* parameters) {
+void FillStringMapFromJava(JNIEnv* env,
+                           const JavaRef<jobjectArray>& names,
+                           const JavaRef<jobjectArray>& values,
+                           std::map<std::string, std::string>* parameters) {
   std::vector<std::string> names_vector;
   base::android::AppendJavaStringArrayToStringVector(env, names, &names_vector);
   std::vector<std::string> values_vector;
@@ -65,6 +66,18 @@ void FillParametersFromJava(JNIEnv* env,
   for (size_t i = 0; i < names_vector.size(); ++i) {
     parameters->insert(std::make_pair(names_vector[i], values_vector[i]));
   }
+}
+
+std::unique_ptr<TriggerContext> CreateTriggerContext(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& jexperiment_ids,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_names,
+    const base::android::JavaParamRef<jobjectArray>& jparameter_values) {
+  std::map<std::string, std::string> parameters;
+  FillStringMapFromJava(env, jparameter_names, jparameter_values, &parameters);
+  return TriggerContext::Create(
+      std::move(parameters),
+      base::android::ConvertJavaStringToUTF8(env, jexperiment_ids));
 }
 
 }  // namespace
@@ -106,12 +119,12 @@ base::android::ScopedJavaLocalRef<jobject> ClientAndroid::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_object_);
 }
 
-void ClientAndroid::Start(JNIEnv* env,
+bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobject>& jcaller,
                           const JavaParamRef<jstring>& jinitial_url,
                           const JavaParamRef<jstring>& jexperiment_ids,
-                          const JavaParamRef<jobjectArray>& parameterNames,
-                          const JavaParamRef<jobjectArray>& parameterValues,
+                          const JavaParamRef<jobjectArray>& parameter_names,
+                          const JavaParamRef<jobjectArray>& parameter_values,
                           const JavaParamRef<jobject>& joverlay_coordinator,
                           jlong jservice) {
   std::unique_ptr<Service> service = nullptr;
@@ -126,12 +139,9 @@ void ClientAndroid::Start(JNIEnv* env,
   }
 
   GURL initial_url(base::android::ConvertJavaStringToUTF8(env, jinitial_url));
-  std::map<std::string, std::string> parameters;
-  FillParametersFromJava(env, parameterNames, parameterValues, &parameters);
-  controller_->Start(initial_url, TriggerContext::Create(
-                                      std::move(parameters),
-                                      base::android::ConvertJavaStringToUTF8(
-                                          env, jexperiment_ids)));
+  return controller_->Start(
+      initial_url, CreateTriggerContext(env, jexperiment_ids, parameter_names,
+                                        parameter_values));
 }
 
 void ClientAndroid::DestroyUI(
@@ -185,6 +195,84 @@ void ClientAndroid::OnAccessToken(JNIEnv* env,
     std::move(fetch_access_token_callback_)
         .Run(success, base::android::ConvertJavaStringToUTF8(access_token));
   }
+}
+
+void ClientAndroid::ListDirectActions(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jexperiment_ids,
+    const base::android::JavaParamRef<jobjectArray>& jargument_names,
+    const base::android::JavaParamRef<jobjectArray>& jargument_values,
+    const base::android::JavaParamRef<jobject>& jcallback) {
+  if (!controller_)
+    CreateController(nullptr);
+
+  base::android::ScopedJavaGlobalRef<jobject> scoped_jcallback(env, jcallback);
+  controller_->Track(
+      CreateTriggerContext(env, jexperiment_ids, jargument_names,
+                           jargument_values),
+      base::BindOnce(&ClientAndroid::OnListDirectActions,
+                     weak_ptr_factory_.GetWeakPtr(), scoped_jcallback));
+}
+
+void ClientAndroid::OnListDirectActions(
+    const base::android::JavaRef<jobject>& jcallback) {
+  // Using a set here helps remove duplicates.
+  std::set<std::string> names;
+  for (const UserAction& user_action : controller_->GetUserActions()) {
+    if (!user_action.enabled())
+      continue;
+
+    for (const std::string& name : user_action.direct_action().names) {
+      names.insert(name);
+    }
+  }
+
+  JNIEnv* env = AttachCurrentThread();
+  Java_AutofillAssistantClient_sendDirectActionList(
+      env, java_object_, jcallback,
+      base::android::ToJavaArrayOfStrings(
+          env, std::vector<std::string>(names.begin(), names.end())));
+}
+
+bool ClientAndroid::PerformDirectAction(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    const base::android::JavaParamRef<jstring>& jaction_name,
+    const base::android::JavaParamRef<jstring>& jexperiment_ids,
+    const base::android::JavaParamRef<jobjectArray>& jargument_names,
+    const base::android::JavaParamRef<jobjectArray>& jargument_values,
+    const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
+  // It's too late to create a controller. This should have been done in
+  // ListDirectActions.
+  if (!controller_)
+    return false;
+
+  std::string action_name =
+      base::android::ConvertJavaStringToUTF8(env, jaction_name);
+
+  const std::vector<UserAction>& user_actions = controller_->GetUserActions();
+  int user_action_count = user_actions.size();
+  for (int i = 0; i < user_action_count; i++) {
+    const UserAction& user_action = user_actions[i];
+    if (!user_action.enabled())
+      continue;
+
+    const std::set<std::string>& action_names =
+        user_action.direct_action().names;
+    if (action_names.count(action_name) != 0) {
+      // If an overlay is already shown, then show the rest of the UI
+      // immediately.
+      if (joverlay_coordinator) {
+        AttachUI(joverlay_coordinator);
+      }
+
+      return controller_->PerformUserActionWithContext(
+          i, CreateTriggerContext(env, jexperiment_ids, jargument_names,
+                                  jargument_values));
+    }
+  }
+  return false;
 }
 
 void ClientAndroid::AttachUI() {

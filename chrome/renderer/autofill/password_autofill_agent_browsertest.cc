@@ -1724,20 +1724,25 @@ TEST_F(PasswordAutofillAgentTest,
   }
 }
 
-// Tests that HasFillData() works correctly for fiiable and non-fillable fields.
-TEST_F(PasswordAutofillAgentTest, HasFillData) {
+// Tests that TryToShowTouchToFill() works correctly for fillable and
+// non-fillable fields.
+TEST_F(PasswordAutofillAgentTest, TryToShowTouchToFill) {
   // Initially no fill data is available.
   WebInputElement random_element = GetInputElementByID("random_field");
-  EXPECT_FALSE(password_autofill_agent_->HasFillData(username_element_));
-  EXPECT_FALSE(password_autofill_agent_->HasFillData(password_element_));
-  EXPECT_FALSE(password_autofill_agent_->HasFillData(random_element));
+  EXPECT_FALSE(
+      password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  EXPECT_FALSE(
+      password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->TryToShowTouchToFill(random_element));
 
   // This changes once fill data is simulated. |random_element| continue  to
   // have no fill data, though.
   SimulateOnFillPasswordForm(fill_data_);
-  EXPECT_TRUE(password_autofill_agent_->HasFillData(username_element_));
-  EXPECT_TRUE(password_autofill_agent_->HasFillData(password_element_));
-  EXPECT_FALSE(password_autofill_agent_->HasFillData(random_element));
+  EXPECT_TRUE(
+      password_autofill_agent_->TryToShowTouchToFill(username_element_));
+  EXPECT_TRUE(
+      password_autofill_agent_->TryToShowTouchToFill(password_element_));
+  EXPECT_FALSE(password_autofill_agent_->TryToShowTouchToFill(random_element));
 }
 
 // Tests that |FillIntoFocusedField| doesn't fill read-only text fields.

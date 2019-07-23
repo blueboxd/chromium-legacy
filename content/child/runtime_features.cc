@@ -522,7 +522,8 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableSmsReceiver(false);
 
   WebRuntimeFeatures::EnableDisplayLocking(
-      base::FeatureList::IsEnabled(blink::features::kDisplayLocking));
+      base::FeatureList::IsEnabled(blink::features::kDisplayLocking) ||
+      enable_experimental_web_platform_features);
 
   WebRuntimeFeatures::EnableFormControlsRefresh(
       features::IsFormControlsRefreshEnabled());

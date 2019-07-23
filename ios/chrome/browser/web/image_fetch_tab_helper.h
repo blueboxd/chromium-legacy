@@ -103,6 +103,9 @@ class ImageFetchTabHelper : public web::WebStateObserver,
   // |OnImageDataReceived| and used to invoke the corresponding callback.
   int call_id_ = 0;
 
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
+
   base::WeakPtrFactory<ImageFetchTabHelper> weak_ptr_factory_;
 
   WEB_STATE_USER_DATA_KEY_DECL();

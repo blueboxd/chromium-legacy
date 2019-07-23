@@ -43,6 +43,7 @@ class BrowserContext;
 class ChromeBlobStorageContext;
 class ResourceContext;
 class ServiceWorkerContextObserver;
+class ServiceWorkerContextWatcher;
 class StoragePartitionImpl;
 class URLLoaderFactoryGetter;
 
@@ -314,6 +315,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
 
+  // Whether |origin| has any registrations. Must be called on UI thread.
+  bool HasRegistrationForOrigin(const GURL& origin) const;
+
  private:
   friend class BackgroundSyncManagerTest;
   friend class base::RefCountedThreadSafe<ServiceWorkerContextWrapper>;
@@ -442,6 +446,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   CreateNonNetworkURLLoaderFactoryBundleInfoForUpdateCheck(
       BrowserContext* browser_context);
 
+  // Called when the stored registrations are loaded, and each time a new
+  // service worker is registered.
+  void OnRegistrationUpdated(
+      const std::vector<ServiceWorkerRegistrationInfo>& registrations);
+
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.
   using ServiceWorkerContextObserverList =
@@ -468,6 +477,15 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // The set of workers that are considered "running". For dispatching
   // OnVersionRunningStatusChanged events.
   base::flat_set<int64_t /* version_id */> running_service_workers_;
+
+  // Maps the origin to a set of registration ids for that origin. Must be
+  // accessed on UI thread.
+  // TODO(http://crbug.com/824858): This can be removed when service workers are
+  // fully converted to running on the UI thread.
+  base::flat_map<GURL, base::flat_set<int64_t>> registrations_for_origin_;
+  bool registrations_initialized_ = false;
+
+  scoped_refptr<ServiceWorkerContextWatcher> watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextWrapper);
 };

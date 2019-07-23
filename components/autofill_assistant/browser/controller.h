@@ -81,7 +81,7 @@ class Controller : public ScriptExecutorDelegate,
   // running.
   //
   // Start() will overwrite any context previously set by Track().
-  void Start(const GURL& deeplink_url,
+  bool Start(const GURL& deeplink_url,
              std::unique_ptr<TriggerContext> trigger_context);
 
   // Returns true if the controller is in a state where UI is necessary.

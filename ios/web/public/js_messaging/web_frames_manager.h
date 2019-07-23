@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
 
@@ -17,13 +16,15 @@ class WebFrame;
 
 // Stores and provides access to all WebFrame objects associated with a
 // particular WebState.
-// NOTE: Code that store references to WebFrames must observe WebState, in
-// particular |WebFrameDidBecomeUnavailable| event, and clear all reference
-// when the frame becomes unavailable ad the pointer to the WebFrame becomes
-// invalid.
-// For example, a navigation will invalidate the WebFrame object for that frame.
-class WebFramesManager : public web::WebStateUserData<WebFramesManager> {
+// NOTE: Code that store references to WebFrames must clear them in
+// WebStateObserver::WebFrameWillBecomeUnavailable, which is emitted when
+// WebFrames in current page become invalid and will be removed from
+// WebFramesManager (e.g. A new navigation is committed or failed, the web
+// process crashed, etc.).
+class WebFramesManager {
  public:
+  virtual ~WebFramesManager() {}
+
   // Returns a list of all the web frames associated with WebState.
   // NOTE: Due to the asynchronous nature of renderer, this list may be
   // outdated.
@@ -38,10 +39,6 @@ class WebFramesManager : public web::WebStateUserData<WebFramesManager> {
   // this object may be outdated and the WebFrame returned by this method may
   // not back a real frame in the web page.
   virtual WebFrame* GetFrameWithId(const std::string& frame_id) = 0;
-
-  ~WebFramesManager() override {}
-
-  WEB_STATE_USER_DATA_KEY_DECL();
 
  protected:
   WebFramesManager() {}

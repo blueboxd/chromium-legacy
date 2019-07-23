@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     PrefService* user_prefs)

@@ -16,7 +16,30 @@
 
 namespace blink {
 
-class ThreadHeapStatsObserver;
+// Interface for observing changes to heap sizing.
+class PLATFORM_EXPORT ThreadHeapStatsObserver {
+ public:
+  // Called upon allocating/releasing chunks of memory that contain objects.
+  //
+  // Must not trigger GC or allocate.
+  virtual void IncreaseAllocatedSpace(size_t) = 0;
+  virtual void DecreaseAllocatedSpace(size_t) = 0;
+
+  // Called once per GC cycle with the accurate number of live |bytes|.
+  //
+  // Must not trigger GC or allocate.
+  virtual void ResetAllocatedObjectSize(size_t bytes) = 0;
+
+  // Called after observing at least
+  // |ThreadHeapStatsCollector::kUpdateThreshold| changed bytes through
+  // allocation or explicit free. Reports both, negative and positive
+  // increments, to allow observer to decide whether absolute values or only the
+  // deltas is interesting.
+  //
+  // May trigger GC but most not allocate.
+  virtual void IncreaseAllocatedObjectSize(size_t) = 0;
+  virtual void DecreaseAllocatedObjectSize(size_t) = 0;
+};
 
 #define FOR_ALL_SCOPES(V)             \
   V(AtomicPauseCompaction)            \
@@ -256,12 +279,11 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     size_t partition_alloc_bytes_before_sweeping = 0;
     double live_object_rate = 0;
     size_t wrapper_count_before_sweeping = 0;
-    base::TimeDelta gc_nested_in_v8;
-    size_t gc_age = 0;
+    base::TimeDelta gc_nested_in_v8_;
   };
 
   // Indicates a new garbage collection cycle.
-  void NotifyMarkingStarted(BlinkGC::GCReason, size_t);
+  void NotifyMarkingStarted(BlinkGC::GCReason);
 
   // Indicates that marking of the current garbage collection cycle is
   // completed.
@@ -327,6 +349,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // Statistics for the previously running garbage collection.
   const Event& previous() const { return previous_; }
 
+
   void RegisterObserver(ThreadHeapStatsObserver* observer);
   void UnregisterObserver(ThreadHeapStatsObserver* observer);
 
@@ -378,34 +401,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
 #undef FOR_ALL_SCOPES
 #undef FOR_ALL_CONCURRENT_SCOPES
-
-// Interface for observing garbage collections and heap sizing.
-class PLATFORM_EXPORT ThreadHeapStatsObserver {
- public:
-  // Called upon allocating/releasing chunks of memory that contain objects.
-  //
-  // Must not trigger GC or allocate.
-  virtual void IncreaseAllocatedSpace(size_t) {}
-  virtual void DecreaseAllocatedSpace(size_t) {}
-
-  // Called once per GC cycle with the accurate number of live |bytes|.
-  //
-  // Must not trigger GC or allocate.
-  virtual void ResetAllocatedObjectSize(size_t bytes) {}
-
-  // Called after observing at least
-  // |ThreadHeapStatsCollector::kUpdateThreshold| changed bytes through
-  // allocation or explicit free. Reports both, negative and positive
-  // increments, to allow observer to decide whether absolute values or only the
-  // deltas is interesting.
-  //
-  // May trigger GC but most not allocate.
-  virtual void IncreaseAllocatedObjectSize(size_t) {}
-  virtual void DecreaseAllocatedObjectSize(size_t) {}
-
-  // Called at the end of a GC cycle.
-  virtual void GCFinished(const ThreadHeapStatsCollector::Event& stats) {}
-};
 
 }  // namespace blink
 

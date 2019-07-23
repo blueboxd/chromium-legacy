@@ -99,7 +99,6 @@ NSString* const kPasswordDoneButtonAccessibilityIdentifier =
   TableViewNavigationController* navigationController =
       [[TableViewNavigationController alloc]
           initWithTable:self.passwordViewController];
-  navigationController.navigationBar.barTintColor = UIColor.whiteColor;
   navigationController.transitioningDelegate = self;
   [navigationController setModalPresentationStyle:UIModalPresentationCustom];
 

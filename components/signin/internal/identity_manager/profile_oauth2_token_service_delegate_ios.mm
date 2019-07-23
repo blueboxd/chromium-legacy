@@ -179,8 +179,10 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
     const CoreAccountId& primary_account_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
-  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
+  DCHECK_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED,
+            load_credentials_state());
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
 
   // Clean-up stale data from prefs.
   ClearExcludedSecondaryAccounts();
@@ -188,14 +190,16 @@ void ProfileOAuth2TokenServiceIOSDelegate::LoadCredentials(
   if (primary_account_id.empty()) {
     // On startup, always fire refresh token loaded even if there is nothing
     // to load (not authenticated).
-    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+    set_load_credentials_state(
+        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FireRefreshTokensLoaded();
     return;
   }
 
   ReloadCredentials();
 
-  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   FireRefreshTokensLoaded();
 }
 

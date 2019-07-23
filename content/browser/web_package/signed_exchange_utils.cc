@@ -36,7 +36,16 @@ void ReportErrorAndTraceEvent(
     devtools_proxy->ReportError(error_message, std::move(error_field));
 }
 
-bool IsSignedExchangeHandlingEnabled(ResourceContext* context) {
+bool IsSignedExchangeHandlingEnabledOnIO(ResourceContext* context) {
+  if (!GetContentClient()->browser()->AllowSignedExchangeOnIO(context))
+    return false;
+
+  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kEnableExperimentalWebPlatformFeatures);
+}
+
+bool IsSignedExchangeHandlingEnabled(BrowserContext* context) {
   if (!GetContentClient()->browser()->AllowSignedExchange(context))
     return false;
 

@@ -687,6 +687,9 @@ void SkiaRenderer::FinishDrawingFrame() {
 
   if (use_swap_with_bounds_)
     swap_content_bounds_ = current_frame()->root_content_bounds;
+
+  skia_output_surface_->ScheduleOverlays(
+      std::move(current_frame()->overlay_list));
 }
 
 void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {

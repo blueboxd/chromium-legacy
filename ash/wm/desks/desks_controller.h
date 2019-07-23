@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -85,23 +86,25 @@ class ASH_EXPORT DesksController
   Desk* GetPreviousDesk() const;
 
   // Creates a new desk. CanCreateDesks() must be checked before calling this.
-  void NewDesk();
+  void NewDesk(DesksCreationRemovalSource source);
 
   // Removes and deletes the given |desk|. |desk| must already exist, and
   // CanRemoveDesks() must be checked before this.
-  void RemoveDesk(const Desk* desk);
+  void RemoveDesk(const Desk* desk, DesksCreationRemovalSource source);
 
   // Performs the desk switch animation on all root windows to activate the
   // given |desk| and to deactivate the currently active one. |desk| has to be
   // an existing desk. The active window on the currently active desk will be
   // deactivated, and the most-recently used window from the newly-activated
   // desk will be activated.
-  void ActivateDesk(const Desk* desk);
+  void ActivateDesk(const Desk* desk, DesksSwitchSource source);
 
   // Moves |window| (which must belong to the currently active desk) to
   // |target_desk| (which must be a different desk). If |window| is minimized,
   // it will be unminimized after it's moved to |target_desk|.
-  void MoveWindowFromActiveDeskTo(aura::Window* window, Desk* target_desk);
+  void MoveWindowFromActiveDeskTo(aura::Window* window,
+                                  Desk* target_desk,
+                                  DesksMoveWindowFromActiveDeskSource source);
 
   // Called explicitly by the RootWindowController when a root window has been
   // added or about to be removed in order to update all the available desks.
@@ -140,6 +143,12 @@ class ASH_EXPORT DesksController
   // Returns the desk to which |window| belongs or nullptr if it doesn't belong
   // to any desk.
   const Desk* FindDeskOfWindow(aura::Window* window) const;
+
+  // Reports the number of windows per each available desk. This called when a
+  // desk switch occurs.
+  void ReportNumberOfWindowsPerDeskHistogram() const;
+
+  void ReportDesksCountHistogram() const;
 
   std::vector<std::unique_ptr<Desk>> desks_;
 

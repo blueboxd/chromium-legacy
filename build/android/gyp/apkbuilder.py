@@ -17,6 +17,10 @@ import zipfile
 import finalize_apk
 
 from util import build_utils
+from util import zipalign
+
+# Input dex.jar files are zipaligned.
+zipalign.ApplyZipFileZipAlignFix()
 
 
 # Taken from aapt's Package.cpp:

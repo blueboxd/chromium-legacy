@@ -22,8 +22,8 @@ class DiagnosticsProviderImpl final : public DiagnosticsProvider {
   ~DiagnosticsProviderImpl() override;
 
   // Returns the state of the load credentials operation.
-  OAuth2TokenServiceDelegate::LoadCredentialsState
-  GetDetailedStateOfLoadingOfRefreshTokens() const override;
+  signin::LoadCredentialsState GetDetailedStateOfLoadingOfRefreshTokens()
+      const override;
 
   // Returns the time until a access token request can be sent (will be zero if
   // the release time is in the past).

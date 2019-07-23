@@ -93,7 +93,9 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
+  DCHECK_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      load_credentials_state());
 
   ValidateAccountId(account_id);
 
@@ -131,7 +133,8 @@ ProfileOAuth2TokenServiceDelegateChromeOS::CreateAccessTokenFetcher(
 // |GetOAuthAccountIdsFromAccountKeys|.
 bool ProfileOAuth2TokenServiceDelegateChromeOS::RefreshTokenIsAvailable(
     const CoreAccountId& account_id) const {
-  if (load_credentials_state() != LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
+  if (load_credentials_state() !=
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
     return false;
   }
 
@@ -201,10 +204,12 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
     const CoreAccountId& primary_account_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (load_credentials_state() != LOAD_CREDENTIALS_NOT_STARTED) {
+  if (load_credentials_state() !=
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED) {
     return;
   }
-  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
 
   if (!is_regular_profile_) {
     // |LoadCredentials| needs to complete successfully for a successful Profile
@@ -213,7 +218,8 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::LoadCredentials(
     // to them. Note: They do have access to an Account Manager instance, but
     // that instance is never set up (|AccountManager::Initialize|). Also, see
     // http://crbug.com/891818
-    set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+    set_load_credentials_state(
+        signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
     FireRefreshTokensLoaded();
     return;
   }
@@ -254,7 +260,9 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::UpdateCredentials(
   // Accounts) we can be sure that |account_id| is present in
   // |AccountTrackerService|.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
+  DCHECK_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      load_credentials_state());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -287,9 +295,11 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnGetAccounts(
   // This callback should only be triggered during |LoadCredentials|, which
   // implies that |load_credentials_state())| should in
   // |LOAD_CREDENTIALS_IN_PROGRESS| state.
-  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
+  DCHECK_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
+            load_credentials_state());
 
-  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   // The typical order of |OAuth2TokenServiceObserver| callbacks is:
   // 1. OnRefreshTokenAvailable
   // 2. OnEndBatchChanges
@@ -350,7 +360,9 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
 void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
     const chromeos::AccountManager::Account& account) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
+  DCHECK_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      load_credentials_state());
 
   auto it = account_keys_.find(account.key);
   if (it == account_keys_.end()) {

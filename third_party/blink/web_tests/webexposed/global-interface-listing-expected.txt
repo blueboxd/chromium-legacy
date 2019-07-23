@@ -503,6 +503,10 @@ interface BatteryManager : EventTarget
     setter onchargingtimechange
     setter ondischargingtimechange
     setter onlevelchange
+interface BeforeActivateEvent : Event
+    attribute @@toStringTag
+    getter activatedElement
+    method constructor
 interface BeforeInstallPromptEvent : Event
     attribute @@toStringTag
     getter platforms
@@ -590,8 +594,10 @@ interface BroadcastChannel : EventTarget
     setter onmessage
     setter onmessageerror
 interface ByteLengthQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
     method constructor
-    method size
 interface CDATASection : Text
     attribute @@toStringTag
     method constructor
@@ -1170,8 +1176,10 @@ interface CookieStore : EventTarget
     method set
     setter onchange
 interface CountQueuingStrategy
+    attribute @@toStringTag
+    getter highWaterMark
+    getter size
     method constructor
-    method size
 interface Credential
     attribute @@toStringTag
     getter id
@@ -1534,6 +1542,14 @@ interface DeviceOrientationEvent : Event
     getter beta
     getter gamma
     method constructor
+interface DisplayLockContext
+    attribute @@toStringTag
+    getter locked
+    method acquire
+    method commit
+    method constructor
+    method update
+    method updateAndCommit
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -1582,6 +1598,7 @@ interface Document : Node
     getter onabort
     getter onactivateinvisible
     getter onauxclick
+    getter onbeforeactivate
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
@@ -1772,6 +1789,7 @@ interface Document : Node
     setter onabort
     setter onactivateinvisible
     setter onauxclick
+    setter onbeforeactivate
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -1974,6 +1992,7 @@ interface Element : Node
     getter clientWidth
     getter computedName
     getter computedRole
+    getter displayLock
     getter firstElementChild
     getter id
     getter innerHTML
@@ -2740,6 +2759,7 @@ interface HTMLElement : Element
     getter onabort
     getter onactivateinvisible
     getter onauxclick
+    getter onbeforeactivate
     getter onblur
     getter oncancel
     getter oncanplay
@@ -2847,6 +2867,7 @@ interface HTMLElement : Element
     setter onabort
     setter onactivateinvisible
     setter onauxclick
+    setter onbeforeactivate
     setter onblur
     setter oncancel
     setter oncanplay
@@ -4895,6 +4916,17 @@ interface MutationRecord
     getter target
     getter type
     method constructor
+interface NDEFMessage
+    attribute @@toStringTag
+    getter records
+    getter url
+    method constructor
+interface NDEFRecord
+    attribute @@toStringTag
+    getter mediaType
+    getter recordType
+    method constructor
+    method data
 interface NFC
     attribute @@toStringTag
     method cancelPush
@@ -4905,6 +4937,11 @@ interface NFC
 interface NFCErrorEvent : Event
     attribute @@toStringTag
     getter error
+    method constructor
+interface NFCReadingEvent : Event
+    attribute @@toStringTag
+    getter message
+    getter serialNumber
     method constructor
 interface NFCWriter
     attribute @@toStringTag
@@ -5749,7 +5786,7 @@ interface RTCDataChannel : EventTarget
     getter bufferedAmountLowThreshold
     getter id
     getter label
-    getter maxRetransmitTime
+    getter maxPacketLifeTime
     getter maxRetransmits
     getter negotiated
     getter onbufferedamountlow
@@ -6323,6 +6360,7 @@ interface SVGElement : Element
     getter onabort
     getter onactivateinvisible
     getter onauxclick
+    getter onbeforeactivate
     getter onblur
     getter oncancel
     getter oncanplay
@@ -6415,6 +6453,7 @@ interface SVGElement : Element
     setter onabort
     setter onactivateinvisible
     setter onauxclick
+    setter onbeforeactivate
     setter onblur
     setter oncancel
     setter oncanplay
@@ -10998,6 +11037,7 @@ interface webkitURL
     getter onanimationstart
     getter onappinstalled
     getter onauxclick
+    getter onbeforeactivate
     getter onbeforeinstallprompt
     getter onbeforeprint
     getter onbeforeunload
@@ -11193,6 +11233,7 @@ interface webkitURL
     setter onanimationstart
     setter onappinstalled
     setter onauxclick
+    setter onbeforeactivate
     setter onbeforeinstallprompt
     setter onbeforeprint
     setter onbeforeunload

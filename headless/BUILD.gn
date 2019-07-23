@@ -300,6 +300,7 @@ jumbo_source_set("headless_shared_sources") {
   deps = [
     ":gen_devtools_client_api",
     ":protocol_sources",
+    ":version_header",
     "//base:base_static",
     "//content/public/common",
     "//content/public/common:service_names",

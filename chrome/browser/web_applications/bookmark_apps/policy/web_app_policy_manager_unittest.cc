@@ -166,9 +166,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    DCHECK(profile()->AsTestingProfile());
-    auto* provider = static_cast<web_app::TestWebAppProvider*>(
-        web_app::WebAppProvider::Get(profile()));
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
 
     auto test_app_registrar = std::make_unique<TestAppRegistrar>();
     test_app_registrar_ = test_app_registrar.get();
@@ -183,6 +181,8 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness {
         std::make_unique<WebAppPolicyManager>(profile());
     web_app_policy_manager_ = web_app_policy_manager.get();
     provider->SetWebAppPolicyManager(std::move(web_app_policy_manager));
+
+    provider->Start();
   }
 
   void SimulatePreviouslyInstalledApp(GURL url,

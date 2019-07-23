@@ -23,7 +23,6 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -182,7 +181,8 @@ static const int kRecipeRetryLimit = 5;
 
   // Save the profile and credit card generated to the personal data manager.
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state);
+  web::WebFrame* main_frame =
+      web_state->GetWebFramesManager()->GetMainWebFrame();
   autofill::AutofillManager* autofill_manager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state,
                                                            main_frame)

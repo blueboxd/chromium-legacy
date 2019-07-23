@@ -359,8 +359,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
     CreateDownloadHandlerIntercept download_handler_intercept,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
     bool enable_resource_scheduler)
-    : request_id_(-1),
-      is_shutdown_(false),
+    : is_shutdown_(false),
       enable_resource_scheduler_(enable_resource_scheduler),
       num_in_flight_requests_(0),
       max_num_in_flight_requests_(base::GetHandleLimit()),
@@ -1766,7 +1765,6 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
 }
 
 int ResourceDispatcherHostImpl::MakeRequestID() {
-  DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
   return --request_id_;
 }
 

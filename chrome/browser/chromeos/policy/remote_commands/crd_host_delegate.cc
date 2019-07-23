@@ -22,7 +22,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "remoting/host/it2me/it2me_native_messaging_host_chromeos.h"

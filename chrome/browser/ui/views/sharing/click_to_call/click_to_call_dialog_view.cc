@@ -25,7 +25,7 @@
 namespace {
 
 // Icon sizes in DIP.
-constexpr int kPrimaryIconSize = 16;
+constexpr int kPrimaryIconSize = 20;
 constexpr int kPrimaryIconBorderWidth = 8;
 
 SkColor GetColorfromTheme() {

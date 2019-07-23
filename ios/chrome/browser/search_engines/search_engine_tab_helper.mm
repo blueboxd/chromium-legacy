@@ -77,7 +77,7 @@ SearchEngineTabHelper::~SearchEngineTabHelper() {}
 SearchEngineTabHelper::SearchEngineTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
   web_state->AddObserver(this);
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::BindRepeating(&SearchEngineTabHelper::OnJsMessage,
                           base::Unretained(this)),
       kCommandPrefix);
@@ -87,7 +87,6 @@ SearchEngineTabHelper::SearchEngineTabHelper(web::WebState* web_state)
 }
 
 void SearchEngineTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveScriptCommandCallback(kCommandPrefix);
   web_state->RemoveObserver(this);
   web_state_ = nullptr;
   favicon_driver_observer_.RemoveAll();

@@ -2481,15 +2481,23 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
   return allow;
 }
 
-bool ChromeContentBrowserClient::AllowSignedExchange(
+bool ChromeContentBrowserClient::AllowSignedExchangeOnIO(
     content::ResourceContext* resource_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(!base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI));
   // Null-check safe_browsing_service_ as in unit tests |resource_context| is a
   // MockResourceContext and the cast doesn't work.
   if (!safe_browsing_service_)
     return false;
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
   return io_data->signed_exchange_enabled()->GetValue();
+}
+
+bool ChromeContentBrowserClient::AllowSignedExchange(
+    content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  return profile->GetPrefs()->GetBoolean(prefs::kSignedHTTPExchangeEnabled);
 }
 
 bool ChromeContentBrowserClient::AllowGetCookie(

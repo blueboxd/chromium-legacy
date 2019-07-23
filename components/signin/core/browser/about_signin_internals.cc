@@ -23,7 +23,7 @@
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/diagnostics_provider.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "components/signin/public/identity_manager/load_credentials_state.h"
 #include "net/base/backoff_entry.h"
 
 namespace {
@@ -112,27 +112,27 @@ std::string SigninStatusFieldToLabel(
 }
 
 std::string TokenServiceLoadCredentialsStateToLabel(
-    OAuth2TokenServiceDelegate::LoadCredentialsState state) {
+    signin::LoadCredentialsState state) {
   switch (state) {
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED:
       return "Load credentials not started";
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS:
       return "Load credentials in progress";
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
       return "Load credentials finished with success";
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED:
       return "Load credentials failed with datase cannot be opened error";
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
       return "Load credentials failed with database errors";
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
       return "Load credentials failed with decrypt errors";
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
       return "Load credentials failed with no refresh token for signed in "
              "account";
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
       return "Load credentials failed with unknown errors";
   }
@@ -613,7 +613,7 @@ AboutSigninInternals::SigninStatus::ToValue(
   AddSectionEntry(
       basic_info, "Signin Status",
       identity_manager->HasPrimaryAccount() ? "Signed In" : "Not Signed In");
-  OAuth2TokenServiceDelegate::LoadCredentialsState load_tokens_state =
+  signin::LoadCredentialsState load_tokens_state =
       identity_manager->GetDiagnosticsProvider()
           ->GetDetailedStateOfLoadingOfRefreshTokens();
   AddSectionEntry(basic_info, "TokenService Load Status",

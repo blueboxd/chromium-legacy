@@ -424,8 +424,10 @@ bool OAuth2TokenServiceDelegateAndroid::UpdateAccountList(
 
 void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded";
-  DCHECK_EQ(LOAD_CREDENTIALS_IN_PROGRESS, load_credentials_state());
-  set_load_credentials_state(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
+  DCHECK_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
+            load_credentials_state());
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   OAuth2TokenServiceDelegate::FireRefreshTokensLoaded();
 }
 
@@ -444,8 +446,10 @@ void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {
 
 void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
     const CoreAccountId& primary_account_id) {
-  DCHECK_EQ(LOAD_CREDENTIALS_NOT_STARTED, load_credentials_state());
-  set_load_credentials_state(LOAD_CREDENTIALS_IN_PROGRESS);
+  DCHECK_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED,
+            load_credentials_state());
+  set_load_credentials_state(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS);
   if (primary_account_id.empty() &&
       !base::FeatureList::IsEnabled(signin::kMiceFeature)) {
     FireRefreshTokensLoaded();

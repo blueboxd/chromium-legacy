@@ -106,23 +106,14 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     ResourceContext* resource_context,
     LoaderCallback callback,
     FallbackCallback fallback_callback) {
-  ClearJob();
-
-  if (!provider_host_) {
+  // InitializeProvider() will update the host. This is important to do before
+  // falling back to network below, so service worker APIs still work even if
+  // the service worker is bypassed for request interception.
+  if (!InitializeProvider(tentative_resource_request)) {
     // We can't do anything other than to fall back to network.
     std::move(callback).Run({});
     return;
   }
-
-  // Update the provider host with this request, clearing old controller state
-  // if this is a redirect. It's important to update the host before falling
-  // back to network below, so service worker APIs still work even if the
-  // service worker is bypassed for request interception.
-  provider_host_->SetControllerRegistration(nullptr,
-                                            /*notify_controllerchange=*/false);
-  stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
-  provider_host_->UpdateUrls(stripped_url_,
-                             tentative_resource_request.site_for_cookies);
 
   // Fall back to network if we were instructed to bypass the service worker for
   // request interception, or if the context is gone so we have to bypass
@@ -202,6 +193,24 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   }
   params.controller_service_worker_info = std::move(controller_info);
   return base::Optional<SubresourceLoaderParams>(std::move(params));
+}
+
+bool ServiceWorkerControlleeRequestHandler::InitializeProvider(
+    const network::ResourceRequest& tentative_resource_request) {
+  ClearJob();
+
+  if (!provider_host_) {
+    return false;
+  }
+
+  // Update the provider host with this request, clearing old controller state
+  // if this is a redirect.
+  provider_host_->SetControllerRegistration(nullptr,
+                                            /*notify_controllerchange=*/false);
+  stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
+  provider_host_->UpdateUrls(stripped_url_,
+                             tentative_resource_request.site_for_cookies);
+  return true;
 }
 
 void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(

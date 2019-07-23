@@ -9,7 +9,6 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
-#include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -101,7 +100,11 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  // Sharing features are disabled in incognito.
+  if (context->IsOffTheRecord())
+    return nullptr;
+
+  return context;
 }
 
 // Due to the dependency on SyncService, this cannot be instantiated before

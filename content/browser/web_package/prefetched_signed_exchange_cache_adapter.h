@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/public/browser/browser_context.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 class GURL;
@@ -34,7 +35,7 @@ class PrefetchedSignedExchangeCacheAdapter {
   PrefetchedSignedExchangeCacheAdapter(
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+      BrowserContext::BlobContextGetter blob_context_getter,
       const GURL& request_url,
       PrefetchURLLoader* prefetch_url_loader);
   ~PrefetchedSignedExchangeCacheAdapter();
@@ -54,6 +55,26 @@ class PrefetchedSignedExchangeCacheAdapter {
 
   void MaybeCallOnSignedExchangeStored();
 
+  // Creates and starts the blob builder.
+  static std::unique_ptr<storage::BlobBuilderFromStream>
+  CreateBlobBuilderFromStream(
+      base::WeakPtr<PrefetchedSignedExchangeCacheAdapter> adapter,
+      mojo::ScopedDataPipeConsumerHandle body,
+      uint64_t length_hint,
+      BrowserContext::BlobContextGetter blob_context_getter);
+
+  // Sets |blob_builder_from_stream| on |adapter|. If |adapter| is no longer
+  // valid, aborts the blob builder.
+  static void SetBlobBuilderFromStream(
+      base::WeakPtr<PrefetchedSignedExchangeCacheAdapter> adapter,
+      std::unique_ptr<storage::BlobBuilderFromStream> blob_builder_from_stream);
+
+  // Calls StreamingBlobDone() on the correct thread.
+  static void StreamingBlobDoneOnIO(
+      base::WeakPtr<PrefetchedSignedExchangeCacheAdapter> adapter,
+      storage::BlobBuilderFromStream* builder,
+      std::unique_ptr<storage::BlobDataHandle> result);
+
   // Holds the prefetched signed exchanges which will be used in the next
   // navigation. This is shared with RenderFrameHostImpl that created this.
   const scoped_refptr<PrefetchedSignedExchangeCache>
@@ -61,18 +82,22 @@ class PrefetchedSignedExchangeCacheAdapter {
 
   // Used to create a BlobDataHandle from a DataPipe of signed exchange's inner
   // response body to store to |prefetched_signed_exchange_cache_|.
-  base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
+  BrowserContext::BlobContextGetter blob_context_getter_;
 
   // A temporary entry of PrefetchedSignedExchangeCache, which will be stored
   // to |prefetched_signed_exchange_cache_|.
   std::unique_ptr<PrefetchedSignedExchangeCache::Entry> cached_exchange_;
 
   // Used to create a BlobDataHandle from a DataPipe of signed exchange's inner
-  // response body.
+  // response body. This should only be accessed on the IO thread.
   std::unique_ptr<storage::BlobBuilderFromStream> blob_builder_from_stream_;
+  bool blob_is_streaming_ = false;
 
   // |prefetch_url_loader_| owns |this|.
   PrefetchURLLoader* prefetch_url_loader_;
+
+  base::WeakPtrFactory<PrefetchedSignedExchangeCacheAdapter> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchedSignedExchangeCacheAdapter);
 };

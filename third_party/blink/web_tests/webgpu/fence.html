@@ -11,7 +11,7 @@ async function testFunction(t) {
 
   {
     // Test default initial value.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     assert_equals(fence.getCompletedValue(), 0);
   }
   {
@@ -22,21 +22,21 @@ async function testFunction(t) {
 
   {
     // Promise resolves when onCompletion value is less than signal value.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     queue.signal(fence, 2);
     await fence.onCompletion(1);
     assert_equals(fence.getCompletedValue(), 2);
   }
   {
     // Promise resolves when onCompletion value is equal to signal value.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     queue.signal(fence, 2);
     await fence.onCompletion(2);
     assert_equals(fence.getCompletedValue(), 2);
   }
   {
     // Promise resolves when signal is called multiple times.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     queue.signal(fence, 1);
     queue.signal(fence, 2);
     await fence.onCompletion(2);
@@ -44,7 +44,7 @@ async function testFunction(t) {
   }
   {
     // Promise resolves if fence has already completed.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     queue.signal(fence, 2);
 
     // Wait for value to update.
@@ -63,7 +63,7 @@ async function testFunction(t) {
     // Test dropping references to the fence and onCompletion promise does not
     // crash.
     {
-      const fence = queue.createFence({});
+      const fence = queue.createFence();
       queue.signal(fence, 2);
       fence.onCompletion(2);
     }
@@ -74,7 +74,7 @@ async function testFunction(t) {
     // crash.
     let promise;
     {
-      const fence = queue.createFence({});
+      const fence = queue.createFence();
       queue.signal(fence, 2);
       promise = fence.onCompletion(2);
     }
@@ -83,7 +83,7 @@ async function testFunction(t) {
   }
   {
     // Test many calls to signal and wait on fence values one at a time.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     for (let i = 1; i <= 20; ++i) {
       queue.signal(fence, i);
       await fence.onCompletion(i);
@@ -92,7 +92,7 @@ async function testFunction(t) {
   }
   {
     // Test many calls to signal and wait on all fence values.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     const promises = [];
     for (let i = 1; i <= 20; ++i) {
       queue.signal(fence, i);
@@ -105,7 +105,7 @@ async function testFunction(t) {
   }
   {
     // Test it is illegal to wait on a fence without signaling the value.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     const promise = fence.onCompletion(2);
 
     await promise_rejects(
@@ -113,7 +113,7 @@ async function testFunction(t) {
   }
   {
     // Test it is illegal to wait on a fence before it is signaled.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     const promise = fence.onCompletion(2);
     queue.signal(fence, 2);
 
@@ -122,7 +122,7 @@ async function testFunction(t) {
   }
   {
     // Test it is illegal to wait on a value greater than the signaled value.
-    const fence = queue.createFence({});
+    const fence = queue.createFence();
     queue.signal(fence, 2);
     const promise = fence.onCompletion(3);
 

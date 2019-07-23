@@ -51,7 +51,7 @@ class Element;
 class StylePropertyShorthand;
 class StyleResolver;
 
-class CSSAnimations final {
+class CORE_EXPORT CSSAnimations final {
   DISALLOW_NEW();
 
  public:

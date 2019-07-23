@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -70,7 +71,8 @@ initWithBaseViewController:(UIViewController*)viewController
   popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
   popoverPresentationController.delegate = self;
-  popoverPresentationController.backgroundColor = UIColor.whiteColor;
+  popoverPresentationController.backgroundColor =
+      UIColor.cr_systemBackgroundColor;
 }
 
 #pragma mark - ChromeCoordinator

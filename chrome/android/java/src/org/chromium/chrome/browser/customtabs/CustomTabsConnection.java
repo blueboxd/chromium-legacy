@@ -53,7 +53,8 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.SessionHandler;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
@@ -200,6 +201,7 @@ public class CustomTabsConnection {
     private final HiddenTabHolder mHiddenTabHolder = new HiddenTabHolder();
     /** @deprecated Use {@link ContextUtils} instead */
     protected final Context mContext;
+    protected final SessionDataHolder mSessionDataHolder;
     @VisibleForTesting
     final ClientManager mClientManager;
     protected final boolean mLogRequests;
@@ -226,6 +228,8 @@ public class CustomTabsConnection {
         mContext = ContextUtils.getApplicationContext();
         mClientManager = new ClientManager();
         mLogRequests = CommandLine.getInstance().hasSwitch(LOG_SERVICE_REQUESTS);
+        mSessionDataHolder =
+                ChromeApplication.getComponent().resolveSessionDataHolder();
     }
 
     /**
@@ -610,6 +614,9 @@ public class CustomTabsConnection {
 
     public boolean updateVisuals(final CustomTabsSessionToken session, Bundle bundle) {
         if (mLogRequests) Log.w(TAG, "updateVisuals: %s", bundleToJson(bundle));
+        SessionHandler handler = mSessionDataHolder.getActiveHandler(session);
+        if (handler == null) return false;
+
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         boolean result = true;
@@ -653,8 +660,8 @@ public class CustomTabsConnection {
             result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 boolean res = true;
                 for (int i = 0; i < ids.size(); i++) {
-                    res &= BrowserSessionContentUtils.updateCustomButton(
-                            session, ids.get(i), icons.get(i), descriptions.get(i));
+                    res &= handler.updateCustomButton(ids.get(i), icons.get(i),
+                            descriptions.get(i));
                 }
                 return res;
             });
@@ -667,10 +674,9 @@ public class CustomTabsConnection {
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
             final PendingIntent pendingIntent = IntentUtils.safeGetParcelable(bundle,
                     CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
-            result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
-                return BrowserSessionContentUtils.updateRemoteViews(
-                        session, remoteViews, clickableIDs, pendingIntent);
-            });
+            result &= PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () ->
+                handler.updateRemoteViews(remoteViews, clickableIDs, pendingIntent)
+            );
         }
         logCall("updateVisuals()", result);
         return result;
@@ -687,7 +693,7 @@ public class CustomTabsConnection {
     private boolean requestPostMessageChannelInternal(final CustomTabsSessionToken session,
             final Origin postMessageOrigin) {
         if (!mWarmupHasBeenCalled.get()) return false;
-        if (!isCallerForegroundOrSelf() && !BrowserSessionContentUtils.isActiveSession(session)) {
+        if (!isCallerForegroundOrSelf() && !mSessionDataHolder.isActiveSession(session)) {
             return false;
         }
         if (!mClientManager.bindToPostMessageServiceForSession(session)) return false;
@@ -728,7 +734,7 @@ public class CustomTabsConnection {
     public int postMessage(CustomTabsSessionToken session, String message, Bundle extras) {
         int result;
         if (!mWarmupHasBeenCalled.get()) result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
-        if (!isCallerForegroundOrSelf() && !BrowserSessionContentUtils.isActiveSession(session)) {
+        if (!isCallerForegroundOrSelf() && !mSessionDataHolder.isActiveSession(session)) {
             result = CustomTabsService.RESULT_FAILURE_DISALLOWED;
         }
         // If called before a validatePostMessageOrigin, the post message origin will be invalid and
@@ -1260,7 +1266,7 @@ public class CustomTabsConnection {
         String controllerName = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? "cpuset" : "cpu";
         // Reading from /proc does not cause disk IO, but strict mode doesn't like it.
         // crbug.com/567143
-        try (StrictModeContext ctx = StrictModeContext.allowDiskReads();
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads();
                 BufferedReader reader = new BufferedReader(new FileReader(cgroupFilename))) {
             String line = null;
             while ((line = reader.readLine()) != null) {

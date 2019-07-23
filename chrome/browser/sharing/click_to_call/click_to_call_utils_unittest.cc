@@ -102,6 +102,14 @@ TEST_F(ClickToCallUtilsTest, UIFlagDisabled_DoNotShowMenu) {
   EXPECT_FALSE(ShouldOfferClickToCall(&profile_, GURL(kTelUrl)));
 }
 
+TEST_F(ClickToCallUtilsTest, IncognitoProfile_DoNotShowMenu) {
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
+  EXPECT_CALL(*service(), GetState()).Times(0);
+
+  EXPECT_FALSE(
+      ShouldOfferClickToCall(profile_.GetOffTheRecordProfile(), GURL(kTelUrl)));
+}
+
 TEST_F(ClickToCallUtilsTest, EmptyTelProtocol_DoNotShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   EXPECT_CALL(*service(), GetState())

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
@@ -49,6 +50,7 @@ class BrowserState;
 class NavigationManager;
 class SessionCertificatePolicyCache;
 class WebFrame;
+class WebFramesManager;
 class WebInterstitial;
 class WebStateDelegate;
 class WebStateInterfaceProvider;
@@ -152,6 +154,11 @@ class WebState : public base::SupportsUserData {
   virtual const NavigationManager* GetNavigationManager() const = 0;
   virtual NavigationManager* GetNavigationManager() = 0;
 
+  // Gets the WebFramesManager associated with this WebState. Can never return
+  // null.
+  virtual const WebFramesManager* GetWebFramesManager() const = 0;
+  virtual WebFramesManager* GetWebFramesManager() = 0;
+
   // Gets the SessionCertificatePolicyCache for this WebState.  Can never return
   // null.
   virtual const SessionCertificatePolicyCache*
@@ -253,20 +260,24 @@ class WebState : public base::SupportsUserData {
   // frame, |user_is_interacting| indicates if the user is interacting with the
   // page.
   // TODO(crbug.com/881813): remove |page_url|.
-  typedef base::RepeatingCallback<void(const base::DictionaryValue& message,
-                                       const GURL& page_url,
-                                       bool user_is_interacting,
-                                       web::WebFrame* sender_frame)>
-      ScriptCommandCallback;
-
-  // Registers a callback that will be called when a command matching
-  // |command_prefix| is received.
-  virtual void AddScriptCommandCallback(const ScriptCommandCallback& callback,
-                                        const std::string& command_prefix) = 0;
-
-  // Removes the callback associated with |command_prefix|.
-  virtual void RemoveScriptCommandCallback(
-      const std::string& command_prefix) = 0;
+  using ScriptCommandCallbackSignature =
+      void(const base::DictionaryValue& message,
+           const GURL& page_url,
+           bool user_is_interacting,
+           web::WebFrame* sender_frame);
+  using ScriptCommandCallback =
+      base::RepeatingCallback<ScriptCommandCallbackSignature>;
+  using ScriptCommandSubscription =
+      base::CallbackList<ScriptCommandCallbackSignature>::Subscription;
+  // Registers |callback| for JS message whose 'command' matches
+  // |command_prefix|. The returned ScriptCommandSubscription should be stored
+  // by the caller. When the description object is destroyed, it will unregister
+  // |callback| if this WebState is still alive, and do nothing if this WebState
+  // is already destroyed. Therefore if the caller want to stop receiving JS
+  // messages it can just destroy the subscription object.
+  virtual std::unique_ptr<ScriptCommandSubscription> AddScriptCommandCallback(
+      const ScriptCommandCallback& callback,
+      const std::string& command_prefix) WARN_UNUSED_RESULT = 0;
 
   // Returns the current CRWWebViewProxy object.
   virtual CRWWebViewProxyType GetWebViewProxy() const = 0;

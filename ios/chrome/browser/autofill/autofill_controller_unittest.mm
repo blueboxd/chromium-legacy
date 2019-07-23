@@ -42,7 +42,6 @@
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -323,7 +322,8 @@ bool AutofillControllerTest::LoadHtmlAndWaitForFormFetched(
     NSString* html,
     size_t expected_number_of_forms) {
   LoadHtml(html);
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
@@ -344,7 +344,8 @@ void AutofillControllerTest::ExpectHappinessMetric(
 // registered as a FormStructure by the AutofillManager.
 TEST_F(AutofillControllerTest, ReadForm) {
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kProfileFormHtml, 1));
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();
@@ -364,7 +365,8 @@ TEST_F(AutofillControllerTest, ReadForm) {
 // name is correctly set.
 TEST_F(AutofillControllerTest, ReadFormName) {
   ASSERT_TRUE(LoadHtmlAndWaitForFormFetched(kMinimalFormWithNameHtml, 1));
-  web::WebFrame* main_frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* main_frame =
+      web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), main_frame)
           ->autofill_manager();

@@ -47,7 +47,7 @@ LanguageDetectionController::LanguageDetectionController(
 
   translate_enabled_.Init(prefs::kOfferTranslateEnabled, prefs);
   web_state_->AddObserver(this);
-  web_state_->AddScriptCommandCallback(
+  subscription_ = web_state_->AddScriptCommandCallback(
       base::Bind(&LanguageDetectionController::OnTextCaptured,
                  base::Unretained(this)),
       kCommandPrefix);
@@ -55,7 +55,6 @@ LanguageDetectionController::LanguageDetectionController(
 
 LanguageDetectionController::~LanguageDetectionController() {
   if (web_state_) {
-    web_state_->RemoveScriptCommandCallback(kCommandPrefix);
     web_state_->RemoveObserver(this);
     web_state_ = nullptr;
   }
@@ -186,7 +185,6 @@ void LanguageDetectionController::DidFinishNavigation(
 
 void LanguageDetectionController::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
-  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 }

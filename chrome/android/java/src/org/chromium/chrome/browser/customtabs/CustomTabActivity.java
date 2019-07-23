@@ -25,6 +25,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -50,8 +51,10 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
-import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.Origin;
+import org.chromium.chrome.browser.browserservices.OriginVerifier;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
+import org.chromium.chrome.browser.browserservices.SessionHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
@@ -106,7 +109,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
-    private BrowserSessionContentHandler mBrowserSessionContentHandler;
+    private SessionHandler mSessionHandler;
     private CustomTabBottomBarDelegate mBottomBarDelegate;
     private CustomTabActivityTabController mTabController;
     private CustomTabActivityTabProvider mTabProvider;
@@ -114,6 +117,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private CustomTabActivityNavigationController mNavigationController;
     private CustomTabStatusBarColorProvider mCustomTabStatusBarColorProvider;
     private CustomTabToolbarCoordinator mToolbarCoordinator;
+    private SessionDataHolder mSessionDataHolder;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -300,24 +304,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             mDynamicModuleCoordinator = getComponent().resolveDynamicModuleCoordinator();
         }
 
-        mBrowserSessionContentHandler = new BrowserSessionContentHandler() {
-            @Override
-            public void loadUrlAndTrackFromTimestamp(LoadUrlParams params, long timestamp) {
-                if (!TextUtils.isEmpty(params.getUrl())) {
-                    params.setUrl(DataReductionProxySettings.getInstance()
-                            .maybeRewriteWebliteUrl(params.getUrl()));
-                }
-                mNavigationController.navigate(params, timestamp);
-            }
+        mSessionHandler = new SessionHandler() {
 
             @Override
             public CustomTabsSessionToken getSession() {
                 return mSession;
-            }
-
-            @Override
-            public boolean shouldIgnoreIntent(Intent intent) {
-                return mIntentHandler.shouldIgnoreIntent(intent);
             }
 
             @Override
@@ -369,6 +360,31 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             public Class<? extends Activity> getActivityClass() {
                 return CustomTabActivity.this.getClass();
             }
+
+            @Override
+            public boolean handleIntent(Intent intent) {
+                if (mIntentHandler.shouldIgnoreIntent(intent)) {
+                    Log.w(TAG, "Incoming intent to Custom Tab was ignored.");
+                    return false;
+                }
+                String url = IntentHandler.getUrlFromIntent(intent);
+                if (TextUtils.isEmpty(url)) return false;
+                LoadUrlParams params = new LoadUrlParams(url);
+
+                params.setUrl(DataReductionProxySettings.getInstance()
+                        .maybeRewriteWebliteUrl(params.getUrl()));
+                mNavigationController.navigate(params,
+                        IntentHandler.getTimestampFromIntent(intent));
+                return true;
+            }
+
+            @Override
+            public boolean canUseReferrer(Uri referrer) {
+                String packageName = mConnection.getClientPackageNameForSession(mSession);
+                if (TextUtils.isEmpty(packageName)) return false;
+                return OriginVerifier.wasPreviouslyVerified(
+                    packageName, new Origin(referrer), CustomTabsService.RELATION_USE_AS_ORIGIN);
+            }
         };
 
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
@@ -404,8 +420,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void onNewIntentWithNative(Intent intent) {
         super.onNewIntentWithNative(intent);
-        BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
-        if (!BrowserSessionContentUtils.handleBrowserServicesIntent(intent)) {
+        mSessionDataHolder.setActiveHandler(mSessionHandler);
+        if (!mSessionDataHolder.handleIntent(intent)) {
             int flagsToRemove = Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP;
             intent.setFlags(intent.getFlags() & ~flagsToRemove);
             startActivity(intent);
@@ -433,7 +449,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
+        mSessionDataHolder.setActiveHandler(mSessionHandler);
         @TabCreationMode int mode = mTabProvider.getInitialTabCreationMode();
         boolean earlyCreatedTabIsReady =
                 (mode == TabCreationMode.HIDDEN || mode == TabCreationMode.EARLY)
@@ -444,7 +460,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
-        BrowserSessionContentUtils.removeActiveContentHandler(mBrowserSessionContentHandler);
+        mSessionDataHolder.removeActiveHandler(mSessionHandler);
     }
 
     @Override
@@ -770,6 +786,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             handleFinishAndClose();
         });
         component.resolveInitialPageLoader();
+        mSessionDataHolder = component.getParent().resolveSessionDataHolder();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

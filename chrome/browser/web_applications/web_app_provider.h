@@ -68,11 +68,8 @@ class WebAppProvider : public WebAppProviderBase,
   explicit WebAppProvider(Profile* profile);
   ~WebAppProvider() override;
 
-  // TODO(crbug.com/973324): Wrap StartRegistry() with a Start() method that
-  // calls ConnectSubsystems().
-  // Start registry. All subsystems depend on it. This will run all subsystem
-  // startup tasks.
-  void StartRegistry();
+  // Start the Web App system. This will run subsystem startup tasks.
+  void Start();
 
   // WebAppProviderBase:
   AppRegistrar& registrar() override;
@@ -104,15 +101,18 @@ class WebAppProvider : public WebAppProviderBase,
   }
 
  protected:
+  virtual void StartImpl();
+
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);
   // ... or create legacy extension-based subsystems.
   void CreateBookmarkAppsSubsystems(Profile* profile);
 
-  // Wire together subsystems but do not start them (yet). Can be called
-  // multiple times before StartRegistry().
+  // Wire together subsystems but do not start them (yet).
   void ConnectSubsystems();
 
+  // Start registry. All other subsystems depend on it.
+  void StartRegistry();
   void OnRegistryReady();
 
   void OnScanForExternalWebApps(std::vector<ExternalInstallOptions>);
@@ -145,8 +145,9 @@ class WebAppProvider : public WebAppProviderBase,
 
   Profile* profile_;
 
-  // Ensures that ConnectSubsystems() is not called after StartRegistry().
+  // Ensures that ConnectSubsystems() is not called after Start().
   bool started_ = false;
+  bool connected_ = false;
 
   base::WeakPtrFactory<WebAppProvider> weak_ptr_factory_{this};
 

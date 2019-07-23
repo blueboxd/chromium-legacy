@@ -413,12 +413,29 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-columnheader.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaCombobox) {
+#if defined(OS_ANDROID)
+// TODO(crbug.com/986673): test is flaky on android.
+#define MAYBE_AccessibilityAriaCombobox DISABLED_AccessibilityAriaCombobox
+#else
+#define MAYBE_AccessibilityAriaCombobox AccessibilityAriaCombobox
+#endif
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityAriaCombobox) {
   RunAriaTest(FILE_PATH_LITERAL("aria-combobox.html"));
 }
 
+#if defined(OS_ANDROID)
+// TODO(crbug.com/986673): test is flaky on android.
+#define MAYBE_AccessibilityAriaOnePointOneCombobox \
+  DISABLED_AccessibilityAriaOnePointOneCombobox
+#else
+#define MAYBE_AccessibilityAriaOnePointOneCombobox \
+  AccessibilityAriaOnePointOneCombobox
+#endif
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaOnePointOneCombobox) {
+                       MAYBE_AccessibilityAriaOnePointOneCombobox) {
   RunAriaTest(FILE_PATH_LITERAL("aria1.1-combobox.html"));
 }
 
@@ -1537,8 +1554,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputText) {
   RunHtmlTest(FILE_PATH_LITERAL("input-text.html"));
 }
 
+#if defined(OS_ANDROID)
+// TODO(crbug.com/986673): test is flaky on android.
+#define MAYBE_AccessibilityInputTextReadOnly \
+  DISABLED_AccessibilityInputTextReadOnly
+#else
+#define MAYBE_AccessibilityInputTextReadOnly AccessibilityInputTextReadOnly
+#endif
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityInputTextReadOnly) {
+                       MAYBE_AccessibilityInputTextReadOnly) {
   RunHtmlTest(FILE_PATH_LITERAL("input-text-read-only.html"));
 }
 

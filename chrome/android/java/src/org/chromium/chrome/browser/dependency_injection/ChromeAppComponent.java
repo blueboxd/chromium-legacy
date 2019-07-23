@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.dependency_injection;
 
 import org.chromium.chrome.browser.AppHooksModule;
+import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.ClearDataDialogResultRecorder;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.NotificationPermissionUpdater;
@@ -41,4 +42,5 @@ public interface ChromeAppComponent {
     ExternalAuthUtils resolveExternalAuthUtils();
 
     CustomTabsClientFileProcessor resolveCustomTabsFileProcessor();
+    SessionDataHolder resolveSessionDataHolder();
 }

@@ -69,11 +69,16 @@ class ServiceWorkerNavigationHandle {
 
   ServiceWorkerNavigationHandleCore* core() const { return core_; }
 
+  const ServiceWorkerContextWrapper* context_wrapper() const {
+    return context_wrapper_.get();
+  }
+
  private:
   blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info_;
   // TODO(leonhsl): Use std::unique_ptr<ServiceWorkerNavigationHandleCore,
   // BrowserThread::DeleteOnIOThread> instead.
   ServiceWorkerNavigationHandleCore* core_;
+  scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtrFactory<ServiceWorkerNavigationHandle> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandle);
 };

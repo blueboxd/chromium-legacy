@@ -7,6 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "net/base/net_errors.h"
 #include "services/network/cross_origin_read_blocking.h"
 
 namespace net {
@@ -20,7 +22,6 @@ struct ResourceResponseHead;
 
 namespace storage {
 class BlobDataHandle;
-class BlobReader;
 }  // namespace storage
 
 namespace url {
@@ -50,21 +51,23 @@ class CrossOriginReadBlockingChecker {
   int GetNetError();
 
  private:
+  class BlobIOState;
+
   void OnAllowed();
   void OnBlocked();
-  void OnNetError();
+  void OnNetError(int net_error);
 
-  void StartSniffing(const storage::BlobDataHandle& blob_data_handle);
-
-  void DidCalculateSize(int result);
-
-  void OnReadComplete(int bytes_read);
+  void OnReadComplete(int bytes_read,
+                      scoped_refptr<net::IOBufferWithSize> buffer,
+                      int net_error);
 
   base::OnceCallback<void(Result)> callback_;
   std::unique_ptr<network::CrossOriginReadBlocking::ResponseAnalyzer>
       corb_analyzer_;
-  std::unique_ptr<storage::BlobReader> blob_reader_;
-  scoped_refptr<net::IOBufferWithSize> buffer_;
+  std::unique_ptr<BlobIOState> blob_io_state_;
+  int net_error_ = net::OK;
+
+  base::WeakPtrFactory<CrossOriginReadBlockingChecker> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlockingChecker);
 };

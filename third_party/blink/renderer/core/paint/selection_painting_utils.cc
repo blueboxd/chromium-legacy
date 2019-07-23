@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -46,10 +47,19 @@ scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
 
   // If we request ::selection style for LayoutText, query ::selection style on
   // the parent element instead, as that is the node for which ::selection
-  // matches.
+  // matches. This should must likely have used FlatTreeTraversal, but since we
+  // don't implement inheritance of ::selection styles, it would probably break
+  // cases where you style a shadow host with ::selection and expect light tree
+  // text children to be affected by that style.
   Element* element = Traversal<Element>::FirstAncestorOrSelf(*node);
-  if (!element || element->IsPseudoElement())
+
+  // <content> and <shadow> elements do not have ComputedStyle, hence they will
+  // return null for StyleForPseudoElement(). Return early to avoid DCHECK
+  // failure for GetComputedStyle() inside StyleForPseudoElement() below.
+  if (!element || element->IsPseudoElement() ||
+      IsActiveV0InsertionPoint(*element)) {
     return nullptr;
+  }
 
   return element->StyleForPseudoElement(PseudoStyleRequest(kPseudoIdSelection));
 }

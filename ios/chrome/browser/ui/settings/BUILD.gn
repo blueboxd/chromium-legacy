@@ -115,7 +115,6 @@ source_set("settings") {
     "//components/prefs/ios",
     "//components/resources",
     "//components/search_engines",
-    "//components/signin/core/browser",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
     "//components/strings",

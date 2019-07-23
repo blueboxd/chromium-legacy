@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -183,13 +184,22 @@ class WebAppUiServiceMigrationBrowserTest
     : public WebAppUiManagerImplBrowserTest {
  public:
   void SetUp() override {
+    hide_settings_app_for_testing_ =
+        apps::BuiltInChromeOsApps::SetHideSettingsAppForTesting(true);
     // Disable System Web Apps so that the Internal Apps are installed.
     scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
     WebAppUiManagerImplBrowserTest::SetUp();
   }
 
+  void TearDown() override {
+    WebAppUiManagerImplBrowserTest::TearDown();
+    apps::BuiltInChromeOsApps::SetHideSettingsAppForTesting(
+        hide_settings_app_for_testing_);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  bool hide_settings_app_for_testing_ = false;
 };
 
 // Tests that the Settings app migrates the launcher and app list details from

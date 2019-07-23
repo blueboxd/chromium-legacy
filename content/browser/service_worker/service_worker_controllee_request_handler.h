@@ -60,6 +60,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
+  // Does all initialization of |provider_host_| for a request.
+  bool InitializeProvider(const network::ResourceRequest& tentative_request);
+
   // Exposed for testing.
   ServiceWorkerNavigationLoader* loader() {
     return loader_wrapper_ ? loader_wrapper_->get() : nullptr;

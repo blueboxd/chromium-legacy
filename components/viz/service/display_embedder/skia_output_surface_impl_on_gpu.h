@@ -69,7 +69,7 @@ struct RenderPassGeometry;
 
 // The SkiaOutputSurface implementation running on the GPU thread. This class
 // should be created, used and destroyed on the GPU thread.
-class SkiaOutputSurfaceImplOnGpu {
+class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
  public:
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
@@ -92,7 +92,7 @@ class SkiaOutputSurfaceImplOnGpu {
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
       const BufferPresentedCallback& buffer_presented_callback,
       const ContextLostCallback& context_lost_callback);
-  ~SkiaOutputSurfaceImplOnGpu();
+  ~SkiaOutputSurfaceImplOnGpu() override;
 
   gpu::CommandBufferId command_buffer_id() const {
     return sync_point_client_state_->command_buffer_id();
@@ -119,6 +119,7 @@ class SkiaOutputSurfaceImplOnGpu {
       std::vector<gpu::SyncToken> sync_tokens,
       uint64_t sync_fence_release,
       base::OnceClosure on_finished);
+  void ScheduleOverlays(const OverlayCandidateList& overlays);
   void SwapBuffers(OutputSurfaceFrame frame);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
@@ -153,6 +154,20 @@ class SkiaOutputSurfaceImplOnGpu {
 
   void SetCapabilitiesForTesting(
       const OutputSurface::Capabilities& capabilities);
+
+  bool IsDisplayedAsOverlay();
+
+  // gpu::ImageTransportSurfaceDelegate implementation:
+#if defined(OS_WIN)
+  void DidCreateAcceleratedSurfaceChildWindow(
+      gpu::SurfaceHandle parent_window,
+      gpu::SurfaceHandle child_window) override;
+#endif
+  const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
+  const gpu::GpuPreferences& GetGpuPreferences() const override;
+  void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
+  void BufferPresented(const gfx::PresentationFeedback& feedback) override;
+  GpuVSyncCallback GetGpuVSyncCallback() override;
 
  private:
   class ScopedPromiseImageAccess;

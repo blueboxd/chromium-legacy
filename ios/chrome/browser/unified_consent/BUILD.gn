@@ -12,7 +12,6 @@ source_set("unified_consent") {
     "//components/browser_sync",
     "//components/keyed_service/ios",
     "//components/metrics",
-    "//components/signin/core/browser",
     "//components/sync",
     "//components/sync_preferences",
     "//components/unified_consent",

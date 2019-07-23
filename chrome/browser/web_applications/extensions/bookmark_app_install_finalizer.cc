@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/bookmark_app_extension_util.h"
@@ -115,17 +116,20 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       OnExtensionInstalled, web_app_info.app_url, launch_type,
       options.locally_installed, std::move(callback), crx_installer));
 
-  switch (options.source) {
-    case web_app::InstallFinalizer::Source::kDefaultInstalled:
+  switch (options.install_source) {
+      // TODO(nigeltao/ortuno): should these two cases lead to different
+      // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
+    case WebappInstallSource::INTERNAL_DEFAULT:
+    case WebappInstallSource::EXTERNAL_DEFAULT:
       crx_installer->set_install_source(Manifest::EXTERNAL_PREF_DOWNLOAD);
       // CrxInstaller::InstallWebApp will OR the creation flags with
       // FROM_BOOKMARK.
       crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
       break;
-    case web_app::InstallFinalizer::Source::kPolicyInstalled:
+    case WebappInstallSource::EXTERNAL_POLICY:
       crx_installer->set_install_source(Manifest::EXTERNAL_POLICY_DOWNLOAD);
       break;
-    case web_app::InstallFinalizer::Source::kSystemInstalled:
+    case WebappInstallSource::SYSTEM_DEFAULT:
       // System Apps are considered EXTERNAL_COMPONENT as they are downloaded
       // from the WebUI they point to. COMPONENT seems like the more correct
       // value, but usages (icon loading, filesystem cleanup), are tightly
@@ -134,7 +138,11 @@ void BookmarkAppInstallFinalizer::FinalizeInstall(
       // InstallWebApp will OR the creation flags with FROM_BOOKMARK.
       crx_installer->set_creation_flags(Extension::WAS_INSTALLED_BY_DEFAULT);
       break;
-    case web_app::InstallFinalizer::Source::kUser:
+    case WebappInstallSource::COUNT:
+      NOTREACHED();
+      break;
+    default:
+      // All other install sources mean user-installed app. Do nothing.
       break;
   }
 

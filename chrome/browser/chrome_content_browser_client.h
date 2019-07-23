@@ -235,7 +235,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
-  bool AllowSignedExchange(content::ResourceContext* resource_context) override;
+  bool AllowSignedExchangeOnIO(
+      content::ResourceContext* resource_context) override;
+  bool AllowSignedExchange(content::BrowserContext* browser_context) override;
   bool AllowGetCookie(const GURL& url,
                       const GURL& first_party,
                       const net::CookieList& cookie_list,

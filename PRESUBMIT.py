@@ -288,7 +288,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^chromeos/geolocation/',
   '^chromeos/login/',
   '^chromeos/network/',
-  '^chromeos/printing/',
   '^chromeos/process_proxy/',
   '^chromeos/services/',
   '^chromeos/settings/',

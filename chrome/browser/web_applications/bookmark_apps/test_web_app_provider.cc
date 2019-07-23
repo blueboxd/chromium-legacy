@@ -22,57 +22,86 @@
 
 namespace web_app {
 
+#define CHECK_NOT_STARTED()                                                \
+  CHECK(!started_) << "Attempted to set a WebAppProvider subsystem after " \
+                      "Start() was called.";
+
 // static
 std::unique_ptr<KeyedService> TestWebAppProvider::BuildDefault(
     content::BrowserContext* context) {
-  return std::make_unique<TestWebAppProvider>(
-      Profile::FromBrowserContext(context));
+  auto provider = std::make_unique<TestWebAppProvider>(
+      Profile::FromBrowserContext(context),
+      /*run_subsystem_startup_tasks=*/false);
+  // TODO(crbug.com/973324): Replace core subsystems with fakes by default.
+  provider->ConnectSubsystems();
+  return provider;
 }
 
-TestWebAppProvider::TestWebAppProvider(Profile* profile)
-    : WebAppProvider(profile) {}
+// static
+TestWebAppProvider* TestWebAppProvider::Get(Profile* profile) {
+  CHECK(profile->AsTestingProfile());
+  auto* test_provider = static_cast<web_app::TestWebAppProvider*>(
+      web_app::WebAppProvider::Get(profile));
+  CHECK(!test_provider->started_);
+
+  // Disconnect so that clients are forced to call Start() before accessing any
+  // subsystems.
+  test_provider->connected_ = false;
+
+  return test_provider;
+}
+
+TestWebAppProvider::TestWebAppProvider(Profile* profile,
+                                       bool run_subsystem_startup_tasks)
+    : WebAppProvider(profile),
+      run_subsystem_startup_tasks_(run_subsystem_startup_tasks) {}
 
 TestWebAppProvider::~TestWebAppProvider() = default;
 
+void TestWebAppProvider::StartImpl() {
+  if (run_subsystem_startup_tasks_)
+    WebAppProvider::StartImpl();
+}
+
 void TestWebAppProvider::SetRegistrar(std::unique_ptr<AppRegistrar> registrar) {
+  CHECK_NOT_STARTED();
   registrar_ = std::move(registrar);
-  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetInstallManager(
     std::unique_ptr<InstallManager> install_manager) {
+  CHECK_NOT_STARTED();
   install_manager_ = std::move(install_manager);
-  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetInstallFinalizer(
     std::unique_ptr<InstallFinalizer> install_finalizer) {
+  CHECK_NOT_STARTED();
   install_finalizer_ = std::move(install_finalizer);
-  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetPendingAppManager(
     std::unique_ptr<PendingAppManager> pending_app_manager) {
+  CHECK_NOT_STARTED();
   pending_app_manager_ = std::move(pending_app_manager);
-  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetWebAppUiManager(
     std::unique_ptr<WebAppUiManager> ui_manager) {
+  CHECK_NOT_STARTED();
   ui_manager_ = std::move(ui_manager);
-  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetSystemWebAppManager(
     std::unique_ptr<SystemWebAppManager> system_web_app_manager) {
+  CHECK_NOT_STARTED();
   system_web_app_manager_ = std::move(system_web_app_manager);
-  ConnectSubsystems();
 }
 
 void TestWebAppProvider::SetWebAppPolicyManager(
     std::unique_ptr<WebAppPolicyManager> web_app_policy_manager) {
+  CHECK_NOT_STARTED();
   web_app_policy_manager_ = std::move(web_app_policy_manager);
-  ConnectSubsystems();
 }
 
 TestWebAppProviderCreator::TestWebAppProviderCreator(

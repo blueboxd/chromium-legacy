@@ -33,15 +33,13 @@ CredentialManager::CredentialManager(
     password_manager::PasswordManagerClient* client,
     web::WebState* web_state)
     : impl_(client), web_state_(web_state) {
-  web_state_->AddScriptCommandCallback(
+  subscription_ = web_state_->AddScriptCommandCallback(
       base::Bind(&CredentialManager::HandleScriptCommand,
                  base::Unretained(this)),
       kCommandPrefix);
 }
 
-CredentialManager::~CredentialManager() {
-  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
-}
+CredentialManager::~CredentialManager() {}
 
 void CredentialManager::HandleScriptCommand(const base::DictionaryValue& json,
                                             const GURL& origin_url,

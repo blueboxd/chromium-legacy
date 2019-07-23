@@ -44,10 +44,6 @@ struct IceConfig {
 
   std::vector<rtc::SocketAddress> stun_servers;
 
-  // Legacy GTURN relay servers.
-  std::vector<std::string> relay_servers;
-  std::string relay_token;
-
   // Standard TURN servers
   std::vector<cricket::RelayServerConfig> turn_servers;
 

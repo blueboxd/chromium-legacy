@@ -61,7 +61,6 @@
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #include "ios/web/public/favicon/favicon_status.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #include "ios/web/public/navigation/navigation_item.h"
@@ -136,6 +135,9 @@ struct PendingPaymentResponse {
   // Storage for data to return in the payment response, until we're ready to
   // send an actual PaymentResponse.
   PendingPaymentResponse _pendingPaymentResponse;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> _subscription;
 }
 
 // YES if Payment Request is enabled on the active web state.
@@ -309,7 +311,6 @@ struct PendingPaymentResponse {
     _paymentRequestJsManager = nil;
 
     _activeWebState->RemoveObserver(_activeWebStateObserver.get());
-    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
     _activeWebStateObserver.reset();
     _activeWebState = nullptr;
   }
@@ -320,7 +321,7 @@ struct PendingPaymentResponse {
     _paymentRequestJsManager = nil;
 
     _activeWebState->RemoveObserver(_activeWebStateObserver.get());
-    _activeWebState->RemoveScriptCommandCallback(kCommandPrefix);
+    _subscription.reset();
     _activeWebState = nullptr;
   }
 
@@ -338,7 +339,8 @@ struct PendingPaymentResponse {
           }
         });
     _activeWebState->AddObserver(_activeWebStateObserver.get());
-    _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
+    _subscription =
+        _activeWebState->AddScriptCommandCallback(callback, kCommandPrefix);
 
     _paymentRequestJsManager =
         base::mac::ObjCCastStrict<JSPaymentRequestManager>(
@@ -679,7 +681,8 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   BOOL connectionSecure =
       _activeWebState->GetLastCommittedURL().SchemeIs(url::kHttpsScheme);
   // Payment Request is only enabled in main frame.
-  web::WebFrame* main_frame = web::GetMainWebFrame(_activeWebState);
+  web::WebFrame* main_frame =
+      _activeWebState->GetWebFramesManager()->GetMainWebFrame();
   autofill::AutofillManager* autofillManager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(_activeWebState,
                                                            main_frame)

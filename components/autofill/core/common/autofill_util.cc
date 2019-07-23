@@ -70,6 +70,14 @@ bool IsKeyboardAccessoryEnabled() {
 #endif
 }
 
+bool IsTouchToFillEnabled() {
+#if defined(OS_ANDROID)
+  return base::FeatureList::IsEnabled(features::kTouchToFillAndroid);
+#else  // !defined(OS_ANDROID)
+  return false;
+#endif
+}
+
 unsigned int GetKeyboardAccessoryAnimationDuration() {
 #if defined(OS_ANDROID)
   return base::GetFieldTrialParamByFeatureAsInt(

@@ -3364,11 +3364,13 @@ class MockAutofillClient : public WebAutofillClient {
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
-  bool HasFillData(const WebFormControlElement&) const override {
-    return has_fill_data_;
+  bool TryToShowTouchToFill(const WebFormControlElement&) override {
+    return can_show_touch_to_fill_;
   }
 
-  void SetFillData(bool has_fill_data) { has_fill_data_ = has_fill_data; }
+  void SetCanShowTouchToFill(bool can_show_touch_to_fill) {
+    can_show_touch_to_fill_ = can_show_touch_to_fill;
+  }
 
   void ClearChangeCounts() { text_changes_ = 0; }
 
@@ -3382,7 +3384,7 @@ class MockAutofillClient : public WebAutofillClient {
   int text_changes_ = 0;
   int text_changes_from_user_gesture_ = 0;
   int user_gesture_notifications_count_ = 0;
-  bool has_fill_data_ = false;
+  bool can_show_touch_to_fill_ = false;
 };
 
 TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
@@ -4684,21 +4686,21 @@ TEST_F(WebViewTest, PasswordFieldCanBeAutofilled) {
   RegisterMockedHttpURLLoad("input_field_password.html");
   // Pretend client has fill data for all fields it's queried.
   MockAutofillClient client;
-  client.SetFillData(true);
+  client.SetCanShowTouchToFill(true);
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_password.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   // No field is focused.
-  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
 
   // Focusing a field should result in treating it autofillable.
   web_view->SetInitialFocus(false);
-  EXPECT_TRUE(frame->CanFocusedFieldBeAutofilled());
+  EXPECT_TRUE(frame->TryToShowTouchToFillForFocusedElement());
 
   // Pretend that |client| no longer has autofill data available.
-  client.SetFillData(false);
-  EXPECT_FALSE(frame->CanFocusedFieldBeAutofilled());
+  client.SetCanShowTouchToFill(false);
+  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
   frame->SetAutofillClient(nullptr);
 }
 

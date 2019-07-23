@@ -782,7 +782,8 @@ test.customizeMenu.testBackgrounds_CancelCustomBackground = function() {
 };
 
 /**
- * Tests the back arrow for custom backgrounds.
+ * Tests pressing the back arrow in the background image submenu will return to
+ * the collections menu.
  */
 test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
   init();
@@ -825,20 +826,7 @@ test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
   // Reopen the images menu, the selection should still be present.
   $('coll_tile_0').click();
 
-  assertFalse(elementIsVisible(backgroundSubmenu));
-  assertTrue(elementIsVisible(backgroundImageSubmenu));
-  assertTrue(
-      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
-          .getElementsByClassName('bg-sel-tile')
-          .length === 4);
-  assertTrue(
-      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
-          .getElementsByClassName('selected')
-          .length === 1);
-  assertTrue(
-      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
-          .getElementsByClassName('selected')[0]
-          .firstChild.id === 'coll_0_img_tile_0');
+  assertImageSubmenuOpenWithFirstTileSelected();
 
   // Clicking the image again should deselect it.
   $('coll_0_img_tile_0').click();
@@ -854,16 +842,73 @@ test.customizeMenu.testBackgrounds_BackArrowCustomBackground = function() {
   assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
   $('coll_tile_0').click();
 
+  assertImageSubmenuOpenWithNoTileSelected();
+};
+
+/**
+ * Tests pressing backspace in the background image submenu will return to the
+ * collections menu.
+ */
+test.customizeMenu.testBackgrounds_BackspaceCustomBackground = function() {
+  init();
+
+  setupFakeAsyncCollectionLoad();
+
+  // Open the Shortcuts submenu.
+  $(test.customizeMenu.IDS.EDIT_BG).click();
+
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundImageSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU);
+  assertTrue(elementIsVisible(backgroundSubmenu));
+
+  // 5 total tiles: upload, default, and the 3 collection tiles.
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 5);
+
+  setupFakeAsyncImageLoad('coll_tile_0');
+  $('coll_tile_0').click();
+
+  // The open menu is now the images menu with 4 tiles.
   assertFalse(elementIsVisible(backgroundSubmenu));
   assertTrue(elementIsVisible(backgroundImageSubmenu));
   assertTrue(
       $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
           .getElementsByClassName('bg-sel-tile')
           .length === 4);
+
+  $('coll_0_img_tile_0').click();
+  const keyDown = new Event('keydown');
+  keyDown.keyCode = 8;
+  $(test.customizeMenu.IDS.CUSTOMIZATION_MENU).dispatchEvent(keyDown);
+
+  // The main backgrounds menu should be open, and no custom background set.
+  assertTrue(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundImageSubmenu));
+  assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
+
+  // Reopen the images menu, the selection should still be present.
+  $('coll_tile_0').click();
+
+  assertImageSubmenuOpenWithFirstTileSelected();
+
+  // Clicking the image again should deselect it.
+  $('coll_0_img_tile_0').click();
   assertTrue(
       $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
           .getElementsByClassName('selected')
           .length === 0);
+
+  // Close and reopen the submenu and ensure nothing is selected.
+  $(test.customizeMenu.IDS.MENU_BACK).click();
+  assertTrue(elementIsVisible(backgroundSubmenu));
+  assertFalse(elementIsVisible(backgroundImageSubmenu));
+  assertEquals(0, test.customizeMenu.timesCustomBackgroundWasSet);
+  $('coll_tile_0').click();
+
+  assertImageSubmenuOpenWithNoTileSelected();
 };
 
 // ******************************* HELPERS *******************************
@@ -946,6 +991,52 @@ assertShortcutOptionsSelected = function(clSelected, mvSelected, isHidden) {
       mvOption.parentElement.classList.contains(
           test.customizeMenu.CLASSES.SELECTED));
   assertEquals(isHidden, hiddenToggle.checked);
+};
+
+/**
+ * Assert that the background images submenu is open and the first image tile is
+ * selected.
+ */
+assertImageSubmenuOpenWithFirstTileSelected = function() {
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundImageSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU);
+
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertTrue(elementIsVisible(backgroundImageSubmenu));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 1);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')[0]
+          .firstChild.id === 'coll_0_img_tile_0');
+};
+
+/**
+ * Assert that the background images submenu is open and no image tile is
+ * selected.
+ */
+assertImageSubmenuOpenWithNoTileSelected = function() {
+  const backgroundSubmenu = $(test.customizeMenu.IDS.BACKGROUNDS_MENU);
+  const backgroundImageSubmenu =
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU);
+
+  assertFalse(elementIsVisible(backgroundSubmenu));
+  assertTrue(elementIsVisible(backgroundImageSubmenu));
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('bg-sel-tile')
+          .length === 4);
+  assertTrue(
+      $(test.customizeMenu.IDS.BACKGROUNDS_IMAGE_MENU)
+          .getElementsByClassName('selected')
+          .length === 0);
 };
 
 /**

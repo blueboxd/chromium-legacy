@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "base/values.h"
+#import "ios/web/web_state/web_state_impl.h"
 
 class GURL;
 namespace web {
-class WebStateImpl;
 class WebFrame;
 
 // Handles "favicon.favicons" message from injected JavaScript and notifies
@@ -27,6 +27,9 @@ class FaviconManager final {
                    WebFrame* sender_frame);
 
   WebStateImpl* web_state_impl_ = nullptr;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconManager);
 };

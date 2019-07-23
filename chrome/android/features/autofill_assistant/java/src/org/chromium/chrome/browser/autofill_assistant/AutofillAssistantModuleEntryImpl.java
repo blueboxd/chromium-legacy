@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
@@ -11,6 +12,8 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Map;
@@ -42,5 +45,13 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                     .start(initialUrl, parameters, experimentIds, intentExtras,
                             onboardingCoordinator.transferControls());
         });
+    }
+
+    @Override
+    public AutofillAssistantActionHandler createActionHandler(Context context,
+            BottomSheetController bottomSheetController, ScrimView scrimView,
+            GetCurrentTab getCurrentTab) {
+        return new AutofillAssistantActionHandlerImpl(
+                context, bottomSheetController, scrimView, getCurrentTab);
     }
 }

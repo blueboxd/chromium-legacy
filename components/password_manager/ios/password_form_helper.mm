@@ -99,6 +99,9 @@ constexpr char kCommandPrefix[] = "passwordForm";
   // Bridge to observe form activity in |_webState|.
   std::unique_ptr<autofill::FormActivityObserverBridge>
       _formActivityObserverBridge;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 }
 
 #pragma mark - Properties
@@ -137,7 +140,8 @@ constexpr char kCommandPrefix[] = "passwordForm";
             [weakSelf handleScriptCommand:JSON];
           }
         });
-    _webState->AddScriptCommandCallback(callback, kCommandPrefix);
+    subscription_ =
+        _webState->AddScriptCommandCallback(callback, kCommandPrefix);
   }
   return self;
 }
@@ -146,7 +150,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 - (void)dealloc {
   if (_webState) {
-    _webState->RemoveScriptCommandCallback(kCommandPrefix);
     _webState->RemoveObserver(_webStateObserverBridge.get());
   }
 }
@@ -156,7 +159,6 @@ constexpr char kCommandPrefix[] = "passwordForm";
 - (void)webStateDestroyed:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   if (_webState) {
-    _webState->RemoveScriptCommandCallback(kCommandPrefix);
     _webState->RemoveObserver(_webStateObserverBridge.get());
     _webState = nullptr;
   }

@@ -34,13 +34,11 @@ class FeatureInfo;
 
 namespace viz {
 
-class SkiaOutputSurfaceDependency;
-
 class SkiaOutputDeviceGL final : public SkiaOutputDevice,
                                  public gpu::ImageTransportSurfaceDelegate {
  public:
   SkiaOutputDeviceGL(
-      SkiaOutputSurfaceDependency* deps,
+      scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
   ~SkiaOutputDeviceGL() override;
@@ -82,7 +80,6 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice,
   GpuVSyncCallback GetGpuVSyncCallback() override;
 
  private:
-  SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info_;
   gpu::GpuPreferences gpu_preferences_;
 

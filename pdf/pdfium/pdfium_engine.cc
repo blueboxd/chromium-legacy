@@ -87,6 +87,8 @@ constexpr draw_utils::PageInsetSizes kSingleViewInsets{
     kPageShadowLeft, kPageShadowTop, kPageShadowRight, kPageShadowBottom};
 
 constexpr int32_t kBottomSeparator = 4;
+constexpr int32_t kHorizontalSeparator = 1;
+
 constexpr int32_t kHighlightColorR = 153;
 constexpr int32_t kHighlightColorG = 193;
 constexpr int32_t kHighlightColorB = 218;
@@ -2332,8 +2334,7 @@ int PDFiumEngine::GetMostVisiblePage() {
 
 pp::Rect PDFiumEngine::GetPageRect(int index) {
   pp::Rect rc(pages_[index]->rect());
-  rc.Inset(-kPageShadowLeft, -kPageShadowTop, -kPageShadowRight,
-           -kPageShadowBottom);
+  InsetPage(index, pages_.size(), /*multiplier=*/-1, &rc);
   return rc;
 }
 
@@ -2637,8 +2638,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
     }
 
     pp::Size size = page_available ? GetPageSize(i) : default_page_size_;
-    size.Enlarge(kPageShadowLeft + kPageShadowRight,
-                 kPageShadowTop + kPageShadowBottom);
+    EnlargePage(i, new_page_count, &size);
     pp::Rect rect(pp::Point(0, document_size_.height()), size);
     page_rects.push_back(rect);
 
@@ -2648,8 +2648,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   for (size_t i = 0; i < new_page_count; ++i) {
     // Center pages relative to the entire document.
     page_rects[i].set_x((document_size_.width() - page_rects[i].width()) / 2);
-    page_rects[i].Inset(kPageShadowLeft, kPageShadowTop, kPageShadowRight,
-                        kPageShadowBottom);
+    InsetPage(i, new_page_count, /*multiplier=*/1, &page_rects[i]);
     AppendPageRectToPages(page_rects[i], i, reload);
   }
 
@@ -2834,6 +2833,39 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
   return size;
 }
 
+void PDFiumEngine::EnlargePage(size_t page_index,
+                               size_t num_of_pages,
+                               pp::Size* page_size) {
+  DCHECK_LT(page_index, num_of_pages);
+
+  draw_utils::PageInsetSizes inset_sizes = kSingleViewInsets;
+  if (two_up_view_) {
+    inset_sizes = draw_utils::GetPageInsetsForTwoUpView(
+        page_index, num_of_pages, kSingleViewInsets, kHorizontalSeparator);
+  }
+
+  page_size->Enlarge(inset_sizes.left + inset_sizes.right,
+                     inset_sizes.top + inset_sizes.bottom);
+}
+
+void PDFiumEngine::InsetPage(size_t page_index,
+                             size_t num_of_pages,
+                             double multiplier,
+                             pp::Rect* rect) {
+  DCHECK_LT(page_index, num_of_pages);
+
+  draw_utils::PageInsetSizes inset_sizes = kSingleViewInsets;
+  if (two_up_view_) {
+    inset_sizes = draw_utils::GetPageInsetsForTwoUpView(
+        page_index, num_of_pages, kSingleViewInsets, kHorizontalSeparator);
+  }
+
+  rect->Inset(static_cast<int>(ceil(inset_sizes.left * multiplier)),
+              static_cast<int>(ceil(inset_sizes.top * multiplier)),
+              static_cast<int>(ceil(inset_sizes.right * multiplier)),
+              static_cast<int>(ceil(inset_sizes.bottom * multiplier)));
+}
+
 int PDFiumEngine::StartPaint(int page_index, const pp::Rect& dirty) {
   // For the first time we hit paint, do nothing and just record the paint for
   // the next callback.  This keeps the UI responsive in case the user is doing
@@ -2972,8 +3004,7 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
       progressive_paints_[progressive_index].rect();
   pp::Rect page_rect = pages_[page_index]->rect();
   pp::Rect shadow_rect(page_rect);
-  shadow_rect.Inset(-kPageShadowLeft, -kPageShadowTop, -kPageShadowRight,
-                    -kPageShadowBottom);
+  InsetPage(page_index, pages_.size(), /*multiplier=*/-1, &shadow_rect);
 
   // Due to the rounding errors of the GetScreenRect it is possible to get
   // different size shadows on the left and right sides even they are defined
@@ -2981,11 +3012,8 @@ void PDFiumEngine::PaintPageShadow(int progressive_index,
   // it by the size of the shadows.
   shadow_rect = GetScreenRect(shadow_rect);
   page_rect = shadow_rect;
-
-  page_rect.Inset(static_cast<int>(ceil(kPageShadowLeft * current_zoom_)),
-                  static_cast<int>(ceil(kPageShadowTop * current_zoom_)),
-                  static_cast<int>(ceil(kPageShadowRight * current_zoom_)),
-                  static_cast<int>(ceil(kPageShadowBottom * current_zoom_)));
+  InsetPage(page_index, pages_.size(), /*multiplier=*/current_zoom_,
+            &page_rect);
 
   DrawPageShadow(page_rect, shadow_rect, dirty_in_screen, image_data);
 }

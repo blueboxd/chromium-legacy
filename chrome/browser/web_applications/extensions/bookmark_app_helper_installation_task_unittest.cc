@@ -25,15 +25,17 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
+#include "chrome/browser/web_applications/bookmark_apps/test_web_app_provider.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
-#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
@@ -325,7 +327,9 @@ class BookmarkAppHelperInstallationTaskTest
 
  private:
   void SetUpTestingFactories() {
-    auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
+    provider->Start();
+
     BookmarkAppInstallManager* install_manager =
         static_cast<BookmarkAppInstallManager*>(&provider->install_manager());
 
@@ -665,8 +669,9 @@ TEST_F(BookmarkAppHelperInstallationTaskTest, InstallPlaceholder) {
 
             EXPECT_EQ(1u, install_finalizer()->num_create_os_shortcuts_calls());
             EXPECT_EQ(1u, install_finalizer()->finalize_options_list().size());
-            EXPECT_EQ(web_app::InstallFinalizer::Source::kPolicyInstalled,
-                      install_finalizer()->finalize_options_list()[0].source);
+            EXPECT_EQ(
+                WebappInstallSource::EXTERNAL_POLICY,
+                install_finalizer()->finalize_options_list()[0].install_source);
             const WebApplicationInfo& web_app_info =
                 install_finalizer()->web_app_info_list().at(0);
 

@@ -148,7 +148,7 @@
       [[NSMutableAttributedString alloc]
           initWithString:cardName
               attributes:@{
-                NSForegroundColorAttributeName : UIColor.blackColor,
+                NSForegroundColorAttributeName : UIColor.cr_labelColor,
                 NSFontAttributeName :
                     [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
               }];

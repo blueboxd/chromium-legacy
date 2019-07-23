@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 #include "content/browser/web_package/signed_exchange_prefetch_handler.h"
@@ -36,6 +37,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
+    BrowserContext* browser_context,
     ResourceContext* resource_context,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     scoped_refptr<SignedExchangePrefetchMetricRecorder>
@@ -50,6 +52,7 @@ PrefetchURLLoader::PrefetchURLLoader(
       client_binding_(this),
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
+      browser_context_(browser_context),
       resource_context_(resource_context),
       request_context_getter_(std::move(request_context_getter)),
       signed_exchange_prefetch_metric_recorder_(
@@ -57,18 +60,27 @@ PrefetchURLLoader::PrefetchURLLoader(
       accept_langs_(accept_langs) {
   DCHECK(network_loader_factory_);
 
-  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
-          resource_context_)) {
+  if (IsSignedExchangeHandlingEnabled()) {
     // Set the SignedExchange accept header.
     // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#internet-media-type-applicationsigned-exchange).
     resource_request_.headers.SetHeader(
         network::kAcceptHeader, kSignedExchangeEnabledAcceptHeaderForPrefetch);
     if (prefetched_signed_exchange_cache &&
         resource_request.is_signed_exchange_prefetch_cache_enabled) {
+      BrowserContext::BlobContextGetter getter;
+      if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+        getter = BrowserContext::GetBlobStorageContext(browser_context_);
+      } else {
+        getter = base::BindRepeating(
+            [](base::WeakPtr<storage::BlobStorageContext> context) {
+              return context;
+            },
+            std::move(blob_storage_context));
+      }
       prefetched_signed_exchange_cache_adapter_ =
           std::make_unique<PrefetchedSignedExchangeCacheAdapter>(
-              std::move(prefetched_signed_exchange_cache),
-              std::move(blob_storage_context), resource_request.url, this);
+              std::move(prefetched_signed_exchange_cache), std::move(getter),
+              resource_request.url, this);
     }
   }
 
@@ -132,8 +144,7 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 
 void PrefetchURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response) {
-  if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
-          resource_context_) &&
+  if (IsSignedExchangeHandlingEnabled() &&
       signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(
           resource_request_.url, response)) {
     DCHECK(!signed_exchange_prefetch_handler_);
@@ -250,6 +261,15 @@ void PrefetchURLLoader::OnNetworkConnectionError() {
   // The network loader has an error; we should let the client know it's closed
   // by dropping this, which will in turn make this loader destroyed.
   forwarding_client_.reset();
+}
+
+bool PrefetchURLLoader::IsSignedExchangeHandlingEnabled() {
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    return signed_exchange_utils::IsSignedExchangeHandlingEnabled(
+        browser_context_);
+  }
+  return signed_exchange_utils::IsSignedExchangeHandlingEnabledOnIO(
+      resource_context_);
 }
 
 }  // namespace content

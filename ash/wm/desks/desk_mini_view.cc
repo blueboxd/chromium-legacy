@@ -191,7 +191,7 @@ void DeskMiniView::ButtonPressed(views::Button* sender,
 
   auto* controller = DesksController::Get();
   DCHECK(controller->CanRemoveDesks());
-  controller->RemoveDesk(desk_);
+  controller->RemoveDesk(desk_, DesksCreationRemovalSource::kButton);
 }
 
 void DeskMiniView::OnContentChanged() {

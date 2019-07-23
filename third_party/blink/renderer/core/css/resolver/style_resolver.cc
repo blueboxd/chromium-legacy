@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/css_pending_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_reflect_value.h"
@@ -67,6 +68,7 @@
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
+#include "third_party/blink/renderer/core/css/resolver/style_animator.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
@@ -871,11 +873,18 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
                            parent_style);
   state.SetStyle(ComputedStyle::Clone(base_style));
   if (value) {
-    StyleBuilder::ApplyProperty(property.GetCSSPropertyName(), state, *value);
-    state.GetFontBuilder().CreateFont(
-        state.GetDocument().GetStyleEngine().GetFontSelector(),
-        state.StyleRef());
-    CSSVariableResolver(state).ResolveVariableDefinitions();
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      StyleCascade cascade(state);
+      auto name = property.GetCSSPropertyName();
+      cascade.Add(name, value, StyleCascade::Origin::kAuthor);
+      cascade.Apply();
+    } else {
+      StyleBuilder::ApplyProperty(property.GetCSSPropertyName(), state, *value);
+      state.GetFontBuilder().CreateFont(
+          state.GetDocument().GetStyleEngine().GetFontSelector(),
+          state.StyleRef());
+      CSSVariableResolver(state).ResolveVariableDefinitions();
+    }
   }
   return CompositorKeyframeValueFactory::Create(property, *state.Style());
 }
@@ -1182,14 +1191,33 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
       state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();
   const ActiveInterpolationsMap& transitions_map =
       state.AnimationUpdate().ActiveInterpolationsForStandardTransitions();
-  ApplyAnimatedStandardProperties<kHighPropertyPriority>(state, animations_map);
-  ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
-                                                         transitions_map);
 
-  UpdateFont(state);
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    // TODO(crbug.com/985049): Use main cascade.
+    //
+    // For now, we use a dedicated cascade for animation of standard properties.
+    // A StyleCascade is required, because otherwise we can't resolve any var()
+    // references that may appear in keyframes. Ultimately, we should use ONE
+    // cascade for everything, but this is not yet possible.
+    using Origin = StyleCascade::Origin;
+    StyleCascade cascade(state);
+    StyleAnimator animator(state, cascade);
+    CascadeInterpolations(cascade, animations_map, Origin::kAnimation);
+    CascadeInterpolations(cascade, transitions_map, Origin::kTransition);
+    cascade.Apply(animator);
+  } else {
+    ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
+                                                           animations_map);
+    ApplyAnimatedStandardProperties<kHighPropertyPriority>(state,
+                                                           transitions_map);
 
-  ApplyAnimatedStandardProperties<kLowPropertyPriority>(state, animations_map);
-  ApplyAnimatedStandardProperties<kLowPropertyPriority>(state, transitions_map);
+    UpdateFont(state);
+
+    ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
+                                                          animations_map);
+    ApplyAnimatedStandardProperties<kLowPropertyPriority>(state,
+                                                          transitions_map);
+  }
 
   // Start loading resources used by animations.
   LoadPendingResources(state);
@@ -1820,53 +1848,12 @@ void StyleResolver::ApplyMatchedHighPriorityProperties(
     apply_inherited_only = false;
 }
 
-void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
-                                           const MatchResult& match_result,
-                                           const Element* animating_element) {
-  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
-                                matched_property_apply, 1);
-
-  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
-  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
-  NeedsApplyPass needs_apply_pass;
-
-  if (!cache_success.IsFullCacheHit()) {
-    ApplyCustomProperties(state, match_result, cache_success, needs_apply_pass);
-    ApplyMatchedAnimationProperties(state, match_result, cache_success,
-                                    needs_apply_pass);
-    ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
-                                       apply_inherited_only, needs_apply_pass);
-  }
-
-  if (HasAnimationsOrTransitions(state, animating_element)) {
-    // Calculate pre-animated computed values for all registered properties.
-    // This is needed to calculate the animation update.
-    CSSVariableResolver(state).ComputeRegisteredVariables();
-
-    // Animation update calculation must happen after application of high
-    // priority properties, otherwise we can't resolve em' units, making it
-    // impossible to know if we should transition in some cases.
-    CalculateAnimationUpdate(state, animating_element);
-
-    if (state.IsAnimatingCustomProperties()) {
-      cache_success.SetFailed();
-
-      CSSVariableAnimator(state).ApplyAll();
-
-      // Apply high priority properties again to re-resolve var() references
-      // to (now-)animated custom properties.
-      // TODO(andruud): Avoid this with https://crbug.com/947004
-      ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
-                                         apply_inherited_only,
-                                         needs_apply_pass);
-    }
-  }
-
-  if (cache_success.IsFullCacheHit())
-    return;
-
-  CSSVariableResolver(state).ResolveVariableDefinitions();
-
+void StyleResolver::ApplyMatchedLowPriorityProperties(
+    StyleResolverState& state,
+    const MatchResult& match_result,
+    const CacheSuccess& cache_success,
+    bool& apply_inherited_only,
+    NeedsApplyPass& needs_apply_pass) {
   // Now do the normal priority UA properties.
   ApplyMatchedProperties<kLowPropertyPriority, kCheckNeedsApplyPass>(
       state, match_result.UaRules(), false, apply_inherited_only,
@@ -1919,6 +1906,243 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
   }
 
   DCHECK(!state.GetFontBuilder().FontDirty());
+}
+
+void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
+                                           const MatchResult& match_result,
+                                           const Element* animating_element) {
+  INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
+                                matched_property_apply, 1);
+
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    CascadeAndApplyMatchedProperties(state, match_result, animating_element);
+    return;
+  }
+
+  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
+  bool apply_inherited_only = cache_success.ShouldApplyInheritedOnly();
+  NeedsApplyPass needs_apply_pass;
+
+  if (!cache_success.IsFullCacheHit()) {
+    ApplyCustomProperties(state, match_result, cache_success, needs_apply_pass);
+    ApplyMatchedAnimationProperties(state, match_result, cache_success,
+                                    needs_apply_pass);
+    ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
+                                       apply_inherited_only, needs_apply_pass);
+  }
+
+  if (HasAnimationsOrTransitions(state, animating_element)) {
+    // Calculate pre-animated computed values for all registered properties.
+    // This is needed to calculate the animation update.
+    CSSVariableResolver(state).ComputeRegisteredVariables();
+
+    // Animation update calculation must happen after application of high
+    // priority properties, otherwise we can't resolve em' units, making it
+    // impossible to know if we should transition in some cases.
+    CalculateAnimationUpdate(state, animating_element);
+
+    if (state.IsAnimatingCustomProperties()) {
+      cache_success.SetFailed();
+
+      CSSVariableAnimator(state).ApplyAll();
+
+      // Apply high priority properties again to re-resolve var() references
+      // to (now-)animated custom properties.
+      // TODO(andruud): Avoid this with https://crbug.com/947004
+      ApplyMatchedHighPriorityProperties(state, match_result, cache_success,
+                                         apply_inherited_only,
+                                         needs_apply_pass);
+    }
+  }
+
+  if (cache_success.IsFullCacheHit())
+    return;
+
+  CSSVariableResolver(state).ResolveVariableDefinitions();
+
+  ApplyMatchedLowPriorityProperties(state, match_result, cache_success,
+                                    apply_inherited_only, needs_apply_pass);
+}
+
+void StyleResolver::CascadeAndApplyMatchedProperties(
+    StyleResolverState& state,
+    const MatchResult& match_result,
+    const Element* animating_element) {
+  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
+
+  CacheSuccess cache_success = ApplyMatchedCache(state, match_result);
+
+  StyleCascade cascade(state);
+  CascadeMatchResult(state, cascade, match_result);
+
+  // We need to copy the entire cascade before applying, in case there are
+  // animations.
+  //
+  // TODO(crbug.com/985010): Avoid this copy with non-destructive Apply.
+  StyleCascade cascade_copy(cascade);
+  cascade_copy.RemoveAnimationPriority();
+
+  if (!cache_success.IsFullCacheHit())
+    cascade.Apply();
+
+  if (HasAnimationsOrTransitions(state, animating_element)) {
+    CalculateAnimationUpdate(state, animating_element);
+
+    // Add animation effects for custom properties to the cascade.
+    if (state.IsAnimatingCustomProperties()) {
+      cache_success.SetFailed();
+      CascadeAnimations(state, cascade_copy);
+      CascadeTransitions(state, cascade_copy);
+      StyleAnimator animator(state, cascade_copy);
+      cascade_copy.Apply(animator);
+    }
+  }
+
+  if (cache_success.IsFullCacheHit())
+    return;
+
+  // TODO(crbug.com/985025): We only support full cache hits for now.
+  bool apply_inherited_only = false;
+
+  // TODO(crbug.com/985027): Cascade kLowPropertyPriority.
+  //
+  // Ultimately NeedsApplyPass will be removed, so we don't bother fixing
+  // that for this codepath. For now, just always go through the low-priority
+  // properties.
+  const bool important = true;
+  NeedsApplyPass needs_apply_pass;
+  needs_apply_pass.Set(kLowPropertyPriority, important);
+  needs_apply_pass.Set(kLowPropertyPriority, !important);
+  ApplyMatchedLowPriorityProperties(state, match_result, cache_success,
+                                    apply_inherited_only, needs_apply_pass);
+}
+
+static void CascadeDeclaration(StyleCascade& cascade,
+                               const CSSPropertyName& name,
+                               const CSSValue& value,
+                               StyleCascade::Priority priority,
+                               unsigned apply_mask) {
+  if (apply_mask & kApplyMaskRegular)
+    cascade.Add(name, &value, priority);
+  if (apply_mask & kApplyMaskVisited) {
+    const CSSProperty* visited =
+        CSSProperty::Get(name.Id()).GetVisitedProperty();
+    if (visited)
+      cascade.Add(visited->GetCSSPropertyName(), &value, priority);
+  }
+}
+
+// https://drafts.csswg.org/css-cascade/#all-shorthand
+static void CascadeAll(StyleResolverState& state,
+                       StyleCascade& cascade,
+                       StyleCascade::Priority priority,
+                       unsigned apply_mask,
+                       ValidPropertyFilter filter,
+                       const CSSValue& value) {
+  for (CSSPropertyID property_id : CSSPropertyIDList()) {
+    using LowPrioData = CSSPropertyPriorityData<kLowPropertyPriority>;
+    if (LowPrioData::PropertyHasPriority(property_id))
+      continue;
+
+    const CSSProperty& property = CSSProperty::Get(property_id);
+
+    if (property.IsShorthand())
+      continue;
+    if (!property.IsAffectedByAll())
+      continue;
+    if (!PassesPropertyFilter(filter, property_id, state.GetDocument()))
+      continue;
+
+    CascadeDeclaration(cascade, CSSPropertyName(property_id), value, priority,
+                       apply_mask);
+  }
+}
+
+void StyleResolver::CascadeMatchResult(StyleResolverState& state,
+                                       StyleCascade& cascade,
+                                       const MatchResult& result) {
+  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
+
+  using Origin = StyleCascade::Origin;
+  CascadeRange(state, cascade, result.UaRules(), Origin::kUserAgent);
+  CascadeRange(state, cascade, result.AuthorRules(), Origin::kAuthor);
+  CascadeRange(state, cascade, result.UserRules(), Origin::kUser);
+}
+
+void StyleResolver::CascadeRange(StyleResolverState& state,
+                                 StyleCascade& cascade,
+                                 const MatchedPropertiesRange& range,
+                                 StyleCascade::Origin origin) {
+  DCHECK(RuntimeEnabledFeatures::CSSCascadeEnabled());
+
+  if (range.IsEmpty())
+    return;
+
+  for (const auto& matched_properties : range) {
+    auto filter = static_cast<ValidPropertyFilter>(
+        matched_properties.types_.valid_property_filter);
+    uint16_t tree_order = matched_properties.types_.tree_order;
+    unsigned apply_mask = ComputeApplyMask(state, matched_properties);
+    const CSSPropertyValueSet* properties = matched_properties.properties.Get();
+    unsigned property_count = properties->PropertyCount();
+
+    for (unsigned i = 0; i < property_count; ++i) {
+      CSSPropertyValueSet::PropertyReference current =
+          properties->PropertyAt(i);
+      CSSPropertyID property_id = current.Id();
+
+      StyleCascade::Priority priority(origin, tree_order);
+
+      if (current.IsImportant())
+        priority = priority.AddImportance();
+
+      if (property_id == CSSPropertyID::kAll) {
+        CascadeAll(state, cascade, priority, apply_mask, filter,
+                   current.Value());
+        continue;
+      }
+
+      using LowPrioData = CSSPropertyPriorityData<kLowPropertyPriority>;
+      if (LowPrioData::PropertyHasPriority(property_id))
+        continue;
+
+      if (!PassesPropertyFilter(filter, property_id, state.GetDocument()))
+        continue;
+
+      CascadeDeclaration(cascade, current.Name(), current.Value(), priority,
+                         apply_mask);
+    }
+  }
+}
+
+void StyleResolver::CascadeTransitions(StyleResolverState& state,
+                                       StyleCascade& cascade) {
+  const auto& update = state.AnimationUpdate();
+  const auto& map = update.ActiveInterpolationsForCustomTransitions();
+  const auto origin = StyleCascade::Origin::kTransition;
+  CascadeInterpolations(cascade, map, origin);
+}
+
+void StyleResolver::CascadeAnimations(StyleResolverState& state,
+                                      StyleCascade& cascade) {
+  const auto& update = state.AnimationUpdate();
+  const auto& map = update.ActiveInterpolationsForCustomAnimations();
+  const auto origin = StyleCascade::Origin::kAnimation;
+  CascadeInterpolations(cascade, map, origin);
+}
+
+void StyleResolver::CascadeInterpolations(StyleCascade& cascade,
+                                          const ActiveInterpolationsMap& map,
+                                          StyleCascade::Origin origin) {
+  using Type = cssvalue::CSSPendingInterpolationValue::Type;
+  for (const auto& entry : map) {
+    auto name = entry.key.GetCSSPropertyName();
+    Type type = entry.key.IsPresentationAttribute()
+                    ? Type::kPresentationAttribute
+                    : Type::kCSSProperty;
+    auto* v = cssvalue::CSSPendingInterpolationValue::Create(type);
+    cascade.Add(name, v, origin);
+  }
 }
 
 bool StyleResolver::HasAuthorBackground(const StyleResolverState& state) {

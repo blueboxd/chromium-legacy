@@ -52,6 +52,7 @@ mojom("mojom_platform") {
     "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
+    "frame/surrounding_text.mojom",
     "geolocation/geolocation_service.mojom",
     "hid/hid.mojom",
     "hyphenation/hyphenation.mojom",

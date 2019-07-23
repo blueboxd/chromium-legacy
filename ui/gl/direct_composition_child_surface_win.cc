@@ -107,9 +107,7 @@ bool DirectCompositionChildSurfaceWin::UseSwapChainFrameStatistics() {
   return base::FeatureList::IsEnabled(features::kSwapChainFrameStatistics);
 }
 
-DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
-    gfx::VSyncProvider* vsync_provider)
-    : vsync_provider_(vsync_provider) {}
+DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() {}
 
 DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
@@ -260,8 +258,6 @@ gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
   bool succeeded = ReleaseDrawTexture(false /* will_discard */);
 
   if (UseSwapChainFrameStatistics()) {
-    vsync_provider_->GetVSyncParametersIfAvailable(&last_vsync_time_,
-                                                   &last_vsync_interval_);
     CheckPendingFrames();
     // Enqueue callback after retiring previous callbacks so that it's called
     // after SwapBuffers() returns.
@@ -505,6 +501,17 @@ bool DirectCompositionChildSurfaceWin::SetEnableDCLayers(bool enable) {
   swap_chain_.Reset();
   dcomp_surface_.Reset();
   return true;
+}
+
+void DirectCompositionChildSurfaceWin::UpdateVSyncParameters(
+    base::TimeTicks vsync_time,
+    base::TimeDelta vsync_interval) {
+  last_vsync_time_ = vsync_time;
+  last_vsync_interval_ = vsync_interval;
+}
+
+bool DirectCompositionChildSurfaceWin::HasPendingFrames() const {
+  return !pending_frames_.empty();
 }
 
 void DirectCompositionChildSurfaceWin::CheckPendingFrames() {

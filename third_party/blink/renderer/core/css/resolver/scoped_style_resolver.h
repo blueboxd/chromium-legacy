@@ -47,9 +47,8 @@ class StyleSheetContents;
 // and provides methods to collect the rules that apply to a given element,
 // broken down by what kind of scope they apply to (e.g. shadow host,
 // tree-boundary-crossing, etc).
-class ScopedStyleResolver final
+class CORE_EXPORT ScopedStyleResolver final
     : public GarbageCollectedFinalized<ScopedStyleResolver> {
-
  public:
   explicit ScopedStyleResolver(TreeScope& scope) : scope_(scope) {}
 

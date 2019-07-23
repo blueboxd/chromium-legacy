@@ -56,8 +56,10 @@ class ServiceWorkerNavigationLoaderInterceptor final
   void LoaderCallbackWrapper(
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
+      LoaderCallback loader_callback,
       SingleRequestURLLoaderFactory::RequestHandler handler_on_io);
-  void FallbackCallbackWrapper(bool reset_subresource_loader_params);
+  void FallbackCallbackWrapper(FallbackCallback fallback_callback,
+                               bool reset_subresource_loader_params);
 
   base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> GetWeakPtr();
 
@@ -76,9 +78,6 @@ class ServiceWorkerNavigationLoaderInterceptor final
   const int frame_tree_node_id_;
   const ResourceType resource_type_;
   const bool skip_service_worker_;
-
-  LoaderCallback loader_callback_;
-  FallbackCallback fallback_callback_;
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 

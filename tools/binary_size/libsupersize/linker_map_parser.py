@@ -485,6 +485,7 @@ class MapFileParserLld(object):
 
     tokenizer = self.Tokenize(lines)
 
+    in_partitions = False
     in_jump_table = False
     jump_tables_count = 0
     jump_entries_count = 0
@@ -493,15 +494,32 @@ class MapFileParserLld(object):
       # Level 1 data match the "Out" column. They specify sections or
       # PROVIDE_HIDDEN lines.
       if level == 1:
-        if not tok.startswith('PROVIDE_HIDDEN'):
-          self._section_sizes[tok] = size
-        cur_section = tok
-        # E.g., Want to convert "(.text._name)" -> "_name" later.
-        mangled_start_idx = len(cur_section) + 2
-        cur_section_is_useful = (cur_section in models.BSS_SECTIONS
-                                 or cur_section in (models.SECTION_RODATA,
-                                                    models.SECTION_TEXT)
-                                 or cur_section.startswith(models.SECTION_DATA))
+        # Ignore sections that belong to feature library partitions. Seeing a
+        # library name is an indicator that we've entered a list of feature
+        # partitions. After these, a single .part.end section will follow to
+        # reserve memory at runtime. Seeing the .part.end section also marks the
+        # end of partition sections in the map file.
+        if tok.startswith('lib') and tok.endswith('.so'):
+          in_partitions = True
+        elif tok == '.part.end':
+          # Note that we want to retain .part.end section, so it's fine to
+          # restart processing on this section, rather than the next one.
+          in_partitions = False
+
+        if in_partitions:
+          # For now, completely ignore feature partitions.
+          cur_section = None
+          cur_section_is_useful = False
+        else:
+          if not tok.startswith('PROVIDE_HIDDEN'):
+            self._section_sizes[tok] = size
+          cur_section = tok
+          # E.g., Want to convert "(.text._name)" -> "_name" later.
+          mangled_start_idx = len(cur_section) + 2
+          cur_section_is_useful = (
+              cur_section in models.BSS_SECTIONS
+              or cur_section in (models.SECTION_RODATA, models.SECTION_TEXT)
+              or cur_section.startswith(models.SECTION_DATA))
 
       elif cur_section_is_useful:
         # Level 2 data match the "In" column. They specify object paths and

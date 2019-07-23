@@ -20,7 +20,7 @@ static_library("unified_consent") {
     "//components/autofill/core/common",
     "//components/browser_sync",
     "//components/pref_registry",
-    "//components/signin/core/browser",
+    "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/sync",
     "//components/sync_preferences",

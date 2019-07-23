@@ -267,6 +267,19 @@ class PDFiumEngine : public PDFEngine,
   // PDFiumPage because we might not have that structure when we need this.
   pp::Size GetPageSize(int index);
 
+  // If |two_up_view_| is false, enlarges |page_size| with inset sizes for
+  // single-view. If |two_up_view_| is true, gets the appropriate two-up view
+  // inset sizes for the position of the page (dependent on |page_index| and
+  // |num_of_pages|) and then enlarges |page_size|.
+  void EnlargePage(size_t page_index, size_t num_of_pages, pp::Size* page_size);
+
+  // Similar to EnlargePage(), but insets a |rect|. Also multiplies the inset
+  // sizes by |multiplier|, using the ceiling of the result.
+  void InsetPage(size_t page_index,
+                 size_t num_of_pages,
+                 double multiplier,
+                 pp::Rect* rect);
+
   void GetAllScreenRectsUnion(const std::vector<PDFiumRange>& rect_range,
                               const pp::Point& offset_point,
                               std::vector<pp::Rect>* rect_vector) const;
@@ -522,6 +535,10 @@ class PDFiumEngine : public PDFEngine,
 
   // The indexes of the pages pending download.
   std::vector<int> pending_pages_;
+
+  // True if loading pages in two-up view layout. False if loading pages in
+  // single view layout.
+  bool two_up_view_ = false;
 
   // During handling of input events we don't want to unload any pages in
   // callbacks to us from PDFium, since the current page can change while PDFium

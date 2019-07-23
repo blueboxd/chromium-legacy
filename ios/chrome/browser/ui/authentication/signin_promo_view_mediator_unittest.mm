@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"

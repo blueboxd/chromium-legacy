@@ -5,14 +5,16 @@
 #ifndef IOS_WEB_WEB_STATE_UI_JS_WINDOW_ERROR_MANAGER_H_
 #define IOS_WEB_WEB_STATE_UI_JS_WINDOW_ERROR_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace base {
 class DictionaryValue;
 }
 class GURL;
 namespace web {
-class WebState;
 class WebFrame;
 
 // Handles "window.error" message from injected JavaScript and DLOG it.
@@ -28,6 +30,9 @@ class JsWindowErrorManager final {
                    WebFrame* sender_frame);
 
   WebState* web_state_impl_ = nullptr;
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(JsWindowErrorManager);
 };

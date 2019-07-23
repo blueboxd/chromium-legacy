@@ -35,6 +35,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/cross_origin_resource_policy.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 using MimeType = network::CrossOriginReadBlocking::MimeType;
 
@@ -148,10 +149,12 @@ void CrossSiteDocumentResourceHandler::OnRequestRedirected(
     network::ResourceResponse* response,
     std::unique_ptr<ResourceController> controller) {
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
+  // COEP is not supported when the network service is disabled.
   if (network::CrossOriginResourcePolicy::kBlock ==
       network::CrossOriginResourcePolicy::Verify(
           request()->url(), request()->initiator(), response->head,
-          request_mode_, kNonNetworkServiceInitiatorLock)) {
+          request_mode_, kNonNetworkServiceInitiatorLock,
+          network::mojom::CrossOriginEmbedderPolicy::kNone)) {
     blocked_read_completed_ = true;
     blocked_by_cross_origin_resource_policy_ = true;
     controller->Cancel();
@@ -168,10 +171,12 @@ void CrossSiteDocumentResourceHandler::OnResponseStarted(
   has_response_started_ = true;
 
   // Enforce the Cross-Origin-Resource-Policy (CORP) header.
+  // COEP is not supported when the network service is disabled.
   if (network::CrossOriginResourcePolicy::kBlock ==
       network::CrossOriginResourcePolicy::Verify(
           request()->url(), request()->initiator(), response->head,
-          request_mode_, kNonNetworkServiceInitiatorLock)) {
+          request_mode_, kNonNetworkServiceInitiatorLock,
+          network::mojom::CrossOriginEmbedderPolicy::kNone)) {
     blocked_read_completed_ = true;
     blocked_by_cross_origin_resource_policy_ = true;
     controller->Cancel();

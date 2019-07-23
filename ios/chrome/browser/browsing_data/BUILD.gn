@@ -50,7 +50,6 @@ source_set("browsing_data") {
     "//components/password_manager/core/browser",
     "//components/prefs",
     "//components/sessions",
-    "//components/signin/core/browser",
     "//components/signin/ios/browser",
     "//components/translate/core/browser:browser",
     "//ios/chrome/browser",

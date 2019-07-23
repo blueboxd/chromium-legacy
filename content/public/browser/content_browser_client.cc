@@ -322,7 +322,11 @@ bool ContentBrowserClient::AllowSharedWorker(
   return true;
 }
 
-bool ContentBrowserClient::AllowSignedExchange(ResourceContext* context) {
+bool ContentBrowserClient::AllowSignedExchangeOnIO(ResourceContext* context) {
+  return true;
+}
+
+bool ContentBrowserClient::AllowSignedExchange(BrowserContext* context) {
   return true;
 }
 

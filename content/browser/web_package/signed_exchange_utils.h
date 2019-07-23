@@ -23,6 +23,7 @@ struct ResourceResponseHead;
 
 namespace content {
 
+class BrowserContext;
 class ResourceContext;
 class SignedExchangeDevToolsProxy;
 
@@ -48,7 +49,10 @@ void ReportErrorAndTraceEvent(
 
 // Returns true when SignedHTTPExchange feature is enabled. This must be called
 // on the IO thread.
-CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled(ResourceContext* context);
+CONTENT_EXPORT bool IsSignedExchangeHandlingEnabledOnIO(
+    ResourceContext* context);
+// Same as above but called on UI thread.
+CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled(BrowserContext* context);
 
 // Returns true when SignedExchangeReportingForDistributors feature is enabled.
 bool IsSignedExchangeReportingForDistributorsEnabled();

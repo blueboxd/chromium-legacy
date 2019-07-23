@@ -10,6 +10,7 @@ source_set("webui") {
     "//ios/web:resources",
     "//ios/web:resources_grit",
     "//ios/web/public",
+    "//ios/web/public/js_messaging",
     "//ios/web/public/webui",
     "//ios/web/web_state:web_state_impl_header",
     "//mojo/public/cpp/system",

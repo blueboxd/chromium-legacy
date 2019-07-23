@@ -82,4 +82,6 @@ const char kObfuscatedGaiaId[] = "obfuscatedGaiaId";
 // Canonical email of the account to sign in.
 const char kClientOAuthEmailKey[] = "email";
 
+// Used as an Invalid refresh token.
+const char kInvalidRefreshToken[] = "invalid_refresh_token";
 }  // namespace GaiaConstants

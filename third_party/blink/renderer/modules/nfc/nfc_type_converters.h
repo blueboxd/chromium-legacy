@@ -11,8 +11,8 @@
 
 namespace blink {
 class DOMArrayBuffer;
-class NDEFRecord;
-class NDEFMessage;
+class NDEFRecordInit;
+class NDEFMessageInit;
 class NFCReaderOptions;
 class NFCPushOptions;
 }  // namespace blink
@@ -55,16 +55,17 @@ struct TypeConverter<base::Optional<Vector<uint8_t>>, blink::NDEFRecordData> {
 };
 
 template <>
-struct TypeConverter<device::mojom::blink::NDEFRecordPtr, blink::NDEFRecord*> {
+struct TypeConverter<device::mojom::blink::NDEFRecordPtr,
+                     blink::NDEFRecordInit*> {
   static device::mojom::blink::NDEFRecordPtr Convert(
-      const blink::NDEFRecord* record);
+      const blink::NDEFRecordInit* record);
 };
 
 template <>
 struct TypeConverter<device::mojom::blink::NDEFMessagePtr,
-                     blink::NDEFMessage*> {
+                     blink::NDEFMessageInit*> {
   static device::mojom::blink::NDEFMessagePtr Convert(
-      const blink::NDEFMessage* message);
+      const blink::NDEFMessageInit* message);
 };
 
 template <>

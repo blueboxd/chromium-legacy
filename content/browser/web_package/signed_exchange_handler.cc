@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
@@ -95,8 +96,8 @@ void OnVerifyCertUI(VerifyCallback callback,
                     int32_t error_code,
                     const net::CertVerifyResult& cv_result,
                     const net::ct::CTVerifyResult& ct_result) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
+  NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
+      FROM_HERE,
       base::BindOnce(std::move(callback), error_code, cv_result, ct_result));
 }
 

@@ -97,6 +97,7 @@ public class ProfilingProcessHostAndroidTest {
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, false));
     }
 
+    @DisabledTest(message = "https://crbug.com/986667")
     @Test
     @MediumTest
     public void testModeBrowserAndAllUtility() throws Exception {

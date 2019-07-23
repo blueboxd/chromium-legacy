@@ -341,6 +341,9 @@ public class LibraryLoader {
                     String apkFilePath = isInZipFile() ? appInfo.sourceDir : null;
                     linker.prepareLibraryLoad(apkFilePath);
 
+                    // See base/android/linker/config.gni, the chromium linker is only enabled
+                    // when we have a sinble library.
+                    assert NativeLibraries.LIBRARIES.length == 1;
                     for (String library : NativeLibraries.LIBRARIES) {
                         // Don't self-load the linker. This is because the build system is
                         // not clever enough to understand that all the libraries packaged

@@ -38,17 +38,3 @@ generate_global_constructors("core_global_constructors_idls") {
     ":core_global_objects",
   ]
 }
-
-generate_web_idl_collection("core_web_idl_collection") {
-  # |sources| contains all IDL files under core/.
-  sources = core_static_interface_idl_files +
-            core_generated_interface_idl_files + core_all_dependency_idl_files
-  output = "web_idl_collection_for_core.pickle"
-  component = "core"
-  output_dir = bindings_core_output_dir
-  deps = [
-    ":core_global_constructors_idls",
-    "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
-    "//third_party/blink/renderer/core:generated_testing_idls_settings",
-  ]
-}

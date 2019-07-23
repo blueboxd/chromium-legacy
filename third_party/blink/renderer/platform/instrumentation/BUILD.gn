@@ -7,6 +7,10 @@ import("//third_party/blink/renderer/platform/platform.gni")
 
 blink_platform_sources("instrumentation") {
   sources = [
+    "instance_counters.cc",
+    "instance_counters.h",
+    "instance_counters_memory_dump_provider.cc",
+    "instance_counters_memory_dump_provider.h",
     "memory_pressure_listener.cc",
     "memory_pressure_listener.h",
     "partition_alloc_memory_dump_provider.cc",

@@ -19,7 +19,6 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "net/base/backoff_entry.h"
 
@@ -36,7 +35,22 @@ class OAuth2TokenServiceDelegate;
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
 // refresh tokens.
 //
-// See |OAuth2TokenService| for usage details.
+// To use this service, call StartRequest() with a given set of scopes and a
+// consumer of the request results. The consumer is required to outlive the
+// request. The request can be deleted. The consumer may be called back
+// asynchronously with the fetch results.
+//
+// - If the consumer is not called back before the request is deleted, it will
+//   never be called back.
+//   Note in this case, the actual network requests are not canceled and the
+//   cache will be populated with the fetched results; it is just the consumer
+//   callback that is aborted.
+//
+// - Otherwise the consumer will be called back with the request and the fetch
+//   results.
+//
+// The caller of StartRequest() owns the returned request and is responsible to
+// delete the request even once the callback has been invoked.
 //
 // Note: after StartRequest returns, in-flight requests will continue
 // even if the TokenService refresh token that was used to initiate
@@ -45,8 +59,7 @@ class OAuth2TokenServiceDelegate;
 // won't be cached.
 //
 // Note: requests should be started from the UI thread.
-class ProfileOAuth2TokenService : public OAuth2TokenService,
-                                  public OAuth2AccessTokenManager::Delegate,
+class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
                                   public OAuth2TokenServiceObserver {
  public:
   typedef base::RepeatingCallback<void(const CoreAccountId& /* account_id */,
@@ -80,6 +93,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  OAuth2TokenServiceDelegate* GetDelegate();
+  const OAuth2TokenServiceDelegate* GetDelegate() const;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
@@ -278,6 +294,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
   void RecreateDeviceIdIfNeeded();
 
   PrefService* user_prefs_;
+
+  std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
 
   // Whether all credentials have been loaded.
   bool all_credentials_loaded_;

@@ -23,9 +23,17 @@ import org.chromium.components.module_installer.ModuleInstaller;
 public class AutofillAssistantModuleEntryProvider {
     private static final String TAG = "AutofillAssistant";
 
+    /**
+     * The real singleton instances. Using an instance instead of static methods allows modifying
+     * method implementation during tests. Outside of tests, this is the only instance that should
+     * exist.
+     */
+    static final AutofillAssistantModuleEntryProvider INSTANCE =
+            new AutofillAssistantModuleEntryProvider();
+
     /* Returns the AA module entry, if it is already installed. */
     @Nullable
-    /* package */ static AutofillAssistantModuleEntry getModuleEntryIfInstalled(Context context) {
+    /* package */ AutofillAssistantModuleEntry getModuleEntryIfInstalled(Context context) {
         // Required to access resources in DFM using this activity as context.
         ModuleInstaller.getInstance().initActivity(context);
         if (AutofillAssistantModule.isInstalled()) {
@@ -35,7 +43,7 @@ public class AutofillAssistantModuleEntryProvider {
     }
 
     /** Gets the AA module entry, installing it if necessary. */
-    /* package */ static void getModuleEntry(
+    /* package */ void getModuleEntry(
             Context context, Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
         AutofillAssistantModuleEntry entry = getModuleEntryIfInstalled(context);
         if (entry != null) {

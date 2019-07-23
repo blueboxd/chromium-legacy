@@ -132,9 +132,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     web_contents_ =
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
 
-    DCHECK(profile()->AsTestingProfile());
-    auto* provider = static_cast<web_app::TestWebAppProvider*>(
-        web_app::WebAppProvider::Get(profile()));
+    auto* provider = web_app::TestWebAppProvider::Get(profile());
 
     auto registrar = std::make_unique<BookmarkAppRegistrar>(profile());
     registrar_ = registrar.get();
@@ -162,6 +160,8 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
     provider->SetRegistrar(std::move(registrar));
     provider->SetInstallManager(std::move(install_manager));
     provider->SetInstallFinalizer(std::move(install_finalizer));
+
+    provider->Start();
   }
 
   void TearDown() override {

@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 
 class AccountTrackerService;
 class DeviceAccountsProvider;

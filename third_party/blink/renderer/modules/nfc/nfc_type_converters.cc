@@ -100,6 +100,13 @@ TypeConverter<base::Optional<Vector<uint8_t>>, blink::NDEFRecordData>::Convert(
     return mojo::ConvertTo<Vector<uint8_t>>(value.GetAsString());
   }
 
+  // TODO(https://crbug.com/520391): Remove this duplicate code for stringifying
+  // json, by reusing the same code in NDEFRecord ctor. i.e. Make users of this
+  // type converter:
+  // 1. first construct a NDEFRecord from the given NDEFRecordInit, the
+  // NDEFRecord ctor would stringify json.
+  // 2. then convert the NDEFRecord into an mojom::NDEFRecordPtr, which should
+  // be just simple.
   if (value.IsDictionary()) {
     v8::Local<v8::String> jsonString;
     blink::Dictionary dictionary = value.GetAsDictionary();
@@ -126,8 +133,8 @@ TypeConverter<base::Optional<Vector<uint8_t>>, blink::NDEFRecordData>::Convert(
   return base::nullopt;
 }
 
-NDEFRecordPtr TypeConverter<NDEFRecordPtr, blink::NDEFRecord*>::Convert(
-    const blink::NDEFRecord* record) {
+NDEFRecordPtr TypeConverter<NDEFRecordPtr, blink::NDEFRecordInit*>::Convert(
+    const blink::NDEFRecordInit* record) {
   NDEFRecordPtr recordPtr = NDEFRecord::New();
 
   if (record->hasRecordType()) {
@@ -172,8 +179,8 @@ NDEFRecordPtr TypeConverter<NDEFRecordPtr, blink::NDEFRecord*>::Convert(
   return recordPtr;
 }
 
-NDEFMessagePtr TypeConverter<NDEFMessagePtr, blink::NDEFMessage*>::Convert(
-    const blink::NDEFMessage* message) {
+NDEFMessagePtr TypeConverter<NDEFMessagePtr, blink::NDEFMessageInit*>::Convert(
+    const blink::NDEFMessageInit* message) {
   NDEFMessagePtr messagePtr = NDEFMessage::New();
   messagePtr->url = message->url();
   messagePtr->data.resize(message->records().size());
@@ -199,8 +206,8 @@ NDEFMessagePtr TypeConverter<NDEFMessagePtr, blink::NDEFMessageSource>::Convert(
   if (message.IsString())
     return NDEFMessage::From(message.GetAsString());
 
-  if (message.IsNDEFMessage())
-    return NDEFMessage::From(message.GetAsNDEFMessage());
+  if (message.IsNDEFMessageInit())
+    return NDEFMessage::From(message.GetAsNDEFMessageInit());
 
   if (message.IsArrayBuffer())
     return NDEFMessage::From(message.GetAsArrayBuffer());

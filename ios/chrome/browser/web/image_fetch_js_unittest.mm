@@ -85,15 +85,10 @@ class ImageFetchJsTest : public web::WebJsTest<web::WebTestWithWebState> {
     WebTestWithWebState::SetUp();
     server_.RegisterDefaultHandler(base::BindRepeating(HandleRequest));
     ASSERT_TRUE(server_.Start());
-    web_state()->AddScriptCommandCallback(
+    subscription_ = web_state()->AddScriptCommandCallback(
         base::BindRepeating(&ImageFetchJsTest::OnMessageFromJavaScript,
                             base::Unretained(this)),
         kCommandPrefix);
-  }
-
-  void TearDown() override {
-    web_state()->RemoveScriptCommandCallback(kCommandPrefix);
-    WebTestWithWebState::TearDown();
   }
 
   void OnMessageFromJavaScript(const base::DictionaryValue& message,
@@ -103,6 +98,9 @@ class ImageFetchJsTest : public web::WebJsTest<web::WebTestWithWebState> {
     message_received_ = true;
     message_ = message.Clone();
   }
+
+  // Subscription for JS message.
+  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
 
   net::EmbeddedTestServer server_;
   base::Value message_;

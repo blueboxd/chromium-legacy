@@ -16,7 +16,6 @@ source_set("test_support") {
   deps = [
     "//components/content_settings/core/common",
     "//components/gcm_driver:gcm_driver",
-    "//components/signin/core/browser",
     "//mojo/core/embedder",
     "//net",
     "//testing/gtest",

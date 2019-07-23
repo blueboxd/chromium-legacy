@@ -12,10 +12,6 @@ namespace web {
 class WebFrame;
 class WebState;
 
-// Returns the main WebFrame in |web_state|.
-// Returns nullptr if |web_state| does not have a main frame.
-WebFrame* GetMainWebFrame(WebState* web_state);
-
 // Returns the ID of the main WebFrame in |web_state|.
 // Returns "" if |web_state| does not have a main frame.
 std::string GetMainWebFrameId(WebState* web_state);
@@ -26,9 +22,6 @@ WebFrame* GetWebFrameWithId(WebState* web_state, const std::string& frame_id);
 
 // Returns the ID of |frame|. Returns std::string() if |frame| is nullptr.
 std::string GetWebFrameId(WebFrame* frame);
-
-// Returns all web frames in |web_state|.
-std::set<WebFrame*> GetAllWebFrames(WebState* web_state);
 
 }  // namespace web
 

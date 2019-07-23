@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 // A specialization of OAuth2TokenServiceDelegate that will be returned by
 // OAuth2TokenServiceDelegateFactory for OS_ANDROID.  This instance uses

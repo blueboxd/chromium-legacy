@@ -31,8 +31,7 @@
 
 namespace blink {
 
-SMILAnimationSandwich::SMILAnimationSandwich()
-    : earliest_fire_time_(SMILTime::Unresolved()) {}
+SMILAnimationSandwich::SMILAnimationSandwich() {}
 
 void SMILAnimationSandwich::Schedule(SVGSMILElement* animation) {
   DCHECK(!sandwich_.Contains(animation));
@@ -70,15 +69,19 @@ void SMILAnimationSandwich::UpdateTiming(double elapsed, bool seek_to_time) {
     } else {
       animation->ClearAnimatedType();
     }
-
-    SMILTime next_fire_time = animation->NextProgressTime();
-    if (next_fire_time.IsFinite())
-      earliest_fire_time_ = std::min(next_fire_time, earliest_fire_time_);
   }
 }
 
 SMILTime SMILAnimationSandwich::GetNextFireTime() {
-  return earliest_fire_time_;
+  SMILTime earliest_fire_time = SMILTime::Unresolved();
+  for (const auto& it_animation : sandwich_) {
+    SVGSMILElement* animation = it_animation.Get();
+
+    SMILTime next_fire_time = animation->NextProgressTime();
+    if (next_fire_time.IsFinite())
+      earliest_fire_time = std::min(next_fire_time, earliest_fire_time);
+  }
+  return earliest_fire_time;
 }
 
 void SMILAnimationSandwich::SendEvents(double elapsed, bool seek_to_time) {
@@ -105,12 +108,6 @@ void SMILAnimationSandwich::SendEvents(double elapsed, bool seek_to_time) {
     }
     scheduled->ClearAnimatedType();
     it = active_.erase(it);
-  }
-
-  for (auto& animation : active_) {
-    SMILTime next_fire_time = animation->NextProgressTime();
-    if (next_fire_time.IsFinite())
-      earliest_fire_time_ = std::min(next_fire_time, earliest_fire_time_);
   }
 }
 

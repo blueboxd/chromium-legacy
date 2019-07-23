@@ -137,51 +137,51 @@ class WithComponent(object):
                 self._components.append(component)
 
 
+class Location(object):
+    def __init__(self, filepath=None, line_number=None, column_number=None):
+        assert filepath is None or isinstance(filepath, str)
+        assert line_number is None or isinstance(line_number, int)
+        assert column_number is None or isinstance(column_number, int)
+        self._filepath = filepath
+        self._line_number = line_number
+        self._column_number = column_number
+
+    def __str__(self):
+        text = '{}'.format(self._filepath or '<<unknown path>>')
+        if self._line_number:
+            text += ':{}'.format(self._line_number)
+            if self._column_number:
+                text += ':{}'.format(self._column_number)
+        return text
+
+    def make_copy(self):
+        return Location(
+            filepath=self._filepath,
+            line_number=self._line_number,
+            column_number=self._column_number)
+
+    @property
+    def filepath(self):
+        return self._filepath
+
+    @property
+    def line_number(self):
+        return self._line_number
+
+    @property
+    def column_number(self):
+        return self._column_number
+
+
 class DebugInfo(object):
     """Provides information useful for debugging."""
 
-    class Location(object):
-        def __init__(self, filepath=None, line_number=None,
-                     column_number=None):
-            assert filepath is None or isinstance(filepath, str)
-            assert line_number is None or isinstance(line_number, int)
-            assert column_number is None or isinstance(column_number, int)
-            self._filepath = filepath
-            self._line_number = line_number
-            self._column_number = column_number
-
-        def __str__(self):
-            text = '{}'.format(self._filepath or '<<unknown path>>')
-            if self._line_number:
-                text += ':{}'.format(self._line_number)
-                if self._column_number:
-                    text += ':{}'.format(self._column_number)
-            return text
-
-        def make_copy(self):
-            return DebugInfo.Location(
-                filepath=self._filepath,
-                line_number=self._line_number,
-                column_number=self._column_number)
-
-        @property
-        def filepath(self):
-            return self._filepath
-
-        @property
-        def line_number(self):
-            return self._line_number
-
-        @property
-        def column_number(self):
-            return self._column_number
-
     def __init__(self, location=None, locations=None):
-        assert location is None or isinstance(location, DebugInfo.Location)
-        assert locations is None or (isinstance(
-            locations, (list, tuple)) and all(
-                isinstance(location, DebugInfo.Location)
-                for location in locations))
+        assert location is None or isinstance(location, Location)
+        assert locations is None or (isinstance(locations, (list, tuple))
+                                     and all(
+                                         isinstance(location, Location)
+                                         for location in locations))
         assert not (location and locations)
         # The first entry is the primary location, e.g. location of non-partial
         # interface.  The rest is secondary locations, e.g. location of partial
@@ -189,17 +189,15 @@ class DebugInfo(object):
         if locations:
             self._locations = locations
         else:
-            self._locations = [location or DebugInfo.Location()]
+            self._locations = [location or Location()]
 
     def make_copy(self):
-        return DebugInfo(
-            locations=map(DebugInfo.Location.make_copy, self._locations))
+        return DebugInfo(locations=map(Location.make_copy, self._locations))
 
     @property
     def location(self):
         """
         Returns the primary location, i.e. location of the main definition.
-        @return DebugInfo.Location
         """
         return self._locations[0]
 
@@ -208,13 +206,12 @@ class DebugInfo(object):
         """
         Returns a list of locations of all related IDL definitions, including
         partial definitions and mixins.
-        @return tuple(DebugInfo.Location)
         """
         return tuple(self._locations)
 
     def add_locations(self, locations):
         assert isinstance(locations, (list, tuple)) and all(
-            isinstance(location, DebugInfo.Location) for location in locations)
+            isinstance(location, Location) for location in locations)
         self._locations.extend(locations)
 
 

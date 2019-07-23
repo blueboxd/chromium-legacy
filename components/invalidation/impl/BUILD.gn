@@ -146,7 +146,6 @@ source_set("unit_tests") {
     "//components/gcm_driver/instance_id:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
-    "//components/signin/public/base:test_support",
     "//components/signin/public/identity_manager:test_support",
     "//components/sync_preferences:test_support",
     "//google_apis:test_support",

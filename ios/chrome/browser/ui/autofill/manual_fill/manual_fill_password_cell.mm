@@ -168,7 +168,7 @@ static const CGFloat NoMultiplier = 1.0;
         [[NSMutableAttributedString alloc]
             initWithString:credential.siteName ? credential.siteName : @""
                 attributes:@{
-                  NSForegroundColorAttributeName : UIColor.blackColor,
+                  NSForegroundColorAttributeName : UIColor.cr_labelColor,
                   NSFontAttributeName :
                       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
                 }];
@@ -177,7 +177,7 @@ static const CGFloat NoMultiplier = 1.0;
       NSString* hostString =
           [NSString stringWithFormat:@" –– %@", credential.host];
       NSDictionary* attributes = @{
-        NSForegroundColorAttributeName : UIColor.lightGrayColor,
+        NSForegroundColorAttributeName : UIColor.cr_secondaryLabelColor,
         NSFontAttributeName :
             [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
       };
@@ -199,7 +199,7 @@ static const CGFloat NoMultiplier = 1.0;
     NSString* titleString =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NO_USERNAME);
     [self.usernameButton setTitle:titleString forState:UIControlStateNormal];
-    [self.usernameButton setTitleColor:UIColor.lightGrayColor
+    [self.usernameButton setTitleColor:UIColor.cr_secondaryLabelColor
                               forState:UIControlStateNormal];
     self.usernameButton.enabled = NO;
   }

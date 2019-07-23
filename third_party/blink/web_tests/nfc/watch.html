@@ -62,7 +62,7 @@ nfc_test(async () => {
   let messageCallback;
   let promise = new Promise(resolve => {
     messageCallback = receivedMessage => {
-      assertWebNDEFMessagesEqual(message, receivedMessage);
+      assertWebNDEFMessagesEqual(new NDEFMessage(message), receivedMessage);
       resolve();
     }
   });

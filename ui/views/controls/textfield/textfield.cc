@@ -281,6 +281,7 @@ Textfield::Textfield()
   cursor_view_.layer()->SetColor(GetTextColor());
   // |cursor_view_| is owned by Textfield view.
   cursor_view_.set_owned_by_client();
+  cursor_view_.GetViewAccessibility().OverrideIsIgnored(true);
   AddChildView(&cursor_view_);
   GetRenderText()->SetFontList(GetDefaultFontList());
   UpdateBorder();

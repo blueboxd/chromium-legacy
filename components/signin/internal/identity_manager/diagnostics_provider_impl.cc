@@ -5,8 +5,8 @@
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 
 namespace identity {
 
@@ -21,7 +21,7 @@ DiagnosticsProviderImpl::DiagnosticsProviderImpl(
 
 DiagnosticsProviderImpl::~DiagnosticsProviderImpl() {}
 
-OAuth2TokenServiceDelegate::LoadCredentialsState
+signin::LoadCredentialsState
 DiagnosticsProviderImpl::GetDetailedStateOfLoadingOfRefreshTokens() const {
   DCHECK(profile_oauth2_token_service_->GetDelegate());
   return profile_oauth2_token_service_->GetDelegate()->load_credentials_state();

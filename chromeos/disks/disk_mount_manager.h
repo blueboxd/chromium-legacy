@@ -28,11 +28,14 @@ enum MountCondition {
 };
 
 // Possible filesystem types that can be passed to FormatMountedDevice.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class FormatFileSystemType {
   kUnknown = 0,
   kVfat = 1,
   kExfat = 2,
   kNtfs = 3,
+  kMaxValue = kNtfs,
 };
 
 // This class handles the interaction with cros-disks.

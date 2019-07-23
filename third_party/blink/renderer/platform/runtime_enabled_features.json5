@@ -330,6 +330,9 @@
       name: "CSSCalcAsInt",
       status: "test",
     },
+    {
+      name: "CSSCascade",
+    },
     // Support for the CSS color-scheme property from the css-color-adjust spec.
     // https://drafts.csswg.org/css-color-adjust/#color-scheme-prop
     {
@@ -485,6 +488,7 @@
     },
     {
       name: "DisplayLocking",
+      status: "experimental",
     },
     {
       name: "DocumentCookie",
@@ -1183,6 +1187,7 @@
     },
     {
       name: "PeriodicBackgroundSync",
+      origin_trial_feature_name: "PeriodicBackgroundSync",
       settable_from_internals: true,
       status: "test",
     },

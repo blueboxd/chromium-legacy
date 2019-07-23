@@ -179,8 +179,10 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Returns whether the element is a username or password textfield.
   bool IsUsernameOrPasswordField(const blink::WebInputElement& element);
 
-  // Returns whether the agent has fill data stored for |control_element|.
-  bool HasFillData(const blink::WebFormControlElement& control_element) const;
+  // Asks the agent to show the touch to fill UI for |control_element|. Returns
+  // whether the agent was able to do so.
+  bool TryToShowTouchToFill(
+      const blink::WebFormControlElement& control_element);
 
   // Shows an Autofill popup with username suggestions for |element|. If
   // |show_all| is |true|, will show all possible suggestions for that element,

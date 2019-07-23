@@ -36,6 +36,7 @@ class SharedURLLoaderFactory;
 
 namespace content {
 
+class BrowserContext;
 class ResourceContext;
 class URLLoaderThrottle;
 class PrefetchedSignedExchangeCacheAdapter;
@@ -66,6 +67,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
+      BrowserContext* browser_context,
       ResourceContext* resource_context,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
@@ -115,6 +117,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   void OnNetworkConnectionError();
 
+  bool IsSignedExchangeHandlingEnabled();
+
   const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
 
   // Set in the constructor and updated when redirected.
@@ -132,6 +136,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   // |url_loader_throttles_getter_| and |resource_context_| should be
   // valid as far as |request_context_getter_| returns non-null value.
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
+  BrowserContext* browser_context_;
   ResourceContext* resource_context_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 

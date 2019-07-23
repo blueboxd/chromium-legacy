@@ -23,7 +23,7 @@ const char kPrintCommandPrefix[] = "print";
 
 PrintTabHelper::PrintTabHelper(web::WebState* web_state) {
   web_state->AddObserver(this);
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::Bind(&PrintTabHelper::OnPrintCommand, base::Unretained(this),
                  base::Unretained(web_state)),
       kPrintCommandPrefix);
@@ -37,7 +37,6 @@ void PrintTabHelper::set_printer(id<WebStatePrinter> printer) {
 
 void PrintTabHelper::WebStateDestroyed(web::WebState* web_state) {
   // Stops handling print requests from the web page.
-  web_state->RemoveScriptCommandCallback(kPrintCommandPrefix);
   web_state->RemoveObserver(this);
 }
 

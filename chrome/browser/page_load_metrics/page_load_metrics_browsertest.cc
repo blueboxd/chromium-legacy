@@ -438,8 +438,16 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
                                      0);
 }
 
+// TODO(crbug.com/986642): Flaky on Win.
+#if defined(OS_WIN)
+#define MAYBE_NoPaintForEmptyDocumentInChildFrame \
+  DISABLED_NoPaintForEmptyDocumentInChildFrame
+#else
+#define MAYBE_NoPaintForEmptyDocumentInChildFrame \
+  NoPaintForEmptyDocumentInChildFrame
+#endif
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       NoPaintForEmptyDocumentInChildFrame) {
+                       MAYBE_NoPaintForEmptyDocumentInChildFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL a_url(

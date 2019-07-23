@@ -276,6 +276,11 @@ TEST_F(CSSVariableResolverTest, CopiedVariablesRetainNeedsResolution) {
 }
 
 TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
+  // This test is not relevant when CSSCascade is enabled, as we won't store
+  // unresolved CSSVariableData on the ComputedStyle in that case.
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled())
+    return;
+
   const ComputedStyle* initial = &ComputedStyle::InitialStyle();
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
                            nullptr /* pseudo_element */, initial, initial);

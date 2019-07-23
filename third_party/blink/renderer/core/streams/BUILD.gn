@@ -6,12 +6,18 @@ import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("streams") {
   sources = [
+    "byte_length_queuing_strategy.cc",
+    "byte_length_queuing_strategy.h",
+    "count_queuing_strategy.cc",
+    "count_queuing_strategy.h",
     "miscellaneous_operations.cc",
     "miscellaneous_operations.h",
     "promise_handler.cc",
     "promise_handler.h",
     "queue_with_sizes.cc",
     "queue_with_sizes.h",
+    "queuing_strategy_common.cc",
+    "queuing_strategy_common.h",
     "readable_stream.cc",
     "readable_stream.h",
     "readable_stream_default_controller.cc",

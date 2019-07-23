@@ -79,6 +79,7 @@ PASS oldChildWindow.onanimationiteration is newChildWindow.onanimationiteration
 PASS oldChildWindow.onanimationstart is newChildWindow.onanimationstart
 PASS oldChildWindow.onappinstalled is newChildWindow.onappinstalled
 PASS oldChildWindow.onauxclick is newChildWindow.onauxclick
+PASS oldChildWindow.onbeforeactivate is newChildWindow.onbeforeactivate
 PASS oldChildWindow.onbeforeinstallprompt is newChildWindow.onbeforeinstallprompt
 PASS oldChildWindow.onbeforeprint is newChildWindow.onbeforeprint
 PASS oldChildWindow.onbeforeunload is newChildWindow.onbeforeunload

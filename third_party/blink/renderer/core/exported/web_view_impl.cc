@@ -2997,7 +2997,6 @@ void WebViewImpl::UpdateBaseBackgroundColor() {
   Color color = BaseBackgroundColor();
   if (auto* local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame())) {
     LocalFrameView* view = local_frame->View();
-    view->SetBaseBackgroundColor(color);
     view->UpdateBaseBackgroundColorRecursively(color);
   }
 }

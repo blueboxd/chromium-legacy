@@ -1125,6 +1125,7 @@ jumbo_component("base") {
     "win/windows_version.cc",
     "win/windows_version.h",
     "win/windowsx_shim.h",
+    "win/winrt_foundation_helpers.h",
     "win/winrt_storage_util.cc",
     "win/winrt_storage_util.h",
     "win/wmi.cc",

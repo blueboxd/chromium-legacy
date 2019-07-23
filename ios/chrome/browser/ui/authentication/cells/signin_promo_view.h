@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "components/signin/public/base/signin_metrics.h"
-
 @protocol SigninPromoViewDelegate;
 
 typedef NS_ENUM(NSInteger, SigninPromoViewMode) {

@@ -234,21 +234,19 @@ crbug.com/907601 external/wpt/dom/events/scrolling/scrollend-event-fired-after-s
 
 crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html [ Pass Failure ]
 
-# Display locking, currently only available via a virtual test.
-crbug.com/882663 wpt_internal/display-lock [ Skip ]
-
 # Display locking, run highlight-display-locked.js only with display locking.
 crbug.com/882663 http/tests/devtools/elements/highlight/highlight-display-locked.js [ Skip ]
-crbug.com/882663 virtual/display-lock/http/tests/devtools/elements/highlight [ Skip ]
-Bug(none) virtual/display-lock/http/tests/devtools/elements/highlight/highlight-display-locked.js [ Pass ]
+crbug.com/882663 http/tests/devtools/elements/highlight [ Skip ]
 
 # Display locking, run css-get-platform-fonts-display-locked.js only with display locking.
 crbug.com/882663 inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Skip ]
-crbug.com/882663 virtual/display-lock/inspector-protocol/css [ Skip ]
-Bug(none) virtual/display-lock/inspector-protocol/css/css-get-platform-fonts-display-locked.js [ Pass ]
+crbug.com/882663 inspector-protocol/css [ Skip ]
 
 # Display locking failures
-crbug.com/955533 virtual/display-lock/wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
+crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.html [ Failure ]
+
+# virtual-scroller failures
+crbug.com/986574 wpt_internal/virtual-scroller/ [ Failure ]
 
 # Sheriff 2018/05/25
 crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
@@ -2196,6 +2194,23 @@ crbug.com/891427 [ Mac Win7 ] virtual/mouseevent_fractional/fast/events/touch/ge
 
 # ====== OOPIF-mode failures until here ======
 
+# ====== Cascade failures from here ======
+
+# These expectations are copied from the main expectations; they also fail
+# without the CSSCascade feature enabled.
+crbug.com/626703 virtual/cascade/external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
+crbug.com/626703 virtual/cascade/external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-from-no-value.html [ Skip ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-to-no-value.html [ Skip ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
+crbug.com/791529 virtual/cascade/external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
+crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.html [ Failure ]
+
+# This is for some reason WontFix'd in the main expectations (see NeverFixTests).
+# That seems wrong, as we should support 'revert' eventually.
+crbug.com/579788 virtual/cascade/external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
+
+# ====== Cascade failures until here ======
 
 ### sheriff 2019-07-16
 crbug.com/983799 [ Win ] http/tests/navigation/redirect-on-back-updates-history-item.html [ Timeout Pass ]
@@ -2379,6 +2394,13 @@ crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumen
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 crbug.com/686118 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
+
+# Service worker updates need to succeed when the script shrinks.
+crbug.com/986688 external/wpt/service-workers/service-worker/update.https.html [ Skip ]
+crbug.com/986688 virtual/blink-cors/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
+crbug.com/986688 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
+crbug.com/986688 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
+crbug.com/986688 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
 
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -6319,10 +6341,6 @@ crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Ti
 crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
 
 # ecosystem-infra sheriff 2019-07-22
-crbug.com/986286 external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
-crbug.com/986286 virtual/blink-cors/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
-crbug.com/986286 virtual/not-omt-sw-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
-crbug.com/986286 virtual/omt-worker-fetch/external/wpt/fetch/api/response/response-consume-empty.html [ Pass Failure ]
 crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
 crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookies/path/match.html [ Pass Timeout ]
@@ -6331,3 +6349,6 @@ crbug.com/986477 [ Win ] virtual/samesite-by-default-cookies/external/wpt/cookie
 crbug.com/986019 animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986019 virtual/threaded/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
 crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-positive-playback-rate.html [ Pass Failure ]
+crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]

@@ -23,8 +23,8 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.touchless.TouchlessUrlUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -32,7 +32,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Unit tests for the {@link ProgressBarMediator} class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class, ShadowPostTask.class})
+@Config(manifest = Config.NONE, shadows = {ShadowPostTask.class})
 public class ProgressBarMediatorTest {
     private static final String SAMPLE_URL = "https://www.google.com/chrome";
     private static final String SAMPLE_URL_SHORT = "google.com";
@@ -44,14 +44,7 @@ public class ProgressBarMediatorTest {
 
     @Before
     public void setUp() {
-        ShadowUrlUtilities.setTestImpl(new ShadowUrlUtilities.TestImpl() {
-            @Override
-            public String getDomainAndRegistry(String uri, boolean includePrivateRegistries) {
-                if (uri.equals(SAMPLE_URL)) return SAMPLE_URL_SHORT;
-
-                return uri;
-            }
-        });
+        TouchlessUrlUtilities.setUrlForDisplayForTest(SAMPLE_URL_SHORT);
         mModel = new PropertyModel.Builder(ProgressBarProperties.ALL_KEYS).build();
         mTabObserver = ArgumentCaptor.forClass(TabObserver.class);
         mTab = mock(Tab.class);
@@ -59,6 +52,11 @@ public class ProgressBarMediatorTest {
         when(activityTabProvider.get()).thenReturn(mTab);
         mProgressBarMediator = new ProgressBarMediator(mModel, activityTabProvider);
         verify(mTab).addObserver(mTabObserver.capture());
+    }
+
+    @After
+    public void tearDown() {
+        TouchlessUrlUtilities.setUrlForDisplayForTest(null);
     }
 
     @Test
@@ -129,10 +127,5 @@ public class ProgressBarMediatorTest {
         mTabObserver.getValue().onUrlUpdated(mTab);
         Assert.assertEquals(mModel.get(ProgressBarProperties.PROGRESS_FRACTION), .1, .001);
         Assert.assertEquals(mModel.get(ProgressBarProperties.URL), SAMPLE_URL_SHORT);
-    }
-
-    @After
-    public void tearDown() {
-        ShadowUrlUtilities.reset();
     }
 }

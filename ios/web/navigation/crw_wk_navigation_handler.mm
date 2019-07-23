@@ -830,8 +830,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       // not notify web view delegate about received response, so web controller
       // does not get a chance to properly update MIME type.
       [self.JSInjector injectWindowID];
-      web::WebFramesManagerImpl::FromWebState(self.webStateImpl)
-          ->RegisterExistingFrames();
+      self.webStateImpl->GetWebFramesManagerImpl().RegisterExistingFrames();
     }
   }
 
@@ -1968,12 +1967,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
 // Clears the frames list.
 - (void)removeAllWebFrames {
-  web::WebFramesManagerImpl* framesManager =
-      web::WebFramesManagerImpl::FromWebState(self.webStateImpl);
-  for (auto* frame : framesManager->GetAllWebFrames()) {
+  web::WebFramesManagerImpl& framesManager =
+      self.webStateImpl->GetWebFramesManagerImpl();
+  for (auto* frame : framesManager.GetAllWebFrames()) {
     self.webStateImpl->OnWebFrameUnavailable(frame);
   }
-  framesManager->RemoveAllWebFrames();
+  framesManager.RemoveAllWebFrames();
 }
 
 // Resets any state that is associated with a specific document object (e.g.,

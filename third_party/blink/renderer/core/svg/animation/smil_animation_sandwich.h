@@ -76,7 +76,6 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   // The list stored here is always sorted.
   ScheduledVector sandwich_;
   ScheduledVector active_;
-  SMILTime earliest_fire_time_;
 };
 
 }  // namespace blink

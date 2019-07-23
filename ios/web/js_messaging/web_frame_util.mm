@@ -14,14 +14,9 @@
 #endif
 
 namespace web {
-WebFrame* GetMainWebFrame(WebState* web_state) {
-  WebFramesManager* manager = WebFramesManager::FromWebState(web_state);
-  DCHECK(manager);
-  return manager->GetMainWebFrame();
-}
 
 std::string GetMainWebFrameId(WebState* web_state) {
-  WebFrame* main_frame = GetMainWebFrame(web_state);
+  WebFrame* main_frame = web_state->GetWebFramesManager()->GetMainWebFrame();
   if (!main_frame) {
     return std::string();
   }
@@ -29,20 +24,13 @@ std::string GetMainWebFrameId(WebState* web_state) {
 }
 
 WebFrame* GetWebFrameWithId(WebState* web_state, const std::string& frame_id) {
-  if (frame_id.size() == 0)
+  if (frame_id.empty())
     return nullptr;
-  WebFramesManager* manager = WebFramesManager::FromWebState(web_state);
-  DCHECK(manager);
-  return manager->GetFrameWithId(frame_id);
+  return web_state->GetWebFramesManager()->GetFrameWithId(frame_id);
 }
 
 std::string GetWebFrameId(WebFrame* frame) {
   return frame ? frame->GetFrameId() : std::string();
-}
-
-std::set<WebFrame*> GetAllWebFrames(WebState* web_state) {
-  WebFramesManager* manager = WebFramesManager::FromWebState(web_state);
-  return manager->GetAllWebFrames();
 }
 
 }  // namespace web

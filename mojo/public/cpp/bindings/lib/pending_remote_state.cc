@@ -13,11 +13,12 @@ PendingRemoteState::PendingRemoteState(ScopedMessagePipeHandle pipe,
                                        uint32_t version)
     : pipe(std::move(pipe)), version(version) {}
 
-PendingRemoteState::PendingRemoteState(PendingRemoteState&&) = default;
+PendingRemoteState::PendingRemoteState(PendingRemoteState&&) noexcept = default;
 
 PendingRemoteState::~PendingRemoteState() = default;
 
-PendingRemoteState& PendingRemoteState::operator=(PendingRemoteState&& other) {
+PendingRemoteState& PendingRemoteState::operator=(
+    PendingRemoteState&& other) noexcept {
   reset();
   pipe = std::move(other.pipe);
   version = other.version;

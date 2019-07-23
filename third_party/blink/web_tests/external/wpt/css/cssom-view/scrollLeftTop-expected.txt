@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS writing-mode:horizontal-tb; direction:ltr
+FAIL writing-mode:horizontal-tb; direction:rtl assert_approx_equals: initial scrollLeft expected 0 +/- 0.5 but got 165
+PASS writing-mode:vertical-lr; direction:ltr
+FAIL writing-mode:vertical-lr; direction:rtl assert_approx_equals: initial scrollTop expected 0 +/- 0.5 but got 315
+FAIL writing-mode:vertical-rl; direction:ltr assert_approx_equals: initial scrollLeft expected 0 +/- 0.5 but got 165
+FAIL writing-mode:vertical-rl; direction:rtl assert_approx_equals: initial scrollLeft expected 0 +/- 0.5 but got 165
+Harness: the test ran to completion.
+

@@ -71,12 +71,17 @@ void IncrementCounters(const webrtc::DataChannelInterface& channel) {
   if (channel.negotiated())
     IncrementCounter(DataChannelCounters::kNegotiated);
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmits",
-                              channel.maxRetransmits(), 1,
-                              std::numeric_limits<uint16_t>::max(), 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmitTime",
-                              channel.maxRetransmitTime(), 1,
-                              std::numeric_limits<uint16_t>::max(), 50);
+  // Only record max retransmits and max packet life time if set.
+  if (channel.maxRetransmitsOpt()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmits",
+                                *(channel.maxRetransmitsOpt()), 1,
+                                std::numeric_limits<uint16_t>::max(), 50);
+  }
+  if (channel.maxPacketLifeTime()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxPacketLifeTime",
+                                *channel.maxPacketLifeTime(), 1,
+                                std::numeric_limits<uint16_t>::max(), 50);
+  }
 }
 
 void RecordMessageSent(const webrtc::DataChannelInterface& channel,
@@ -257,14 +262,24 @@ bool RTCDataChannel::ordered() const {
   return channel()->ordered();
 }
 
-uint16_t RTCDataChannel::maxRetransmitTime() const {
+uint16_t RTCDataChannel::maxPacketLifeTime(bool& is_null) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return channel()->maxRetransmitTime();
+  if (channel()->maxPacketLifeTime()) {
+    is_null = false;
+    return *(channel()->maxPacketLifeTime());
+  }
+  is_null = true;
+  return -1;
 }
 
-uint16_t RTCDataChannel::maxRetransmits() const {
+uint16_t RTCDataChannel::maxRetransmits(bool& is_null) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return channel()->maxRetransmits();
+  if (channel()->maxRetransmitsOpt()) {
+    is_null = false;
+    return *(channel()->maxRetransmitsOpt());
+  }
+  is_null = true;
+  return -1;
 }
 
 String RTCDataChannel::protocol() const {

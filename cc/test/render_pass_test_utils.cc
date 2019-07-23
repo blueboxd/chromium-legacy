@@ -107,8 +107,8 @@ viz::SolidColorDrawQuad* AddTransformedQuad(viz::RenderPass* pass,
   return quad;
 }
 
-void AddRenderPassQuad(viz::RenderPass* to_pass,
-                       viz::RenderPass* contributing_pass) {
+viz::RenderPassDrawQuad* AddRenderPassQuad(viz::RenderPass* to_pass,
+                                           viz::RenderPass* contributing_pass) {
   gfx::Rect output_rect = contributing_pass->output_rect;
   viz::SharedQuadState* shared_state =
       to_pass->CreateAndAppendSharedQuadState();
@@ -119,6 +119,7 @@ void AddRenderPassQuad(viz::RenderPass* to_pass,
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id, 0,
                gfx::RectF(), gfx::Size(), false, gfx::Vector2dF(),
                gfx::PointF(), gfx::RectF(), false, 1.0f);
+  return quad;
 }
 
 void AddRenderPassQuad(viz::RenderPass* to_pass,

@@ -44,6 +44,10 @@
 // |display| is NO. Will animate change if |animated| is YES.
 - (void)displayBadge:(BOOL)display animated:(BOOL)animated;
 
+// Toggles |enabled| state of the trailing button and updates accessibility
+// appropriately.
+- (void)enableTrailingButton:(BOOL)enabled;
+
 // The tappable button representing the location bar.
 @property(nonatomic, strong) UIButton* locationButton;
 // The label displaying the current location URL.

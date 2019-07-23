@@ -9,6 +9,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/load_credentials_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 const char kAccountId[] = "user@gmail.com";
@@ -46,9 +47,9 @@ TEST_F(DiagnosticsProviderTest, Basic) {
 }
 
 TEST_F(DiagnosticsProviderTest, GetDetailedStateOfLoadingOfRefreshTokens) {
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
-                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            diagnostics_provider()->GetDetailedStateOfLoadingOfRefreshTokens());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      diagnostics_provider()->GetDetailedStateOfLoadingOfRefreshTokens());
 }
 
 TEST_F(DiagnosticsProviderTest, GetDelayBeforeMakingAccessTokenRequests) {

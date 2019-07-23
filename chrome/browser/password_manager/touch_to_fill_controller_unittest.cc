@@ -10,7 +10,7 @@
 #include "chrome/browser/autofill/mock_manual_filling_controller.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,8 +46,7 @@ TEST_F(TouchToFillControllerTest, AllowedForWebContents) {
                  << is_touch_to_fill_enabled);
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitWithFeatureState(
-        password_manager::features::kTouchToFillAndroid,
-        is_touch_to_fill_enabled);
+        autofill::features::kTouchToFillAndroid, is_touch_to_fill_enabled);
     EXPECT_EQ(is_touch_to_fill_enabled,
               TouchToFillController::AllowedForWebContents(nullptr));
   }

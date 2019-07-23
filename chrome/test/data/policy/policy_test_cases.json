@@ -4297,6 +4297,14 @@
     ]
   },
 
+  "CrostiniRootAccessAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "CrostiniRootAccessAllowed": false },
+    "pref_mappings": [
+      { "pref": "crostini.user_root_access_allowed_by_policy" }
+    ]
+  },
+
   "DeviceSamlLoginAuthenticationType": {
   },
 

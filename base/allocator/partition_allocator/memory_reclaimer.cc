@@ -17,8 +17,9 @@ namespace internal {
 
 const Feature kNoPartitionAllocDecommit{"NoPartitionAllocDecommit",
                                         FEATURE_DISABLED_BY_DEFAULT};
+// TODO(crbug.com/942512): Remove the feature after the M77 branch.
 const Feature kPartitionAllocPeriodicDecommit{"PartitionAllocPeriodicDecommit",
-                                              FEATURE_DISABLED_BY_DEFAULT};
+                                              FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace internal
 
@@ -43,7 +44,6 @@ void PartitionAllocMemoryReclaimer::RegisterPartition(
     internal::PartitionRootBase* partition) {
   AutoLock lock(lock_);
   DCHECK(partition);
-  DCHECK(!timer_);
   auto it_and_whether_inserted = partitions_.insert(partition);
   DCHECK(it_and_whether_inserted.second);
 }

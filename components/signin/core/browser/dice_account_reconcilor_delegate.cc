@@ -32,6 +32,85 @@ bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
   return account_consistency_ == AccountConsistencyMethod::kDice;
 }
 
+DiceAccountReconcilorDelegate::InconsistencyReason
+DiceAccountReconcilorDelegate::GetInconsistencyReason(
+    const CoreAccountId& primary_account,
+    const std::vector<CoreAccountId>& chrome_accounts,
+    const std::vector<gaia::ListedAccount>& gaia_accounts,
+    bool first_execution) const {
+  std::vector<CoreAccountId> valid_gaia_accounts_ids;
+  for (const gaia::ListedAccount& gaia_account : gaia_accounts) {
+    if (gaia_account.valid)
+      valid_gaia_accounts_ids.push_back(gaia_account.id);
+  }
+
+  bool primary_account_has_token = false;
+  if (!primary_account.empty()) {
+    primary_account_has_token =
+        base::Contains(chrome_accounts, primary_account);
+    bool primary_account_has_cookie =
+        base::Contains(valid_gaia_accounts_ids, primary_account);
+    if (primary_account_has_token && !primary_account_has_cookie)
+      return InconsistencyReason::kMissingSyncCookie;
+
+    if (!primary_account_has_token && primary_account_has_cookie)
+      return InconsistencyReason::kSyncAccountAuthError;
+  }
+
+  bool missing_first_web_account_token =
+      primary_account.empty() && !gaia_accounts.empty() &&
+      gaia_accounts[0].valid &&
+      !base::Contains(chrome_accounts, gaia_accounts[0].id);
+
+  if (missing_first_web_account_token)
+    return InconsistencyReason::kMissingFirstWebAccountToken;
+
+  std::sort(valid_gaia_accounts_ids.begin(), valid_gaia_accounts_ids.end());
+  std::vector<CoreAccountId> sorted_chrome_accounts(chrome_accounts);
+  std::sort(sorted_chrome_accounts.begin(), sorted_chrome_accounts.end());
+  bool missing_token =
+      !base::STLIncludes(sorted_chrome_accounts, valid_gaia_accounts_ids);
+  bool missing_cookie =
+      !base::STLIncludes(valid_gaia_accounts_ids, sorted_chrome_accounts);
+
+  if (missing_token && missing_cookie)
+    return InconsistencyReason::kCookieTokenMismatch;
+
+  if (missing_token)
+    return InconsistencyReason::kMissingSecondaryToken;
+
+  if (missing_cookie)
+    return InconsistencyReason::kMissingSecondaryCookie;
+
+  if (first_execution && primary_account_has_token &&
+      gaia_accounts[0].id != primary_account && gaia_accounts[0].valid)
+    return InconsistencyReason::kSyncCookieNotFirst;
+
+  return InconsistencyReason::kNone;
+}
+
+void DiceAccountReconcilorDelegate::MaybeLogInconsistencyReason(
+    const CoreAccountId& primary_account,
+    const std::vector<CoreAccountId>& chrome_accounts,
+    const std::vector<gaia::ListedAccount>& gaia_accounts,
+    bool first_execution) const {
+  if (account_consistency_ != AccountConsistencyMethod::kDiceMigration)
+    return;
+
+  InconsistencyReason inconsistency_reason = GetInconsistencyReason(
+      primary_account, chrome_accounts, gaia_accounts, first_execution);
+
+  if (first_execution) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Signin.DiceMigrationNotReady.Reason.FirstExecution",
+        inconsistency_reason);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Signin.DiceMigrationNotReady.Reason.NotFirstExecution",
+        inconsistency_reason);
+  }
+}
+
 gaia::GaiaSource DiceAccountReconcilorDelegate::GetGaiaApiSource() const {
   return gaia::GaiaSource::kAccountReconcilorDice;
 }

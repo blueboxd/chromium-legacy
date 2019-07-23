@@ -50,6 +50,14 @@ namespace ash {
 
 namespace {
 
+void NewDesk() {
+  DesksController::Get()->NewDesk(DesksCreationRemovalSource::kButton);
+}
+
+void RemoveDesk(const Desk* desk) {
+  DesksController::Get()->RemoveDesk(desk, DesksCreationRemovalSource::kButton);
+}
+
 std::unique_ptr<aura::Window> CreateTransientWindow(
     aura::Window* transient_parent,
     const gfx::Rect& bounds) {
@@ -263,7 +271,7 @@ TEST_F(DesksTest, DesksCreationAndRemoval) {
 
   // Add desks until no longer possible.
   while (controller->CanCreateDesks())
-    controller->NewDesk();
+    NewDesk();
 
   // Expect we've reached the max number of desks, and we've been notified only
   // with the newly created desks.
@@ -274,7 +282,7 @@ TEST_F(DesksTest, DesksCreationAndRemoval) {
   // Remove all desks until no longer possible, and expect that there's always
   // one default desk remaining.
   while (controller->CanRemoveDesks())
-    controller->RemoveDesk(observer.desks().back());
+    RemoveDesk(observer.desks().back());
 
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_FALSE(controller->CanRemoveDesks());
@@ -377,9 +385,9 @@ TEST_F(DesksTest, DeskActivation) {
             desk_1->GetDeskContainerForRoot(root));
 
   // Create three new desks, and activate one of the middle ones.
-  controller->NewDesk();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(4u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
   const Desk* desk_3 = controller->desks()[2].get();
@@ -400,7 +408,7 @@ TEST_F(DesksTest, DeskActivation) {
   // Remove the active desk, which is in the middle, activation should move to
   // the left, so desk 1 should be activated.
   EXPECT_FALSE(controller->AreDesksBeingModified());
-  controller->RemoveDesk(desk_2);
+  RemoveDesk(desk_2);
   EXPECT_FALSE(controller->AreDesksBeingModified());
   ASSERT_EQ(3u, controller->desks().size());
   EXPECT_EQ(desk_1, controller->active_desk());
@@ -414,7 +422,7 @@ TEST_F(DesksTest, DeskActivation) {
   // Remove the active desk, it's the first one on the left, so desk_3 (on the
   // right) will be activated.
   EXPECT_FALSE(controller->AreDesksBeingModified());
-  controller->RemoveDesk(desk_1);
+  RemoveDesk(desk_1);
   EXPECT_FALSE(controller->AreDesksBeingModified());
   ASSERT_EQ(2u, controller->desks().size());
   EXPECT_EQ(desk_3, controller->active_desk());
@@ -426,7 +434,7 @@ TEST_F(DesksTest, DeskActivation) {
 
 TEST_F(DesksTest, TestWindowPositioningPaused) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
 
   // Create two windows whose window positioning is managed.
   const auto win0_bounds = gfx::Rect{10, 20, 250, 100};
@@ -443,13 +451,14 @@ TEST_F(DesksTest, TestWindowPositioningPaused) {
   // Moving one window to the second desk should not affect the bounds of either
   // windows.
   Desk* desk_2 = controller->desks()[1].get();
-  controller->MoveWindowFromActiveDeskTo(win1.get(), desk_2);
+  controller->MoveWindowFromActiveDeskTo(
+      win1.get(), desk_2, DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
   EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
 
   // Removing a desk, which results in moving its windows to another desk should
   // not affect the positions of those managed windows.
-  controller->RemoveDesk(desk_2);
+  RemoveDesk(desk_2);
   EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
   EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
 }
@@ -466,9 +475,9 @@ TEST_F(DesksTest, DeskActivationDualDisplay) {
   EXPECT_TRUE(desk_1->is_active());
 
   // Create three new desks, and activate one of the middle ones.
-  controller->NewDesk();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(4u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
   const Desk* desk_3 = controller->desks()[2].get();
@@ -516,7 +525,7 @@ TEST_F(DesksTest, TransientWindows) {
             desks_util::GetDeskContainerForContext(win1.get()));
 
   // Create a new desk and activate it.
-  controller->NewDesk();
+  NewDesk();
   const Desk* desk_2 = controller->desks()[1].get();
   EXPECT_TRUE(desk_2->windows().empty());
   ActivateDesk(desk_2);
@@ -537,7 +546,7 @@ TEST_F(DesksTest, TransientWindows) {
 
   // Remove the inactive desk 1, and expect that its windows, including
   // transient will move to desk 2.
-  controller->RemoveDesk(desk_1);
+  RemoveDesk(desk_1);
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_EQ(desk_2, controller->active_desk());
   EXPECT_EQ(3u, desk_2->windows().size());
@@ -549,8 +558,8 @@ TEST_F(DesksTest, TransientWindows) {
 
 TEST_F(DesksTest, TransientModalChildren) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(3u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
@@ -573,7 +582,7 @@ TEST_F(DesksTest, TransientModalChildren) {
   // Remove desk_1, and expect that all its windows (including the transient
   // modal child and its parent) are moved to desk_2, and that their z-order
   // within the container is preserved.
-  controller->RemoveDesk(desk_1);
+  RemoveDesk(desk_1);
   EXPECT_EQ(desk_2, controller->active_desk());
   ASSERT_EQ(3u, desk_2->windows().size());
   auto* desk_2_container = desk_2->GetDeskContainerForRoot(root);
@@ -584,7 +593,8 @@ TEST_F(DesksTest, TransientModalChildren) {
 
   // Move only the modal child window to desk_3, and expect that its parent will
   // move along with it, and their z-order is preserved.
-  controller->MoveWindowFromActiveDeskTo(win1.get(), desk_3);
+  controller->MoveWindowFromActiveDeskTo(
+      win1.get(), desk_3, DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   ASSERT_EQ(1u, desk_2->windows().size());
   ASSERT_EQ(2u, desk_3->windows().size());
   EXPECT_EQ(win2.get(), desk_2_container->children()[0]);
@@ -613,7 +623,7 @@ TEST_F(DesksTest, WindowActivation) {
   // Create a new desk and activate it. Expect it's not tracking any windows
   // yet.
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
@@ -670,7 +680,7 @@ TEST_F(DesksTest, WindowActivation) {
   // desk.
   TestDeskObserver observer;
   desk_1->AddObserver(&observer);
-  controller->RemoveDesk(desk_2);
+  RemoveDesk(desk_2);
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_EQ(4u, desk_1->windows().size());
@@ -694,9 +704,9 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   auto* controller = DesksController::Get();
 
   // Create three desks other than the default initial desk.
-  controller->NewDesk();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(4u, controller->desks().size());
 
   // Create two windows on desk_1.
@@ -769,9 +779,9 @@ TEST_F(DesksTest, ActivateDeskFromOverviewDualDisplay) {
   auto* controller = DesksController::Get();
 
   // Create three desks other than the default initial desk.
-  controller->NewDesk();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(4u, controller->desks().size());
 
   // Enter overview mode.
@@ -808,9 +818,9 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   auto* controller = DesksController::Get();
 
   // Create three desks other than the default initial desk.
-  controller->NewDesk();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(4u, controller->desks().size());
 
   // Create two windows on desk_1.
@@ -886,7 +896,7 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   auto* controller = DesksController::Get();
 
   // Create one desk other than the default initial desk.
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
 
   // Create two windows on desk_1.
@@ -965,7 +975,7 @@ TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
 
   // Create one more desk other than the default initial desk, so the desks bar
   // shows up in overview mode.
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
 
   // Enter overview mode, and click on `desk_1`'s mini_view, and expect that
@@ -986,7 +996,7 @@ TEST_F(DesksTest, ActivateActiveDeskFromOverview) {
 
 TEST_F(DesksTest, MinimizedWindow) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
@@ -1022,7 +1032,7 @@ TEST_F(DesksTest, MinimizedWindow) {
 
 TEST_P(DesksTest, DragWindowToDesk) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
@@ -1109,7 +1119,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
 
 TEST_P(DesksTest, DragMinimizedWindowToDesk) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
 
@@ -1161,7 +1171,7 @@ TEST_P(DesksTest, DragMinimizedWindowToDesk) {
 
 TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
@@ -1213,7 +1223,7 @@ TEST_F(DesksTest, MruWindowTracker) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
@@ -1258,7 +1268,7 @@ TEST_F(DesksTest, NextActivatable) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
@@ -1305,7 +1315,7 @@ class TabletModeDesksTest : public DesksTest {
 
 TEST_F(TabletModeDesksTest, Backdrops) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   const Desk* desk_1 = controller->desks()[0].get();
   const Desk* desk_2 = controller->desks()[1].get();
@@ -1406,7 +1416,7 @@ TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
   // the desks bar is visible.
   overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  controller->NewDesk();
+  NewDesk();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   overview_grid = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
@@ -1425,7 +1435,7 @@ TEST_F(TabletModeDesksTest, DesksCreationRemovalCycle) {
   // correct, and there are no crashes as desks are removed.
   auto* desks_controller = DesksController::Get();
   for (size_t i = 0; i < 2 * desks_util::kMaxNumberOfDesks; ++i) {
-    desks_controller->NewDesk();
+    NewDesk();
     ASSERT_EQ(2u, desks_controller->desks().size());
     const Desk* desk_1 = desks_controller->desks()[0].get();
     const Desk* desk_2 = desks_controller->desks()[1].get();
@@ -1441,7 +1451,7 @@ TEST_F(TabletModeDesksTest, DesksCreationRemovalCycle) {
     }
     // Remove the active desk, and expect that now desk_2 should have a hidden
     // backdrop, while the container of the removed desk_1 should have none.
-    desks_controller->RemoveDesk(desk_1);
+    RemoveDesk(desk_1);
     {
       SCOPED_TRACE("Check backdrops after desk removal");
       EXPECT_TRUE(desk_2->is_active());
@@ -1456,7 +1466,7 @@ TEST_F(TabletModeDesksTest, DesksCreationRemovalCycle) {
 TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   // Create two desks with two snapped windows in each.
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_1 = desks_controller->desks()[0].get();
   Desk* desk_2 = desks_controller->desks()[1].get();
@@ -1497,7 +1507,7 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
 
 TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
@@ -1560,7 +1570,7 @@ TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
   // Setup two desks, one (desk_1) with two snapped windows, and the other
   // (desk_2) with only one snapped window.
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_1 = desks_controller->desks()[0].get();
   Desk* desk_2 = desks_controller->desks()[1].get();
@@ -1594,7 +1604,7 @@ TEST_F(TabletModeDesksTest, OverviewStateOnSwitchToDeskWithSplitView) {
 
 TEST_F(TabletModeDesksTest, RemovingDesksWithSplitView) {
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->desks()[1].get();
   auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
@@ -1610,7 +1620,7 @@ TEST_F(TabletModeDesksTest, RemovingDesksWithSplitView) {
   EXPECT_EQ(win2.get(), split_view_controller->right_window());
 
   // Removing desk_2 will cause both snapped windows to merge in SplitView.
-  desks_controller->RemoveDesk(desk_2);
+  RemoveDesk(desk_2);
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(win2.get(), split_view_controller->right_window());
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
@@ -1618,7 +1628,7 @@ TEST_F(TabletModeDesksTest, RemovingDesksWithSplitView) {
 
 TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_2 = desks_controller->desks()[1].get();
   auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
@@ -1635,7 +1645,7 @@ TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
 
   // Removing desk_2 will cause us to enter overview mode without any crashes.
   // SplitView will remain left snapped.
-  desks_controller->RemoveDesk(desk_2);
+  RemoveDesk(desk_2);
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
@@ -1644,7 +1654,7 @@ TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
 
 TEST_F(TabletModeDesksTest, BackdropsStacking) {
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, desks_controller->desks().size());
   Desk* desk_1 = desks_controller->desks()[0].get();
   Desk* desk_2 = desks_controller->desks()[1].get();
@@ -1690,8 +1700,8 @@ TEST_F(TabletModeDesksTest, BackdropsStacking) {
 
 TEST_F(DesksTest, MiniViewsTouchGestures) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(3u, controller->desks().size());
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
@@ -1762,7 +1772,7 @@ class DesksWithSplitViewTest : public AshTestBase {
 
 TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
@@ -1879,7 +1889,7 @@ TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
   // Create two desks with two windows on each, one window that belongs to the
   // first user, and the other belongs to the second.
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
@@ -2004,8 +2014,8 @@ TEST_F(DesksAcceleratorsTest, RemoveDesk) {
   auto* controller = DesksController::Get();
   // Create a few desks and remove them outside and inside overview using the
   // shortcut.
-  controller->NewDesk();
-  controller->NewDesk();
+  NewDesk();
+  NewDesk();
   ASSERT_EQ(3u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
@@ -2028,7 +2038,7 @@ TEST_F(DesksAcceleratorsTest, RemoveDesk) {
 
 TEST_F(DesksAcceleratorsTest, LeftRightDeskActivation) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
@@ -2061,7 +2071,7 @@ TEST_F(DesksAcceleratorsTest, LeftRightDeskActivation) {
 
 TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDesk) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();
@@ -2104,7 +2114,7 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDesk) {
 
 TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  NewDesk();
   ASSERT_EQ(2u, controller->desks().size());
   Desk* desk_1 = controller->desks()[0].get();
   Desk* desk_2 = controller->desks()[1].get();

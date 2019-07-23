@@ -277,7 +277,8 @@ void HandleActivateDesk(const ui::Accelerator& accelerator) {
   }
 
   if (desk_to_activate) {
-    desks_controller->ActivateDesk(desk_to_activate);
+    desks_controller->ActivateDesk(desk_to_activate,
+                                   DesksSwitchSource::kDeskSwitchShortcut);
   } else {
     const bool going_left = accelerator.key_code() == ui::VKEY_OEM_4;
     for (auto* root : Shell::GetAllRootWindows())
@@ -329,7 +330,9 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
         /*going_left=*/accelerator.key_code() == ui::VKEY_OEM_4);
   }
 
-  desks_controller->MoveWindowFromActiveDeskTo(window_to_move, target_desk);
+  desks_controller->MoveWindowFromActiveDeskTo(
+      window_to_move, target_desk,
+      DesksMoveWindowFromActiveDeskSource::kShortcut);
 
   if (in_overview) {
     // We should not exit overview as a result of this shortcut.
@@ -352,9 +355,9 @@ void HandleNewDesk() {
 
   // Add a new desk and switch to it.
   const size_t new_desk_index = desks_controller->desks().size();
-  desks_controller->NewDesk();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kKeyboard);
   const Desk* desk = desks_controller->desks()[new_desk_index].get();
-  desks_controller->ActivateDesk(desk);
+  desks_controller->ActivateDesk(desk, DesksSwitchSource::kNewDeskShortcut);
   base::RecordAction(base::UserMetricsAction("Accel_Desks_NewDesk"));
 }
 
@@ -373,7 +376,8 @@ void HandleRemoveCurrentDesk() {
 
   // TODO(afakhry): Finalize the desk removal animation outside of overview with
   // UX. https://crbug.com/977434.
-  desks_controller->RemoveDesk(desks_controller->active_desk());
+  desks_controller->RemoveDesk(desks_controller->active_desk(),
+                               DesksCreationRemovalSource::kKeyboard);
   base::RecordAction(base::UserMetricsAction("Accel_Desks_RemoveDesk"));
 }
 

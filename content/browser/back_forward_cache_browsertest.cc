@@ -72,8 +72,8 @@ std::initializer_list<RenderFrameHostImpl*> Elements(
 // Navigate from A to B and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -105,8 +105,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Basic) {
 // Navigate from A to B and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -140,8 +140,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicDocumentInitiated) {
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigateBackForwardRepeatedly) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -202,8 +202,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
     return;
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A and open a popup.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -258,9 +258,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
 // Navigate from A(B) to C and go back.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL(
+  const GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   // 1) Navigate to A(B).
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -294,8 +294,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BasicIframe) {
 // Ensure flushing the BackForwardCache works properly.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -328,8 +328,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, BackForwardCacheFlush) {
 // document from the BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Go to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -349,8 +349,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VisibleURL) {
 // Test documents are evicted from the BackForwardCache at some point.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheEviction) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   EXPECT_TRUE(NavigateToURL(shell(), url_a));  // BackForwardCache size is 0.
   RenderFrameHostImpl* rfh_a = current_frame_host();
@@ -377,9 +377,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheEviction) {
 // Test case: a1(b2) -> c3 -> a1(b2)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache1) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL(
+  const GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  const GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
 
@@ -416,9 +416,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache1) {
 // Test case: a1(b2) -> b3 -> a1(b2).
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache2) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL(
+  const GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
 
@@ -456,9 +456,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache2) {
 // Test case: a1(b2) -> b3(a4) -> a1(b2) -> b3(a4)
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache3) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL(
+  const GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL url_b(embedded_test_server()->GetURL(
+  const GURL url_b(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(a)"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
@@ -511,10 +511,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache3) {
 // Test case: a1(b2) -> b3 -> a4 -> b5 -> a1(b2).
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache4) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_ab(embedded_test_server()->GetURL(
+  const GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   std::vector<RenderFrameDeletedObserver*> rfh_observer;
 
@@ -567,19 +567,33 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, SubframeSurviveCache4) {
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DisallowedFeatureOnPage) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  // Navigate to a page that has an unsupported feature for bfcache.
-  NavigateToURL(
-      shell(),
-      embedded_test_server()->GetURL(
-          "a.com", "/back_forward_cache/page_with_dedicated_worker.html"));
-  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL(
+      "b.com", "/back_forward_cache/page_with_dedicated_worker.html"));
 
-  // Navigate away.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // Navigate to page A which is cacheable.
+  NavigateToURL(shell(), url_a);
+  EXPECT_EQ(url_a, web_contents()->GetVisibleURL());
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
 
-  // The page with the unsupported feature should be deleted (not cached).
-  delete_rfh_a.WaitUntilDeleted();
+  // Navigate to page B which has an unsupported feature for bfcache.
+  NavigateToURL(shell(), url_b);
+  EXPECT_EQ(url_b, web_contents()->GetVisibleURL());
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_b(rfh_b);
+
+  // Page A should now be cached.
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // Navigate back to page A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(url_a, web_contents()->GetVisibleURL());
+
+  // Page B with the unsupported feature should have been deleted (not cached).
+  delete_rfh_b.WaitUntilDeleted();
 }
 
 // Check that unload event handlers are not dispatched when the page goes
@@ -587,8 +601,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DisallowedFeatureOnPage) {
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        ConfirmUnloadEventNotFired) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));

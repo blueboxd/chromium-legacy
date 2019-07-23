@@ -25,6 +25,11 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   // AccountReconcilorDelegate:
   bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
+  void MaybeLogInconsistencyReason(
+      const CoreAccountId& primary_account,
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      bool first_execution) const override;
   gaia::GaiaSource GetGaiaApiSource() const override;
   CoreAccountId GetFirstGaiaAccountForReconcile(
       const std::vector<CoreAccountId>& chrome_accounts,
@@ -39,6 +44,30 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   bool ShouldRevokeTokensOnCookieDeleted() override;
 
  private:
+  // Possible inconsistency reasons between tokens and gaia cookies.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class InconsistencyReason {
+    // Consistent
+    kNone = 0,
+    // Inconsistent
+    kMissingSyncCookie = 1,
+    kSyncAccountAuthError = 2,
+    kMissingFirstWebAccountToken = 3,
+    kMissingSecondaryCookie = 4,
+    kMissingSecondaryToken = 5,
+    kCookieTokenMismatch = 6,
+    kSyncCookieNotFirst = 7,
+    kMaxValue = kSyncCookieNotFirst
+  };
+
+  // Computes inconsistency reason between tokens and gaia cookies.
+  InconsistencyReason GetInconsistencyReason(
+      const CoreAccountId& primary_account,
+      const std::vector<CoreAccountId>& chrome_accounts,
+      const std::vector<gaia::ListedAccount>& gaia_accounts,
+      bool first_execution) const;
+
   std::vector<CoreAccountId> GetChromeAccountsForReconcile(
       const std::vector<CoreAccountId>& chrome_accounts,
       const CoreAccountId& primary_account,

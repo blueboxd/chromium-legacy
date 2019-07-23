@@ -697,7 +697,7 @@ TEST_F(DesksWindowCyclingTest, CycleShowsAllDesksWindows) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   auto* desks_controller = DesksController::Get();
-  desks_controller->NewDesk();
+  desks_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desks_controller->desks().size());
   const Desk* desk_2 = desks_controller->desks()[1].get();
   ActivateDesk(desk_2);

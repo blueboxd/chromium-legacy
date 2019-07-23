@@ -21,6 +21,7 @@
 #include "build/buildflag.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -33,7 +34,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_database_service.h"
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -379,12 +379,13 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   // Ensure DB is clean.
   oauth2_service_delegate_->RevokeAllCredentials();
 
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED,
             oauth2_service_delegate_->load_credentials_state());
   oauth2_service_delegate_->LoadCredentials("");
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
@@ -398,13 +399,13 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
 
   // Perform a load from an empty DB.
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED,
             oauth2_service_delegate_->load_credentials_state());
   oauth2_service_delegate_->LoadCredentials("account_id");
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
             oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(OAuth2TokenServiceDelegate::
+  EXPECT_EQ(signin::LoadCredentialsState::
                 LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
             oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
@@ -428,7 +429,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   // is in the refresh_token map.
   EXPECT_EQ(1U, oauth2_service_delegate_->refresh_tokens_.size());
   EXPECT_EQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->refresh_tokens_[account_id].refresh_token);
   // Setup a DB with tokens that don't require upgrade and clear memory.
   oauth2_service_delegate_->UpdateCredentials(account_id, "refresh_token");
@@ -439,11 +440,12 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
 
   oauth2_service_delegate_->LoadCredentials(account_id);
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
             oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
             oauth2_service_delegate_->GetAuthError(account_id));
   EXPECT_EQ(2, token_available_count_);
@@ -477,14 +479,15 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   oauth2_service_delegate_->RevokeAllCredentials();
   ResetObserverCounts();
   // Perform a load from an empty DB.
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED,
             oauth2_service_delegate_->load_credentials_state());
   oauth2_service_delegate_->LoadCredentials("");
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
             oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(1, end_batch_changes_);
   EXPECT_EQ(0, auth_error_changed_count_);
   ExpectOneTokensLoadedNotification();
@@ -502,11 +505,12 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   ResetObserverCounts();
 
   oauth2_service_delegate_->LoadCredentials("");
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+  EXPECT_EQ(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
             oauth2_service_delegate_->load_credentials_state());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
@@ -560,8 +564,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
       primary_account.account_id));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       secondary_account.account_id));
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
@@ -601,8 +606,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
       primary_account.account_id));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       secondary_account.account_id));
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
@@ -640,8 +646,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(1, auth_error_changed_count_);
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       primary_account.account_id));
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->load_credentials_state());
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
 
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
@@ -679,14 +686,14 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       primary_account.account_id));
   EXPECT_EQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->refresh_tokens_[primary_account.account_id]
           .refresh_token);
   EXPECT_EQ(
       GoogleServiceAuthError::InvalidGaiaCredentialsReason::CREDENTIALS_MISSING,
       oauth2_service_delegate_->GetAuthError(primary_account.account_id)
           .GetInvalidGaiaCredentialsReason());
-  EXPECT_EQ(OAuth2TokenServiceDelegate::
+  EXPECT_EQ(signin::LoadCredentialsState::
                 LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
             oauth2_service_delegate_->load_credentials_state());
 
@@ -844,8 +851,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
   ASSERT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   oauth2_service_delegate_->UpdateCredentials(
-      account_id,
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      account_id, GaiaConstants::kInvalidRefreshToken);
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
   EXPECT_EQ(1, auth_error_changed_count_);
   ExpectOneTokenAvailableNotification();
@@ -913,14 +919,13 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   std::map<std::string, std::string> tokens;
   const CoreAccountId account_id("account_id");
-  tokens["AccountId-account_id"] =
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken;
+  tokens["AccountId-account_id"] = GaiaConstants::kInvalidRefreshToken;
 
   oauth2_service_delegate_->LoadAllCredentialsIntoMemory(tokens);
 
   EXPECT_EQ(1u, oauth2_service_delegate_->GetAccounts().size());
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(account_id));
-  EXPECT_STREQ(MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+  EXPECT_STREQ(GaiaConstants::kInvalidRefreshToken,
                oauth2_service_delegate_->GetRefreshToken(account_id).c_str());
 
   // The account is in authentication error.
@@ -1359,8 +1364,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
   // Start with the SigninErrorController in error state, so that it calls
   // OnErrorChanged() from AddProvider().
   oauth2_service_delegate_->UpdateCredentials(
-      "error_account_id",
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      "error_account_id", GaiaConstants::kInvalidRefreshToken);
 
   TokenServiceErrorObserver token_service_observer(
       oauth2_service_delegate_.get());
@@ -1391,8 +1395,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetAuthError) {
             oauth2_service_delegate_->GetAuthError("foo"));
   // Add account with invalid token.
   oauth2_service_delegate_->UpdateCredentials(
-      "account_id_2",
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      "account_id_2", GaiaConstants::kInvalidRefreshToken);
   EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                 GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                     CREDENTIALS_REJECTED_BY_CLIENT),
@@ -1447,8 +1450,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
       oauth2_service_delegate_.get());
   oauth2_service_delegate_->AddObserver(&token_service_observer);
   oauth2_service_delegate_->UpdateCredentials(
-      "account_id",
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken);
+      "account_id", GaiaConstants::kInvalidRefreshToken);
   EXPECT_TRUE(token_service_observer.token_available_);
   EXPECT_TRUE(token_service_observer.error_changed_);
   oauth2_service_delegate_->RemoveObserver(&token_service_observer);
@@ -1479,7 +1481,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ClearTokensOnStartup) {
   EXPECT_FALSE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
   EXPECT_STREQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->GetRefreshToken(primary_account).c_str());
   EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                 GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -1502,7 +1504,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ClearTokensOnStartup) {
   EXPECT_FALSE(
       oauth2_service_delegate_->RefreshTokenIsAvailable(secondary_account));
   EXPECT_STREQ(
-      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      GaiaConstants::kInvalidRefreshToken,
       oauth2_service_delegate_->GetRefreshToken(primary_account).c_str());
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
 }
@@ -1569,9 +1571,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
         "Signin.RefreshTokenUpdated.ToValidToken.Source",
         Source::kDiceResponseHandler_Signin, 1);
 
-    token_service.UpdateCredentials(
-        "account_id_2", OAuth2TokenServiceDelegate::kInvalidRefreshToken,
-        Source::kDiceResponseHandler_Signin);
+    token_service.UpdateCredentials("account_id_2",
+                                    GaiaConstants::kInvalidRefreshToken,
+                                    Source::kDiceResponseHandler_Signin);
     EXPECT_EQ("DiceResponseHandler::Signin",
               source_for_refresh_token_available_);
     h_tester.ExpectUniqueSample(

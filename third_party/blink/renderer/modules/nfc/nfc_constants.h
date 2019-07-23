@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_CONSTANTS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_CONSTANTS_H_
 
-#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message.h"
+#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_ndef_message_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_unrestricted_double_or_array_buffer_or_dictionary.h"
 
 namespace blink {
 
-using NDEFMessageSource = blink::StringOrArrayBufferOrNDEFMessage;
+using NDEFMessageSource = blink::StringOrArrayBufferOrNDEFMessageInit;
 using NDEFRecordData =
     blink::StringOrUnrestrictedDoubleOrArrayBufferOrDictionary;
 

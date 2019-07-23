@@ -17,7 +17,6 @@
 #include "crypto/aead.h"
 #include "crypto/random.h"
 #include "ios/web/public/thread/web_task_traits.h"
-#import "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,7 +41,7 @@ WebFrameImpl::WebFrameImpl(const std::string& frame_id,
   DCHECK(web_state);
   web_state->AddObserver(this);
 
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::BindRepeating(&WebFrameImpl::OnJavaScriptReply,
                           base::Unretained(this), base::Unretained(web_state)),
       GetScriptCommandPrefix());
@@ -269,7 +268,6 @@ void WebFrameImpl::OnJavaScriptReply(web::WebState* web_state,
 
 void WebFrameImpl::DetachFromWebState() {
   if (web_state_) {
-    web_state_->RemoveScriptCommandCallback(GetScriptCommandPrefix());
     web_state_->RemoveObserver(this);
     web_state_ = nullptr;
   }

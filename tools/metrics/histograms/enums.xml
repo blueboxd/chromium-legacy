@@ -891,6 +891,17 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Account Corruption Detected"/>
 </enum>
 
+<enum name="AccountReconcilorInconsistencyReason">
+  <int value="0" label="Consistent"/>
+  <int value="1" label="Sync cookie missing"/>
+  <int value="2" label="Sync account auth error"/>
+  <int value="3" label="First web account token missing"/>
+  <int value="4" label="Secondary cookie missing"/>
+  <int value="5" label="Secondary token missing"/>
+  <int value="6" label="Cookie Token mismatch"/>
+  <int value="7" label="Sync cookie not first"/>
+</enum>
+
 <enum name="AccountRelation">
   <int value="0" label="Empty cookie jar"/>
   <int value="1" label="No signed in, single signed out match"/>
@@ -12786,6 +12797,24 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="New key accelerator is used"/>
 </enum>
 
+<enum name="DesksCreationRemovalSource">
+  <int value="0" label="Button pressed"/>
+  <int value="1" label="Keyboard shortcut"/>
+</enum>
+
+<enum name="DesksMoveWindowFromActiveDeskSource">
+  <int value="0" label="Drag and drop"/>
+  <int value="1" label="Move-window-to-desk keyboard shortcut"/>
+</enum>
+
+<enum name="DesksSwitchSource">
+  <int value="0" label="New-desk keyboard shortcut"/>
+  <int value="1" label="Active desk was removed"/>
+  <int value="2" label="Desk-switch keyboard shortcut"/>
+  <int value="3" label="Mini_view button press"/>
+  <int value="4" label="Window on desk activated"/>
+</enum>
+
 <enum name="DesktopCaptureCounters">
   <int value="0" label="Screen capturer created."/>
   <int value="1" label="Window capturer created."/>
@@ -17462,6 +17491,7 @@ Called by update_net_error_codes.py.-->
   <int value="573" label="SelectToSpeakEnabled"/>
   <int value="574" label="BrowserGuestModeEnforced"/>
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
+  <int value="576" label="CrostiniRootAccessAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25025,6 +25055,13 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Unable to open"/>
 </enum>
 
+<enum name="FileManagerFormatFileSystemType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="FAT32"/>
+  <int value="2" label="exFAT"/>
+  <int value="3" label="NTFS"/>
+</enum>
+
 <enum name="FileManagerListType">
   <int value="0" label="Uninitialized"/>
   <int value="1" label="List view (detail)"/>
@@ -29649,6 +29686,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="HttpServerPropertiesUpdatePrefsLocation">
+  <obsolete>
+    Deprecated as of July 2019.
+  </obsolete>
   <int value="0" label="SUPPORTS_SPDY"/>
   <int value="1" label="HTTP_11_REQUIRED"/>
   <int value="2" label="SET_ALTERNATIVE_SERVICE"/>

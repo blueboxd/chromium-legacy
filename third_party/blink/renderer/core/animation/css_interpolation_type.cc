@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/data_equivalency.h"
@@ -26,8 +27,7 @@
 
 namespace blink {
 
-class ResolvedVariableChecker
-    : public CSSInterpolationType::CSSConversionChecker {
+class ResolvedVariableChecker : public CSSInterpolationType::ConversionChecker {
  public:
   ResolvedVariableChecker(CSSPropertyID property,
                           const CSSValue* variable_reference,
@@ -37,14 +37,21 @@ class ResolvedVariableChecker
         resolved_value_(resolved_value) {}
 
  private:
-  bool IsValid(const StyleResolverState& state,
-               const InterpolationValue& underlying) const final {
+  bool IsValid(const InterpolationEnvironment& environment,
+               const InterpolationValue&) const final {
+    const auto& css_environment = ToCSSInterpolationEnvironment(environment);
     // TODO(alancutter): Just check the variables referenced instead of doing a
     // full CSSValue resolve.
     bool omit_animation_tainted = false;
-    const CSSValue* resolved_value =
-        CSSVariableResolver(state).ResolveVariableReferences(
-            property_, *variable_reference_, omit_animation_tainted);
+    const CSSValue* resolved_value = nullptr;
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      resolved_value = css_environment.Resolve(
+          PropertyHandle(CSSProperty::Get(property_)), variable_reference_);
+    } else {
+      const StyleResolverState& state = css_environment.GetState();
+      resolved_value = CSSVariableResolver(state).ResolveVariableReferences(
+          property_, *variable_reference_, omit_animation_tainted);
+    }
     return DataEquivalent(resolved_value_.Get(), resolved_value);
   }
 
@@ -94,14 +101,22 @@ class ResolvedRegisteredCustomPropertyChecker
  private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    DCHECK(ToCSSInterpolationEnvironment(environment).HasVariableResolver());
-    bool cycle_detected = false;
-    scoped_refptr<CSSVariableData> resolved_tokens =
-        ToCSSInterpolationEnvironment(environment)
-            .VariableResolver()
-            .ResolveCustomPropertyAnimationKeyframe(*declaration_,
-                                                    cycle_detected);
-    DCHECK(!cycle_detected);
+    const auto& css_environment = ToCSSInterpolationEnvironment(environment);
+    scoped_refptr<CSSVariableData> resolved_tokens = nullptr;
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      const CSSValue* resolved = css_environment.Resolve(
+          PropertyHandle(declaration_->GetName()), declaration_);
+      if (const auto* decl = DynamicTo<CSSCustomPropertyDeclaration>(resolved))
+        resolved_tokens = decl->Value();
+    } else {
+      DCHECK(css_environment.HasVariableResolver());
+      bool cycle_detected = false;
+      resolved_tokens = ToCSSInterpolationEnvironment(environment)
+                            .VariableResolver()
+                            .ResolveCustomPropertyAnimationKeyframe(
+                                *declaration_, cycle_detected);
+      DCHECK(!cycle_detected);
+    }
     return DataEquivalent(resolved_tokens, resolved_tokens_);
   }
 
@@ -145,18 +160,23 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
     return MaybeConvertNeutral(underlying, conversion_checkers);
 
   if (GetProperty().IsCSSCustomProperty()) {
-    DCHECK(css_environment.HasVariableResolver());
     return MaybeConvertCustomPropertyDeclaration(
-        To<CSSCustomPropertyDeclaration>(*value), state,
-        css_environment.VariableResolver(), conversion_checkers);
+        To<CSSCustomPropertyDeclaration>(*value), environment,
+        conversion_checkers);
   }
 
   if (value->IsVariableReferenceValue() ||
       value->IsPendingSubstitutionValue()) {
-    bool omit_animation_tainted = false;
-    const CSSValue* resolved_value =
-        CSSVariableResolver(state).ResolveVariableReferences(
-            CssProperty().PropertyID(), *value, omit_animation_tainted);
+    const CSSValue* resolved_value = nullptr;
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      resolved_value = css_environment.Resolve(GetProperty(), value);
+    } else {
+      bool omit_animation_tainted = false;
+      resolved_value = CSSVariableResolver(state).ResolveVariableReferences(
+          CssProperty().PropertyID(), *value, omit_animation_tainted);
+    }
+
+    DCHECK(resolved_value);
     conversion_checkers.push_back(std::make_unique<ResolvedVariableChecker>(
         CssProperty().PropertyID(), value, resolved_value));
     value = resolved_value;
@@ -176,9 +196,12 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingleInternal(
 
 InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     const CSSCustomPropertyDeclaration& declaration,
-    const StyleResolverState& state,
-    CSSVariableResolver& variable_resolver,
+    const InterpolationEnvironment& environment,
     ConversionCheckers& conversion_checkers) const {
+  const CSSInterpolationEnvironment& css_environment =
+      ToCSSInterpolationEnvironment(environment);
+  const StyleResolverState& state = css_environment.GetState();
+
   const AtomicString& name = declaration.GetName();
   DCHECK_EQ(GetProperty().CustomPropertyName(), name);
 
@@ -209,10 +232,20 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
 
   scoped_refptr<CSSVariableData> resolved_tokens;
   if (declaration.Value()->NeedsVariableResolution()) {
-    bool cycle_detected = false;
-    resolved_tokens = variable_resolver.ResolveCustomPropertyAnimationKeyframe(
-        declaration, cycle_detected);
-    DCHECK(!cycle_detected);
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      const CSSValue* resolved =
+          css_environment.Resolve(GetProperty(), &declaration);
+      if (const auto* decl = DynamicTo<CSSCustomPropertyDeclaration>(resolved))
+        resolved_tokens = decl->Value();
+    } else {
+      CSSVariableResolver& variable_resolver =
+          css_environment.VariableResolver();
+      bool cycle_detected = false;
+      resolved_tokens =
+          variable_resolver.ResolveCustomPropertyAnimationKeyframe(
+              declaration, cycle_detected);
+      DCHECK(!cycle_detected);
+    }
     conversion_checkers.push_back(
         std::make_unique<ResolvedRegisteredCustomPropertyChecker>(
             declaration, resolved_tokens));
@@ -283,8 +316,23 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   scoped_refptr<CSSVariableData> variable_data = CSSVariableData::Create(
       CSSParserTokenRange(tokens), is_animation_tainted,
       needs_variable_resolution, KURL(), WTF::TextEncoding());
-  ComputedStyle& style = *state.Style();
   const PropertyHandle property = GetProperty();
+
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    // When cascade is enabled, we need to go through the StyleBuilder,
+    // since the computed value is produced during ApplyProperty. (Without
+    // this, we'd end up with values like 10em on the computed style).
+    //
+    // TODO(andruud): Avoid making the CSSCustomPropertyDeclaration by allowing
+    // any CSSValue in CustomProperty::ApplyValue.
+    const CSSValue* value = MakeGarbageCollected<CSSCustomPropertyDeclaration>(
+        property.CustomPropertyName(), std::move(variable_data));
+    StyleBuilder::ApplyProperty(GetProperty().GetCSSPropertyName(), state,
+                                *value);
+    return;
+  }
+
+  ComputedStyle& style = *state.Style();
   const AtomicString& property_name = property.CustomPropertyName();
   bool inherits = Registration().Inherits();
   style.SetVariableData(property_name, std::move(variable_data), inherits);

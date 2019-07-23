@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -16,7 +17,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using signin_metrics::SourceForRefreshTokenOperation;
@@ -69,8 +69,8 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     PrefService* user_prefs,
     std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
-    : OAuth2TokenService(std::move(delegate)),
-      user_prefs_(user_prefs),
+    : user_prefs_(user_prefs),
+      delegate_(std::move(delegate)),
       all_credentials_loaded_(false) {
   DCHECK(user_prefs_);
   DCHECK(delegate_);
@@ -133,6 +133,15 @@ void ProfileOAuth2TokenService::RegisterProfilePrefs(
 #endif
   registry->RegisterStringPref(prefs::kGoogleServicesSigninScopedDeviceId,
                                std::string());
+}
+
+OAuth2TokenServiceDelegate* ProfileOAuth2TokenService::GetDelegate() {
+  return delegate_.get();
+}
+
+const OAuth2TokenServiceDelegate* ProfileOAuth2TokenService::GetDelegate()
+    const {
+  return delegate_.get();
 }
 
 void ProfileOAuth2TokenService::AddObserver(
@@ -401,9 +410,9 @@ void ProfileOAuth2TokenService::OnRefreshTokenRevoked(
 void ProfileOAuth2TokenService::OnRefreshTokensLoaded() {
   all_credentials_loaded_ = true;
 
-  DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+  DCHECK_NE(signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED,
             GetDelegate()->load_credentials_state());
-  DCHECK_NE(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+  DCHECK_NE(signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS,
             GetDelegate()->load_credentials_state());
 
   // Reset the state for update refresh token operations to Unknown as this
@@ -435,21 +444,21 @@ void ProfileOAuth2TokenService::CancelRequestsForAccount(
 
 bool ProfileOAuth2TokenService::HasLoadCredentialsFinishedWithNoErrors() {
   switch (GetDelegate()->load_credentials_state()) {
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED:
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS:
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_NOT_STARTED:
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_IN_PROGRESS:
       // LoadCredentials has not finished.
       return false;
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED:
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_DB_ERRORS:
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_DECRYPT_ERRORS:
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS:
       // LoadCredentials finished, but with errors
       return false;
-    case OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
-    case OAuth2TokenServiceDelegate::
+    case signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS:
+    case signin::LoadCredentialsState::
         LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT:
       // Load credentials finished with success.
       return true;

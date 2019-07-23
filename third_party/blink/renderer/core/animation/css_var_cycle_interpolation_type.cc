@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -27,12 +28,15 @@ class CycleChecker : public InterpolationType::ConversionChecker {
  private:
   bool IsValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {
-    DCHECK(ToCSSInterpolationEnvironment(environment).HasVariableResolver());
-    CSSVariableResolver& variable_resolver =
-        ToCSSInterpolationEnvironment(environment).VariableResolver();
+    const auto& css_environment = ToCSSInterpolationEnvironment(environment);
     bool cycle_detected = false;
-    variable_resolver.ResolveCustomPropertyAnimationKeyframe(*declaration_,
-                                                             cycle_detected);
+    if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+      cycle_detected = !css_environment.Resolve(
+          PropertyHandle(declaration_->GetName()), declaration_);
+    } else {
+      css_environment.VariableResolver().ResolveCustomPropertyAnimationKeyframe(
+          *declaration_, cycle_detected);
+    }
     return cycle_detected == cycle_detected_;
   }
 
@@ -63,12 +67,16 @@ InterpolationValue CSSVarCycleInterpolationType::MaybeConvertSingle(
     return nullptr;
   }
 
-  DCHECK(ToCSSInterpolationEnvironment(environment).HasVariableResolver());
-  CSSVariableResolver& variable_resolver =
-      ToCSSInterpolationEnvironment(environment).VariableResolver();
+  const auto& css_environment = ToCSSInterpolationEnvironment(environment);
+
   bool cycle_detected = false;
-  variable_resolver.ResolveCustomPropertyAnimationKeyframe(declaration,
-                                                           cycle_detected);
+  if (RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    cycle_detected = !css_environment.Resolve(GetProperty(), &declaration);
+  } else {
+    css_environment.VariableResolver().ResolveCustomPropertyAnimationKeyframe(
+        declaration, cycle_detected);
+  }
+
   conversion_checkers.push_back(
       std::make_unique<CycleChecker>(declaration, cycle_detected));
   return cycle_detected ? CreateCycleDetectedValue() : nullptr;

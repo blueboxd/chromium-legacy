@@ -25,7 +25,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager_test_util.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -242,15 +241,13 @@ TEST_F(CrOSOAuthDelegateTest, RefreshTokensAreLoadedForNonRegularProfiles) {
   EXPECT_FALSE(observer.refresh_tokens_loaded_);
   delegate->LoadCredentials("" /* primary_account_id */);
   EXPECT_TRUE(observer.refresh_tokens_loaded_);
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
-                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+  EXPECT_EQ(LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate->load_credentials_state());
 }
 
 TEST_F(CrOSOAuthDelegateTest,
        RefreshTokenIsAvailableReturnsTrueForValidGaiaTokens) {
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
-                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+  EXPECT_EQ(LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate_->load_credentials_state());
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
@@ -266,8 +263,7 @@ TEST_F(CrOSOAuthDelegateTest,
 
 TEST_F(CrOSOAuthDelegateTest,
        RefreshTokenIsAvailableReturnsTrueForInvalidGaiaTokens) {
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
-                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+  EXPECT_EQ(LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate_->load_credentials_state());
 
   EXPECT_FALSE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
@@ -484,8 +480,7 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccountsWithInvalidTokens) {
 
 TEST_F(CrOSOAuthDelegateTest,
        RefreshTokenMustBeAvailableForAllAccountsReturnedByGetAccounts) {
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LoadCredentialsState::
-                LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+  EXPECT_EQ(LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate_->load_credentials_state());
   EXPECT_TRUE(delegate_->GetAccounts().empty());
   const std::string kUserEmail2 = "random-email2@example.com";

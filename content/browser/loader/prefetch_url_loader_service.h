@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,8 +42,9 @@ class URLLoaderFactoryGetter;
 class URLLoaderThrottle;
 
 class CONTENT_EXPORT PrefetchURLLoaderService final
-    : public base::RefCountedThreadSafe<PrefetchURLLoaderService,
-                                        BrowserThread::DeleteOnIOThread>,
+    : public base::RefCountedThreadSafe<
+          PrefetchURLLoaderService,
+          NavigationURLLoaderImpl::DeleteOnLoaderThread>,
       public blink::mojom::RendererPreferenceWatcher,
       public network::mojom::URLLoaderFactory {
  public:
@@ -96,7 +98,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
 
  private:
   friend class base::DeleteHelper<content::PrefetchURLLoaderService>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend struct NavigationURLLoaderImpl::DeleteOnLoaderThread;
   struct BindContext;
 
   ~PrefetchURLLoaderService() override;
@@ -122,6 +124,8 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
 
   scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+  BrowserContext* browser_context_ = nullptr;
+  // Not used when NavigationLoaderOnUI is enabled.
   ResourceContext* resource_context_ = nullptr;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 

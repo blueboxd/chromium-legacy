@@ -105,6 +105,7 @@ namespace http://www.w3.org/1999/xhtml
     property dataset
     property dir
     property dispatchEvent
+    property displayLock
     property draggable
     property enterKeyHint
     property firstChild
@@ -167,6 +168,7 @@ namespace http://www.w3.org/1999/xhtml
     property onabort
     property onactivateinvisible
     property onauxclick
+    property onbeforeactivate
     property onbeforecopy
     property onbeforecut
     property onbeforepaste
@@ -1291,6 +1293,7 @@ namespace http://www.w3.org/2000/svg
     property createShadowRoot
     property dataset
     property dispatchEvent
+    property displayLock
     property firstChild
     property firstElementChild
     property focus
@@ -1340,6 +1343,7 @@ namespace http://www.w3.org/2000/svg
     property onabort
     property onactivateinvisible
     property onauxclick
+    property onbeforeactivate
     property onbeforecopy
     property onbeforecut
     property onbeforepaste

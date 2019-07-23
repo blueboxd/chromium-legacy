@@ -24,7 +24,7 @@ static const char* kCommandPrefix = "console";
 JavaScriptConsoleTabHelper::JavaScriptConsoleTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
   web_state->AddObserver(this);
-  web_state->AddScriptCommandCallback(
+  subscription_ = web_state->AddScriptCommandCallback(
       base::BindRepeating(
           &JavaScriptConsoleTabHelper::OnJavaScriptConsoleMessage,
           base::Unretained(this)),
@@ -62,7 +62,6 @@ void JavaScriptConsoleTabHelper::OnJavaScriptConsoleMessage(
 }
 
 void JavaScriptConsoleTabHelper::WebStateDestroyed(web::WebState* web_state) {
-  web_state->RemoveScriptCommandCallback(kCommandPrefix);
   web_state->RemoveObserver(this);
   web_state_ = nullptr;
 }
@@ -75,7 +74,6 @@ void JavaScriptConsoleTabHelper::SetDelegate(
 JavaScriptConsoleTabHelper::~JavaScriptConsoleTabHelper() {
   if (web_state_) {
     web_state_->RemoveObserver(this);
-    web_state_->RemoveScriptCommandCallback(kCommandPrefix);
     web_state_ = nullptr;
   }
 }

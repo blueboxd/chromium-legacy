@@ -21,11 +21,11 @@ struct COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) PendingRemoteState {
   PendingRemoteState();
   PendingRemoteState(ScopedMessagePipeHandle pipe, uint32_t version);
   PendingRemoteState(const PendingRemoteState&) = delete;
-  PendingRemoteState(PendingRemoteState&&);
+  PendingRemoteState(PendingRemoteState&&) noexcept;
   ~PendingRemoteState();
 
   PendingRemoteState& operator=(const PendingRemoteState&) = delete;
-  PendingRemoteState& operator=(PendingRemoteState&&);
+  PendingRemoteState& operator=(PendingRemoteState&&) noexcept;
 
   void reset();
 

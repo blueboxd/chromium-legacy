@@ -223,7 +223,7 @@ TEST_F(OverviewWindowDragControllerWithDesksTest,
        SwitchDragToCloseToNormalDragWhendraggedToDesk) {
   UpdateDisplay("600x800");
   auto* controller = DesksController::Get();
-  controller->NewDesk();
+  controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, controller->desks().size());
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));

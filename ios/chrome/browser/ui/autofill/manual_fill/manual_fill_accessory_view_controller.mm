@@ -231,7 +231,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 }
 
 - (UIColor*)activeTintColor {
-  return [UIColor.blackColor colorWithAlphaComponent:0.5];
+  return [UIColor colorWithWhite:0.5 alpha:1.0];
 }
 
 - (void)animateKeyboardButtonHidden:(BOOL)hidden {

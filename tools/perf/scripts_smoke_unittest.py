@@ -33,19 +33,23 @@ class ScriptsSmokeTest(unittest.TestCase):
     return_code = proc.returncode
     return return_code, stdout
 
+  # TODO(crbug.com/985712): Re-enable after new command line interface lands.
+  @decorators.Disabled('all')
   def testRunBenchmarkHelp(self):
-    return_code, stdout = self.RunPerfScript('run_benchmark help')
+    return_code, stdout = self.RunPerfScript('run_benchmark --help')
     self.assertEquals(return_code, 0, stdout)
-    self.assertIn('Available commands are', stdout)
+    self.assertIn('usage: run_benchmark', stdout)
 
   def testRunBenchmarkRunListsOutBenchmarks(self):
     return_code, stdout = self.RunPerfScript('run_benchmark run')
     self.assertIn('Pass --browser to list benchmarks', stdout)
     self.assertNotEquals(return_code, 0)
 
+  # TODO(crbug.com/985712): Re-enable after new command line interface lands.
+  @decorators.Disabled('all')
   def testRunBenchmarkRunNonExistingBenchmark(self):
     return_code, stdout = self.RunPerfScript('run_benchmark foo')
-    self.assertIn('No benchmark named "foo"', stdout)
+    self.assertIn('no such benchmark: foo', stdout)
     self.assertNotEquals(return_code, 0)
 
   def testRunRecordWprHelp(self):

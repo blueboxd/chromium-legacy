@@ -11,7 +11,7 @@ source_set("promos") {
   ]
   deps = [
     "//base",
-    "//components/signin/core/browser",
+    "//components/signin/public/base",
     "//components/unified_consent",
     "//components/version_info",
     "//ios/chrome/app:tests_hook",

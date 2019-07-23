@@ -357,6 +357,16 @@ void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
 }
 
+void SkiaOutputSurfaceImpl::ScheduleOverlays(OverlayCandidateList overlays) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // impl_on_gpu_ is released on the GPU thread by a posted task from
+  // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
+  auto callback =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ScheduleOverlays,
+                     base::Unretained(impl_on_gpu_.get()), std::move(overlays));
+  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
+}
+
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     const RenderPassId& id,
     const gfx::Size& surface_size,
@@ -558,6 +568,7 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event,
     *result = false;
   } else {
     capabilities_ = impl_on_gpu_->capabilities();
+    is_displayed_as_overlay_ = impl_on_gpu_->IsDisplayedAsOverlay();
     *result = true;
   }
 }
@@ -681,7 +692,7 @@ uint32_t SkiaOutputSurfaceImpl::GetFramebufferCopyTextureFormat() {
 }
 
 bool SkiaOutputSurfaceImpl::IsDisplayedAsOverlayPlane() const {
-  return false;
+  return is_displayed_as_overlay_;
 }
 
 unsigned SkiaOutputSurfaceImpl::GetOverlayTextureId() const {

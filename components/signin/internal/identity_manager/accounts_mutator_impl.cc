@@ -13,7 +13,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/core_account_id.h"
-#include "google_apis/gaia/oauth2_token_service_delegate.h"
+#include "google_apis/gaia/gaia_constants.h"
 
 namespace identity {
 
@@ -83,7 +83,7 @@ void AccountsMutatorImpl::InvalidateRefreshTokenForPrimaryAccount(
   AccountInfo primary_account_info =
       primary_account_manager_->GetAuthenticatedAccountInfo();
   AddOrUpdateAccount(primary_account_info.gaia, primary_account_info.email,
-                     OAuth2TokenServiceDelegate::kInvalidRefreshToken,
+                     GaiaConstants::kInvalidRefreshToken,
                      primary_account_info.is_under_advanced_protection, source);
 }
 

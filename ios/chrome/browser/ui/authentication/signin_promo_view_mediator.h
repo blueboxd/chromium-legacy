@@ -15,6 +15,10 @@
 @class SigninPromoViewConfigurator;
 @protocol SigninPromoViewConsumer;
 
+namespace signin_metrics {
+enum class AccessPoint;
+}
+
 namespace ios {
 class ChromeBrowserState;
 

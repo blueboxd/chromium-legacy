@@ -625,6 +625,7 @@ void Controller::ExecuteScript(const std::string& script_path,
                                std::unique_ptr<TriggerContext> context,
                                AutofillAssistantState end_state) {
   DCHECK(!script_tracker()->running());
+
   EnterState(AutofillAssistantState::RUNNING);
 
   touchable_element_area()->Clear();
@@ -777,11 +778,11 @@ bool Controller::NeedsUI() const {
          state_ != AutofillAssistantState::STOPPED;
 }
 
-void Controller::Start(const GURL& deeplink_url,
+bool Controller::Start(const GURL& deeplink_url,
                        std::unique_ptr<TriggerContext> trigger_context) {
   if (state_ != AutofillAssistantState::INACTIVE &&
       state_ != AutofillAssistantState::TRACKING)
-    return;
+    return false;
 
   trigger_context_ = std::move(trigger_context);
   InitFromParameters();
@@ -795,6 +796,7 @@ void Controller::Start(const GURL& deeplink_url,
       IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(deeplink_url_.host())));
   SetProgress(kAutostartInitialProgress);
   EnterState(AutofillAssistantState::STARTING);
+  return true;
 }
 
 AutofillAssistantState Controller::GetState() {

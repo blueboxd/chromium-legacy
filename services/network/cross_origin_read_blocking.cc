@@ -28,6 +28,7 @@
 #include "services/network/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response_info.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 using base::StringPiece;
 using MimeType = network::CrossOriginReadBlocking::MimeType;
@@ -787,10 +788,12 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // |request_initiator| (i.e. vetted against |request_initiator|site_lock|).
   constexpr mojom::RequestMode kOverreachingRequestMode =
       mojom::RequestMode::kNoCors;
+  // COEP is not supported when OOR-CORS is disabled.
   if (CrossOriginResourcePolicy::kBlock ==
-      CrossOriginResourcePolicy::Verify(request_url, request_initiator,
-                                        response, kOverreachingRequestMode,
-                                        request_initiator_site_lock)) {
+      CrossOriginResourcePolicy::Verify(
+          request_url, request_initiator, response, kOverreachingRequestMode,
+          request_initiator_site_lock,
+          mojom::CrossOriginEmbedderPolicy::kNone)) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.
     return kBlock;

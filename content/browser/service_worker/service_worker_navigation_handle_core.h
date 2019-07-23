@@ -53,7 +53,9 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
     provider_host_ = std::move(provider_host);
   }
 
-  ServiceWorkerProviderHost* provider_host() { return provider_host_.get(); }
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host() {
+    return provider_host_;
+  }
 
   void set_interceptor(
       std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor) {

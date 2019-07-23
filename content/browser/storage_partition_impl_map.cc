@@ -568,14 +568,16 @@ void StoragePartitionImplMap::PostCreateInitialization(
                        partition->GetServiceWorkerContext(),
                        browser_context_->GetResourceContext()));
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &PrefetchURLLoaderService::InitializeResourceContext,
-            partition->GetPrefetchURLLoaderService(),
-            browser_context_->GetResourceContext(), request_context_getter,
-            base::RetainedRef(
-                ChromeBlobStorageContext::GetFor(browser_context_))));
+    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {BrowserThread::IO},
+          base::BindOnce(
+              &PrefetchURLLoaderService::InitializeResourceContext,
+              partition->GetPrefetchURLLoaderService(),
+              browser_context_->GetResourceContext(), request_context_getter,
+              base::RetainedRef(
+                  ChromeBlobStorageContext::GetFor(browser_context_))));
+    }
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},

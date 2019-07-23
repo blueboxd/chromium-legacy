@@ -19,7 +19,9 @@ using namespace testing;
 namespace {
 
 const char kTestAppId[] = "test_app_id";
-const char kTestMessageId[] = "test_message_id";
+const char kTestMessageId[] = "0:1563805165426489%0bb84dcff9fd7ecd";
+const char kTestMessageIdSecondaryUser[] =
+    "0:1563805165426489%20#0bb84dcff9fd7ecd";
 const char kOriginalMessageId[] = "test_original_message_id";
 const char kSenderGuid[] = "test_sender_guid";
 
@@ -54,9 +56,10 @@ class SharingFCMHandlerTest : public Test {
 
   // Creates a gcm::IncomingMessage with SharingMessage and defaults.
   gcm::IncomingMessage CreateGCMIncomingMessage(
+      const std::string& message_id,
       const SharingMessage& sharing_message) {
     gcm::IncomingMessage incoming_message;
-    incoming_message.message_id = kTestMessageId;
+    incoming_message.message_id = message_id;
     sharing_message.SerializeToString(&incoming_message.raw_data);
     return incoming_message;
   }
@@ -85,7 +88,7 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
   sharing_message.mutable_ack_message()->set_original_message_id(
       kOriginalMessageId);
   gcm::IncomingMessage incoming_message =
-      CreateGCMIncomingMessage(sharing_message);
+      CreateGCMIncomingMessage(kTestMessageId, sharing_message);
 
   EXPECT_CALL(mock_sharing_message_handler_,
               OnMessage(ProtoEquals(sharing_message)));
@@ -102,7 +105,7 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   sharing_message.set_sender_guid(kSenderGuid);
   sharing_message.mutable_ping_message();
   gcm::IncomingMessage incoming_message =
-      CreateGCMIncomingMessage(sharing_message);
+      CreateGCMIncomingMessage(kTestMessageId, sharing_message);
 
   SharingMessage sharing_ack_message;
   sharing_ack_message.mutable_ack_message()->set_original_message_id(
@@ -130,5 +133,29 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
   EXPECT_CALL(mock_sharing_fcm_sender_, SendMessageToDevice(_, _, _, _))
       .Times(0);
   sharing_fcm_handler_->RemoveSharingHandler(SharingMessage::kPingMessage);
+  sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
+}
+
+// Test for handling of SharingMessage payload other than AckMessage for
+// secondary users in Android.
+TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
+  SharingMessage sharing_message;
+  sharing_message.set_sender_guid(kSenderGuid);
+  sharing_message.mutable_ping_message();
+  gcm::IncomingMessage incoming_message =
+      CreateGCMIncomingMessage(kTestMessageIdSecondaryUser, sharing_message);
+
+  SharingMessage sharing_ack_message;
+  sharing_ack_message.mutable_ack_message()->set_original_message_id(
+      kTestMessageId);
+
+  // Tests OnMessage flow in SharingFCMHandler after handler is added.
+  EXPECT_CALL(mock_sharing_message_handler_,
+              OnMessage(ProtoEquals(sharing_message)));
+  EXPECT_CALL(mock_sharing_fcm_sender_,
+              SendMessageToDevice(Eq(kSenderGuid), Eq(kAckTimeToLive),
+                                  ProtoEquals(sharing_ack_message), _));
+  sharing_fcm_handler_->AddSharingHandler(SharingMessage::kPingMessage,
+                                          &mock_sharing_message_handler_);
   sharing_fcm_handler_->OnMessage(kTestAppId, incoming_message);
 }

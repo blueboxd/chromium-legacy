@@ -100,7 +100,7 @@ class BookmarkAppInstallFinalizerTest : public ChromeRenderViewHostTestHarness {
     info->title = base::ASCIIToUTF16(kWebAppTitle);
 
     web_app::InstallFinalizer::FinalizeOptions options;
-    options.source = web_app::InstallFinalizer::Source::kPolicyInstalled;
+    options.install_source = WebappInstallSource::EXTERNAL_POLICY;
 
     web_app::AppId app_id;
     base::RunLoop run_loop;
@@ -146,6 +146,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallSucceeds) {
 
   base::RunLoop run_loop;
   web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
   web_app::AppId app_id;
   bool callback_called = false;
 
@@ -182,6 +183,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, BasicInstallFails) {
 
   base::RunLoop run_loop;
   web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
   bool callback_called = false;
 
   installer.FinalizeInstall(
@@ -211,7 +213,8 @@ TEST_F(BookmarkAppInstallFinalizerTest, ConcurrentInstallSucceeds) {
 
   bool callback1_called = false;
   bool callback2_called = false;
-  const web_app::InstallFinalizer::FinalizeOptions options;
+  web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
 
   // Start install finalization for the 1st app
   {
@@ -261,7 +264,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, DefaultInstalledSucceeds) {
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
-  options.source = web_app::InstallFinalizer::Source::kDefaultInstalled;
+  options.install_source = WebappInstallSource::EXTERNAL_DEFAULT;
 
   base::RunLoop run_loop;
   installer.FinalizeInstall(
@@ -290,7 +293,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, PolicyInstalledSucceeds) {
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
-  options.source = web_app::InstallFinalizer::Source::kPolicyInstalled;
+  options.install_source = WebappInstallSource::EXTERNAL_POLICY;
 
   base::RunLoop run_loop;
   installer.FinalizeInstall(
@@ -318,7 +321,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, SystemInstalledSucceeds) {
   info->title = base::ASCIIToUTF16(kWebAppTitle);
 
   web_app::InstallFinalizer::FinalizeOptions options;
-  options.source = web_app::InstallFinalizer::Source::kSystemInstalled;
+  options.install_source = WebappInstallSource::SYSTEM_DEFAULT;
 
   base::RunLoop run_loop;
   installer.FinalizeInstall(
@@ -346,6 +349,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NoNetworkInstallSucceeds) {
   info->app_url = kWebAppUrl;
 
   web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::ARC;
   options.no_network_install = true;
 
   base::RunLoop run_loop;
@@ -375,6 +379,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, ForceLaunchContainer) {
   info->open_as_window = true;
 
   web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
   // Force launch as a tab.
   options.force_launch_container = web_app::LaunchContainer::kTab;
 
@@ -413,6 +418,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, CanSkipAppUpdateForSync) {
 
   base::RunLoop run_loop;
   web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::SYNC;
 
   installer.FinalizeInstall(
       *info, options,
@@ -550,6 +556,7 @@ TEST_F(BookmarkAppInstallFinalizerTest, NotLocallyInstalled) {
   info->app_url = kWebAppUrl;
 
   web_app::InstallFinalizer::FinalizeOptions options;
+  options.install_source = WebappInstallSource::INTERNAL_DEFAULT;
   options.locally_installed = false;
 
   base::RunLoop run_loop;

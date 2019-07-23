@@ -46,3 +46,51 @@ action("cached_jinja_templates") {
     rebase_path(stamp_file, root_build_dir),
   ]
 }
+
+# Python library that supports Web IDL compiler and database
+group("web_idl_pylib") {
+  data = [
+    "web_idl/argument.py",
+    "web_idl/ast_group.py",
+    "web_idl/attribute.py",
+    "web_idl/callback_function.py",
+    "web_idl/callback_interface.py",
+    "web_idl/common.py",
+    "web_idl/constant.py",
+    "web_idl/constructor.py",
+    "web_idl/database.py",
+    "web_idl/dictionary.py",
+    "web_idl/enumeration.py",
+    "web_idl/exposure.py",
+    "web_idl/extended_attribute.py",
+    "web_idl/identifier_ir_map.py",
+    "web_idl/idl_compiler.py",
+    "web_idl/idl_member.py",
+    "web_idl/idl_type.py",
+    "web_idl/includes.py",
+    "web_idl/interface.py",
+    "web_idl/ir_builder.py",
+    "web_idl/namespace.py",
+    "web_idl/operation.py",
+    "web_idl/reference.py",
+    "web_idl/typedef.py",
+    "web_idl/user_defined_type.py",
+    "web_idl/values.py",
+  ]
+  data += [  # dependencies to Python libraries
+    "//third_party/blink/renderer/build/scripts/blinkbuild/name_style_converter.py",
+
+    # PLY (Python Lex-Yacc)
+    "//third_party/ply/lex.py",
+    "//third_party/ply/yacc.py",
+
+    # Web IDL lexer/parser (base parser)
+    "//tools/idl_parser/idl_lexer.py",
+    "//tools/idl_parser/idl_node.py",
+    "//tools/idl_parser/idl_parser.py",
+
+    # Blink IDL lexer/parser/constructor
+    "blink_idl_lexer.py",
+    "blink_idl_parser.py",
+  ]
+}

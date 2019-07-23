@@ -156,7 +156,7 @@ const int64_t kJavaScriptExecutionTimeoutInSeconds = 1;
       [self.injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
   web::WebState* webState = self.webStateList->GetActiveWebState();
   if (webState) {
-    [manager setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
+    [manager setWebFramesManager:webState->GetWebFramesManager()];
   }
   return manager;
 }

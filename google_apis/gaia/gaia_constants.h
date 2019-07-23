@@ -47,6 +47,8 @@ extern const char kObfuscatedGaiaId[];
 // Used by wallet sign in helper.
 extern const char kClientOAuthEmailKey[];
 
+// Refresh token that is guaranteed to be invalid.
+extern const char kInvalidRefreshToken[];
 }  // namespace GaiaConstants
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_CONSTANTS_H_

@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
-#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/autofill/core/common/autofill_util.h"
 
 using content::WebContents;
 
@@ -41,8 +41,7 @@ TouchToFillController::~TouchToFillController() = default;
 
 // static
 bool TouchToFillController::AllowedForWebContents(WebContents* web_contents) {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kTouchToFillAndroid);
+  return autofill::IsTouchToFillEnabled();
 }
 
 void TouchToFillController::Show(

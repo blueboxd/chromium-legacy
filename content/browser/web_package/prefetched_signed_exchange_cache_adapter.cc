@@ -4,21 +4,40 @@
 
 #include "content/browser/web_package/prefetched_signed_exchange_cache_adapter.h"
 
+#include "base/task/post_task.h"
+#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "storage/browser/blob/blob_builder_from_stream.h"
 #include "storage/browser/blob/blob_data_handle.h"
 
 namespace content {
+namespace {
+
+void AbortAndDeleteBlobBuilder(
+    std::unique_ptr<storage::BlobBuilderFromStream> blob_builder) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    blob_builder->Abort();
+    return;
+  }
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&storage::BlobBuilderFromStream::Abort,
+                     std::move(blob_builder)));
+}
+
+}  // namespace
 
 PrefetchedSignedExchangeCacheAdapter::PrefetchedSignedExchangeCacheAdapter(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
+    BrowserContext::BlobContextGetter blob_context_getter,
     const GURL& request_url,
     PrefetchURLLoader* prefetch_url_loader)
     : prefetched_signed_exchange_cache_(
           std::move(prefetched_signed_exchange_cache)),
-      blob_storage_context_(std::move(blob_storage_context)),
+      blob_context_getter_(std::move(blob_context_getter)),
       cached_exchange_(
           std::make_unique<PrefetchedSignedExchangeCache::Entry>()),
       prefetch_url_loader_(prefetch_url_loader) {
@@ -27,7 +46,7 @@ PrefetchedSignedExchangeCacheAdapter::PrefetchedSignedExchangeCacheAdapter(
 
 PrefetchedSignedExchangeCacheAdapter::~PrefetchedSignedExchangeCacheAdapter() {
   if (blob_builder_from_stream_)
-    blob_builder_from_stream_->Abort();
+    AbortAndDeleteBlobBuilder(std::move(blob_builder_from_stream_));
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnReceiveOuterResponse(
@@ -61,18 +80,26 @@ void PrefetchedSignedExchangeCacheAdapter::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(cached_exchange_->inner_response());
   DCHECK(!cached_exchange_->completion_status());
-  DCHECK(blob_storage_context_);
   uint64_t length_hint = 0;
   if (cached_exchange_->inner_response()->content_length > 0) {
     length_hint = cached_exchange_->inner_response()->content_length;
   }
-  blob_builder_from_stream_ = std::make_unique<storage::BlobBuilderFromStream>(
-      blob_storage_context_, "" /* content_type */,
-      "" /* content_disposition */,
-      base::BindOnce(&PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone,
-                     base::Unretained(this)));
-  blob_builder_from_stream_->Start(length_hint, std::move(body),
-                                   nullptr /*  progress_client */);
+  blob_is_streaming_ = true;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(
+            &PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream,
+            weak_factory_.GetWeakPtr(), std::move(body), length_hint,
+            blob_context_getter_),
+        base::BindOnce(
+            &PrefetchedSignedExchangeCacheAdapter::SetBlobBuilderFromStream,
+            weak_factory_.GetWeakPtr()));
+  } else {
+    blob_builder_from_stream_ =
+        CreateBlobBuilderFromStream(weak_factory_.GetWeakPtr(), std::move(body),
+                                    length_hint, blob_context_getter_);
+  }
 }
 
 void PrefetchedSignedExchangeCacheAdapter::OnComplete(
@@ -85,13 +112,19 @@ void PrefetchedSignedExchangeCacheAdapter::OnComplete(
 void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone(
     storage::BlobBuilderFromStream* builder,
     std::unique_ptr<storage::BlobDataHandle> result) {
-  blob_builder_from_stream_.reset();
+  blob_is_streaming_ = false;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
+                              std::move(blob_builder_from_stream_));
+  } else {
+    blob_builder_from_stream_.reset();
+  }
   cached_exchange_->SetBlobDataHandle(std::move(result));
   MaybeCallOnSignedExchangeStored();
 }
 
 void PrefetchedSignedExchangeCacheAdapter::MaybeCallOnSignedExchangeStored() {
-  if (!cached_exchange_->completion_status() || blob_builder_from_stream_) {
+  if (!cached_exchange_->completion_status() || blob_is_streaming_) {
     return;
   }
 
@@ -115,6 +148,52 @@ void PrefetchedSignedExchangeCacheAdapter::MaybeCallOnSignedExchangeStored() {
       return;
   }
   prefetch_url_loader_->SendOnComplete(completion_status);
+}
+
+// static
+std::unique_ptr<storage::BlobBuilderFromStream>
+PrefetchedSignedExchangeCacheAdapter::CreateBlobBuilderFromStream(
+    base::WeakPtr<PrefetchedSignedExchangeCacheAdapter> adapter,
+    mojo::ScopedDataPipeConsumerHandle body,
+    uint64_t length_hint,
+    BrowserContext::BlobContextGetter blob_context_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto blob_builder_from_stream =
+      std::make_unique<storage::BlobBuilderFromStream>(
+          blob_context_getter.Run(), "" /* content_type */,
+          "" /* content_disposition */,
+          base::BindOnce(
+              &PrefetchedSignedExchangeCacheAdapter::StreamingBlobDoneOnIO,
+              std::move(adapter)));
+
+  blob_builder_from_stream->Start(length_hint, std::move(body),
+                                  nullptr /*  progress_client */);
+  return blob_builder_from_stream;
+}
+
+// static
+void PrefetchedSignedExchangeCacheAdapter::SetBlobBuilderFromStream(
+    base::WeakPtr<PrefetchedSignedExchangeCacheAdapter> adapter,
+    std::unique_ptr<storage::BlobBuilderFromStream> blob_builder_from_stream) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!adapter) {
+    AbortAndDeleteBlobBuilder(std::move(blob_builder_from_stream));
+    return;
+  }
+
+  adapter->blob_builder_from_stream_ = std::move(blob_builder_from_stream);
+}
+
+// static
+void PrefetchedSignedExchangeCacheAdapter::StreamingBlobDoneOnIO(
+    base::WeakPtr<PrefetchedSignedExchangeCacheAdapter> adapter,
+    storage::BlobBuilderFromStream* builder,
+    std::unique_ptr<storage::BlobDataHandle> result) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  NavigationURLLoaderImpl::RunOrPostTaskOnLoaderThread(
+      FROM_HERE,
+      base::BindOnce(&PrefetchedSignedExchangeCacheAdapter::StreamingBlobDone,
+                     adapter, builder, std::move(result)));
 }
 
 }  // namespace content

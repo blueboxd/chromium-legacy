@@ -36,10 +36,26 @@ base::Optional<base::TimeDelta> GetMaxWaitTimeP2PConnections() {
 std::set<int32_t> GetThrottledHashes() {
   std::set<int32_t> throttled_hashes;
 
-  const std::string& throttled_traffic_annotation_tags =
+  if (!base::FeatureList::IsEnabled(
+          features::kPauseBrowserInitiatedHeavyTrafficForP2P)) {
+    return throttled_hashes;
+  }
+
+  std::string throttled_traffic_annotation_tags =
       base::GetFieldTrialParamValueByFeature(
           features::kPauseBrowserInitiatedHeavyTrafficForP2P,
           "throttled_traffic_annotation_tags");
+
+  // Use default values for blocked hashes if there is none specified using
+  // field trial: The list below includes annotation tags that generate a lot of
+  // either downlink or uplink traffic and are expected to cause traffic
+  // contention with the P2P traffic on slow connections.
+  if (throttled_traffic_annotation_tags.empty()) {
+    // 6019475: safe_browsing_module_loader
+    // 82509217: safe_browsing_v4_update
+    // 727528: metrics_report_uma
+    throttled_traffic_annotation_tags = "6019475,82509217,727528";
+  }
 
   const std::vector<std::string>& tokens =
       base::SplitString(throttled_traffic_annotation_tags, ",",

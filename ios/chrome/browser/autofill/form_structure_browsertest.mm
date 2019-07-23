@@ -30,7 +30,6 @@
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/web/public/js_messaging/web_frame.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -173,7 +172,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
   ASSERT_TRUE(LoadHtmlWithoutSubresources(input));
   base::ThreadPoolInstance::Get()->FlushForTesting();
-  web::WebFrame* frame = web::GetMainWebFrame(web_state());
+  web::WebFrame* frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebStateAndWebFrame(web_state(), frame)
           ->autofill_manager();

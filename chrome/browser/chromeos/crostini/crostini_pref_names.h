@@ -20,6 +20,7 @@ extern const char kContainerKey[];
 
 extern const char kUserCrostiniAllowedByPolicy[];
 extern const char kUserCrostiniExportImportUIAllowedByPolicy[];
+extern const char kUserCrostiniRootAccessAllowedByPolicy[];
 
 extern const char kReportCrostiniUsageEnabled[];
 extern const char kCrostiniLastLaunchTerminaComponentVersion[];

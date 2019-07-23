@@ -49,7 +49,7 @@ TranslateController::TranslateController(web::WebState* web_state,
   DCHECK(js_manager_);
   DCHECK(web_state_);
   web_state_->AddObserver(this);
-  web_state_->AddScriptCommandCallback(
+  subscription_ = web_state_->AddScriptCommandCallback(
       base::Bind(
           [](TranslateController* ptr, const base::DictionaryValue& command,
              const GURL& page_url, bool user_is_interacting,
@@ -288,7 +288,6 @@ void TranslateController::OnRequestFetchComplete(
 
 void TranslateController::WebStateDestroyed(web::WebState* web_state) {
   DCHECK_EQ(web_state_, web_state);
-  web_state_->RemoveScriptCommandCallback(kCommandPrefix);
   web_state_->RemoveObserver(this);
   web_state_ = nullptr;
 

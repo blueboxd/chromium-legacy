@@ -186,7 +186,7 @@ void InspectDOMHandler::DidReceiveConsoleMessage(
     web::WebFrame* sender_frame,
     const JavaScriptConsoleMessage& message) {
   web::WebFrame* inspect_ui_main_frame =
-      web::GetMainWebFrame(web_ui()->GetWebState());
+      web_ui()->GetWebState()->GetWebFramesManager()->GetMainWebFrame();
   if (!inspect_ui_main_frame) {
     // Disable logging and drop this message because the main frame no longer
     // exists.
@@ -195,7 +195,8 @@ void InspectDOMHandler::DidReceiveConsoleMessage(
   }
 
   std::vector<base::Value> params;
-  web::WebFrame* main_web_frame = web::GetMainWebFrame(web_state);
+  web::WebFrame* main_web_frame =
+      web_state->GetWebFramesManager()->GetMainWebFrame();
   params.push_back(base::Value(main_web_frame->GetFrameId()));
   params.push_back(base::Value(sender_frame->GetFrameId()));
   params.push_back(base::Value(message.url.spec()));
@@ -245,7 +246,10 @@ void InspectDOMHandler::WillCloseWebStateAt(WebStateList* web_state_list,
   std::vector<base::Value> params;
   params.push_back(base::Value(web::GetMainWebFrameId(web_state)));
 
-  web::GetMainWebFrame(web_ui()->GetWebState())
+  web_ui()
+      ->GetWebState()
+      ->GetWebFramesManager()
+      ->GetMainWebFrame()
       ->CallJavaScriptFunction("inspectWebUI.tabClosed", params);
 }
 

@@ -60,7 +60,7 @@ struct CSSPropertyValueMetadata {
   unsigned inherited_ : 1;
 };
 
-class CSSPropertyValue {
+class CORE_EXPORT CSSPropertyValue {
   DISALLOW_NEW();
 
  public:

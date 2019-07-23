@@ -1,23 +1,18 @@
-#!/usr/bin/python
-#
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Generates a data collection of IDL information per component.
-This scripts parses IDL files and stores the result ASTs in a pickle file.
-The output file may contain information about component, too.
+"""
+Builds Web IDL database.
+
+Web IDL database is a Python object that supports a variety of accessors to
+IDL definitions such as IDL interface and IDL attribute.
 """
 
 import optparse
 
 import utilities
-
-from web_idl.identifier_ir_map import IdentifierIRMap
-from web_idl.idl_compiler import IdlCompiler
-from web_idl.idl_type import IdlTypeFactory
-from web_idl.ir_builder import load_and_register_idl_definitions
-from web_idl.reference import RefByIdFactory
+import web_idl
 
 
 def parse_options():
@@ -34,19 +29,10 @@ def parse_options():
 
 def main():
     options, filepaths = parse_options()
-    ir_map = IdentifierIRMap()
-    ref_to_idl_type_factory = RefByIdFactory()
-    ref_to_idl_def_factory = RefByIdFactory()
-    idl_type_factory = IdlTypeFactory()
-    load_and_register_idl_definitions(
-        filepaths,
-        ir_map.register,
-        ref_to_idl_type_factory.create,
-        ref_to_idl_def_factory.create,
-        idl_type_factory)
-    idl_compiler = IdlCompiler(ir_map)
-    idl_database = idl_compiler.build_database()
-    utilities.write_pickle_file(options.output, idl_database)
+
+    database = web_idl.build_database(filepaths)
+
+    utilities.write_pickle_file(options.output, database)
 
 
 if __name__ == '__main__':

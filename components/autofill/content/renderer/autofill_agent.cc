@@ -909,10 +909,11 @@ void AutofillAgent::SelectFieldOptionsChanged(
                           weak_ptr_factory_.GetWeakPtr(), element));
 }
 
-bool AutofillAgent::HasFillData(const WebFormControlElement& element) const {
+bool AutofillAgent::TryToShowTouchToFill(const WebFormControlElement& element) {
   // This is currently only implemented for passwords. Consider supporting other
   // autofill types in the future as well.
-  return password_autofill_agent_->HasFillData(element);
+  return IsTouchToFillEnabled() &&
+         password_autofill_agent_->TryToShowTouchToFill(element);
 }
 
 void AutofillAgent::SelectWasUpdated(

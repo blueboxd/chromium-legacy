@@ -97,7 +97,7 @@ namespace blink {
 // This class stores the CSS Animations/Transitions information we use during a
 // style recalc. This includes updates to animations/transitions as well as the
 // Interpolations to be applied.
-class CSSAnimationUpdate final {
+class CORE_EXPORT CSSAnimationUpdate final {
   DISALLOW_NEW();
 
  public:

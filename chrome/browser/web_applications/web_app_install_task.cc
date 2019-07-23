@@ -131,6 +131,7 @@ void WebAppInstallTask::InstallWebAppFromInfo(
                                         : ForInstallableSite::kNo);
 
   InstallFinalizer::FinalizeOptions options;
+  options.install_source = install_source;
   if (no_network_install) {
     options.no_network_install = true;
     // We should only install windowed apps via this method.
@@ -149,7 +150,8 @@ void WebAppInstallTask::InstallWebAppWithOptions(
 
   Observe(contents);
   install_callback_ = std::move(install_callback);
-  install_source_ = ConvertOptionsToMetricsInstallSource(install_options);
+  install_source_ = ConvertExternalInstallSourceToInstallSource(
+      install_options.install_source);
   install_options_ = install_options;
   background_installation_ = true;
 
@@ -417,6 +419,7 @@ void WebAppInstallTask::OnIconsRetrieved(
   UpdateWebAppIconsWithoutChangingLinks(size_map, web_app_info.get());
 
   InstallFinalizer::FinalizeOptions options;
+  options.install_source = install_source_;
   options.locally_installed = is_locally_installed;
 
   install_finalizer_->FinalizeInstall(
@@ -471,27 +474,10 @@ void WebAppInstallTask::OnDialogCompleted(
   RecordInstallEvent(for_installable_site);
 
   InstallFinalizer::FinalizeOptions finalize_options;
+  finalize_options.install_source = install_source_;
   if (install_options_) {
     finalize_options.force_launch_container =
         install_options_->launch_container;
-
-    switch (install_options_->install_source) {
-      // TODO(nigeltao/ortuno): should these two cases lead to different
-      // Manifest::Location values: INTERNAL vs EXTERNAL_PREF_DOWNLOAD?
-      case ExternalInstallSource::kInternalDefault:
-      case ExternalInstallSource::kExternalDefault:
-        finalize_options.source = InstallFinalizer::Source::kDefaultInstalled;
-        break;
-      case ExternalInstallSource::kExternalPolicy:
-        finalize_options.source = InstallFinalizer::Source::kPolicyInstalled;
-        break;
-      case ExternalInstallSource::kSystemInstalled:
-        finalize_options.source = InstallFinalizer::Source::kSystemInstalled;
-        break;
-      case ExternalInstallSource::kArc:
-        NOTREACHED();
-        break;
-    }
   }
 
   install_finalizer_->FinalizeInstall(

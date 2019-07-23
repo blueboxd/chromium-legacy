@@ -83,6 +83,11 @@ void FakeSkiaOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   NOTIMPLEMENTED();
 }
 
+void FakeSkiaOutputSurface::ScheduleOverlays(OverlayCandidateList overlays) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  NOTIMPLEMENTED();
+}
+
 uint32_t FakeSkiaOutputSurface::GetFramebufferCopyTextureFormat() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return GL_RGB;

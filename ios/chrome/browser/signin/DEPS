@@ -1,21 +1,4 @@
 specific_include_rules = {
-  # IdentityManagerFactory creates IdentityManager instances from internal
-  # dependencies. TODO(crbug.com/974198): Internalize this building and
-  # eliminate the need for these inclusions.
-  "identity_manager_factory.cc": [
-    "+components/signin/internal/identity_manager/account_fetcher_service.h",
-    "+components/signin/internal/identity_manager/account_tracker_service.h",
-    "+components/signin/internal/identity_manager/accounts_cookie_mutator_impl.h",
-    "+components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h",
-    "+components/signin/internal/identity_manager/diagnostics_provider_impl.h",
-    "+components/signin/internal/identity_manager/gaia_cookie_manager_service.h",
-    "+components/signin/internal/identity_manager/primary_account_mutator_impl.h",
-    "+components/signin/internal/identity_manager/primary_account_manager.h",
-    "+components/signin/internal/identity_manager/primary_account_policy_manager_impl.h",
-    "+components/signin/internal/identity_manager/profile_oauth2_token_service.h",
-    "+components/signin/internal/identity_manager/profile_oauth2_token_service_delegate_ios.h",
-  ],
-
   # The dependence on the Identity Service implementation should be used *only*
   # for Identity Service creation.
   "identity_service_creator.cc": [

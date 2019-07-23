@@ -62,6 +62,7 @@ extern const base::Feature kAutomaticPasswordGeneration;
 #if defined(OS_ANDROID)
 extern const base::Feature kAutofillManualFallbackAndroid;
 extern const base::Feature kAutofillRefreshStyleAndroid;
+extern const base::Feature kTouchToFillAndroid;
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

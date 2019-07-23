@@ -52,6 +52,13 @@ _OutputDirectoryContext = collections.namedtuple('_OutputDirectoryContext', [
     'thin_archives',
 ])
 
+# When ensuring matching section sizes between .elf and .map files, these
+# sections should be ignored. When lld creates a combined library with
+# partitions, some sections (like .text) exist in each partition, but the ones
+# below are common. At library splitting time, llvm-objcopy pulls what's needed
+# from these sections into the new libraries. Hence, the ELF sections will end
+# up smaller than the combined .map file sections.
+_SECTION_SIZE_BLACKLIST = ['.symtab', '.shstrtab', '.strtab']
 
 # Tunable "knobs" for CreateSectionSizesAndSymbols().
 class SectionSizeKnobs(object):
@@ -857,7 +864,7 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
 
   logging.info('Parsing Linker Map')
   with _OpenMaybeGz(map_path) as map_file:
-    section_sizes, raw_symbols, linker_map_extras = (
+    map_section_sizes, raw_symbols, linker_map_extras = (
         linker_map_parser.MapFileParser().Parse(linker_name, map_file))
 
     if outdir_context and outdir_context.thin_archives:
@@ -866,12 +873,17 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
   if elf_path:
     logging.debug('Validating section sizes')
     elf_section_sizes = _SectionSizesFromElf(elf_path, tool_prefix)
+    differing_elf_section_sizes = {}
+    differing_map_section_sizes = {}
     for k, v in elf_section_sizes.iteritems():
-      if v != section_sizes.get(k):
-        logging.error('ELF file and .map file do not agree on section sizes.')
-        logging.error('.map file: %r', section_sizes)
-        logging.error('readelf: %r', elf_section_sizes)
-        sys.exit(1)
+      if k not in _SECTION_SIZE_BLACKLIST and v != map_section_sizes.get(k):
+        differing_map_section_sizes[k] = map_section_sizes.get(k)
+        differing_elf_section_sizes[k] = v
+    if differing_map_section_sizes:
+      logging.error('ELF file and .map file do not agree on section sizes.')
+      logging.error('readelf: %r', differing_elf_section_sizes)
+      logging.error('.map file: %r', differing_map_section_sizes)
+      sys.exit(1)
 
   if elf_path and outdir_context:
     missed_object_paths = _DiscoverMissedObjectPaths(
@@ -937,7 +949,10 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
 
   linker_map_parser.DeduceObjectPathsFromThinMap(raw_symbols, linker_map_extras)
 
-  return section_sizes, raw_symbols, object_paths_by_name
+  # If we have an ELF file, use its sizes as the source of truth, since some
+  # sections can differ from the .map.
+  return (elf_section_sizes if elf_path else map_section_sizes, raw_symbols,
+          object_paths_by_name)
 
 
 def _ComputePakFileSymbols(
@@ -1506,7 +1521,7 @@ def _DetectLinkerName(map_path):
 
 
 def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
-  """Returns a tuple of (build_id, section_sizes)."""
+  """Returns a tuple of (build_id, section_sizes, elf_overhead_size)."""
   with zipfile.ZipFile(apk_path) as apk, \
        tempfile.NamedTemporaryFile() as f:
     f.write(apk.read(apk_so_path))

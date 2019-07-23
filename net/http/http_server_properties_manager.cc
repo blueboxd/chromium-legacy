@@ -163,7 +163,7 @@ void HttpServerPropertiesManager::SetSupportsSpdy(
   http_server_properties_impl_->SetSupportsSpdy(server, support_spdy);
   bool new_support_spdy = http_server_properties_impl_->GetSupportsSpdy(server);
   if (old_support_spdy != new_support_spdy)
-    ScheduleUpdatePrefs(SUPPORTS_SPDY);
+    ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::RequiresHTTP11(const HostPortPair& server) {
@@ -176,7 +176,7 @@ void HttpServerPropertiesManager::SetHTTP11Required(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   http_server_properties_impl_->SetHTTP11Required(server);
-  ScheduleUpdatePrefs(HTTP_11_REQUIRED);
+  ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::MaybeForceHTTP11(const HostPortPair& server,
@@ -200,7 +200,7 @@ bool HttpServerPropertiesManager::SetHttp2AlternativeService(
   const bool changed = http_server_properties_impl_->SetHttp2AlternativeService(
       origin, alternative_service, expiration);
   if (changed) {
-    ScheduleUpdatePrefs(SET_ALTERNATIVE_SERVICES);
+    ScheduleUpdatePrefs();
   }
   return changed;
 }
@@ -214,7 +214,7 @@ bool HttpServerPropertiesManager::SetQuicAlternativeService(
   const bool changed = http_server_properties_impl_->SetQuicAlternativeService(
       origin, alternative_service, expiration, advertised_versions);
   if (changed) {
-    ScheduleUpdatePrefs(SET_ALTERNATIVE_SERVICES);
+    ScheduleUpdatePrefs();
   }
   return changed;
 }
@@ -226,7 +226,7 @@ bool HttpServerPropertiesManager::SetAlternativeServices(
   const bool changed = http_server_properties_impl_->SetAlternativeServices(
       origin, alternative_service_info_vector);
   if (changed) {
-    ScheduleUpdatePrefs(SET_ALTERNATIVE_SERVICES);
+    ScheduleUpdatePrefs();
   }
   return changed;
 }
@@ -236,7 +236,7 @@ void HttpServerPropertiesManager::MarkAlternativeServiceBroken(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   http_server_properties_impl_->MarkAlternativeServiceBroken(
       alternative_service);
-  ScheduleUpdatePrefs(MARK_ALTERNATIVE_SERVICE_BROKEN);
+  ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::
@@ -246,8 +246,7 @@ void HttpServerPropertiesManager::
   http_server_properties_impl_
       ->MarkAlternativeServiceBrokenUntilDefaultNetworkChanges(
           alternative_service);
-  ScheduleUpdatePrefs(
-      MARK_ALTERNATIVE_SERVICE_BROKEN_UNTIL_DEFAULT_NETWORK_CHANGES);
+  ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::MarkAlternativeServiceRecentlyBroken(
@@ -255,7 +254,7 @@ void HttpServerPropertiesManager::MarkAlternativeServiceRecentlyBroken(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   http_server_properties_impl_->MarkAlternativeServiceRecentlyBroken(
       alternative_service);
-  ScheduleUpdatePrefs(MARK_ALTERNATIVE_SERVICE_RECENTLY_BROKEN);
+  ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::IsAlternativeServiceBroken(
@@ -283,14 +282,14 @@ void HttpServerPropertiesManager::ConfirmAlternativeService(
   // For persisting, we only care about the value returned by
   // IsAlternativeServiceBroken. If that value changes, then call persist.
   if (old_value != new_value)
-    ScheduleUpdatePrefs(CONFIRM_ALTERNATIVE_SERVICE);
+    ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::OnDefaultNetworkChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   bool changed = http_server_properties_impl_->OnDefaultNetworkChanged();
   if (changed)
-    ScheduleUpdatePrefs(ON_DEFAULT_NETWORK_CHANGED);
+    ScheduleUpdatePrefs();
   return changed;
 }
 
@@ -321,7 +320,7 @@ void HttpServerPropertiesManager::SetSupportsQuic(bool used_quic,
   IPAddress new_last_quic_addr;
   http_server_properties_impl_->GetSupportsQuic(&new_last_quic_addr);
   if (old_last_quic_addr != new_last_quic_addr)
-    ScheduleUpdatePrefs(SET_SUPPORTS_QUIC);
+    ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::SetServerNetworkStats(
@@ -337,7 +336,7 @@ void HttpServerPropertiesManager::SetServerNetworkStats(
   ServerNetworkStats new_stats =
       *(http_server_properties_impl_->GetServerNetworkStats(server));
   if (old_stats != new_stats)
-    ScheduleUpdatePrefs(SET_SERVER_NETWORK_STATS);
+    ScheduleUpdatePrefs();
 }
 
 void HttpServerPropertiesManager::ClearServerNetworkStats(
@@ -347,7 +346,7 @@ void HttpServerPropertiesManager::ClearServerNetworkStats(
       http_server_properties_impl_->GetServerNetworkStats(server) != nullptr;
   http_server_properties_impl_->ClearServerNetworkStats(server);
   if (need_update)
-    ScheduleUpdatePrefs(CLEAR_SERVER_NETWORK_STATS);
+    ScheduleUpdatePrefs();
 }
 
 const ServerNetworkStats* HttpServerPropertiesManager::GetServerNetworkStats(
@@ -369,7 +368,7 @@ bool HttpServerPropertiesManager::SetQuicServerInfo(
   bool changed =
       http_server_properties_impl_->SetQuicServerInfo(server_id, server_info);
   if (changed)
-    ScheduleUpdatePrefs(SET_QUIC_SERVER_INFO);
+    ScheduleUpdatePrefs();
   return changed;
 }
 
@@ -588,7 +587,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefs() {
 
   // Update the prefs with what we have read (delete all corrupted prefs).
   if (detected_corrupted_prefs)
-    ScheduleUpdatePrefs(DETECTED_CORRUPTED_PREFS);
+    ScheduleUpdatePrefs();
 }
 
 bool HttpServerPropertiesManager::AddToBrokenAlternativeServices(
@@ -940,10 +939,7 @@ bool HttpServerPropertiesManager::AddToQuicServerInfoMap(
   return !detected_corrupted_prefs;
 }
 
-//
-// Update Preferences with data from the cached data.
-//
-void HttpServerPropertiesManager::ScheduleUpdatePrefs(Location location) {
+void HttpServerPropertiesManager::ScheduleUpdatePrefs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Do not schedule a new update if there is already one scheduled.
   if (network_prefs_update_timer_.IsRunning())
@@ -953,10 +949,6 @@ void HttpServerPropertiesManager::ScheduleUpdatePrefs(Location location) {
       FROM_HERE, kUpdatePrefsDelay,
       base::Bind(&HttpServerPropertiesManager::UpdatePrefsFromCache,
                  base::Unretained(this), base::Passed(base::OnceClosure())));
-
-  // TODO(rtenneti): Delete the following histogram after collecting some data.
-  UMA_HISTOGRAM_ENUMERATION("Net.HttpServerProperties.UpdatePrefs", location,
-                            HttpServerPropertiesManager::NUM_LOCATIONS);
 }
 
 void HttpServerPropertiesManager::UpdatePrefsFromCache(

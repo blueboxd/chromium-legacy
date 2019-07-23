@@ -28,6 +28,7 @@ using ::testing::IsNull;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::SizeIs;
+using ::testing::UnorderedElementsAre;
 
 class PromptActionTest : public testing::Test {
  public:
@@ -127,7 +128,7 @@ TEST_F(PromptActionTest, ReportDirectAction) {
   EXPECT_THAT((*user_actions_)[0].direct_action().names, ElementsAre("ok"));
   EXPECT_FALSE((*user_actions_)[0].chip().empty());
   EXPECT_THAT((*user_actions_)[1].direct_action().names,
-              ElementsAre("maybe", "I_guess"));
+              UnorderedElementsAre("maybe", "I_guess"));
   EXPECT_TRUE((*user_actions_)[1].chip().empty());
 }
 

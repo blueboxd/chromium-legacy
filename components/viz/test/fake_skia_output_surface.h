@@ -49,6 +49,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                bool has_alpha,
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
+  void ScheduleOverlays(OverlayCandidateList overlays) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;

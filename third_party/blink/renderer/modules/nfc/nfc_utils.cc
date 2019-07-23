@@ -19,7 +19,7 @@ using device::mojom::blink::NFCPushTarget;
 namespace blink {
 
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
-                                        const NDEFRecord* record) {
+                                        const NDEFRecordInit* record) {
   const NDEFRecordData& value = record->data();
 
   if (!value.IsString() && !(value.IsUnrestrictedDouble() &&
@@ -42,7 +42,7 @@ ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
-                                       const NDEFRecord* record) {
+                                       const NDEFRecordInit* record) {
   if (!record->data().IsString()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
@@ -60,7 +60,7 @@ ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
-                                        const NDEFRecord* record) {
+                                        const NDEFRecordInit* record) {
   if (!record->data().IsDictionary()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
@@ -83,7 +83,7 @@ ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
-                                          const NDEFRecord* record) {
+                                          const NDEFRecordInit* record) {
   if (!record->data().IsArrayBuffer()) {
     return ScriptPromise::Reject(
         script_state,
@@ -95,7 +95,7 @@ ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
 }
 
 ScriptPromise RejectIfInvalidNDEFRecord(ScriptState* script_state,
-                                        const NDEFRecord* record) {
+                                        const NDEFRecordInit* record) {
   NDEFRecordType type;
   if (record->hasRecordType()) {
     type = StringToNDEFRecordType(record->recordType());
@@ -140,7 +140,7 @@ ScriptPromise RejectIfInvalidNDEFRecord(ScriptState* script_state,
 
 ScriptPromise RejectIfInvalidNDEFRecordArray(
     ScriptState* script_state,
-    const HeapVector<Member<NDEFRecord>>& records) {
+    const HeapVector<Member<NDEFRecordInit>>& records) {
   for (const auto& record : records) {
     ScriptPromise isValidRecord =
         RejectIfInvalidNDEFRecord(script_state, record);
@@ -155,17 +155,17 @@ ScriptPromise RejectIfInvalidNDEFMessageSource(
     ScriptState* script_state,
     const NDEFMessageSource& push_message) {
   // If NDEFMessageSource of invalid type, reject promise with TypeError
-  if (!push_message.IsNDEFMessage() && !push_message.IsString() &&
+  if (!push_message.IsNDEFMessageInit() && !push_message.IsString() &&
       !push_message.IsArrayBuffer()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(), kNfcMsgTypeError));
   }
 
-  if (push_message.IsNDEFMessage()) {
+  if (push_message.IsNDEFMessageInit()) {
     // https://w3c.github.io/web-nfc/#the-push-method
     // If NDEFMessage.records is empty, reject promise with TypeError
-    const NDEFMessage* message = push_message.GetAsNDEFMessage();
+    const NDEFMessageInit* message = push_message.GetAsNDEFMessageInit();
     if (!message->hasRecords() || message->records().IsEmpty()) {
       return ScriptPromise::Reject(
           script_state, V8ThrowException::CreateTypeError(
@@ -178,74 +178,13 @@ ScriptPromise RejectIfInvalidNDEFMessageSource(
   return ScriptPromise();
 }
 
-NDEFRecordData BuildRecordData(
-    ScriptState* script_state,
-    const device::mojom::blink::NDEFRecordPtr& record) {
-  NDEFRecordData result = NDEFRecordData();
-  switch (record->record_type) {
-    case NDEFRecordType::TEXT:
-    case NDEFRecordType::URL:
-    case NDEFRecordType::JSON: {
-      String string_data;
-      if (!record->data.IsEmpty()) {
-        string_data = String::FromUTF8WithLatin1Fallback(
-            static_cast<unsigned char*>(&record->data.front()),
-            record->data.size());
-      }
-
-      // Convert back the stringified double.
-      if (record->record_type == NDEFRecordType::TEXT) {
-        bool can_convert = false;
-        double number = string_data.ToDouble(&can_convert);
-        if (can_convert) {
-          result.SetUnrestrictedDouble(number);
-          return result;
-        }
-      }
-
-      // Stringified JSON must be converted back to an Object.
-      if (record->record_type == NDEFRecordType::JSON) {
-        v8::Isolate* isolate = script_state->GetIsolate();
-        v8::Local<v8::String> string = V8String(isolate, string_data);
-        v8::Local<v8::Value> json_object;
-        v8::TryCatch try_catch(isolate);
-        NonThrowableExceptionState exception_state;
-
-        if (v8::JSON::Parse(script_state->GetContext(), string)
-                .ToLocal(&json_object)) {
-          result.SetDictionary(
-              Dictionary(isolate, json_object, exception_state));
-          return result;
-        }
-      }
-
-      result.SetString(string_data);
-      return result;
-    }
-
-    case NDEFRecordType::OPAQUE_RECORD: {
-      if (!record->data.IsEmpty()) {
-        result.SetArrayBuffer(DOMArrayBuffer::Create(
-            static_cast<void*>(&record->data.front()), record->data.size()));
-      }
-
-      return result;
-    }
-
-    case NDEFRecordType::EMPTY:
-      return result;
-  }
-
-  NOTREACHED();
-  return result;
-}
-
 // https://w3c.github.io/web-nfc/#creating-web-nfc-message Step 2.1
 // If NDEFRecord type is not provided, deduce NDEFRecord type from JS data type:
 // String or Number => 'text' record
 // ArrayBuffer => 'opaque' record
 // Dictionary, JSON serializable Object => 'json' record
-NDEFRecordType DeduceRecordTypeFromDataType(const blink::NDEFRecord* record) {
+NDEFRecordType DeduceRecordTypeFromDataType(
+    const blink::NDEFRecordInit* record) {
   if (record->hasData()) {
     const blink::NDEFRecordData& value = record->data();
 
@@ -347,28 +286,6 @@ NFCPushTarget StringToNFCPushTarget(const String& target) {
     return NFCPushTarget::PEER;
 
   return NFCPushTarget::ANY;
-}
-
-NDEFRecord* MojoToBlinkNDEFRecord(
-    ScriptState* script_state,
-    const device::mojom::blink::NDEFRecordPtr& record) {
-  NDEFRecord* nfc_record = NDEFRecord::Create();
-  nfc_record->setMediaType(record->media_type);
-  nfc_record->setRecordType(NDEFRecordTypeToString(record->record_type));
-  nfc_record->setData(BuildRecordData(script_state, record));
-  return nfc_record;
-}
-
-NDEFMessage* MojoToBlinkNDEFMessage(
-    ScriptState* script_state,
-    const device::mojom::blink::NDEFMessagePtr& message) {
-  NDEFMessage* ndef_message = NDEFMessage::Create();
-  ndef_message->setURL(message->url);
-  blink::HeapVector<Member<NDEFRecord>> records;
-  for (wtf_size_t i = 0; i < message->data.size(); ++i)
-    records.push_back(MojoToBlinkNDEFRecord(script_state, message->data[i]));
-  ndef_message->setRecords(records);
-  return ndef_message;
 }
 
 }  // namespace blink

@@ -159,7 +159,7 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:
-  provider->StartRegistry();
+  provider->Start();
 
   return provider;
 }

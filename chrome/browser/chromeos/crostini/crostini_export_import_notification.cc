@@ -29,12 +29,10 @@ constexpr char kNotifierCrostiniExportImportOperation[] =
 
 CrostiniExportImportNotification::CrostiniExportImportNotification(
     Profile* profile,
-    CrostiniExportImport* service,
     ExportImportType type,
     const std::string& notification_id,
     const base::FilePath& path)
     : profile_(profile),
-      service_(service),
       type_(type),
       path_(path),
       weak_ptr_factory_(this) {
@@ -136,6 +134,14 @@ void CrostiniExportImportNotification::SetStatusFailedInsufficientSpace(
       ui::FormatBytes(additional_required_space)));
 }
 
+void CrostiniExportImportNotification::SetStatusFailedConcurrentOperation(
+    ExportImportType in_progress_operation_type) {
+  SetStatusFailed(l10n_util::GetStringUTF16(
+      in_progress_operation_type == ExportImportType::EXPORT
+          ? IDS_CROSTINI_EXPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS
+          : IDS_CROSTINI_IMPORT_NOTIFICATION_MESSAGE_FAILED_IN_PROGRESS));
+}
+
 void CrostiniExportImportNotification::SetStatusFailed(
     const base::string16& message) {
   status_ = Status::FAILED;
@@ -158,7 +164,7 @@ void CrostiniExportImportNotification::SetStatusFailed(
 void CrostiniExportImportNotification::Close(bool by_user) {
   closed_ = true;
   if (status_ != Status::RUNNING) {
-    service_->NotificationCompleted(*this);
+    delete this;
   }
 }
 

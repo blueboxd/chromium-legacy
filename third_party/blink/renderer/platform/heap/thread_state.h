@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
-#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
@@ -123,15 +122,24 @@ class ThreadStateFor;
   ThreadState::PrefinalizerRegistration<Class> prefinalizer_dummy_ = this; \
   using UsingPreFinalizerMacroNeedsTrailingSemiColon = char
 
-// Automically registers as observer for heap and garabge collection changes.
-// For individual overrides see documentation of |ThreadHeapStatsObserver|.
-class PLATFORM_EXPORT HeapObserver : public ThreadHeapStatsObserver {
+class PLATFORM_EXPORT BlinkGCObserver {
+  USING_FAST_MALLOC(BlinkGCObserver);
+
  public:
-  HeapObserver(ThreadState*);
-  virtual ~HeapObserver();
+  // The constructor automatically register this object to ThreadState's
+  // observer lists. The argument must not be null.
+  explicit BlinkGCObserver(ThreadState*);
+
+  // The destructor automatically unregister this object from ThreadState's
+  // observer lists.
+  virtual ~BlinkGCObserver();
+
+  virtual void OnCompleteSweepDone() = 0;
 
  private:
-  ThreadState* const thread_state_;
+  // As a ThreadState must live when a BlinkGCObserver lives, holding a raw
+  // pointer is safe.
+  ThreadState* thread_state_;
 };
 
 class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
@@ -276,7 +284,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void CompleteSweep();
   void FinishSnapshot();
-  void NotifySweepDone();
   void PostSweep();
 
   // Returns whether it is currently allowed to allocate an object. Mainly used
@@ -416,7 +423,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return &FromObject(object)->Heap() == &Heap();
   }
 
-  size_t GcAge() const { return gc_age_; }
+  int GcAge() const { return gc_age_; }
 
   MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
@@ -492,6 +499,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
 
+  void UpdateStatisticsAfterSweeping();
+
   // The version is needed to be able to start incremental marking.
   void MarkPhasePrologue(BlinkGC::StackState,
                          BlinkGC::MarkingType,
@@ -544,6 +553,16 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   void ReportMemoryToV8();
 
+  // Adds the given observer to the ThreadState's observer list. This doesn't
+  // take ownership of the argument. The argument must not be null. The argument
+  // must not be registered before calling this.
+  void AddObserver(BlinkGCObserver*);
+
+  // Removes the given observer from the ThreadState's observer list. This
+  // doesn't take ownership of the argument. The argument must not be null.
+  // The argument must be registered before calling this.
+  void RemoveObserver(BlinkGCObserver*);
+
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;
@@ -583,6 +602,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   void* asan_fake_stack_;
 #endif
 
+  HashSet<BlinkGCObserver*> observers_;
+
   // PersistentNodes that are stored in static references;
   // references that either have to be cleared upon the thread
   // detaching from Oilpan and shutting down or references we
@@ -596,7 +617,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   size_t reported_memory_to_v8_;
 
-  size_t gc_age_ = 0;
+  int gc_age_ = 0;
 
   struct GCData {
     BlinkGC::StackState stack_state;
@@ -608,6 +629,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   CancelableTaskScheduler sweeper_scheduler_;
 
+  friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;
   friend class incremental_marking_test::IncrementalMarkingTestDriver;
   friend class HeapAllocator;

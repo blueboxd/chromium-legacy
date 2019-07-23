@@ -340,8 +340,7 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
 - (void)findAllFormsWithCompletionHandler:
     (void (^)(NSArray<CWVAutofillForm*>*))completionHandler {
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(_webState);
+  web::WebFramesManager* framesManager = _webState->GetWebFramesManager();
   DCHECK(framesManager);
   web::WebFrame* webFrame = framesManager->GetMainWebFrame();
   if (!webFrame) {
@@ -490,8 +489,7 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
     return;
   }
 
-  web::WebFramesManager* framesManager =
-      web::WebFramesManager::FromWebState(_webState);
+  web::WebFramesManager* framesManager = _webState->GetWebFramesManager();
   DCHECK(framesManager);
   web::WebFrame* webFrame = framesManager->GetMainWebFrame();
   if (!webFrame) {

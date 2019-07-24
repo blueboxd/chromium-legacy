@@ -10,6 +10,8 @@ blink_modules_sources("launch") {
     "dom_window_launch_params.h",
     "launch_params.cc",
     "launch_params.h",
+    "web_launch_service_impl.cc",
+    "web_launch_service_impl.h",
   ]
 
   deps = [

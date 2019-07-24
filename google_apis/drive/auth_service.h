@@ -29,13 +29,13 @@ class AuthServiceObserver;
 // (IdentityManager) and provides OAuth2 token refresh infrastructure.
 // All public functions must be called on UI thread.
 class AuthService : public AuthServiceInterface,
-                    public identity::IdentityManager::Observer {
+                    public signin::IdentityManager::Observer {
  public:
   // |url_loader_factory| is used to perform authentication with
   // SimpleURLLoader.
   //
   // |scopes| specifies OAuth2 scopes.
-  AuthService(identity::IdentityManager* identity_manager,
+  AuthService(signin::IdentityManager* identity_manager,
               const CoreAccountId& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const std::vector<std::string>& scopes);
@@ -67,7 +67,7 @@ class AuthService : public AuthServiceInterface,
                        DriveApiErrorCode error,
                        const std::string& access_token);
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   CoreAccountId account_id_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool has_refresh_token_;

@@ -48,8 +48,14 @@ void QueryContentProtectionTask::Run() {
       return;
     }
 
+    // Collect displays to be queried based on HDCP capability. For unprotected
+    // displays not inherently secure through an internal connection, record the
+    // existence of an unsecure display to report no protection for all displays
+    // in mirroring mode.
     if (protection_mask & CONTENT_PROTECTION_METHOD_HDCP)
       hdcp_capable_displays.push_back(display);
+    else if (display->type() != DISPLAY_CONNECTION_TYPE_INTERNAL)
+      no_protection_mask_ |= CONTENT_PROTECTION_METHOD_HDCP;
   }
 
   pending_requests_ = hdcp_capable_displays.size();

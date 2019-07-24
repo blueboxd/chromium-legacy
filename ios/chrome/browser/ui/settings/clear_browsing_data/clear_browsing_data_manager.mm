@@ -354,7 +354,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 // Add footers about user's account data.
 - (void)addSyncProfileItemsToModel:(ListModel*)model {
   // Google Account footer.
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(self.browserState);
   if (identityManager->HasPrimaryAccount()) {
     // TODO(crbug.com/650424): Footer items must currently go into a separate
@@ -805,7 +805,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       "History.ClearBrowsingData.HistoryNoticeShownInFooterWhenUpdated",
       _shouldShowNoticeAboutOtherFormsOfBrowsingHistory);
 
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   if (!identityManager->HasPrimaryAccount()) {
     return;

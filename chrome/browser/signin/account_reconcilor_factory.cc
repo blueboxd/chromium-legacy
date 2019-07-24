@@ -49,7 +49,7 @@ class ChromeOSChildAccountReconcilorDelegate
     : public signin::MirrorAccountReconcilorDelegate {
  public:
   explicit ChromeOSChildAccountReconcilorDelegate(
-      identity::IdentityManager* identity_manager)
+      signin::IdentityManager* identity_manager)
       : signin::MirrorAccountReconcilorDelegate(identity_manager) {}
 
   base::TimeDelta GetReconcileTimeout() const override {
@@ -88,7 +88,7 @@ class ChromeOSAccountReconcilorDelegate
     : public signin::MirrorAccountReconcilorDelegate {
  public:
   ChromeOSAccountReconcilorDelegate(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       chromeos::AccountManagerMigrator* account_migrator)
       : signin::MirrorAccountReconcilorDelegate(identity_manager),
         account_migrator_(account_migrator) {}
@@ -140,7 +140,7 @@ AccountReconcilorFactory* AccountReconcilorFactory::GetInstance() {
 KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   SigninClient* signin_client =
       ChromeSigninClientFactory::GetForProfile(profile);
@@ -205,7 +205,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
 
 std::unique_ptr<signin::ConsistencyCookieManagerBase>
 AccountReconcilorFactory::CreateConsistencyCookieManager(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     SigninClient* signin_client,
     AccountReconcilor* account_reconcilor) const {
 #if defined(OS_ANDROID)

@@ -198,8 +198,7 @@ class V4Database {
       const base::FilePath& base_path,
       const ListInfos& list_infos,
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-      NewDatabaseReadyCallback callback,
-      const base::TimeTicks create_start_time);
+      NewDatabaseReadyCallback callback);
 
   // Makes the passed |factory| the factory used to instantiate a V4Database.
   // Only for tests.

@@ -180,7 +180,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
 #else
     // Mock a signed-in user. This is used by the UserCloudPolicyStore to pass
     // the account id to the UserCloudPolicyValidator.
-    identity::SetPrimaryAccount(
+    signin::SetPrimaryAccount(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         PolicyBuilder::kFakeUsername);
 
@@ -219,7 +219,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
         IdentityManagerFactory::GetForProfile(browser()->profile())
             ->GetPrimaryAccountMutator();
     primary_account_mutator->ClearPrimaryAccount(
-        identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
         signin_metrics::SIGNOUT_TEST,
         signin_metrics::SignoutDelete::IGNORE_METRIC);
   }

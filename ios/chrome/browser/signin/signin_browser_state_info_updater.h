@@ -15,12 +15,11 @@
 
 // This class listens to various signin events and updates the signin-related
 // fields of BrowserStateInfoCache.
-class SigninBrowserStateInfoUpdater
-    : public KeyedService,
-      public SigninErrorController::Observer,
-      public identity::IdentityManager::Observer {
+class SigninBrowserStateInfoUpdater : public KeyedService,
+                                      public SigninErrorController::Observer,
+                                      public signin::IdentityManager::Observer {
  public:
-  SigninBrowserStateInfoUpdater(identity::IdentityManager* identity_manager,
+  SigninBrowserStateInfoUpdater(signin::IdentityManager* identity_manager,
                                 SigninErrorController* signin_error_controller,
                                 const base::FilePath& browser_state_path);
 
@@ -42,10 +41,10 @@ class SigninBrowserStateInfoUpdater
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
   SigninErrorController* signin_error_controller_ = nullptr;
   const base::FilePath browser_state_path_;
-  ScopedObserver<identity::IdentityManager, SigninBrowserStateInfoUpdater>
+  ScopedObserver<signin::IdentityManager, SigninBrowserStateInfoUpdater>
       identity_manager_observer_;
   ScopedObserver<SigninErrorController, SigninBrowserStateInfoUpdater>
       signin_error_controller_observer_;

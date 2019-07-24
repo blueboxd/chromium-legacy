@@ -39,24 +39,21 @@ namespace network {
 class NetworkConnectionTracker;
 }
 
-namespace signin {
-enum class AccountConsistencyMethod;
-}
-
 #if defined(OS_CHROMEOS)
 namespace chromeos {
 class AccountManager;
 }
 #endif
 
-namespace identity {
+namespace signin {
+enum class AccountConsistencyMethod;
 class IdentityManager;
 
 struct IdentityManagerBuildParams {
   IdentityManagerBuildParams();
   ~IdentityManagerBuildParams();
 
-  signin::AccountConsistencyMethod account_consistency;
+  AccountConsistencyMethod account_consistency;
   std::unique_ptr<AccountTrackerService> account_tracker_service;
   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder;
   PrefService* local_state;
@@ -90,6 +87,6 @@ struct IdentityManagerBuildParams {
 std::unique_ptr<IdentityManager> BuildIdentityManager(
     IdentityManagerBuildParams* params);
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_MANAGER_BUILDER_H_

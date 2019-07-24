@@ -1309,11 +1309,6 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('No command line for %s found (test type %s).'
                                 % (target, test_type), output_path=None)
 
-    if is_win and asan:
-      # Sandbox is not yet supported by ASAN for Windows.
-      # Perhaps this is only needed for tests that use the sandbox?
-      cmdline.append('--no-sandbox')
-
     cmdline += isolate_map[target].get('args', [])
 
     return cmdline, extra_files

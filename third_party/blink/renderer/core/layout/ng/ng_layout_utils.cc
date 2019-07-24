@@ -21,60 +21,6 @@ namespace {
 // kMainSize - width / height
 enum class LengthResolveType { kMinSize, kMaxSize, kMainSize };
 
-bool ContentShrinkToFitMayChange(const ComputedStyle& style,
-                                 const NGConstraintSpace& new_space,
-                                 const NGConstraintSpace& old_space,
-                                 const NGLayoutResult& layout_result) {
-  if (old_space.AvailableSize().inline_size ==
-      new_space.AvailableSize().inline_size)
-    return false;
-
-  NGBoxStrut margins = ComputeMarginsForSelf(new_space, style);
-
-#if DCHECK_IS_ON()
-  // The margins must be the same, as this function won't be called if we have
-  // percentage inline margins, and the percentage resolution size changes.
-  NGBoxStrut old_margins = ComputeMarginsForSelf(old_space, style);
-  DCHECK_EQ(margins.inline_start, old_margins.inline_start);
-  DCHECK_EQ(margins.inline_end, old_margins.inline_end);
-#endif
-
-  LayoutUnit old_available_inline_size =
-      std::max(LayoutUnit(),
-               old_space.AvailableSize().inline_size - margins.InlineSum());
-  LayoutUnit new_available_inline_size =
-      std::max(LayoutUnit(),
-               new_space.AvailableSize().inline_size - margins.InlineSum());
-
-  LayoutUnit inline_size =
-      NGFragment(style.GetWritingMode(), layout_result.PhysicalFragment())
-          .InlineSize();
-
-  // If the previous fragment was at its min-content size (indicated by the old
-  // available size being smaller than the fragment), we may be able to skip
-  // layout if the new available size is also smaller.
-  bool unaffected_as_min_content_size =
-      old_available_inline_size < inline_size &&
-      new_available_inline_size <= inline_size;
-
-  // If the previous fragment was at its max-content size (indicated by the old
-  // available size being larger than the fragment), we may be able to skip
-  // layout if the new available size is also larger.
-  bool unaffected_as_max_content_size =
-      old_available_inline_size > inline_size &&
-      new_available_inline_size >= inline_size;
-
-  // TODO(crbug.com/935634): There is an additional optimization where if we
-  // detect (by setting a flag in the layout result) that the
-  // min-content == max-content we can simply just skip layout, as the
-  // available size won't have any effect.
-
-  if (unaffected_as_min_content_size || unaffected_as_max_content_size)
-    return false;
-
-  return true;
-}
-
 inline bool InlineLengthMayChange(const ComputedStyle& style,
                                   const Length& length,
                                   LengthResolveType type,
@@ -99,20 +45,6 @@ inline bool InlineLengthMayChange(const ComputedStyle& style,
       (new_space.PercentageResolutionInlineSize() !=
        old_space.PercentageResolutionInlineSize()))
     return true;
-
-  // For elements which shrink to fit, we can perform a specific optimization
-  // where we can skip relayout if the element was sized to its min-content or
-  // max-content size.
-  bool is_content_shrink_to_fit =
-      type == LengthResolveType::kMainSize &&
-      (new_space.IsShrinkToFit() || length.IsFitContent());
-
-  // TODO(ikilpatrick): Test if we can remove this optimization now that we
-  // compute the initial size of the fragment.
-  if (is_content_shrink_to_fit) {
-    return ContentShrinkToFitMayChange(style, new_space, old_space,
-                                       layout_result);
-  }
 
   if (is_unspecified) {
     if (new_space.AvailableSize().inline_size !=

@@ -74,7 +74,7 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid
   ~HttpAuthNegotiateAndroid() override;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override;
+  bool Init(const NetLogWithSource& net_log) override;
   bool NeedsIdentity() const override;
   bool AllowsExplicitCredentials() const override;
   HttpAuth::AuthorizationResult ParseChallenge(
@@ -83,8 +83,19 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const NetLogWithSource& net_log,
                         CompletionOnceCallback callback) override;
   void SetDelegation(HttpAuth::DelegationType delegation_type) override;
+
+  // Unlike the platform agnostic GenerateAuthToken(), the Android specific
+  // version doesn't require a NetLogWithSource. The call is made across service
+  // boundaries, so currently the goings-on within the GenerateAuthToken()
+  // handler is outside the scope of the NetLog.
+  int GenerateAuthTokenAndroid(const AuthCredentials* credentials,
+                               const std::string& spn,
+                               const std::string& channel_bindings,
+                               std::string* auth_token,
+                               CompletionOnceCallback callback);
 
   bool can_delegate() const { return can_delegate_; }
   void set_can_delegate(bool can_delegate) { can_delegate_ = can_delegate; }

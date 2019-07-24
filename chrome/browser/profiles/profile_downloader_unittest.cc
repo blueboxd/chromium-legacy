@@ -36,7 +36,7 @@ const char kTestInvalidPictureURL[] = "invalid_picture_url";
 class ProfileDownloaderTest
     : public testing::Test,
       public ProfileDownloaderDelegate,
-      public identity::IdentityManager::DiagnosticsObserver {
+      public signin::IdentityManager::DiagnosticsObserver {
  protected:
   ProfileDownloaderTest() : profile_downloader_(this) {
     identity_test_env_.identity_manager()->AddDiagnosticsObserver(this);
@@ -48,7 +48,7 @@ class ProfileDownloaderTest
   bool NeedsProfilePicture() const override { return true; }
   int GetDesiredImageSideLength() const override { return 128; }
   std::string GetCachedPictureURL() const override { return std::string(); }
-  identity::IdentityManager* GetIdentityManager() override {
+  signin::IdentityManager* GetIdentityManager() override {
     return identity_test_env_.identity_manager();
   }
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() override {
@@ -89,7 +89,7 @@ class ProfileDownloaderTest
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   ProfileDownloader profile_downloader_;
 
   base::OnceClosure on_access_token_request_callback_;

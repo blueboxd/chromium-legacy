@@ -104,7 +104,6 @@ class WallpaperControllerClient : public ash::WallpaperControllerClient {
 
   // ash::WallpaperControllerClient:
   void OpenWallpaperPicker() override;
-  void OnFirstWallpaperAnimationFinished() override;
 
   void DeviceWallpaperImageFilePathChanged();
 

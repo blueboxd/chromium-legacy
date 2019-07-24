@@ -77,7 +77,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
 
 // Verifies that the sync promo is not displayed for a signed in user.
 TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
-  identity::MakePrimaryAccountAvailable(
+  signin::MakePrimaryAccountAvailable(
       IdentityManagerFactory::GetForProfile(profile()), "fake_username");
   CreateBubbleView();
   std::unique_ptr<views::View> footnote = CreateFootnoteView();

@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "base/sequence_checker.h"
+#include "base/sequenced_task_runner.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 
 namespace tracing {
@@ -102,7 +103,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // Be careful when using ResetTaskRunnerForTesting. There is a PostTask in the
   // constructor of PerfettoTracedProcess, so before this class is constructed
   // is the only safe time to call this.
-  static void ResetTaskRunnerForTesting();
+  static void ResetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);
 
   static void ReconstructForTesting(const char* system_socket);
 

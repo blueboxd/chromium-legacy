@@ -548,7 +548,6 @@ MediaStreamManager::MediaStreamManager(
     if (base::FeatureList::IsEnabled(features::kMojoVideoCapture)) {
       video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
           std::make_unique<ServiceVideoCaptureProvider>(
-              GetSystemConnector(),
               base::BindRepeating(&SendVideoCaptureLogMessage)),
           InProcessVideoCaptureProvider::CreateInstanceForNonDeviceCapture(
               std::move(device_task_runner),
@@ -2055,13 +2054,13 @@ void MediaStreamManager::OnMediaStreamUIWindowId(
   if (!window_id)
     return;
 
-  if (video_type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
+  if (!blink::IsVideoDesktopCaptureMediaType(video_type))
     return;
 
   // Pass along for desktop screen and window capturing when
   // DesktopCaptureDevice is used.
   for (const MediaStreamDevice& device : devices) {
-    if (device.type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE)
+    if (!blink::IsVideoDesktopCaptureMediaType(device.type))
       continue;
 
     DesktopMediaID media_id = DesktopMediaID::Parse(device.id);

@@ -72,6 +72,7 @@ source_set("autofill") {
     "//ios/chrome/browser/webdata_services",
     "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
+    "//ios/web/common",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
     "//third_party/leveldatabase",

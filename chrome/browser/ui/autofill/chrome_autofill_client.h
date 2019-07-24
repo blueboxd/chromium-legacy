@@ -55,7 +55,7 @@ class ChromeAutofillClient
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;

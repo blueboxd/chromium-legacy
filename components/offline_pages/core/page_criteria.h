@@ -17,7 +17,6 @@
 #include "url/gurl.h"
 
 namespace offline_pages {
-class ClientPolicyController;
 struct OfflinePageItem;
 
 // Criteria for matching an offline page. The default |PageCriteria| matches
@@ -76,19 +75,14 @@ struct PageCriteria {
 
 // Returns true if an offline page with |client_id| could potentially match
 // |criteria|.
-bool MeetsCriteria(const ClientPolicyController& policy_controller,
-                   const PageCriteria& criteria,
-                   const ClientId& client_id);
+bool MeetsCriteria(const PageCriteria& criteria, const ClientId& client_id);
 
 // Returns whether |item| matches |criteria|.
-bool MeetsCriteria(const ClientPolicyController& policy_controller,
-                   const PageCriteria& criteria,
-                   const OfflinePageItem& item);
+bool MeetsCriteria(const PageCriteria& criteria, const OfflinePageItem& item);
 
 // Returns the list of offline page namespaces that could potentially match
 // Criteria. Returns an empty list if any namespace could match.
 std::vector<std::string> PotentiallyMatchingNamespaces(
-    const ClientPolicyController& policy_controller,
     const PageCriteria& criteria);
 
 }  // namespace offline_pages

@@ -157,7 +157,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
       // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
       DCHECK(account_mutator);
       account_mutator->ClearPrimaryAccount(
-          identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
           signin_metrics::SIGNOUT_TEST,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
     }
@@ -203,7 +203,7 @@ class RecentTabsTableCoordinatorTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   GoogleServiceAuthError no_error_;
   IOSChromeScopedTestingLocalState local_state_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   syncer::FakeModelTypeControllerDelegate fake_controller_delegate_;
   testing::NiceMock<OpenTabsUIDelegateMock> open_tabs_ui_delegate_;

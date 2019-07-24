@@ -401,26 +401,36 @@ TEST(AXEventGeneratorTest, CreateAlertAndLiveRegion) {
 
   AXEventGenerator event_generator(&tree);
   AXTreeUpdate update = initial_state;
-  update.nodes.resize(3);
+  update.nodes.resize(4);
   update.nodes[0].child_ids.push_back(2);
   update.nodes[0].child_ids.push_back(3);
+  update.nodes[0].child_ids.push_back(4);
+
   update.nodes[1].id = 2;
   update.nodes[1].AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
                                      "polite");
+
+  // Blink should automatically add aria-live="assertive" to elements with role
+  // kAlert, but we should fire an alert event regardless.
   update.nodes[2].id = 3;
   update.nodes[2].role = ax::mojom::Role::kAlert;
-  update.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
-                                     "polite");
+
+  // Elements with role kAlertDialog will *not* usually have a live region
+  // status, but again, we should always fire an alert event.
+  update.nodes[3].id = 4;
+  update.nodes[3].role = ax::mojom::Role::kAlertDialog;
 
   ASSERT_TRUE(tree.Unserialize(update));
   EXPECT_THAT(
       event_generator,
       UnorderedElementsAre(
           HasEventAtNode(AXEventGenerator::Event::ALERT, 3),
+          HasEventAtNode(AXEventGenerator::Event::ALERT, 4),
           HasEventAtNode(AXEventGenerator::Event::CHILDREN_CHANGED, 1),
           HasEventAtNode(AXEventGenerator::Event::LIVE_REGION_CREATED, 2),
           HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 2),
-          HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 3)));
+          HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 3),
+          HasEventAtNode(AXEventGenerator::Event::SUBTREE_CREATED, 4)));
 }
 
 TEST(AXEventGeneratorTest, LiveRegionChanged) {

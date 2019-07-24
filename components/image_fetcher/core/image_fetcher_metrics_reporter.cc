@@ -20,16 +20,18 @@ const int kMaxReportTimeMs = 10 * 1000;
 
 constexpr char kEventsHistogram[] = "ImageFetcher.Events";
 constexpr char kImageLoadFromCacheHistogram[] =
-    "CachedImageFetcher.ImageLoadFromCacheTime";
+    "ImageFetcher.ImageLoadFromCacheTime";
 constexpr char kImageLoadFromCacheJavaHistogram[] =
-    "CachedImageFetcher.ImageLoadFromCacheTimeJava";
+    "ImageFetcher.ImageLoadFromCacheTimeJava";
 constexpr char kTotalFetchFromNativeTimeJavaHistogram[] =
-    "CachedImageFetcher.ImageLoadFromNativeTimeJava";
+    "ImageFetcher.ImageLoadFromNativeTimeJava";
 constexpr char kImageLoadFromNetworkHistogram[] =
-    "CachedImageFetcher.ImageLoadFromNetworkTime";
+    "ImageFetcher.ImageLoadFromNetworkTime";
 constexpr char kImageLoadFromNetworkAfterCacheHitHistogram[] =
-    "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit";
-constexpr char kLoadImageMetadata[] = "CachedImageFetcher.LoadImageMetadata";
+    "ImageFetcher.ImageLoadFromNetworkAfterCacheHit";
+constexpr char kTimeSinceLastLRUEvictionHistogram[] =
+    "ImageFetcher.TimeSinceLastCacheLRUEviction";
+constexpr char kLoadImageMetadata[] = "ImageFetcher.LoadImageMetadata";
 
 // Returns a raw pointer to a histogram which is owned
 base::HistogramBase* GetTimeHistogram(const std::string& histogram_name,
@@ -115,8 +117,7 @@ void ImageFetcherMetricsReporter::ReportImageLoadFromNetworkAfterCacheHit(
 void ImageFetcherMetricsReporter::ReportTimeSinceLastCacheLRUEviction(
     base::Time start_time) {
   base::TimeDelta time_delta = base::Time::Now() - start_time;
-  UMA_HISTOGRAM_TIMES("CachedImageFetcher.TimeSinceLastCacheLRUEviction",
-                      time_delta);
+  UMA_HISTOGRAM_TIMES(kTimeSinceLastLRUEvictionHistogram, time_delta);
 }
 
 // static

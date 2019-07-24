@@ -155,7 +155,7 @@ void FilterCategories(FetchedCategoriesVector* categories,
 bool RemoteSuggestionsFetcherImpl::skip_api_key_check_for_testing_ = false;
 
 RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     PrefService* pref_service,
     UrlLanguageHistogram* language_histogram,
@@ -283,17 +283,17 @@ void RemoteSuggestionsFetcherImpl::StartTokenRequest() {
 
   base::Time token_start_time = clock_->Now();
   identity::ScopeSet scopes{kContentSuggestionsApiScope};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "ntp_snippets", identity_manager_, scopes,
       base::BindOnce(&RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished,
                      base::Unretained(this), token_start_time),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void RemoteSuggestionsFetcherImpl::AccessTokenFetchFinished(
     base::Time token_start_time,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 

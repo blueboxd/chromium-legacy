@@ -1339,6 +1339,18 @@ def CreateSectionSizesAndSymbols(map_path=None,
     logging.info('Parsing ninja files.')
     source_mapper, ninja_elf_object_paths = (
         ninja_parser.Parse(output_directory, elf_path))
+
+    # If no symbols came from the library, it's because it's a partition
+    # extracted from a combined library. Look there instead.
+    if not ninja_elf_object_paths and elf_path:
+      combined_elf_path = elf_path.replace('.so', '__combined.so')
+      logging.info('Found no objects in %s, trying %s', elf_path,
+                   combined_elf_path)
+      source_mapper, ninja_elf_object_paths = (ninja_parser.Parse(
+          output_directory, combined_elf_path))
+      if ninja_elf_object_paths:
+        assert map_path and '__combined.so.map' in map_path
+
     logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
     assert not elf_path or ninja_elf_object_paths, (
         'Failed to find link command in ninja files for ' +
@@ -1485,6 +1497,11 @@ def _SectionSizesFromElf(elf_path, tool_prefix):
     items = match.group(1).split()
     section_sizes[items[0]] = int(items[4], 16)
   return section_sizes
+
+
+def _ElfIsMainPartition(elf_path, tool_prefix):
+  section_names = _SectionSizesFromElf(elf_path, tool_prefix).keys()
+  return models.SECTION_PART_END in section_names
 
 
 def _ArchFromElf(elf_path, tool_prefix):
@@ -1653,13 +1670,21 @@ def _DeduceMainPaths(args, parser, extracted_minimal_apk_path=None):
     if not map_path.endswith('.map') and not map_path.endswith('.map.gz'):
       parser.error('Expected --map-file to end with .map or .map.gz')
   elif elf_path:
-    map_path = elf_path + '.map'
+    # Look for a .map file named for either the ELF file, or in the partitioned
+    # native library case, the combined ELF file from which the main library was
+    # extracted. Note that we don't yet have a tool_prefix to use here, but
+    # that's not a problem for this use case.
+    if _ElfIsMainPartition(elf_path, ''):
+      map_path = elf_path.replace('.so', '__combined.so') + '.map'
+    else:
+      map_path = elf_path + '.map'
     if not os.path.exists(map_path):
       map_path += '.gz'
     if not os.path.exists(map_path):
       parser.error('Could not find .map(.gz)? file. Ensure you have built with '
                    'is_official_build=true and generate_linker_map=true, or '
                    'use --map-file to point me a linker map file.')
+
   tool_prefix = None
   if map_path:
     linker_name = _DetectLinkerName(map_path)

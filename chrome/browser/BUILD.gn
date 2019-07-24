@@ -2032,7 +2032,6 @@ jumbo_split_static_library("browser") {
     "//components/services/unzip/public/mojom",
     "//components/sessions",
     "//components/signin/core/browser",
-    "//components/signin/internal/identity_manager",  # TODO(974198): remove once closed
     "//components/signin/public/base:signin_buildflags",
     "//components/signin/public/identity_manager",
     "//components/signin/public/webdata",
@@ -2846,7 +2845,7 @@ jumbo_split_static_library("browser") {
       "//components/payments/content/android",
       "//components/resources:components_resources",
       "//components/send_tab_to_self",
-      "//components/signin/public/identity_manager",
+      "//components/signin/internal/identity_manager",  # see android/signin/DEPS
       "//media/mojo/clients",
       "//media/mojo/interfaces:constants",
       "//rlz:rlz_utils",
@@ -3464,6 +3463,8 @@ jumbo_split_static_library("browser") {
       "usb/web_usb_chooser_desktop.h",
       "usb/web_usb_detector.cc",
       "usb/web_usb_detector.h",
+      "web_launch/web_launch_files_helper.cc",
+      "web_launch/web_launch_files_helper.h",
     ]
     deps += [
       ":theme_properties",
@@ -3785,6 +3786,8 @@ jumbo_split_static_library("browser") {
   if (is_mac) {
     allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
     sources += [
+      "apps/intent_helper/mac_apps_navigation_throttle.h",
+      "apps/intent_helper/mac_apps_navigation_throttle.mm",
       "badging/badge_manager_delegate_mac.cc",
       "badging/badge_manager_delegate_mac.h",
       "download/drag_download_item_mac.mm",
@@ -3807,6 +3810,9 @@ jumbo_split_static_library("browser") {
       "ImageCaptureCore.framework",
       "OpenGL.framework",
       "QuartzCore.framework",
+
+      # TODO(avi): When we move to the 10.15 SDK, -weak_framework SafariServices
+      # here and remove the manual framework opening code.
       "SecurityInterface.framework",
     ]
   }

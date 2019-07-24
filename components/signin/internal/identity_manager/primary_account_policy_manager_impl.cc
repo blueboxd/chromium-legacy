@@ -103,5 +103,5 @@ bool PrimaryAccountPolicyManagerImpl::IsAllowedUsername(
   if (!local_state)
     return true;
 
-  return identity::IsUsernameAllowedByPatternFromPrefs(local_state, username);
+  return signin::IsUsernameAllowedByPatternFromPrefs(local_state, username);
 }

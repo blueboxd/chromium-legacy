@@ -44,7 +44,9 @@ promise_test(async () => {
   let pointerPauseThenUp = new Promise((resolve, reject) => {
       chrome.gpuBenchmarking.pointerActionSequence([{
           source: 'mouse',
-          actions: [{ 'name': 'pause', duration: 100 },
+          // The autoscroll time begins 250ms after the mouse down so we add a
+          // bit of buffer.
+          actions: [{ 'name': 'pause', duration: 300 },
                     { 'name': 'pointerUp' }]
       }], resolve);
   });

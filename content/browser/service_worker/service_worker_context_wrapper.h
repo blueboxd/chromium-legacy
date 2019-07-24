@@ -96,6 +96,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void set_storage_partition(StoragePartitionImpl* storage_partition);
 
+  // UI thread.
+  BrowserContext* browser_context();
+
   // The ResourceContext for the associated BrowserContext. This should only
   // be accessed on the IO thread, and can be null during initialization and
   // shutdown.
@@ -295,20 +298,6 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void RemoveObserver(ServiceWorkerContextCoreObserver* observer);
 
   bool is_incognito() const { return is_incognito_; }
-
-  // Used for starting a web worker (dedicated worker or shared worker). Returns
-  // a provider host for the worker and fills |out_provider_info| with info to
-  // send to the renderer to connect to the host. The host stays alive as long
-  // as this info stays alive (namely, as long as
-  // |out_provider_info->host_ptr_info| stays alive).
-  //
-  // Returns null if context() is null.
-  //
-  // Must be called on the IO thread.
-  base::WeakPtr<ServiceWorkerProviderHost> PreCreateHostForWorker(
-      int process_id,
-      blink::mojom::ServiceWorkerProviderType provider_type,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after

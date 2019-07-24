@@ -12,7 +12,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace identity {
+namespace signin {
 
 AccessTokenFetcher::AccessTokenFetcher(const CoreAccountId& account_id,
                                        const std::string& oauth_consumer_name,
@@ -187,4 +187,4 @@ void AccessTokenFetcher::RunCallbackAndMaybeDie(
   std::move(callback_).Run(std::move(error), std::move(access_token_info));
 }
 
-}  // namespace identity
+}  // namespace signin

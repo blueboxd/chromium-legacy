@@ -141,10 +141,9 @@ void WebRequestEventDetails::SetFrameData(
 
 void WebRequestEventDetails::DetermineFrameDataOnUI() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
   ExtensionApiFrameIdMap::FrameData frame_data =
-      ExtensionApiFrameIdMap::Get()->GetFrameData(rfh);
+      ExtensionApiFrameIdMap::Get()->GetFrameData(render_process_id_,
+                                                  render_frame_id_);
   SetFrameData(frame_data);
 }
 

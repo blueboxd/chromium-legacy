@@ -84,18 +84,6 @@ void VoiceInteractionController::NotifyHotwordEnabled(bool enabled) {
     observer.OnVoiceInteractionHotwordEnabled(enabled);
 }
 
-void VoiceInteractionController::NotifyHotwordAlwaysOn(bool always_on) {
-  if (hotword_always_on_.has_value() && hotword_always_on_.value() == always_on)
-    return;
-
-  hotword_always_on_ = always_on;
-  observers_.ForAllPtrs([always_on](auto* observer) {
-    observer->OnVoiceInteractionHotwordAlwaysOn(always_on);
-  });
-  for (auto& observer : local_observers_)
-    observer.OnVoiceInteractionHotwordAlwaysOn(always_on);
-}
-
 void VoiceInteractionController::NotifyFeatureAllowed(
     mojom::AssistantAllowedState state) {
   if (allowed_state_ == state)
@@ -109,10 +97,6 @@ void VoiceInteractionController::NotifyFeatureAllowed(
     observer.OnAssistantFeatureAllowedChanged(state);
 }
 
-void VoiceInteractionController::NotifyNotificationEnabled(bool enabled) {
-  notification_enabled_ = enabled;
-}
-
 void VoiceInteractionController::NotifyLocaleChanged(
     const std::string& locale) {
   if (locale_ == locale)
@@ -123,11 +107,6 @@ void VoiceInteractionController::NotifyLocaleChanged(
       [locale](auto* observer) { observer->OnLocaleChanged(locale); });
   for (auto& observer : local_observers_)
     observer.OnLocaleChanged(locale);
-}
-
-void VoiceInteractionController::NotifyLaunchWithMicOpen(
-    bool launch_with_mic_open) {
-  launch_with_mic_open_ = launch_with_mic_open;
 }
 
 void VoiceInteractionController::NotifyArcPlayStoreEnabledChanged(
@@ -185,8 +164,6 @@ void VoiceInteractionController::InitObserver(
     observer->OnVoiceInteractionContextEnabled(context_enabled_.value());
   if (hotword_enabled_.has_value())
     observer->OnVoiceInteractionHotwordEnabled(hotword_enabled_.value());
-  if (hotword_always_on_.has_value())
-    observer->OnVoiceInteractionHotwordAlwaysOn(hotword_always_on_.value());
   if (allowed_state_.has_value())
     observer->OnAssistantFeatureAllowedChanged(allowed_state_.value());
   if (locale_.has_value())

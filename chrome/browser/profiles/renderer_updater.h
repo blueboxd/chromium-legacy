@@ -30,7 +30,7 @@ class RenderProcessHost;
 // The RendererUpdater is responsible for updating renderers about state change.
 class RendererUpdater
     : public KeyedService,
-      public identity::IdentityManager::Observer,
+      public signin::IdentityManager::Observer,
 #if defined(OS_CHROMEOS)
       public chromeos::OAuth2LoginManager::Observer,
 #endif
@@ -92,9 +92,9 @@ class RendererUpdater
   std::string cached_variation_ids_header_;
   std::string cached_variation_ids_header_signed_in_;
 
-  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererUpdater);
 };

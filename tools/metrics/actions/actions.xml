@@ -12352,6 +12352,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileNTPPaused">
+  <owner>skym@chromium.org</owner>
+  <owner>carloks@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The New Tab Page (NTP) was open when Chrome was backgrounded by the user.
+  </description>
+</action>
+
 <action name="MobileNTPRecentlyClosed">
   <obsolete>
     Deprecated as of 01/2017. Replaced with
@@ -17150,6 +17159,30 @@ should be able to be added at any place in this file.
     A dialog was shown to the user to indicate that their administrator requires
     that Chrome be relaunched.
   </description>
+</action>
+
+<action name="ReleaseNotes.LaunchedAboutPage">
+  <owner>yulunwu@chromium.org</owner>
+  <description>
+    Release Notes was launched from clicking link in about page.
+  </description>
+</action>
+
+<action name="ReleaseNotes.LaunchedNotification">
+  <owner>yulunwu@chromium.org</owner>
+  <description>
+    Release Notes was launched from clicking notification.
+  </description>
+</action>
+
+<action name="ReleaseNotes.NotificationShown">
+  <owner>yulunwu@chromium.org</owner>
+  <description>Release Notes notification was shown.</description>
+</action>
+
+<action name="ReleaseNotes.ShowReleaseNotes">
+  <owner>yulunwu@chromium.org</owner>
+  <description>Release Notes app was launched.</description>
 </action>
 
 <action name="Reload">

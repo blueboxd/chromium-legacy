@@ -15,7 +15,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-namespace identity {
+namespace signin {
 
 AccountsMutatorImpl::AccountsMutatorImpl(
     ProfileOAuth2TokenService* token_service,
@@ -102,7 +102,7 @@ void AccountsMutatorImpl::MoveAccount(AccountsMutator* target,
   // to the device ID of the current mutator on the server. Reset the device ID
   // of the current mutator to avoid tying it with the new mutator. See
   // https://crbug.com/813928#c16
-  signin::RecreateSigninScopedDeviceId(pref_service_);
+  RecreateSigninScopedDeviceId(pref_service_);
 }
 #endif
 
@@ -113,4 +113,4 @@ void AccountsMutatorImpl::LegacySetRefreshTokenForSupervisedUser(
       signin_metrics::SourceForRefreshTokenOperation::kSupervisedUser_InitSync);
 }
 
-}  // namespace identity
+}  // namespace signin

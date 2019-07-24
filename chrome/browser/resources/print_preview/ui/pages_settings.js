@@ -374,10 +374,8 @@ Polymer({
           'pageRangeSyntaxInstruction',
           loadTimeData.getString('examplePageRangeText'));
     } else {
-      formattedMessage = (this.pageCount === 0) ?
-          '' :
-          loadTimeData.getStringF(
-              'pageRangeLimitInstructionWithValue', this.pageCount);
+      formattedMessage = loadTimeData.getStringF(
+          'pageRangeLimitInstructionWithValue', this.pageCount);
     }
     return formattedMessage.replace(/<\/b>|<b>/g, '');
   },
@@ -404,6 +402,10 @@ Polymer({
    * @private
    */
   getAllPagesString_: function() {
+    if (this.pageCount === 0) {
+      return '';
+    }
+
     return this.pageCount === 1 ? '1' : `1-${this.pageCount}`;
   },
 

@@ -116,9 +116,10 @@ using VideoEncodeAcceleratorSupportedProfiles =
     std::vector<VideoEncodeAcceleratorSupportedProfile>;
 
 enum class ImageDecodeAcceleratorType {
-  kJpeg = 0,
-  kUnknown = 1,
-  kMaxValue = kUnknown,
+  kUnknown = 0,
+  kJpeg = 1,
+  kWebP = 2,
+  kMaxValue = kWebP,
 };
 
 enum class ImageDecodeAcceleratorSubsampling {

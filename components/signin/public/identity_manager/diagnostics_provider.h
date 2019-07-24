@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "components/signin/public/identity_manager/load_credentials_state.h"
 
-namespace identity {
+namespace signin {
 
 // DiagnosticsProvider is the interface to obtain diagnostics about
 // IdentityManager internals.
@@ -34,6 +34,6 @@ class DiagnosticsProvider {
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsProvider);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_DIAGNOSTICS_PROVIDER_H_

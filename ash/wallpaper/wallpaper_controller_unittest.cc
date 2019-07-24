@@ -231,15 +231,12 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
   virtual ~TestWallpaperControllerClient() = default;
 
   size_t open_count() const { return open_count_; }
-  size_t animation_count() const { return animation_count_; }
 
   // WallpaperControllerClient:
   void OpenWallpaperPicker() override { open_count_++; }
-  void OnFirstWallpaperAnimationFinished() override { animation_count_++; }
 
  private:
   size_t open_count_ = 0;
-  size_t animation_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestWallpaperControllerClient);
 };
@@ -552,13 +549,6 @@ TEST_F(WallpaperControllerTest, Client) {
   EXPECT_TRUE(controller_->CanOpenWallpaperPicker());
   controller_->OpenWallpaperPickerIfAllowed();
   EXPECT_EQ(1u, client.open_count());
-
-  EXPECT_EQ(0u, client.animation_count());
-  controller_->ShowWallpaperImage(CreateImage(640, 480, SK_ColorBLUE),
-                                  CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
-                                  /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
-  EXPECT_EQ(1u, client.animation_count());
 }
 
 TEST_F(WallpaperControllerTest, BasicReparenting) {

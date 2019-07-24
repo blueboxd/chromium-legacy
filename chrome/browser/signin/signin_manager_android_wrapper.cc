@@ -7,7 +7,7 @@
 SigninManagerAndroidWrapper::SigninManagerAndroidWrapper(
     SigninClient* signin_client,
     PrefService* local_state_prefs_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     std::unique_ptr<SigninManagerDelegate> signin_manager_delegate)
     : signin_manager_android_(signin_client,
                               local_state_prefs_service,

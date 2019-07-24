@@ -26,10 +26,12 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class AppCacheHost;
+class BrowserContext;
 class ThrottlingURLLoader;
 class NavigationLoaderInterceptor;
 class ResourceContext;
-class ServiceWorkerProviderHost;
+class ServiceWorkerNavigationHandle;
+class ServiceWorkerNavigationHandleCore;
 
 // The URLLoader for loading a shared worker script. Only used for the main
 // script request.
@@ -41,13 +43,18 @@ class ServiceWorkerProviderHost;
 // client. On redirects, it starts over with the new request URL, possibly
 // starting a new loader and becoming the client of that.
 //
-// Lives on the IO thread.
+// Lives on the UI thread when NavigationLoaderOnUI is enabled, and the IO
+// thread otherwise.
 class WorkerScriptLoader : public network::mojom::URLLoader,
                            public network::mojom::URLLoaderClient {
  public:
   // Returns the resource context, or nullptr during shutdown. Must be called on
   // the IO thread.
   using ResourceContextGetter = base::RepeatingCallback<ResourceContext*(void)>;
+
+  // Returns the browser context, or nullptr during shutdown. Must be called on
+  // the UI thread.
+  using BrowserContextGetter = base::RepeatingCallback<BrowserContext*(void)>;
 
   // |default_loader_factory| is used to load the script if the load is not
   // intercepted by a feature like service worker. Typically it will load the
@@ -61,8 +68,12 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       uint32_t options,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
-      base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+      base::WeakPtr<ServiceWorkerNavigationHandle>
+          service_worker_handle /* UI */,
+      base::WeakPtr<ServiceWorkerNavigationHandleCore>
+          service_worker_handle_core /* IO */,
       base::WeakPtr<AppCacheHost> appcache_host,
+      const BrowserContextGetter& browser_context_getter,
       const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
@@ -114,6 +125,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   bool default_loader_used_ = false;
 
  private:
+  void Abort();
   void Start();
   void MaybeStartLoader(
       NavigationLoaderInterceptor* interceptor,
@@ -134,7 +146,9 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   const uint32_t options_;
   network::ResourceRequest resource_request_;
   network::mojom::URLLoaderClientPtr client_;
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
+  base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  base::WeakPtr<ServiceWorkerNavigationHandleCore> service_worker_handle_core_;
+  BrowserContextGetter browser_context_getter_;
   ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -157,4 +171,5 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
 };
 
 }  // namespace content
+
 #endif  // CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_H_

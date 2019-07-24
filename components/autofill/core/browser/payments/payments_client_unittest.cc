@@ -299,7 +299,7 @@ class PaymentsClientTest : public testing::Test {
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   TestPersonalDataManager test_personal_data_;
   std::unique_ptr<PaymentsClient> client_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   net::HttpRequestHeaders intercepted_headers_;
   bool has_variations_header_;

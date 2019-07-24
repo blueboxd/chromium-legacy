@@ -263,7 +263,7 @@ HttpAuthSSPI::~HttpAuthSSPI() {
   }
 }
 
-bool HttpAuthSSPI::Init() {
+bool HttpAuthSSPI::Init(const NetLogWithSource&) {
   return true;
 }
 
@@ -300,6 +300,7 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
                                     const std::string& spn,
                                     const std::string& channel_bindings,
                                     std::string* auth_token,
+                                    const NetLogWithSource&,
                                     CompletionOnceCallback /*callback*/) {
   // Initial challenge.
   if (!SecIsValidHandle(&cred_)) {

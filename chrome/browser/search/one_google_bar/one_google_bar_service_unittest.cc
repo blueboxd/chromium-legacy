@@ -73,7 +73,7 @@ class OneGoogleBarServiceTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
 
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_env_;
+  signin::IdentityTestEnvironment identity_env_;
 
   // Owned by the service.
   FakeOneGoogleBarLoader* loader_;

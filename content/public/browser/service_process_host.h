@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_SERVICE_PROCESS_HOST_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -58,12 +59,16 @@ class CONTENT_EXPORT ServiceProcessHost {
     // Specifies the display name of the service process. This should generally
     // be a human readable and meaningful application or service name and will
     // appear in places like the system task viewer.
+    Options& WithDisplayName(const std::string& name);
     Options& WithDisplayName(const base::string16& name);
     Options& WithDisplayName(int resource_id);
 
     // Specifies additional flags to configure the launched process. See
     // ChildProcessHost for flag definitions.
     Options& WithChildFlags(int flags);
+
+    // Specifies extra command line switches to append before launch.
+    Options& WithExtraCommandLineSwitches(std::vector<std::string> switches);
 
     // Passes the contents of this Options object to a newly returned Options
     // value. This must be called when moving a built Options object into a call
@@ -73,6 +78,7 @@ class CONTENT_EXPORT ServiceProcessHost {
     SandboxType sandbox_type = service_manager::SANDBOX_TYPE_UTILITY;
     base::string16 display_name;
     base::Optional<int> child_flags;
+    std::vector<std::string> extra_switches;
   };
 
   // An interface which can be implemented and registered/unregistered with

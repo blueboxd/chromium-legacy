@@ -21,7 +21,7 @@ class PrefService;
 class PrimaryAccountManager;
 class ProfileOAuth2TokenService;
 
-namespace identity {
+namespace signin {
 
 // Concrete implementation of the AccountsMutatorImpl interface.
 class AccountsMutatorImpl : public AccountsMutator {
@@ -70,6 +70,6 @@ class AccountsMutatorImpl : public AccountsMutator {
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorImpl);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_ACCOUNTS_MUTATOR_IMPL_H_

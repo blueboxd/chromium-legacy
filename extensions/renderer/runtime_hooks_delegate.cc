@@ -89,6 +89,28 @@ RuntimeHooksDelegate::RuntimeHooksDelegate(
     : messaging_service_(messaging_service) {}
 RuntimeHooksDelegate::~RuntimeHooksDelegate() {}
 
+// static
+RequestResult RuntimeHooksDelegate::GetURL(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  DCHECK_EQ(1u, arguments.size());
+  DCHECK(arguments[0]->IsString());
+  DCHECK(script_context->extension());
+
+  v8::Isolate* isolate = script_context->isolate();
+  std::string path = gin::V8ToString(isolate, arguments[0]);
+
+  RequestResult result(RequestResult::HANDLED);
+  std::string url = base::StringPrintf(
+      "chrome-extension://%s%s%s", script_context->extension()->id().c_str(),
+      !path.empty() && path[0] == '/' ? "" : "/", path.c_str());
+  result.return_value = gin::StringToV8(isolate, url);
+  // TODO(tjudkins): Gather data on how often this is passed a bad URL (i.e. not
+  // a relative file path for the extension), so we can decide if it's fine to
+  // throw an error in those cases.
+  return result;
+}
+
 RequestResult RuntimeHooksDelegate::HandleRequest(
     const std::string& method_name,
     const APISignature* signature,
@@ -174,20 +196,7 @@ RequestResult RuntimeHooksDelegate::HandleGetManifest(
 RequestResult RuntimeHooksDelegate::HandleGetURL(
     ScriptContext* script_context,
     const std::vector<v8::Local<v8::Value>>& arguments) {
-  DCHECK_EQ(1u, arguments.size());
-  DCHECK(arguments[0]->IsString());
-  DCHECK(script_context->extension());
-
-  v8::Isolate* isolate = script_context->isolate();
-  std::string path = gin::V8ToString(isolate, arguments[0]);
-
-  RequestResult result(RequestResult::HANDLED);
-  std::string url = base::StringPrintf(
-      "chrome-extension://%s%s%s", script_context->extension()->id().c_str(),
-      !path.empty() && path[0] == '/' ? "" : "/", path.c_str());
-  result.return_value = gin::StringToV8(isolate, url);
-
-  return result;
+  return GetURL(script_context, arguments);
 }
 
 RequestResult RuntimeHooksDelegate::HandleSendMessage(

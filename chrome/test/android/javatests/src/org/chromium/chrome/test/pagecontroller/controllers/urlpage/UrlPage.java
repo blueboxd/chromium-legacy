@@ -6,6 +6,7 @@ package org.chromium.chrome.test.pagecontroller.controllers.urlpage;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.pagecontroller.controllers.PageController;
+import org.chromium.chrome.test.pagecontroller.controllers.tabswitcher.TabSwitcherController;
 import org.chromium.chrome.test.pagecontroller.utils.IUi2Locator;
 import org.chromium.chrome.test.pagecontroller.utils.Ui2Locators;
 import org.chromium.chrome.test.pagecontroller.utils.UiLocatorHelper;
@@ -45,5 +46,12 @@ public class UrlPage extends PageController {
         IUi2Locator locator =
                 Ui2Locators.withPath(LOCATOR_WEB_VIEW, Ui2Locators.withTextContaining(text));
         return mLocatorHelper.isOnScreen(locator);
+    }
+
+    public TabSwitcherController openTabSwitcher() {
+        mUtils.click(LOCATOR_TAB_SWITCHER);
+        TabSwitcherController inst = TabSwitcherController.getInstance();
+        inst.verify();
+        return inst;
     }
 }

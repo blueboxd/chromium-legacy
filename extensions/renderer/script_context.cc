@@ -49,8 +49,6 @@ std::string GetContextTypeDescriptionString(Feature::Context context_type) {
       return "BLESSED_WEB_PAGE";
     case Feature::WEBUI_CONTEXT:
       return "WEBUI";
-    case Feature::SERVICE_WORKER_CONTEXT:
-      return "SERVICE_WORKER";
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       return "LOCK_SCREEN_EXTENSION";
   }
@@ -268,15 +266,20 @@ std::string ScriptContext::GetEffectiveContextTypeDescription() const {
 }
 
 const GURL& ScriptContext::service_worker_scope() const {
-  DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context_type());
+  DCHECK(IsForServiceWorker());
   return service_worker_scope_;
+}
+
+bool ScriptContext::IsForServiceWorker() const {
+  return service_worker_version_id_ !=
+         blink::mojom::kInvalidServiceWorkerVersionId;
 }
 
 bool ScriptContext::IsAnyFeatureAvailableToContext(
     const Feature& api,
     CheckAliasStatus check_alias) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(lazyboy): Decide what we should do for SERVICE_WORKER_CONTEXT, where
+  // TODO(lazyboy): Decide what we should do for service workers, where
   // web_frame() is null.
   GURL url = web_frame() ? GetDocumentLoaderURLForFrame(web_frame()) : url_;
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(

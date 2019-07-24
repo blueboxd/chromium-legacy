@@ -113,7 +113,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
       [[NSMutableDictionary alloc] init];
 
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
@@ -180,7 +180,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 @interface SignedInAccountsViewController () <
     IdentityManagerObserverBridgeDelegate> {
   ios::ChromeBrowserState* _browserState;  // Weak.
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   MDCDialogTransitionController* _transitionController;
 
@@ -217,7 +217,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     _browserState = browserState;
     _dispatcher = dispatcher;
     _identityManagerObserver =
-        std::make_unique<identity::IdentityManagerObserverBridge>(
+        std::make_unique<signin::IdentityManagerObserverBridge>(
             IdentityManagerFactory::GetForBrowserState(_browserState), self);
     _transitionController = [[MDCDialogTransitionController alloc] init];
     self.modalPresentationStyle = UIModalPresentationCustom;
@@ -246,7 +246,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   CGFloat width = std::min(
       kDialogMaxWidth, self.presentingViewController.view.bounds.size.width -
                            2 * kMDCMinHorizontalPadding);
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   int shownAccounts =
       std::min(kMaxShownAccounts,
@@ -389,7 +389,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 #pragma mark IdentityManagerObserverBridgeDelegate
 
 - (void)onEndBatchOfRefreshTokenStateChanges {
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   if (identityManager->GetAccountsWithRefreshTokens().empty()) {
     [self dismissWithCompletion:nil];

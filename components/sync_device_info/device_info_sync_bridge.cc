@@ -22,6 +22,7 @@
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_util.h"
 #include "components/sync_device_info/local_device_info_util.h"
 
@@ -127,10 +128,13 @@ base::Optional<ModelError> ParseSpecificsOnBackendSequence(
 DeviceInfoSyncBridge::DeviceInfoSyncBridge(
     std::unique_ptr<MutableLocalDeviceInfoProvider> local_device_info_provider,
     OnceModelTypeStoreFactory store_factory,
-    std::unique_ptr<ModelTypeChangeProcessor> change_processor)
+    std::unique_ptr<ModelTypeChangeProcessor> change_processor,
+    std::unique_ptr<DeviceInfoPrefs> device_info_prefs)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      local_device_info_provider_(std::move(local_device_info_provider)) {
+      local_device_info_provider_(std::move(local_device_info_provider)),
+      device_info_prefs_(std::move(device_info_prefs)) {
   DCHECK(local_device_info_provider_);
+  DCHECK(device_info_prefs_);
 
   // Provider must not be initialized, the bridge takes care.
   DCHECK(!local_device_info_provider_->GetLocalDeviceInfo());
@@ -150,6 +154,8 @@ void DeviceInfoSyncBridge::OnSyncStarting(
     const DataTypeActivationRequest& request) {
   // Store the cache GUID, mainly in case MergeSyncData() is executed later.
   local_cache_guid_ = request.cache_guid;
+  // Add the cache guid to the local prefs.
+  device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
 }
 
 std::unique_ptr<MetadataChangeList>
@@ -174,8 +180,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
     DCHECK_EQ(change->storage_key(), specifics.cache_guid());
 
     // Each device is the authoritative source for itself, ignore any remote
-    // changes that have our local cache guid.
-    if (change->storage_key() == local_cache_guid_) {
+    // changes that have a cache guid that is or was this local device.
+    if (device_info_prefs_->IsRecentLocalCacheGuid(change->storage_key())) {
       continue;
     }
 
@@ -197,8 +203,8 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
   for (const std::unique_ptr<EntityChange>& change : entity_changes) {
     const std::string guid = change->storage_key();
     // Each device is the authoritative source for itself, ignore any remote
-    // changes that have our local cache guid.
-    if (guid == local_cache_guid_) {
+    // changes that have a cache guid that is or was this local device.
+    if (device_info_prefs_->IsRecentLocalCacheGuid(guid)) {
       continue;
     }
 
@@ -303,6 +309,11 @@ void DeviceInfoSyncBridge::RemoveObserver(Observer* observer) {
 
 int DeviceInfoSyncBridge::CountActiveDevices() const {
   return CountActiveDevices(Time::Now());
+}
+
+bool DeviceInfoSyncBridge::IsRecentLocalCacheGuid(
+    const std::string& cache_guid) const {
+  return device_info_prefs_->IsRecentLocalCacheGuid(cache_guid);
 }
 
 bool DeviceInfoSyncBridge::IsPulseTimerRunningForTest() const {
@@ -429,6 +440,10 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   local_cache_guid_ = local_cache_guid_in_metadata;
   local_device_info_provider_->Initialize(local_cache_guid_,
                                           local_session_name_);
+
+  // This probably isn't strictly needed, but in case the cache_guid has changed
+  // we save the new one to prefs.
+  device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
   ReconcileLocalAndStored();
 }
 

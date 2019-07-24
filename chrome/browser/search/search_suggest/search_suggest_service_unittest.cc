@@ -64,7 +64,7 @@ class SearchSuggestServiceTest : public BrowserWithTestWindowTest {
     template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
     search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
 
-    identity_env_ = std::make_unique<identity::IdentityTestEnvironment>(
+    identity_env_ = std::make_unique<signin::IdentityTestEnvironment>(
         &test_url_loader_factory_);
     auto loader = std::make_unique<FakeSearchSuggestLoader>();
     loader_ = loader.get();
@@ -132,7 +132,7 @@ class SearchSuggestServiceTest : public BrowserWithTestWindowTest {
  private:
   TemplateURLService* template_url_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_env_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_env_;
 
   // Owned by the service.
   FakeSearchSuggestLoader* loader_;

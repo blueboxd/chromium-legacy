@@ -899,6 +899,12 @@
           'shards': 2,
         },
       },
+      'chromeos-betty-google-rel': {
+        # TODO(crbug.com/986904): Remove this filter.
+        'args': [
+          '--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT',
+        ],
+      },
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,

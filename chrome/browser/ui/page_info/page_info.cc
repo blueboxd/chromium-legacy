@@ -987,18 +987,14 @@ void PageInfo::RecordPasswordReuseEvent() {
         safe_browsing::WarningAction::SHOWN,
         password_protection_service_
             ->GetPasswordProtectionReusedPasswordAccountType(
-                PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                (password_protection_service_->GetAccountInfo())
-                    .hosted_domain));
+                PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   } else {
     safe_browsing::LogWarningAction(
         safe_browsing::WarningUIType::PAGE_INFO,
         safe_browsing::WarningAction::SHOWN,
         password_protection_service_
             ->GetPasswordProtectionReusedPasswordAccountType(
-                PasswordType::ENTERPRISE_PASSWORD,
-                (password_protection_service_->GetAccountInfo())
-                    .hosted_domain));
+                PasswordType::ENTERPRISE_PASSWORD));
   }
 }
 #endif

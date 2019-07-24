@@ -55,14 +55,11 @@ FileAnalyzer::Results ExtractFileFeatures(
   UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
                       base::TimeTicks::Now() - start_time);
 
-  start_time = base::TimeTicks::Now();
   if (!binary_feature_extractor->ExtractImageFeatures(
           file_path, BinaryFeatureExtractor::kDefaultOptions,
           &results.image_headers, nullptr)) {
     results.image_headers = ClientDownloadRequest::ImageHeaders();
   }
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractImageHeadersTime",
-                      base::TimeTicks::Now() - start_time);
 
   return results;
 }

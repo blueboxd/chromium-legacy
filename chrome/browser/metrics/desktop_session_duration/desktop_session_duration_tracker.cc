@@ -156,7 +156,7 @@ void DesktopSessionDurationTracker::EndSession(
     delta = base::TimeDelta();
 
   for (Observer& observer : observer_list_)
-    observer.OnSessionEnded(delta);
+    observer.OnSessionEnded(delta, session_start_ + delta);
 
   DVLOG(4) << "Logging session length of " << delta.InSeconds() << " seconds.";
 

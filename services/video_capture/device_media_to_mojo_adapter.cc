@@ -40,24 +40,18 @@ namespace video_capture {
 
 #if defined(OS_CHROMEOS)
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device,
     media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
     scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner)
-    : service_ref_(std::move(service_ref)),
-      device_(std::move(device)),
+    : device_(std::move(device)),
       jpeg_decoder_factory_callback_(std::move(jpeg_decoder_factory_callback)),
       jpeg_decoder_task_runner_(std::move(jpeg_decoder_task_runner)),
       device_started_(false),
       weak_factory_(this) {}
 #else
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device)
-    : service_ref_(std::move(service_ref)),
-      device_(std::move(device)),
-      device_started_(false),
-      weak_factory_(this) {}
+    : device_(std::move(device)), device_started_(false), weak_factory_(this) {}
 #endif  // defined(OS_CHROMEOS)
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {

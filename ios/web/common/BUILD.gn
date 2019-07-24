@@ -15,6 +15,8 @@ source_set("common") {
     "origin_util.mm",
     "referrer_util.cc",
     "referrer_util.h",
+    "url_scheme_util.h",
+    "url_scheme_util.mm",
     "url_util.cc",
     "url_util.h",
   ]
@@ -64,6 +66,7 @@ source_set("unittests") {
   sources = [
     "origin_util_unittest.mm",
     "referrer_util_unittest.cc",
+    "url_scheme_util_unittest.mm",
     "url_util_unittest.cc",
   ]
 }

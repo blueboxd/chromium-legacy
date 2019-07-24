@@ -38,7 +38,7 @@ const char kForceSigninVerificationFailureTimeMetricsName[] =
     "Signin.ForceSigninVerificationTime.Failure";
 
 ForceSigninVerifier::ForceSigninVerifier(
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : has_token_verified_(false),
       backoff_entry_(&kForceSigninVerifierBackoffPolicy),
       creation_time_(base::TimeTicks::Now()),
@@ -55,7 +55,7 @@ ForceSigninVerifier::~ForceSigninVerifier() {
 
 void ForceSigninVerifier::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   if (error.state() != GoogleServiceAuthError::NONE) {
     if (error.IsPersistentError()) {
       UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationFailureTimeMetricsName,
@@ -127,11 +127,11 @@ void ForceSigninVerifier::SendRequestIfNetworkAvailable(
   // It is safe to use Unretained(this) here given that the callback
   // will not be invoked if this object is deleted.
   access_token_fetcher_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           "force_signin_verifier", identity_manager_, oauth2_scopes,
           base::BindOnce(&ForceSigninVerifier::OnAccessTokenFetchComplete,
                          base::Unretained(this)),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 bool ForceSigninVerifier::ShouldSendRequest() {
@@ -146,12 +146,12 @@ void ForceSigninVerifier::CloseAllBrowserWindows() {
   if (!primary_account_mutator)
     return;
   primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
       signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
 }
 
-identity::PrimaryAccountAccessTokenFetcher*
+signin::PrimaryAccountAccessTokenFetcher*
 ForceSigninVerifier::GetAccessTokenFetcherForTesting() {
   return access_token_fetcher_.get();
 }

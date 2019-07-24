@@ -14,7 +14,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/gaia/core_account_id.h"
 
-namespace identity {
+namespace signin {
 
 PrimaryAccountMutatorImpl::PrimaryAccountMutatorImpl(
     AccountTrackerService* account_tracker,
@@ -87,4 +87,4 @@ bool PrimaryAccountMutatorImpl::ClearPrimaryAccount(
 }
 #endif
 
-}  // namespace identity
+}  // namespace signin

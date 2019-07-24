@@ -22,8 +22,6 @@ class ScopedVAImage;
 // or 4:4:4, returns kInvalidVaRtFormat.
 unsigned int VaSurfaceFormatForJpeg(const JpegFrameHeader& frame_header);
 
-// Initializes a VaapiWrapper for the purpose of performing
-// hardware-accelerated JPEG decodes.
 class VaapiJpegDecoder : public VaapiImageDecoder {
  public:
   VaapiJpegDecoder();
@@ -40,7 +38,7 @@ class VaapiJpegDecoder : public VaapiImageDecoder {
   std::unique_ptr<ScopedVAImage> GetImage(uint32_t preferred_image_fourcc,
                                           VaapiImageDecodeStatus* status);
 
- protected:
+ private:
   // VaapiImageDecoder implementation.
   VaapiImageDecodeStatus AllocateVASurfaceAndSubmitVABuffers(
       base::span<const uint8_t> encoded_image) override;

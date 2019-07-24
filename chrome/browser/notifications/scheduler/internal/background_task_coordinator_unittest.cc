@@ -15,8 +15,8 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/test/fake_clock.h"
+#include "chrome/browser/notifications/scheduler/test/mock_notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
@@ -43,21 +43,6 @@ const std::vector<test::ImpressionTestData> kClientsImpressionTestData = {
      2 /* current_max_daily_show */,
      {},
      base::nullopt /* suppression_info */}};
-
-class MockNotificationBackgroundTaskScheduler
-    : public NotificationBackgroundTaskScheduler {
- public:
-  MockNotificationBackgroundTaskScheduler() = default;
-  ~MockNotificationBackgroundTaskScheduler() override = default;
-  MOCK_METHOD3(Schedule,
-               void(notifications::SchedulerTaskTime,
-                    base::TimeDelta,
-                    base::TimeDelta));
-  MOCK_METHOD0(Cancel, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockNotificationBackgroundTaskScheduler);
-};
 
 base::TimeDelta NoopTimeRandomizer(const base::TimeDelta& time_window) {
   return base::TimeDelta();
@@ -89,14 +74,14 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
     config_.suppression_duration = base::TimeDelta::FromDays(3);
 
     auto background_task =
-        std::make_unique<MockNotificationBackgroundTaskScheduler>();
+        std::make_unique<test::MockNotificationBackgroundTaskScheduler>();
     background_task_ = background_task.get();
     coordinator_ = std::make_unique<BackgroundTaskCoordinator>(
         std::move(background_task), &config_,
         base::BindRepeating(&NoopTimeRandomizer, base::TimeDelta()), &clock_);
   }
 
-  MockNotificationBackgroundTaskScheduler* background_task() {
+  test::MockNotificationBackgroundTaskScheduler* background_task() {
     return background_task_;
   }
 
@@ -148,7 +133,7 @@ class BackgroundTaskCoordinatorTest : public testing::Test {
   test::FakeClock clock_;
   SchedulerConfig config_;
   std::unique_ptr<BackgroundTaskCoordinator> coordinator_;
-  MockNotificationBackgroundTaskScheduler* background_task_;
+  test::MockNotificationBackgroundTaskScheduler* background_task_;
   TestData test_data_;
   std::map<SchedulerClientType, std::unique_ptr<ClientState>> client_states_;
 

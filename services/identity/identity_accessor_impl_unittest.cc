@@ -116,12 +116,12 @@ class IdentityAccessorImplTest : public testing::Test {
   base::Optional<std::string> access_token_;
   GoogleServiceAuthError access_token_error_;
 
-  IdentityTestEnvironment* identity_test_environment() {
+  signin::IdentityTestEnvironment* identity_test_environment() {
     return &identity_test_environment_;
   }
 
  private:
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   IdentityService service_;
 

@@ -697,7 +697,7 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
     // pointer_event_factory updates it.
     FloatPoint last_mouse_position =
         pointer_event_factory_.GetLastPointerPosition(
-            PointerEventFactory::kMouseId, event);
+            PointerEventFactory::kMouseId, event, event.GetType());
 
     WebInputEventResult result = CreateAndDispatchPointerEvent(
         target, mouse_event_type, event, coalesced_events, predicted_events,
@@ -710,8 +710,8 @@ WebInputEventResult PointerEventManager::DirectDispatchMousePointerEvent(
     return result;
   }
   pointer_event_factory_.SetLastPosition(
-      pointer_event_factory_.GetPointerEventId(event),
-      event.PositionInScreen());
+      pointer_event_factory_.GetPointerEventId(event), event.PositionInScreen(),
+      event.GetType());
 
   return WebInputEventResult::kHandledSuppressed;
 }
@@ -740,7 +740,8 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
   // pointer_event_factory updates it.
   FloatPoint last_mouse_position =
       pointer_event_factory_.GetLastPointerPosition(
-          pointer_event_factory_.GetPointerEventId(mouse_event), mouse_event);
+          pointer_event_factory_.GetPointerEventId(mouse_event), mouse_event,
+          event_type);
 
   PointerEvent* pointer_event = pointer_event_factory_.Create(
       web_pointer_event, pointer_coalesced_events, pointer_predicted_events,
@@ -1086,15 +1087,10 @@ void PointerEventManager::SetLastPointerPositionForFrameBoundary(
     pointer_event_factory_.RemoveLastPosition(pointer_id);
   } else if (!last_target || new_target->GetDocument().GetFrame() !=
                                  last_target->GetDocument().GetFrame()) {
-    pointer_event_factory_.SetLastPosition(
-        pointer_id, web_pointer_event.PositionInScreen());
+    pointer_event_factory_.SetLastPosition(pointer_id,
+                                           web_pointer_event.PositionInScreen(),
+                                           web_pointer_event.GetType());
   }
-}
-
-void PointerEventManager::SetLastMousePositionForPointerUnlock(
-    FloatPoint mouse_lock_position_in_screen) {
-  pointer_event_factory_.SetLastPosition(PointerEventFactory::kMouseId,
-                                         mouse_lock_position_in_screen);
 }
 
 void PointerEventManager::RemoveLastMousePosition() {

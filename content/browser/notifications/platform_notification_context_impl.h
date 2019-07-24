@@ -24,6 +24,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 
 class GURL;
@@ -65,8 +66,9 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
   void Shutdown();
 
   // Creates a BlinkNotificationServiceImpl that is owned by this context.
-  void CreateService(const url::Origin& origin,
-                     blink::mojom::NotificationServiceRequest request);
+  void CreateService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NotificationService> receiver);
 
   // Removes |service| from the list of owned services, for example because the
   // Mojo pipe disconnected. Must be called on the UI thread.

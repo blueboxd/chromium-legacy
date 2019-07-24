@@ -81,6 +81,8 @@ const CLASSES = {
   DARK: 'dark',
   DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  // Extended and elevated style for customization entry point.
+  ENTRY_POINT_ENHANCED: 'ep-enhanced',
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   // Applied when the fakebox placeholder text should not be hidden on focus.
   SHOW_PLACEHOLDER: 'show-placeholder',
@@ -148,22 +150,6 @@ const IDS = {
  * @const
  */
 const LOG_TYPE = {
-  // A static Doodle was shown, coming from cache.
-  NTP_STATIC_LOGO_SHOWN_FROM_CACHE: 30,
-  // A static Doodle was shown, coming from the network.
-  NTP_STATIC_LOGO_SHOWN_FRESH: 31,
-  // A call-to-action Doodle image was shown, coming from cache.
-  NTP_CTA_LOGO_SHOWN_FROM_CACHE: 32,
-  // A call-to-action Doodle image was shown, coming from the network.
-  NTP_CTA_LOGO_SHOWN_FRESH: 33,
-
-  // A static Doodle was clicked.
-  NTP_STATIC_LOGO_CLICKED: 34,
-  // A call-to-action Doodle was clicked.
-  NTP_CTA_LOGO_CLICKED: 35,
-  // An animated Doodle was clicked.
-  NTP_ANIMATED_LOGO_CLICKED: 36,
-
   // The One Google Bar was shown.
   NTP_ONE_GOOGLE_BAR_SHOWN: 37,
 
@@ -446,8 +432,7 @@ function renderTheme() {
 
   $(customize.IDS.EDIT_BG)
       .classList.toggle(
-          customize.CLASSES.ENTRY_POINT_ENHANCED,
-          !info.customBackgroundConfigured);
+          CLASSES.ENTRY_POINT_ENHANCED, !info.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
     customize.onThemeChange();
@@ -1156,9 +1141,6 @@ function init() {
     }
 
     doodles.init();
-
-    $(customize.IDS.EDIT_BG_TEXT).textContent =
-        configData.translatedStrings.customizeButtonLabel;
   } else {
     document.body.classList.add(CLASSES.NON_GOOGLE_PAGE);
   }

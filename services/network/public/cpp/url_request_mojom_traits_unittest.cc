@@ -53,9 +53,8 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.top_frame_origin = origin;
   original.trusted_network_isolation_key =
       net::NetworkIsolationKey(origin, origin);
-  original.update_network_isolation_key_on_redirect =
-      network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-          kUpdateTopFrameAndInitiatingFrameOrigin;
+  original.update_network_isolation_key_on_redirect = network::mojom::
+      UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
   original.attach_same_site_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);

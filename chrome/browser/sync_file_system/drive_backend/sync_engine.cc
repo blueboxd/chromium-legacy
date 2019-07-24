@@ -94,7 +94,7 @@ constexpr net::NetworkTrafficAnnotationTag kSyncFileSystemTrafficAnnotation =
 
 std::unique_ptr<drive::DriveServiceInterface>
 SyncEngine::DriveServiceFactory::CreateDriveService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner) {
   return std::unique_ptr<
@@ -209,7 +209,7 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
       drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(context)->extension_service();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
@@ -720,7 +720,7 @@ SyncEngine::SyncEngine(
     TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
     extensions::ExtensionServiceInterface* extension_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DriveServiceFactory> drive_service_factory,
     leveldb::Env* env_override)

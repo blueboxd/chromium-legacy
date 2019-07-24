@@ -513,7 +513,7 @@
       // https://crbug.com/879270
       name: "ElementTiming",
       origin_trial_feature_name: "ElementTimingImages",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "EncryptedMediaEncryptionSchemeQuery",

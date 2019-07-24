@@ -55,7 +55,7 @@ void RecordFaviconFetchResult(FaviconFetchResult result) {
 
 ContentSuggestionsService::ContentSuggestionsService(
     State state,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     history::HistoryService* history_service,
     favicon::LargeIconService* large_icon_service,
     PrefService* pref_service,
@@ -517,7 +517,7 @@ void ContentSuggestionsService::OnSuggestionInvalidated(
     observer.OnSuggestionInvalidated(suggestion_id);
   }
 }
-// identity::IdentityManager::Observer implementation
+// signin::IdentityManager::Observer implementation
 void ContentSuggestionsService::OnPrimaryAccountSet(
     const CoreAccountInfo& account_info) {
   OnSignInStateChanged(/*has_signed_in=*/true);

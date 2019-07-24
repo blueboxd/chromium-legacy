@@ -98,9 +98,6 @@ class CORE_EXPORT PointerEventManager
 
   void RemoveLastMousePosition();
 
-  void SetLastMousePositionForPointerUnlock(
-      FloatPoint mouse_lock_position_in_screen);
-
   Element* GetMouseCaptureTarget();
 
   // Sends any outstanding events. For example it notifies TouchEventManager

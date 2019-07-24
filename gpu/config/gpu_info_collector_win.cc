@@ -18,6 +18,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// Initguid.h must come before Devpkey.h for DEFINE_DEVPROPKEY macros
+// to resolve without giving unresolved external externals linker errors.
+#include <initguid.h>
+
+#include <Devpkey.h>
+
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -108,6 +114,48 @@ inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
   }
 }
 
+std::string GetDeviceStringProperty(DEVINST dev_inst,
+                                    const DEVPROPKEY* prop_key) {
+  ULONG buffer_size = 0;
+  DEVPROPTYPE prop_type;
+  // To find out how big to make the buffer that receives the string, we must
+  // first call CM_Get_DevNode_PropertyW with a nullptr buffer and zero buffer
+  // size. buffer_size will receive the number of bytes to make the buffer.
+  CONFIGRET config_ret = CM_Get_DevNode_PropertyW(
+      dev_inst, prop_key, &prop_type, nullptr, &buffer_size, 0);
+  if (config_ret != CR_BUFFER_SMALL)
+    return std::string();
+  std::vector<WCHAR> property_value;
+  property_value.resize(buffer_size / sizeof(WCHAR));
+  config_ret = CM_Get_DevNode_PropertyW(
+      dev_inst, prop_key, &prop_type,
+      reinterpret_cast<PBYTE>(property_value.data()), &buffer_size, 0);
+  if (config_ret != CR_SUCCESS)
+    return std::string();
+  DCHECK(prop_type == DEVPROP_TYPE_STRING);
+  return base::UTF16ToASCII(property_value.data());
+}
+
+std::string GetDeviceFileTimeProperty(DEVINST dev_inst,
+                                      const DEVPROPKEY* property_key) {
+  FILETIME file_time;
+  DEVPROPTYPE prop_type;
+  ULONG file_time_size = sizeof(file_time);
+  const CONFIGRET config_ret = CM_Get_DevNode_PropertyW(
+      dev_inst, property_key, &prop_type, reinterpret_cast<PBYTE>(&file_time),
+      &file_time_size, 0);
+  if (config_ret != CR_SUCCESS)
+    return std::string();
+  DCHECK(prop_type == DEVPROP_TYPE_FILETIME);
+  DCHECK(file_time_size == sizeof(file_time));
+  const base::Time time = base::Time::FromFileTime(file_time);
+  base::Time::Exploded time_exploded;
+  time.UTCExplode(&time_exploded);
+  // Software fallback list expects dates to be in month-day-year format.
+  return base::StringPrintf("%d-%d-%d", time_exploded.month,
+                            time_exploded.day_of_month, time_exploded.year);
+}
+
 }  // namespace
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
@@ -151,13 +199,13 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
 
   // Display adapter class GUID from
   // https://msdn.microsoft.com/en-us/library/windows/hardware/ff553426%28v=vs.85%29.aspx
-  GUID display_class = {0x4d36e968,
-                        0xe325,
-                        0x11ce,
-                        {0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18}};
+  const GUID display_class = {0x4d36e968,
+                              0xe325,
+                              0x11ce,
+                              {0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18}};
 
   // create device info for the display device
-  HDEVINFO device_info =
+  const HDEVINFO device_info =
       ::SetupDiGetClassDevs(&display_class, nullptr, nullptr, DIGCF_PRESENT);
   if (device_info == INVALID_HANDLE_VALUE) {
     LOG(ERROR) << "Creating device info failed";
@@ -175,82 +223,56 @@ bool CollectDriverInfoD3D(const std::wstring& device_id, GPUInfo* gpu_info) {
   SP_DEVINFO_DATA device_info_data;
   device_info_data.cbSize = sizeof(device_info_data);
   while (SetupDiEnumDeviceInfo(device_info, index++, &device_info_data)) {
-    WCHAR value[255];
-    if (SetupDiGetDeviceRegistryPropertyW(
-            device_info, &device_info_data, SPDRP_DRIVER, nullptr,
-            reinterpret_cast<PBYTE>(value), sizeof(value), nullptr)) {
-      HKEY key;
-      std::wstring driver_key = L"System\\CurrentControlSet\\Control\\Class\\";
-      driver_key += value;
-      LONG result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, driver_key.c_str(), 0,
-                                  KEY_QUERY_VALUE, &key);
-      if (result == ERROR_SUCCESS) {
-        GPUInfo::GPUDevice device;
-        DWORD dwcb_data = sizeof(value);
-        result = RegQueryValueExW(key, L"DriverVersion", nullptr, nullptr,
-                                  reinterpret_cast<LPBYTE>(value), &dwcb_data);
-        if (result == ERROR_SUCCESS)
-          device.driver_version = base::UTF16ToASCII(std::wstring(value));
+    GPUInfo::GPUDevice device;
+    device.driver_version = GetDeviceStringProperty(
+        device_info_data.DevInst, &DEVPKEY_Device_DriverVersion);
+    device.driver_vendor = GetDeviceStringProperty(
+        device_info_data.DevInst, &DEVPKEY_Device_DriverProvider);
+    device.driver_date = GetDeviceFileTimeProperty(device_info_data.DevInst,
+                                                   &DEVPKEY_Device_DriverDate);
 
-        dwcb_data = sizeof(value);
-        result = RegQueryValueExW(key, L"DriverDate", nullptr, nullptr,
-                                  reinterpret_cast<LPBYTE>(value), &dwcb_data);
-        if (result == ERROR_SUCCESS)
-          device.driver_date = base::UTF16ToASCII(std::wstring(value));
+    wchar_t new_device_id[MAX_DEVICE_ID_LEN];
+    const CONFIGRET status = CM_Get_Device_ID(
+        device_info_data.DevInst, new_device_id, MAX_DEVICE_ID_LEN, 0);
 
-        dwcb_data = sizeof(value);
-        result = RegQueryValueExW(key, L"ProviderName", nullptr, nullptr,
-                                  reinterpret_cast<LPBYTE>(value), &dwcb_data);
-        if (result == ERROR_SUCCESS)
-          device.driver_vendor = base::UTF16ToASCII(std::wstring(value));
-
-        wchar_t new_device_id[MAX_DEVICE_ID_LEN];
-        CONFIGRET status = CM_Get_Device_ID(
-            device_info_data.DevInst, new_device_id, MAX_DEVICE_ID_LEN, 0);
-
-        if (status == CR_SUCCESS) {
-          std::wstring id = new_device_id;
-          DeviceIDToVendorAndDevice(id, &(device.vendor_id),
-                                    &(device.device_id));
-          if (id.compare(0, device_id.size(), device_id) == 0) {
-            primary_device = devices.size();
-            if (device.vendor_id == 0x1002)
-              amd_is_primary = true;
-          }
-          if (device.vendor_id == 0x8086)
-            found_intel = true;
-          if (device.vendor_id == 0x1002)
-            found_amd = true;
-          if (device.vendor_id == 0x10de) {
-            std::string nvml_driver_version;
-            int major_cuda_compute_capability = 0;
-            int minor_cuda_compute_capability = 0;
-            bool nvml_success = GetNvmlDeviceInfo(
-                device.device_id, &nvml_driver_version,
-                &major_cuda_compute_capability, &minor_cuda_compute_capability);
-            if (nvml_success) {
-              // We use the NVML driver version instead of the registry version,
-              // since the registry version includes OS-specific digits that are
-              // not part of the actual driver version.
-              device.driver_version = nvml_driver_version;
-              device.cuda_compute_capability_major =
-                  major_cuda_compute_capability;
-            } else {
-              // If we can't get the actual driver version from NVML, do
-              // best-effort parsing of the actual driver version from the
-              // registry driver version.
-              device.driver_version =
-                  ParseNVIDIARegistryDriverVersion(device.driver_version);
-            }
-          }
-          devices.push_back(device);
-        }
-
-        RegCloseKey(key);
+    if (status == CR_SUCCESS) {
+      std::wstring id = new_device_id;
+      DeviceIDToVendorAndDevice(id, &(device.vendor_id), &(device.device_id));
+      if (id.compare(0, device_id.size(), device_id) == 0) {
+        primary_device = devices.size();
+        if (device.vendor_id == 0x1002)
+          amd_is_primary = true;
       }
+      if (device.vendor_id == 0x8086)
+        found_intel = true;
+      if (device.vendor_id == 0x1002)
+        found_amd = true;
+      if (device.vendor_id == 0x10de) {
+        std::string nvml_driver_version;
+        int major_cuda_compute_capability = 0;
+        int minor_cuda_compute_capability = 0;
+        bool nvml_success = GetNvmlDeviceInfo(
+            device.device_id, &nvml_driver_version,
+            &major_cuda_compute_capability, &minor_cuda_compute_capability);
+        if (nvml_success) {
+          // We use the NVML driver version instead of the registry version,
+          // since the registry version includes OS-specific digits that are
+          // not part of the actual driver version.
+          device.driver_version = nvml_driver_version;
+          device.cuda_compute_capability_major = major_cuda_compute_capability;
+        } else {
+          // If we can't get the actual driver version from NVML, do
+          // best-effort parsing of the actual driver version from the
+          // registry driver version.
+          device.driver_version =
+              ParseNVIDIARegistryDriverVersion(device.driver_version);
+        }
+      }
+      devices.push_back(device);
     }
   }
   SetupDiDestroyDeviceInfoList(device_info);
+
   if (found_amd && found_intel) {
     // Potential AMD Switchable system found.
     if (!amd_is_primary) {

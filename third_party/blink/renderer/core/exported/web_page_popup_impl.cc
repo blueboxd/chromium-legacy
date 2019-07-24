@@ -175,9 +175,8 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void SetHasScrollEventHandlers(LocalFrame* frame,
                                  bool has_event_handlers) override {
-    DCHECK(frame->IsMainFrame());
-    if (popup_->layer_tree_view_)
-      popup_->layer_tree_view_->SetHaveScrollEventHandlers(has_event_handlers);
+    // WebPagePopup's compositor does not handle compositor thread input (set up
+    // in RenderWidget) so there is no need to signal this.
   }
 
   void SetTouchAction(LocalFrame* frame, TouchAction touch_action) override {

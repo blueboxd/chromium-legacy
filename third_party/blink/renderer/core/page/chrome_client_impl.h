@@ -132,7 +132,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool DoubleTapToZoomEnabled() const override;
   void PageScaleFactorChanged() const override;
   float ClampPageScaleFactorToLimits(float scale) const override;
-  void MainFrameScrollOffsetChanged() const override;
+  void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override;
   void ResizeAfterLayout() const override;
   void MainFrameLayoutUpdated() const override;
   void ShowMouseOverURL(const HitTestResult&) override;

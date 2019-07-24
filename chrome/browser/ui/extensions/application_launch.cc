@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
@@ -427,6 +428,10 @@ WebContents* ShowApplicationWindow(const AppLaunchParams& params,
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
   web_contents->SetInitialFocus();
+
+  web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, url,
+                                                   params.launch_files);
+
   return web_contents;
 }
 

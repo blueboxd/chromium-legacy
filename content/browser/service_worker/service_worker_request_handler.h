@@ -46,11 +46,21 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler {
       const NavigationRequestInfo& request_info,
       base::WeakPtr<ServiceWorkerProviderHost>* out_provider_host);
 
-  // Same as above but for a dedicated worker or shared worker. Called on the IO
+  // Returns a loader interceptor for a dedicated worker or shared worker. May
+  // return nullptr if the worker cannot use service workers. Called on the IO
   // thread.
-  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorker(
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorkerUI(
       const network::ResourceRequest& resource_request,
-      ServiceWorkerProviderHost* host);
+      int process_id,
+      ServiceWorkerNavigationHandle* navigation_handle);
+
+  // Returns a loader interceptor for a dedicated worker or shared worker. May
+  // return nullptr if the worker cannot use service workers. Called on the UI
+  // thread.
+  static std::unique_ptr<NavigationLoaderInterceptor> CreateForWorkerIO(
+      const network::ResourceRequest& resource_request,
+      int process_id,
+      ServiceWorkerNavigationHandleCore* navigation_handle_core);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestHandler);

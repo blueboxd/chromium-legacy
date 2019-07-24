@@ -93,6 +93,7 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
     case apps::mojom::AppType::kExtension:
+    case apps::mojom::AppType::kMacNative:
       break;
   }
   apps::AppsNavigationThrottle::OnIntentPickerClosed(
@@ -162,6 +163,7 @@ ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
     case PickerAction::CHROME_PREFERRED_PRESSED:
     case PickerAction::OBSOLETE_ALWAYS_PRESSED:
     case PickerAction::OBSOLETE_JUST_ONCE_PRESSED:
+    case PickerAction::MAC_NATIVE_APP_PRESSED:
     case PickerAction::INVALID:
       break;
   }
@@ -286,7 +288,7 @@ bool ChromeOsAppsNavigationThrottle::ShouldAutoDisplayUi(
   // until "Remember my choice" is available for desktop PWAs.
   // TODO(crbug.com/826982): show the intent picker when the app registry is
   // available to persist "Remember my choice" for PWAs.
-  if (ContainsOnlyPwas(apps_for_picker))
+  if (ContainsOnlyPwasAndMacApps(apps_for_picker))
     return false;
 
   DCHECK(ui_auto_display_service_);

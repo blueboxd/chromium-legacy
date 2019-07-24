@@ -27,9 +27,9 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -46,7 +46,7 @@ class ArcFetcherBase;
 class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
                        public ConnectionObserver<mojom::AuthInstance>,
-                       public identity::IdentityManager::Observer,
+                       public signin::IdentityManager::Observer,
                        public ArcSessionManager::Observer {
  public:
   using GetGoogleAccountsInArcCallback =
@@ -190,7 +190,7 @@ class ArcAuthService : public KeyedService,
 
   // Non-owning pointers.
   Profile* const profile_;
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
   ArcBridgeService* const arc_bridge_service_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

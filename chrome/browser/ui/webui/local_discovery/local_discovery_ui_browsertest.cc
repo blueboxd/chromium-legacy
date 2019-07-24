@@ -390,7 +390,7 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     test_url_loader_factory_.AddResponse(kURLRegisterComplete,
                                          kResponseRegisterComplete);
 
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         kSampleUser);
 

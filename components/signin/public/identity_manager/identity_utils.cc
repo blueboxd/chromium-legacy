@@ -12,7 +12,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
-namespace identity {
+namespace signin {
 
 namespace {
 
@@ -58,4 +58,4 @@ bool IsUsernameAllowedByPatternFromPrefs(const PrefService* prefs,
       username, prefs->GetString(prefs::kGoogleServicesUsernamePattern));
 }
 
-}  // namespace identity
+}  // namespace signin

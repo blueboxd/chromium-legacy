@@ -103,7 +103,7 @@ PrefService* ApplicationContext::GetLocalState() {
     flags_ui::PrefServiceFlagsStorage::RegisterPrefs(pref_registry.get());
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
-    identity::IdentityManager::RegisterLocalStatePrefs(pref_registry.get());
+    signin::IdentityManager::RegisterLocalStatePrefs(pref_registry.get());
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SYNC)
 
     base::FilePath local_state_path;

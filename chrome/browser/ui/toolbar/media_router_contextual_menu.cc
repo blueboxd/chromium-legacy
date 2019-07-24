@@ -124,7 +124,7 @@ bool MediaRouterContextualMenu::IsCommandIdVisible(int command_id) const {
   if (command_id == IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE) {
     // Cloud services preference is not set or used if the user is not signed
     // in.
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser_->profile());
     return identity_manager && identity_manager->HasPrimaryAccount();
   }

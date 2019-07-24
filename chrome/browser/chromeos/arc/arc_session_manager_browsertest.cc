@@ -198,7 +198,7 @@ class ArcSessionManagerTest : public chromeos::MixinBasedInProcessBrowserTest {
 
   Profile* profile() { return profile_.get(); }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_environment_adaptor_->identity_test_env();
   }
 

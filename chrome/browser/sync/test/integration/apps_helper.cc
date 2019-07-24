@@ -7,12 +7,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_installer.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -105,6 +107,19 @@ bool IsIncognitoEnabled(Profile* profile, int index) {
 
 void InstallAppsPendingForSync(Profile* profile) {
   SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(profile);
+  WaitForAppService(profile);
+}
+
+void WaitForAppService(Profile* profile) {
+  // The App Service is a Mojo service, and Mojo calls are asynchronous
+  // (because they are potentially IPC calls). When the tests install and
+  // uninstall apps, they may need to pump the run loop so that those async
+  // calls settle.
+  if (!base::FeatureList::IsEnabled(features::kAppServiceAsh))
+    return;
+
+  apps::AppServiceProxyImpl::GetImplForTesting(profile)
+      ->FlushMojoCallsForTesting();
 }
 
 syncer::StringOrdinal GetPageOrdinalForApp(Profile* profile,

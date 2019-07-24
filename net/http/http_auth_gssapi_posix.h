@@ -43,7 +43,7 @@ class NET_EXPORT_PRIVATE GSSAPILibrary {
   // Initializes the library, including any necessary dynamic libraries.
   // This is done separately from construction (which happens at startup time)
   // in order to delay work until the class is actually needed.
-  virtual bool Init() = 0;
+  virtual bool Init(const NetLogWithSource& net_log) = 0;
 
   // These methods match the ones in the GSSAPI library.
   virtual OM_uint32 import_name(
@@ -116,7 +116,7 @@ class NET_EXPORT_PRIVATE GSSAPISharedLibrary : public GSSAPILibrary {
   ~GSSAPISharedLibrary() override;
 
   // GSSAPILibrary methods:
-  bool Init() override;
+  bool Init(const NetLogWithSource& net_log) override;
   OM_uint32 import_name(OM_uint32* minor_status,
                         const gss_buffer_t input_name_buffer,
                         const gss_OID input_name_type,
@@ -171,12 +171,14 @@ class NET_EXPORT_PRIVATE GSSAPISharedLibrary : public GSSAPILibrary {
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup);
 
-  bool InitImpl();
+  bool InitImpl(const NetLogWithSource& net_log);
   // Finds a usable dynamic library for GSSAPI and loads it.  The criteria are:
   //   1. The library must exist.
   //   2. The library must export the functions we need.
-  base::NativeLibrary LoadSharedLibrary();
-  bool BindMethods(base::NativeLibrary lib);
+  base::NativeLibrary LoadSharedLibrary(const NetLogWithSource& net_log);
+  bool BindMethods(base::NativeLibrary lib,
+                   base::StringPiece library_name,
+                   const NetLogWithSource& net_log);
 
   bool initialized_ = false;
 
@@ -207,7 +209,7 @@ class ScopedSecurityContext {
   gss_ctx_id_t* receive() { return &security_context_; }
 
  private:
-  gss_ctx_id_t security_context_;
+  gss_ctx_id_t security_context_ = GSS_C_NO_CONTEXT;
   GSSAPILibrary* gssapi_lib_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSecurityContext);
@@ -223,7 +225,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
   ~HttpAuthGSSAPI() override;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override;
+  bool Init(const NetLogWithSource& net_log) override;
   bool NeedsIdentity() const override;
   bool AllowsExplicitCredentials() const override;
   HttpAuth::AuthorizationResult ParseChallenge(
@@ -232,6 +234,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const NetLogWithSource& net_log,
                         CompletionOnceCallback callback) override;
   void SetDelegation(HttpAuth::DelegationType delegation_type) override;
 
@@ -239,7 +242,8 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
   int GetNextSecurityToken(const std::string& spn,
                            const std::string& channel_bindings,
                            gss_buffer_t in_token,
-                           gss_buffer_t out_token);
+                           gss_buffer_t out_token,
+                           const NetLogWithSource& net_log);
 
   std::string scheme_;
   gss_OID gss_oid_;

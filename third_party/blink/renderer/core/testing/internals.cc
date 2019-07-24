@@ -34,6 +34,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -272,8 +273,7 @@ void Internals::ResetToConsistentState(Page* page) {
   // call.
   page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
-  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
-      TransformationMatrix());
+  page->GetChromeClient().GetWebView()->DisableDeviceEmulation();
 
   // Ensure timers are reset so timers such as EventHandler's |hover_timer_| do
   // not cause additional lifecycle updates.
@@ -3461,8 +3461,9 @@ void Internals::setDeviceEmulationScale(float scale,
         "The document's page cannot be retrieved.");
     return;
   }
-  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
-      TransformationMatrix().Scale(scale));
+  WebDeviceEmulationParams params;
+  params.scale = scale;
+  page->GetChromeClient().GetWebView()->EnableDeviceEmulation(params);
 }
 
 void Internals::ResolveResourcePriority(ScriptPromiseResolver* resolver,

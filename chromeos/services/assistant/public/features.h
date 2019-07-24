@@ -76,10 +76,6 @@ extern const base::Feature kEnableTextQueriesWithClientDiscourseContext;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kTimerTicks;
 
-// Enables Assistant key remapping on keyboards.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantKeyRemapping;
-
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAlarmTimerManagerEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();

@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "net/http/http_auth_sspi_win.h"
+
 #include "base/bind.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/mock_sspi_library_win.h"
+#include "net/log/net_log_with_source.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,9 +98,10 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
 
   // Generate an auth token and create another thing.
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    nullptr, "HTTP/intranet.google.com", std::string(),
-                    &auth_token, base::BindOnce(&UnexpectedCallback)));
+  EXPECT_EQ(OK,
+            auth_sspi.GenerateAuthToken(
+                nullptr, "HTTP/intranet.google.com", std::string(), &auth_token,
+                NetLogWithSource(), base::BindOnce(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -133,9 +136,10 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
             auth_sspi.ParseChallenge(&first_challenge));
 
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    nullptr, "HTTP/intranet.google.com", std::string(),
-                    &auth_token, base::BindOnce(&UnexpectedCallback)));
+  EXPECT_EQ(OK,
+            auth_sspi.GenerateAuthToken(
+                nullptr, "HTTP/intranet.google.com", std::string(), &auth_token,
+                NetLogWithSource(), base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());
@@ -156,9 +160,10 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
             auth_sspi.ParseChallenge(&first_challenge));
 
   std::string auth_token;
-  EXPECT_EQ(OK, auth_sspi.GenerateAuthToken(
-                    nullptr, "HTTP/intranet.google.com", std::string(),
-                    &auth_token, base::BindOnce(&UnexpectedCallback)));
+  EXPECT_EQ(OK,
+            auth_sspi.GenerateAuthToken(
+                nullptr, "HTTP/intranet.google.com", std::string(), &auth_token,
+                NetLogWithSource(), base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());

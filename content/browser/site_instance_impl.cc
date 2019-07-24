@@ -36,8 +36,8 @@ namespace {
 // Returns true if CreateForURL() and related functions should be allowed to
 // return a default SiteInstance.
 bool ShouldAllowDefaultSiteInstance() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDefaultSiteInstance);
+  return base::FeatureList::IsEnabled(
+      features::kProcessSharingWithDefaultSiteInstances);
 }
 
 }  // namespace

@@ -145,7 +145,7 @@ struct KidsChromeManagementClient::KidsChromeManagementRequest {
   KidsChromeManagementCallback callback;
   std::unique_ptr<network::ResourceRequest> resource_request;
   const net::NetworkTrafficAnnotationTag traffic_annotation;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher;
   bool access_token_expired;
   const char* oauth_consumer_name;
@@ -227,18 +227,18 @@ void KidsChromeManagementClient::StartFetching(
   identity::ScopeSet scopes{req->scope};
 
   req->access_token_fetcher =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           req->oauth_consumer_name, identity_manager_, scopes,
           base::BindOnce(
               &KidsChromeManagementClient::OnAccessTokenFetchComplete,
               base::Unretained(this), it),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void KidsChromeManagementClient::OnAccessTokenFetchComplete(
     KidsChromeRequestList::iterator it,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(WARNING) << "Token error: " << error.ToString();
 
@@ -287,7 +287,7 @@ void KidsChromeManagementClient::OnAccessTokenFetchComplete(
 void KidsChromeManagementClient::OnSimpleLoaderComplete(
     KidsChromeRequestList::iterator it,
     std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
-    identity::AccessTokenInfo token_info,
+    signin::AccessTokenInfo token_info,
     std::unique_ptr<std::string> response_body) {
   int response_code = -1;
 

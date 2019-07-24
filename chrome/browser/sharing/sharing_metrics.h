@@ -7,6 +7,8 @@
 
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 
+#include "base/time/time.h"
+
 enum class SharingDeviceRegistrationResult;
 
 // Result of VAPID key creation during Sharing registration.
@@ -59,5 +61,9 @@ void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix, int index);
 // |histogram_suffix| indicates in which UI this event happened and must match
 // one from SharingClickToCallUi defined in histograms.xml.
 void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index);
+
+// Logs to UMA the time from sending a FCM message from the Sharing service
+// until an ack message is received for it.
+void LogSharingMessageAckTime(base::TimeDelta time);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

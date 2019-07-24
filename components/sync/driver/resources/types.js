@@ -59,7 +59,7 @@ cr.define('chrome.sync.types', function() {
     var counters = details.counters;
 
     if (typeCountersMap.hasOwnProperty(modelType))
-      for (k in counters) {
+      for (var k in counters) {
         typeCountersMap[modelType][k] = counters[k];
       }
     refreshTypeCountersDisplay();

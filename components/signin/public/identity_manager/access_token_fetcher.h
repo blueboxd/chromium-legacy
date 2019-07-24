@@ -24,7 +24,7 @@ class SharedURLLoaderFactory;
 class GoogleServiceAuthError;
 class ProfileOAuth2TokenService;
 
-namespace identity {
+namespace signin {
 struct AccessTokenInfo;
 
 // Helper class to ease the task of obtaining an OAuth2 access token for a
@@ -146,6 +146,6 @@ class AccessTokenFetcher : public OAuth2TokenServiceObserver,
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcher);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCESS_TOKEN_FETCHER_H_

@@ -13,6 +13,8 @@ import java.util.List;
  * Utility classes for recording UMA metrics before the native library
  * may have been loaded.  Metrics are cached until the library is known
  * to be loaded, then committed to the MetricsService all at once.
+ *
+ * NOTE: Currently supports recording metrics only in Browser/Webview/Renderer processes.
  */
 public class CachedMetrics {
     /**
@@ -306,7 +308,7 @@ public class CachedMetrics {
 
     /**
      * Calls out to native code to commit any cached histograms and events.
-     * Should be called once the native library has been loaded.
+     * Should be called once the native library has been initialized.
      */
     public static void commitCachedMetrics() {
         synchronized (CachedMetric.sMetrics) {

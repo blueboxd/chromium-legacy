@@ -76,17 +76,17 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   // owned by this object (thus destroyed when this object is destroyed) and
   // PrimaryAccountAccessTokenFetcher guarantees that it doesn't invoke its
   // callback after it is destroyed.
-  access_token_fetcher_ = std::make_unique<
-      identity::PrimaryAccountAccessTokenFetcher>(
-      kAccessTokenFetchId, identity_manager_, scopes,
-      base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
-                     base::Unretained(this)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+  access_token_fetcher_ =
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
+          kAccessTokenFetchId, identity_manager_, scopes,
+          base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
+                         base::Unretained(this)),
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void TokenHandleFetcher::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {

@@ -264,12 +264,25 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
   return PerformChecks(url, navigated_domain, service->GetLatestEngagedSites());
 }
 
-ThrottleCheckResult LookalikeUrlNavigationThrottle::WillStartRequest() {
+ThrottleCheckResult LookalikeUrlNavigationThrottle::WillProcessResponse() {
+  if (navigation_handle()->GetNetErrorCode() != net::OK) {
+    return content::NavigationThrottle::PROCEED;
+  }
   return HandleThrottleRequest(navigation_handle()->GetURL());
 }
 
 ThrottleCheckResult LookalikeUrlNavigationThrottle::WillRedirectRequest() {
-  return HandleThrottleRequest(navigation_handle()->GetURL());
+  const std::vector<GURL>& chain = navigation_handle()->GetRedirectChain();
+
+  // WillRedirectRequest is called after a redirect occurs, so the end of the
+  // chain is the URL that was redirected to. We need to check the preceding URL
+  // that caused the redirection. The final URL in the chain is checked either:
+  //  - after the next redirection (when there is a longer chain), or
+  //  - by WillProcessResponse (before content is rendered).
+  if (chain.size() < 2) {
+    return content::NavigationThrottle::PROCEED;
+  }
+  return HandleThrottleRequest(chain[chain.size() - 2]);
 }
 
 const char* LookalikeUrlNavigationThrottle::GetNameForLogging() {

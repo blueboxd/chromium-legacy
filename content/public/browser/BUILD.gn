@@ -334,6 +334,7 @@ jumbo_source_set("browser_sources") {
     "url_loader_request_interceptor.h",
     "video_capture_device_launcher.cc",
     "video_capture_device_launcher.h",
+    "video_capture_service.h",
     "visibility.h",
     "vpn_service_proxy.h",
     "web_contents.cc",
@@ -398,6 +399,7 @@ jumbo_source_set("browser_sources") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
+    "//services/video_capture/public/mojom",
     "//services/viz/public/interfaces",
     "//third_party/webrtc/modules/desktop_capture",
 

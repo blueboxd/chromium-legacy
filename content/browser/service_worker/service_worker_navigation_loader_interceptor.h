@@ -11,19 +11,36 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
 
-struct NavigationRequestInfo;
 class ServiceWorkerNavigationHandle;
+
+struct ServiceWorkerNavigationLoaderInterceptorParams {
+  // For all clients:
+  ResourceType resource_type = ResourceType::kMainFrame;
+  bool skip_service_worker = false;
+
+  // For windows:
+  bool is_main_frame = false;
+  // Whether all ancestor frames of the frame that is navigating have a secure
+  // origin. True for main frames.
+  bool are_ancestors_secure = false;
+  int frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId;
+
+  // For web workers:
+  int process_id = ChildProcessHost::kInvalidUniqueID;
+};
 
 // This class is a work in progress for https://crbug.com/824858. It is used
 // only when NavigationLoaderOnUI is enabled.
 //
-// Handles navigations for service worker clients (for now just documents, not
-// web workers). Lives on the UI thread.
+// Handles navigations for service worker clients (windows and web workers).
+// Lives on the UI thread.
 //
 // The corresponding legacy class is ServiceWorkerControlleeRequestHandler which
 // lives on the IO thread. Currently, this class just delegates to the
@@ -32,7 +49,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
     : public NavigationLoaderInterceptor {
  public:
   ServiceWorkerNavigationLoaderInterceptor(
-      const NavigationRequestInfo& request_info,
+      const ServiceWorkerNavigationLoaderInterceptorParams& params,
       ServiceWorkerNavigationHandle* handle);
   ~ServiceWorkerNavigationLoaderInterceptor() override;
 
@@ -74,10 +91,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
   // |handle_| owns |this|.
   ServiceWorkerNavigationHandle* const handle_;
 
-  const bool are_ancestors_secure_;
-  const int frame_tree_node_id_;
-  const ResourceType resource_type_;
-  const bool skip_service_worker_;
+  const ServiceWorkerNavigationLoaderInterceptorParams params_;
 
   base::Optional<SubresourceLoaderParams> subresource_loader_params_;
 

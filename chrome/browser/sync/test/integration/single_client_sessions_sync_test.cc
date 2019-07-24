@@ -756,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   // Avoid interferences from actual IdentityManager trying to fetch gaia
   // account information, which would exercise
   // ProfileSyncService::OnAccountsInCookieUpdated().
-  identity::CancelAllOngoingGaiaCookieOperations(
+  signin::CancelAllOngoingGaiaCookieOperations(
       IdentityManagerFactory::GetForProfile(GetProfile(0)));
 
   // Trigger a cookie jar change (user signing in to content area).

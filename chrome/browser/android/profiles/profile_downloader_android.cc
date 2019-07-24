@@ -63,7 +63,7 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
     return desired_image_side_pixels_;
   }
 
-  identity::IdentityManager* GetIdentityManager() override {
+  signin::IdentityManager* GetIdentityManager() override {
     return IdentityManagerFactory::GetForProfile(profile_);
   }
 

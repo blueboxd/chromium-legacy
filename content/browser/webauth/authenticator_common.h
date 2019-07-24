@@ -176,6 +176,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // acknowledgement before returning the error, and handles the error
   // appropriately.
   void SignalFailureToRequestDelegate(
+      const ::device::FidoAuthenticator* authenticator,
       AuthenticatorRequestClientDelegate::InterestingFailureReason reason);
 
   void InvokeCallbackAndCleanup(

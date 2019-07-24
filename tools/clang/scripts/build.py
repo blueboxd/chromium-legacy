@@ -471,10 +471,6 @@ def main():
                      '-DCOMPILER_RT_USE_LIBCXX=NO',
                      # Don't run Go bindings tests; PGO makes them confused.
                      '-DLLVM_INCLUDE_GO_TESTS=OFF',
-                     # Don't build libfuzzer. It needs to be built using the
-                     # same C++ standard library as the code that's going to use
-                     # it.
-                     '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
                      ]
 
   if args.gcc_toolchain:
@@ -524,7 +520,6 @@ def main():
         '-DCMAKE_INSTALL_PREFIX=' + LLVM_BOOTSTRAP_INSTALL_DIR,
         '-DCMAKE_C_FLAGS=' + ' '.join(cflags),
         '-DCMAKE_CXX_FLAGS=' + ' '.join(cxxflags),
-        '-DCOMPILER_RT_BUILD_XRAY=OFF',
         # Ignore args.disable_asserts for the bootstrap compiler.
         '-DLLVM_ENABLE_ASSERTIONS=ON',
         ]
@@ -544,6 +539,17 @@ def main():
           '-DCOMPILER_RT_ENABLE_WATCHOS=OFF',
           '-DCOMPILER_RT_ENABLE_TVOS=OFF',
           ])
+    elif args.pgo:
+      # PGO needs libclang_rt.profile but none of the other compiler-rt stuff.
+      bootstrap_args.extend([
+          '-DCOMPILER_RT_BUILD_BUILTINS=OFF',
+          '-DCOMPILER_RT_BUILD_CRT=OFF',
+          '-DCOMPILER_RT_BUILD_LIBFUZZER=OFF',
+          '-DCOMPILER_RT_BUILD_PROFILE=ON',
+          '-DCOMPILER_RT_BUILD_SANITIZERS=OFF',
+          '-DCOMPILER_RT_BUILD_XRAY=OFF',
+          ])
+
     if cc is not None:  bootstrap_args.append('-DCMAKE_C_COMPILER=' + cc)
     if cxx is not None: bootstrap_args.append('-DCMAKE_CXX_COMPILER=' + cxx)
     if lld is not None: bootstrap_args.append('-DCMAKE_LINKER=' + lld)

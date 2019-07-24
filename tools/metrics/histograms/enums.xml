@@ -2412,18 +2412,18 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="ARC app preferred and pressed"/>
   <int value="9" label="Progressive web app pressed"/>
   <int value="10" label="Error before showing picker"/>
+  <int value="11" label="Invalid"/>
+  <int value="12" label="Mac native app pressed"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
-  <obsolete>
-    Deprecated as of 9/2018 (M71).
-  </obsolete>
   <summary>
     Defines ARC intent handler platforms to continue the navigation.
   </summary>
   <int value="0" label="ARC"/>
   <int value="1" label="Chrome"/>
   <int value="2" label="Progressive web app"/>
+  <int value="3" label="Mac native app"/>
 </enum>
 
 <enum name="ArcIntentHelperOpenType">
@@ -4593,6 +4593,7 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="Trace upload failed"/>
   <int value="11" label="Trace upload succeeded"/>
   <int value="12" label="Startup scenario triggered"/>
+  <int value="13" label="Large upload waiting to retry"/>
 </enum>
 
 <enum name="BackingStoreResults">
@@ -6138,6 +6139,9 @@ Unknown properties are collapsed to zero. -->
 </enum>
 
 <enum name="BooleanIsUseRelinker">
+  <obsolete>
+    Removed in 2019-07.
+  </obsolete>
   <int value="0" label="Didn't use relinker"/>
   <int value="1" label="Used relinker"/>
 </enum>
@@ -9098,6 +9102,9 @@ Called by update_net_error_codes.py.-->
   <int value="14" label="Animation has an unsupported CSS property"/>
   <int value="15"
       label="There are multiple transform animations on the target element"/>
+  <int value="16"
+      label="Custom property contains different value types in keyframe
+             animation"/>
 </enum>
 
 <enum name="CompositorFrameSinkSubmitResult">
@@ -10665,6 +10672,7 @@ Called by update_net_error_codes.py.-->
   <int value="529697949" label="CPP_EH_EXCEPTION"/>
   <int value="533692099" label="STATUS_GUARD_PAGE_VIOLATION"/>
   <int value="536870904" label="Out of Memory"/>
+  <int value="1073740760" label="STATUS_INVALID_IMAGE_HASH"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
   <int value="1073740940" label="STATUS_HEAP_CORRUPTION"/>
   <int value="1073741502" label="STATUS_DLL_INIT_FAILED"/>
@@ -12991,6 +12999,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="Push Messaging"/>
   <int value="5" label="Notifications"/>
   <int value="6" label="Payment Handler"/>
+  <int value="7" label="Periodic Background Sync"/>
 </enum>
 
 <enum name="DevToolsPanel">
@@ -23998,6 +24007,7 @@ Called by update_net_error_codes.py.-->
   <int value="2968" label="SVGSMILDiscardElementParsed"/>
   <int value="2969" label="SVGSMILDiscardElementTriggered"/>
   <int value="2970" label="LinkHeaderStylesheet"/>
+  <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -32883,10 +32893,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="LargestContentType">
   <summary>
-    Whether the LargestContentPaint results from image or text. These are the
+    Whether the LargestContentfulPaint results from image or text. These are the
     only content types currently tracked by the metric
-    PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint, so there
-    is no need for an 'Other' label.
+    PageLoad.PaintTiming.NavigationToLargestContentfulPaint, so there is no need
+    for an 'Other' label.
   </summary>
   <int value="0" label="Image"/>
   <int value="1" label="Text"/>
@@ -35580,6 +35590,7 @@ from previous Chrome versions.
   <int value="474743272" label="material-design-ink-drop"/>
   <int value="475858648"
       label="OverlayScrollbarFlashAfterAnyScrollUpdate:disabled"/>
+  <int value="477796416" label="ReleaseNotes:enabled"/>
   <int value="477967119" label="enable-unified-media-pipeline"/>
   <int value="479906041" label="RunAllFlashInAllowMode:disabled"/>
   <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>
@@ -35683,6 +35694,7 @@ from previous Chrome versions.
   <int value="633442161" label="ExperimentalUi:disabled"/>
   <int value="634789085" label="LayeredAPI:disabled"/>
   <int value="635076832" label="MarkHttpAs:disabled"/>
+  <int value="635533110" label="ReleaseNotes:disabled"/>
   <int value="635971109" label="PrintPdfAsImage:disabled"/>
   <int value="636341169" label="ExploreSites:disabled"/>
   <int value="636425179" label="mhtml-generator-option"/>
@@ -48577,6 +48589,110 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="PROFILE_IMPORT"/>
   <int value="13" label="NACL"/>
   <int value="14" label="NACL_BROKER_PROCESS"/>
+</enum>
+
+<enum name="Profile">
+  <int value="0" label="Guest Profile"/>
+  <int value="1" label="Profile 1"/>
+  <int value="2" label="Profile 2"/>
+  <int value="3" label="Profile 3"/>
+  <int value="4" label="Profile 4"/>
+  <int value="5" label="Profile 5"/>
+  <int value="6" label="Profile 6"/>
+  <int value="7" label="Profile 7"/>
+  <int value="8" label="Profile 8"/>
+  <int value="9" label="Profile 9"/>
+  <int value="10" label="Profile 10"/>
+  <int value="11" label="Profile 11"/>
+  <int value="12" label="Profile 12"/>
+  <int value="13" label="Profile 13"/>
+  <int value="14" label="Profile 14"/>
+  <int value="15" label="Profile 15"/>
+  <int value="16" label="Profile 16"/>
+  <int value="17" label="Profile 17"/>
+  <int value="18" label="Profile 18"/>
+  <int value="19" label="Profile 19"/>
+  <int value="20" label="Profile 20"/>
+  <int value="21" label="Profile 21"/>
+  <int value="22" label="Profile 22"/>
+  <int value="23" label="Profile 23"/>
+  <int value="24" label="Profile 24"/>
+  <int value="25" label="Profile 25"/>
+  <int value="26" label="Profile 26"/>
+  <int value="27" label="Profile 27"/>
+  <int value="28" label="Profile 28"/>
+  <int value="29" label="Profile 29"/>
+  <int value="30" label="Profile 30"/>
+  <int value="31" label="Profile 31"/>
+  <int value="32" label="Profile 32"/>
+  <int value="33" label="Profile 33"/>
+  <int value="34" label="Profile 34"/>
+  <int value="35" label="Profile 35"/>
+  <int value="36" label="Profile 36"/>
+  <int value="37" label="Profile 37"/>
+  <int value="38" label="Profile 38"/>
+  <int value="39" label="Profile 39"/>
+  <int value="40" label="Profile 40"/>
+  <int value="41" label="Profile 41"/>
+  <int value="42" label="Profile 42"/>
+  <int value="43" label="Profile 43"/>
+  <int value="44" label="Profile 44"/>
+  <int value="45" label="Profile 45"/>
+  <int value="46" label="Profile 46"/>
+  <int value="47" label="Profile 47"/>
+  <int value="48" label="Profile 48"/>
+  <int value="49" label="Profile 49"/>
+  <int value="50" label="Profile 50"/>
+  <int value="51" label="Profile 51"/>
+  <int value="52" label="Profile 52"/>
+  <int value="53" label="Profile 53"/>
+  <int value="54" label="Profile 54"/>
+  <int value="55" label="Profile 55"/>
+  <int value="56" label="Profile 56"/>
+  <int value="57" label="Profile 57"/>
+  <int value="58" label="Profile 58"/>
+  <int value="59" label="Profile 59"/>
+  <int value="60" label="Profile 60"/>
+  <int value="61" label="Profile 61"/>
+  <int value="62" label="Profile 62"/>
+  <int value="63" label="Profile 63"/>
+  <int value="64" label="Profile 64"/>
+  <int value="65" label="Profile 65"/>
+  <int value="66" label="Profile 66"/>
+  <int value="67" label="Profile 67"/>
+  <int value="68" label="Profile 68"/>
+  <int value="69" label="Profile 69"/>
+  <int value="70" label="Profile 70"/>
+  <int value="71" label="Profile 71"/>
+  <int value="72" label="Profile 72"/>
+  <int value="73" label="Profile 73"/>
+  <int value="74" label="Profile 74"/>
+  <int value="75" label="Profile 75"/>
+  <int value="76" label="Profile 76"/>
+  <int value="77" label="Profile 77"/>
+  <int value="78" label="Profile 78"/>
+  <int value="79" label="Profile 79"/>
+  <int value="80" label="Profile 80"/>
+  <int value="81" label="Profile 81"/>
+  <int value="82" label="Profile 82"/>
+  <int value="83" label="Profile 83"/>
+  <int value="84" label="Profile 84"/>
+  <int value="85" label="Profile 85"/>
+  <int value="86" label="Profile 86"/>
+  <int value="87" label="Profile 87"/>
+  <int value="88" label="Profile 88"/>
+  <int value="89" label="Profile 89"/>
+  <int value="90" label="Profile 90"/>
+  <int value="91" label="Profile 91"/>
+  <int value="92" label="Profile 92"/>
+  <int value="93" label="Profile 93"/>
+  <int value="94" label="Profile 94"/>
+  <int value="95" label="Profile 95"/>
+  <int value="96" label="Profile 96"/>
+  <int value="97" label="Profile 97"/>
+  <int value="98" label="Profile 98"/>
+  <int value="99" label="Profile 99"/>
+  <int value="100" label="Profile 100"/>
 </enum>
 
 <enum name="ProfileAddNewUser">
@@ -62415,6 +62531,7 @@ Full version information for the fingerprint enum values:
   <int value="-1073740791" label="0xC0000409 - STATUS_STACK_BUFFER_OVERRUN"/>
   <int value="-1073740777"
       label="0xC0000417 - STATUS_INVALID_CRUNTIME_PARAMETER"/>
+  <int value="-1073740760" label="0xC0000428 - STATUS_INVALID_IMAGE_HASH"/>
   <int value="-1073740022"
       label="0xC000070A - STATUS_THREADPOOL_HANDLE_EXCEPTION"/>
   <int value="-1073740021"

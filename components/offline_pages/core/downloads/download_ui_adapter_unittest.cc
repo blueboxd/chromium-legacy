@@ -30,8 +30,8 @@
 #include "components/offline_pages/core/background/offliner_stub.h"
 #include "components/offline_pages/core/background/request_coordinator_stub_taco.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "components/offline_pages/core/visuals_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,9 +116,7 @@ class MockVisualsDecoder : public VisualsDecoder {
 class MockOfflinePageModel : public StubOfflinePageModel {
  public:
   explicit MockOfflinePageModel(base::TestMockTimeTaskRunner* task_runner)
-      : observer_(nullptr),
-        task_runner_(task_runner),
-        policy_controller_(new ClientPolicyController()) {}
+      : observer_(nullptr), task_runner_(task_runner) {}
 
   ~MockOfflinePageModel() override {}
 
@@ -193,10 +191,9 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 
   void GetPagesWithCriteria(const PageCriteria& criteria,
                             MultipleOfflinePageItemCallback callback) override {
-    ClientPolicyController policy_controller;
     std::vector<OfflinePageItem> matches;
     for (const auto& page : pages) {
-      if (MeetsCriteria(policy_controller, criteria, page.second)) {
+      if (MeetsCriteria(criteria, page.second)) {
         matches.push_back(page.second);
       }
     }
@@ -209,18 +206,12 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     observer_->OfflinePageAdded(this, page);
   }
 
-  ClientPolicyController* GetPolicyController() override {
-    return policy_controller_.get();
-  }
-
   std::map<int64_t, OfflinePageItem> pages;
   std::unique_ptr<OfflinePageVisuals> visuals_by_offline_id_result;
 
  private:
   OfflinePageModel::Observer* observer_;
   base::TestMockTimeTaskRunner* task_runner_;
-  // Normally owned by OfflinePageModel.
-  std::unique_ptr<ClientPolicyController> policy_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOfflinePageModel);
 };

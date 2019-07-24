@@ -3661,8 +3661,8 @@
     },
 
     'gpu_skia_renderer_vulkan_telemetry_tests': {
-      'pixel_skia': {
-        'name': 'pixel_skia_gold_test',
+      'vulkan_pixel_skia': {
+        'name': 'vulkan_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
           '--refimg-cloud-storage-bucket',
@@ -3674,7 +3674,7 @@
           '--test-machine-name',
           '${buildername}',
           '--use-skia-gold',
-          '--extra-browser-args="--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer"',
+          '--extra-browser-args="--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback"',
         ],
         'non_precommit_args': [
           '--upload-refimg-to-cloud-storage',
@@ -5286,6 +5286,16 @@
       'gpu_common_gtests',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
+    ],
+
+    'gpu_fyi_linux_intel_and_nvidia_release_experimental_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_skia_renderer_vulkan_telemetry_tests',
+      'gpu_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_telemetry_tests',
     ],
 
     'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests': [

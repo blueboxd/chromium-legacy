@@ -18,14 +18,17 @@ using sandbox::syscall_broker::BrokerProcess;
 
 namespace service_manager {
 
-ImeProcessPolicy::ImeProcessPolicy() = default;
+ImeProcessPolicy::ImeProcessPolicy() {}
 
-ImeProcessPolicy::~ImeProcessPolicy() = default;
+ImeProcessPolicy::~ImeProcessPolicy() {}
 
 ResultExpr ImeProcessPolicy::EvaluateSyscall(int sysno) const {
   switch (sysno) {
 #if defined(__NR_uname)
     case __NR_uname:
+#endif
+#if defined(__NR_clock_gettime)
+    case __NR_clock_gettime:
 #endif
       return Allow();
     default:

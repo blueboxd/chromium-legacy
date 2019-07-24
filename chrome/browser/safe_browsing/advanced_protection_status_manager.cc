@@ -155,7 +155,7 @@ void AdvancedProtectionStatusManager::OnAdvancedProtectionDisabled() {
 void AdvancedProtectionStatusManager::OnAccessTokenFetchComplete(
     std::string account_id,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   DCHECK(access_token_fetcher_);
 
   if (is_under_advanced_protection_) {
@@ -197,12 +197,12 @@ void AdvancedProtectionStatusManager::RefreshAdvancedProtectionStatus() {
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
 
   access_token_fetcher_ =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           "advanced_protection_status_manager", identity_manager_, scopes,
           base::BindOnce(
               &AdvancedProtectionStatusManager::OnAccessTokenFetchComplete,
               base::Unretained(this), primary_account_id),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void AdvancedProtectionStatusManager::ScheduleNextRefresh() {

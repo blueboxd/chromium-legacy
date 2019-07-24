@@ -49,8 +49,10 @@ class MockPreconnectManager : public PreconnectManager {
   MOCK_METHOD1(StartPreresolveHost, void(const GURL& url));
   MOCK_METHOD1(StartPreresolveHosts,
                void(const std::vector<std::string>& hostnames));
-  MOCK_METHOD2(StartPreconnectUrl,
-               void(const GURL& url, bool allow_credentials));
+  MOCK_METHOD3(StartPreconnectUrl,
+               void(const GURL& url,
+                    bool allow_credentials,
+                    net::NetworkIsolationKey network_isolation_key));
   MOCK_METHOD1(Stop, void(const GURL& url));
 
   void Start(const GURL& url,
@@ -303,7 +305,8 @@ TEST_F(LoadingPredictorTest, TestDontPredictOmniboxHints) {
 TEST_F(LoadingPredictorPreconnectTest, TestHandleOmniboxHint) {
   const GURL preconnect_suggestion = GURL("http://search.com/kittens");
   EXPECT_CALL(*mock_preconnect_manager_,
-              StartPreconnectUrl(preconnect_suggestion, true));
+              StartPreconnectUrl(preconnect_suggestion, true,
+                                 net::NetworkIsolationKey()));
   predictor_->PrepareForPageLoad(preconnect_suggestion, HintOrigin::OMNIBOX,
                                  true);
   // The second suggestion for the same host should be filtered out.

@@ -83,6 +83,10 @@ public class SyncPreferenceUtils {
             return res.getString(R.string.sync_is_disabled);
         }
 
+        if (profileSyncService.isSyncDisabledByEnterprisePolicy()) {
+            return res.getString(R.string.sync_is_disabled_by_administrator);
+        }
+
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
             return res.getString(
                     GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
@@ -122,6 +126,11 @@ public class SyncPreferenceUtils {
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
             return UiUtils.getTintedDrawable(
                     context, R.drawable.ic_sync_green_40dp, R.color.default_icon_color);
+        }
+
+        if (profileSyncService.isSyncDisabledByEnterprisePolicy()) {
+            return UiUtils.getTintedDrawable(
+                    context, R.drawable.ic_sync_error_40dp, R.color.default_icon_color);
         }
 
         if (profileSyncService.isEngineInitialized()

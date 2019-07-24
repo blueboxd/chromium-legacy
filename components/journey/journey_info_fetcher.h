@@ -18,9 +18,9 @@ namespace base {
 class Value;
 }  // namespace base
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -37,7 +37,7 @@ using FetchResponseAvailableCallback =
 class JourneyInfoFetcher {
  public:
   JourneyInfoFetcher(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory);
 
   ~JourneyInfoFetcher();
@@ -60,7 +60,7 @@ class JourneyInfoFetcher {
                     const std::string& oauth_access_token);
 
   void AccessTokenFetchFinished(GoogleServiceAuthError error,
-                                identity::AccessTokenInfo access_token_info);
+                                signin::AccessTokenInfo access_token_info);
 
   void AccessTokenError(const GoogleServiceAuthError& error);
 
@@ -73,9 +73,9 @@ class JourneyInfoFetcher {
                        base::Optional<base::Value> result,
                        const std::string& error_detail);
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   const scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 

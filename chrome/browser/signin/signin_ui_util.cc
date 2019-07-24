@@ -57,7 +57,7 @@ void CreateDiceTurnSyncOnHelper(
 namespace signin_ui_util {
 
 base::string16 GetAuthenticatedUsername(
-    const identity::IdentityManager* identity_manager) {
+    const signin::IdentityManager* identity_manager) {
   std::string user_display_name;
 
   if (identity_manager->HasPrimaryAccount()) {
@@ -146,7 +146,7 @@ void EnableSyncFromPromo(
           ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
           : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   bool needs_reauth_before_enable_sync =
       !identity_manager->HasAccountWithRefreshToken(account.account_id) ||
@@ -170,16 +170,16 @@ void EnableSyncFromPromo(
 }  // namespace internal
 
 std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   std::string email =
       identity_manager
           ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
           ->email;
   if (email.empty()) {
-    DCHECK_EQ(identity::IdentityManager::AccountIdMigrationState::
-                  MIGRATION_NOT_STARTED,
-              identity_manager->GetAccountIdMigrationState());
+    DCHECK_EQ(
+        signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED,
+        identity_manager->GetAccountIdMigrationState());
     return account_id;
   }
   return email;
@@ -187,7 +187,7 @@ std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
 
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   std::vector<AccountInfo> accounts_with_tokens =
       identity_manager->GetExtendedAccountInfoForAccountsWithRefreshToken();
@@ -215,7 +215,7 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   std::vector<AccountInfo> accounts;
   for (auto& account_info : accounts_with_tokens) {
     DCHECK(!account_info.IsEmpty());
-    if (!identity::IsUsernameAllowedByPatternFromPrefs(
+    if (!signin::IsUsernameAllowedByPatternFromPrefs(
             g_browser_process->local_state(), account_info.email)) {
       continue;
     }

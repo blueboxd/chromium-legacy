@@ -40,7 +40,7 @@ class SendTabToSelfBubbleController
   // Returns the title of send tab to self bubble.
   base::string16 GetWindowTitle() const;
   // Returns the valid devices info map.
-  std::vector<TargetDeviceInfo> GetValidDevices() const;
+  const std::vector<TargetDeviceInfo>& GetValidDevices() const;
   // Returns current profile.
   Profile* GetProfile() const;
 

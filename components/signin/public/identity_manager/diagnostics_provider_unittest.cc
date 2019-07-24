@@ -20,11 +20,11 @@ class DiagnosticsProviderTest : public testing::Test {
  public:
   DiagnosticsProviderTest() = default;
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
 
-  identity::DiagnosticsProvider* diagnostics_provider() {
+  signin::DiagnosticsProvider* diagnostics_provider() {
     return identity_test_env_.identity_manager()->GetDiagnosticsProvider();
   }
 
@@ -32,7 +32,7 @@ class DiagnosticsProviderTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
  private:
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsProviderTest);
 };

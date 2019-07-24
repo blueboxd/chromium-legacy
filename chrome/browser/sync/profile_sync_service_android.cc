@@ -169,6 +169,14 @@ jboolean ProfileSyncServiceAndroid::IsSyncActive(
   return sync_service_->IsSyncFeatureActive();
 }
 
+jboolean ProfileSyncServiceAndroid::IsSyncDisabledByEnterprisePolicy(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return sync_service_->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+}
+
 jboolean ProfileSyncServiceAndroid::IsEngineInitialized(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {

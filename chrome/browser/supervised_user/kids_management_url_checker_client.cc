@@ -142,7 +142,7 @@ struct KidsManagementURLCheckerClient::Check {
   Check(Check&&) = default;
 
   GURL url;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher;
   bool access_token_expired;
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
@@ -164,7 +164,7 @@ KidsManagementURLCheckerClient::Check::~Check() {
 KidsManagementURLCheckerClient::KidsManagementURLCheckerClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& country,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : url_loader_factory_(std::move(url_loader_factory)),
       traffic_annotation_(
           net::DefineNetworkTrafficAnnotation("kids_management_url_checker", R"(
@@ -214,18 +214,18 @@ void KidsManagementURLCheckerClient::StartFetching(CheckList::iterator it) {
   // only comes from |checks_in_progress_|, which are owned by this object
   // too.
   it->get()->access_token_fetcher =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           "kids_url_classifier", identity_manager_, scopes,
           base::BindOnce(
               &KidsManagementURLCheckerClient::OnAccessTokenFetchComplete,
               base::Unretained(this), it),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void KidsManagementURLCheckerClient::OnAccessTokenFetchComplete(
     CheckList::iterator it,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(WARNING) << "Token error: " << error.ToString();
 
@@ -259,7 +259,7 @@ void KidsManagementURLCheckerClient::OnAccessTokenFetchComplete(
 
 void KidsManagementURLCheckerClient::OnSimpleLoaderComplete(
     CheckList::iterator it,
-    identity::AccessTokenInfo token_info,
+    signin::AccessTokenInfo token_info,
     std::unique_ptr<std::string> response_body) {
   Check* check = it->get();
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader =

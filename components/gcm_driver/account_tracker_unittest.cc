@@ -277,12 +277,12 @@ class AccountTrackerTest : public testing::Test {
 #if !defined(OS_CHROMEOS)
   void NotifyLogoutOfPrimaryAccountOnly() {
     identity_test_env_.ClearPrimaryAccount(
-        identity::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
+        signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
   }
 
   void NotifyLogoutOfAllAccounts() {
     identity_test_env_.ClearPrimaryAccount(
-        identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
+        signin::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
   }
 #endif
 
@@ -334,7 +334,7 @@ class AccountTrackerTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::IO};
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<AccountTracker> account_tracker_;
   AccountTrackerObserver observer_;

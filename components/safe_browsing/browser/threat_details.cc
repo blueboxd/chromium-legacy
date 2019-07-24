@@ -404,7 +404,7 @@ ThreatDetails::ThreatDetails()
       is_all_done_(false) {}
 
 ThreatDetails::~ThreatDetails() {
-  DCHECK(all_done_expected_ == is_all_done_);
+  DCHECK_EQ(all_done_expected_, is_all_done_);
 }
 
 bool ThreatDetails::IsReportableUrl(const GURL& url) const {

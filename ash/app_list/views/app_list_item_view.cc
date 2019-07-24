@@ -159,6 +159,22 @@ class AppListItemView::IconImageView : public views::ImageView {
     return old_layer;
   }
 
+  // Update the rounded corner and insets with animation. |show| is true when
+  // the target rounded corner radius and insets are for showing the indicator
+  // circle.
+  void AnimateRoundedCornerAndInsets(bool show) {
+    ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+    settings.SetTweenType(gfx::Tween::EASE_IN);
+    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+        kDraggedViewHoverAnimationDurationForFolder));
+
+    SetRoundedCornerAndInsets(
+        show ? AppListConfig::instance().folder_unclipped_icon_dimension() / 2
+             : AppListConfig::instance().folder_icon_dimension() / 2,
+        show ? gfx::Insets()
+             : gfx::Insets(AppListConfig::instance().folder_icon_insets()));
+  }
+
   // Sets the rounded corner and the clip insets.
   void SetRoundedCornerAndInsets(int corner_radius, const gfx::Insets& insets) {
     EnsureLayer();
@@ -761,11 +777,19 @@ base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
 }
 
 void AppListItemView::OnDraggedViewEnter() {
+  if (is_folder_) {
+    icon_->AnimateRoundedCornerAndInsets(true);
+    return;
+  }
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Show();
 }
 
 void AppListItemView::OnDraggedViewExit() {
+  if (is_folder_) {
+    icon_->AnimateRoundedCornerAndInsets(false);
+    return;
+  }
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Hide();
 }
@@ -786,18 +810,7 @@ void AppListItemView::EnsureLayer() {
 }
 
 void AppListItemView::AnimationProgressed(const gfx::Animation* animation) {
-  if (is_folder_) {
-    // Animate the folder icon via changing mask layer's corner radius and
-    // insets.
-    const double progress = animation->GetCurrentValue();
-    const int corner_radius = gfx::Tween::IntValueBetween(
-        progress, AppListConfig::instance().folder_icon_dimension() / 2,
-        AppListConfig::instance().folder_unclipped_icon_dimension() / 2);
-    const int insets = gfx::Tween::IntValueBetween(
-        progress, AppListConfig::instance().folder_icon_insets(), 0);
-    icon_->SetRoundedCornerAndInsets(corner_radius, gfx::Insets(insets));
-    return;
-  }
+  DCHECK(!is_folder_);
 
   preview_circle_radius_ = gfx::Tween::IntValueBetween(
       animation->GetCurrentValue(), 0,
@@ -926,14 +939,15 @@ int AppListItemView::GetPreviewCircleRadius() const {
 }
 
 void AppListItemView::CreateDraggedViewHoverAnimation() {
+  DCHECK(!is_folder_);
+
   if (dragged_view_hover_animation_)
     return;
 
   dragged_view_hover_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   dragged_view_hover_animation_->SetTweenType(gfx::Tween::EASE_IN);
   dragged_view_hover_animation_->SetSlideDuration(
-      is_folder_ ? kDraggedViewHoverAnimationDurationForFolder
-                 : kDraggedViewHoverAnimationDuration);
+      kDraggedViewHoverAnimationDuration);
 }
 
 void AppListItemView::AdaptBoundsForSelectionHighlight(gfx::Rect* bounds) {

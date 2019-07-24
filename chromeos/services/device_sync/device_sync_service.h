@@ -17,9 +17,9 @@ namespace gcm {
 class GCMDriver;
 }  // namespace gcm
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -38,7 +38,7 @@ class GcmDeviceInfoProvider;
 class DeviceSyncService : public service_manager::Service {
  public:
   DeviceSyncService(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
       ClientAppMetadataProvider* client_app_metadata_provider,
@@ -55,7 +55,7 @@ class DeviceSyncService : public service_manager::Service {
 
   service_manager::ServiceBinding service_binding_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   const GcmDeviceInfoProvider* gcm_device_info_provider_;
   ClientAppMetadataProvider* client_app_metadata_provider_;

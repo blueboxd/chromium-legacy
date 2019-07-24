@@ -63,6 +63,13 @@ Polymer({
       value: false,
     },
 
+    /** @private */
+    hasReleaseNotes_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     showCrostini: Boolean,
 
     /**
@@ -83,6 +90,12 @@ Polymer({
       value: false,
     },
     // </if>
+
+    /** @private */
+    hasInternetConnection_: {
+      type: Boolean,
+      value: false,
+    },
 
     // <if expr="_google_chrome and is_macosx">
     /** @private {!PromoteUpdaterStatus} */
@@ -224,6 +237,14 @@ Polymer({
       this.hasEndOfLife_ = result;
     });
 
+    this.aboutBrowserProxy_.getEnabledReleaseNotes().then(result => {
+      this.hasReleaseNotes_ = result;
+    });
+
+    this.aboutBrowserProxy_.checkInternetConnection().then(result => {
+      this.hasInternetConnection_ = result;
+    });
+
     // </if>
     // <if expr="not chromeos">
     this.startListening_();
@@ -312,6 +333,11 @@ Polymer({
     // Stop the propagation of events, so that clicking on links inside
     // actionable items won't trigger action.
     event.stopPropagation();
+  },
+
+  /** @private */
+  onReleaseNotesTap_: function() {
+    this.aboutBrowserProxy_.launchReleaseNotes();
   },
 
   /** @private */

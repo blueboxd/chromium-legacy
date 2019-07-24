@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_CHROMEOS_DELEGATE_TO_BROWSER_GPU_SERVICE_ACCELERATOR_FACTORY_H_
 
 #include "content/common/content_export.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 
 namespace content {
 

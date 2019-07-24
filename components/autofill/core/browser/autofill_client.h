@@ -32,7 +32,7 @@ namespace gfx {
 class RectF;
 }
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -234,7 +234,7 @@ class AutofillClient : public RiskDataLoader {
   virtual syncer::SyncService* GetSyncService() = 0;
 
   // Gets the IdentityManager associated with the client.
-  virtual identity::IdentityManager* GetIdentityManager() = 0;
+  virtual signin::IdentityManager* GetIdentityManager() = 0;
 
   // Gets the FormDataImporter instance owned by the client.
   virtual FormDataImporter* GetFormDataImporter() = 0;

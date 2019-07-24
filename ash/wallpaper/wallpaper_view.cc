@@ -232,7 +232,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   ::wm::SetWindowVisibilityAnimationType(wallpaper_window, animation_type);
 
   // Enable wallpaper transition for the following cases:
-  // 1. Initial(OOBE) wallpaper animation.
+  // 1. Initial wallpaper animation after device boot.
   // 2. Wallpaper fades in from a non empty background.
   // 3. From an empty background, chrome transit to a logged in user session.
   // 4. From an empty background, guest user logged in.

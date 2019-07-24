@@ -10,7 +10,6 @@
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_prefs_controller.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 
@@ -131,7 +130,8 @@ aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
 }
 
 bool AssistantViewDelegateImpl::IsLaunchWithMicOpen() const {
-  return VoiceInteractionController::Get()->launch_with_mic_open();
+  return assistant_controller_->prefs_controller()->prefs()->GetBoolean(
+      chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
 }
 
 bool AssistantViewDelegateImpl::IsTabletMode() const {

@@ -105,7 +105,7 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
 
   Profile* profile() { return profile_.get(); }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_environment_adaptor_->identity_test_env()
         ->identity_manager();
   }

@@ -9,7 +9,7 @@
 
 #include "google_apis/gaia/gaia_auth_util.h"
 
-namespace identity {
+namespace signin {
 
 // Container for a response to get the accounts in the cookie jar.
 struct AccountsInCookieJarInfo {
@@ -32,6 +32,6 @@ struct AccountsInCookieJarInfo {
   ~AccountsInCookieJarInfo();
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNTS_IN_COOKIE_JAR_INFO_H_

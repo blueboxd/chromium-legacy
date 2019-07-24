@@ -60,10 +60,10 @@ class AnalyserNode;
 class AudioBuffer;
 class AudioBufferSourceNode;
 class AudioContextOptions;
+class AudioGraphTracer;
 class AudioListener;
 class AudioWorklet;
 class BiquadFilterNode;
-class BaseAudioContextTracker;
 class ChannelMergerNode;
 class ChannelSplitterNode;
 class ConstantSourceNode;
@@ -377,7 +377,7 @@ class MODULES_EXPORT BaseAudioContext
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  BaseAudioContextTracker* Tracker();
+  AudioGraphTracer* GraphTracer();
 
  private:
   // Unique ID for each context.

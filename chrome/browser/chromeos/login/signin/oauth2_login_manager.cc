@@ -83,7 +83,7 @@ void OAuth2LoginManager::ContinueSessionRestore() {
 }
 
 void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
-  identity::IdentityManager* identity_manager = GetIdentityManager();
+  signin::IdentityManager* identity_manager = GetIdentityManager();
   if (identity_manager->HasPrimaryAccountWithRefreshToken()) {
     VLOG(1) << "OAuth2 refresh token is already loaded.";
     VerifySessionCookies();
@@ -147,7 +147,7 @@ void OAuth2LoginManager::OnRefreshTokenUpdatedForAccount(
   }
 }
 
-identity::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
+signin::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(user_profile_);
 }
 
@@ -184,7 +184,7 @@ void OAuth2LoginManager::StoreOAuth2Token() {
   } else {
     // TODO(sinhak): Remove this when Account Manager is enabled by default.
 
-    identity::IdentityManager* identity_manager = GetIdentityManager();
+    signin::IdentityManager* identity_manager = GetIdentityManager();
     DCHECK(identity_manager->HasPrimaryAccount());
 
     // On ChromeOS, the primary account is set via

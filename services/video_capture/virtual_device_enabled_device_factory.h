@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/device_factory.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
@@ -29,8 +28,6 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
   ~VirtualDeviceEnabledDeviceFactory() override;
 
   // DeviceFactory implementation.
-  void SetServiceRef(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref) override;
   void GetDeviceInfos(GetDeviceInfosCallback callback) override;
   void CreateDevice(const std::string& device_id,
                     mojom::DeviceRequest device_request,
@@ -69,7 +66,6 @@ class VirtualDeviceEnabledDeviceFactory : public DeviceFactory {
 
   std::map<std::string, VirtualDeviceEntry> virtual_devices_by_id_;
   const std::unique_ptr<DeviceFactory> device_factory_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::vector<mojom::DevicesChangedObserverPtr> devices_changed_observers_;
 
   base::WeakPtrFactory<VirtualDeviceEnabledDeviceFactory> weak_factory_;

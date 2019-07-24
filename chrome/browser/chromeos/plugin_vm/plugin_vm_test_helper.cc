@@ -4,12 +4,15 @@
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_test_helper.h"
 
+#include "ash/public/cpp/shelf_item_delegate.h"
+#include "ash/public/cpp/shelf_model.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -30,6 +33,22 @@ const char kPluginVmImageHash[] =
 const char kDomain[] = "example.com";
 const char kDeviceId[] = "device_id";
 const char kPluginVmImageUrl[] = "https://example.com/plugin_vm_image";
+
+// For adding a fake shelf item without requiring opening an actual window.
+class FakeShelfItemDelegate : public ash::ShelfItemDelegate {
+ public:
+  explicit FakeShelfItemDelegate(const ash::ShelfID& shelf_id)
+      : ShelfItemDelegate(shelf_id) {}
+
+  void ExecuteCommand(bool from_context_menu,
+                      int64_t command_id,
+                      int32_t event_flags,
+                      int64_t display_id) override {}
+  void Close() override {
+    ChromeLauncherController::instance()->CloseLauncherItem(
+        ash::ShelfID(kPluginVmAppId));
+  }
+};
 
 }  // namespace
 
@@ -141,6 +160,28 @@ void PluginVmTestHelper::AllowPluginVmForManualTesting() {
   EnablePluginVmFeature();
   EnableDevMode();
   ASSERT_TRUE(IsPluginVmAllowedForProfile(testing_profile_));
+}
+
+void PluginVmTestHelper::OpenShelfItem() {
+  ash::ShelfID shelf_id(kPluginVmAppId);
+  std::unique_ptr<ash::ShelfItemDelegate> delegate =
+      std::make_unique<FakeShelfItemDelegate>(shelf_id);
+  ChromeLauncherController* laucher_controller =
+      ChromeLauncherController::instance();
+  // Similar logic to InternalAppWindowShelfController, for handling pins and
+  // spinners.
+  if (laucher_controller->GetItem(shelf_id)) {
+    laucher_controller->shelf_model()->SetShelfItemDelegate(
+        shelf_id, std::move(delegate));
+    laucher_controller->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
+  } else {
+    laucher_controller->CreateAppLauncherItem(std::move(delegate),
+                                              ash::STATUS_RUNNING);
+  }
+}
+
+void PluginVmTestHelper::CloseShelfItem() {
+  ChromeLauncherController::instance()->Close(ash::ShelfID(kPluginVmAppId));
 }
 
 }  // namespace plugin_vm

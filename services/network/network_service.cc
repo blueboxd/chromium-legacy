@@ -150,7 +150,9 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
   ~NetworkServiceAuthNegotiateAndroid() override = default;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override { return auth_negotiate_.Init(); }
+  bool Init(const net::NetLogWithSource& net_log) override {
+    return auth_negotiate_.Init(net_log);
+  }
 
   bool NeedsIdentity() const override {
     return auth_negotiate_.NeedsIdentity();
@@ -169,6 +171,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const net::NetLogWithSource& net_log,
                         net::CompletionOnceCallback callback) override {
     network_service_->client()->OnGenerateHttpNegotiateAuthToken(
         auth_negotiate_.server_auth_token(), auth_negotiate_.can_delegate(),
@@ -491,8 +494,7 @@ void NetworkService::SetUpHttpAuth(
 
   http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
       &http_auth_preferences_, http_auth_static_params->supported_schemes
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
       http_auth_static_params->gssapi_library_name
 #endif

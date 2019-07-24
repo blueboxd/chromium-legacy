@@ -969,11 +969,23 @@ void QuicChromiumClientSession::UnregisterStreamPriority(quic::QuicStreamId id,
 void QuicChromiumClientSession::UpdateStreamPriority(
     quic::QuicStreamId id,
     spdy::SpdyPriority new_priority) {
-  if (headers_include_h2_stream_dependency_) {
+  if (headers_include_h2_stream_dependency_ ||
+      VersionHasStreamType(connection()->transport_version())) {
     auto updates = priority_dependency_state_.OnStreamUpdate(id, new_priority);
     for (auto update : updates) {
-      WritePriority(update.id, update.parent_stream_id, update.weight,
-                    update.exclusive);
+      if (!VersionHasStreamType(connection()->transport_version())) {
+        WritePriority(update.id, update.parent_stream_id, update.weight,
+                      update.exclusive);
+      } else {
+        quic::PriorityFrame frame;
+        frame.weight = update.weight;
+        frame.exclusive = update.exclusive;
+        frame.prioritized_element_id = update.id;
+        frame.prioritized_type = quic::REQUEST_STREAM;
+        frame.dependency_type = quic::REQUEST_STREAM;
+        frame.element_dependency_id = update.parent_stream_id;
+        WriteH3Priority(frame);
+      }
     }
   }
   quic::QuicSpdySession::UpdateStreamPriority(id, new_priority);
@@ -3030,7 +3042,8 @@ bool QuicChromiumClientSession::HandlePromised(
                                  weak_factory_.GetWeakPtr(), GURL(pushed_url)),
                              net_log_);
     }
-    if (headers_include_h2_stream_dependency_) {
+    if (headers_include_h2_stream_dependency_ ||
+        VersionHasStreamType(connection()->transport_version())) {
       // Even though the promised stream will not be created until after the
       // push promise headers are received, send a PRIORITY frame for the
       // promised stream ID. Send |kDefaultPriority| since that will be the
@@ -3041,7 +3054,18 @@ bool QuicChromiumClientSession::HandlePromised(
       bool exclusive = false;
       priority_dependency_state_.OnStreamCreation(
           promised_id, priority, &parent_stream_id, &weight, &exclusive);
-      WritePriority(promised_id, parent_stream_id, weight, exclusive);
+      if (!VersionHasStreamType(connection()->transport_version())) {
+        WritePriority(promised_id, parent_stream_id, weight, exclusive);
+      } else {
+        quic::PriorityFrame frame;
+        frame.weight = weight;
+        frame.exclusive = exclusive;
+        frame.prioritized_type = quic::PUSH_STREAM;
+        frame.prioritized_element_id = promised_id;
+        frame.dependency_type = quic::REQUEST_STREAM;
+        frame.element_dependency_id = parent_stream_id;
+        WriteH3Priority(frame);
+      }
     }
   }
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_PUSH_PROMISE_RECEIVED,

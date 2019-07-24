@@ -4,7 +4,7 @@
 
 #include "components/signin/public/identity_manager/access_token_info.h"
 
-namespace identity {
+namespace signin {
 
 bool operator==(const AccessTokenInfo& lhs, const AccessTokenInfo& rhs) {
   return (lhs.token == rhs.token) &&
@@ -12,4 +12,4 @@ bool operator==(const AccessTokenInfo& lhs, const AccessTokenInfo& rhs) {
          (lhs.id_token == rhs.id_token);
 }
 
-}  // namespace identity
+}  // namespace signin

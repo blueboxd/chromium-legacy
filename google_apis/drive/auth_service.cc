@@ -39,7 +39,7 @@ void RecordAuthResultHistogram(int value) {
 // OAuth2 authorization token retrieval request.
 class AuthRequest {
  public:
-  AuthRequest(identity::IdentityManager* identity_manager,
+  AuthRequest(signin::IdentityManager* identity_manager,
               const CoreAccountId& account_id,
               scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
               const AuthStatusCallback& callback,
@@ -48,17 +48,17 @@ class AuthRequest {
 
  private:
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   AuthStatusCallback callback_;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthRequest);
 };
 
 AuthRequest::AuthRequest(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const AuthStatusCallback& callback,
@@ -72,14 +72,14 @@ AuthRequest::AuthRequest(
       identity::ScopeSet(scopes.begin(), scopes.end()),
       base::BindOnce(&AuthRequest::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 AuthRequest::~AuthRequest() {}
 
 void AuthRequest::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (error.state() == GoogleServiceAuthError::NONE) {
@@ -111,7 +111,7 @@ void AuthRequest::OnAccessTokenFetchComplete(
 }  // namespace
 
 AuthService::AuthService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::vector<std::string>& scopes)

@@ -35,6 +35,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_color.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_filter_operations.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_transform.h"
@@ -51,6 +52,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/animation/animation_translation_util.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_color_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_filter_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_filter_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
@@ -265,14 +267,20 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           // Backdrop-filter pixel moving filters do not change the layer bounds
           // like regular filters do, so they can still be composited.
           break;
-        case CSSPropertyID::kVariable:
+        case CSSPropertyID::kVariable: {
           // Custom properties are supported only in the case of
           // OffMainThreadCSSPaintEnabled, and even then only for some specific
           // property types. Otherwise they are treated as unsupported.
-          if (keyframe->GetCompositorKeyframeValue()) {
+          const CompositorKeyframeValue* keyframe_value =
+              keyframe->GetCompositorKeyframeValue();
+          if (keyframe_value) {
             DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
-            DCHECK(keyframe->GetCompositorKeyframeValue()->IsDouble() ||
-                   keyframe->GetCompositorKeyframeValue()->IsColor());
+            DCHECK(keyframe_value->IsDouble() || keyframe_value->IsColor());
+            // TODO: Add support for keyframes containing different types
+            if (keyframes.front()->GetCompositorKeyframeValue()->GetType() !=
+                keyframe_value->GetType()) {
+              reasons |= kMixedKeyframeValueTypes;
+            }
           } else {
             // We skip the rest of the loop in this case for the same reason as
             // unsupported CSS properties - see below.
@@ -280,6 +288,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
             continue;
           }
           break;
+        }
         default:
           // We skip the rest of the loop in this case for two reasons:
           //   i.  Getting a CompositorElementId below will DCHECK if we pass it
@@ -587,6 +596,16 @@ void AddKeyframeToCurve(CompositorFloatAnimationCurve& curve,
   curve.AddKeyframe(float_keyframe);
 }
 
+void AddKeyframeToCurve(CompositorColorAnimationCurve& curve,
+                        Keyframe::PropertySpecificKeyframe* keyframe,
+                        const CompositorKeyframeValue* value,
+                        const TimingFunction& keyframe_timing_function) {
+  CompositorColorKeyframe color_keyframe(
+      keyframe->Offset(), ToCompositorKeyframeColor(value)->ToColor(),
+      keyframe_timing_function);
+  curve.AddKeyframe(color_keyframe);
+}
+
 void AddKeyframeToCurve(CompositorTransformAnimationCurve& curve,
                         Keyframe::PropertySpecificKeyframe* keyframe,
                         const CompositorKeyframeValue* value,
@@ -693,12 +712,21 @@ void CompositorAnimations::GetAnimationOnCompositor(
         DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
         custom_property_name = property.CustomPropertyName();
         target_property = compositor_target_property::CSS_CUSTOM_PROPERTY;
-        // TODO(kevers): Extend support to non-float types.
-        auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
-        AddKeyframesToCurve(*float_curve, values);
-        float_curve->SetTimingFunction(*timing.timing_function);
-        float_curve->SetScaledDuration(scale);
-        curve = std::move(float_curve);
+
+        // Create curve based on the keyframe value type
+        if (values.front()->GetCompositorKeyframeValue()->IsColor()) {
+          auto color_curve = std::make_unique<CompositorColorAnimationCurve>();
+          AddKeyframesToCurve(*color_curve, values);
+          color_curve->SetTimingFunction(*timing.timing_function);
+          color_curve->SetScaledDuration(scale);
+          curve = std::move(color_curve);
+        } else {
+          auto float_curve = std::make_unique<CompositorFloatAnimationCurve>();
+          AddKeyframesToCurve(*float_curve, values);
+          float_curve->SetTimingFunction(*timing.timing_function);
+          float_curve->SetScaledDuration(scale);
+          curve = std::move(float_curve);
+        }
         break;
       }
       default:

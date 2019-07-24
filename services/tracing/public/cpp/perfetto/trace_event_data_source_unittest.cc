@@ -5,6 +5,7 @@
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -15,10 +16,16 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_id_name_manager.h"
+#include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/trace_event/thread_instruction_count.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_log.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
@@ -116,6 +123,11 @@ class MockProducerClient : public ProducerClient {
     FlushPacketIfPossible();
     EXPECT_GT(proto_metadata_packets_.size(), packet_index);
     return &proto_metadata_packets_[packet_index]->chrome_metadata();
+  }
+
+  const std::vector<std::unique_ptr<perfetto::protos::TracePacket>>&
+  finalized_packets() {
+    return finalized_packets_;
   }
 
  private:
@@ -1137,6 +1149,80 @@ TEST_F(TraceEventDataSourceNoInterningTest, InterningScopedToPackets) {
   ExpectEventCategories(e_packet3, {{1u, "cat2"}});
   ExpectEventNames(e_packet3, {{1u, "e2"}});
   ExpectDebugAnnotationNames(e_packet3, {{1u, "arg2"}});
+}
+
+TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
+  PerfettoTracedProcess::ResetTaskRunnerForTesting(
+      base::SequencedTaskRunnerHandle::Get());
+  constexpr char kStartupTestEvent1[] = "startup_registry";
+  TraceEventDataSource::ResetForTesting();
+  auto* data_source = TraceEventDataSource::GetInstance();
+
+  // Start startup tracing registry with no timeout. This would cause startup
+  // tracing to abort and flush as soon the current thread can run tasks.
+  data_source->set_startup_tracing_timeout_for_testing(base::TimeDelta());
+  data_source->SetupStartupTracing(true);
+  base::trace_event::TraceLog::GetInstance()->SetEnabled(
+      base::trace_event::TraceConfig(),
+      base::trace_event::TraceLog::RECORDING_MODE);
+
+  // The trace event will be added to the startup registry since the abort is
+  // not run yet.
+  TRACE_EVENT_BEGIN0(kCategoryGroup, kStartupTestEvent1);
+
+  // Run task on background thread to add trace events while aborting and
+  // starting tracing on the data source. This is to test we do not have any
+  // crashes when a background thread is trying to create trace writers when
+  // deleting startup registry and setting the producer.
+  auto wait_for_start_tracing = std::make_unique<base::WaitableEvent>();
+  base::WaitableEvent* wait_ptr = wait_for_start_tracing.get();
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskPriority::BEST_EFFORT,
+      base::BindOnce(
+          [](std::unique_ptr<base::WaitableEvent> wait_for_start_tracing) {
+            // This event can be hit anytime before startup registry is
+            // destroyed to tracing started using producer.
+            TRACE_EVENT_BEGIN0(kCategoryGroup, "maybe_lost");
+            base::ScopedAllowBaseSyncPrimitivesForTesting allow;
+            wait_for_start_tracing->Wait();
+            // This event can be hit while flushing for startup registry or when
+            // tracing is started or when already stopped tracing.
+            TRACE_EVENT_BEGIN0(kCategoryGroup, "maybe_lost");
+          },
+          std::move(wait_for_start_tracing)));
+
+  // Let tasks run on this thread, which should abort startup tracing and flush
+  // since we have not added a producer to the data source.
+  data_source->OnTaskSchedulerAvailable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(base::trace_event::TraceLog::GetInstance()->IsEnabled());
+
+  // Start tracing while flush is running.
+  perfetto::DataSourceConfig config;
+  data_source->StartTracing(producer_client(), config);
+  wait_ptr->Signal();
+
+  // Verify that the trace buffer does not have the event added to startup
+  // registry.
+  producer_client()->FlushPacketIfPossible();
+  std::set<std::string> event_names;
+  for (const auto& packet : producer_client()->finalized_packets()) {
+    if (packet->has_interned_data()) {
+      for (const auto& name : packet->interned_data().legacy_event_names()) {
+        event_names.insert(name.name());
+      }
+    }
+  }
+  EXPECT_EQ(event_names.end(), event_names.find(kStartupTestEvent1));
+
+  // Stop tracing must be called even if tracing is not started to clear the
+  // pending task.
+  base::RunLoop wait_for_stop;
+  data_source->StopTracing(base::BindRepeating(
+      [](const base::RepeatingClosure& quit_closure) { quit_closure.Run(); },
+      wait_for_stop.QuitClosure()));
+
+  wait_for_stop.Run();
 }
 
 // TODO(eseckler): Add startup tracing unittests.

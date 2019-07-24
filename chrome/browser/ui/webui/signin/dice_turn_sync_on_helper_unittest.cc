@@ -130,7 +130,7 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   }
 
   FakeUserPolicySigninService(Profile* profile,
-                              identity::IdentityManager* identity_manager)
+                              signin::IdentityManager* identity_manager)
       : UserPolicySigninService(profile,
                                 nullptr,
                                 nullptr,
@@ -231,10 +231,10 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
 
   // Basic accessors.
   Profile* profile() { return profile_.get(); }
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env()->identity_manager();
   }
   const std::string& account_id() { return account_id_; }

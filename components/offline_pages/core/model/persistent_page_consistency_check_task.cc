@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/offline_pages/core/archive_manager.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
@@ -36,13 +35,10 @@ namespace {
 const base::TimeDelta kExpireThreshold = base::TimeDelta::FromDays(365);
 
 std::vector<OfflinePageItem> GetPersistentPages(
-    const ClientPolicyController* policy_controller,
     sql::Database* db) {
   PageCriteria criteria;
   criteria.lifetime_type = LifetimeType::PERSISTENT;
-  return std::move(
-      GetPagesTask::ReadPagesWithCriteriaSync(policy_controller, criteria, db)
-          .pages);
+  return std::move(GetPagesTask::ReadPagesWithCriteriaSync(criteria, db).pages);
 }
 
 bool SetItemsFileMissingTimeSync(const std::vector<int64_t>& item_ids,
@@ -78,7 +74,6 @@ PersistentPageConsistencyCheckSync(
     OfflinePageMetadataStore* store,
     const base::FilePath& private_dir,
     const base::FilePath& public_dir,
-    const ClientPolicyController* policy_controller,
     base::Time check_time,
     sql::Database* db) {
   std::vector<PublishedArchiveId> publish_ids_of_deleted_pages;
@@ -88,8 +83,7 @@ PersistentPageConsistencyCheckSync(
     return {SyncOperationResult::TRANSACTION_BEGIN_ERROR,
             publish_ids_of_deleted_pages};
 
-  std::vector<OfflinePageItem> persistent_page_infos =
-      GetPersistentPages(policy_controller, db);
+  std::vector<OfflinePageItem> persistent_page_infos = GetPersistentPages(db);
 
   std::vector<int64_t> pages_found_missing;
   std::vector<int64_t> pages_reappeared;
@@ -163,31 +157,28 @@ PersistentPageConsistencyCheckTask::CheckResult::~CheckResult() {}
 PersistentPageConsistencyCheckTask::PersistentPageConsistencyCheckTask(
     OfflinePageMetadataStore* store,
     ArchiveManager* archive_manager,
-    ClientPolicyController* policy_controller,
     base::Time check_time,
     PersistentPageConsistencyCheckCallback callback)
     : store_(store),
       archive_manager_(archive_manager),
-      policy_controller_(policy_controller),
       check_time_(check_time),
       callback_(std::move(callback)) {
   DCHECK(store_);
   DCHECK(archive_manager_);
-  DCHECK(policy_controller_);
 }
 
 PersistentPageConsistencyCheckTask::~PersistentPageConsistencyCheckTask() =
     default;
 
 void PersistentPageConsistencyCheckTask::Run() {
-  store_->Execute(base::BindOnce(&PersistentPageConsistencyCheckSync, store_,
-                                 archive_manager_->GetPrivateArchivesDir(),
-                                 archive_manager_->GetPublicArchivesDir(),
-                                 policy_controller_, check_time_),
-                  base::BindOnce(&PersistentPageConsistencyCheckTask::
-                                     OnPersistentPageConsistencyCheckDone,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                  CheckResult{SyncOperationResult::INVALID_DB_CONNECTION, {}});
+  store_->Execute(
+      base::BindOnce(&PersistentPageConsistencyCheckSync, store_,
+                     archive_manager_->GetPrivateArchivesDir(),
+                     archive_manager_->GetPublicArchivesDir(), check_time_),
+      base::BindOnce(&PersistentPageConsistencyCheckTask::
+                         OnPersistentPageConsistencyCheckDone,
+                     weak_ptr_factory_.GetWeakPtr()),
+      CheckResult{SyncOperationResult::INVALID_DB_CONNECTION, {}});
 }
 
 void PersistentPageConsistencyCheckTask::OnPersistentPageConsistencyCheckDone(

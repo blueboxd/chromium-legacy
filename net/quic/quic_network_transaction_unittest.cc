@@ -6094,8 +6094,9 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
-  if (client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43) {
+  if ((client_headers_include_h2_stream_dependency_ &&
+       version_.transport_version >= quic::QUIC_VERSION_43) ||
+      VersionHasStreamType(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(
@@ -6183,8 +6184,9 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
-  if (client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43) {
+  if ((client_headers_include_h2_stream_dependency_ &&
+       version_.transport_version >= quic::QUIC_VERSION_43) ||
+      VersionHasStreamType(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(
@@ -6436,8 +6438,9 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
 
-  if (client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43) {
+  if ((client_headers_include_h2_stream_dependency_ &&
+       version_.transport_version >= quic::QUIC_VERSION_43) ||
+      VersionHasStreamType(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(
@@ -7084,8 +7087,10 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
           1, GetNthClientInitiatedBidirectionalStreamId(0),
           GetNthServerInitiatedUnidirectionalStreamId(0), false,
           GetRequestHeaders("GET", "https", "/pushed.jpg"), &server_maker_));
-  if (client_headers_include_h2_stream_dependency_ &&
-      version_.transport_version >= quic::QUIC_VERSION_43) {
+
+  if ((client_headers_include_h2_stream_dependency_ &&
+       version_.transport_version >= quic::QUIC_VERSION_43) ||
+      VersionHasStreamType(version_.transport_version)) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(

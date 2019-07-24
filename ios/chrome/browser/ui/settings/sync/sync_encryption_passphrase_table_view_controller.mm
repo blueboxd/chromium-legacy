@@ -60,7 +60,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   NSString* savedTitle_;
   UIBarButtonItem* savedLeftButton_;
   std::unique_ptr<SyncObserverBridge> syncObserver_;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       identityManagerObserver_;
   UITextField* passphrase_;
 }
@@ -109,7 +109,7 @@ const CGFloat kSpinnerButtonPadding = 18;
     _footerMessage = l10n_util::GetNSString(IDS_IOS_SYNC_PASSPHRASE_RECOVER);
 
     identityManagerObserver_ =
-        std::make_unique<identity::IdentityManagerObserverBridge>(
+        std::make_unique<signin::IdentityManagerObserverBridge>(
             IdentityManagerFactory::GetForBrowserState(browserState_), self);
   }
   return self;

@@ -109,6 +109,9 @@ public class DownloadFilter {
     public static @Type int fromMimeType(String mimeType) {
         if (TextUtils.isEmpty(mimeType)) return Type.OTHER;
 
+        Integer type = filterForSpecialMimeTypes(mimeType);
+        if (type != null) return type;
+
         String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
         if (pieces.length != 2) return Type.OTHER;
 
@@ -123,5 +126,10 @@ public class DownloadFilter {
         } else {
             return Type.OTHER;
         }
+    }
+
+    private static Integer filterForSpecialMimeTypes(String mimeType) {
+        if (mimeType.equals("application/ogg")) return Type.AUDIO;
+        return null;
     }
 }

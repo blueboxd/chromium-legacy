@@ -93,7 +93,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   // Sync observer.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
   // Identity manager observer.
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserverBridge;
   // Chrome identity observer.
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
@@ -632,7 +632,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   [self loadSyncSection];
   [self loadNonPersonalizedSection];
   _identityManagerObserverBridge.reset(
-      new identity::IdentityManagerObserverBridge(self.identityManager, self));
+      new signin::IdentityManagerObserverBridge(self.identityManager, self));
   DCHECK(self.syncService);
   _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
   _identityServiceObserver.reset(new ChromeIdentityServiceObserverBridge(self));

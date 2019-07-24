@@ -19,7 +19,7 @@ namespace content {
 class WebContents;
 }
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -42,7 +42,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   ProcessDiceHeaderDelegateImpl(
       content::WebContents* web_contents,
       signin::AccountConsistencyMethod account_consistency,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
       ShowSigninErrorCallback show_signin_error_callback,
@@ -59,7 +59,7 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   bool ShouldEnableSync();
 
   signin::AccountConsistencyMethod account_consistency_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;
   bool is_sync_signin_tab_;

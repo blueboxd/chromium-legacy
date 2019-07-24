@@ -89,6 +89,11 @@ class VaapiImageDecoder {
  protected:
   explicit VaapiImageDecoder(VAProfile va_profile);
 
+  ScopedVAContextAndSurface scoped_va_context_and_surface_;
+
+  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+
+ private:
   // Submits an image to the VA-API by filling its parameters and calling on the
   // corresponding methods according to the image in |encoded_image|. Returns a
   // VaapiImageDecodeStatus that will indicate whether the operation succeeded
@@ -96,11 +101,6 @@ class VaapiImageDecoder {
   virtual VaapiImageDecodeStatus AllocateVASurfaceAndSubmitVABuffers(
       base::span<const uint8_t> encoded_image) = 0;
 
-  ScopedVAContextAndSurface scoped_va_context_and_surface_;
-
-  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-
- private:
   // The VA profile used for the current image decoder.
   const VAProfile va_profile_;
 

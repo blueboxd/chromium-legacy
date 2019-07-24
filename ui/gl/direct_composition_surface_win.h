@@ -16,6 +16,7 @@
 #include "ui/gl/child_window_win.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/vsync_observer.h"
 
 namespace gl {
 class DCLayerTree;
@@ -23,7 +24,8 @@ class DirectCompositionChildSurfaceWin;
 class GLSurfacePresentationHelper;
 class VSyncThreadWin;
 
-class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
+class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
+                                              public VSyncObserver {
  public:
   using VSyncCallback =
       base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
@@ -105,13 +107,15 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
   gfx::Vector2d GetDrawOffset() const override;
   bool SupportsGpuVSync() const override;
   void SetGpuVSyncEnabled(bool enabled) override;
-
   // This schedules an overlay plane to be displayed on the next SwapBuffers
   // or PostSubBuffer call. Overlay planes must be scheduled before every swap
   // to remain in the layer tree. This surface's backbuffer doesn't have to be
   // scheduled with ScheduleDCLayer, as it's automatically placed in the layer
   // tree at z-order 0.
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
+
+  // VSyncObserver implementation.
+  void OnVSync(base::TimeTicks vsync_time, base::TimeDelta interval) override;
 
   HWND window() const { return window_; }
 
@@ -127,32 +131,20 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL {
   ~DirectCompositionSurfaceWin() override;
 
  private:
-  void HandleVSyncOnVSyncThread(base::TimeTicks vsync_time,
-                                base::TimeDelta vsync_interval);
-
-  void HandleVSyncOnMainThread(base::TimeTicks vsync_time,
-                               base::TimeDelta vsync_interval);
-
   HWND window_ = nullptr;
   ChildWindowWin child_window_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_refptr<DirectCompositionChildSurfaceWin> root_surface_;
   std::unique_ptr<DCLayerTree> layer_tree_;
-
-  std::unique_ptr<VSyncThreadWin> vsync_thread_;
-  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
-
-  const VSyncCallback vsync_callback_;
-  bool vsync_callback_enabled_ = false;
-
   std::unique_ptr<GLSurfacePresentationHelper> presentation_helper_;
+
+  std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
+  const VSyncCallback vsync_callback_;
+  VSyncThreadWin* vsync_thread_ = nullptr;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
-
-  VSyncCallback main_thread_vsync_callback_;
-  base::WeakPtrFactory<DirectCompositionSurfaceWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectCompositionSurfaceWin);
 };

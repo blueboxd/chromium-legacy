@@ -46,10 +46,23 @@ PreresolveInfo::~PreresolveInfo() = default;
 PreresolveJob::PreresolveJob(const GURL& url,
                              int num_sockets,
                              bool allow_credentials,
+                             net::NetworkIsolationKey network_isolation_key,
                              PreresolveInfo* info)
     : url(url),
       num_sockets(num_sockets),
       allow_credentials(allow_credentials),
+      network_isolation_key(std::move(network_isolation_key)),
+      info(info) {
+  DCHECK_GE(num_sockets, 0);
+}
+
+PreresolveJob::PreresolveJob(PreconnectRequest preconnect_request,
+                             PreresolveInfo* info)
+    : url(std::move(preconnect_request.origin)),
+      num_sockets(preconnect_request.num_sockets),
+      allow_credentials(preconnect_request.allow_credentials),
+      network_isolation_key(
+          std::move(preconnect_request.network_isolation_key)),
       info(info) {
   DCHECK_GE(num_sockets, 0);
 }
@@ -79,11 +92,11 @@ void PreconnectManager::Start(const GURL& url,
       host, std::make_unique<PreresolveInfo>(url, requests.size()));
   PreresolveInfo* info = iterator_and_whether_inserted.first->second.get();
 
-  for (const auto& request : requests) {
-    DCHECK(request.origin.GetOrigin() == request.origin);
+  for (auto request_it = requests.begin(); request_it != requests.end();
+       ++request_it) {
+    DCHECK(request_it->origin.GetOrigin() == request_it->origin);
     PreresolveJobId job_id = preresolve_jobs_.Add(
-        std::make_unique<PreresolveJob>(request.origin, request.num_sockets,
-                                        request.allow_credentials, info));
+        std::make_unique<PreresolveJob>(std::move(*request_it), info));
     queued_jobs_.push_back(job_id);
   }
 
@@ -95,7 +108,8 @@ void PreconnectManager::StartPreresolveHost(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
-      url.GetOrigin(), 0, kAllowCredentialsOnPreconnectByDefault, nullptr));
+      url.GetOrigin(), 0, kAllowCredentialsOnPreconnectByDefault,
+      net::NetworkIsolationKey(), nullptr));
   queued_jobs_.push_front(job_id);
 
   TryToLaunchPreresolveJobs();
@@ -109,20 +123,23 @@ void PreconnectManager::StartPreresolveHosts(
     PreresolveJobId job_id =
         preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
             GURL("http://" + *it), 0, kAllowCredentialsOnPreconnectByDefault,
-            nullptr));
+            net::NetworkIsolationKey(), nullptr));
     queued_jobs_.push_front(job_id);
   }
 
   TryToLaunchPreresolveJobs();
 }
 
-void PreconnectManager::StartPreconnectUrl(const GURL& url,
-                                           bool allow_credentials) {
+void PreconnectManager::StartPreconnectUrl(
+    const GURL& url,
+    bool allow_credentials,
+    net::NetworkIsolationKey network_isolation_key) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
   PreresolveJobId job_id = preresolve_jobs_.Add(std::make_unique<PreresolveJob>(
-      url.GetOrigin(), 1, allow_credentials, nullptr));
+      url.GetOrigin(), 1, allow_credentials, std::move(network_isolation_key),
+      nullptr));
   queued_jobs_.push_front(job_id);
 
   TryToLaunchPreresolveJobs();
@@ -138,9 +155,11 @@ void PreconnectManager::Stop(const GURL& url) {
   it->second->was_canceled = true;
 }
 
-void PreconnectManager::PreconnectUrl(const GURL& url,
-                                      int num_sockets,
-                                      bool allow_credentials) const {
+void PreconnectManager::PreconnectUrl(
+    const GURL& url,
+    int num_sockets,
+    bool allow_credentials,
+    const net::NetworkIsolationKey& network_isolation_key) const {
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
   if (observer_)
@@ -159,9 +178,8 @@ void PreconnectManager::PreconnectUrl(const GURL& url,
                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
   }
 
-  // TODO(mmenke): Use an appropriate NetworkIsolationKey().
   network_context->PreconnectSockets(num_sockets, url, load_flags, privacy_mode,
-                                     net::NetworkIsolationKey());
+                                     network_isolation_key);
 }
 
 std::unique_ptr<ResolveHostClientImpl> PreconnectManager::PreresolveUrl(
@@ -275,8 +293,10 @@ void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id,
   DCHECK(job);
 
   bool need_preconnect = success && job->need_preconnect();
-  if (need_preconnect)
-    PreconnectUrl(job->url, job->num_sockets, job->allow_credentials);
+  if (need_preconnect) {
+    PreconnectUrl(job->url, job->num_sockets, job->allow_credentials,
+                  job->network_isolation_key);
+  }
 
   PreresolveInfo* info = job->info;
   if (info)

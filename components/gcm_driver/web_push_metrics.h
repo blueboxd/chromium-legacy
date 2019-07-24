@@ -23,6 +23,10 @@ enum class SendWebPushMessageResult {
 // is sent.
 void LogSendWebPushMessageResult(SendWebPushMessageResult result);
 
+// Logs the size of message payload to UMA. This should be called right before a
+// web push message is sent.
+void LogSendWebPushMessagePayloadSize(int size);
+
 }  // namespace gcm
 
 #endif  // COMPONENTS_GCM_DRIVER_WEB_PUSH_METRICS_H_

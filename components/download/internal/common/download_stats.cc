@@ -650,8 +650,6 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   bool unknown_size = total <= 0;
   int64_t received_kb = received / 1024;
   int64_t total_kb = total / 1024;
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedReceivedSizeK", received_kb,
-                              1, kMaxKb, kBuckets);
   if (is_parallel_download_enabled) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.InterruptedReceivedSizeK.ParallelDownload", received_kb, 1,
@@ -668,31 +666,9 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
     }
     if (delta_bytes == 0) {
       RecordDownloadCountWithSource(INTERRUPTED_AT_END_COUNT, download_source);
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION("Download.InterruptedAtEndReason",
-                                       reason, samples);
-
       if (is_parallelizable) {
         RecordParallelizableDownloadCount(INTERRUPTED_AT_END_COUNT,
                                           is_parallel_download_enabled);
-        UMA_HISTOGRAM_CUSTOM_ENUMERATION(
-            "Download.InterruptedAtEndReason.ParallelDownload", reason,
-            samples);
-      }
-    } else if (delta_bytes > 0) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedOverrunBytes",
-                                  delta_bytes, 1, kMaxKb, kBuckets);
-      if (is_parallel_download_enabled) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Download.InterruptedOverrunBytes.ParallelDownload", delta_bytes, 1,
-            kMaxKb, kBuckets);
-      }
-    } else {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedUnderrunBytes",
-                                  -delta_bytes, 1, kMaxKb, kBuckets);
-      if (is_parallel_download_enabled) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Download.InterruptedUnderrunBytes.ParallelDownload", -delta_bytes,
-            1, kMaxKb, kBuckets);
       }
     }
   }

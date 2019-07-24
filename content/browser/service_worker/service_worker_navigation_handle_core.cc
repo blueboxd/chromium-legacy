@@ -51,4 +51,10 @@ void ServiceWorkerNavigationHandleCore::OnBeginNavigationCommit(
     provider_host_->OnBeginNavigationCommit(render_process_id, render_frame_id);
 }
 
+void ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (provider_host_)
+    provider_host_->CompleteWebWorkerPreparation();
+}
+
 }  // namespace content

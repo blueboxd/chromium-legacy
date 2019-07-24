@@ -33,6 +33,9 @@
 
 namespace views {
 
+// static
+bool BubbleDialogDelegateView::devtools_dismiss_override_ = false;
+
 namespace {
 
 // Override base functionality of Widget to give bubble dialogs access to the
@@ -222,6 +225,9 @@ void BubbleDialogDelegateView::OnWidgetVisibilityChanged(Widget* widget,
 
 void BubbleDialogDelegateView::OnWidgetActivationChanged(Widget* widget,
                                                          bool active) {
+  if (devtools_dismiss_override_)
+    return;
+
 #if defined(OS_MACOSX)
   // Install |mac_bubble_closer_| the first time the widget becomes active.
   if (widget == GetWidget() && active && !mac_bubble_closer_) {

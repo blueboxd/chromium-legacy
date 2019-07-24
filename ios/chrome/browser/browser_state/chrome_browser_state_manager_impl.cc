@@ -219,7 +219,7 @@ void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(
   if (browser_state->GetStatePath().DirName() != cache->GetUserDataDir())
     return;
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);

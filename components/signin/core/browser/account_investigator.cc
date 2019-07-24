@@ -43,7 +43,7 @@ const TimeDelta AccountInvestigator::kPeriodicReportingInterval =
 
 AccountInvestigator::AccountInvestigator(
     PrefService* pref_service,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : pref_service_(pref_service), identity_manager_(identity_manager) {}
 
 AccountInvestigator::~AccountInvestigator() {}
@@ -74,7 +74,7 @@ void AccountInvestigator::Shutdown() {
 }
 
 void AccountInvestigator::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   if (error != GoogleServiceAuthError::AuthErrorNone()) {
     // If we are pending periodic reporting, leave the flag set, and we will

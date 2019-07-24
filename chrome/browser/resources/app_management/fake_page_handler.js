@@ -112,23 +112,29 @@ cr.define('app_management', function() {
     }
 
     /**
-     * @param {appManagement.mojom.PageProxy} page
+     * @param {appManagement.mojom.PageRemote} page
      */
     constructor(page) {
-      /** @type {appManagement.mojom.PageProxy} */
+      this.receiver_ = new appManagement.mojom.PageHandlerReceiver(this);
+      /** @type {appManagement.mojom.PageRemote} */
       this.page = page;
 
       /** @type {!Array<App>} */
       this.apps_ = [];
 
-      this.$ = {
-        flushForTesting: async () => {
-          await this.page.$.flushForTesting();
-        }
-      };
-
       /** @type {number} */
       this.guid = 0;
+    }
+
+    /**
+     * @returns {!appManagement.mojom.PageHandlerRemote}
+     */
+    getRemote() {
+      return this.receiver_.$.bindNewPipeAndPassRemote();
+    }
+
+    async flushPipesForTesting() {
+      await this.page.$.flushForTesting();
     }
 
     async getApps() {
@@ -200,7 +206,7 @@ cr.define('app_management', function() {
       optId = optId || String(this.guid++);
       const app = FakePageHandler.createApp(optId, optConfig);
       this.page.onAppAdded(app);
-      await this.$.flushForTesting();
+      await this.flushPipesForTesting();
       return app;
     }
 
@@ -213,7 +219,7 @@ cr.define('app_management', function() {
      */
     async changeApp(id, changes) {
       this.page.onAppChanged(FakePageHandler.createApp(id, changes));
-      await this.$.flushForTesting();
+      await this.flushPipesForTesting();
     }
   }
 

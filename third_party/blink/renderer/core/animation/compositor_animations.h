@@ -90,12 +90,13 @@ class CORE_EXPORT CompositorAnimations {
     kFilterRelatedPropertyMayMovePixels = 1 << 12,
     kUnsupportedCSSProperty = 1 << 13,
     kMultipleTransformAnimationsOnSameTarget = 1 << 14,
+    kMixedKeyframeValueTypes = 1 << 15,
 
     // The maximum number of flags in this enum (excluding itself). New flags
     // should increment this number but it should never be decremented because
     // the values are used in UMA histograms. It should also be noted that it
     // excludes the kNoFailure value.
-    kFailureReasonCount = 15,
+    kFailureReasonCount = 16,
   };
 
   static FailureReasons CheckCanStartAnimationOnCompositor(

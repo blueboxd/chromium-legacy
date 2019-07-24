@@ -306,6 +306,11 @@ void UserActivityManager::HandleSmartDimDecision(
   std::move(callback).Run(dim_deferred_);
 }
 
+void UserActivityManager::OnSessionManagerDestroyed() {
+  session_manager_observer_.RemoveAll();
+  session_manager_ = nullptr;
+}
+
 void UserActivityManager::OnSessionStateChanged() {
   DCHECK(session_manager_);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 // require cr.js
-// require cr/event_target.js
 // require cr/util.js
 
 cr.define('chrome.sync', function() {
@@ -97,7 +96,8 @@ cr.define('chrome.sync', function() {
    * Updates the logic sending events to the protocol logic if they should
    * include specifics or not when converting to a human readable format.
    *
-   * @param {bool} includeSpecifics Whether protocol events include specifics.
+   * @param {boolean} includeSpecifics Whether protocol events include
+   *     specifics.
    */
   var setIncludeSpecifics = function(includeSpecifics) {
     chrome.send('setIncludeSpecifics', [includeSpecifics]);
@@ -150,7 +150,7 @@ cr.define('chrome.sync', function() {
   /**
    * A map from counter values to asynchronous request callbacks.
    * Used in the implementation of GetAllNodes.
-   * @type {{number: !Function}}
+   * @type {!Object<!Function>}
    */
   var requestCallbacks = {};
 
@@ -174,7 +174,7 @@ cr.define('chrome.sync', function() {
    */
   var getAllNodesCallback = function(id, response) {
     requestCallbacks[id](response);
-    requestCallbacks[id] = undefined;
+    delete requestCallbacks[id];
   };
 
   return {

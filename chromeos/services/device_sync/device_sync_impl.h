@@ -31,9 +31,9 @@ namespace gcm {
 class GCMDriver;
 }  // namespace gcm
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -76,7 +76,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
     // Note: |timer| should be a newly-created base::OneShotTimer object; this
     // parameter only exists for testing via dependency injection.
     virtual std::unique_ptr<DeviceSyncBase> BuildInstance(
-        identity::IdentityManager* identity_manager,
+        signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
@@ -167,7 +167,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   };
 
   DeviceSyncImpl(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
       service_manager::Connector* connector,
       const GcmDeviceInfoProvider* gcm_device_info_provider,
@@ -212,7 +212,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void SetPrefConnectionDelegateForTesting(
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   gcm::GCMDriver* gcm_driver_;
   service_manager::Connector* connector_;
   const GcmDeviceInfoProvider* gcm_device_info_provider_;

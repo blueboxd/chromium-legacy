@@ -34,6 +34,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/url_constants.h"
@@ -190,8 +191,8 @@ bool AreAllSitesIsolatedForTesting() {
 
 bool AreDefaultSiteInstancesEnabled() {
   return !AreAllSitesIsolatedForTesting() &&
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableDefaultSiteInstance);
+         base::FeatureList::IsEnabled(
+             features::kProcessSharingWithDefaultSiteInstances);
 }
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {

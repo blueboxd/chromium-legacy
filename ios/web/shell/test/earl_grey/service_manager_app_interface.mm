@@ -9,7 +9,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 #import "ios/web/shell/web_usage_controller.mojom.h"

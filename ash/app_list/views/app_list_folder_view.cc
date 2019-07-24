@@ -64,20 +64,14 @@ int GetCompositorActivatedFrameCount(ui::Compositor* compositor) {
 // folder's background when opening the folder. Transit the other way when
 // closing the folder.
 class BackgroundAnimation : public AppListFolderView::Animation,
-                            public views::AnimationDelegateViews {
+                            public ui::ImplicitAnimationObserver {
  public:
   BackgroundAnimation(bool show,
                       AppListFolderView* folder_view,
                       views::View* background_view)
-      : AnimationDelegateViews(background_view),
-        show_(show),
-        animation_(this),
+      : show_(show),
         folder_view_(folder_view),
-        background_view_(background_view) {
-    animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-    animation_.SetSlideDuration(
-        AppListConfig::instance().folder_transition_in_duration_ms());
-  }
+        background_view_(background_view) {}
 
   ~BackgroundAnimation() override = default;
 
@@ -88,14 +82,14 @@ class BackgroundAnimation : public AppListFolderView::Animation,
     const int icon_radius = AppListConfig::instance().folder_icon_radius();
     const int folder_radius =
         AppListConfig::instance().folder_background_radius();
-    from_radius_ = show_ ? icon_radius : folder_radius;
-    to_radius_ = show_ ? folder_radius : icon_radius;
-    from_rect_ = show_ ? folder_view_->folder_item_icon_bounds()
-                       : background_view_->bounds();
-    from_rect_ -= background_view_->bounds().OffsetFromOrigin();
-    to_rect_ = show_ ? background_view_->bounds()
-                     : folder_view_->folder_item_icon_bounds();
-    to_rect_ -= background_view_->bounds().OffsetFromOrigin();
+    const int from_radius = show_ ? icon_radius : folder_radius;
+    const int to_radius = show_ ? folder_radius : icon_radius;
+    gfx::Rect from_rect = show_ ? folder_view_->folder_item_icon_bounds()
+                                : background_view_->bounds();
+    from_rect -= background_view_->bounds().OffsetFromOrigin();
+    gfx::Rect to_rect = show_ ? background_view_->bounds()
+                              : folder_view_->folder_item_icon_bounds();
+    to_rect -= background_view_->bounds().OffsetFromOrigin();
     const SkColor background_color =
         AppListConfig::instance().folder_background_color();
     const SkColor from_color =
@@ -106,55 +100,36 @@ class BackgroundAnimation : public AppListFolderView::Animation,
               : AppListConfig::instance().folder_bubble_color();
 
     background_view_->layer()->SetColor(from_color);
-    background_view_->layer()->SetClipRect(from_rect_);
+    background_view_->layer()->SetClipRect(from_rect);
     background_view_->layer()->SetRoundedCornerRadius(
-        gfx::RoundedCornersF(from_radius_));
+        gfx::RoundedCornersF(from_radius));
 
-    // We use the layer animation for the color, while gfx::Animation to update
-    // the corner radius and the clip rect. They can be slightly inconsistent
-    // since these animations run independently.
     ui::ScopedLayerAnimationSettings settings(
         background_view_->layer()->GetAnimator());
     settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         AppListConfig::instance().folder_transition_in_duration_ms()));
     settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    settings.AddObserver(this);
     background_view_->layer()->SetColor(to_color);
-
-    animation_.Show();
-  }
-
-  bool IsAnimationRunning() override { return animation_.is_animating(); }
-
-  // gfx::AnimationDelegate
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    const double progress = animation->GetCurrentValue();
-    const int current_radius =
-        gfx::Tween::IntValueBetween(progress, from_radius_, to_radius_);
+    background_view_->layer()->SetClipRect(to_rect);
     background_view_->layer()->SetRoundedCornerRadius(
-        gfx::RoundedCornersF(current_radius));
-    const gfx::Rect current_bounds =
-        gfx::Tween::RectValueBetween(progress, from_rect_, to_rect_);
-    background_view_->layer()->SetClipRect(current_bounds);
+        gfx::RoundedCornersF(to_radius));
+    is_animating_ = true;
   }
-  void AnimationEnded(const gfx::Animation* animation) override {
+
+  bool IsAnimationRunning() override { return is_animating_; }
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override {
+    is_animating_ = false;
     folder_view_->RecordAnimationSmoothness();
-  }
-  void AnimationCanceled(const gfx::Animation* animation) override {
-    AnimationEnded(animation);
   }
 
   // True if opening the folder.
   const bool show_;
 
-  // The source and target state of the background's corner radius.
-  int from_radius_ = 0;
-  int to_radius_ = 0;
+  bool is_animating_ = false;
 
-  // The source and target state of the bounds of the background.
-  gfx::Rect from_rect_;
-  gfx::Rect to_rect_;
-
-  gfx::SlideAnimation animation_;
   AppListFolderView* const folder_view_;  // Not owned.
   views::View* const background_view_;    // Not owned.
 

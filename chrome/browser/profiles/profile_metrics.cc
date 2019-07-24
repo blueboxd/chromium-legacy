@@ -22,6 +22,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/profile_metrics/counts.h"
+#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/browser_thread.h"
 
 #if !defined(OS_ANDROID)

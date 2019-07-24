@@ -54,7 +54,7 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 }  // namespace
 
 SyncAuthManager::SyncAuthManager(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const AccountStateChangedCallback& account_state_changed,
     const CredentialsChangedCallback& credentials_changed)
     : identity_manager_(identity_manager),
@@ -370,7 +370,7 @@ void SyncAuthManager::OnRefreshTokenRemovedForAccount(
 }
 
 void SyncAuthManager::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   UpdateSyncAccountIfNecessary();
 }
@@ -462,12 +462,12 @@ void SyncAuthManager::RequestAccessToken() {
           {GaiaConstants::kChromeSyncOAuth2Scope},
           base::BindOnce(&SyncAuthManager::AccessTokenFetched,
                          base::Unretained(this)),
-          identity::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+          signin::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
 }
 
 void SyncAuthManager::AccessTokenFetched(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(registered_for_auth_notifications_);
 
   DCHECK(ongoing_access_token_fetch_);

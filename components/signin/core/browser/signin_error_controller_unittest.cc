@@ -36,7 +36,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
   EXPECT_CALL(observer, OnErrorChanged()).Times(0);
 
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
       identity_test_env.identity_manager());
@@ -84,7 +84,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
 
 TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
 
   std::string test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
@@ -115,8 +115,8 @@ TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
 #if !defined(OS_CHROMEOS)
 TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityTestEnvironment identity_test_env;
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_test_env.identity_manager()->GetPrimaryAccountMutator();
 
   std::string test_account_id =
@@ -144,7 +144,7 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
   // Change the primary account to the account with an error and check that the
   // error controller updates its error status accordingly.
   primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
       signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   identity_test_env.SetPrimaryAccount(kTestEmail);
@@ -160,7 +160,7 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
   // Change the primary account again and check that the error controller
   // updates its error status accordingly.
   primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
       signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   identity_test_env.SetPrimaryAccount(kOtherTestEmail);
@@ -170,7 +170,7 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
   // Sign out and check that that the error controller updates its error status
   // accordingly.
   primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
       signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   ASSERT_FALSE(error_controller.HasError());
@@ -180,7 +180,7 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
 // Verify that SigninErrorController handles errors properly.
 TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
 
   std::string test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
@@ -227,7 +227,7 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
 // Verify that existing error is not replaced by new error.
 TEST(SigninErrorControllerTest, AuthStatusChange) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
 
   std::string test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
@@ -283,7 +283,7 @@ TEST(SigninErrorControllerTest, AuthStatusChange) {
 TEST(SigninErrorControllerTest,
      PrimaryAccountErrorsArePreferredToSecondaryAccountErrors) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
 
   AccountInfo primary_account_info =
       identity_test_env.MakePrimaryAccountAvailable(kPrimaryAccountEmail);
@@ -330,7 +330,7 @@ TEST(SigninErrorControllerTest,
 
 TEST(SigninErrorControllerTest, PrimaryAccountErrorsAreSticky) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
 
   AccountInfo primary_account_info =
       identity_test_env.MakePrimaryAccountAvailable(kPrimaryAccountEmail);

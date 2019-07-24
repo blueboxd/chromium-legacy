@@ -16,13 +16,13 @@
 
 class PrefService;
 
-namespace identity {
+namespace signin {
 
 // Returns true if the username is allowed based on a pattern registered
 // |prefs::kGoogleServicesUsernamePattern| with the preferences service
 // referenced by |prefs|.
 bool IsUsernameAllowedByPatternFromPrefs(const PrefService* prefs,
                                          const std::string& username);
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_UTILS_H_

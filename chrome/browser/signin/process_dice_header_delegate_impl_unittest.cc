@@ -70,7 +70,7 @@ class ProcessDiceHeaderDelegateImplTest
     show_error_called_ = true;
   }
 
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
 
   bool enable_sync_called_;
   bool show_error_called_;

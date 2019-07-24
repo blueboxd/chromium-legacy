@@ -10,7 +10,6 @@
 #include "media/capture/video/video_capture_device_client.h"
 #include "media/capture/video/video_capture_device_factory.h"
 #include "media/capture/video_capture_types.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 
 #if defined(OS_CHROMEOS)
@@ -28,13 +27,11 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
  public:
 #if defined(OS_CHROMEOS)
   DeviceMediaToMojoAdapter(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<media::VideoCaptureDevice> device,
       media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
       scoped_refptr<base::SequencedTaskRunner> jpeg_decoder_task_runner);
 #else
   DeviceMediaToMojoAdapter(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref,
       std::unique_ptr<media::VideoCaptureDevice> device);
 #endif  // defined(OS_CHROMEOS)
   ~DeviceMediaToMojoAdapter() override;
@@ -57,7 +54,6 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
   static int max_buffer_pool_buffer_count();
 
  private:
-  const std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   const std::unique_ptr<media::VideoCaptureDevice> device_;
 #if defined(OS_CHROMEOS)
   const media::MojoMjpegDecodeAcceleratorFactoryCB

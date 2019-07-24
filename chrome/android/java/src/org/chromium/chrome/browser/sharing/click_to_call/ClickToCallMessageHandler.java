@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.CachedMetrics;
@@ -81,6 +82,8 @@ public class ClickToCallMessageHandler {
                         .setContentIntent(contentIntent)
                         .setContentTitle(phoneNumber)
                         .setContentText(text)
+                        .setColor(ApiCompatibilityUtils.getColor(
+                                context.getResources(), R.color.default_icon_color_blue))
                         .setGroup(NotificationConstants.GROUP_CLICK_TO_CALL)
                         .setPriorityBeforeO(NotificationCompat.PRIORITY_HIGH)
                         .setVibrate(new long[0])

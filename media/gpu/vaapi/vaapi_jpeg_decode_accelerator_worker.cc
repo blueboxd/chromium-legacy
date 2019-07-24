@@ -4,9 +4,9 @@
 
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
 
-#include <utility>
-
 #include <va/va.h>
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/containers/span.h"

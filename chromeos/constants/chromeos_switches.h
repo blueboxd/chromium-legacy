@@ -136,6 +136,8 @@ extern const char kFakeDriveFsLauncherChrootPath[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kFakeDriveFsLauncherSocketPath[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kForceCertVerifierBuiltin[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kForceDevToolsAvailable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kForceFirstRunUI[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

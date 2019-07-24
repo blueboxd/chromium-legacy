@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest,
   base::HistogramTester histogram_tester;
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 #if defined(CHROMEOS)
-  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
 #endif  // defined(CHROMEOS)

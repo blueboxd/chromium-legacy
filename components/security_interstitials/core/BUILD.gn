@@ -52,6 +52,6 @@ static_library("core") {
   ]
 
   public_deps = [
-    "//components/security_interstitials/core/common/interfaces:interfaces",
+    "//components/security_interstitials/core/common/mojom",
   ]
 }

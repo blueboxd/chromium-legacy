@@ -456,6 +456,13 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void QueueSyntheticGestureCompleteImmediately(
       std::unique_ptr<SyntheticGesture> synthetic_gesture);
 
+  // Ensures the renderer is in a state ready to receive synthetic input. The
+  // SyntheticGestureController will normally ensure this before sending the
+  // first gesture; however, in some tests that may be a bad time (e.g. the
+  // gesture is sent while the main thread is blocked) so this allows the
+  // caller to do so manually.
+  void EnsureReadyForSyntheticGestures(base::OnceClosure on_ready);
+
   // Update the composition node of the renderer (or WebKit).
   // WebKit has a special node (a composition node) for input method to change
   // its text without affecting any other DOM nodes. When the input method

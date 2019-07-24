@@ -9,8 +9,8 @@
 #include "base/optional.h"
 #include "base/scoped_generic.h"
 #include "chrome/browser/android/vr/arcore_device/arcore.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "third_party/arcore-android-sdk/src/libraries/include/arcore_c_api.h"
 
 namespace device {
 

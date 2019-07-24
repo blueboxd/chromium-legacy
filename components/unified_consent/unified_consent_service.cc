@@ -21,7 +21,7 @@ namespace unified_consent {
 
 UnifiedConsentService::UnifiedConsentService(
     sync_preferences::PrefServiceSyncable* pref_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
     const std::vector<std::string>& service_pref_names)
     : pref_service_(pref_service),

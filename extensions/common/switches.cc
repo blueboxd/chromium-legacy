@@ -66,12 +66,6 @@ const char kLoadApps[] = "load-apps";
 // Comma-separated list of paths to extensions to load at startup.
 const char kLoadExtension[] = "load-extension";
 
-#if defined(CHROMIUM_BUILD)
-// Should we prompt the user before allowing external extensions to install?
-// This flag is available on Chromium for testing purposes.
-const char kPromptForExternalExtensions[] = "prompt-for-external-extensions";
-#endif
-
 // Set the parameters for ExtensionURLLoaderThrottleBrowserTest.
 const char kSetExtensionThrottleTestParams[] =
     "set-extension-throttle-test-params";

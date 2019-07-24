@@ -1815,7 +1815,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   }
   download_url_ = std::move(download_url);
   const ChromeExtensionFunctionDetails chrome_details(this);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details.GetProfile());
   const std::string& account_id = identity_manager->GetPrimaryAccountId();
   std::vector<std::string> scopes;

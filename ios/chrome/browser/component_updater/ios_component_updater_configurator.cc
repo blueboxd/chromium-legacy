@@ -25,7 +25,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 

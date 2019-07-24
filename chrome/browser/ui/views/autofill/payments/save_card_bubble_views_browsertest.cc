@@ -314,7 +314,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
   }
 
   void SetAccountFullName(const std::string& full_name) {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
     PersonalDataManager* personal_data_manager =
         PersonalDataManagerFactory::GetForProfile(browser()->profile());
@@ -328,7 +328,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     account_info.is_under_advanced_protection =
         core_info.is_under_advanced_protection;
     account_info.full_name = full_name;
-    identity::UpdateAccountInfoForAccount(identity_manager, account_info);
+    signin::UpdateAccountInfoForAccount(identity_manager, account_info);
   }
 
   void SubmitFormAndWaitForCardLocalSaveBubble() {

@@ -55,12 +55,14 @@ void ObservableAuthenticatorList::ChangeAuthenticatorId(
 
 void ObservableAuthenticatorList::ChangeAuthenticatorPairingMode(
     base::StringPiece authenticator_id,
-    bool is_in_pairing_mode) {
+    bool is_in_pairing_mode,
+    base::string16 display_name) {
   auto it = GetAuthenticatorIterator(authenticator_id);
   if (it == authenticator_list_.end())
     return;
 
   it->is_in_pairing_mode = is_in_pairing_mode;
+  it->authenticator_display_name = std::move(display_name);
   if (observer_)
     observer_->OnAuthenticatorPairingModeChanged(*it);
 }

@@ -21,6 +21,7 @@ void LargestContentfulPaintCalculator::OnLargestImageUpdated(
     largest_image_->first_size = largest_image->first_size;
     largest_image_->paint_time = largest_image->paint_time;
     largest_image_->cached_image = largest_image->cached_image;
+    largest_image_->load_time = largest_image->load_time;
   }
 
   if (LargestImageSize() > LargestTextSize()) {
@@ -95,7 +96,7 @@ void LargestContentfulPaintCalculator::OnLargestContentfulPaintUpdated(
         image_element ? image_element->GetIdAttribute() : AtomicString();
     window_performance_->OnLargestContentfulPaintUpdated(
         largest_image_->paint_time, largest_image_->first_size,
-        cached_image->LoadResponseEnd(), image_id, image_url, image_element);
+        largest_image_->load_time, image_id, image_url, image_element);
   } else {
     Node* text_node = DOMNodeIds::NodeForId(largest_text_->node_id);
     // |text_node| could be null and |largest_text_| should be ignored in this

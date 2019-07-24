@@ -32,10 +32,10 @@ extern const char kHistogramFirstContentfulPaint[];
 extern const char kHistogramFirstMeaningfulPaint[];
 extern const char kHistogramLargestImagePaint[];
 extern const char kHistogramLargestTextPaint[];
-extern const char kHistogramLargestContentPaint[];
-extern const char kHistogramLargestContentPaintContentType[];
-extern const char kHistogramLargestContentPaintAllFrames[];
-extern const char kHistogramLargestContentPaintAllFramesContentType[];
+extern const char kHistogramLargestContentfulPaint[];
+extern const char kHistogramLargestContentfulPaintContentType[];
+extern const char kHistogramLargestContentfulPaintMainFrame[];
+extern const char kHistogramLargestContentfulPaintMainFrameContentType[];
 extern const char kHistogramTimeToInteractive[];
 extern const char kHistogramParseDuration[];
 extern const char kHistogramParseBlockedOnScriptLoad[];
@@ -237,7 +237,7 @@ class CorePageLoadMetricsObserver
 
  private:
   void RecordTimingHistograms(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::mojom::PageLoadTiming& main_frame_timing,
       const page_load_metrics::PageLoadExtraInfo& info);
   void RecordByteAndResourceHistograms(
       const page_load_metrics::mojom::PageLoadTiming& timing,

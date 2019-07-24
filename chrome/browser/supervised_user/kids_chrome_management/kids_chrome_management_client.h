@@ -16,10 +16,10 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/protobuf/src/google/protobuf/message_lite.h"
 
-namespace identity {
+namespace signin {
 struct AccessTokenInfo;
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -87,12 +87,12 @@ class KidsChromeManagementClient : public KeyedService {
   void OnAccessTokenFetchComplete(
       KidsChromeRequestList::iterator kids_chrome_request,
       GoogleServiceAuthError auth_error,
-      identity::AccessTokenInfo token_info);
+      signin::AccessTokenInfo token_info);
 
   void OnSimpleLoaderComplete(
       KidsChromeRequestList::iterator kids_chrome_request,
       std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
-      identity::AccessTokenInfo token_info,
+      signin::AccessTokenInfo token_info,
       std::unique_ptr<std::string> response_body);
 
   // Calls the callback provided by the existing RPC client with the response
@@ -103,7 +103,7 @@ class KidsChromeManagementClient : public KeyedService {
       ErrorCode error);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // List of requests in execution.
   KidsChromeRequestList requests_in_progress_;

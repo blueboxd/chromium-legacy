@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/location.h"
+#include "components/sync/base/encryptor.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/base/time.h"
@@ -337,13 +338,39 @@ void UpdateNigoriSpecificsFromEncryptedTypes(
   specifics->set_encrypt_web_apps(encrypted_types.Has(WEB_APPS));
 }
 
+// Packs explicit passphrase key in order to persist it. Should be aligned with
+// Directory implementation (Cryptographer::GetBootstrapToken()) unless it is
+// removed. Returns empty string in case of errors.
+std::string PackExplicitPassphraseKey(const Encryptor& encryptor,
+                                      const Cryptographer& cryptographer) {
+  // Explicit passphrase key should always be default one.
+  std::string serialized_key = cryptographer.GetDefaultNigoriKeyData();
+  if (serialized_key.empty()) {
+    DLOG(ERROR) << "Failed to serialize explicit passphrase key.";
+    return std::string();
+  }
+
+  std::string encrypted_key;
+  if (!encryptor.EncryptString(serialized_key, &encrypted_key)) {
+    DLOG(ERROR) << "Failed to encrypt explicit passphrase key.";
+    return std::string();
+  }
+
+  std::string encoded_key;
+  base::Base64Encode(encrypted_key, &encoded_key);
+  return encoded_key;
+}
+
 }  // namespace
 
 NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
-    std::unique_ptr<NigoriLocalChangeProcessor> processor)
-    : processor_(std::move(processor)),
+    std::unique_ptr<NigoriLocalChangeProcessor> processor,
+    const Encryptor* encryptor)
+    : encryptor_(encryptor),
+      processor_(std::move(processor)),
       passphrase_type_(NigoriSpecifics::UNKNOWN),
       encrypt_everything_(false) {
+  DCHECK(encryptor);
   processor_->ModelReadyToSync(this, NigoriMetadataBatch());
 }
 
@@ -427,9 +454,9 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
     observer.OnEncryptedTypesChanged(EncryptableUserTypes(),
                                      encrypt_everything_);
   }
+  MaybeNotifyBootstrapTokenUpdated();
   // OnLocalSetPassphraseEncryption() is intentionally not called here, because
   // it's needed only for the Directory implementation unit tests.
-  // TODO(crbug.com/922900): persist |passphrase| in corresponding storage.
   // TODO(crbug.com/922900): support SCRYPT key derivation method.
   NOTIMPLEMENTED();
 }
@@ -437,8 +464,8 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
 void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
     const std::string& passphrase) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // |passphrase| should be a valid one already (verified by the UI part, using
-  // pending keys exposed by OnPassphraseRequired()).
+  // |passphrase| should be a valid one already (verified by SyncServiceCrypto,
+  // using pending keys exposed by OnPassphraseRequired()).
   DCHECK(!passphrase.empty());
   DCHECK(cryptographer_.has_pending_keys());
   KeyParams key_params = {GetKeyDerivationParamsForPendingKeys(), passphrase};
@@ -466,7 +493,7 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
   for (auto& observer : observers_) {
     observer.OnPassphraseAccepted();
   }
-  // TODO(crbug.com/922900): persist |passphrase| in corresponding storage.
+  MaybeNotifyBootstrapTokenUpdated();
   // TODO(crbug.com/922900): we may need to rewrite encryption_keybag in Nigori
   // node in case we have some keys in |cryptographer_| which is not stored in
   // encryption_keybag yet.
@@ -828,6 +855,31 @@ KeyDerivationParams NigoriSyncBridgeImpl::GetKeyDerivationParamsForPendingKeys()
     case NigoriSpecifics::CUSTOM_PASSPHRASE:
       DCHECK(custom_passphrase_key_derivation_params_);
       return *custom_passphrase_key_derivation_params_;
+  }
+}
+
+void NigoriSyncBridgeImpl::MaybeNotifyBootstrapTokenUpdated() const {
+  switch (passphrase_type_) {
+    case NigoriSpecifics::UNKNOWN:
+    case NigoriSpecifics::IMPLICIT_PASSPHRASE:
+      NOTREACHED();
+      return;
+    case NigoriSpecifics::KEYSTORE_PASSPHRASE:
+      // TODO(crbug.com/922900): notify about keystore bootstrap token updates.
+      NOTIMPLEMENTED();
+      return;
+    case NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
+    case NigoriSpecifics::CUSTOM_PASSPHRASE:
+      // |packed_custom_passphrase_key| will be empty in case serialization or
+      // encryption error occurs.
+      std::string packed_custom_passphrase_key =
+          PackExplicitPassphraseKey(*encryptor_, cryptographer_);
+      if (!packed_custom_passphrase_key.empty()) {
+        for (auto& observer : observers_) {
+          observer.OnBootstrapTokenUpdated(packed_custom_passphrase_key,
+                                           PASSPHRASE_BOOTSTRAP_TOKEN);
+        }
+      }
   }
 }
 

@@ -16,7 +16,7 @@ StoreMetricsReporter::StoreMetricsReporter(
     bool password_manager_enabled,
     PasswordManagerClient* client,
     const syncer::SyncService* sync_service,
-    const identity::IdentityManager* identity_manager,
+    const signin::IdentityManager* identity_manager,
     PrefService* prefs) {
   password_manager::PasswordStore* store = client->GetPasswordStore();
   // May be null in tests.

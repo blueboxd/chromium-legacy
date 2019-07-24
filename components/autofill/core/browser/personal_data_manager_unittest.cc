@@ -306,7 +306,7 @@ class PersonalDataManagerTestBase {
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
   scoped_refptr<AutofillWebDataService> profile_database_service_;
   scoped_refptr<AutofillWebDataService> account_database_service_;

@@ -57,14 +57,14 @@ enum class AccountsCookiesMutatorAction {
 
 }  // namespace
 
-namespace identity {
+namespace signin {
 class AccountsCookieMutatorTest : public testing::Test {
  public:
   AccountsCookieMutatorTest()
       : test_signin_client_(&prefs_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
                            &prefs_,
-                           signin::AccountConsistencyMethod::kDisabled,
+                           AccountConsistencyMethod::kDisabled,
                            &test_signin_client_) {}
 
   ~AccountsCookieMutatorTest() override {}
@@ -113,18 +113,16 @@ class AccountsCookieMutatorTest : public testing::Test {
             std::string(kTestOAuthMultiLoginResponse), net::HTTP_OK);
         break;
       case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateNoAccounts:
-        signin::SetListAccountsResponseNoAccounts(GetTestURLLoaderFactory());
+        SetListAccountsResponseNoAccounts(GetTestURLLoaderFactory());
         break;
       case AccountsCookiesMutatorAction::kTriggerCookieJarUpdateOneAccount:
-        signin::SetListAccountsResponseOneAccount(
-            kTestAccountEmail, kTestAccountGaiaId, GetTestURLLoaderFactory());
+        SetListAccountsResponseOneAccount(kTestAccountEmail, kTestAccountGaiaId,
+                                          GetTestURLLoaderFactory());
         break;
     }
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
-    return &identity_test_env_;
-  }
+  IdentityTestEnvironment* identity_test_env() { return &identity_test_env_; }
 
   TestIdentityManagerObserver* identity_manager_observer() {
     return identity_test_env_.identity_manager_observer();
@@ -142,7 +140,7 @@ class AccountsCookieMutatorTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestSigninClient test_signin_client_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  IdentityTestEnvironment identity_test_env_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorTest);
 };
@@ -282,10 +280,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllNonExistingAccounts) {
   accounts_cookie_mutator()->SetAccountsInCookie(
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             signin::SetAccountsInCookieResult result) {
-            EXPECT_EQ(result,
-                      signin::SetAccountsInCookieResult::kPersistentError);
+          [](base::OnceClosure quit_closure, SetAccountsInCookieResult result) {
+            EXPECT_EQ(result, SetAccountsInCookieResult::kPersistentError);
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));
@@ -309,10 +305,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_SomeNonExistingAccounts) {
   accounts_cookie_mutator()->SetAccountsInCookie(
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             signin::SetAccountsInCookieResult result) {
-            EXPECT_EQ(result,
-                      signin::SetAccountsInCookieResult::kPersistentError);
+          [](base::OnceClosure quit_closure, SetAccountsInCookieResult result) {
+            EXPECT_EQ(result, SetAccountsInCookieResult::kPersistentError);
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));
@@ -337,9 +331,8 @@ TEST_F(AccountsCookieMutatorTest, SetAccountsInCookie_AllExistingAccounts) {
   accounts_cookie_mutator()->SetAccountsInCookie(
       accounts_ids, gaia::GaiaSource::kChrome,
       base::BindOnce(
-          [](base::OnceClosure quit_closure,
-             signin::SetAccountsInCookieResult result) {
-            EXPECT_EQ(result, signin::SetAccountsInCookieResult::kSuccess);
+          [](base::OnceClosure quit_closure, SetAccountsInCookieResult result) {
+            EXPECT_EQ(result, SetAccountsInCookieResult::kSuccess);
             std::move(quit_closure).Run();
           },
           run_loop.QuitClosure()));
@@ -426,4 +419,4 @@ TEST_F(AccountsCookieMutatorTest, LogOutAllAccounts) {
   run_loop.Run();
 }
 
-}  // namespace identity
+}  // namespace signin

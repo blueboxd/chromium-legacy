@@ -52,6 +52,8 @@ class ScopedObserver {
 
   bool IsObservingSources() const { return !sources_.empty(); }
 
+  size_t GetSourcesCount() const { return sources_.size(); }
+
  private:
   Observer* observer_;
 

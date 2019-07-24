@@ -20,7 +20,7 @@ class AssistantSetup;
 
 // Class to handle all assistant in-browser-process functionalities.
 class AssistantClient : chromeos::assistant::mojom::Client,
-                        public identity::IdentityManager::Observer,
+                        public signin::IdentityManager::Observer,
                         public session_manager::SessionManagerObserver {
  public:
   static AssistantClient* Get();
@@ -37,7 +37,7 @@ class AssistantClient : chromeos::assistant::mojom::Client,
       RequestAssistantStructureCallback callback) override;
 
  private:
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   // Retry to initiate Assistant service when account info has been updated.
   // This is necessary if previous calls of MaybeInit() failed due to Assistant
   // disallowed by account type. This can happen when the chromeos sign-in
@@ -61,7 +61,7 @@ class AssistantClient : chromeos::assistant::mojom::Client,
 
   // Non-owning pointers.
   Profile* profile_ = nullptr;
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantClient);
 };

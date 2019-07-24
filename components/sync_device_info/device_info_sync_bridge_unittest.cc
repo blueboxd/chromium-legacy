@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -22,6 +23,7 @@
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/test/test_matchers.h"
+#include "components/sync_device_info/device_info_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -220,6 +222,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
  protected:
   DeviceInfoSyncBridgeTest()
       : store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
+    DeviceInfoPrefs::RegisterProfilePrefs(pref_service_.registry());
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   }
 
@@ -239,7 +242,8 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
     bridge_ = std::make_unique<DeviceInfoSyncBridge>(
         std::make_unique<TestLocalDeviceInfoProvider>(),
         ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
-        mock_processor_.CreateForwardingProcessor());
+        mock_processor_.CreateForwardingProcessor(),
+        std::make_unique<DeviceInfoPrefs>(&pref_service_));
     bridge_->AddObserver(this);
   }
 
@@ -402,6 +406,7 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
   // Holds the store.
   const std::unique_ptr<ModelTypeStore> store_;
 
+  TestingPrefServiceSimple pref_service_;
   // Not initialized immediately (upon test's constructor). This allows each
   // test case to modify the dependencies the bridge will be constructed with.
   std::unique_ptr<DeviceInfoSyncBridge> bridge_;

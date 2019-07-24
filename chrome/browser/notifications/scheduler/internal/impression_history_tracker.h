@@ -118,15 +118,21 @@ class ImpressionHistoryTrackerImpl : public ImpressionHistoryTracker {
   // Analyzes the impression history for a particular client.
   void AnalyzeImpressionHistory(ClientState* client_state);
 
+  // Check consecutive user actions, and generate impression result if no less
+  // than |num_actions| count of user actions.
+  void CheckConsecutiveUserAction(ClientState* client_state,
+                                  std::deque<Impression*>* impressions,
+                                  size_t num_actions);
+
+  // Generates user impression result.
+  void GenerateImpressionResult(Impression* impression);
+
+  // Updates notification throttling based on the impression result.
+  void UpdateThrottling(ClientState* client_state, Impression* impression);
+
   // Applies a positive impression result to this notification type.
   void ApplyPositiveImpression(ClientState* client_state,
                                Impression* impression);
-
-  // Applies negative impression on this notification type when |num_actions|
-  // consecutive negative impression result are generated.
-  void ApplyNegativeImpressions(ClientState* client_state,
-                                std::deque<Impression*>* impressions,
-                                size_t num_actions);
 
   // Applies one negative impression.
   void ApplyNegativeImpression(ClientState* client_state,

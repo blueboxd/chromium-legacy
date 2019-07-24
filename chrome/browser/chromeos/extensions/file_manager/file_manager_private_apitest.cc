@@ -351,7 +351,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         crostini::prefs::kCrostiniEnabled, true);
     scoped_feature_list->InitWithFeatures({features::kCrostini}, {});
     // Profile must be signed in with email for crostini.
-    identity::SetPrimaryAccount(
+    signin::SetPrimaryAccount(
         IdentityManagerFactory::GetForProfileIfExists(browser()->profile()),
         "testuser@gmail.com");
   }

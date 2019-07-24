@@ -216,7 +216,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void SetZoomFactorOverride(float);
   void SetCompositorDeviceScaleFactorOverride(float);
-  void SetDeviceEmulationTransform(const TransformationMatrix&);
   TransformationMatrix GetDeviceEmulationTransform() const;
 
   SkColor BackgroundColor() const;
@@ -509,6 +508,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetIsAcceleratedCompositingActive(bool);
   void DoComposite();
   void ReallocateRenderer();
+
+  void SetDeviceEmulationTransform(const TransformationMatrix&);
   void UpdateDeviceEmulationTransform();
 
   // Helper function: Widens the width of |source| by the specified margins

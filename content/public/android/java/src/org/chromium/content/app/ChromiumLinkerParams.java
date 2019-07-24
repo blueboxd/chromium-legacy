@@ -27,10 +27,6 @@ public class ChromiumLinkerParams {
     // registered in the service process.
     public final String mTestRunnerClassNameForTesting;
 
-    // If mTestRunnerClassNameForTesting is not empty, the Linker implementation
-    // to force for testing.
-    public final int mLinkerImplementationForTesting;
-
     private static final String EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS =
             "org.chromium.content.common.linker_params.base_load_address";
 
@@ -40,25 +36,20 @@ public class ChromiumLinkerParams {
     private static final String EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME =
             "org.chromium.content.common.linker_params.test_runner_class_name";
 
-    private static final String EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION =
-            "org.chromium.content.common.linker_params.linker_implementation";
-
     public ChromiumLinkerParams(long baseLoadAddress, boolean waitForSharedRelro) {
         mBaseLoadAddress = baseLoadAddress;
         mWaitForSharedRelro = waitForSharedRelro;
         mTestRunnerClassNameForTesting = null;
-        mLinkerImplementationForTesting = 0;
     }
 
     /**
      * Use this constructor to create a LinkerParams instance for testing.
      */
-    public ChromiumLinkerParams(long baseLoadAddress, boolean waitForSharedRelro,
-            String testRunnerClassName, int linkerImplementation) {
+    public ChromiumLinkerParams(
+            long baseLoadAddress, boolean waitForSharedRelro, String testRunnerClassName) {
         mBaseLoadAddress = baseLoadAddress;
         mWaitForSharedRelro = waitForSharedRelro;
         mTestRunnerClassNameForTesting = testRunnerClassName;
-        mLinkerImplementationForTesting = linkerImplementation;
     }
 
     /**
@@ -71,8 +62,7 @@ public class ChromiumLinkerParams {
     public static ChromiumLinkerParams create(Bundle bundle) {
         if (!bundle.containsKey(EXTRA_LINKER_PARAMS_BASE_LOAD_ADDRESS)
                 || !bundle.containsKey(EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO)
-                || !bundle.containsKey(EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME)
-                || !bundle.containsKey(EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION)) {
+                || !bundle.containsKey(EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME)) {
             return null;
         }
         return new ChromiumLinkerParams(bundle);
@@ -83,8 +73,6 @@ public class ChromiumLinkerParams {
         mWaitForSharedRelro = bundle.getBoolean(EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO, false);
         mTestRunnerClassNameForTesting =
                 bundle.getString(EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME);
-        mLinkerImplementationForTesting =
-                bundle.getInt(EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION, 0);
     }
 
     /**
@@ -97,7 +85,6 @@ public class ChromiumLinkerParams {
         bundle.putBoolean(EXTRA_LINKER_PARAMS_WAIT_FOR_SHARED_RELRO, mWaitForSharedRelro);
         bundle.putString(
                 EXTRA_LINKER_PARAMS_TEST_RUNNER_CLASS_NAME, mTestRunnerClassNameForTesting);
-        bundle.putInt(EXTRA_LINKER_PARAMS_LINKER_IMPLEMENTATION, mLinkerImplementationForTesting);
     }
 
     // For debugging traces only.
@@ -105,8 +92,8 @@ public class ChromiumLinkerParams {
     public String toString() {
         return String.format(Locale.US,
                 "LinkerParams(baseLoadAddress:0x%x, waitForSharedRelro:%s, "
-                        + "testRunnerClassName:%s, linkerImplementation:%d",
+                        + "testRunnerClassName:%s",
                 mBaseLoadAddress, Boolean.toString(mWaitForSharedRelro),
-                mTestRunnerClassNameForTesting, mLinkerImplementationForTesting);
+                mTestRunnerClassNameForTesting);
     }
 }

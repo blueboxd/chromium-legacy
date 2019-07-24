@@ -219,7 +219,7 @@ void DevToolsEmulator::SetPrimaryHoverType(HoverType hover_type) {
     web_view_->GetPage()->GetSettings().SetPrimaryHoverType(hover_type);
 }
 
-void DevToolsEmulator::EnableDeviceEmulation(
+TransformationMatrix DevToolsEmulator::EnableDeviceEmulation(
     const WebDeviceEmulationParams& params) {
   if (device_metrics_enabled_ &&
       emulation_params_.view_size == params.view_size &&
@@ -228,7 +228,7 @@ void DevToolsEmulator::EnableDeviceEmulation(
       emulation_params_.scale == params.scale &&
       emulation_params_.viewport_offset == params.viewport_offset &&
       emulation_params_.viewport_scale == params.viewport_scale) {
-    return;
+    return ComputeRootLayerTransform();
   }
   if (emulation_params_.device_scale_factor != params.device_scale_factor ||
       !device_metrics_enabled_)
@@ -248,18 +248,19 @@ void DevToolsEmulator::EnableDeviceEmulation(
     DisableMobileEmulation();
 
   web_view_->SetCompositorDeviceScaleFactorOverride(params.device_scale_factor);
-  if (params.viewport_offset.x >= 0)
-    ForceViewport(params.viewport_offset, params.viewport_scale);
-  else
-    ResetViewport();
 
-  // TODO(dgozman): MainFrameImpl() is null when it's remote. Figure out how
-  // we end up with enabling emulation in this case.
+  // TODO(wjmaclean): Tell all local frames in the WebView's frame tree, not
+  // just a local main frame.
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
             web_view_->MainFrameImpl()->GetFrame()->GetDocument())
       document->MediaQueryAffectingValueChanged();
   }
+
+  if (params.viewport_offset.x >= 0)
+    return ForceViewport(params.viewport_offset, params.viewport_scale);
+  else
+    return ResetViewport();
 }
 
 void DevToolsEmulator::DisableDeviceEmulation() {
@@ -273,13 +274,17 @@ void DevToolsEmulator::DisableDeviceEmulation() {
   DisableMobileEmulation();
   web_view_->SetCompositorDeviceScaleFactorOverride(0.f);
   web_view_->SetPageScaleFactor(1.f);
-  ResetViewport();
-  // mainFrameImpl() could be null during cleanup or remote <-> local swap.
+
+  // TODO(wjmaclean): Tell all local frames in the WebView's frame tree, not
+  // just a local main frame.
   if (web_view_->MainFrameImpl()) {
     if (Document* document =
             web_view_->MainFrameImpl()->GetFrame()->GetDocument())
       document->MediaQueryAffectingValueChanged();
   }
+
+  TransformationMatrix matrix = ResetViewport();
+  DCHECK(matrix.IsIdentity());
 }
 
 void DevToolsEmulator::EnableMobileEmulation() {
@@ -319,8 +324,9 @@ void DevToolsEmulator::EnableMobileEmulation() {
   original_default_maximum_page_scale_factor_ =
       web_view_->DefaultMaximumPageScaleFactor();
   web_view_->SetDefaultPageScaleLimits(0.25f, 5);
-  // TODO(dgozman): MainFrameImpl() is null when it's remote. Figure out how
-  // we end up with enabling emulation in this case.
+
+  // TODO(wjmaclean): Update all local frames in the WebView's frame tree, not
+  // just a local main frame.
   if (web_view_->MainFrameImpl())
     web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
@@ -362,13 +368,14 @@ void DevToolsEmulator::DisableMobileEmulation() {
     web_view_->MainFrameImpl()->GetFrameView()->UpdateLayout();
 }
 
-void DevToolsEmulator::ForceViewport(const WebFloatPoint& position,
-                                     float scale) {
-  GraphicsLayer* container_layer =
-      web_view_->GetPage()->GetVisualViewport().ContainerLayer();
+TransformationMatrix DevToolsEmulator::ForceViewport(
+    const WebFloatPoint& position,
+    float scale) {
   if (!viewport_override_) {
     viewport_override_ = ViewportOverride();
 
+    GraphicsLayer* container_layer =
+        web_view_->GetPage()->GetVisualViewport().ContainerLayer();
     // Disable clipping on the visual viewport layer, to ensure the whole area
     // is painted.
     if (container_layer) {
@@ -383,31 +390,29 @@ void DevToolsEmulator::ForceViewport(const WebFloatPoint& position,
 
   // Move the correct (scaled) content area to show in the top left of the
   // CompositorFrame via the root transform.
-  UpdateRootLayerTransform();
+  return ComputeRootLayerTransform();
 }
 
-void DevToolsEmulator::ResetViewport() {
-  if (!viewport_override_) {
-    UpdateRootLayerTransform();
-    return;
+TransformationMatrix DevToolsEmulator::ResetViewport() {
+  if (viewport_override_) {
+    GraphicsLayer* container_layer =
+        web_view_->GetPage()->GetVisualViewport().ContainerLayer();
+    if (container_layer) {
+      container_layer->SetMasksToBounds(
+          viewport_override_->original_visual_viewport_masking);
+    }
+
+    viewport_override_ = base::nullopt;
   }
 
-  bool original_masking = viewport_override_->original_visual_viewport_masking;
-  viewport_override_ = base::nullopt;
-
-  GraphicsLayer* container_layer =
-      web_view_->GetPage()->GetVisualViewport().ContainerLayer();
-  if (container_layer)
-    container_layer->SetMasksToBounds(original_masking);
-
-  UpdateRootLayerTransform();
+  return ComputeRootLayerTransform();
 }
 
-void DevToolsEmulator::MainFrameScrollOrScaleChanged() {
+TransformationMatrix DevToolsEmulator::MainFrameScrollOrScaleChanged() {
   // Viewport override has to take current page scale and scroll offset into
   // account. Update the transform if override is active.
-  if (viewport_override_)
-    UpdateRootLayerTransform();
+  DCHECK(viewport_override_);
+  return ComputeRootLayerTransform();
 }
 
 void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
@@ -435,15 +440,14 @@ void DevToolsEmulator::ApplyViewportOverride(TransformationMatrix* transform) {
   transform->Scale(1. / web_view_->PageScaleFactor());
 }
 
-void DevToolsEmulator::UpdateRootLayerTransform() {
+TransformationMatrix DevToolsEmulator::ComputeRootLayerTransform() {
   TransformationMatrix transform;
-
   // Apply device emulation transform first, so that it is affected by the
   // viewport override.
   ApplyViewportOverride(&transform);
   if (device_metrics_enabled_)
     transform.Scale(emulation_params_.scale);
-  web_view_->SetDeviceEmulationTransform(transform);
+  return transform;
 }
 
 void DevToolsEmulator::OverrideVisibleRect(const IntSize& viewport_size,

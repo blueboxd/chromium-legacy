@@ -23,7 +23,7 @@
 AuthenticationServiceFake::AuthenticationServiceFake(
     PrefService* pref_service,
     SyncSetupService* sync_setup_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
     : AuthenticationService(pref_service,
                             sync_setup_service,

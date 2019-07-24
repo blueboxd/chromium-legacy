@@ -23,6 +23,7 @@ source_set("app_launcher") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/u2f",
+    "//ios/web/common",
     "//ios/web/public",
     "//url",
   ]

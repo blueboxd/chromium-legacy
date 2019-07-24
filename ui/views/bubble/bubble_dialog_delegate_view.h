@@ -30,6 +30,10 @@ namespace ui {
 class Accelerator;
 }  // namespace ui
 
+namespace ui_devtools {
+class PageAgentViews;
+}
+
 namespace views {
 
 class BubbleFrameView;
@@ -192,6 +196,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
  private:
   friend class BubbleBorderDelegate;
   friend class BubbleWindowTargeter;
+  friend class ui_devtools::PageAgentViews;
 
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, NonClientHitTest);
@@ -209,6 +214,10 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // view set in |highlighted_button_tracker_|. This can be overridden to
   // provide different highlight effects.
   virtual void UpdateHighlightedButton(bool highlighted);
+
+  // Set from UI DevTools to prevent bubbles from closing in
+  // OnWidgetActivationChanged().
+  static bool devtools_dismiss_override_;
 
   // A flag controlling bubble closure on deactivation.
   bool close_on_deactivate_;

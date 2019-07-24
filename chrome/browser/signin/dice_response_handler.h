@@ -24,7 +24,7 @@ class GoogleServiceAuthError;
 class SigninClient;
 class Profile;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -55,7 +55,7 @@ class DiceResponseHandler : public KeyedService {
   static DiceResponseHandler* GetForProfile(Profile* profile);
 
   DiceResponseHandler(SigninClient* signin_client,
-                      identity::IdentityManager* identity_manager,
+                      signin::IdentityManager* identity_manager,
                       AccountReconcilor* account_reconcilor,
                       AboutSigninInternals* about_signin_internals,
                       signin::AccountConsistencyMethod account_consistency,
@@ -152,7 +152,7 @@ class DiceResponseHandler : public KeyedService {
                               const GoogleServiceAuthError& error);
 
   SigninClient* signin_client_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   AccountReconcilor* account_reconcilor_;
   AboutSigninInternals* about_signin_internals_;
   signin::AccountConsistencyMethod account_consistency_;

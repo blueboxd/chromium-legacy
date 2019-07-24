@@ -1256,19 +1256,18 @@ void RenderViewContextMenu::AppendLinkItems() {
       menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
       if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
-        menu_model_.AddItem(
-            IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
-            l10n_util::GetStringFUTF16(
-                IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                    GetBrowser()->profile()))));
+        menu_model_.AddItem(IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                            l10n_util::GetStringFUTF16(
+                                IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                                send_tab_to_self::GetSingleTargetDeviceName(
+                                    GetBrowser()->profile())));
 #else
         menu_model_.AddItemWithIcon(
             IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET,
             l10n_util::GetStringFUTF16(
                 IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-                base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                    GetBrowser()->profile()))),
+                send_tab_to_self::GetSingleTargetDeviceName(
+                    GetBrowser()->profile())),
             *send_tab_to_self::GetImageSkia());
 #endif
         send_tab_to_self::RecordSendTabToSelfClickResult(
@@ -1491,19 +1490,18 @@ void RenderViewContextMenu::AppendPageItems() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
     if (send_tab_to_self::GetValidDeviceCount(GetBrowser()->profile()) == 1) {
 #if defined(OS_MACOSX)
-      menu_model_.AddItem(
-          IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
-          l10n_util::GetStringFUTF16(
-              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                  GetBrowser()->profile()))));
+      menu_model_.AddItem(IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                          l10n_util::GetStringFUTF16(
+                              IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
+                              send_tab_to_self::GetSingleTargetDeviceName(
+                                  GetBrowser()->profile())));
 #else
       menu_model_.AddItemWithIcon(
           IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
           l10n_util::GetStringFUTF16(
               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                  GetBrowser()->profile()))),
+              send_tab_to_self::GetSingleTargetDeviceName(
+                  GetBrowser()->profile())),
           *send_tab_to_self::GetImageSkia());
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(

@@ -113,7 +113,7 @@ class MockGSSAPILibrary : public GSSAPILibrary {
   // Initializes the library, including any necessary dynamic libraries.
   // This is done separately from construction (which happens at startup time)
   // in order to delay work until the class is actually needed.
-  bool Init() override;
+  bool Init(const NetLogWithSource& net_log) override;
 
   // These methods match the ones in the GSSAPI library.
   OM_uint32 import_name(OM_uint32* minor_status,
@@ -202,6 +202,8 @@ class MockGSSAPILibrary : public GSSAPILibrary {
 };
 
 }  // namespace test
+
+using MockAuthLibrary = test::MockGSSAPILibrary;
 
 }  // namespace net
 

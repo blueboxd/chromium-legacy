@@ -4091,6 +4091,13 @@
     The next time you restart your device, your administrator will perform a one-time update that will delete your local data.
   </message>
 
+  <message name="IDS_RELEASE_NOTES_NOTIFICATION_TITLE" desc="Text for the notification title informing the user that the device has been updated and patch notes are available.">
+    See what's new on Chromebook
+  </message>
+  <message name="IDS_RELEASE_NOTES_NOTIFICATION_MESSAGE" desc="Text for the notification message informing the user that the device has been updated and patch notes are available.">
+    Get highlights from the latest update
+  </message>
+
   <!-- Strings for Add Supervision screen -->
   <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
     Add Supervision

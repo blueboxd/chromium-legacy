@@ -241,6 +241,8 @@ jumbo_split_static_library("ui") {
     "webui/fileicon_source.h",
     "webui/flags_ui.cc",
     "webui/flags_ui.h",
+    "webui/flags_ui_handler.cc",
+    "webui/flags_ui_handler.h",
     "webui/gcm_internals_ui.cc",
     "webui/gcm_internals_ui.h",
     "webui/interstitials/interstitial_ui.cc",

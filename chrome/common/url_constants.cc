@@ -37,6 +37,10 @@ const char kChooserUsbOverviewURL[] =
 const char kChromeBetaForumURL[] =
     "https://support.google.com/chrome/?p=beta_forum";
 
+// TODO: replace w/link after marketing provides it.
+const char kChromeReleaseNotesURL[] =
+    "https://www.google.com/chromebook/whatsnew/embedded/";
+
 const char kChromeHelpViaKeyboardURL[] =
 #if defined(OS_CHROMEOS)
 #if defined(GOOGLE_CHROME_BUILD)

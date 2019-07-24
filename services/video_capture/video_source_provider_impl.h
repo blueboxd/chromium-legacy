@@ -51,7 +51,6 @@ class VideoSourceProviderImpl : public mojom::VideoSourceProvider {
   int client_count_ = 0;
   int closed_but_not_yet_disconnected_client_count_ = 0;
   mojo::BindingSet<mojom::VideoSourceProvider> bindings_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
   std::map<std::string, std::unique_ptr<VideoSourceImpl>> sources_;
   DISALLOW_COPY_AND_ASSIGN(VideoSourceProviderImpl);
 };

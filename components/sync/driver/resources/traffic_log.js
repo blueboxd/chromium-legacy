@@ -6,6 +6,9 @@ cr.exportPath('chrome.sync.traffic_log_tab', new class {
   constructor() {
     this.protocolEvents = [];
     this.knownEventTimestamps = new Set();
+
+    /** @type {!HTMLElement} */
+    this.container;
   }
 
   /**
@@ -53,7 +56,7 @@ cr.exportPath('chrome.sync.traffic_log_tab', new class {
 
   /**
    * Toggles the given traffic event entry div's "expanded" state.
-   * @param {MouseEvent} e the click event that triggered the toggle.
+   * @param {!Event} e the click event that triggered the toggle.
    * @private
    */
   _expandListener(e) {
@@ -79,13 +82,13 @@ cr.exportPath('chrome.sync.traffic_log_tab', new class {
   }
 
   onLoad() {
-    this.container = $('traffic-event-fullscreen-container');
+    this.container = getRequiredElement('traffic-event-fullscreen-container');
 
     chrome.sync.events.addEventListener(
       'onProtocolEvent', this._onReceivedProtocolEvent.bind(this));
 
     // Make the prototype jscontent element disappear.
-    jstProcess({}, this.container);
+    jstProcess(new JsEvalContext({}), this.container);
   }
 });
 

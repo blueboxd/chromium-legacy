@@ -244,7 +244,7 @@ Background Sync Failure:
                 value : 300000
             }
         ]
-        eventName : Sync event failed
+        eventName : sync event failed
         instanceId : background-sync-reject
         origin : http://127.0.0.1:8000/
         service : backgroundSync

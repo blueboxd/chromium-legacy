@@ -62,7 +62,7 @@ constexpr size_t kUploadLimitOnWifiKb = 5 * 1024;  // ~1MB compressed size.
 constexpr size_t kUploadLimitKb = 30 * 1024;  // Less than 10MB compressed size.
 #endif
 
-bool IsTraceLogUploadAllowed(size_t trace_size_kb) {
+size_t TraceLogUploadLimitKb() {
 #if defined(OS_ANDROID)
   auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
   if (connection_type != net::NetworkChangeNotifier::CONNECTION_WIFI &&
@@ -235,7 +235,7 @@ bool BackgroundTracingManagerImpl::HasTraceToUpload() {
   if (trace_to_upload_.empty()) {
     return false;
   }
-  if (!IsTraceLogUploadAllowed(trace_to_upload_.size())) {
+  if (trace_to_upload_.size() > TraceLogUploadLimitKb() * 1024) {
     RecordMetric(Metrics::LARGE_UPLOAD_WAITING_TO_RETRY);
     return false;
   }

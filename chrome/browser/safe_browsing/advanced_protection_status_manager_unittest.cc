@@ -80,7 +80,7 @@ class AdvancedProtectionStatusManagerTest : public testing::Test {
                     : GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 

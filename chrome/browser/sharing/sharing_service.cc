@@ -24,6 +24,7 @@
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -164,20 +165,29 @@ void SharingService::SendMessageToDevice(
   fcm_sender_->SendMessageToDevice(
       device_guid, time_to_live, std::move(message),
       base::BindOnce(&SharingService::OnMessageSent,
-                     weak_ptr_factory_.GetWeakPtr(), message_guid));
+                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),
+                     message_guid));
 }
 
-void SharingService::OnMessageSent(const std::string& message_guid,
+void SharingService::OnMessageSent(base::TimeTicks start_time,
+                                   const std::string& message_guid,
                                    base::Optional<std::string> message_id) {
   if (!message_id) {
     InvokeSendMessageCallback(message_guid, /*success=*/false);
     return;
   }
 
+  send_message_times_.emplace(*message_id, start_time);
   message_guids_.emplace(*message_id, message_guid);
 }
 
 void SharingService::OnAckReceived(const std::string& message_id) {
+  auto times_iter = send_message_times_.find(message_id);
+  if (times_iter != send_message_times_.end()) {
+    LogSharingMessageAckTime(base::TimeTicks::Now() - times_iter->second);
+    send_message_times_.erase(times_iter);
+  }
+
   auto iter = message_guids_.find(message_id);
   if (iter == message_guids_.end())
     return;

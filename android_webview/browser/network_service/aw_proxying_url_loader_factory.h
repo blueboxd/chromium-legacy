@@ -22,11 +22,32 @@
 
 namespace android_webview {
 
-class AwInterceptedRequestHandler {};
-
-// URL Loader Factory for android webview, for supporting request/response
-// interception, processing and callback invocation. Currently contains basic
-// pass-through implementation.
+// URL Loader Factory for Android WebView. This is the entry point for handling
+// Android WebView callbacks (i.e. error, interception and other callbacks) and
+// loading of android specific schemes and overridden responses.
+//
+// This class contains centralized logic for:
+//  - request interception and blocking,
+//  - setting load flags and headers,
+//  - loading requests depending on the scheme (e.g. different delegates are
+//    used for loading android assets/resources as compared to overridden
+//    responses).
+//  - handling errors (e.g. no input stream, redirect or safebrowsing related
+//    errors).
+//
+// In particular handles the following Android WebView callbacks:
+//  - shouldInterceptRequest
+//  - onReceivedError
+//  - onReceivedHttpError
+//  - onReceivedLoginRequest
+//
+// Threading:
+//  Currently the factory and the associated loader assume they live on the IO
+//  thread. This is also required by the shouldInterceptRequest callback (which
+//  should be called on a non-UI thread). The other callbacks (i.e.
+//  onReceivedError, onReceivedHttpError and onReceivedLoginRequest) are posted
+//  on the UI thread.
+//
 class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
   // Create a factory that will create specialized URLLoaders for Android
@@ -38,7 +59,6 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
       int process_id,
       network::mojom::URLLoaderFactoryRequest loader_request,
       network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      std::unique_ptr<AwInterceptedRequestHandler> request_handler,
       bool intercept_only);
 
   ~AwProxyingURLLoaderFactory() override;
@@ -47,8 +67,7 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   static void CreateProxy(
       int process_id,
       network::mojom::URLLoaderFactoryRequest loader,
-      network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-      std::unique_ptr<AwInterceptedRequestHandler> request_handler);
+      network::mojom::URLLoaderFactoryPtrInfo target_factory_info);
 
   void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
                             int32_t routing_id,
@@ -68,10 +87,6 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   const int process_id_;
   mojo::BindingSet<network::mojom::URLLoaderFactory> proxy_bindings_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
-
-  // TODO(timvolodine): consider functionality to have multiple interception
-  // handlers operating in sequence.
-  std::unique_ptr<AwInterceptedRequestHandler> request_handler_;
 
   // When true the loader resulting from this factory will only execute
   // intercept callback (shouldInterceptRequest). If that returns without

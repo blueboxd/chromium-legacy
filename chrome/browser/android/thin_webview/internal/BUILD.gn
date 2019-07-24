@@ -9,6 +9,8 @@ static_library("internal") {
   sources = [
     "compositor_view_impl.cc",
     "compositor_view_impl.h",
+    "thin_webview.cc",
+    "thin_webview.h",
   ]
 
   deps = [
@@ -26,7 +28,10 @@ static_library("internal") {
 }
 
 android_library("internal_java") {
-  java_files = [ "java/src/org/chromium/chrome/browser/thinwebview/internal/CompositorViewImpl.java" ]
+  java_files = [
+    "java/src/org/chromium/chrome/browser/thinwebview/internal/CompositorViewImpl.java",
+    "java/src/org/chromium/chrome/browser/thinwebview/internal/ThinWebViewImpl.java",
+  ]
 
   deps = [
     "//base:base_java",
@@ -40,5 +45,6 @@ generate_jni("jni_headers") {
   visibility = [ ":*" ]
   sources = [
     "java/src/org/chromium/chrome/browser/thinwebview/internal/CompositorViewImpl.java",
+    "java/src/org/chromium/chrome/browser/thinwebview/internal/ThinWebViewImpl.java",
   ]
 }

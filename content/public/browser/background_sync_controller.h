@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <set>
+
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_sync_registration.h"
@@ -91,6 +93,13 @@ class CONTENT_EXPORT BackgroundSyncController {
   // to finish firing one sync event.
   virtual std::unique_ptr<BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() = 0;
+
+  // Updates its internal list of origins for which we have suspended periodic
+  // Background Sync registrations. This is compiled from each
+  // BackgroundSyncManager when they are initialized. This list used to ignore
+  // changes concerning origins we don't care about.
+  virtual void NoteSuspendedPeriodicSyncOrigins(
+      std::set<url::Origin> suspended_origins) = 0;
 };
 
 }  // namespace content

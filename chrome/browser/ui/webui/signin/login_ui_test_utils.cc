@@ -44,7 +44,7 @@ const char kGetPasswordFieldFromDiceSigninPage[] =
 
 // The SignInObserver observes the identity manager and blocks until a signin
 // success or failure notification is fired.
-class SignInObserver : public identity::IdentityManager::Observer {
+class SignInObserver : public signin::IdentityManager::Observer {
  public:
   SignInObserver() : seen_(false), running_(false), signed_in_(false) {}
 
@@ -298,7 +298,7 @@ bool SignInWithUI(Browser* browser,
   return false;
 #else
   SignInObserver signin_observer;
-  ScopedObserver<identity::IdentityManager, SignInObserver>
+  ScopedObserver<signin::IdentityManager, SignInObserver>
       scoped_signin_observer(&signin_observer);
   scoped_signin_observer.Add(
       IdentityManagerFactory::GetForProfile(browser->profile()));

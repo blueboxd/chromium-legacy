@@ -15,6 +15,9 @@ namespace tracing {
 // tracing backend is used.
 void COMPONENT_EXPORT(TRACING_CPP) EnableStartupTracingIfNeeded();
 
+// Initialize tracing components that require task runners.
+void COMPONENT_EXPORT(TRACING_CPP) InitTracingPostThreadPoolStart();
+
 }  // namespace tracing
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_TRACE_STARTUP_H_

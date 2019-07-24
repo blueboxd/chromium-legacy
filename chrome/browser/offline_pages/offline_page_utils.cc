@@ -28,8 +28,8 @@
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_clock.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_item_utils.h"
@@ -60,13 +60,7 @@ class OfflinePageComparer {
 
 bool IsSupportedByDownload(content::BrowserContext* browser_context,
                            const std::string& name_space) {
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
-  DCHECK(offline_page_model);
-  ClientPolicyController* policy_controller =
-      offline_page_model->GetPolicyController();
-  DCHECK(policy_controller);
-  return policy_controller->IsSupportedByDownload(name_space);
+  return GetPolicy(name_space).is_supported_by_download;
 }
 
 void CheckDuplicateOngoingDownloads(

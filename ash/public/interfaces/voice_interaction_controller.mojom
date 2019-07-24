@@ -62,9 +62,6 @@ interface VoiceInteractionObserver {
   // Called when hotword listening is enabled/disabled.
   OnVoiceInteractionHotwordEnabled(bool enabled);
 
-  // Called when hotword is set to always on/only with power source.
-  OnVoiceInteractionHotwordAlwaysOn(bool always_on);
-
   // Called when assistant feature allowed state has changed.
   OnAssistantFeatureAllowedChanged(AssistantAllowedState state);
 

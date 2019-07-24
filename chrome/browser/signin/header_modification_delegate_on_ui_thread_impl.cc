@@ -57,6 +57,10 @@ void HeaderModificationDelegateOnUIThreadImpl::ProcessRequest(
     const GURL& redirect_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const PrefService* prefs = profile_->GetPrefs();
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+#endif
   FixAccountConsistencyRequestHeader(
       request_adapter, redirect_url, profile_->IsOffTheRecord(),
       prefs->GetInteger(prefs::kIncognitoModeAvailability),
@@ -66,8 +70,7 @@ void HeaderModificationDelegateOnUIThreadImpl::ProcessRequest(
       prefs->GetBoolean(prefs::kAccountConsistencyMirrorRequired),
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-      ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->IsSyncFeatureEnabled(),
+      sync_service && sync_service->IsSyncFeatureEnabled(),
       prefs->GetString(prefs::kGoogleServicesSigninScopedDeviceId),
 #endif
       cookie_settings_.get());

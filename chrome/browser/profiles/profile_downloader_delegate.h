@@ -11,9 +11,9 @@
 
 class ProfileDownloader;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 namespace mojom {
@@ -49,7 +49,7 @@ class ProfileDownloaderDelegate {
   virtual std::string GetCachedPictureURL() const = 0;
 
   // Returns the IdentityManager associated with this download request.
-  virtual identity::IdentityManager* GetIdentityManager() = 0;
+  virtual signin::IdentityManager* GetIdentityManager() = 0;
 
   // Returns the URLLoaderFactory to use for this download request.
   virtual network::mojom::URLLoaderFactory* GetURLLoaderFactory() = 0;

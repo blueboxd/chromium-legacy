@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
 
+#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
+
 using local_discovery::ServiceDescription;
 
 namespace media_router {

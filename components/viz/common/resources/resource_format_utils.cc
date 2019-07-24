@@ -435,7 +435,7 @@ VkFormat ToVkFormat(ResourceFormat format) {
     case RG_88:
       return VK_FORMAT_R8G8_UNORM;
     case RGBA_F16:
-      return VK_FORMAT_R16_SFLOAT;
+      return VK_FORMAT_R16G16B16A16_SFLOAT;
     case R16_EXT:
       return VK_FORMAT_R16_UNORM;
     case RGBX_8888:

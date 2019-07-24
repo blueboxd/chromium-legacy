@@ -318,16 +318,15 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
           &largest_content_paint_size, &largest_content_type) &&
       WasStartedInForegroundOptionalEventInForeground(
           largest_content_paint_time, info)) {
-    builder.SetExperimental_PaintTiming_NavigationToLargestContentPaint(
+    builder.SetPaintTiming_NavigationToLargestContentfulPaint_MainFrame(
         largest_content_paint_time.value().InMilliseconds());
   }
   const page_load_metrics::ContentfulPaintTimingInfo& paint =
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
-    builder
-        .SetExperimental_PaintTiming_NavigationToLargestContentPaintAllFrames(
-            paint.Time().value().InMilliseconds());
+    builder.SetPaintTiming_NavigationToLargestContentfulPaint(
+        paint.Time().value().InMilliseconds());
   }
   if (timing.interactive_timing->interactive) {
     base::TimeDelta time_to_interactive =

@@ -31,11 +31,12 @@ MockResourcePrefetchPredictor::MockResourcePrefetchPredictor(
 MockResourcePrefetchPredictor::~MockResourcePrefetchPredictor() = default;
 
 void InitializeRedirectStat(RedirectStat* redirect,
-                            const std::string& url,
+                            const GURL& url,
                             int number_of_hits,
                             int number_of_misses,
                             int consecutive_misses) {
-  redirect->set_url(url);
+  redirect->set_url(url.host());
+  redirect->set_url_scheme(url.scheme());
   redirect->set_number_of_hits(number_of_hits);
   redirect->set_number_of_misses(number_of_misses);
   redirect->set_consecutive_misses(consecutive_misses);
@@ -168,9 +169,9 @@ std::ostream& operator<<(std::ostream& os, const RedirectData& data) {
 }
 
 std::ostream& operator<<(std::ostream& os, const RedirectStat& redirect) {
-  return os << "[" << redirect.url() << "," << redirect.number_of_hits() << ","
-            << redirect.number_of_misses() << ","
-            << redirect.consecutive_misses() << "]";
+  return os << "[" << redirect.url() << "," << redirect.url_scheme() << ","
+            << redirect.number_of_hits() << "," << redirect.number_of_misses()
+            << "," << redirect.consecutive_misses() << "]";
 }
 
 std::ostream& operator<<(std::ostream& os, const OriginData& data) {
@@ -237,7 +238,7 @@ bool operator==(const RedirectData& lhs, const RedirectData& rhs) {
 }
 
 bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
-  return lhs.url() == rhs.url() &&
+  return lhs.url() == rhs.url() && lhs.url_scheme() == rhs.url_scheme() &&
          lhs.number_of_hits() == rhs.number_of_hits() &&
          lhs.number_of_misses() == rhs.number_of_misses() &&
          lhs.consecutive_misses() == rhs.consecutive_misses();

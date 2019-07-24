@@ -46,7 +46,7 @@ class ChildAccountServiceTest : public ::testing::Test {
         ->GetTestURLLoaderFactory();
   }
 
-  identity::AccountsCookieMutator* GetAccountsCookieMutator() {
+  signin::AccountsCookieMutator* GetAccountsCookieMutator() {
     IdentityTestEnvironmentProfileAdaptor identity_test_env_profile_adaptor(
         profile_.get());
     return identity_test_env_profile_adaptor.identity_test_env()

@@ -852,8 +852,10 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
   void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
                                   std::string new_authenticator_id) override {}
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override {}
+  void FidoAuthenticatorPairingModeChanged(
+      base::StringPiece authenticator_id,
+      bool is_in_pairing_mode,
+      base::string16 display_name) override {}
   bool SupportsPIN() const override { return false; }
   void CollectPIN(
       base::Optional<int> attempts,

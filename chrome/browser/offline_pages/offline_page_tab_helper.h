@@ -211,11 +211,6 @@ class OfflinePageTabHelper
   // Service, outlives this object.
   PrefetchService* prefetch_service_ = nullptr;
 
-  // Table of OfflinePages policies.
-  // TODO(dimich): When we only have one shared version of PolicyController,
-  // replace this instance with access to a shared one.
-  ClientPolicyController policy_controller_;
-
   // TODO(crbug.com/827215): We only really want interface messages for the main
   // frame but this is not easily done with the current helper classes.
   content::WebContentsFrameBindingSet<mojom::MhtmlPageNotifier>

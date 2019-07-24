@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Shared strings -->
-  <message name="IDS_ONBOARDING_WELCOME_GET_STARTED" desc="Label for a confirmation button to finish adding a bookmark and get the user started with using the browser.">
-    Get started
-  </message>
   <message name="IDS_ONBOARDING_WELCOME_NEXT" desc="Label for a button to confirm and continue from the current onboarding step.">
     Next
   </message>
@@ -89,9 +86,6 @@
   </message>
   <message name="IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SUB_HEADER" desc="Sub-header for the page that prompts user to set Chrome as their default browser.">
     Get Google Search and Google smarts everytime you browse
-  </message>
-  <message name="IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SKIP" desc="The label for a button to skip setting Chrome as their default browser.">
-    Skip
   </message>
   <message name="IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT" desc="The label for a button to confirm setting Chrome as their default browser.">
     Set as default

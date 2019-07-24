@@ -61,4 +61,8 @@ void EnableStartupTracingIfNeeded() {
   }
 }
 
+void InitTracingPostThreadPoolStart() {
+  TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
+}
+
 }  // namespace tracing

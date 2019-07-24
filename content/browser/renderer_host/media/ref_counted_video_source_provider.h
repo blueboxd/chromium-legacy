@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 
 namespace content {
@@ -22,7 +21,6 @@ class CONTENT_EXPORT RefCountedVideoSourceProvider
  public:
   RefCountedVideoSourceProvider(
       video_capture::mojom::VideoSourceProviderPtr source_provider,
-      video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider,
       base::OnceClosure destruction_cb);
 
   base::WeakPtr<RefCountedVideoSourceProvider> GetWeakPtr();
@@ -31,7 +29,6 @@ class CONTENT_EXPORT RefCountedVideoSourceProvider
     return source_provider_;
   }
 
-  void ShutdownServiceAsap();
   void SetRetryCount(int32_t count);
   void ReleaseProviderForTesting();
 
@@ -40,7 +37,6 @@ class CONTENT_EXPORT RefCountedVideoSourceProvider
   ~RefCountedVideoSourceProvider();
 
   video_capture::mojom::VideoSourceProviderPtr source_provider_;
-  video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
   base::OnceClosure destruction_cb_;
   base::WeakPtrFactory<RefCountedVideoSourceProvider> weak_ptr_factory_{this};
 

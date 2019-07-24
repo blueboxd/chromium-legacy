@@ -699,11 +699,6 @@ base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
-    const AuthenticatorSupportedOptions& options) {
-  device_info_->options = options;
-}
-
 base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {

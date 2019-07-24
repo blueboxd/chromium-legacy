@@ -16,7 +16,7 @@
 
 class GoogleServiceAuthError;
 
-namespace identity {
+namespace signin {
 struct AccessTokenInfo;
 
 // Helper class to ease the task of obtaining an OAuth2 access token for the
@@ -100,6 +100,6 @@ class PrimaryAccountAccessTokenFetcher : public IdentityManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(PrimaryAccountAccessTokenFetcher);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_PRIMARY_ACCOUNT_ACCESS_TOKEN_FETCHER_H_

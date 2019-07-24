@@ -21,17 +21,16 @@ namespace content {
 
 namespace {
 
-// Runs |task| on the thread specified by |thread_id| if already on that thread,
-// otherwise posts a task to that thread.
-void RunOrPostTaskIfNecessary(const base::Location& from_here,
-                              BrowserThread::ID thread_id,
-                              base::OnceClosure task) {
-  if (BrowserThread::CurrentlyOn(thread_id)) {
+// If on the UI thread, just run |task|, otherwise post a task to run
+// the thread on the UI thread.
+void RunOrPostTaskIfNotOnUiThread(const base::Location& from_here,
+                                  base::OnceClosure task) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     std::move(task).Run();
     return;
   }
 
-  base::PostTaskWithTraits(from_here, {thread_id}, std::move(task));
+  base::PostTaskWithTraits(from_here, {BrowserThread::UI}, std::move(task));
 }
 
 void AddErrorMessageToConsoleOnUI(
@@ -132,8 +131,8 @@ void SignedExchangeDevToolsProxy::ReportError(
   DCHECK_CURRENTLY_ON(
       NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
   errors_.push_back(SignedExchangeError(message, std::move(error_field)));
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, BrowserThread::UI,
+  RunOrPostTaskIfNotOnUiThread(
+      FROM_HERE,
       base::BindOnce(&AddErrorMessageToConsoleOnUI, frame_tree_node_id_getter_,
                      std::move(message)));
 }
@@ -144,8 +143,8 @@ void SignedExchangeDevToolsProxy::CertificateRequestSent(
   if (!devtools_enabled_)
     return;
 
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, BrowserThread::UI,
+  RunOrPostTaskIfNotOnUiThread(
+      FROM_HERE,
       base::BindOnce(
           &CertificateRequestSentOnUI, frame_tree_node_id_getter_, request_id,
           devtools_navigation_token_ ? *devtools_navigation_token_ : request_id,
@@ -163,8 +162,8 @@ void SignedExchangeDevToolsProxy::CertificateResponseReceived(
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
   resource_response->head = head;
 
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, BrowserThread::UI,
+  RunOrPostTaskIfNotOnUiThread(
+      FROM_HERE,
       base::BindOnce(
           &CertificateResponseReceivedOnUI, frame_tree_node_id_getter_,
           request_id,
@@ -177,8 +176,8 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
     const network::URLLoaderCompletionStatus& status) {
   if (!devtools_enabled_)
     return;
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, BrowserThread::UI,
+  RunOrPostTaskIfNotOnUiThread(
+      FROM_HERE,
       base::BindOnce(&CertificateRequestCompletedOnUI,
                      frame_tree_node_id_getter_, request_id, status));
 }
@@ -199,8 +198,8 @@ void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
   resource_response->head = outer_response_;
 
-  RunOrPostTaskIfNecessary(
-      FROM_HERE, BrowserThread::UI,
+  RunOrPostTaskIfNotOnUiThread(
+      FROM_HERE,
       base::BindOnce(&OnSignedExchangeReceivedOnUI, frame_tree_node_id_getter_,
                      outer_request_url_, resource_response->DeepCopy(),
                      devtools_navigation_token_, envelope, certificate,

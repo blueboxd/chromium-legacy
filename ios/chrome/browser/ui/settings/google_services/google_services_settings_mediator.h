@@ -23,9 +23,9 @@ namespace syncer {
 class SyncService;
 }  // namespace syncer
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity
+}  // namespace signin
 
 // Mediator for the Google services settings.
 @interface GoogleServicesSettingsMediator
@@ -44,7 +44,7 @@ class IdentityManager;
 // Sync service.
 @property(nonatomic, assign) syncer::SyncService* syncService;
 // Identity manager;
-@property(nonatomic, assign) identity::IdentityManager* identityManager;
+@property(nonatomic, assign) signin::IdentityManager* identityManager;
 
 // Designated initializer. All the paramters should not be null.
 // |userPrefService|: preference service from the browser state.

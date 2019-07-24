@@ -1041,10 +1041,7 @@ inline bool LocationBarView::UpdateSendTabToSelfIcon() {
   PageActionIconView* icon =
       this->omnibox_page_action_icon_container_view()->GetPageActionIconView(
           PageActionIconType::kSendTabToSelf);
-  if (icon) {
-    return icon->Update();
-  }
-  return false;
+  return icon && icon->Update();
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {

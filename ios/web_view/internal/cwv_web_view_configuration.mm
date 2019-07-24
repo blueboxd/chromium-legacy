@@ -149,7 +149,7 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     syncer::SyncService* syncService =
         ios_web_view::WebViewProfileSyncServiceFactory::GetForBrowserState(
             self.browserState);
-    identity::IdentityManager* identityManager =
+    signin::IdentityManager* identityManager =
         ios_web_view::WebViewIdentityManagerFactory::GetForBrowserState(
             self.browserState);
     SigninErrorController* signinErrorController =

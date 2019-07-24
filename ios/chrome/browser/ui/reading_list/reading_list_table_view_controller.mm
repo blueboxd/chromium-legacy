@@ -359,13 +359,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   return [self.dataSource isItemRead:item];
 }
 
-- (void)deleteItem:(id<ReadingListListItem>)item {
-  TableViewModel* model = self.tableViewModel;
-  TableViewItem* tableViewItem = base::mac::ObjCCastStrict<TableViewItem>(item);
-  if ([model hasItem:tableViewItem])
-    [self deleteItemsAtIndexPaths:@[ [model indexPathForItem:tableViewItem] ]];
-}
-
 - (void)openItemInNewTab:(id<ReadingListListItem>)item {
   [self.delegate readingListListViewController:self
                               openItemInNewTab:item

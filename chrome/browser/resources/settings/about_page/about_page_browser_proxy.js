@@ -153,6 +153,12 @@ cr.define('settings', function() {
      */
     refreshUpdateStatus() {}
 
+    // <if expr="chromeos">
+    /** Opens the release notes app. */
+    launchReleaseNotes() {}
+    // </if>
+
+
     /** Opens the help page. */
     openHelpPage() {}
 
@@ -220,6 +226,20 @@ cr.define('settings', function() {
      */
     promoteUpdater() {}
     // </if>
+
+    // <if expr="chromeos">
+    /**
+     * Checks if the device has release notes enabled.
+     * @return {!Promise<boolean>}
+     */
+    getEnabledReleaseNotes() {}
+
+    /**
+     * Checks if the device is connected to the internet.
+     * @return {!Promise<boolean>}
+     */
+    checkInternetConnection() {}
+    // </if>
   }
 
   /**
@@ -243,6 +263,11 @@ cr.define('settings', function() {
     }
 
     // </if>
+
+    /** @override */
+    launchReleaseNotes() {
+      chrome.send('launchReleaseNotes');
+    }
 
     /** @override */
     openHelpPage() {
@@ -296,6 +321,16 @@ cr.define('settings', function() {
     /** @override */
     getHasEndOfLife() {
       return cr.sendWithPromise('getHasEndOfLife');
+    }
+
+    /** @override */
+    getEnabledReleaseNotes() {
+      return cr.sendWithPromise('getEnabledReleaseNotes');
+    }
+
+    /** @override */
+    checkInternetConnection() {
+      return cr.sendWithPromise('checkInternetConnection');
     }
 
     /** @override */

@@ -6,7 +6,7 @@
 [RuntimeEnabled=ElementTiming]
 interface PerformanceElementTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp renderTime;
-    readonly attribute DOMHighResTimeStamp responseEnd;
+    readonly attribute DOMHighResTimeStamp loadTime;
     readonly attribute DOMRectReadOnly intersectionRect;
     readonly attribute DOMString identifier;
     readonly attribute unsigned long naturalWidth;

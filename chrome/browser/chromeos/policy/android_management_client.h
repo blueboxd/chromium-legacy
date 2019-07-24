@@ -20,11 +20,11 @@ namespace enterprise_management {
 class DeviceManagementResponse;
 }
 
-namespace identity {
+namespace signin {
 class AccessTokenFetcher;
 class IdentityManager;
 struct AccessTokenInfo;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -53,7 +53,7 @@ class AndroidManagementClient {
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& account_id,
-      identity::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager);
   ~AndroidManagementClient();
 
   // Starts sending of check Android management request to DM server, issues
@@ -67,7 +67,7 @@ class AndroidManagementClient {
 
  private:
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   // Requests an access token.
   void RequestAccessToken();
@@ -90,8 +90,8 @@ class AndroidManagementClient {
   // The account ID that will be used for the access token fetch.
   const std::string account_id_;
 
-  identity::IdentityManager* identity_manager_;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  signin::IdentityManager* identity_manager_;
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
 
   StatusCallback callback_;
 

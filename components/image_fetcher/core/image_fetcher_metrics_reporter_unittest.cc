@@ -17,18 +17,17 @@ const char kUmaClientName[] = "foo";
 const char kUmaClientNameOther[] = "bar";
 
 const char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
-const char kCacheLoadHistogramName[] =
-    "CachedImageFetcher.ImageLoadFromCacheTime";
+const char kCacheLoadHistogramName[] = "ImageFetcher.ImageLoadFromCacheTime";
 const char kCacheLoadHistogramNameJava[] =
-    "CachedImageFetcher.ImageLoadFromCacheTimeJava";
+    "ImageFetcher.ImageLoadFromCacheTimeJava";
 constexpr char kTotalFetchFromNativeHistogramNameJava[] =
-    "CachedImageFetcher.ImageLoadFromNativeTimeJava";
+    "ImageFetcher.ImageLoadFromNativeTimeJava";
 const char kNetworkLoadHistogramName[] =
-    "CachedImageFetcher.ImageLoadFromNetworkTime";
+    "ImageFetcher.ImageLoadFromNetworkTime";
 const char kNetworkLoadAfterCacheHitHistogram[] =
-    "CachedImageFetcher.ImageLoadFromNetworkAfterCacheHit";
+    "ImageFetcher.ImageLoadFromNetworkAfterCacheHit";
 const char kTimeSinceLastCacheLRUEviction[] =
-    "CachedImageFetcher.TimeSinceLastCacheLRUEviction";
+    "ImageFetcher.TimeSinceLastCacheLRUEviction";
 
 }  // namespace
 

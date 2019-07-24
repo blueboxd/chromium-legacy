@@ -54,14 +54,6 @@ content::RenderFrameHost* FindFrameMaybeUnsafe(
                    handle->GetFrameTreeNodeId());
 }
 
-void RecordSingleFeatureUsage(content::RenderFrameHost* rfh,
-                              blink::mojom::WebFeature web_feature) {
-  page_load_metrics::mojom::PageLoadFeatures page_load_features(
-      {web_feature}, {} /* css_properties */, {} /* animated_css_properties */);
-  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      rfh, page_load_features);
-}
-
 using ResourceMimeType = AdsPageLoadMetricsObserver::ResourceMimeType;
 
 }  // namespace
@@ -517,13 +509,6 @@ void AdsPageLoadMetricsObserver::ProcessResourceForFrame(
       resource, process_id, GetDelegate()->GetResourceTracker());
   if (unaccounted_ad_bytes)
     ancestor_data->AdjustAdBytes(unaccounted_ad_bytes, mime_type);
-
-  if (ancestor_data->size_intervention_status() ==
-      FrameData::FrameSizeInterventionStatus::kTriggered) {
-    RecordSingleFeatureUsage(
-        GetDelegate()->GetWebContents()->GetMainFrame(),
-        blink::mojom::WebFeature::kAdFrameSizeIntervention);
-  }
 }
 
 void AdsPageLoadMetricsObserver::RecordAdFrameUkm(ukm::SourceId source_id) {
@@ -805,16 +790,6 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
                   UMA_HISTOGRAM_COUNTS_10000, visibility,
                   std::min(ad_frame_data.frame_size().width(),
                            ad_frame_data.frame_size().height()));
-    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.SizeIntervention",
-                  UMA_HISTOGRAM_ENUMERATION, visibility,
-                  ad_frame_data.size_intervention_status());
-
-    if (ad_frame_data.size_intervention_status() ==
-        FrameData::FrameSizeInterventionStatus::kTriggered) {
-      ADS_HISTOGRAM(
-          "FrameCounts.AdFrames.PerFrame.SizeIntervention.MediaStatus",
-          UMA_HISTOGRAM_ENUMERATION, visibility, ad_frame_data.media_status());
-    }
 
     ADS_HISTOGRAM("Bytes.AdFrames.PerFrame.Total", PAGE_BYTES_HISTOGRAM,
                   visibility, ad_frame_data.bytes());

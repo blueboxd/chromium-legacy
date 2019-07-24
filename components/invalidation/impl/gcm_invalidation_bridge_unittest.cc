@@ -99,7 +99,7 @@ class GCMInvalidationBridgeTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<ProfileIdentityProvider> identity_provider_;
 

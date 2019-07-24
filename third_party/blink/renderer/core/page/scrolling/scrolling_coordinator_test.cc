@@ -127,13 +127,8 @@ class ScrollingCoordinatorTest : public testing::Test,
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
-
-  WebLayerTreeView* GetWebLayerTreeView() const {
-    return GetWebView()->LayerTreeView();
-  }
-
-  WebWidgetClient* GetWidgetClient() const {
-    return GetWebView()->WidgetClient();
+  frame_test_helpers::TestWebWidgetClient* GetWidgetClient() const {
+    return helper_.GetWebWidgetClient();
   }
 
   void LoadAhem() { helper_.LoadAhem(); }
@@ -572,7 +567,7 @@ TEST_P(ScrollingCoordinatorTest, scrollEventHandler) {
   NavigateTo(base_url_ + "scroll-event-handler.html");
   ForceFullCompositingUpdate();
 
-  ASSERT_TRUE(GetWebLayerTreeView()->HaveScrollEventHandlers());
+  ASSERT_TRUE(GetWidgetClient()->HaveScrollEventHandlers());
 }
 
 TEST_P(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown) {

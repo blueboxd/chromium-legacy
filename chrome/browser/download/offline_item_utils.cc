@@ -41,8 +41,18 @@ const char kDownloadNamespacePrefix[] = "LEGACY_DOWNLOAD";
 // The remaining time for a download item if it cannot be calculated.
 constexpr int64_t kUnknownRemainingTime = -1;
 
+base::Optional<OfflineItemFilter> FilterForSpecialMimeTypes(
+    const std::string& mime_type) {
+  if (base::EqualsCaseInsensitiveASCII(mime_type, "application/ogg"))
+    return OfflineItemFilter::FILTER_AUDIO;
+
+  return base::nullopt;
+}
+
 OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
-  OfflineItemFilter filter = OfflineItemFilter::FILTER_OTHER;
+  auto filter = FilterForSpecialMimeTypes(mime_type);
+  if (filter.has_value())
+    return filter.value();
 
   if (base::StartsWith(mime_type, "audio/", base::CompareCase::SENSITIVE)) {
     filter = OfflineItemFilter::FILTER_AUDIO;
@@ -59,7 +69,7 @@ OfflineItemFilter MimeTypeToOfflineItemFilter(const std::string& mime_type) {
     filter = OfflineItemFilter::FILTER_OTHER;
   }
 
-  return filter;
+  return filter.value();
 }
 
 bool IsInterruptedDownloadAutoResumable(download::DownloadItem* item) {

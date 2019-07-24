@@ -1293,6 +1293,7 @@ if (closure_compile) {
     testonly = true
     data_deps = [
       "chrome/browser/resources:closure_compile",
+      "components/sync/driver/resources:closure_compile",
       "components/ukm/debug:closure_compile",
       "content/browser/resources:closure_compile",
       "mojo/public/tools/bindings/generators/js_templates/lite/test:closure_compile",

@@ -125,11 +125,23 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 }
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
+    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   if (!IsWebAuthnUIEnabled())
     return false;
   if (!weak_dialog_model_)
     return false;
+
+  DCHECK(authenticator || reason == InterestingFailureReason::kTimeout);
+
+#if defined(OS_WIN)
+  if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
+    // Do not display a Chrome error dialog if the user cancels out of the
+    // Windows UI. No other errors are reachable.
+    DCHECK(reason == InterestingFailureReason::kUserConsentDenied);
+    return false;
+  }
+#endif  // defined(OS_WIN)
 
   switch (reason) {
     case InterestingFailureReason::kTimeout:
@@ -230,7 +242,6 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     std::move(callback).Run(true);
     return;
   }
-
 #endif  // defined(OS_WIN)
 
   weak_dialog_model_->RequestAttestationPermission(std::move(callback));
@@ -422,12 +433,13 @@ void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorIdChanged(
 
 void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorPairingModeChanged(
     base::StringPiece authenticator_id,
-    bool is_in_pairing_mode) {
+    bool is_in_pairing_mode,
+    base::string16 display_name) {
   if (!weak_dialog_model_)
     return;
 
   weak_dialog_model_->UpdateAuthenticatorReferencePairingMode(
-      authenticator_id, is_in_pairing_mode);
+      authenticator_id, is_in_pairing_mode, display_name);
 }
 
 void ChromeAuthenticatorRequestDelegate::BluetoothAdapterPowerChanged(

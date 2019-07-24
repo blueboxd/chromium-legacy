@@ -39,7 +39,7 @@ const int kMinUpdateIntervalSeconds = 5;
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
     : profile_(profile) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   identity_manager->AddObserver(this);
 
@@ -61,7 +61,7 @@ GAIAInfoUpdateService::~GAIAInfoUpdateService() {
 
 void GAIAInfoUpdateService::Update() {
   // The user must be logged in.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (!identity_manager->HasPrimaryAccount())
     return;
@@ -88,7 +88,7 @@ int GAIAInfoUpdateService::GetDesiredImageSideLength() const {
   return 256;
 }
 
-identity::IdentityManager* GAIAInfoUpdateService::GetIdentityManager() {
+signin::IdentityManager* GAIAInfoUpdateService::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(profile_);
 }
 
@@ -185,7 +185,7 @@ void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
 void GAIAInfoUpdateService::Shutdown() {
   timer_.Stop();
   profile_image_downloader_.reset();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   identity_manager->RemoveObserver(this);
 

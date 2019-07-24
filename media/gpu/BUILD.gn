@@ -584,6 +584,7 @@ source_set("unit_tests") {
       "windows/d3d11_texture_selector_unittest.cc",
       "windows/d3d11_video_decoder_unittest.cc",
       "windows/d3d11_video_processor_proxy_unittest.cc",
+      "windows/supported_profile_helpers_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]
   }

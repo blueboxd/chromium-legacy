@@ -33,6 +33,9 @@ class DOMWindowLaunchParams final
   // IDL Interface.
   static Member<LaunchParams> launchParams(LocalDOMWindow&);
 
+  static void UpdateLaunchFiles(LocalDOMWindow*,
+                                HeapVector<Member<NativeFileSystemHandle>>);
+
   void Trace(blink::Visitor*) override;
 
  private:

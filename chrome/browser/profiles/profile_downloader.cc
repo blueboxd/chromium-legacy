@@ -141,7 +141,7 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
           account_id_, "profile_downloader", scopes,
           base::BindOnce(&ProfileDownloader::OnAccessTokenFetchComplete,
                          base::Unretained(this)),
-          identity::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
+          signin::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
 }
 
 ProfileDownloader::~ProfileDownloader() {
@@ -282,7 +282,7 @@ void ProfileDownloader::OnDecodeImageFailed() {
 
 void ProfileDownloader::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   oauth2_access_token_fetcher_.reset();
   if (error.state() != GoogleServiceAuthError::NONE) {
     LOG(WARNING)

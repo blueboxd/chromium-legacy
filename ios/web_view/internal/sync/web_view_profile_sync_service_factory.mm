@@ -80,7 +80,7 @@ WebViewProfileSyncServiceFactory::BuildServiceInstanceFor(
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state);
   WebViewGCMProfileServiceFactory::GetForBrowserState(browser_state);
 

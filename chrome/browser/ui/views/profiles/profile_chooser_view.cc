@@ -182,7 +182,7 @@ void ProfileChooserView::Init() {
   avatar_menu_->RebuildMenu();
 
   Profile* profile = browser()->profile();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
   if (identity_manager)
@@ -266,7 +266,7 @@ void ProfileChooserView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
   avatar_menu_.reset();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
   if (identity_manager)
     identity_manager->RemoveObserver(this);
@@ -343,7 +343,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
                 IdentityManagerFactory::GetForProfile(browser()->profile())
                     ->GetPrimaryAccountMutator()) {
           account_mutator->ClearPrimaryAccount(
-              identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+              signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
               signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
               signin_metrics::SignoutDelete::IGNORE_METRIC);
           ShowViewOrOpenTab(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);

@@ -30,7 +30,6 @@
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/shape_detection/public/cpp/manifest.h"
 #include "services/tracing/manifest.h"
-#include "services/video_capture/public/cpp/manifest.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/cpp/manifest.h"  // nogncheck
@@ -91,12 +90,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           resource_coordinator::GetManifest(),
           shape_detection::GetManifest(),
           tracing::GetManifest(),
-          video_capture::GetManifest(
-              features::IsVideoCaptureServiceEnabledForOutOfProcess()
-                  ? service_manager::Manifest::ExecutionMode::
-                        kOutOfProcessBuiltin
-                  : service_manager::Manifest::ExecutionMode::
-                        kInProcessBuiltin),
 #if defined(OS_LINUX)
           font_service::GetManifest(),
 #endif

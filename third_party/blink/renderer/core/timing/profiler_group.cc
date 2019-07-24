@@ -46,6 +46,10 @@ ProfilerGroup* ProfilerGroup::From(v8::Isolate* isolate) {
   return profiler_group;
 }
 
+base::TimeDelta ProfilerGroup::GetBaseSampleInterval() {
+  return base::TimeDelta::FromMilliseconds(kBaseSampleIntervalMs);
+}
+
 ProfilerGroup::ProfilerGroup(v8::Isolate* isolate)
     : isolate_(isolate),
       cpu_profiler_(nullptr),
@@ -61,8 +65,13 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
   DCHECK_EQ(script_state->GetIsolate(), isolate_);
   DCHECK(init_options.hasSampleInterval());
 
-  if (init_options.sampleInterval() < 0) {
-    exception_state.ThrowRangeError("Expected non-negative sample interval");
+  const base::TimeDelta sample_interval =
+      base::TimeDelta::FromMillisecondsD(init_options.sampleInterval());
+  const int64_t sample_interval_us = sample_interval.InMicroseconds();
+
+  if (sample_interval_us < 0 ||
+      sample_interval_us > std::numeric_limits<int>::max()) {
+    exception_state.ThrowRangeError("Invalid sample interval");
     return nullptr;
   }
 
@@ -70,14 +79,12 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
     InitV8Profiler();
   DCHECK(cpu_profiler_);
 
-  // TODO(acomminos): Requires support in V8 for subsampling intervals
-  int sample_interval_ms = kBaseSampleIntervalMs;
-
   String profiler_id = NextProfilerId();
-  v8::CpuProfilingOptions options(
-      v8::kLeafNodeLineNumbers, init_options.hasMaxBufferSize()
-                                    ? init_options.maxBufferSize()
-                                    : v8::CpuProfilingOptions::kNoSampleLimit);
+  v8::CpuProfilingOptions options(v8::kLeafNodeLineNumbers,
+                                  init_options.hasMaxBufferSize()
+                                      ? init_options.maxBufferSize()
+                                      : v8::CpuProfilingOptions::kNoSampleLimit,
+                                  static_cast<int>(sample_interval_us));
 
   cpu_profiler_->StartProfiling(V8String(isolate_, profiler_id), options);
 
@@ -87,8 +94,21 @@ Profiler* ProfilerGroup::CreateProfiler(ScriptState* script_state,
   scoped_refptr<const SecurityOrigin> source_origin(
       execution_context->GetSecurityOrigin());
 
-  auto* profiler = MakeGarbageCollected<Profiler>(
-      this, profiler_id, sample_interval_ms, source_origin, time_origin);
+  // The V8 CPU profiler ticks in multiples of the base sampling interval. This
+  // effectively means that we gather samples at the multiple of the base
+  // sampling interval that's greater than or equal to the requested interval.
+  int effective_sample_interval_ms =
+      static_cast<int>(sample_interval.InMilliseconds());
+  if (effective_sample_interval_ms % kBaseSampleIntervalMs != 0 ||
+      effective_sample_interval_ms == 0) {
+    effective_sample_interval_ms +=
+        (kBaseSampleIntervalMs -
+         effective_sample_interval_ms % kBaseSampleIntervalMs);
+  }
+
+  auto* profiler = MakeGarbageCollected<Profiler>(this, profiler_id,
+                                                  effective_sample_interval_ms,
+                                                  source_origin, time_origin);
   profilers_.insert(profiler);
 
   num_active_profilers_++;

@@ -36,8 +36,10 @@ std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtap(
   if (!device_info) {
     device_info = DefaultAuthenticatorInfo();
   }
-  return std::make_unique<MockFidoDevice>(ProtocolVersion::kCtap2,
-                                          std::move(*device_info));
+  auto device = std::make_unique<MockFidoDevice>(ProtocolVersion::kCtap2,
+                                                 std::move(*device_info));
+  device->StubGetDisplayName();
+  return device;
 }
 
 // static
@@ -45,6 +47,7 @@ std::unique_ptr<MockFidoDevice>
 MockFidoDevice::MakeU2fWithGetInfoExpectation() {
   auto device = std::make_unique<MockFidoDevice>();
   device->StubGetId();
+  device->StubGetDisplayName();
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
   return device;
@@ -61,6 +64,7 @@ std::unique_ptr<MockFidoDevice> MockFidoDevice::MakeCtapWithGetInfoExpectation(
   CHECK(get_info);
   auto device = MockFidoDevice::MakeCtap(std::move(*get_info));
   device->StubGetId();
+  device->StubGetDisplayName();
   device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetInfo, std::move(get_info_response));
   return device;
@@ -179,6 +183,11 @@ void MockFidoDevice::ExpectRequestAndDoNotRespond(
 void MockFidoDevice::SetDeviceTransport(
     FidoTransportProtocol transport_protocol) {
   transport_protocol_ = transport_protocol;
+}
+
+void MockFidoDevice::StubGetDisplayName() {
+  EXPECT_CALL(*this, GetDisplayName())
+      .WillRepeatedly(testing::Return(base::string16()));
 }
 
 }  // namespace device

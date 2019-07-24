@@ -141,7 +141,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
   }
 
   // Returns the identity manager.
-  identity::IdentityManager* GetIdentityManager() {
+  signin::IdentityManager* GetIdentityManager() {
     return IdentityManagerFactory::GetForProfile(profile());
   }
 
@@ -323,7 +323,7 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithAccountThatNeedsReauth) {
 
   // Add an account and then put its refresh token into an error state to
   // require a reauth before enabling sync.
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       GetIdentityManager(), account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 

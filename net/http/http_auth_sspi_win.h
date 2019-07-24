@@ -116,7 +116,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
   ~HttpAuthSSPI() override;
 
   // HttpNegotiateAuthSystem implementation:
-  bool Init() override;
+  bool Init(const NetLogWithSource& net_log) override;
   bool NeedsIdentity() const override;
   bool AllowsExplicitCredentials() const override;
   HttpAuth::AuthorizationResult ParseChallenge(
@@ -125,6 +125,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
                         const std::string& spn,
                         const std::string& channel_bindings,
                         std::string* auth_token,
+                        const NetLogWithSource& net_log,
                         CompletionOnceCallback callback) override;
   void SetDelegation(HttpAuth::DelegationType delegation_type) override;
 

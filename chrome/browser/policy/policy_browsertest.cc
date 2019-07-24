@@ -763,6 +763,8 @@ class MockPasswordProtectionService
                      safe_browsing::LoginReputationClientRequest::
                          PasswordReuseEvent::SyncAccountType());
 
+  MOCK_CONST_METHOD0(IsPrimaryAccountGmail, bool());
+
   AccountInfo GetAccountInfo() const override {
     AccountInfo info;
     info.email = "user@mycompany.com";
@@ -5109,9 +5111,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionWarningTriggerGmail) {
 
   // If user is a Gmail user, |GetPasswordProtectionWarningTriggerPref(...)|
   // should return |PHISHING_REUSE| unless specified by policy.
-  EXPECT_CALL(mock_service, GetSyncAccountType())
-      .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
-                                 PasswordReuseEvent::GMAIL));
+  EXPECT_CALL(mock_service, IsPrimaryAccountGmail())
+      .WillRepeatedly(Return(true));
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   EXPECT_FALSE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                    ->IsManaged());

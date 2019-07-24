@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "url/gurl.h"
@@ -140,6 +141,7 @@ class PreviewsProber
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const size_t max_cache_entries,
       base::TimeDelta revalidate_cache_after);
   ~PreviewsProber() override;
@@ -180,6 +182,7 @@ class PreviewsProber
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const size_t max_cache_entries,
       base::TimeDelta revalidate_cache_after,
       const base::TickClock* tick_clock,
@@ -233,6 +236,9 @@ class PreviewsProber
   // How long to allow a cached entry to be valid until it is revalidated in the
   // background.
   const base::TimeDelta revalidate_cache_after_;
+
+  // The traffic annotation to use for creating |url_loader_|.
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   // The number of retries that have been attempted. This count does not include
   // the original probe.

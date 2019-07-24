@@ -348,4 +348,70 @@ TEST_F(PointerEventManagerTest, PointerEventSmallFractionMovements) {
   ASSERT_FLOAT_EQ(callback->last_movement_y_, 0);
 }
 
+TEST_F(PointerEventManagerTest, PointerRawUpdateMovements) {
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<body style='padding: 0px; width: 400px; height: 400px;'>"
+      "</body>");
+  PointerEventCoordinateListenerCallback* callback =
+      PointerEventCoordinateListenerCallback::Create();
+  GetDocument().body()->addEventListener(event_type_names::kPointermove,
+                                         callback);
+  GetDocument().body()->addEventListener(event_type_names::kPointerrawupdate,
+                                         callback);
+
+  // Turn on the flag for test.
+  ScopedConsolidatedMovementXYForTest scoped_feature(true);
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerRawUpdate,
+                             WebPointerProperties::PointerType::kMouse,
+                             WebFloatPoint(150, 210), WebFloatPoint(100, 50),
+                             10, 10),
+      {}, {}));
+  // The first pointerrawupdate event has movement_x/y 0.
+  ASSERT_EQ(callback->last_screen_x_, 100);
+  ASSERT_EQ(callback->last_screen_y_, 50);
+  ASSERT_EQ(callback->last_movement_x_, 0);
+  ASSERT_EQ(callback->last_movement_y_, 0);
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerRawUpdate,
+                             WebPointerProperties::PointerType::kMouse,
+                             WebFloatPoint(150, 200), WebFloatPoint(132, 29),
+                             10, 10),
+      {}, {}));
+  // pointerrawupdate event movement = event.screenX/Y - last_event.screenX/Y.
+  ASSERT_EQ(callback->last_screen_x_, 132);
+  ASSERT_EQ(callback->last_screen_y_, 29);
+  ASSERT_EQ(callback->last_movement_x_, 32);
+  ASSERT_EQ(callback->last_movement_y_, -21);
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerMove,
+                             WebPointerProperties::PointerType::kMouse,
+                             WebFloatPoint(150, 200), WebFloatPoint(144, 30),
+                             10, 10),
+      {}, {}));
+  // First pointermove, have 0 movements.
+  ASSERT_EQ(callback->last_screen_x_, 144);
+  ASSERT_EQ(callback->last_screen_y_, 30);
+  ASSERT_EQ(callback->last_movement_x_, 0);
+  ASSERT_EQ(callback->last_movement_y_, 0);
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+      CreateTestPointerEvent(WebInputEvent::kPointerRawUpdate,
+                             WebPointerProperties::PointerType::kMouse,
+                             WebFloatPoint(150, 200), WebFloatPoint(142, 32),
+                             10, 10),
+      {}, {}));
+  // pointerrawupdate event's movement is independent from pointermoves.
+  ASSERT_EQ(callback->last_screen_x_, 142);
+  ASSERT_EQ(callback->last_screen_y_, 32);
+  ASSERT_EQ(callback->last_movement_x_, 10);
+  ASSERT_EQ(callback->last_movement_y_, 3);
+}
+
 }  // namespace blink

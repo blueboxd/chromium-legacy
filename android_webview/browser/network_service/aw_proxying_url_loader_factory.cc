@@ -711,13 +711,10 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     int process_id,
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    std::unique_ptr<AwInterceptedRequestHandler> request_handler,
     bool intercept_only)
     : process_id_(process_id),
-      request_handler_(std::move(request_handler)),
       intercept_only_(intercept_only),
       weak_factory_(this) {
-  // actual creation of the factory
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!(intercept_only_ && target_factory_info));
   if (target_factory_info) {
@@ -738,14 +735,12 @@ AwProxyingURLLoaderFactory::~AwProxyingURLLoaderFactory() {}
 void AwProxyingURLLoaderFactory::CreateProxy(
     int process_id,
     network::mojom::URLLoaderFactoryRequest loader_request,
-    network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
-    std::unique_ptr<AwInterceptedRequestHandler> request_handler) {
+    network::mojom::URLLoaderFactoryPtrInfo target_factory_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // will manage its own lifetime
   new AwProxyingURLLoaderFactory(process_id, std::move(loader_request),
-                                 std::move(target_factory_info),
-                                 std::move(request_handler), false);
+                                 std::move(target_factory_info), false);
 }
 
 void AwProxyingURLLoaderFactory::CreateLoaderAndStart(

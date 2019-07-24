@@ -14,7 +14,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_clock.h"
@@ -100,7 +99,6 @@ DeletePageTaskResult DeletePagesSync(
 }
 
 DeletePageTaskResult DeletePagesWithCriteria(
-    const ClientPolicyController* policy_controller,
     const PageCriteria& criteria,
     sql::Database* db) {
   // If you create a transaction but dont Commit() it is automatically
@@ -110,7 +108,7 @@ DeletePageTaskResult DeletePagesWithCriteria(
     return {DeletePageResult::STORE_FAILURE, {}};
 
   GetPagesTask::ReadResult read_result =
-      GetPagesTask::ReadPagesWithCriteriaSync(policy_controller, criteria, db);
+      GetPagesTask::ReadPagesWithCriteriaSync(criteria, db);
   if (!read_result.success)
     return {DeletePageResult::STORE_FAILURE, {}};
 
@@ -125,7 +123,6 @@ DeletePageTaskResult DeletePagesWithCriteria(
 // Deletes all but |limit| pages that match |criteria|, in the order specified
 // by |criteria|.
 DeletePageTaskResult DeletePagesForPageLimit(
-    const ClientPolicyController* policy_controller,
     const PageCriteria& criteria,
     size_t limit,
     sql::Database* db) {
@@ -143,7 +140,7 @@ DeletePageTaskResult DeletePagesForPageLimit(
     return {DeletePageResult::STORE_FAILURE, {}};
 
   GetPagesTask::ReadResult read_result =
-      GetPagesTask::ReadPagesWithCriteriaSync(policy_controller, criteria, db);
+      GetPagesTask::ReadPagesWithCriteriaSync(criteria, db);
   if (!read_result.success)
     return {DeletePageResult::STORE_FAILURE, {}};
 
@@ -165,12 +162,10 @@ DeletePageTaskResult DeletePagesForPageLimit(
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskWithCriteria(
     OfflinePageMetadataStore* store,
-    const ClientPolicyController& policy_controller,
     const PageCriteria& criteria,
     DeletePageTask::DeletePageTaskCallback callback) {
   return std::unique_ptr<DeletePageTask>(new DeletePageTask(
-      store,
-      base::BindOnce(&DeletePagesWithCriteria, &policy_controller, criteria),
+      store, base::BindOnce(&DeletePagesWithCriteria, criteria),
       std::move(callback)));
 }
 
@@ -178,7 +173,6 @@ std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskWithCriteria(
 std::unique_ptr<DeletePageTask>
 DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
     OfflinePageMetadataStore* store,
-    const ClientPolicyController& policy_controller,
     DeletePageTask::DeletePageTaskCallback callback,
     const UrlPredicate& predicate) {
   PageCriteria criteria;
@@ -188,29 +182,25 @@ DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
         return predicate.Run(item.url);
       },
       predicate);
-  return CreateTaskWithCriteria(store, policy_controller, criteria,
-                                std::move(callback));
+  return CreateTaskWithCriteria(store, criteria, std::move(callback));
 }
 
 // static
 std::unique_ptr<DeletePageTask> DeletePageTask::CreateTaskDeletingForPageLimit(
     OfflinePageMetadataStore* store,
-    const ClientPolicyController& policy_controller,
     DeletePageTask::DeletePageTaskCallback callback,
     const OfflinePageItem& page) {
   std::string name_space = page.client_id.name_space;
-  size_t limit = policy_controller.GetPolicy(name_space).pages_allowed_per_url;
+  size_t limit = GetPolicy(name_space).pages_allowed_per_url;
   PageCriteria criteria;
   criteria.url = page.url;
   criteria.client_namespaces = std::vector<std::string>{name_space};
   // Sorting is important here. DeletePagesForPageLimit will delete the results
   // in order, leaving only the last |limit| pages.
   criteria.result_order = PageCriteria::kAscendingAccessTime;
-  return base::WrapUnique(
-      new DeletePageTask(store,
-                         base::BindOnce(&DeletePagesForPageLimit,
-                                        &policy_controller, criteria, limit),
-                         std::move(callback)));
+  return base::WrapUnique(new DeletePageTask(
+      store, base::BindOnce(&DeletePagesForPageLimit, criteria, limit),
+      std::move(callback)));
 }
 
 DeletePageTask::DeletePageTask(OfflinePageMetadataStore* store,

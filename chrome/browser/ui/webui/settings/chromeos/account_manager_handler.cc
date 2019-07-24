@@ -97,7 +97,7 @@ void ShowToast(const std::string& id, const base::string16& message) {
 
 AccountManagerUIHandler::AccountManagerUIHandler(
     AccountManager* account_manager,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : account_manager_(account_manager),
       identity_manager_(identity_manager),
       account_manager_observer_(this),
@@ -322,11 +322,11 @@ void AccountManagerUIHandler::OnAccountRemoved(
   RefreshUI();
 }
 
-// |identity::IdentityManager::Observer| overrides. For newly added accounts,
-// |identity::IdentityManager| may take some time to fetch user's full name and
+// |signin::IdentityManager::Observer| overrides. For newly added accounts,
+// |signin::IdentityManager| may take some time to fetch user's full name and
 // account image. Whenever that is completed, we may need to update the UI with
 // this new set of information. Note that we may be listening to
-// |identity::IdentityManager| but we still consider |AccountManager| to be the
+// |signin::IdentityManager| but we still consider |AccountManager| to be the
 // source of truth for account list.
 void AccountManagerUIHandler::OnExtendedAccountInfoUpdated(
     const AccountInfo& info) {

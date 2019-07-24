@@ -12,7 +12,7 @@
 std::unique_ptr<service_manager::Service> CreateIdentityService(
     ios::ChromeBrowserState* browser_state,
     service_manager::mojom::ServiceRequest request) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browser_state);
   return std::make_unique<identity::IdentityService>(identity_manager,
                                                      std::move(request));

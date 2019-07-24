@@ -89,17 +89,17 @@ BlinkNotificationServiceImpl::BlinkNotificationServiceImpl(
     BrowserContext* browser_context,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const url::Origin& origin,
-    mojo::InterfaceRequest<blink::mojom::NotificationService> request)
+    mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
     : notification_context_(notification_context),
       browser_context_(browser_context),
       service_worker_context_(std::move(service_worker_context)),
       origin_(origin),
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(notification_context_);
   DCHECK(browser_context_);
 
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &BlinkNotificationServiceImpl::OnConnectionError,
       base::Unretained(this) /* the channel is owned by |this| */));
 }
@@ -129,7 +129,8 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
     const std::string& token,
     const blink::PlatformNotificationData& platform_notification_data,
     const blink::NotificationResources& notification_resources,
-    blink::mojom::NonPersistentNotificationListenerPtr event_listener_ptr) {
+    mojo::PendingRemote<blink::mojom::NonPersistentNotificationListener>
+        event_listener_remote) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!ValidateNotificationResources(notification_resources))
     return;
@@ -147,7 +148,7 @@ void BlinkNotificationServiceImpl::DisplayNonPersistentNotification(
   NotificationEventDispatcherImpl* event_dispatcher =
       NotificationEventDispatcherImpl::GetInstance();
   event_dispatcher->RegisterNonPersistentNotificationListener(
-      notification_id, std::move(event_listener_ptr));
+      notification_id, std::move(event_listener_remote));
 
   GetNotificationService(browser_context_)
       ->DisplayNotification(notification_id, origin_.GetURL(),
@@ -188,7 +189,7 @@ bool BlinkNotificationServiceImpl::ValidateNotificationResources(
   if (notification_resources.image.drawsNothing() ||
       base::FeatureList::IsEnabled(features::kNotificationContentImage))
     return true;
-  binding_.ReportBadMessage(kBadMessageImproperNotificationImage);
+  receiver_.ReportBadMessage(kBadMessageImproperNotificationImage);
   // The above ReportBadMessage() closes |binding_| but does not trigger its
   // connection error handler, so we need to call the error handler explicitly
   // here to do some necessary work.
@@ -200,7 +201,7 @@ bool BlinkNotificationServiceImpl::ValidateNotificationResources(
 bool BlinkNotificationServiceImpl::ValidateNotificationData(
     const blink::PlatformNotificationData& notification_data) {
   if (!CheckNotificationTriggerRange(notification_data)) {
-    binding_.ReportBadMessage(kBadMessageInvalidNotificationTriggerTimestamp);
+    receiver_.ReportBadMessage(kBadMessageInvalidNotificationTriggerTimestamp);
     OnConnectionError();
     return false;
   }

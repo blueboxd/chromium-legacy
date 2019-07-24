@@ -298,6 +298,11 @@ void UtilityProcessHost::SetServiceIdentity(
   service_identity_ = identity;
 }
 
+void UtilityProcessHost::SetExtraCommandLineSwitches(
+    std::vector<std::string> switches) {
+  extra_switches_ = std::move(switches);
+}
+
 mojom::ChildProcess* UtilityProcessHost::GetChildProcess() {
   return static_cast<ChildProcessHostImpl*>(process_->GetHost())
       ->child_process();
@@ -449,6 +454,9 @@ bool UtilityProcessHost::StartProcess() {
       GetContentClient()->browser()->AdjustUtilityServiceProcessCommandLine(
           *service_identity_, cmd_line.get());
     }
+
+    for (const auto& extra_switch : extra_switches_)
+      cmd_line->AppendSwitch(extra_switch);
 
     std::unique_ptr<UtilitySandboxedProcessLauncherDelegate> delegate =
         std::make_unique<UtilitySandboxedProcessLauncherDelegate>(

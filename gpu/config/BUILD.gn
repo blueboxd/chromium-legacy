@@ -173,6 +173,7 @@ jumbo_source_set("config_sources") {
 
   if (is_win) {
     libs = [
+      "cfgmgr32.lib",
       "dxguid.lib",
       "setupapi.lib",
     ]

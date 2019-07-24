@@ -27,7 +27,7 @@ base::TimeDelta SubtractInactiveTime(base::TimeDelta total_length,
 
 SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
     SyncService* sync_service,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : sync_service_(sync_service),
       identity_manager_(identity_manager),
       sync_observer_(this),
@@ -44,7 +44,7 @@ SyncSessionDurationsMetricsRecorder::SyncSessionDurationsMetricsRecorder(
 
   // Check if we already know the signed in cookies. This will trigger a fetch
   // if we don't have them yet.
-  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+  signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
       identity_manager_->GetAccountsInCookieJar();
   if (accounts_in_cookie_jar_info.accounts_are_fresh) {
     OnAccountsInCookieUpdated(accounts_in_cookie_jar_info,
@@ -93,7 +93,7 @@ void SyncSessionDurationsMetricsRecorder::OnSessionEnded(
 }
 
 void SyncSessionDurationsMetricsRecorder::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   DVLOG(1) << "Cookie state change. accounts: "
            << accounts_in_cookie_jar_info.signed_in_accounts.size()

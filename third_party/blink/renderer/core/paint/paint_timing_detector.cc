@@ -118,6 +118,13 @@ void PaintTimingDetector::NotifyImagePaint(
       object, intrinsic_size, *cached_image, current_paint_chunk_properties);
 }
 
+void PaintTimingDetector::NotifyImageFinished(
+    const LayoutObject& object,
+    const ImageResourceContent* cached_image) {
+  if (image_paint_timing_detector_)
+    image_paint_timing_detector_->NotifyImageFinished(object, cached_image);
+}
+
 void PaintTimingDetector::LayoutObjectWillBeDestroyed(
     const LayoutObject& object) {
   if (text_paint_timing_detector_)

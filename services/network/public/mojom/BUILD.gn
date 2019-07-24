@@ -85,6 +85,7 @@ mojom("mojom") {
     "digitally_signed.mojom",
     "fetch_api.mojom",
     "host_resolver.mojom",
+    "http_raw_headers.mojom",
     "http_request_headers.mojom",
     "mdns_responder.mojom",
     "net_log.mojom",

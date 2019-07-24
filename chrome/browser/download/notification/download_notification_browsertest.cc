@@ -1046,10 +1046,10 @@ class MultiProfileDownloadNotificationTest
     Profile* profile =
         chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
 
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     if (!identity_manager->HasPrimaryAccount())
-      identity::MakePrimaryAccountAvailable(identity_manager, info.email);
+      signin::MakePrimaryAccountAvailable(identity_manager, info.email);
   }
 
   std::unique_ptr<NotificationDisplayServiceTester> display_service1_;

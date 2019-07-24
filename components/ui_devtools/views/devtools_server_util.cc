@@ -12,6 +12,7 @@
 #include "components/ui_devtools/switches.h"
 #include "components/ui_devtools/views/dom_agent_views.h"
 #include "components/ui_devtools/views/overlay_agent_views.h"
+#include "components/ui_devtools/views/page_agent_views.h"
 
 namespace ui_devtools {
 
@@ -26,10 +27,10 @@ std::unique_ptr<UiDevToolsServer> CreateUiDevToolsServerForViews(
       std::make_unique<UiDevToolsClient>("UiDevToolsClient", server.get());
   auto dom_agent_views = DOMAgentViews::Create();
   auto* dom_agent_views_ptr = dom_agent_views.get();
+  client->AddAgent(std::make_unique<PageAgentViews>(dom_agent_views_ptr));
   client->AddAgent(std::move(dom_agent_views));
   client->AddAgent(std::make_unique<CSSAgent>(dom_agent_views_ptr));
   client->AddAgent(OverlayAgentViews::Create(dom_agent_views_ptr));
-  client->AddAgent(std::make_unique<PageAgent>(dom_agent_views_ptr));
   server->AttachClient(std::move(client));
   return server;
 }

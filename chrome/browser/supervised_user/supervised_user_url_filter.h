@@ -23,7 +23,7 @@
 class GURL;
 class SupervisedUserBlacklist;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -157,7 +157,7 @@ class SupervisedUserURLFilter {
   // Initializes the experimental asynchronous checker.
   void InitAsyncURLChecker(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      identity::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager);
 
   // Clears any asynchronous checker.
   void ClearAsyncURLChecker();

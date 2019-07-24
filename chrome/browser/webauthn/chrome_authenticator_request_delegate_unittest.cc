@@ -10,6 +10,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/web_contents_tester.h"
+#include "device/fido/fido_device_authenticator.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,14 +117,14 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 #endif
 
 #if defined(OS_WIN)
+// Tests that ShouldReturnAttestation() returns with true if |authenticator|
+// is the Windows native WebAuthn API with WEBAUTHN_API_VERSION_2 or higher,
+// where Windows prompts for attestation in its own native UI.
+//
+// Ideally, this would also test the inverse case, i.e. that with
+// WEBAUTHN_API_VERSION_1 Chrome's own attestation prompt is shown. However,
+// there seems to be no good way to test AuthenticatorRequestDialogModel UI.
 TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
-  // Test that ShouldReturnAttestation() returns with true if |authenticator|
-  // is the Windows native WebAuthn API with WEBAUTHN_API_VERSION_2 or higher,
-  // where Windows prompts for attestation in its own native UI.
-  //
-  // Ideally, this would also test the inverse case, i.e. that with
-  // WEBAUTHN_API_VERSION_1 Chrome's own attestation prompt is shown. However,
-  // there seems to be no good way to test AuthenticatorRequestDialogModel UI.
   ::device::ScopedFakeWinWebAuthnApi win_webauthn_api;
   win_webauthn_api.set_version(WEBAUTHN_API_VERSION_2);
   ::device::WinWebAuthnApiAuthenticator authenticator(
@@ -135,5 +136,30 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
                                    cb.callback());
   cb.WaitForCallback();
   EXPECT_EQ(cb.value(), true);
+}
+
+// Ensures that DoesBlockOnRequestFailure() returns false if |authenticator|
+// is the Windows native WebAuthn API because Chrome's request dialog UI
+// should not show an error sheet after the user cancels out of the native
+// Windows UI.
+TEST_F(ChromeAuthenticatorRequestDelegateTest, DoesBlockRequestOnFailure) {
+  ::device::ScopedFakeWinWebAuthnApi win_webauthn_api;
+  ::device::WinWebAuthnApiAuthenticator win_authenticator(
+      /*current_window=*/nullptr);
+  ::device::FidoDeviceAuthenticator device_authenticator(/*device=*/nullptr);
+
+  for (const bool use_win_api : {false, true}) {
+    SCOPED_TRACE(::testing::Message() << "use_win_api=" << use_win_api);
+
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+    EXPECT_EQ(delegate.DoesBlockRequestOnFailure(
+                  use_win_api ? static_cast<::device::FidoAuthenticator*>(
+                                    &win_authenticator)
+                              : static_cast<::device::FidoAuthenticator*>(
+                                    &device_authenticator),
+                  ChromeAuthenticatorRequestDelegate::InterestingFailureReason::
+                      kUserConsentDenied),
+              !use_win_api);
+  }
 }
 #endif  // defined(OS_WIN)

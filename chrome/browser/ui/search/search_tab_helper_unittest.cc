@@ -105,7 +105,7 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     sync_service->SetPreferredDataTypes(types);
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     DCHECK(identity_test_env_adaptor_);
     return identity_test_env_adaptor_->identity_test_env();
   }

@@ -17,6 +17,7 @@ imageset("tabstrip_background_tab") {
   sources = [
     "tabstrip_background_tab.imageset/Contents.json",
     "tabstrip_background_tab.imageset/tabstrip_background_tab@2x~ipad.png",
+    "tabstrip_background_tab.imageset/tabstrip_background_tab_dark@2x~ipad.png",
   ]
 }
 
@@ -24,6 +25,7 @@ imageset("tabstrip_foreground_tab") {
   sources = [
     "tabstrip_foreground_tab.imageset/Contents.json",
     "tabstrip_foreground_tab.imageset/tabstrip_foreground_tab@2x~ipad.png",
+    "tabstrip_foreground_tab.imageset/tabstrip_foreground_tab_dark@2x~ipad.png",
   ]
 }
 
@@ -45,20 +47,6 @@ imageset("tabstrip_new_tab") {
   sources = [
     "tabstrip_new_tab.imageset/Contents.json",
     "tabstrip_new_tab.imageset/tabstrip_new_tab@2x~ipad.png",
-  ]
-}
-
-imageset("tabstrip_new_tab_incognito") {
-  sources = [
-    "tabstrip_new_tab_incognito.imageset/Contents.json",
-    "tabstrip_new_tab_incognito.imageset/tabstrip_new_tab_incognito@2x~ipad.png",
-  ]
-}
-
-imageset("tabstrip_new_tab_incognito_pressed") {
-  sources = [
-    "tabstrip_new_tab_incognito_pressed.imageset/Contents.json",
-    "tabstrip_new_tab_incognito_pressed.imageset/tabstrip_new_tab_incognito_pressed@2x~ipad.png",
   ]
 }
 
@@ -108,5 +96,11 @@ colorset("tabstrip_active_tab_incognito_close_button_color") {
 colorset("tabstrip_inactive_tab_close_button_color") {
   sources = [
     "tabstrip_inactive_tab_close_button_color.colorset/Contents.json",
+  ]
+}
+
+colorset("tabstrip_inactive_tab_text_color") {
+  sources = [
+    "tabstrip_inactive_tab_text_color.colorset/Contents.json",
   ]
 }

@@ -43,7 +43,7 @@ class SyncSetupInProgressHandle;
 namespace settings {
 
 class PeopleHandler : public SettingsPageUIHandler,
-                      public identity::IdentityManager::Observer,
+                      public signin::IdentityManager::Observer,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
                       public syncer::SyncServiceObserver,
@@ -261,7 +261,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   PrefChangeRegistrar profile_pref_registrar_;
 
   // Manages observer lifetimes.
-  ScopedObserver<identity::IdentityManager, PeopleHandler>
+  ScopedObserver<signin::IdentityManager, PeopleHandler>
       identity_manager_observer_;
   ScopedObserver<syncer::SyncService, PeopleHandler> sync_service_observer_;
 

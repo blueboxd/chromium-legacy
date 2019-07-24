@@ -5,10 +5,9 @@
 #include "media/gpu/vaapi/vaapi_mjpeg_decode_accelerator.h"
 
 #include <stddef.h>
+#include <va/va.h>
 
 #include <utility>
-
-#include <va/va.h>
 
 #include "base/bind.h"
 #include "base/containers/span.h"
@@ -282,7 +281,7 @@ void VaapiMjpegDecodeAccelerator::Decode(
 }
 
 bool VaapiMjpegDecodeAccelerator::IsSupported() {
-  return VaapiWrapper::IsJpegDecodeSupported();
+  return VaapiWrapper::IsDecodeSupported(VAProfileJPEGBaseline);
 }
 
 }  // namespace media

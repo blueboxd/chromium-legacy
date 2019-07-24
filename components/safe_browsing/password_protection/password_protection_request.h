@@ -61,7 +61,6 @@ class PasswordProtectionRequest
                             const GURL& password_form_frame_url,
                             const std::string& username,
                             PasswordType password_type,
-                            bool is_account_syncing,
                             const std::vector<std::string>& matching_origins,
                             LoginReputationClientRequest::TriggerType type,
                             bool password_field_exists,
@@ -187,9 +186,6 @@ class PasswordProtectionRequest
 
   // Type of the reused password.
   const PasswordType password_type_;
-
-  // Whether the user's first currently signed in to Chrome account is syncing.
-  const bool is_primary_account_syncing_;
 
   // Domains from the Password Manager that match this password.
   // Should be non-empty if |reused_password_type_| == SAVED_PASSWORD.

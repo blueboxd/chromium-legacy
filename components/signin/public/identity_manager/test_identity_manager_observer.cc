@@ -8,7 +8,7 @@
 
 #include <utility>
 
-namespace identity {
+namespace signin {
 
 TestIdentityManagerObserver::TestIdentityManagerObserver(
     IdentityManager* identity_manager)
@@ -226,4 +226,4 @@ void TestIdentityManagerObserver::OnEndBatchOfRefreshTokenStateChanges() {
   is_inside_batch_ = false;
 }
 
-}  // namespace identity
+}  // namespace signin

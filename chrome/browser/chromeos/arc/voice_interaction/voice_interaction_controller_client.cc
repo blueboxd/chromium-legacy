@@ -108,25 +108,11 @@ void VoiceInteractionControllerClient::NotifyHotwordEnabled() {
   ash::VoiceInteractionController::Get()->NotifyHotwordEnabled(enabled);
 }
 
-void VoiceInteractionControllerClient::NotifyHotwordAlwaysOn() {
-  DCHECK(profile_);
-  PrefService* prefs = profile_->GetPrefs();
-  bool always_on = prefs->GetBoolean(prefs::kVoiceInteractionHotwordAlwaysOn);
-  ash::VoiceInteractionController::Get()->NotifyHotwordAlwaysOn(always_on);
-}
-
 void VoiceInteractionControllerClient::NotifyFeatureAllowed() {
   DCHECK(profile_);
   ash::mojom::AssistantAllowedState state =
       assistant::IsAssistantAllowedForProfile(profile_);
   ash::VoiceInteractionController::Get()->NotifyFeatureAllowed(state);
-}
-
-void VoiceInteractionControllerClient::NotifyNotificationEnabled() {
-  DCHECK(profile_);
-  PrefService* prefs = profile_->GetPrefs();
-  bool enabled = prefs->GetBoolean(prefs::kVoiceInteractionNotificationEnabled);
-  ash::VoiceInteractionController::Get()->NotifyNotificationEnabled(enabled);
 }
 
 void VoiceInteractionControllerClient::NotifyLocaleChanged() {
@@ -138,15 +124,6 @@ void VoiceInteractionControllerClient::NotifyLocaleChanged() {
       profile_->GetPrefs()->GetString(language::prefs::kApplicationLocale);
 
   ash::VoiceInteractionController::Get()->NotifyLocaleChanged(out_locale);
-}
-
-void VoiceInteractionControllerClient::NotifyLaunchWithMicOpen() {
-  DCHECK(profile_);
-  PrefService* prefs = profile_->GetPrefs();
-  bool voice_preferred =
-      prefs->GetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen);
-  ash::VoiceInteractionController::Get()->NotifyLaunchWithMicOpen(
-      voice_preferred);
 }
 
 void VoiceInteractionControllerClient::ActiveUserChanged(
@@ -193,29 +170,11 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
       base::BindRepeating(
           &VoiceInteractionControllerClient::NotifyHotwordEnabled,
           base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kVoiceInteractionHotwordAlwaysOn,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifyHotwordAlwaysOn,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kVoiceInteractionNotificationEnabled,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifyNotificationEnabled,
-          base::Unretained(this)));
-  pref_change_registrar_->Add(
-      prefs::kVoiceInteractionLaunchWithMicOpen,
-      base::BindRepeating(
-          &VoiceInteractionControllerClient::NotifyLaunchWithMicOpen,
-          base::Unretained(this)));
 
   NotifySettingsEnabled();
   NotifyContextEnabled();
   NotifyLocaleChanged();
-  NotifyNotificationEnabled();
-  NotifyLaunchWithMicOpen();
   NotifyHotwordEnabled();
-  NotifyHotwordAlwaysOn();
   OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile_));
 }
 

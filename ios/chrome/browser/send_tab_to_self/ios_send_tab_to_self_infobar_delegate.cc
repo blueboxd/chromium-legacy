@@ -66,7 +66,7 @@ bool IOSSendTabToSelfInfoBarDelegate::Accept() {
   model_->MarkEntryOpened(entry_->GetGUID());
   RecordNotificationHistogram(SendTabToSelfNotification::kOpened);
   infobar()->owner()->OpenURL(entry_->GetURL(),
-                              WindowOpenDisposition::CURRENT_TAB);
+                              WindowOpenDisposition::NEW_FOREGROUND_TAB);
   return true;
 }
 

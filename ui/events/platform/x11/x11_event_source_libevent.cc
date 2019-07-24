@@ -250,4 +250,12 @@ void X11EventSourceLibevent::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
+void XEventDispatcher::CheckCanDispatchNextPlatformEvent(XEvent* xev) {}
+
+void XEventDispatcher::PlatformEventDispatchFinished() {}
+
+PlatformEventDispatcher* XEventDispatcher::GetPlatformEventDispatcher() {
+  return nullptr;
+}
+
 }  // namespace ui

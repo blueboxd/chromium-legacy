@@ -12150,24 +12150,47 @@ GroupEffect.prototype.init = function(data,element){
  * a wrapper that manages animation control for each animation.
  */
 
-var animations = [];
+var currentAnimation = null;
 
 onmessage = function(evt) {
-    if (!evt || !evt.data || !evt.data.params || !evt.data.canvas) return;
-    var canvas = evt.data.canvas;
-    var params = evt.data.params;
-    var ctx = canvas.getContext("2d");
-    var animation = lottiejs.loadAnimation({
-        renderer: 'canvas',
-        loop: params.loop,
-        autoplay: params.autoplay,
-        animationData: evt.data.animationData,
-        rendererSettings: {
-            context: ctx,
-            scaleMode: 'noScale',
-            clearCanvas: true
-        }
-    });
-    animations.push(animation);
-    animation.play();
+    if (!evt || !evt.data) return;
+
+    var canvas = null;
+    if (currentAnimation) {
+        canvas = currentAnimation.renderer.canvasContext.canvas;
+    } else if (evt.data.canvas) {
+        canvas = evt.data.canvas;
+    } else {
+        return;
+    }
+
+    // Set the draw size of the canvas. This is the pixel size at which the
+    // lottie renderer will render the frames.
+    if (evt.data.drawSize) {
+        canvas.height = evt.data.drawSize.height;
+        canvas.width = evt.data.drawSize.width;
+
+        // Update lottie player to use the new canvas size.
+        if (currentAnimation)
+            currentAnimation.resize();
+    }
+
+    if (!currentAnimation) {
+        if (!evt.data.animationData || !evt.data.params)
+            return;
+        var params = evt.data.params;
+        var ctx = canvas.getContext("2d");
+        currentAnimation = lottiejs.loadAnimation({
+            renderer: 'canvas',
+            loop: params.loop,
+            autoplay: params.autoplay,
+            animationData: evt.data.animationData,
+            rendererSettings: {
+                context: ctx,
+                scaleMode: 'noScale',
+                clearCanvas: true
+            }
+        });
+        currentAnimation.play();
+    }
 };

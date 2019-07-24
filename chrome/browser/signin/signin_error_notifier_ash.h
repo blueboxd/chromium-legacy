@@ -18,9 +18,9 @@
 
 class Profile;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
-}  // namespace identity.
+}  // namespace signin.
 
 // Shows signin-related errors as notifications in Ash.
 class SigninErrorNotifier : public SigninErrorController::Observer,
@@ -64,7 +64,7 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   Profile* const profile_;
 
   // A non-owning pointer to IdentityManager.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   // A non-owning pointer.
   chromeos::AccountManager* const account_manager_;

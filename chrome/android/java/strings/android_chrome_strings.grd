@@ -1529,6 +1529,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SYNC_IS_DISABLED" desc="Message to show when Chrome sync is disabled">
         Sync is off
       </message>
+      <message name="IDS_SYNC_IS_DISABLED_BY_ADMINISTRATOR" desc="Message to show when Chrome sync is disabled by administrator">
+        Sync is disabled by your administrator
+      </message>
       <message name="IDS_SYNC_NEED_PASSPHRASE" desc="Error message when a passphrase is needed for decrypting sync data.">
         Passphrase required
       </message>

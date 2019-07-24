@@ -20,7 +20,7 @@
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/buildflags.h"
-#include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
+#include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread.h"

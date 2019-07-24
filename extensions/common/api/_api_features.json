@@ -276,7 +276,8 @@
   },
   "management": [{
     "dependencies": ["permission:management"],
-    "contexts": ["blessed_extension", "extension_service_worker"],
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false,
     "default_parent": true
   }, {
     "channel": "stable",
@@ -446,9 +447,9 @@
     ],
     "contexts": [
       "blessed_extension",
-      "lock_screen_extension",
-      "extension_service_worker"
-    ]
+      "lock_screen_extension"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.getManifest": {
     "contexts": [
@@ -466,32 +467,33 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page",
-      "extension_service_worker"
+      "web_page"
     ],
+    "disallow_for_service_workers": false,
     "matches": ["<all_urls>"]
   },
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "runtime.getURL": {
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.id": {
     "contexts": [
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.lastError": {
     "contexts": "all",
@@ -503,9 +505,9 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.onConnectNative": {
     "dependencies": ["permission:nativeMessaging"],
@@ -516,9 +518,9 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "content_script",
-      "extension_service_worker"
-    ]
+      "content_script"
+    ],
+    "disallow_for_service_workers": false
   },
   "runtime.sendMessage": {
     // Everything except WebUI.
@@ -528,14 +530,15 @@
       "blessed_extension",
       "lock_screen_extension",
       "unblessed_extension",
-      "web_page",
-      "extension_service_worker"
+      "web_page"
     ],
+    "disallow_for_service_workers": false,
     "matches": ["<all_urls>"]
   },
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "serial": {
     "dependencies": ["permission:serial"],
@@ -559,8 +562,8 @@
   },
   "storage": {
     "dependencies": ["permission:storage"],
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script",
-                 "extension_service_worker"]
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "disallow_for_service_workers": false
   },
   "system.cpu": {
     "dependencies": ["permission:system.cpu"],
@@ -607,10 +610,10 @@
       "blessed_extension",
       "blessed_web_page",
       "content_script",
-      "extension_service_worker",
       "lock_screen_extension",
       "unblessed_extension"
-    ]
+    ],
+    "disallow_for_service_workers": false
   }, {
     "channel": "stable",
     "contexts": ["webui"],
@@ -640,12 +643,14 @@
   },
   "webRequest": {
     "dependencies": ["permission:webRequest"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "webRequestInternal": [{
     "internal": true,
     "channel": "stable",
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   }, {
     // webview uses webRequestInternal API.
     "channel": "stable",

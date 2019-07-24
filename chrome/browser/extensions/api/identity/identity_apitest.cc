@@ -353,7 +353,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   // Fix auth error on secondary account or add a new account.
   void FixOrAddSecondaryAccount() {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(GetProfile());
     std::vector<CoreAccountInfo> accounts =
         identity_manager->GetAccountsWithRefreshTokens();
@@ -373,7 +373,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
       }
     }
     if (!fixed_auth_error) {
-      identity::MakeAccountAvailable(identity_manager, "secondary@example.com");
+      signin::MakeAccountAvailable(identity_manager, "secondary@example.com");
     }
   }
 
@@ -382,15 +382,15 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
     EXPECT_FALSE(login_ui_shown_);
     login_ui_shown_ = true;
     if (login_ui_result_) {
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(GetProfile());
       if (IdentityAPI::GetFactoryInstance()
               ->Get(GetProfile())
               ->AreExtensionsRestrictedToPrimaryAccount()) {
         // Set a primary account.
         ASSERT_FALSE(identity_manager->HasPrimaryAccount());
-        identity::MakeAccountAvailable(identity_manager, "primary@example.com");
-        identity::SetPrimaryAccount(identity_manager, "primary@example.com");
+        signin::MakeAccountAvailable(identity_manager, "primary@example.com");
+        signin::SetPrimaryAccount(identity_manager, "primary@example.com");
       } else {
         FixOrAddSecondaryAccount();
       }
@@ -495,7 +495,7 @@ class IdentityTestWithSignin : public AsyncExtensionBrowserTest {
     return IdentityAPI::GetFactoryInstance()->Get(browser()->profile());
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
 
@@ -717,7 +717,7 @@ IN_PROC_BROWSER_TEST_F(IdentityGetProfileUserInfoFunctionTest,
 
 class GetAuthTokenFunctionTest
     : public IdentityTestWithSignin,
-      public identity::IdentityManager::DiagnosticsObserver {
+      public signin::IdentityManager::DiagnosticsObserver {
  public:
   GetAuthTokenFunctionTest() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -814,7 +814,7 @@ class GetAuthTokenFunctionTest
   base::OnceClosure on_access_token_requested_;
 
  private:
-  // identity::IdentityManager::DiagnosticsObserver:
+  // signin::IdentityManager::DiagnosticsObserver:
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
                               const identity::ScopeSet& scopes) override {
@@ -1523,7 +1523,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   signin::SetListAccountsResponseOneAccount(
       account_info.email, account_info.gaia, &test_url_loader_factory_);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  identity::SetFreshnessOfAccountsInGaiaCookie(identity_manager, false);
+  signin::SetFreshnessOfAccountsInGaiaCookie(identity_manager, false);
 
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());

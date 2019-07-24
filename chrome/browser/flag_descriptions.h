@@ -1870,9 +1870,6 @@ extern const char kEnableArcUnifiedAudioFocusDescription[];
 extern const char kEnableAssistantAppSupportName[];
 extern const char kEnableAssistantAppSupportDescription[];
 
-extern const char kEnableAssistantKeyRemappingName[];
-extern const char kEnableAssistantKeyRemappingDescription[];
-
 extern const char kEnableAssistantLauncherIntegrationName[];
 extern const char kEnableAssistantLauncherIntegrationDescription[];
 
@@ -1988,6 +1985,9 @@ extern const char kNewZipUnpackerDescription[];
 
 extern const char kPrinterProviderSearchAppName[];
 extern const char kPrinterProviderSearchAppDescription[];
+
+extern const char kReleaseNotesName[];
+extern const char kReleaseNotesDescription[];
 
 extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];

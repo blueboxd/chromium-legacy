@@ -64,8 +64,8 @@ void CreateNewEntry(content::WebContents* tab,
 
 void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  DCHECK(GetValidDeviceCount(profile) == 1);
-  std::vector<TargetDeviceInfo> devices =
+  DCHECK_EQ(GetValidDeviceCount(profile), 1u);
+  const std::vector<TargetDeviceInfo>& devices =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile)
           ->GetSendTabToSelfModel()
           ->GetTargetDeviceInfoSortedList();
@@ -94,24 +94,25 @@ void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
                               device_count);
 }
 
-int GetValidDeviceCount(Profile* profile) {
+size_t GetValidDeviceCount(Profile* profile) {
   SendTabToSelfSyncService* service =
       SendTabToSelfSyncServiceFactory::GetForProfile(profile);
   DCHECK(service);
   SendTabToSelfModel* model = service->GetSendTabToSelfModel();
   DCHECK(model);
-  std::vector<TargetDeviceInfo> devices =
+  const std::vector<TargetDeviceInfo>& devices =
       model->GetTargetDeviceInfoSortedList();
   return devices.size();
 }
 
-std::string GetSingleTargetDeviceName(Profile* profile) {
-  DCHECK(GetValidDeviceCount(profile) == 1);
-  return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-      ->GetSendTabToSelfModel()
-      ->GetTargetDeviceInfoSortedList()
-      .begin()
-      ->device_name;
+base::string16 GetSingleTargetDeviceName(Profile* profile) {
+  DCHECK_EQ(GetValidDeviceCount(profile), 1u);
+  return base::UTF8ToUTF16(
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+          ->GetSendTabToSelfModel()
+          ->GetTargetDeviceInfoSortedList()
+          .begin()
+          ->device_name);
 }
 
 }  // namespace send_tab_to_self

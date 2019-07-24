@@ -192,8 +192,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD);
 
     // Custom Backgrounds
-    AddString(translated_strings.get(), "customizeButtonLabel",
-              IDS_NTP_CUSTOMIZE_BUTTON_LABEL);
     AddString(translated_strings.get(), "defaultWallpapers",
               IDS_NTP_CUSTOM_BG_CHROME_WALLPAPERS);
     AddString(translated_strings.get(), "uploadImage",
@@ -978,6 +976,8 @@ void LocalNtpSource::StartDataRequest(
 
     replacements["customizeMenu"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
+    replacements["customizeButton"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_BUTTON_LABEL);
     replacements["cancelButton"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CANCEL);
     replacements["doneButton"] =

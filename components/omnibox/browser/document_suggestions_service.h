@@ -16,10 +16,10 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
-}  // namespace identity
+}  // namespace signin
 
 class GoogleServiceAuthError;
 class TemplateURLService;
@@ -29,7 +29,7 @@ class DocumentSuggestionsService : public KeyedService {
  public:
   // null may be passed for params, but no request will be issued.
   DocumentSuggestionsService(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~DocumentSuggestionsService() override;
@@ -60,7 +60,7 @@ class DocumentSuggestionsService : public KeyedService {
                             StartCallback start_callback,
                             CompletionCallback completion_callback,
                             GoogleServiceAuthError error,
-                            identity::AccessTokenInfo access_token_info);
+                            signin::AccessTokenInfo access_token_info);
 
   // Activates a loader for |request|, wiring it up to |completion_callback|,
   // and calls |start_callback|. If |request_body| isn't empty, it will be
@@ -74,11 +74,11 @@ class DocumentSuggestionsService : public KeyedService {
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // Helper for fetching OAuth2 access tokens. Non-null when we have a token
   // available, or while a token fetch is in progress.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentSuggestionsService);
 };

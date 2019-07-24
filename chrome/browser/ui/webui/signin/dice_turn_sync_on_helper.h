@@ -21,7 +21,7 @@
 
 class Browser;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -196,7 +196,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
 
   std::unique_ptr<Delegate> delegate_;
   Profile* profile_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   const signin_metrics::AccessPoint signin_access_point_;
   const signin_metrics::PromoAction signin_promo_action_;
   const signin_metrics::Reason signin_reason_;

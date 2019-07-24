@@ -211,6 +211,45 @@ const DeviceCapabilities kEveTouchScreen = {
     base::size(kEveTouchScreenAbsAxes),
 };
 
+// Captured from Pixel Slate.
+const DeviceAbsoluteAxis kNocturneTouchScreenAbsAxes[] = {
+    {ABS_X, {0, 0, 10404, 0, 0, 40}},
+    {ABS_Y, {0, 0, 6936, 0, 0, 40}},
+    {ABS_PRESSURE, {0, 0, 255, 0, 0, 0}},
+    {ABS_MT_SLOT, {0, 0, 9, 0, 0, 0}},
+    {ABS_MT_TOUCH_MAJOR, {0, 0, 255, 0, 0, 1}},
+    {ABS_MT_TOUCH_MINOR, {0, 0, 255, 0, 0, 1}},
+    {ABS_MT_ORIENTATION, {0, 0, 1, 0, 0, 0}},
+    {ABS_MT_POSITION_X, {0, 0, 10404, 0, 0, 40}},
+    {ABS_MT_POSITION_Y, {0, 0, 6936, 0, 0, 40}},
+    {ABS_MT_TOOL_TYPE, {0, 0, 2, 0, 0, 0}},
+    {ABS_MT_TRACKING_ID, {0, 0, 65535, 0, 0, 0}},
+    {ABS_MT_PRESSURE, {0, 0, 255, 0, 0, 0}},
+};
+const DeviceCapabilities kNocturneTouchScreen = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-6/"
+    "i2c-WCOM50C1:00/0018:2D1F:486C.0001/input/input2/event2",
+    /* name */ "WCOM50C1:00 2D1F:486C",
+    /* phys */ "i2c-WCOM50C1:00",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "2d1f",
+    /* product */ "486c",
+    /* version */ "0100",
+    /* prop */ "2",
+    /* ev */ "1b",
+    /* key */ "400 0 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "6f3800001000003",
+    /* msc */ "20",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kNocturneTouchScreenAbsAxes,
+    base::size(kNocturneTouchScreenAbsAxes),
+};
+
 // Captured from Chromebook Pixel.
 const DeviceCapabilities kLinkKeyboard = {
     /* path */ "/sys/devices/platform/i8042/serio0/input/input6/event6",
@@ -637,6 +676,36 @@ const DeviceCapabilities kEveStylus = {
     /* ff */ "0",
     kEveStylusAbsAxes,
     base::size(kEveStylusAbsAxes),
+};
+
+// Captured from Pixel Slate
+const DeviceAbsoluteAxis kNocturneStylusAbsAxes[] = {
+    {ABS_X, {0, 0, 26010, 0, 0, 100}},     {ABS_Y, {0, 0, 17340, 0, 0, 100}},
+    {ABS_PRESSURE, {0, 0, 2047, 0, 0, 0}}, {ABS_TILT_X, {0, -90, 90, 0, 0, 57}},
+    {ABS_TILT_Y, {0, -90, 90, 0, 0, 57}},  {ABS_MISC, {0, 0, 65535, 0, 0, 0}},
+};
+const DeviceCapabilities kNocturneStylus = {
+    /* path */
+    "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-6/"
+    "i2c-WCOM50C1:00/0018:2D1F:486C.0001/input/input3/event3",
+    /* name */ "WCOM50C1:00 2D1F:486C Pen",
+    /* phys */ "",
+    /* uniq */ "",
+    /* bustype */ "0018",
+    /* vendor */ "2d1f",
+    /* product */ "486c",
+    /* version */ "0100",
+    /* prop */ "0",
+    /* ev */ "1b",
+    /* key */ "1c03 1 0 0 0 0",
+    /* rel */ "0",
+    /* abs */ "1000d000003",
+    /* msc */ "11",
+    /* sw */ "0",
+    /* led */ "0",
+    /* ff */ "0",
+    kNocturneStylusAbsAxes,
+    base::size(kNocturneStylusAbsAxes),
 };
 
 const DeviceCapabilities kHammerKeyboard = {

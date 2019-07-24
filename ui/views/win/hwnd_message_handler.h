@@ -764,6 +764,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // the first message after frame type changes.
   bool needs_dwm_frame_clear_ = true;
 
+  // True if user is in remote session.
+  bool is_remote_session_;
+
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the
   // window destruction and ensure that the map is cleaned up.

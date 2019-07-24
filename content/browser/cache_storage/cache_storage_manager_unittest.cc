@@ -1751,12 +1751,28 @@ TEST_F(CacheStorageManagerTest, MAYBE_GetAllOriginsUsageWithOldIndex) {
   EXPECT_TRUE(CachePut(original_handle.value(), kBarURL));
   original_handle = CacheStorageCacheHandle();
 
+  // Capture the size before the index has necessarily flushed to disk.
   std::vector<StorageUsageInfo> usage = GetAllOriginsUsage();
   ASSERT_EQ(1ULL, usage.size());
   int64_t usage_before_close = usage[0].total_size_bytes;
   EXPECT_GT(usage_before_close, 0);
 
+  // Flush the index to ensure we can read it correctly from the index file.
+  EXPECT_TRUE(FlushCacheStorageIndex(origin1_));
+
   // Close the caches and cache manager.
+  DestroyStorageManager();
+
+  CreateStorageManager();
+  quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+  RecreateStorageManager();
+
+  // Read the size from the index file.
+  CreateStorageManager();
+  usage = GetAllOriginsUsage();
+  ASSERT_EQ(1ULL, usage.size());
+  EXPECT_EQ(usage_before_close, usage[0].total_size_bytes);
+
   DestroyStorageManager();
 
   // Restore the index to the V1 state. Make the access/mod times of index file
@@ -1767,6 +1783,7 @@ TEST_F(CacheStorageManagerTest, MAYBE_GetAllOriginsUsageWithOldIndex) {
   EXPECT_TRUE(base::TouchFile(index_path, t, t));
   EXPECT_FALSE(IsIndexFileCurrent(storage_dir));
 
+  // Read the size with the stale index file forcing a recalculation.
   CreateStorageManager();
   usage = GetAllOriginsUsage();
   ASSERT_EQ(1ULL, usage.size());

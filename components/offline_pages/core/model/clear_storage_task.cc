@@ -17,7 +17,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/delete_page_task.h"
 #include "components/offline_pages/core/model/get_pages_task.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
@@ -42,18 +41,14 @@ const double kOfflinePageStorageClearThreshold = 0.1;
 
 class PageClearCriteria {
  public:
-  PageClearCriteria(const ClientPolicyController* policy_controller,
-                    base::Time start_time,
+  PageClearCriteria(base::Time start_time,
                     const ArchiveManager::StorageStats& stats)
-      : policy_controller_(policy_controller),
-        start_time_(start_time),
-        stats_(stats) {}
+      : start_time_(start_time), stats_(stats) {}
 
   // Returns whether a page should be deleted.
   bool should_delete_item(const OfflinePageItem& page) {
     const std::string& name_space = page.client_id.name_space;
-    const OfflinePageClientPolicy& policy =
-        policy_controller_->GetPolicy(name_space);
+    const OfflinePageClientPolicy& policy = GetPolicy(name_space);
     const size_t page_limit = policy.page_limit;
     const base::TimeDelta expiration_period = policy.expiration_period;
 
@@ -96,7 +91,6 @@ class PageClearCriteria {
   }
 
  private:
-  const ClientPolicyController* policy_controller_;
   base::Time start_time_;
   const ArchiveManager::StorageStats& stats_;
 
@@ -105,12 +99,11 @@ class PageClearCriteria {
 };
 
 std::vector<OfflinePageItem> GetPagesToClear(
-    const ClientPolicyController* policy_controller,
     const base::Time& start_time,
     const ArchiveManager::StorageStats& stats,
     sql::Database* db) {
   std::map<std::string, size_t> namespace_page_count;
-  PageClearCriteria additional_criteria(policy_controller, start_time, stats);
+  PageClearCriteria additional_criteria(start_time, stats);
 
   PageCriteria criteria;
   criteria.lifetime_type = LifetimeType::TEMPORARY;
@@ -120,7 +113,7 @@ std::vector<OfflinePageItem> GetPagesToClear(
       base::BindRepeating(&PageClearCriteria::should_delete_item,
                           base::Unretained(&additional_criteria));
   GetPagesTask::ReadResult result =
-      GetPagesTask::ReadPagesWithCriteriaSync(policy_controller, criteria, db);
+      GetPagesTask::ReadPagesWithCriteriaSync(criteria, db);
 
   return std::move(result.pages);
 }
@@ -131,12 +124,11 @@ bool DeleteArchiveSync(const base::FilePath& file_path) {
 }
 
 std::pair<size_t, DeletePageResult> ClearPagesSync(
-    ClientPolicyController* policy_controller,
     const base::Time& start_time,
     const ArchiveManager::StorageStats& stats,
     sql::Database* db) {
   std::vector<OfflinePageItem> pages_to_delete =
-      GetPagesToClear(policy_controller, start_time, stats, db);
+      GetPagesToClear(start_time, stats, db);
 
   size_t pages_cleared = 0;
   for (const OfflinePageItem& page : pages_to_delete) {
@@ -163,17 +155,14 @@ std::pair<size_t, DeletePageResult> ClearPagesSync(
 
 ClearStorageTask::ClearStorageTask(OfflinePageMetadataStore* store,
                                    ArchiveManager* archive_manager,
-                                   ClientPolicyController* policy_controller,
                                    const base::Time& clearup_time,
                                    ClearStorageCallback callback)
     : store_(store),
       archive_manager_(archive_manager),
-      policy_controller_(policy_controller),
       callback_(std::move(callback)),
       clearup_time_(clearup_time) {
   DCHECK(store_);
   DCHECK(archive_manager_);
-  DCHECK(policy_controller_);
   DCHECK(!callback_.is_null());
 }
 
@@ -188,11 +177,10 @@ void ClearStorageTask::Run() {
 
 void ClearStorageTask::OnGetStorageStatsDone(
     const ArchiveManager::StorageStats& stats) {
-  store_->Execute(
-      base::BindOnce(&ClearPagesSync, policy_controller_, clearup_time_, stats),
-      base::BindOnce(&ClearStorageTask::OnClearPagesDone,
-                     weak_ptr_factory_.GetWeakPtr()),
-      {0, DeletePageResult::STORE_FAILURE});
+  store_->Execute(base::BindOnce(&ClearPagesSync, clearup_time_, stats),
+                  base::BindOnce(&ClearStorageTask::OnClearPagesDone,
+                                 weak_ptr_factory_.GetWeakPtr()),
+                  {0, DeletePageResult::STORE_FAILURE});
 }
 
 void ClearStorageTask::OnClearPagesDone(

@@ -16,7 +16,7 @@ namespace payments {
 
 TestPaymentsClient::TestPaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     PersonalDataManager* personal_data_manager)
     : PaymentsClient(url_loader_factory_,
                      identity_manager,

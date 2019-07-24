@@ -191,10 +191,7 @@ void AppListClientImpl::ActivateItem(int profile_id,
     return;
   }
 
-  requested_model_updater->ActivateChromeItem(id, event_flags);
-
   // Send a training signal to the search controller.
-  CHECK(current_model_updater_);
   const auto* item = current_model_updater_->FindItem(id);
   if (item) {
     app_list::AppLaunchData app_launch_data;
@@ -205,6 +202,19 @@ void AppListClientImpl::ActivateItem(int profile_id,
   }
 
   app_launch_event_logger_.OnGridClicked(id);
+
+  requested_model_updater->ActivateChromeItem(id, event_flags);
+
+  // Suspect that |id| may be destructed after calling ActivateChromeItem. Add
+  // the following two lines to help investigate the crash.
+  std::string copy = id;
+  base::debug::Alias(&copy);
+
+  // Suspect that the model updater may change after calling ActivateChromeItem.
+  // Add checks to help invesigate the crash.
+  CHECK(current_model_updater_);
+  CHECK(requested_model_updater);
+  CHECK(current_model_updater_ == requested_model_updater);
 }
 
 void AppListClientImpl::GetContextMenuModel(

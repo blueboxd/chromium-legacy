@@ -672,6 +672,10 @@ void TestWebWidgetClient::InjectGestureScrollEvent(
   injected_scroll_gesture_data_.push_back(data);
 }
 
+void TestWebWidgetClient::SetHaveScrollEventHandlers(bool have_handlers) {
+  have_scroll_event_handlers_ = have_handlers;
+}
+
 void TestWebWidgetClient::SetEventListenerProperties(
     cc::EventListenerClass event_class,
     cc::EventListenerProperties properties) {

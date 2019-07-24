@@ -33,8 +33,10 @@ class SendTabToSelfSubMenuModel : public ui::SimpleMenuModel,
   struct ValidDeviceItem;
 
   SendTabToSelfSubMenuModel(content::WebContents* tab,
+                            SendTabToSelfMenuType menu_type);
+  SendTabToSelfSubMenuModel(content::WebContents* tab,
                             SendTabToSelfMenuType menu_type,
-                            const GURL& link_url = GURL());
+                            const GURL& link_url);
   ~SendTabToSelfSubMenuModel() override;
 
   // Overridden from ui::SimpleMenuModel::Delegate:

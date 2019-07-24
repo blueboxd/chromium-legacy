@@ -28,7 +28,7 @@ void RedirectToNtp(content::WebContents* contents) {
 ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     content::WebContents* web_contents,
     signin::AccountConsistencyMethod account_consistency,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     bool is_sync_signin_tab,
     EnableSyncCallback enable_sync_callback,
     ShowSigninErrorCallback show_signin_error_callback,

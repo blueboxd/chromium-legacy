@@ -69,9 +69,9 @@ void V4Database::Create(
   const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
       base::ThreadTaskRunnerHandle::Get();
   db_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&V4Database::CreateOnTaskRunner, db_task_runner,
-                                base_path, list_infos, callback_task_runner,
-                                new_db_callback, TimeTicks::Now()));
+      FROM_HERE,
+      base::BindOnce(&V4Database::CreateOnTaskRunner, db_task_runner, base_path,
+                     list_infos, callback_task_runner, new_db_callback));
 }
 
 // static
@@ -80,8 +80,7 @@ void V4Database::CreateOnTaskRunner(
     const base::FilePath& base_path,
     const ListInfos& list_infos,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-    NewDatabaseReadyCallback new_db_callback,
-    const TimeTicks create_start_time) {
+    NewDatabaseReadyCallback new_db_callback) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
   if (!g_store_factory.Get())
@@ -112,9 +111,6 @@ void V4Database::CreateOnTaskRunner(
   // thread. This would unblock resource loads.
   callback_task_runner->PostTask(
       FROM_HERE, base::BindOnce(new_db_callback, std::move(v4_database)));
-
-  UMA_HISTOGRAM_TIMES("SafeBrowsing.V4DatabaseOpen.Time",
-                      TimeTicks::Now() - create_start_time);
 }
 
 // static

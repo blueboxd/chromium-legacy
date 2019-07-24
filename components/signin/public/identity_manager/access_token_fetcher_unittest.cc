@@ -28,7 +28,7 @@ using sync_preferences::TestingPrefServiceSyncable;
 using testing::_;
 using testing::StrictMock;
 
-namespace identity {
+namespace signin {
 
 namespace {
 
@@ -608,4 +608,4 @@ TEST_F(AccessTokenFetcherTest, FetcherWithCustomURLLoaderFactory) {
           access_token_info().id_token));
 }
 
-}  // namespace identity
+}  // namespace signin

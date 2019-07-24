@@ -700,9 +700,9 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
               0 4px 8px 3px rgba(var(--GG800-rgb), .15);
   color: rgb(var(--GG700-rgb));
   height: 528px;
+  min-width: 800px;
   padding: 0;
   user-select: none;
-  width: 800px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -825,9 +825,8 @@ html[dir=rtl] .menu-option {
   height: 32px;
   line-height: 32px;
   margin-inline-start: 16px;
-  max-width: 128px;
+  max-width: 126px;
   overflow: hidden;
-  text-align: center;
   text-overflow: ellipsis;
   user-select: none;
   white-space: nowrap;
@@ -959,9 +958,9 @@ html[dir=rtl] .menu-option {
   background-color: unset;
   color: rgb(var(--GG700-rgb));
   font-size: 13px;
-  height: 30px;
-  margin-bottom: -28px;
-  padding: 8px 0 24px 0;
+  margin-bottom: -34px;
+  min-height: 30px;
+  padding: 0;
 }
 
 @media (prefers-color-scheme: dark) {

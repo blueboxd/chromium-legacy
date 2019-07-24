@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "media/gpu/media_gpu_export.h"
 #include "media/gpu/windows/d3d11_com_defs.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -37,6 +38,7 @@ ResolutionPair GetMaxResolutionsForGUIDs(
     const std::vector<gfx::Size>& resolutions_to_test,
     DXGI_FORMAT format = DXGI_FORMAT_NV12);
 
+MEDIA_GPU_EXPORT
 void GetResolutionsForDecoders(std::vector<GUID> h264_guids,
                                ComD3D11Device device,
                                const gpu::GpuDriverBugWorkarounds& workarounds,

@@ -42,11 +42,11 @@ class LogoCache;
 class LogoObserver;
 
 class LogoServiceImpl : public LogoService,
-                        public identity::IdentityManager::Observer {
+                        public signin::IdentityManager::Observer {
  public:
   LogoServiceImpl(
       const base::FilePath& cache_directory,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       TemplateURLService* template_url_service,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -103,8 +103,8 @@ class LogoServiceImpl : public LogoService,
 
   const int kDownloadOutcomeNotTracked = -1;
 
-  // identity::IdentityManager::Observer implementation.
-  void OnAccountsInCookieUpdated(const identity::AccountsInCookieJarInfo&,
+  // signin::IdentityManager::Observer implementation.
+  void OnAccountsInCookieUpdated(const signin::AccountsInCookieJarInfo&,
                                  const GoogleServiceAuthError&) override;
 
   // Clear any cached logo we might have. Useful on sign-out to get rid of
@@ -171,7 +171,7 @@ class LogoServiceImpl : public LogoService,
 
   // Constructor arguments.
   const base::FilePath cache_directory_;
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
   TemplateURLService* const template_url_service_;
   const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

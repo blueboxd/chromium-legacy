@@ -185,7 +185,7 @@ class SuggestionsServiceTest : public testing::Test {
     return suggestions_service_.get();
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
 
@@ -197,7 +197,7 @@ class SuggestionsServiceTest : public testing::Test {
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService test_sync_service_;
   network::TestURLLoaderFactory url_loader_factory_;
 

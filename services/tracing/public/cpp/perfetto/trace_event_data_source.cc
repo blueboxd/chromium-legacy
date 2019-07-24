@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -19,8 +20,12 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
 #include "base/pickle.h"
+#include "base/sequence_checker.h"
 #include "base/task/common/scoped_defer_task_posting.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_log.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
@@ -235,6 +240,7 @@ TraceEventDataSource::TraceEventDataSource()
       disable_interning_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kPerfettoDisableInterning)) {
   g_trace_event_data_source_for_testing = this;
+  DETACH_FROM_SEQUENCE(perfetto_sequence_checker_);
 }
 
 TraceEventDataSource::~TraceEventDataSource() = default;
@@ -250,11 +256,19 @@ void TraceEventDataSource::RegisterWithTraceLog() {
 void TraceEventDataSource::UnregisterFromTraceLog() {
   RegisterTracedValueProtoWriter(false);
   TraceLog::GetInstance()->SetAddTraceEventOverrides(nullptr, nullptr, nullptr);
+  base::AutoLock l(lock_);
+  flushing_trace_log_ = false;
+  DCHECK(!flush_complete_task_);
 }
 
 void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
   {
     base::AutoLock lock(lock_);
+    // Do not enable startup registry if trace log is being flushed. The
+    // previous tracing session has not ended yet.
+    if (flushing_trace_log_) {
+      return;
+    }
     // No need to do anything if startup tracing has already been set,
     // or we know Perfetto has already been setup.
     if (startup_writer_registry_ || producer_) {
@@ -267,11 +281,97 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
         std::make_unique<perfetto::StartupTraceWriterRegistry>();
   }
   RegisterWithTraceLog();
+  if (base::SequencedTaskRunnerHandle::IsSet()) {
+    OnTaskSchedulerAvailable();
+  }
+}
+
+void TraceEventDataSource::OnTaskSchedulerAvailable() {
+  {
+    base::AutoLock lock(lock_);
+    if (!startup_writer_registry_)
+      return;
+  }
+  startup_tracing_timer_.Start(
+      FROM_HERE, startup_tracing_timeout_,
+      base::BindOnce(&TraceEventDataSource::StartupTracingTimeoutFired,
+                     base::Unretained(this)));
+}
+
+void TraceEventDataSource::StartupTracingTimeoutFired() {
+  auto task_runner =
+      PerfettoTracedProcess::Get()->GetTaskRunner()->GetOrCreateTaskRunner();
+  if (!task_runner->RunsTasksInCurrentSequence()) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TraceEventDataSource::StartupTracingTimeoutFired,
+                       base::Unretained(this)));
+    return;
+  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
+  std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry;
+  {
+    base::AutoLock lock(lock_);
+    if (!startup_writer_registry_) {
+      return;
+    }
+    // Set startup_writer_registry_ to null so that no further writers are
+    // created.
+    startup_writer_registry_.reset();
+    flushing_trace_log_ = true;
+  }
+  auto* trace_log = base::trace_event::TraceLog::GetInstance();
+  trace_log->SetDisabled();
+  trace_log->Flush(base::BindRepeating(&TraceEventDataSource::OnFlushFinished,
+                                       base::Unretained(this)),
+                   /*use_worker_thread=*/false);
+}
+
+void TraceEventDataSource::OnFlushFinished(
+    const scoped_refptr<base::RefCountedString>&,
+    bool has_more_events) {
+  if (has_more_events) {
+    return;
+  }
+
+  // Clear the pending task on the tracing service thread.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
+  base::OnceClosure task;
+  {
+    base::AutoLock l(lock_);
+    // Run any pending start or stop tracing
+    // task.
+    task = std::move(flush_complete_task_);
+    flushing_trace_log_ = false;
+  }
+  if (task) {
+    std::move(task).Run();
+  }
 }
 
 void TraceEventDataSource::StartTracing(
     PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
+  {
+    base::AutoLock l(lock_);
+    if (flushing_trace_log_) {
+      DCHECK(!flush_complete_task_);
+      // Delay start tracing until flush is finished.
+      // Unretained is fine here because the producer will be valid till
+      // stop tracing is called and at stop this task will be cleared.
+      flush_complete_task_ = base::BindOnce(
+          &TraceEventDataSource::StartTracingInternal, base::Unretained(this),
+          base::Unretained(producer), data_source_config);
+      return;
+    }
+  }
+  StartTracingInternal(producer, data_source_config);
+}
+
+void TraceEventDataSource::StartTracingInternal(
+    PerfettoProducer* producer,
+    const perfetto::DataSourceConfig& data_source_config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
   std::unique_ptr<perfetto::StartupTraceWriterRegistry> unbound_writer_registry;
   {
     base::AutoLock lock(lock_);
@@ -312,7 +412,7 @@ void TraceEventDataSource::StartTracing(
 
 void TraceEventDataSource::StopTracing(
     base::OnceClosure stop_complete_callback) {
-  LogHistograms();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
   stop_complete_callback_ = std::move(stop_complete_callback);
 
   auto on_tracing_stopped_callback =
@@ -332,15 +432,28 @@ void TraceEventDataSource::StopTracing(
   bool was_enabled = TraceLog::GetInstance()->IsEnabled();
   if (was_enabled) {
     // Write metadata events etc.
+    LogHistograms();
     TraceLog::GetInstance()->SetDisabled();
   }
 
   {
-    // Prevent recreation of ThreadLocalEventSinks after flush.
     base::AutoLock lock(lock_);
+    if (flush_complete_task_) {
+      DCHECK(!producer_);
+      // Skip start tracing task at this point if we still have not flushed
+      // trace log. We wouldn't be replacing a |flush_complete_task_| that is
+      // stop tracing callback task at any point, since perfetto will wait for
+      // the callback before starting next session.
+      flush_complete_task_ =
+          base::BindOnce(std::move(on_tracing_stopped_callback), this,
+                         scoped_refptr<base::RefCountedString>(), false);
+      return;
+    }
+    // Prevent recreation of ThreadLocalEventSinks after flush.
     DCHECK(producer_);
     producer_ = nullptr;
     target_buffer_ = 0;
+    flushing_trace_log_ = was_enabled;
   }
 
   if (was_enabled) {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -74,6 +75,8 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
       FidoRequestHandlerBase::TransportAvailabilityInfo>;
   using AuthenticatorIdChangeNotificationReceiver =
       test::TestCallbackReceiver<std::string>;
+  using AuthenticatorPairingModeReceiver =
+      test::TestCallbackReceiver<std::string, bool, base::string16>;
 
   TestObserver() {}
   ~TestObserver() override {}
@@ -105,6 +108,21 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
     EXPECT_EQ(expected_new_authenticator_id, result);
   }
 
+  void WaitForAuthenticatorPairingModeChanged(std::string authenticator_id,
+                                              bool is_in_pairing_mode,
+                                              base::string16 display_name) {
+    authenticator_pairing_mode_changed_receiver_.WaitForCallback();
+    auto id =
+        std::get<0>(*authenticator_pairing_mode_changed_receiver_.result());
+    EXPECT_EQ(authenticator_id, id);
+    bool pairing_mode =
+        std::get<1>(*authenticator_pairing_mode_changed_receiver_.result());
+    EXPECT_EQ(is_in_pairing_mode, pairing_mode);
+    auto name =
+        std::get<2>(*authenticator_pairing_mode_changed_receiver_.result());
+    EXPECT_EQ(display_name, name);
+  }
+
  protected:
   // FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(
@@ -126,8 +144,13 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
     authenticator_id_change_notification_receiver_.callback().Run(
         std::move(new_authenticator_id));
   }
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override {}
+  void FidoAuthenticatorPairingModeChanged(
+      base::StringPiece authenticator_id,
+      bool is_in_pairing_mode,
+      base::string16 display_name) override {
+    authenticator_pairing_mode_changed_receiver_.callback().Run(
+        authenticator_id.as_string(), is_in_pairing_mode, display_name);
+  }
 
   bool SupportsPIN() const override { return false; }
 
@@ -146,6 +169,7 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
       transport_availability_notification_receiver_;
   AuthenticatorIdChangeNotificationReceiver
       authenticator_id_change_notification_receiver_;
+  AuthenticatorPairingModeReceiver authenticator_pairing_mode_changed_receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -318,6 +342,13 @@ class FidoRequestHandlerTest : public ::testing::Test {
                                             std::move(new_authenticator_id));
   }
 
+  void AuthenticatorPairingModeChanged(FakeFidoRequestHandler* request_handler,
+                                       std::string authenticator_id,
+                                       bool in_pairing_mode) {
+    request_handler->AuthenticatorPairingModeChanged(
+        ble_discovery_, authenticator_id, in_pairing_mode);
+  }
+
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
   test::FakeFidoDiscovery* ble_discovery() const { return ble_discovery_; }
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> adapter() {
@@ -477,6 +508,8 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       CtapRequestCommand::kAuthenticatorGetInfo,
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
+  EXPECT_CALL(*device0, GetDisplayName())
+      .WillRepeatedly(testing::Return(base::string16()));
   device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeDeviceProcesssingError());
 
@@ -487,6 +520,8 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       CtapRequestCommand::kAuthenticatorGetInfo,
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
+  EXPECT_CALL(*device1, GetDisplayName())
+      .WillRepeatedly(testing::Return(base::string16()));
   device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeUserPresenceVerifiedError(),
                                        base::TimeDelta::FromMicroseconds(1));
@@ -498,6 +533,8 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       CtapRequestCommand::kAuthenticatorGetInfo,
       test_data::kTestAuthenticatorGetInfoResponse);
   EXPECT_CALL(*device2, GetId()).WillRepeatedly(testing::Return("device2"));
+  EXPECT_CALL(*device2, GetDisplayName())
+      .WillRepeatedly(testing::Return(base::string16()));
   device2->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeDeviceProcesssingError(),
                                        base::TimeDelta::FromMicroseconds(10));
@@ -734,5 +771,28 @@ TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
   }
 }
 #endif  // defined(OS_WIN)
+
+// Verify that a BLE device's display name propagates to the UI layer
+// when its pairing mode changes.
+TEST_F(FidoRequestHandlerTest, DisplayNameUpdatesWhenPairingModeChanges) {
+  constexpr char kDeviceId[] = "device0";
+  const base::string16 kDisplayName(base::ASCIIToUTF16("new_display_name"));
+  EXPECT_CALL(*adapter(), IsPresent()).WillOnce(::testing::Return(true));
+
+  TestObserver observer;
+  auto request_handler = CreateFakeHandler();
+  request_handler->set_observer(&observer);
+  ble_discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return(kDeviceId));
+  EXPECT_CALL(*device, GetDisplayName())
+      .WillRepeatedly(testing::Return(kDisplayName));
+  ble_discovery()->AddDevice(std::move(device));
+
+  AuthenticatorPairingModeChanged(request_handler.get(), kDeviceId, true);
+  observer.WaitForAuthenticatorPairingModeChanged(kDeviceId, true,
+                                                  kDisplayName);
+}
 
 }  // namespace device

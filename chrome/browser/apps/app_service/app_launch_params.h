@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_LAUNCH_PARAMS_H_
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -79,6 +80,10 @@ struct AppLaunchParams {
   // The frame that initiated the open. May be null. If set, the new app will
   // have |opener| as its window.opener.
   content::RenderFrameHost* opener;
+
+  // The files the application was launched with. Empty if the application was
+  // not launched with files.
+  std::vector<base::FilePath> launch_files;
 };
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_LAUNCH_PARAMS_H_

@@ -14,7 +14,6 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
-#include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui.h"
@@ -79,9 +78,9 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
           "chrome.signin.getSigninInfo.handleReply",
           *about_signin_internals->GetSigninStatus());
 
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(profile);
-      identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+      signin::AccountsInCookieJarInfo accounts_in_cookie_jar =
           identity_manager->GetAccountsInCookieJar();
       if (accounts_in_cookie_jar.accounts_are_fresh) {
         about_signin_internals->OnAccountsInCookieUpdated(

@@ -30,21 +30,25 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                      PasswordProtectionTrigger());
   MOCK_CONST_METHOD0(GetCurrentContentAreaSize, gfx::Size());
   MOCK_CONST_METHOD0(GetAccountInfo, AccountInfo());
+  MOCK_CONST_METHOD0(IsPrimaryAccountSyncing, bool());
+  MOCK_CONST_METHOD0(IsPrimaryAccountSignedIn, bool());
+  MOCK_CONST_METHOD0(IsPrimaryAccountGmail, bool());
+  MOCK_CONST_METHOD1(IsOtherGaiaAccountSignedIn, bool(const std::string&));
   MOCK_CONST_METHOD2(IsURLWhitelistedForPasswordEntry,
                      bool(const GURL&, RequestOutcome*));
 
   MOCK_METHOD0(IsExtendedReporting, bool());
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(IsHistorySyncEnabled, bool());
-  MOCK_METHOD0(IsAccountSyncing, bool());
   MOCK_METHOD0(IsUnderAdvancedProtection, bool());
   MOCK_METHOD0(ReportPasswordChanged, void());
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD1(UserClickedThroughSBInterstitial, bool(content::WebContents*));
   MOCK_METHOD2(ShowInterstitial, void(content::WebContents*, PasswordType));
-  MOCK_METHOD3(IsPingingEnabled,
+  MOCK_METHOD4(IsPingingEnabled,
                bool(LoginReputationClientRequest::TriggerType,
                     PasswordType,
+                    const std::string&,
                     RequestOutcome*));
   MOCK_METHOD3(ShowModalWarning,
                void(content::WebContents*, const std::string&, PasswordType));
@@ -73,13 +77,11 @@ class MockPasswordProtectionService : public PasswordProtectionService {
                     const GURL&,
                     const GURL&,
                     const std::string&));
-  MOCK_METHOD8(MaybeStartProtectedPasswordEntryRequest,
+  MOCK_METHOD6(MaybeStartProtectedPasswordEntryRequest,
                void(content::WebContents*,
                     const GURL&,
                     const std::string&,
                     PasswordType,
-                    const std::string,
-                    bool,
                     const std::vector<std::string>&,
                     bool));
 

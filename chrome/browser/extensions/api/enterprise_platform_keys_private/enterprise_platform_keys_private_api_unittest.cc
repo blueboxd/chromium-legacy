@@ -206,7 +206,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   virtual void SetAuthenticatedUser() {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::MakePrimaryAccountAvailable(identity_manager, kUserEmail);
+    signin::MakePrimaryAccountAvailable(identity_manager, kUserEmail);
   }
 
   chromeos::FakeCryptohomeClient cryptohome_client_;
@@ -589,8 +589,8 @@ class EPKPChallengeMachineKeyUnmanagedUserTest
   void SetAuthenticatedUser() override {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::MakePrimaryAccountAvailable(identity_manager,
-                                          account_id_.GetUserEmail());
+    signin::MakePrimaryAccountAvailable(identity_manager,
+                                        account_id_.GetUserEmail());
   }
 
   TestingProfile* CreateProfile() override {
@@ -602,7 +602,7 @@ class EPKPChallengeMachineKeyUnmanagedUserTest
   const std::string kOtherEmail = "test@chromium.com";
   const AccountId account_id_ = AccountId::FromUserEmailGaiaId(
       kOtherEmail,
-      identity::GetTestGaiaIdForEmail(kOtherEmail));
+      signin::GetTestGaiaIdForEmail(kOtherEmail));
 };
 
 TEST_F(EPKPChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
@@ -615,8 +615,8 @@ class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
   void SetAuthenticatedUser() override {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfile(browser()->profile());
-    identity::MakePrimaryAccountAvailable(identity_manager,
-                                          account_id_.GetUserEmail());
+    signin::MakePrimaryAccountAvailable(identity_manager,
+                                        account_id_.GetUserEmail());
   }
 
   TestingProfile* CreateProfile() override {
@@ -628,7 +628,7 @@ class EPKPChallengeUserKeyUnmanagedUserTest : public EPKPChallengeUserKeyTest {
   const std::string kOtherEmail = "test@chromium.com";
   const AccountId account_id_ = AccountId::FromUserEmailGaiaId(
       kOtherEmail,
-      identity::GetTestGaiaIdForEmail(kOtherEmail));
+      signin::GetTestGaiaIdForEmail(kOtherEmail));
 };
 
 TEST_F(EPKPChallengeUserKeyUnmanagedUserTest, UserNotManaged) {

@@ -79,7 +79,7 @@ class IdentityTokenCacheValue {
 };
 
 class IdentityAPI : public BrowserContextKeyedAPI,
-                    public identity::IdentityManager::Observer {
+                    public signin::IdentityManager::Observer {
  public:
   typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
@@ -128,7 +128,7 @@ class IdentityAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "IdentityAPI"; }
   static const bool kServiceIsNULLWhileTesting = true;
 
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   // NOTE: This class must listen for this callback rather than

@@ -38,7 +38,7 @@ constexpr char UserCloudPolicyTokenForwarder::kUMAChildUserOAuthTokenError[];
 
 UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
     UserCloudPolicyManagerChromeOS* manager,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : manager_(manager),
       identity_manager_(identity_manager),
       refresh_oauth_token_timer_(std::make_unique<base::RepeatingTimer>()),
@@ -104,18 +104,18 @@ void UserCloudPolicyTokenForwarder::StartRequest() {
   identity::ScopeSet scopes;
   scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
-  access_token_fetcher_ = std::make_unique<
-      identity::PrimaryAccountAccessTokenFetcher>(
-      "policy_token_forwarder", identity_manager_, scopes,
-      base::BindOnce(
-          &UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted,
-          base::Unretained(this)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+  access_token_fetcher_ =
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
+          "policy_token_forwarder", identity_manager_, scopes,
+          base::BindOnce(
+              &UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted,
+              base::Unretained(this)),
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void UserCloudPolicyTokenForwarder::OnAccessTokenFetchCompleted(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   DCHECK(access_token_fetcher_);
 
   if (error.state() == GoogleServiceAuthError::NONE) {

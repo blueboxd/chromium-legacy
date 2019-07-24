@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/arcore-android-sdk/src/libraries/include/arcore_c_api.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
 
 #include <dlfcn.h>
 
@@ -12,52 +12,53 @@
 namespace {
 
 // Run CALL macro for every function defined in the API.
-#define FOR_EACH_API_FN                 \
-  CALL(ArCamera_getDisplayOrientedPose) \
-  CALL(ArCamera_getProjectionMatrix)    \
-  CALL(ArCamera_getTrackingState)       \
-  CALL(ArCamera_getViewMatrix)          \
-  CALL(ArConfig_create)                 \
-  CALL(ArConfig_destroy)                \
-  CALL(ArFrame_acquireCamera)           \
-  CALL(ArFrame_create)                  \
-  CALL(ArFrame_destroy)                 \
-  CALL(ArFrame_getUpdatedTrackables)    \
-  CALL(ArFrame_hitTestRay)              \
-  CALL(ArFrame_transformCoordinates2d)  \
-  CALL(ArHitResult_acquireTrackable)    \
-  CALL(ArHitResult_create)              \
-  CALL(ArHitResult_destroy)             \
-  CALL(ArHitResult_getHitPose)          \
-  CALL(ArHitResultList_create)          \
-  CALL(ArHitResultList_destroy)         \
-  CALL(ArHitResultList_getItem)         \
-  CALL(ArHitResultList_getSize)         \
-  CALL(ArPlane_acquireSubsumedBy)       \
-  CALL(ArPlane_getCenterPose)           \
-  CALL(ArPlane_getPolygon)              \
-  CALL(ArPlane_getPolygonSize)          \
-  CALL(ArPlane_getType)                 \
-  CALL(ArPlane_isPoseInPolygon)         \
-  CALL(ArPose_create)                   \
-  CALL(ArPose_destroy)                  \
-  CALL(ArPose_getMatrix)                \
-  CALL(ArPose_getPoseRaw)               \
-  CALL(ArSession_configure)             \
-  CALL(ArSession_create)                \
-  CALL(ArSession_destroy)               \
-  CALL(ArSession_getAllTrackables)      \
-  CALL(ArSession_pause)                 \
-  CALL(ArSession_resume)                \
-  CALL(ArSession_setCameraTextureName)  \
-  CALL(ArSession_setDisplayGeometry)    \
-  CALL(ArSession_update)                \
-  CALL(ArTrackable_getTrackingState)    \
-  CALL(ArTrackable_getType)             \
-  CALL(ArTrackable_release)             \
-  CALL(ArTrackableList_acquireItem)     \
-  CALL(ArTrackableList_create)          \
-  CALL(ArTrackableList_destroy)         \
+#define FOR_EACH_API_FN                       \
+  CALL(ArCamera_getDisplayOrientedPose)       \
+  CALL(ArCamera_getProjectionMatrix)          \
+  CALL(ArCamera_getTrackingState)             \
+  CALL(ArCamera_getViewMatrix)                \
+  CALL(ArConfig_create)                       \
+  CALL(ArConfig_destroy)                      \
+  CALL(ArFrame_acquireCamera)                 \
+  CALL(ArFrame_create)                        \
+  CALL(ArFrame_destroy)                       \
+  CALL(ArFrame_getUpdatedTrackables)          \
+  CALL(ArFrame_hitTestRay)                    \
+  CALL(ArFrame_transformCoordinates2d)        \
+  CALL(ArHitResult_acquireTrackable)          \
+  CALL(ArHitResult_create)                    \
+  CALL(ArHitResult_destroy)                   \
+  CALL(ArHitResult_getHitPose)                \
+  CALL(ArHitResultList_create)                \
+  CALL(ArHitResultList_destroy)               \
+  CALL(ArHitResultList_getItem)               \
+  CALL(ArHitResultList_getSize)               \
+  CALL(ArPlane_acquireSubsumedBy)             \
+  CALL(ArPlane_getCenterPose)                 \
+  CALL(ArPlane_getPolygon)                    \
+  CALL(ArPlane_getPolygonSize)                \
+  CALL(ArPlane_getType)                       \
+  CALL(ArPlane_isPoseInPolygon)               \
+  CALL(ArPose_create)                         \
+  CALL(ArPose_destroy)                        \
+  CALL(ArPose_getMatrix)                      \
+  CALL(ArPose_getPoseRaw)                     \
+  CALL(ArSession_configure)                   \
+  CALL(ArSession_create)                      \
+  CALL(ArSession_destroy)                     \
+  CALL(ArSession_enableIncognitoMode_private) \
+  CALL(ArSession_getAllTrackables)            \
+  CALL(ArSession_pause)                       \
+  CALL(ArSession_resume)                      \
+  CALL(ArSession_setCameraTextureName)        \
+  CALL(ArSession_setDisplayGeometry)          \
+  CALL(ArSession_update)                      \
+  CALL(ArTrackable_getTrackingState)          \
+  CALL(ArTrackable_getType)                   \
+  CALL(ArTrackable_release)                   \
+  CALL(ArTrackableList_acquireItem)           \
+  CALL(ArTrackableList_create)                \
+  CALL(ArTrackableList_destroy)               \
   CALL(ArTrackableList_getSize)
 
 #define CALL(fn) decltype(&fn) impl_##fn = nullptr;
@@ -350,6 +351,10 @@ ArStatus ArSession_create(void* env,
 
 void ArSession_destroy(ArSession* session) {
   arcore_api->impl_ArSession_destroy(session);
+}
+
+void ArSession_enableIncognitoMode_private(ArSession* session) {
+  arcore_api->impl_ArSession_enableIncognitoMode_private(session);
 }
 
 void ArSession_getAllTrackables(const ArSession* session,

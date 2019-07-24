@@ -692,6 +692,10 @@ bool WorkletAnimation::IsCurrentTimeInitialized() const {
 //
 // Changing scroll-linked animation start_time initialization is under
 // consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
+//
+// TODO(https://crbug.com/986925): The playback rate should be taken into
+// consideration when calculating the initial current time.
+// https://drafts.csswg.org/web-animations/#playing-an-animation-section
 base::Optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
   if (play_state_ == Animation::kIdle || play_state_ == Animation::kUnset ||
       !IsTimelineActive())

@@ -26,7 +26,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -221,6 +220,7 @@ PreviewsProber::PreviewsProber(
     const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const size_t max_cache_entries,
     base::TimeDelta revalidate_cache_after)
     : PreviewsProber(delegate,
@@ -232,6 +232,7 @@ PreviewsProber::PreviewsProber(
                      headers,
                      retry_policy,
                      timeout_policy,
+                     traffic_annotation,
                      max_cache_entries,
                      revalidate_cache_after,
                      base::DefaultTickClock::GetInstance(),
@@ -247,6 +248,7 @@ PreviewsProber::PreviewsProber(
     const net::HttpRequestHeaders headers,
     const RetryPolicy& retry_policy,
     const TimeoutPolicy& timeout_policy,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const size_t max_cache_entries,
     base::TimeDelta revalidate_cache_after,
     const base::TickClock* tick_clock,
@@ -261,6 +263,7 @@ PreviewsProber::PreviewsProber(
       timeout_policy_(timeout_policy),
       max_cache_entries_(max_cache_entries),
       revalidate_cache_after_(revalidate_cache_after),
+      traffic_annotation_(traffic_annotation),
       successive_retry_count_(0),
       successive_timeout_count_(0),
       cached_probe_results_(std::make_unique<base::DictionaryValue>()),
@@ -385,28 +388,6 @@ void PreviewsProber::CreateAndStartURLLoader() {
     url = url.ReplaceComponents(replacements);
   }
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("previews_prober", R"(
-        semantics {
-          sender: "Previews Prober"
-          description:
-            "Requests a small resource to test network connectivity to a given "
-            "resource or domain which will either be a Google owned domain or"
-            "the website that the user is navigating to."
-          trigger:
-            "Requested when Lite mode and Previews are enabled on startup and "
-            "on every network change."
-          data: "None."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "Users can control Lite mode on Android via the settings menu. "
-            "Lite mode is not available on iOS, and on desktop only for "
-            "developer testing."
-          policy_exception_justification: "Not implemented."
-        })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->method = HttpMethodToString(http_method_);
@@ -415,7 +396,7 @@ void PreviewsProber::CreateAndStartURLLoader() {
   request->allow_credentials = false;
 
   url_loader_ =
-      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation_);
   url_loader_->SetAllowHttpErrorResults(true);
 
   url_loader_->DownloadToString(

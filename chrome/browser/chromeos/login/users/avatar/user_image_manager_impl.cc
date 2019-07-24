@@ -793,7 +793,7 @@ int UserImageManagerImpl::GetDesiredImageSideLength() const {
   return GetCurrentUserImageSize();
 }
 
-identity::IdentityManager* UserImageManagerImpl::GetIdentityManager() {
+signin::IdentityManager* UserImageManagerImpl::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(
       ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser()));
 }

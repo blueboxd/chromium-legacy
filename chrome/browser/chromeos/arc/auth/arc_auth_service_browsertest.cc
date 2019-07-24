@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceAccountManagerTest,
 
   EXPECT_EQ(0, auth_instance().num_account_removed_calls());
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile());
   base::Optional<AccountInfo> maybe_account_info =
       identity_manager->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(

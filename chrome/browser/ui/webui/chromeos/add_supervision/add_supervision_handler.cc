@@ -81,7 +81,7 @@ void AddSupervisionHandler::GetOAuthToken(GetOAuthTokenCallback callback) {
           identity_manager_->GetPrimaryAccountId(), "add_supervision", scopes,
           base::BindOnce(&AddSupervisionHandler::OnAccessTokenFetchComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
-          identity::AccessTokenFetcher::Mode::kImmediate);
+          signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void AddSupervisionHandler::LogOut() {
@@ -98,7 +98,7 @@ void AddSupervisionHandler::NotifySupervisionEnabled() {
 void AddSupervisionHandler::OnAccessTokenFetchComplete(
     GetOAuthTokenCallback callback,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   oauth2_access_token_fetcher_.reset();
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(ERROR) << "AddSupervisionHandler: OAuth2 token request failed. "

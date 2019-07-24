@@ -144,7 +144,7 @@ bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
     }
 
     case SigninType::FAKE_SIGNIN: {
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(profile_);
 
       // Verify HasPrimaryAccount() separately because
@@ -158,12 +158,11 @@ bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
         // always hand out the same access token string, any new access token
         // acquired later would also be considered invalid.
         if (!identity_manager->HasPrimaryAccountWithRefreshToken()) {
-          identity::SetRefreshTokenForPrimaryAccount(identity_manager);
+          signin::SetRefreshTokenForPrimaryAccount(identity_manager);
         }
       } else {
         // Authenticate sync client using GAIA credentials.
-        identity::MakePrimaryAccountAvailable(
-            identity_manager, username_);
+        signin::MakePrimaryAccountAvailable(identity_manager, username_);
       }
       return true;
     }
@@ -176,20 +175,20 @@ bool ProfileSyncServiceHarness::SignInPrimaryAccount() {
 #if !defined(OS_CHROMEOS)
 void ProfileSyncServiceHarness::SignOutPrimaryAccount() {
   DCHECK(!username_.empty());
-  identity::ClearPrimaryAccount(
+  signin::ClearPrimaryAccount(
       IdentityManagerFactory::GetForProfile(profile_),
-      identity::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
+      signin::ClearPrimaryAccountPolicy::REMOVE_ALL_ACCOUNTS);
 }
 #endif  // !OS_CHROMEOS
 
 void ProfileSyncServiceHarness::EnterSyncPausedStateForPrimaryAccount() {
   DCHECK(service_->IsSyncFeatureActive());
-  identity::SetInvalidRefreshTokenForPrimaryAccount(
+  signin::SetInvalidRefreshTokenForPrimaryAccount(
       IdentityManagerFactory::GetForProfile(profile_));
 }
 
 void ProfileSyncServiceHarness::ExitSyncPausedStateForPrimaryAccount() {
-  identity::SetRefreshTokenForPrimaryAccount(
+  signin::SetRefreshTokenForPrimaryAccount(
       IdentityManagerFactory::GetForProfile(profile_));
 }
 

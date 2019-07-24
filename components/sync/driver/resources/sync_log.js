@@ -54,7 +54,7 @@ cr.define('chrome.sync', function() {
 
       /**
        * The recorded log entries.
-       * @type {array}
+       * @type {!Array}
        */
       this.entries =  [];
 
@@ -83,7 +83,7 @@ cr.define('chrome.sync', function() {
      * field of a custom event.
      * @param {string} submodule The sync submodule for the event.
      * @param {string} event The name of the event.
-     * @param {dictionary} details A dictionary of event-specific details.
+     * @param {!Object} details A dictionary of event-specific details.
      */
     log_(submodule, event, details) {
       var entry = {

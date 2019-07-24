@@ -30,6 +30,8 @@ class CORE_EXPORT ProfilerGroup
  public:
   static ProfilerGroup* From(v8::Isolate*);
 
+  static base::TimeDelta GetBaseSampleInterval();
+
   ProfilerGroup(v8::Isolate* isolate);
   ~ProfilerGroup() override;
 

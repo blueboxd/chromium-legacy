@@ -142,7 +142,7 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
   return nullptr;
 }
 
-const identity::IdentityManager* GetIdentityManagerForOriginalProfile(
+const signin::IdentityManager* GetIdentityManagerForOriginalProfile(
     Profile* profile) {
   return IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
 }
@@ -510,15 +510,9 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
   if (!pps)
     return;
 
-  syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-  bool is_account_syncing =
-      (password_type == PasswordType::PRIMARY_ACCOUNT_PASSWORD) &&
-      (sync && sync->IsSyncFeatureActive() && !sync->IsLocalSyncEnabled());
   pps->MaybeStartProtectedPasswordEntryRequest(
       web_contents(), web_contents()->GetLastCommittedURL(), username,
-      password_type, pps->GetAccountInfo().hosted_domain, is_account_syncing,
-      matching_domains, password_field_exists);
+      password_type, matching_domains, password_field_exists);
 }
 
 void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {

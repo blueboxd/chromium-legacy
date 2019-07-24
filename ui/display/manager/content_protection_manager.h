@@ -158,7 +158,6 @@ class DISPLAY_MANAGER_EXPORT ContentProtectionManager
                                 Task::Status status,
                                 uint32_t connection_mask,
                                 uint32_t protection_mask);
-  void NotifyDisplaySecurityObservers(int64_t display_id, bool secure);
 
   DisplayLayoutManager* const layout_manager_;                // Not owned.
   NativeDisplayDelegate* native_display_delegate_ = nullptr;  // Not owned.

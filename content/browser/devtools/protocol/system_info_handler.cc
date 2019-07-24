@@ -171,10 +171,21 @@ ImageDecodeAcceleratorSupportedProfileToProtocol(
     }
   }
 
+  SystemInfo::ImageType image_type;
+  switch (profile.image_type) {
+    case gpu::ImageDecodeAcceleratorType::kJpeg:
+      image_type = SystemInfo::ImageTypeEnum::Jpeg;
+      break;
+    case gpu::ImageDecodeAcceleratorType::kWebP:
+      image_type = SystemInfo::ImageTypeEnum::Webp;
+      break;
+    case gpu::ImageDecodeAcceleratorType::kUnknown:
+      image_type = SystemInfo::ImageTypeEnum::Unknown;
+      break;
+  }
+
   return SystemInfo::ImageDecodeAcceleratorCapability::Create()
-      .SetImageType(profile.image_type == gpu::ImageDecodeAcceleratorType::kJpeg
-                        ? "JPEG"
-                        : "Unknown")
+      .SetImageType(image_type)
       .SetMaxDimensions(GfxSizeToSystemInfoSize(profile.max_encoded_dimensions))
       .SetMinDimensions(GfxSizeToSystemInfoSize(profile.min_encoded_dimensions))
       .SetSubsamplings(std::move(subsamplings))

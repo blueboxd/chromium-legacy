@@ -5,8 +5,8 @@
 #include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/browser_list.h"
 
 namespace {
+
+ProfileActivityMetricsRecorder* g_profile_activity_metrics_recorder = nullptr;
 
 // The maximum number of profiles that are recorded. This means that all
 // profiles with bucket index greater than |kMaxProfileBucket| won't be included
@@ -38,24 +40,75 @@ int GetMetricsBucketIndex(Profile* profile) {
   return entry->GetMetricsBucketIndex();
 }
 
-}  // namespace
+void RecordProfileSessionDuration(Profile* profile,
+                                  base::TimeDelta session_length) {
+  if (!profile || session_length.InMinutes() <= 0)
+    return;
 
-// static
-void ProfileActivityMetricsRecorder::Initialize() {
-  static base::NoDestructor<ProfileActivityMetricsRecorder>
-      s_profile_activity_metrics_recorder;
+  int profile_bucket = GetMetricsBucketIndex(profile);
+
+  if (0 <= profile_bucket && profile_bucket <= kMaxProfileBucket) {
+    base::Histogram::FactoryGet("Profile.SessionDuration.PerProfile", 0,
+                                kMaxProfileBucket, kMaxProfileBucket + 1,
+                                base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->AddCount(profile_bucket, session_length.InMinutes());
+  }
 }
 
-ProfileActivityMetricsRecorder::ProfileActivityMetricsRecorder() {
-  BrowserList::AddObserver(this);
-}
-
-void ProfileActivityMetricsRecorder::OnBrowserSetLastActive(Browser* browser) {
-  int profile_bucket =
-      GetMetricsBucketIndex(browser->profile()->GetOriginalProfile());
+void RecordBrowserActivation(Profile* profile) {
+  DCHECK(profile);
+  int profile_bucket = GetMetricsBucketIndex(profile);
 
   if (0 <= profile_bucket && profile_bucket <= kMaxProfileBucket) {
     UMA_HISTOGRAM_EXACT_LINEAR("Profile.BrowserActive.PerProfile",
                                profile_bucket, kMaxProfileBucket);
   }
+}
+
+}  // namespace
+
+// static
+void ProfileActivityMetricsRecorder::Initialize() {
+  DCHECK(!g_profile_activity_metrics_recorder);
+  g_profile_activity_metrics_recorder = new ProfileActivityMetricsRecorder();
+}
+
+// static
+void ProfileActivityMetricsRecorder::CleanupForTesting() {
+  DCHECK(g_profile_activity_metrics_recorder);
+  delete g_profile_activity_metrics_recorder;
+  g_profile_activity_metrics_recorder = nullptr;
+}
+
+ProfileActivityMetricsRecorder::ProfileActivityMetricsRecorder() {
+  BrowserList::AddObserver(this);
+  metrics::DesktopSessionDurationTracker::Get()->AddObserver(this);
+}
+
+ProfileActivityMetricsRecorder::~ProfileActivityMetricsRecorder() {
+  BrowserList::RemoveObserver(this);
+  metrics::DesktopSessionDurationTracker::Get()->RemoveObserver(this);
+}
+
+void ProfileActivityMetricsRecorder::OnBrowserSetLastActive(Browser* browser) {
+  Profile* active_profile = browser->profile()->GetOriginalProfile();
+
+  RecordBrowserActivation(active_profile);
+
+  if (last_active_profile_ != active_profile) {
+    RecordProfileSessionDuration(
+        last_active_profile_, base::TimeTicks::Now() - profile_session_start_);
+    last_active_profile_ = active_profile;
+    profile_session_start_ = base::TimeTicks::Now();
+  }
+}
+
+void ProfileActivityMetricsRecorder::OnSessionEnded(
+    base::TimeDelta session_length,
+    base::TimeTicks session_end) {
+  // |session_length| can't be used here because it was measured across all
+  // profiles.
+  RecordProfileSessionDuration(last_active_profile_,
+                               session_end - profile_session_start_);
+  last_active_profile_ = nullptr;
 }

@@ -7,6 +7,7 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_asserts.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas />
 
@@ -53,7 +54,7 @@ let testFunction = function(session, fakeDeviceController, t) {
           assert_false(pose2 instanceof XRViewerPose);
           assert_not_equals(pose2.transform, null);
           assert_not_equals(pose2.transform.matrix, null);
-          assert_matrices_approx_equal(pose.transform.matrix, pose2.transform.matrix);
+          assert_matrix_approx_equals(pose.transform.matrix, pose2.transform.matrix);
         }
 
         // Ensure that two views are provided.
@@ -72,8 +73,8 @@ let testFunction = function(session, fakeDeviceController, t) {
         assert_not_equals(leftView.projectionMatrix, null);
         assert_not_equals(rightView.projectionMatrix, null);
 
-        assert_matrices_approx_equal(leftView.projectionMatrix, VALID_PROJECTION_MATRIX);
-        assert_matrices_approx_equal(rightView.projectionMatrix, VALID_PROJECTION_MATRIX);
+        assert_matrix_approx_equals(leftView.projectionMatrix, VALID_PROJECTION_MATRIX);
+        assert_matrix_approx_equals(rightView.projectionMatrix, VALID_PROJECTION_MATRIX);
 
         // Finished test.
         resolve();

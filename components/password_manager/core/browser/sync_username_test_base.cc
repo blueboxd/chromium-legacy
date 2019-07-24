@@ -19,7 +19,7 @@ void SyncUsernameTestBase::FakeSigninAs(const std::string& email) {
   // not allow logging in without a previously log-out.
   // So make sure tests only log in once and that the email is the same in case
   // of FakeSigninAs calls roll.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       identity_test_env_.identity_manager();
   if (identity_manager->HasPrimaryAccount()) {
     DCHECK_EQ(identity_manager->GetPrimaryAccountInfo().email, email);

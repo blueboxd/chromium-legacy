@@ -25,6 +25,17 @@
 
 namespace send_tab_to_self {
 
+namespace {
+
+// The valid device button height.
+constexpr int kDeviceButtonHeight = 56;
+// Maximum number of buttons that are shown without scroll. If the device
+// number is larger than kMaximumButtons, the bubble content will be
+// scrollable.
+constexpr int kMaximumButtons = 5;
+
+}  // namespace
+
 SendTabToSelfBubbleViewImpl::SendTabToSelfBubbleViewImpl(
     views::View* anchor_view,
     const gfx::Point& anchor_point,
@@ -71,10 +82,7 @@ bool SendTabToSelfBubbleViewImpl::Close() {
 
 void SendTabToSelfBubbleViewImpl::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&SendTabToSelfBubbleViewImpl::DevicePressed,
-                     weak_factory_.GetWeakPtr(), sender->tag()));
+  DevicePressed(sender->tag());
 }
 
 gfx::Size SendTabToSelfBubbleViewImpl::CalculatePreferredSize() const {
@@ -129,7 +137,7 @@ void SendTabToSelfBubbleViewImpl::CreateScrollView() {
 }
 
 void SendTabToSelfBubbleViewImpl::PopulateScrollView(
-    const std::vector<TargetDeviceInfo> devices) {
+    const std::vector<TargetDeviceInfo>& devices) {
   device_buttons_.clear();
   auto device_list_view = std::make_unique<views::View>();
   device_list_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -152,8 +160,7 @@ void SendTabToSelfBubbleViewImpl::DevicePressed(size_t index) {
   if (!controller_) {
     return;
   }
-  SendTabToSelfBubbleDeviceButton* device_button =
-      device_buttons_.at(index).get();
+  SendTabToSelfBubbleDeviceButton* device_button = device_buttons_[index].get();
   controller_->OnDeviceSelected(device_button->device_name(),
                                 device_button->device_guid());
   Hide();

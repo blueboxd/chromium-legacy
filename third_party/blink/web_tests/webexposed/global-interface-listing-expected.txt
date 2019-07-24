@@ -4421,8 +4421,8 @@ interface LargestContentfulPaint : PerformanceEntry
     attribute @@toStringTag
     getter element
     getter id
+    getter loadTime
     getter renderTime
-    getter responseEnd
     getter size
     getter url
     method constructor
@@ -5439,10 +5439,10 @@ interface PerformanceElementTiming : PerformanceEntry
     getter id
     getter identifier
     getter intersectionRect
+    getter loadTime
     getter naturalHeight
     getter naturalWidth
     getter renderTime
-    getter responseEnd
     getter url
     method constructor
     method toJSON

@@ -37,6 +37,8 @@ namespace {
 
 // Time zones that will be used in tests.
 constexpr char kESTTimeZoneID[] = "America/New_York";
+constexpr char kISTTimeZoneID[] = "Asia/Kolkata";
+constexpr char kPSTTimeZoneID[] = "America/Los_Angeles";
 
 void DecodeJsonStringAndNormalize(const std::string& json_string,
                                   base::Value* value) {
@@ -98,6 +100,54 @@ std::string IcuDayOfWeekToStringDayOfWeek(UCalendarDaysOfWeek day_of_week) {
   return "SATURDAY";
 }
 
+// Sets |output|'s time of day to |input|'s. Assume's |input| is valid.
+void SetTimeOfDay(const icu::Calendar& input, icu::Calendar* output) {
+  // Getting each of these properties should succeed if |input| is valid.
+  UErrorCode status = U_ZERO_ERROR;
+  int32_t hour = input.get(UCAL_HOUR_OF_DAY, status);
+  ASSERT_TRUE(U_SUCCESS(status));
+  int32_t minute = input.get(UCAL_MINUTE, status);
+  ASSERT_TRUE(U_SUCCESS(status));
+  int32_t seconds = input.get(UCAL_SECOND, status);
+  ASSERT_TRUE(U_SUCCESS(status));
+  int32_t ms = input.get(UCAL_MILLISECOND, status);
+  ASSERT_TRUE(U_SUCCESS(status));
+
+  output->set(UCAL_HOUR_OF_DAY, hour);
+  output->set(UCAL_MINUTE, minute);
+  output->set(UCAL_SECOND, seconds);
+  output->set(UCAL_MILLISECOND, ms);
+}
+
+// Calculates |cur_time + delay| in |old_tz|. Then gets the same time of day
+// (hours:minutes:seconds:ms) in |new_tz|. Returns the delay between |cur_time|
+// and |new_tz|. |delay| must be non-zero.
+base::TimeDelta CalculateTimerExpirationDelayInDailyPolicyForTimeZone(
+    base::Time cur_time,
+    base::TimeDelta delay,
+    const icu::TimeZone& old_tz,
+    const icu::TimeZone& new_tz) {
+  DCHECK(!delay.is_zero());
+
+  auto cur_time_utc_cal = update_checker_internal::ConvertUtcToTzIcuTime(
+      cur_time, *icu::TimeZone::getGMT());
+
+  auto old_tz_timer_expiration_cal =
+      update_checker_internal::ConvertUtcToTzIcuTime(cur_time + delay, old_tz);
+
+  auto new_tz_timer_expiration_cal =
+      update_checker_internal::ConvertUtcToTzIcuTime(cur_time, new_tz);
+  SetTimeOfDay(*old_tz_timer_expiration_cal, new_tz_timer_expiration_cal.get());
+
+  base::TimeDelta result = update_checker_internal::GetDiff(
+      *new_tz_timer_expiration_cal, *cur_time_utc_cal);
+  // If the update check time in the new time zone has already passed then it
+  // will happen on the next day.
+  if (result <= base::TimeDelta())
+    result += base::TimeDelta::FromDays(1);
+  return result;
+}
+
 }  // namespace
 
 class DeviceScheduledUpdateCheckerForTest
@@ -131,6 +181,7 @@ class DeviceScheduledUpdateCheckerForTest
 
   void SetTimeZone(std::unique_ptr<icu::TimeZone> time_zone) {
     time_zone_ = std::move(time_zone);
+    DeviceScheduledUpdateChecker::TimezoneChanged(*time_zone_);
   }
 
   base::Time GetCurrentTime() override { return clock_->Now(); }
@@ -378,6 +429,81 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
     }
     return std::make_pair(std::move(scheduled_update_check_value),
                           std::move(update_check_icu_time));
+  }
+
+  // Checks if a time zone change to |tz_id| recalculates and sets the correct
+  // update check timer. Returns false if |tz_id| is the same as the current
+  // time zone or on a scheduling error.
+  bool CheckRecalculationOnTimezoneChange(const std::string& new_tz_id) {
+    base::Time cur_time = device_scheduled_update_checker_->GetCurrentTime();
+    const icu::TimeZone& cur_tz =
+        device_scheduled_update_checker_->GetTimeZone();
+    auto new_tz = base::WrapUnique(
+        icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(new_tz_id)));
+    if (cur_tz == *new_tz) {
+      ADD_FAILURE() << "New time zone same as current time zone: " << new_tz_id;
+      return false;
+    }
+
+    base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
+    // If the timer is set to expire at 5PM in |cur_tz| then changing time zones
+    // means that the new timer would expire at 5PM in |new_tz| as well. This
+    // delay is the delay between the new time zone's timer expiration time and
+    // |cur_time|.
+    base::TimeDelta new_tz_timer_expiration_delay =
+        CalculateTimerExpirationDelayInDailyPolicyForTimeZone(
+            cur_time, delay_from_now, cur_tz, *new_tz);
+    EXPECT_FALSE(new_tz_timer_expiration_delay <= base::TimeDelta());
+
+    // Set daily policy to start update check one hour from now.
+    int expected_update_checks = 0;
+    int expected_update_check_requests = 0;
+    int expected_update_check_completions = 0;
+    auto policy_and_next_update_check_time = CreatePolicy(
+        delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+    cros_settings_.device_settings()->Set(
+        chromeos::kDeviceScheduledUpdateCheck,
+        std::move(policy_and_next_update_check_time.first));
+    if (!CheckStats(expected_update_checks, expected_update_check_requests,
+                    expected_update_check_completions)) {
+      ADD_FAILURE() << "Incorrect stats after policy set";
+      return false;
+    }
+
+    // Change the time zone. This should change the time at which the timer
+    // should expire.
+    device_scheduled_update_checker_->SetTimeZone(std::move(new_tz));
+
+    // Fast forward right before the new time zone's expected timer expiration
+    // time and check if no new events happened.
+    const base::TimeDelta small_delay = base::TimeDelta::FromMilliseconds(1);
+    scoped_task_environment_.FastForwardBy(new_tz_timer_expiration_delay -
+                                           small_delay);
+    if (!CheckStats(expected_update_checks, expected_update_check_requests,
+                    expected_update_check_completions)) {
+      ADD_FAILURE()
+          << "Incorrect stats just before the new time zone expiration";
+      return false;
+    }
+
+    // Fast forward to the new time zone's expected timer expiration time and
+    // check if the timer expiration and update check happens.
+    expected_update_checks += 1;
+    expected_update_check_requests += 1;
+    expected_update_check_completions += 1;
+    scoped_task_environment_.FastForwardBy(small_delay);
+    // Simulate update check succeeding.
+    NotifyUpdateCheckStatus(
+        chromeos::UpdateEngineClient::UpdateStatusOperation::
+            UPDATE_STATUS_UPDATED_NEED_REBOOT);
+    if (!CheckStats(expected_update_checks, expected_update_check_requests,
+                    expected_update_check_completions)) {
+      ADD_FAILURE()
+          << "Incorrect stats just after the expected new time zone expiration";
+      return false;
+    }
+
+    return true;
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -770,6 +896,20 @@ TEST_F(DeviceScheduledUpdateCheckerTest,
                               UPDATE_STATUS_UPDATED_NEED_REBOOT);
   EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
                          expected_update_check_completions));
+}
+
+// Checks if a time zone change successfully recalculates update check timer
+// expiration delays when time zone moves forward.
+TEST_F(DeviceScheduledUpdateCheckerTest,
+       CheckRecalculationOnForwardTimezoneChange) {
+  EXPECT_TRUE(CheckRecalculationOnTimezoneChange(kISTTimeZoneID));
+}
+
+// Checks if a time zone change successfully recalculates update check timer
+// expiration delays when time zone moves backward.
+TEST_F(DeviceScheduledUpdateCheckerTest,
+       CheckRecalculationOnBackwardTimezoneChange) {
+  EXPECT_TRUE(CheckRecalculationOnTimezoneChange(kPSTTimeZoneID));
 }
 
 }  // namespace policy

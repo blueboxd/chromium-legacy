@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_interface_binders.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -190,9 +191,9 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->CreateService(std::move(request), origin);
       }));
 
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](blink::mojom::NotificationServiceRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::NotificationServiceRequest request,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetPlatformNotificationContext()
             ->CreateService(origin, std::move(request));

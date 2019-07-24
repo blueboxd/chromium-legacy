@@ -73,6 +73,11 @@ bool ArCoreImpl::Initialize(
     return false;
   }
 
+  // Set incognito mode for ARCore session - this is done unconditionally as we
+  // always want to limit the amount of logging done by ARCore.
+  ArSession_enableIncognitoMode_private(session.get());
+  DVLOG(1) << __func__ << ": ARCore incognito mode enabled";
+
   internal::ScopedArCoreObject<ArConfig*> arcore_config;
   ArConfig_create(
       session.get(),
@@ -247,7 +252,7 @@ void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
 
     fn(ar_plane);
   }
-}
+}  // namespace device
 
 std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
   EnsureArCorePlanesList();

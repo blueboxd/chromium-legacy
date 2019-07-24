@@ -9,12 +9,15 @@ if (is_android) {
 }
 
 source_set("test_lib") {
+  testonly = true
   visibility =
       [ "//chrome/browser/notifications/scheduler/internal:unit_tests" ]
 
   sources = [
     "fake_clock.cc",
     "fake_clock.h",
+    "mock_notification_background_task_scheduler.cc",
+    "mock_notification_background_task_scheduler.h",
     "test_utils.cc",
     "test_utils.h",
   ]
@@ -24,5 +27,7 @@ source_set("test_lib") {
     "//chrome/browser/notifications/scheduler/internal:lib",
     "//chrome/browser/notifications/scheduler/public",
     "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

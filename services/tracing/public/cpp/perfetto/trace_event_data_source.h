@@ -13,8 +13,10 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_base.h"
+#include "base/sequence_checker.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/trace_event/trace_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
@@ -114,6 +116,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // service. Should only be called once.
   void SetupStartupTracing(bool privacy_filtering_enabled);
 
+  void OnTaskSchedulerAvailable();
+
   // The PerfettoProducer is responsible for calling StopTracing
   // which will clear the stored pointer to it, before it
   // gets destroyed. PerfettoProducer::CreateTraceWriter can be
@@ -131,11 +135,23 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void ReturnTraceWriter(
       std::unique_ptr<perfetto::StartupTraceWriter> trace_writer);
 
+  void set_startup_tracing_timeout_for_testing(base::TimeDelta timeout_us) {
+    startup_tracing_timeout_ = timeout_us;
+  }
+
  private:
   friend class base::NoDestructor<TraceEventDataSource>;
 
   TraceEventDataSource();
   ~TraceEventDataSource() override;
+
+  void StartupTracingTimeoutFired();
+  void OnFlushFinished(const scoped_refptr<base::RefCountedString>&,
+                       bool has_more_events);
+
+  void StartTracingInternal(
+      PerfettoProducer* producer_client,
+      const perfetto::DataSourceConfig& data_source_config);
 
   void RegisterWithTraceLog();
   void UnregisterFromTraceLog();
@@ -167,6 +183,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // This ID is incremented whenever a new tracing session is started.
   static constexpr uint32_t kInvalidSessionID = 0;
   static constexpr uint32_t kFirstSessionID = 1;
+  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(10);
   std::atomic<uint32_t> session_id_{kInvalidSessionID};
 
   // To avoid lock-order inversion, this lock should not be held while making
@@ -180,8 +197,12 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // SetupStartupTracing() is called.
   std::unique_ptr<perfetto::StartupTraceWriterRegistry>
       startup_writer_registry_;
+  base::OneShotTimer startup_tracing_timer_;
+  bool flushing_trace_log_ = false;
+  base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;
   bool privacy_filtering_enabled_ = false;
+  SEQUENCE_CHECKER(perfetto_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);
 };

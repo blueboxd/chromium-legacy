@@ -43,6 +43,7 @@ class DemoModeResourcesRemover;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
+class GnubbyNotification;
 class IdleActionWarningObserver;
 class LowDiskNotification;
 class NetworkChangeManagerClient;
@@ -55,7 +56,6 @@ class SessionTerminationManager;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
 class WilcoDtcSupportdManager;
-class GnubbyNotification;
 
 namespace default_app_order {
 class ExternalLoader;

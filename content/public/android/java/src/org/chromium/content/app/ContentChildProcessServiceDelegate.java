@@ -81,7 +81,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         mCpuFeatures = connectionBundle.getLong(ContentChildProcessConstants.EXTRA_CPU_FEATURES);
         assert mCpuCount > 0;
 
-        if (LibraryLoader.useChromiumLinker() && !LibraryLoader.getInstance().isLoadedByZygote()) {
+        if (LibraryLoader.useCrazyLinker() && !LibraryLoader.getInstance().isLoadedByZygote()) {
             Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
             if (sharedRelros != null) {
                 getLinker().useSharedRelros(sharedRelros);
@@ -107,7 +107,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
         Linker linker = null;
         boolean requestedSharedRelro = false;
-        if (LibraryLoader.useChromiumLinker()) {
+        if (LibraryLoader.useCrazyLinker()) {
             assert mLinkerParams != null;
             linker = getLinker();
             if (mLinkerParams.mWaitForSharedRelro) {
@@ -187,8 +187,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
             // For testing, set the Linker implementation and the test runner
             // class name to match those used by the parent.
             assert mLinkerParams != null;
-            Linker.setupForTesting(mLinkerParams.mLinkerImplementationForTesting,
-                    mLinkerParams.mTestRunnerClassNameForTesting);
+            Linker.setupForTesting(mLinkerParams.mTestRunnerClassNameForTesting);
         }
         return Linker.getInstance();
     }

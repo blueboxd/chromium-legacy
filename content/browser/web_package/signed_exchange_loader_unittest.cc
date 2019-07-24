@@ -149,13 +149,7 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoaderTest);
 };
 
-// Test is flaky on Fuchsia. See https://crbug.com/986337.
-#if defined(OS_FUCHSIA)
-#define MAYBE_Simple DISABLED_Simple
-#else
-#define MAYBE_Simple Simple
-#endif
-TEST_P(SignedExchangeLoaderTest, MAYBE_Simple) {
+TEST_P(SignedExchangeLoaderTest, Simple) {
   network::mojom::URLLoaderPtr loader;
   network::mojom::URLLoaderClientPtr loader_client;
   MockURLLoader mock_loader(mojo::MakeRequest(&loader));
@@ -254,6 +248,7 @@ TEST_P(SignedExchangeLoaderTest, MAYBE_Simple) {
     ping_loader_client()->OnReceiveResponse(network::ResourceResponseHead());
     ping_loader_client()->OnComplete(
         network::URLLoaderCompletionStatus(net::OK));
+    run_loop.Run();
     base::RunLoop().RunUntilIdle();
   }
 }

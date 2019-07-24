@@ -21,8 +21,6 @@ namespace ime {
 
 namespace {
 
-// The name of an IME decoder shared library.
-const char kLibImeDecoderName[] = "libimedecoder.so";
 // The path of input tools relative folder, which contains some 'pre-bundled'
 // static language dictionaries.
 const char kInputToolsBundleFolder[] = "input_methods/input_tools";
@@ -43,15 +41,6 @@ bool CreateFolderIfNotExist(const char* dir) {
   return base::CreateDirectory(path);
 }
 
-// This is where IME decoder shared library will be put.
-base::FilePath GetLibFolder() {
-#if defined(__x86_64__) || defined(__aarch64__)
-  return base::FilePath("/usr/lib64");
-#else
-  return base::FilePath("/usr/lib");
-#endif
-}
-
 // Whether IME instance shares a same language data path with each other.
 inline constexpr bool CrosImeSharedDataEnabled() {
 #if BUILDFLAG(ENABLE_CROS_IME_SHARED_DATA)
@@ -66,9 +55,22 @@ base::FilePath GetChromeOSAssetFolder() {
   return base::FilePath("/usr/share/chromeos-assets");
 }
 
-void AddDecoderPath(std::vector<BrokerFilePermission>* permissions) {
-  base::FilePath lib_path = GetLibFolder().AppendASCII(kLibImeDecoderName);
-  permissions->push_back(BrokerFilePermission::ReadOnly(lib_path.value()));
+void AddSharedLibraryAndDepsPath(
+    std::vector<BrokerFilePermission>* permissions) {
+  // Where IME decoder shared library and its dependencies will live.
+  static const char* kReadOnlyLibDirs[] =
+#if defined(__x86_64__) || defined(__aarch64__)
+      {"/usr/lib64", "/lib64"};
+#else
+      {"/usr/lib", "/lib"};
+#endif
+
+  for (const char* dir : kReadOnlyLibDirs) {
+    std::string path(dir);
+    permissions->push_back(
+        BrokerFilePermission::StatOnlyWithIntermediateDirs(path));
+    permissions->push_back(BrokerFilePermission::ReadOnlyRecursive(path + "/"));
+  }
 }
 
 void AddBundleFolder(std::vector<BrokerFilePermission>* permissions) {
@@ -98,10 +100,11 @@ void AddUserDataFolder(std::vector<BrokerFilePermission>* permissions) {
   // user dictionary can not be saved.
   bool success = CreateFolderIfNotExist(kUserHomePath);
   if (!success) {
-    LOG(WARNING) << "Unable to create ime folder under user profile folder";
+    LOG(WARNING) << "Unable to create IME folder under user profile folder";
+    return;
   }
-  // Still need to push this path, otherwise process will crash directly when
-  // decoder tries to access this folder.
+  // Push this path, otherwise process will crash directly when IME decoder
+  // tries to access this folder.
   permissions->push_back(
       BrokerFilePermission::ReadWriteCreateRecursive(kUserHomePath));
 }
@@ -111,7 +114,8 @@ std::vector<BrokerFilePermission> GetImeFilePermissions() {
   std::vector<BrokerFilePermission> permissions{
       BrokerFilePermission::ReadOnly("/dev/urandom"),
       BrokerFilePermission::ReadOnly("/sys/devices/system/cpu")};
-  AddDecoderPath(&permissions);
+
+  AddSharedLibraryAndDepsPath(&permissions);
   AddBundleFolder(&permissions);
   AddUserDataFolder(&permissions);
   AddSharedDataFolderIfEnabled(&permissions);
@@ -123,9 +127,11 @@ std::vector<BrokerFilePermission> GetImeFilePermissions() {
 bool ImePreSandboxHook(service_manager::SandboxLinux::Options options) {
   auto* instance = service_manager::SandboxLinux::GetInstance();
   instance->StartBrokerProcess(MakeBrokerCommandSet({
+                                   sandbox::syscall_broker::COMMAND_ACCESS,
                                    sandbox::syscall_broker::COMMAND_OPEN,
                                    sandbox::syscall_broker::COMMAND_MKDIR,
                                    sandbox::syscall_broker::COMMAND_STAT,
+                                   sandbox::syscall_broker::COMMAND_STAT64,
                                    sandbox::syscall_broker::COMMAND_RENAME,
                                    sandbox::syscall_broker::COMMAND_UNLINK,
                                }),

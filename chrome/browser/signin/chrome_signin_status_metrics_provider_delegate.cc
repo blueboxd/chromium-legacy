@@ -64,7 +64,7 @@ ChromeSigninStatusMetricsProviderDelegate::GetStatusOfAllAccounts() {
 #endif
     accounts_status.num_opened_accounts++;
 
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile->GetOriginalProfile());
     if (identity_manager && identity_manager->HasPrimaryAccount())
       accounts_status.num_signed_in_accounts++;
@@ -73,12 +73,12 @@ ChromeSigninStatusMetricsProviderDelegate::GetStatusOfAllAccounts() {
   return accounts_status;
 }
 
-std::vector<identity::IdentityManager*>
+std::vector<signin::IdentityManager*>
 ChromeSigninStatusMetricsProviderDelegate::GetIdentityManagersForAllAccounts() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
 
-  std::vector<identity::IdentityManager*> managers;
+  std::vector<signin::IdentityManager*> managers;
   for (Profile* profile : profiles) {
     auto* identity_manager =
         IdentityManagerFactory::GetForProfileIfExists(profile);
@@ -92,7 +92,7 @@ ChromeSigninStatusMetricsProviderDelegate::GetIdentityManagersForAllAccounts() {
 #if !defined(OS_ANDROID)
 void ChromeSigninStatusMetricsProviderDelegate::OnBrowserAdded(
     Browser* browser) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser->profile());
 
   // Nothing will change if the opened browser is in incognito mode.
@@ -105,12 +105,12 @@ void ChromeSigninStatusMetricsProviderDelegate::OnBrowserAdded(
 #endif
 
 void ChromeSigninStatusMetricsProviderDelegate::IdentityManagerCreated(
-    identity::IdentityManager* identity_manager) {
+    signin::IdentityManager* identity_manager) {
   owner()->OnIdentityManagerCreated(identity_manager);
 }
 
 void ChromeSigninStatusMetricsProviderDelegate::IdentityManagerShutdown(
-    identity::IdentityManager* identity_manager) {
+    signin::IdentityManager* identity_manager) {
   owner()->OnIdentityManagerShutdown(identity_manager);
 }
 

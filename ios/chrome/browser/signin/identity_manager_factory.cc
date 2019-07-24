@@ -23,7 +23,7 @@
 
 void IdentityManagerFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  identity::IdentityManager::RegisterProfilePrefs(registry);
+  signin::IdentityManager::RegisterProfilePrefs(registry);
 }
 
 IdentityManagerFactory::IdentityManagerFactory()
@@ -36,16 +36,16 @@ IdentityManagerFactory::IdentityManagerFactory()
 IdentityManagerFactory::~IdentityManagerFactory() {}
 
 // static
-identity::IdentityManager* IdentityManagerFactory::GetForBrowserState(
+signin::IdentityManager* IdentityManagerFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<identity::IdentityManager*>(
+  return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
-identity::IdentityManager* IdentityManagerFactory::GetForBrowserStateIfExists(
+signin::IdentityManager* IdentityManagerFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
-  return static_cast<identity::IdentityManager*>(
+  return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
 
@@ -70,7 +70,7 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
 
-  identity::IdentityManagerBuildParams params;
+  signin::IdentityManagerBuildParams params;
   params.account_consistency = signin::AccountConsistencyMethod::kMirror;
   params.device_accounts_provider =
       std::make_unique<DeviceAccountsProviderImpl>();
@@ -80,8 +80,8 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
   params.profile_path = base::FilePath();
   params.signin_client = SigninClientFactory::GetForBrowserState(browser_state);
 
-  std::unique_ptr<identity::IdentityManager> identity_manager =
-      identity::BuildIdentityManager(&params);
+  std::unique_ptr<signin::IdentityManager> identity_manager =
+      signin::BuildIdentityManager(&params);
 
   for (auto& observer : observer_list_)
     observer.IdentityManagerCreated(identity_manager.get());
@@ -90,7 +90,7 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
 }
 
 void IdentityManagerFactory::BrowserStateShutdown(web::BrowserState* context) {
-  auto* identity_manager = static_cast<identity::IdentityManager*>(
+  auto* identity_manager = static_cast<signin::IdentityManager*>(
       GetServiceForBrowserState(context, false));
   if (identity_manager) {
     for (auto& observer : observer_list_)

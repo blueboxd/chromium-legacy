@@ -87,7 +87,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
     sync_service_observer_ = observer;
   }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return WebViewIdentityManagerFactory::GetForBrowserState(&browser_state_);
   }
 
@@ -163,7 +163,7 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
     // Create authentication error.
     GoogleServiceAuthError auth_error(
         GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+    signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_manager(), identity_manager()->GetPrimaryAccountId(),
         auth_error);
 

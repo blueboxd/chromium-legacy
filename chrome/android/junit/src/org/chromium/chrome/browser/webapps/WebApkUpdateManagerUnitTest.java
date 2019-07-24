@@ -34,7 +34,6 @@ import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -481,7 +480,6 @@ public class WebApkUpdateManagerUnitTest {
     @Before
     public void setUp() throws Exception {
         PathUtils.setPrivateDataDirectorySuffix("chrome");
-        CommandLine.init(null);
         PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
 
         mJniMocker.mock(WebApkUpdateManagerJni.TEST_HOOKS, new TestWebApkUpdateManagerJni());

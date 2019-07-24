@@ -18,6 +18,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -276,6 +277,49 @@ HitTest GetWindowResizeHitTest(UINT param) {
   }
 }
 
+void RecordDeltaBetweenTimeNowAndPerformanceCountHistogram(
+    base::TimeTicks event_time,
+    UINT64 performance_count,
+    POINTER_INPUT_TYPE pointer_input_type,
+    bool is_session_remote) {
+  // In remote session, sometimes |performance_count| drifts
+  // substantially in future compared to |TimeTicks::Now()| - enough to skew the
+  // histogram data.  Additionally, user input over remote session already has
+  // lag, so user is less likely to be sensitive to the responsiveness of input
+  // in such case. So we are less concerned capturing the deltas in remote
+  // session scenario.
+  if (base::TimeTicks::IsHighResolution() && !is_session_remote) {
+    base::TimeTicks event_time_from_pointer =
+        base::TimeTicks::FromQPCValue(performance_count);
+
+    double delta_between_event_timestamps =
+        (event_time - event_time_from_pointer).InMicrosecondsF();
+    std::string pointer_type;
+    switch (pointer_input_type) {
+      case PT_PEN:
+        pointer_type = "Pen";
+        break;
+      case PT_TOUCH:
+        pointer_type = "Touch";
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    std::string number_sign =
+        delta_between_event_timestamps >= 0 ? "Positive" : "Negative";
+    base::TimeDelta delta_sample_value = base::TimeDelta::FromMicroseconds(
+        std::abs(delta_between_event_timestamps));
+
+    base::UmaHistogramCustomMicrosecondsTimes(
+        base::StringPrintf("Event.%s.InputEventTimeStamp."
+                           "DeltaBetweenTimeNowAndPerformanceCount.%s",
+                           pointer_type.c_str(), number_sign.c_str()),
+        delta_sample_value, base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(30), 30);
+  }
+}
+
 constexpr int kTouchDownContextResetTimeout = 500;
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
@@ -408,6 +452,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate,
       pointer_events_for_touch_(::features::IsUsingWMPointerForTouch()),
       precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
           ::features::kPrecisionTouchpadScrollPhase)),
+      is_remote_session_(base::win::IsCurrentSessionRemote()),
       autohide_factory_(this) {}
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -2413,6 +2458,7 @@ void HWNDMessageHandler::OnSettingChange(UINT flags, const wchar_t* section) {
     if (flags == SPI_SETWORKAREA)
       delegate_->HandleWorkAreaChanged();
     SetMsgHandled(FALSE);
+    is_remote_session_ = base::win::IsCurrentSessionRemote();
   }
 
   // If the work area is changing, then it could be as a result of the taskbar
@@ -3041,6 +3087,10 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleTouchEvent(&event);
 
+  RecordDeltaBetweenTimeNowAndPerformanceCountHistogram(
+      event_time, pointer_info.PerformanceCount, pointer_info.pointerType,
+      is_remote_session_);
+
   if (ref) {
     // Mark touch released events handled. These will usually turn into tap
     // gestures, and doing this avoids propagating the event to other windows.
@@ -3090,12 +3140,16 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
   // window, so use the weak ptr to check if destruction occured or not.
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   if (event) {
-    if (event->IsTouchEvent())
+    if (event->IsTouchEvent()) {
       delegate_->HandleTouchEvent(event->AsTouchEvent());
-    else if (event->IsMouseEvent())
+      RecordDeltaBetweenTimeNowAndPerformanceCountHistogram(
+          event->time_stamp(), pointer_pen_info.pointerInfo.PerformanceCount,
+          pointer_pen_info.pointerInfo.pointerType, is_remote_session_);
+    } else if (event->IsMouseEvent()) {
       delegate_->HandleMouseEvent(event->AsMouseEvent());
-    else
+    } else {
       NOTREACHED();
+    }
     last_touch_or_pen_message_time_ = ::GetMessageTime();
   }
 

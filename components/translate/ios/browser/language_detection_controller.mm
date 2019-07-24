@@ -17,9 +17,9 @@
 #include "components/translate/core/language_detection/language_detection_util.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 #include "components/translate/ios/browser/string_clipping_util.h"
+#import "ios/web/common/url_scheme_util.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/navigation_context.h"
-#import "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "net/http/http_response_headers.h"
 

@@ -184,7 +184,7 @@ void IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount(
     // No primary account, try the first account in cookies.
     DCHECK_EQ(AccountListeningMode::kNotListening, account_listening_mode_);
     account_listening_mode_ = AccountListeningMode::kListeningCookies;
-    identity::AccountsInCookieJarInfo accounts_in_cookies =
+    signin::AccountsInCookieJarInfo accounts_in_cookies =
         identity_manager->GetAccountsInCookieJar();
     if (accounts_in_cookies.accounts_are_fresh) {
       OnAccountsInCookieUpdated(accounts_in_cookies,
@@ -242,7 +242,7 @@ void IdentityGetAuthTokenFunction::OnReceivedExtensionAccountInfo(
 }
 
 void IdentityGetAuthTokenFunction::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   if (account_listening_mode_ != AccountListeningMode::kListeningCookies)
     return;
@@ -707,7 +707,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 
 void IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   token_key_account_access_token_fetcher_.reset();
   if (error.state() == GoogleServiceAuthError::NONE) {
     OnGetAccessTokenComplete(access_token_info.token,
@@ -773,7 +773,7 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
               base::BindOnce(
                   &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
                   base::Unretained(this)),
-              identity::AccessTokenFetcher::Mode::kImmediate);
+              signin::AccessTokenFetcher::Mode::kImmediate);
       return;
     }
   }
@@ -786,7 +786,7 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
           base::BindOnce(
               &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
               base::Unretained(this)),
-          identity::AccessTokenFetcher::Mode::kImmediate);
+          signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(

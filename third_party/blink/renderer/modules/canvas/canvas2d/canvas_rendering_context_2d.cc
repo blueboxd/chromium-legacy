@@ -443,6 +443,8 @@ cc::PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
 }
 
 cc::PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
+  if (isContextLost())
+    return nullptr;
   if (IsPaintable())
     return canvas()->GetCanvas2DLayerBridge()->Canvas();
   return nullptr;

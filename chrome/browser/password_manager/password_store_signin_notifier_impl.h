@@ -15,10 +15,10 @@ namespace password_manager {
 // PasswordStore.
 class PasswordStoreSigninNotifierImpl
     : public PasswordStoreSigninNotifier,
-      public identity::IdentityManager::Observer {
+      public signin::IdentityManager::Observer {
  public:
   explicit PasswordStoreSigninNotifierImpl(
-      identity::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager);
   ~PasswordStoreSigninNotifierImpl() override;
 
   // PasswordStoreSigninNotifier implementations.
@@ -30,7 +30,7 @@ class PasswordStoreSigninNotifierImpl
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
  private:
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
 };
 
 }  // namespace password_manager

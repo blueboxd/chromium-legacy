@@ -8,3 +8,4 @@ yuweih@chromium.org
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 
 # COMPONENT: Services>Chromoting
+# TEAM: chromoting-team@google.com

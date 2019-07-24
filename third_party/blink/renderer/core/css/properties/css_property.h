@@ -66,20 +66,20 @@ class CORE_EXPORT CSSProperty : public CSSUnresolvedProperty {
       const ComputedStyle&,
       const SVGComputedStyle&,
       const LayoutObject*,
-      Node*,
+      const Node*,
       bool allow_visited_style) const {
     return nullptr;
   }
   // TODO: Resolve computed auto alignment in applyProperty/ComputedStyle and
-  // remove this non-const Node parameter.
+  // remove this const Node parameter.
   const CSSValue* CSSValueFromComputedStyle(const ComputedStyle&,
                                             const LayoutObject*,
-                                            Node*,
+                                            const Node*,
                                             bool allow_visited_style) const;
   virtual std::unique_ptr<CrossThreadStyleValue>
   CrossThreadStyleValueFromComputedStyle(const ComputedStyle& computed_style,
                                          const LayoutObject* layout_object,
-                                         Node* node,
+                                         const Node* styled_node,
                                          bool allow_visited_style) const;
   virtual const CSSProperty& ResolveDirectionAwareProperty(TextDirection,
                                                            WritingMode) const {

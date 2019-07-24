@@ -25,11 +25,15 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
@@ -81,6 +85,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public static final String CONTEXT_MENU_USER_ACTION_PREFIX = "Suggestions";
 
     protected final Tab mTab;
+    private final ActivityTabProvider mActivityTabProvider;
+    private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
 
     private final String mTitle;
     private final int mBackgroundColor;
@@ -95,6 +101,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private @Nullable NewTabPageView mNewTabPageView;
     protected NewTabPageLayout mNewTabPageLayout;
     private TabObserver mTabObserver;
+    private LifecycleObserver mLifecycleObserver;
     protected boolean mSearchProviderHasLogo;
 
     protected FakeboxDelegate mFakeboxDelegate;
@@ -283,12 +290,17 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * @param activity The activity used for context to create the new tab page's View.
      * @param nativePageHost The host that is showing this new tab page.
      * @param tabModelSelector The TabModelSelector used to open tabs.
+     * @param activityTabProvider Allows us to check if we are the current tab.
+     * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
      */
     public NewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
-            TabModelSelector tabModelSelector) {
+            TabModelSelector tabModelSelector, ActivityTabProvider activityTabProvider,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
         mConstructedTimeNs = System.nanoTime();
         TraceEvent.begin(TAG);
 
+        mActivityTabProvider = activityTabProvider;
+        mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mTab = nativePageHost.getActiveTab();
         Profile profile = mTab.getProfile();
 
@@ -334,8 +346,22 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             }
         };
         mTab.addObserver(mTabObserver);
-        updateSearchProviderHasLogo();
 
+        mLifecycleObserver = new PauseResumeWithNativeObserver() {
+            @Override
+            public void onResumeWithNative() {}
+
+            @Override
+            public void onPauseWithNative() {
+                // Only record when this tab is the current tab.
+                if (mActivityTabProvider.get() == mTab) {
+                    RecordUserAction.record("MobileNTPPaused");
+                }
+            }
+        };
+        mActivityLifecycleDispatcher.register(mLifecycleObserver);
+
+        updateSearchProviderHasLogo();
         initializeMainView(activity, nativePageHost);
 
         mFullscreenManager = activity.getFullscreenManager();
@@ -681,6 +707,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         TemplateUrlServiceFactory.get().removeObserver(this);
         mTab.removeObserver(mTabObserver);
         mTabObserver = null;
+        mActivityLifecycleDispatcher.unregister(mLifecycleObserver);
+        mLifecycleObserver = null;
         mFullscreenManager.removeListener(this);
         mIsDestroyed = true;
     }

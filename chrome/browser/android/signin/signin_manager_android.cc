@@ -32,7 +32,7 @@ void ClearLastSignedInUserForProfile(SigninClient* signin_client) {
 SigninManagerAndroid::SigninManagerAndroid(
     SigninClient* signin_client,
     PrefService* local_state_pref_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     std::unique_ptr<SigninManagerDelegate> signin_manager_delegate)
     : signin_client_(signin_client),
       identity_manager_(identity_manager),
@@ -91,7 +91,7 @@ void SigninManagerAndroid::SignOut(JNIEnv* env,
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
   account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       static_cast<signin_metrics::ProfileSignout>(signoutReason),
       // Always use IGNORE_METRIC for the profile deletion argument. Chrome
       // Android has just a single-profile which is never deleted upon

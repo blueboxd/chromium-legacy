@@ -307,6 +307,7 @@ jumbo_component("gl") {
       "gl_wgl_api_implementation.h",
       "swap_chain_presenter.cc",
       "swap_chain_presenter.h",
+      "vsync_observer.h",
       "vsync_provider_win.cc",
       "vsync_provider_win.h",
       "vsync_thread_win.cc",

@@ -30,7 +30,7 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
     AutocompleteHistoryManager* autocomplete_history_manager,
     web::WebState* web_state,
     id<CWVAutofillClientIOSBridge> bridge,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     StrikeDatabase* strike_database,
     scoped_refptr<AutofillWebDataService> autofill_web_data_service,
     syncer::SyncService* sync_service)
@@ -77,7 +77,7 @@ syncer::SyncService* WebViewAutofillClientIOS::GetSyncService() {
   return sync_service_;
 }
 
-identity::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
+signin::IdentityManager* WebViewAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
 }
 

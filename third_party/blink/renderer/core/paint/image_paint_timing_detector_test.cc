@@ -128,7 +128,10 @@ class ImagePaintTimingDetectorTest
                ->records_manager_.size_ordered_set_.size() +
            GetPaintTimingDetector()
                .GetImagePaintTimingDetector()
-               ->records_manager_.images_queued_for_paint_time_.size();
+               ->records_manager_.images_queued_for_paint_time_.size() +
+           GetPaintTimingDetector()
+               .GetImagePaintTimingDetector()
+               ->records_manager_.image_finished_times_.size();
   }
 
   size_t CountChildFrameRecords() {
@@ -629,7 +632,7 @@ TEST_F(ImagePaintTimingDetectorTest,
   )HTML");
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  EXPECT_EQ(ContainerTotalSize(), 2u);
+  EXPECT_EQ(ContainerTotalSize(), 3u);
 
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("target"));
@@ -657,7 +660,7 @@ TEST_F(ImagePaintTimingDetectorTest,
   )HTML");
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  EXPECT_EQ(ContainerTotalSize(), 1u);
+  EXPECT_EQ(ContainerTotalSize(), 2u);
   EXPECT_EQ(CountInvisibleRecords(), 1u);
 
   GetDocument().body()->RemoveChild(GetDocument().getElementById("parent"));
@@ -680,7 +683,7 @@ TEST_F(ImagePaintTimingDetectorTest,
     </div>
   )HTML");
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
-  EXPECT_EQ(ContainerTotalSize(), 2u);
+  EXPECT_EQ(ContainerTotalSize(), 3u);
 
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("target"));
@@ -696,7 +699,7 @@ TEST_F(ImagePaintTimingDetectorTest,
   )HTML");
   SetImageAndPaint("target", 5, 5);
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(ContainerTotalSize(), 3u);
+  EXPECT_EQ(ContainerTotalSize(), 4u);
 
   GetDocument().getElementById("parent")->RemoveChild(
       GetDocument().getElementById("target"));

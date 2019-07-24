@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
@@ -108,13 +109,16 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     appcache_handle_ = std::make_unique<AppCacheNavigationHandle>(
         storage_partition_impl->GetAppCacheService(), worker_process_id_);
 
+    service_worker_handle_ = std::make_unique<ServiceWorkerNavigationHandle>(
+        storage_partition_impl->GetServiceWorkerContext());
+
     WorkerScriptFetchInitiator::Start(
         worker_process_id_, script_url, request_initiator_origin,
         credentials_mode, std::move(outside_fetch_client_settings_object),
         ResourceType::kWorker,
         storage_partition_impl->GetServiceWorkerContext(),
-        appcache_handle_->core(), std::move(blob_url_loader_factory), nullptr,
-        storage_partition_impl,
+        service_worker_handle_.get(), appcache_handle_->core(),
+        std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
         base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                        weak_factory_.GetWeakPtr()));
   }
@@ -136,10 +140,6 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
   // worker in the renderer process.
   //
-  // |service_worker_provider_info| is sent to the renderer process and contains
-  // information about its ServiceWorkerProviderHost, the browser-side host for
-  // supporting the dedicated worker as a service worker client.
-  //
   // |main_script_load_params| is sent to the renderer process and to be used to
   // load the dedicated worker main script pre-requested by the browser process.
   //
@@ -153,8 +153,6 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
   void DidStartScriptLoad(
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr
-          service_worker_provider_info,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -170,8 +168,11 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       return;
     }
 
-    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
-    if (!worker_process_host) {
+    // TODO(cammie): Change this approach when we support shared workers
+    // creating dedicated workers, as there might be no ancestor frame.
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    if (!ancestor_render_frame_host) {
       client_->OnScriptLoadStartFailed();
       return;
     }
@@ -181,7 +182,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         pending_default_factory;
     CreateNetworkFactory(
         pending_default_factory.InitWithNewPipeAndPassReceiver(),
-        worker_process_host);
+        ancestor_render_frame_host);
     subresource_loader_factories->pending_default_factory() =
         std::move(pending_default_factory);
 
@@ -197,7 +198,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       service_worker_state = controller->object_info->state;
     }
 
-    client_->OnScriptLoadStarted(std::move(service_worker_provider_info),
+    client_->OnScriptLoadStarted(service_worker_handle_->TakeProviderInfo(),
                                  std::move(main_script_load_params),
                                  std::move(subresource_loader_factories),
                                  std::move(controller));
@@ -217,20 +218,20 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   }
 
   void CreateNetworkFactory(network::mojom::URLLoaderFactoryRequest request,
-                            RenderProcessHost* worker_process_host) {
+                            RenderFrameHostImpl* render_frame_host) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    DCHECK(render_frame_host);
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
 
     // Get the origin of the frame tree's root to use as top-frame origin.
-    // TODO(cammie): Change this approach when we support shared workers
-    // creating dedicated workers, as there might be no ancestor frame.
-    RenderFrameHostImpl* ancestor_render_frame_host =
-        GetAncestorRenderFrameHost();
-    url::Origin top_frame_origin(ancestor_render_frame_host->frame_tree_node()
+    // TODO(crbug.com/986167): Resolve issue of potential race condition.
+    url::Origin top_frame_origin(render_frame_host->frame_tree_node()
                                      ->frame_tree()
                                      ->root()
                                      ->current_origin());
 
+    RenderProcessHost* worker_process_host = render_frame_host->GetProcess();
+    DCHECK(worker_process_host);
     worker_process_host->CreateURLLoaderFactory(
         origin_, nullptr /* preferences */,
         net::NetworkIsolationKey(top_frame_origin, origin_),
@@ -314,6 +315,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
   blink::mojom::DedicatedWorkerHostFactoryClientPtr client_;
 
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
+  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   service_manager::BinderRegistry registry_;
 

@@ -37,7 +37,7 @@ namespace gfx {
 class Image;
 }
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
                                           const std::string&,
@@ -48,7 +48,7 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
                                           const std::string&,
                                           const std::string&,
                                           const std::string&);
-}  // namespace identity
+}  // namespace signin
 
 // Retrieves and caches GAIA information about Google Accounts.
 class AccountTrackerService {
@@ -148,8 +148,8 @@ class AccountTrackerService {
 
  private:
   friend class AccountFetcherService;
-  friend void identity::SimulateSuccessfulFetchOfAccountInfo(
-      identity::IdentityManager*,
+  friend void signin::SimulateSuccessfulFetchOfAccountInfo(
+      signin::IdentityManager*,
       const std::string&,
       const std::string&,
       const std::string&,

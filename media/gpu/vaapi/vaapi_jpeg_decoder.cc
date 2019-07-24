@@ -5,11 +5,10 @@
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 
 #include <string.h>
+#include <va/va.h>
 
 #include <iostream>
 #include <type_traits>
-
-#include <va/va.h>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"

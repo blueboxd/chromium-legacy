@@ -143,7 +143,7 @@ class DiceResponseHandlerTest : public testing::Test,
     DiceResponseParams dice_params;
     dice_params.user_intention = action;
     DiceResponseParams::AccountInfo account_info;
-    account_info.gaia_id = identity::GetTestGaiaIdForEmail(kEmail);
+    account_info.gaia_id = signin::GetTestGaiaIdForEmail(kEmail);
     account_info.email = kEmail;
     account_info.session_index = kSessionIndex;
     switch (action) {
@@ -174,7 +174,7 @@ class DiceResponseHandlerTest : public testing::Test,
   void OnBlockReconcile() override { ++reconcilor_blocked_count_; }
   void OnUnblockReconcile() override { ++reconcilor_unblocked_count_; }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 
@@ -182,7 +182,7 @@ class DiceResponseHandlerTest : public testing::Test,
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient signin_client_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;
   AboutSigninInternals about_signin_internals_;
   std::unique_ptr<AccountReconcilor> account_reconcilor_;
@@ -507,7 +507,7 @@ TEST_F(DiceResponseHandlerTest, MigrationSignout) {
   const char kSecondaryEmail[] = "other@gmail.com";
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   dice_params.signout_info->account_infos.emplace_back(
-      identity::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail, 1);
+      signin::GetTestGaiaIdForEmail(kSecondaryEmail), kSecondaryEmail, 1);
   const auto& main_account_info = dice_params.signout_info->account_infos[0];
 
   // User is signed in to Chrome, and has some refresh token for a secondary

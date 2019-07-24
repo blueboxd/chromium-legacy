@@ -1422,11 +1422,48 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
       GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
       GenURL("a.com", "/title1.html"), true));
 
-  // Navigate to the same subframe document from a different top frame top frame
-  // origin. It should be a cache miss.
+  // Navigate to the same subframe document from a different top frame origin.
+  // It should be a cache miss.
   EXPECT_FALSE(NavigationResourceCached(
       GenURL("b.com", "/navigation_controller/page_with_iframe.html"),
       GenURL("a.com", "/title1.html"), false));
+}
+
+// See: http://crbug.com/983931
+#if defined(OS_ANDROID)
+#define MAYBE_SubframeNavigationResources DISABLED_SubframeNavigationResources
+#else
+#define MAYBE_SubframeNavigationResources SubframeNavigationResources
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
+                       MAYBE_SubframeNavigationResources) {
+  // Navigate for the first time, and it's not cached.
+  NavigationResourceCached(
+      GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("a.com", "/title1.html"), false);
+
+  // The second time it should be a cache hit.
+  NavigationResourceCached(
+      GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("a.com", "/title1.html"), true);
+
+  // Navigate to the same subframe document from a different top frame origin.
+  // It should be a cache miss.
+  NavigationResourceCached(
+      GenURL("b.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("a.com", "/title1.html"), false);
+
+  // Navigate the subframe to a.com/redirect_to_d which redirects to
+  // d.com/title1.html.
+  NavigationResourceCached(
+      GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("a.com", "/redirect_to_d"), false);
+
+  // Navigate to d.com directly. The resource should be cached due to the
+  // earlier redirected navigation.
+  NavigationResourceCached(
+      GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
+      GenURL("d.com", "/title1.html"), true);
 }
 
 // See: http://crbug.com/983931
@@ -1435,6 +1472,7 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
 #else
 #define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
 #endif
+
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
                        MAYBE_SplitCacheDedicatedWorkers) {
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the

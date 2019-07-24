@@ -25,7 +25,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           const String& url,
                                           const FloatRect& intersection_rect,
                                           DOMHighResTimeStamp render_time,
-                                          DOMHighResTimeStamp response_end,
+                                          DOMHighResTimeStamp load_time,
                                           const AtomicString& identifier,
                                           int naturalWidth,
                                           int naturalHeight,
@@ -35,7 +35,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                            const String& url,
                            const FloatRect& intersection_rect,
                            DOMHighResTimeStamp render_time,
-                           DOMHighResTimeStamp response_end,
+                           DOMHighResTimeStamp load_time,
                            const AtomicString& identifier,
                            int naturalWidth,
                            int naturalHeight,
@@ -49,7 +49,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
 
   DOMRectReadOnly* intersectionRect() const { return intersection_rect_; }
   DOMHighResTimeStamp renderTime() const { return render_time_; }
-  DOMHighResTimeStamp responseEnd() const { return response_end_; }
+  DOMHighResTimeStamp loadTime() const { return load_time_; }
   AtomicString identifier() const { return identifier_; }
   unsigned naturalWidth() const { return naturalWidth_; }
   unsigned naturalHeight() const { return naturalHeight_; }
@@ -65,7 +65,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   WeakMember<Element> element_;
   Member<DOMRectReadOnly> intersection_rect_;
   DOMHighResTimeStamp render_time_;
-  DOMHighResTimeStamp response_end_;
+  DOMHighResTimeStamp load_time_;
   AtomicString identifier_;
   unsigned naturalWidth_;
   unsigned naturalHeight_;

@@ -282,10 +282,17 @@ WebWorkerFetchContextImpl::CloneForNestedWorker(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
-  DCHECK(service_worker_provider_context);
   DCHECK(loader_factory_info);
   DCHECK(fallback_factory_info);
   DCHECK(task_runner);
+
+  if (!service_worker_provider_context) {
+    return CloneForNestedWorkerInternal(
+        /*service_worker_client_request=*/nullptr,
+        /*service_worker_worker_client_registry_ptr_info=*/nullptr,
+        /*container_host_ptr_info=*/nullptr, std::move(loader_factory_info),
+        std::move(fallback_factory_info), std::move(task_runner));
+  }
 
   blink::mojom::ServiceWorkerWorkerClientRegistryPtrInfo
       service_worker_worker_client_registry_ptr_info;

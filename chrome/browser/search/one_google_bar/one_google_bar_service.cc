@@ -12,11 +12,11 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 class OneGoogleBarService::SigninObserver
-    : public identity::IdentityManager::Observer {
+    : public signin::IdentityManager::Observer {
  public:
   using SigninStatusChangedCallback = base::Closure;
 
-  SigninObserver(identity::IdentityManager* identity_manager,
+  SigninObserver(signin::IdentityManager* identity_manager,
                  const SigninStatusChangedCallback& callback)
       : identity_manager_(identity_manager), callback_(callback) {
     identity_manager_->AddObserver(this);
@@ -27,17 +27,17 @@ class OneGoogleBarService::SigninObserver
  private:
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override {
     callback_.Run();
   }
 
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
 
 OneGoogleBarService::OneGoogleBarService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     std::unique_ptr<OneGoogleBarLoader> loader)
     : loader_(std::move(loader)),
       signin_observer_(std::make_unique<SigninObserver>(

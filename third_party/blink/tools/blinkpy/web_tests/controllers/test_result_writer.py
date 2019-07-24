@@ -119,16 +119,11 @@ class TestResultWriter(object):
         self._root_output_dir = root_output_dir
         self._test_name = test_name
 
-    def _make_output_directory(self):
-        """Creates the output directory (if needed) for a given test filename."""
-        fs = self._filesystem
-        output_filename = fs.join(self._root_output_dir, self._test_name)
-        fs.maybe_make_directory(fs.dirname(output_filename))
-
     def _write_file(self, path, contents):
         if contents is not None:
-            self._make_output_directory()
-            self._filesystem.write_binary_file(path, contents)
+            fs = self._filesystem
+            fs.maybe_make_directory(fs.dirname(path))
+            fs.write_binary_file(path, contents)
 
     def _output_filename(self, suffix, extension):
         """Returns a filename based on the given suffix and extension.

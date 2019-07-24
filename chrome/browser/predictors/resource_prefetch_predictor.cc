@@ -59,8 +59,13 @@ void InitializeOnDBSequence(
 
 }  // namespace
 
-PreconnectRequest::PreconnectRequest(const GURL& origin, int num_sockets)
-    : origin(origin), num_sockets(num_sockets) {
+PreconnectRequest::PreconnectRequest(
+    const GURL& origin,
+    int num_sockets,
+    net::NetworkIsolationKey network_isolation_key)
+    : origin(origin),
+      num_sockets(num_sockets),
+      network_isolation_key(std::move(network_isolation_key)) {
   DCHECK_GE(num_sockets, 0);
 }
 
@@ -188,9 +193,10 @@ void ResourcePrefetchPredictor::RecordPageRequestSummary(
     return;
   }
 
-  const std::string& host = summary->main_frame_url.host();
-  LearnRedirect(summary->initial_url.host(), host, host_redirect_data_.get());
-  LearnOrigins(host, summary->main_frame_url.GetOrigin(), summary->origins);
+  LearnRedirect(summary->initial_url.host(), summary->main_frame_url,
+                host_redirect_data_.get());
+  LearnOrigins(summary->main_frame_url.host(),
+               summary->main_frame_url.GetOrigin(), summary->origins);
 
   if (observer_)
     observer_->OnNavigationLearned(*summary);
@@ -287,7 +293,7 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
 }
 
 void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
-                                              const std::string& final_redirect,
+                                              const GURL& final_redirect,
                                               RedirectDataMap* redirect_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // If the primary key is too long reject it.
@@ -300,18 +306,36 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
     data.set_primary_key(key);
     data.set_last_visit_time(base::Time::Now().ToInternalValue());
     RedirectStat* redirect_to_add = data.add_redirect_endpoints();
-    redirect_to_add->set_url(final_redirect);
+    redirect_to_add->set_url(final_redirect.host());
     redirect_to_add->set_number_of_hits(1);
+    redirect_to_add->set_url_scheme(final_redirect.scheme());
   } else {
     data.set_last_visit_time(base::Time::Now().ToInternalValue());
 
     bool need_to_add = true;
     for (RedirectStat& redirect : *(data.mutable_redirect_endpoints())) {
-      if (redirect.url() == final_redirect) {
+      const bool host_mismatch = redirect.url() != final_redirect.host();
+
+      // When the existing scheme in database is empty, then difference in
+      // schemes is not considered a scheme mismatch. This case is treated
+      // specially since scheme was added later to the database, and previous
+      // entries would have empty scheme. In such case, we do not consider this
+      // as a mismatch, and simply update the scheme in the database.
+      const bool url_scheme_mismatch =
+          !redirect.url_scheme().empty() &&
+          redirect.url_scheme() != final_redirect.scheme();
+
+      if (!host_mismatch && !url_scheme_mismatch) {
+        // No mismatch.
         need_to_add = false;
         redirect.set_number_of_hits(redirect.number_of_hits() + 1);
         redirect.set_consecutive_misses(0);
+
+        // If existing scheme in database is empty, then update it.
+        if (redirect.url_scheme().empty())
+          redirect.set_url_scheme(final_redirect.scheme());
       } else {
+        // A real mismatch.
         redirect.set_number_of_misses(redirect.number_of_misses() + 1);
         redirect.set_consecutive_misses(redirect.consecutive_misses() + 1);
       }
@@ -319,8 +343,9 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
 
     if (need_to_add) {
       RedirectStat* redirect_to_add = data.add_redirect_endpoints();
-      redirect_to_add->set_url(final_redirect);
+      redirect_to_add->set_url(final_redirect.host());
       redirect_to_add->set_number_of_hits(1);
+      redirect_to_add->set_url_scheme(final_redirect.scheme());
     }
   }
 

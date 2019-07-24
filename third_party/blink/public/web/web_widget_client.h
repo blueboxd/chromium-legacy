@@ -193,6 +193,9 @@ class WebWidgetClient {
   // Called to update if touch events should be sent.
   virtual void SetHasTouchEventHandlers(bool) {}
 
+  // Called to update if scroll events should be sent.
+  virtual void SetHaveScrollEventHandlers(bool) {}
+
   // Called to update whether low latency input mode is enabled or not.
   virtual void SetNeedsLowLatencyInput(bool) {}
 
@@ -284,6 +287,10 @@ class WebWidgetClient {
                                        bool use_anchor,
                                        float new_page_scale,
                                        double duration_sec) {}
+
+  // For when the embedder itself change scales on the page (e.g. devtools)
+  // and wants all of the content at the new scale to be crisp.
+  virtual void ForceRecalculateRasterScales() {}
 
   // Requests an image decode and will have the |callback| run asynchronously
   // when it completes. Forces a new main frame to occur that will trigger

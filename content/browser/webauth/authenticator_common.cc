@@ -1040,8 +1040,8 @@ void AuthenticatorCommon::OnRegisterResponse(
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kKeyAlreadyRegistered);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kKeyAlreadyRegistered);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1056,31 +1056,34 @@ void AuthenticatorCommon::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kUserConsentDenied:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kUserConsentDenied);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kUserConsentDenied);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kSoftPINBlock);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kSoftPINBlock);
       return;
     case device::FidoReturnCode::kHardPINBlock:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kHardPINBlock);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kHardPINBlock);
       return;
     case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
+          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
+          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingResidentKeys);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
+          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification);
       return;
@@ -1101,8 +1104,8 @@ void AuthenticatorCommon::OnRegisterResponse(
       return;
     case device::FidoReturnCode::kStorageFull:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kStorageFull);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kStorageFull);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1249,8 +1252,8 @@ void AuthenticatorCommon::OnSignResponse(
   switch (status_code) {
     case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kKeyNotRegistered);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kKeyNotRegistered);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1264,31 +1267,34 @@ void AuthenticatorCommon::OnSignResponse(
       return;
     case device::FidoReturnCode::kUserConsentDenied:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kUserConsentDenied);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kUserConsentDenied);
       return;
     case device::FidoReturnCode::kSoftPINBlock:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kSoftPINBlock);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kSoftPINBlock);
       return;
     case device::FidoReturnCode::kHardPINBlock:
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kHardPINBlock);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kHardPINBlock);
       return;
     case device::FidoReturnCode::kAuthenticatorRemovedDuringPINEntry:
       SignalFailureToRequestDelegate(
+          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorRemovedDuringPINEntry);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingResidentKeys:
       SignalFailureToRequestDelegate(
+          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingResidentKeys);
       return;
     case device::FidoReturnCode::kAuthenticatorMissingUserVerification:
       SignalFailureToRequestDelegate(
+          authenticator,
           AuthenticatorRequestClientDelegate::InterestingFailureReason::
               kAuthenticatorMissingUserVerification);
       return;
@@ -1308,8 +1314,8 @@ void AuthenticatorCommon::OnSignResponse(
     case device::FidoReturnCode::kStorageFull:
       NOTREACHED() << "Should not be possible for assertions.";
       SignalFailureToRequestDelegate(
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kStorageFull);
+          authenticator, AuthenticatorRequestClientDelegate::
+                             InterestingFailureReason::kStorageFull);
       return;
     case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
@@ -1355,6 +1361,7 @@ void AuthenticatorCommon::OnAccountSelected(
 }
 
 void AuthenticatorCommon::SignalFailureToRequestDelegate(
+    const ::device::FidoAuthenticator* authenticator,
     AuthenticatorRequestClientDelegate::InterestingFailureReason reason) {
   blink::mojom::AuthenticatorStatus status =
       blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR;
@@ -1405,7 +1412,7 @@ void AuthenticatorCommon::SignalFailureToRequestDelegate(
 
   // If WebAuthnUi is enabled, this error blocks until after receiving user
   // acknowledgement. Otherwise, the error is returned right away.
-  if (request_delegate_->DoesBlockRequestOnFailure(reason)) {
+  if (request_delegate_->DoesBlockRequestOnFailure(authenticator, reason)) {
     // Cancel pending authenticator requests before the error dialog is shown.
     request_->CancelActiveAuthenticators();
     return;
@@ -1424,6 +1431,7 @@ void AuthenticatorCommon::OnTimeout() {
   }
 
   SignalFailureToRequestDelegate(
+      /*authenticator=*/nullptr,
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
 }
 

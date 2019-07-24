@@ -14,7 +14,7 @@ enum class SignoutDelete;
 
 struct CoreAccountId;
 
-namespace identity {
+namespace signin {
 
 // PrimaryAccountMutator is the interface to set and clear the primary account
 // (see IdentityManager for more information).
@@ -82,6 +82,6 @@ class PrimaryAccountMutator {
 #endif
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_PRIMARY_ACCOUNT_MUTATOR_H_

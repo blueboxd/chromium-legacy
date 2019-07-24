@@ -71,7 +71,7 @@ class LocalNTPOneGoogleBarSmokeTest : public InProcessBrowserTest {
 
   static std::unique_ptr<KeyedService> CreateOneGoogleBarService(
       content::BrowserContext* context) {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(
             Profile::FromBrowserContext(context));
     return std::make_unique<OneGoogleBarService>(

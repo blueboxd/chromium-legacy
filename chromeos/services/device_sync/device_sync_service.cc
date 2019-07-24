@@ -16,7 +16,7 @@ namespace chromeos {
 namespace device_sync {
 
 DeviceSyncService::DeviceSyncService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
     ClientAppMetadataProvider* client_app_metadata_provider,

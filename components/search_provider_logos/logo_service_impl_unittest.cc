@@ -327,14 +327,14 @@ class SigninHelper {
  public:
   explicit SigninHelper() : identity_test_env_(&test_url_loader_factory_) {}
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 
   void SignIn() {
     std::string email("user@gmail.com");
     identity_test_env_.SetCookieAccounts(
-        {{email, identity::GetTestGaiaIdForEmail(email)}});
+        {{email, signin::GetTestGaiaIdForEmail(email)}});
   }
 
   void SignOut() {
@@ -343,7 +343,7 @@ class SigninHelper {
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 };
 
 class LogoServiceImplTest : public ::testing::Test {

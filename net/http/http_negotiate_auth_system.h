@@ -13,12 +13,13 @@ namespace net {
 
 class AuthCredentials;
 class HttpAuthChallengeTokenizer;
+class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE HttpNegotiateAuthSystem {
  public:
   virtual ~HttpNegotiateAuthSystem() = default;
 
-  virtual bool Init() = 0;
+  virtual bool Init(const NetLogWithSource& net_log) = 0;
 
   // True if authentication needs the identity of the user from Chrome.
   virtual bool NeedsIdentity() const = 0;
@@ -57,6 +58,7 @@ class NET_EXPORT_PRIVATE HttpNegotiateAuthSystem {
                                 const std::string& spn,
                                 const std::string& channel_bindings,
                                 std::string* auth_token,
+                                const NetLogWithSource& net_log,
                                 CompletionOnceCallback callback) = 0;
 
   // Sets the delegation type allowed on the Kerberos ticket. This allows

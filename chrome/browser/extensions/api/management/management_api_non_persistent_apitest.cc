@@ -49,10 +49,12 @@ class ManagementApiNonPersistentApiTest
   }
 };
 
-// Test has been flaky on all platforms. https://crbug.com/985936.
 // Tests chrome.management.uninstallSelf API.
-IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest,
-                       DISABLED_UninstallSelf) {
+IN_PROC_BROWSER_TEST_P(ManagementApiNonPersistentApiTest, UninstallSelf) {
+  if (GetParam() == ContextType::kEventPage) {
+    // Test has been flaky on all platforms. https://crbug.com/985936.
+    return;
+  }
   constexpr char kEventPageBackgroundScript[] = R"({"scripts": ["script.js"]})";
   constexpr char kServiceWorkerBackgroundScript[] =
       R"({"service_worker": "script.js"})";

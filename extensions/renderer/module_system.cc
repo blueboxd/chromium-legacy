@@ -182,7 +182,7 @@ ModuleSystem::ModuleSystem(ScriptContext* context, const SourceMap* source_map)
 
   if (context_->GetRenderFrame() &&
       context_->context_type() == Feature::BLESSED_EXTENSION_CONTEXT &&
-      ContextNeedsMojoBindings(context_)) {
+      !context_->IsForServiceWorker() && ContextNeedsMojoBindings(context_)) {
     blink::WebContextFeatures::EnableMojoJS(context->v8_context(), true);
   }
 }

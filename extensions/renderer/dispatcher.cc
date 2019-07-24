@@ -323,6 +323,9 @@ void Dispatcher::DidCreateScriptContext(
                           elapsed);
       break;
     case Feature::BLESSED_EXTENSION_CONTEXT:
+      // For service workers this is handled in
+      // DidInitializeServiceWorkerContextOnWorkerThread().
+      DCHECK(!context->IsForServiceWorker());
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_Blessed", elapsed);
       break;
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
@@ -342,10 +345,6 @@ void Dispatcher::DidCreateScriptContext(
       break;
     case Feature::WEBUI_CONTEXT:
       UMA_HISTOGRAM_TIMES("Extensions.DidCreateScriptContext_WebUI", elapsed);
-      break;
-    case Feature::SERVICE_WORKER_CONTEXT:
-      // Handled in DidInitializeServiceWorkerContextOnWorkerThread().
-      NOTREACHED();
       break;
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       UMA_HISTOGRAM_TIMES(
@@ -407,8 +406,8 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   // by extensions minimal bindings, just as we might want to give them to
   // service workers that aren't registered by extensions.
   ScriptContext* context = new ScriptContext(
-      v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
-      extension, Feature::SERVICE_WORKER_CONTEXT);
+      v8_context, nullptr, extension, Feature::BLESSED_EXTENSION_CONTEXT,
+      extension, Feature::BLESSED_EXTENSION_CONTEXT);
   context->set_url(script_url);
   context->set_service_worker_scope(service_worker_scope);
   context->set_service_worker_version_id(service_worker_version_id);
@@ -1347,7 +1346,6 @@ bool Dispatcher::IsWithinPlatformApp() {
 }
 
 void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
-  Feature::Context context_type = context->context_type();
   ModuleSystem* module_system = context->module_system();
   bool requires_guest_view_module = false;
 
@@ -1402,7 +1400,8 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   // error-providing custom elements for the GuestView types that are not
   // available, and thus all of those types must have been checked and loaded
   // (or not loaded) beforehand.
-  if (context_type == Feature::BLESSED_EXTENSION_CONTEXT) {
+  if (context->context_type() == Feature::BLESSED_EXTENSION_CONTEXT &&
+      !context->IsForServiceWorker()) {
     module_system->Require("guestViewDeny");
   }
 }

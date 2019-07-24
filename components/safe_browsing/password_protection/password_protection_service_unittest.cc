@@ -248,7 +248,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
 
     request_ = new PasswordProtectionRequest(
         web_contents, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
-        kUserName, PasswordType::PASSWORD_TYPE_UNKNOWN, false, {},
+        kUserName, PasswordType::PASSWORD_TYPE_UNKNOWN, {},
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -266,7 +266,7 @@ class PasswordProtectionServiceTest : public ::testing::TestWithParam<bool> {
             Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
-        web_contents, target_url, GURL(), GURL(), kUserName, type, false,
+        web_contents, target_url, GURL(), GURL(), kUserName, type,
         matching_domains, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         true, password_protection_service_.get(), timeout_in_ms);
     request_->Start();
@@ -829,7 +829,8 @@ TEST_P(PasswordProtectionServiceTest,
                          GURL(kTargetUrl).host());
   test_url_loader_factory_.AddResponse(url_.spec(),
                                        expected_response.SerializeAsString());
-
+  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSyncing())
+      .WillRepeatedly(Return(true));
   // Initiate a sync password entry request (w/ no saved password).
   InitializeAndStartPasswordEntryRequest(
       PasswordType::PRIMARY_ACCOUNT_PASSWORD, {}, false /* match whitelist */,
@@ -862,7 +863,7 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   password_protection_service_->StartRequest(
       GetWebContents(), target_url, GURL("http://foo.com/submit"),
       GURL("http://foo.com/frame"), "username", PasswordType::SAVED_PASSWORD,
-      false, {}, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+      {}, LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
 
   // Destroy password_protection_service_ while there is one request pending.
   password_protection_service_.reset();
@@ -965,57 +966,43 @@ TEST_P(PasswordProtectionServiceTest,
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_CALL(*password_protection_service_,
               GetPasswordProtectionWarningTriggerPref())
       .WillRepeatedly(Return(PHISHING_REUSE));
+  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
+      .WillRepeatedly(Return(true));
 
   // Don't show modal warning if it is not a password reuse ping.
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
       PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // Don't show modal warning if it is a saved password reuse.
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::SAVED_PASSWORD, LoginReputationClientResponse::PHISHING));
+      PasswordType::SAVED_PASSWORD,
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // Don't show modal warning if it is a non-sync gaia password reuse.
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::OTHER_GAIA_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // Don't show modal warning if reused password type unknown.
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::PASSWORD_TYPE_UNKNOWN,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
-  // Don't show modal warning if it is a sync password reuse but user is not
-  // signed in.
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
-
-  // Show warning if it is a sync password reuse and user is signed in and
-  // is not manged by enterprise.
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // For a GSUITE account, don't show warning if password protection is set to
   // off by enterprise policy.
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GSUITE));
   EXPECT_CALL(*password_protection_service_,
               GetPasswordProtectionWarningTriggerPref())
       .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
@@ -1025,7 +1012,7 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // For a GSUITE account, show warning if password protection is set to
   // PHISHING_REUSE.
@@ -1038,27 +1025,23 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // Modal dialog warning is also shown on LOW_REPUTATION verdict.
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-      LoginReputationClientResponse::LOW_REPUTATION));
+      /*username=*/"", LoginReputationClientResponse::LOW_REPUTATION));
 
   // Modal dialog warning should not be shown for enterprise password reuse
   // if it is turned off by policy.
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
   EXPECT_CALL(*password_protection_service_,
               GetPasswordProtectionWarningTriggerPref())
       .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::ENTERPRISE_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 
   // Show modal warning for enterprise password reuse if the trigger is
   // configured to PHISHING_REUSE.
@@ -1068,26 +1051,16 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       PasswordType::ENTERPRISE_PASSWORD,
-      LoginReputationClientResponse::PHISHING));
+      /*username=*/"", LoginReputationClientResponse::PHISHING));
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
   // For user who is not signed-in, event logging should be disabled.
-  EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN,
-            password_protection_service_->GetSyncAccountType());
   EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
 
   // Event logging should be enable for all signed-in users..
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
-  EXPECT_EQ(PasswordReuseEvent::GMAIL,
-            password_protection_service_->GetSyncAccountType());
-  EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
-
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GSUITE));
-  EXPECT_EQ(PasswordReuseEvent::GSUITE,
-            password_protection_service_->GetSyncAccountType());
+  EXPECT_CALL(*password_protection_service_, IsPrimaryAccountSignedIn())
+      .WillRepeatedly(Return(true));
   EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 }
 
@@ -1114,23 +1087,17 @@ TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::SAVED_PASSWORD));
-  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::OTHER_GAIA_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::ENTERPRISE_PASSWORD));
 
-  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::SAVED_PASSWORD));
-  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-      PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::OTHER_GAIA_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
@@ -1146,7 +1113,7 @@ TEST_P(PasswordProtectionServiceTest, TestPingsForAboutBlank) {
                                        expected_response.SerializeAsString());
   password_protection_service_->StartRequest(
       GetWebContents(), GURL("about:blank"), GURL(), GURL(), "username",
-      PasswordType::SAVED_PASSWORD, false, {"example.com"},
+      PasswordType::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 1);
@@ -1164,7 +1131,7 @@ TEST_P(PasswordProtectionServiceTest,
       .WillOnce(Return(gfx::Size(1000, 1000)));
   password_protection_service_->StartRequest(
       GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
-      PasswordType::SAVED_PASSWORD, false, {"example.com"},
+      PasswordType::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 
@@ -1188,7 +1155,7 @@ TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
       .WillOnce(Return(gfx::Size(1000, 1000)));
   password_protection_service_->StartRequest(
       GetWebContents(), GURL("about:blank"), GURL(), GURL(), kUserName,
-      PasswordType::SAVED_PASSWORD, false, {"example.com"},
+      PasswordType::SAVED_PASSWORD, {"example.com"},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   base::RunLoop().RunUntilIdle();
 

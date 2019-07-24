@@ -12,13 +12,12 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/google/core/common/google_util.h"
-#include "components/signin/core/browser/chrome_connected_header_helper.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
@@ -30,6 +29,11 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+
+#if defined(OS_CHROMEOS)
+#include "components/signin/core/browser/chrome_connected_header_helper.h"
+#include "components/signin/core/browser/signin_header_helper.h"
+#endif
 
 namespace {
 

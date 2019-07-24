@@ -9330,22 +9330,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
     </if>
 
-    <!-- Welcome page (chrome://welcome) strings -->
-    <if expr="not chromeos">
-      <message name="IDS_WELCOME_SUBHEADER" desc="A message which will appear underneath the header on the Welcome UI.">
-        The web browser by Google, for you
-      </message>
-      <message name="IDS_WELCOME_DESCRIPTION" desc="A message on the welcome page explaining the purpose of signing in.">
-        Sign in to Chrome with your Google Account to get your bookmarks, history, passwords, and other settings on all your devices.
-      </message>
-      <message name="IDS_WELCOME_ACCEPT_BUTTON" desc="A button on the welcome page which accepts the offer to sign in to Chrome.">
-        Sign in
-      </message>
-      <message name="IDS_WELCOME_DECLINE_BUTTON" desc="A button on the welcome page which declines the offer to sign in to Chrome.">
-        No thanks
-      </message>
-    </if>
-
     <!-- Windows 10 toast strings -->
     <if expr="is_win">
       <message name="IDS_WIN10_TOAST_BROWSE_FAST" desc="Toast message variant: browse fast.">

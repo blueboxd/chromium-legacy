@@ -78,10 +78,7 @@ void InvokeRequestHandlerOnIO(
 void MaybeCreateLoaderOnIO(
     base::WeakPtr<ServiceWorkerNavigationLoaderInterceptor> interceptor_on_ui,
     ServiceWorkerNavigationHandleCore* handle_core,
-    bool are_ancestors_secure,
-    int frame_tree_node_id,
-    ResourceType resource_type,
-    bool skip_service_worker,
+    const ServiceWorkerNavigationLoaderInterceptorParams& params,
     const network::ResourceRequest& tentative_resource_request,
     BrowserContext* browser_context,
     NavigationLoaderInterceptor::LoaderCallback loader_callback,
@@ -110,17 +107,30 @@ void MaybeCreateLoaderOnIO(
     // ServiceWorkerNavigationHandle on the UI thread, and finally passed to the
     // renderer when the navigation commits.
     provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
-    provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
-        context_core->AsWeakPtr(), are_ancestors_secure, frame_tree_node_id,
-        &provider_info);
+    if (params.resource_type == ResourceType::kMainFrame ||
+        params.resource_type == ResourceType::kSubFrame) {
+      provider_host = ServiceWorkerProviderHost::PreCreateNavigationHost(
+          context_core->AsWeakPtr(), params.are_ancestors_secure,
+          params.frame_tree_node_id, &provider_info);
+    } else {
+      DCHECK(params.resource_type == ResourceType::kWorker ||
+             params.resource_type == ResourceType::kSharedWorker);
+      auto provider_type =
+          params.resource_type == ResourceType::kWorker
+              ? blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker
+              : blink::mojom::ServiceWorkerProviderType::kForSharedWorker;
+      provider_host = ServiceWorkerProviderHost::PreCreateForWebWorker(
+          context_core->AsWeakPtr(), params.process_id, provider_type,
+          &provider_info);
+    }
     handle_core->set_provider_host(provider_host);
 
     // Also make the inner interceptor.
     DCHECK(!handle_core->interceptor());
     handle_core->set_interceptor(
         std::make_unique<ServiceWorkerControlleeRequestHandler>(
-            context_core->AsWeakPtr(), provider_host, resource_type,
-            skip_service_worker));
+            context_core->AsWeakPtr(), provider_host, params.resource_type,
+            params.skip_service_worker));
   }
 
   // If |initialize_provider_only| is true, we have already determined there is
@@ -152,14 +162,9 @@ void MaybeCreateLoaderOnIO(
 
 ServiceWorkerNavigationLoaderInterceptor::
     ServiceWorkerNavigationLoaderInterceptor(
-        const NavigationRequestInfo& request_info,
+        const ServiceWorkerNavigationLoaderInterceptorParams& params,
         ServiceWorkerNavigationHandle* handle)
-    : handle_(handle),
-      are_ancestors_secure_(request_info.are_ancestors_secure),
-      frame_tree_node_id_(request_info.frame_tree_node_id),
-      resource_type_(request_info.is_main_frame ? ResourceType::kMainFrame
-                                                : ResourceType::kSubFrame),
-      skip_service_worker_(request_info.begin_params->skip_service_worker) {
+    : handle_(handle), params_(params) {
   DCHECK(NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled());
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -194,10 +199,9 @@ void ServiceWorkerNavigationLoaderInterceptor::MaybeCreateLoader(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&MaybeCreateLoaderOnIO, GetWeakPtr(), handle_->core(),
-                     are_ancestors_secure_, frame_tree_node_id_, resource_type_,
-                     skip_service_worker_, tentative_resource_request,
-                     browser_context, std::move(loader_callback),
-                     std::move(fallback_callback), initialize_provider_only));
+                     params_, tentative_resource_request, browser_context,
+                     std::move(loader_callback), std::move(fallback_callback),
+                     initialize_provider_only));
 }
 
 base::Optional<SubresourceLoaderParams>

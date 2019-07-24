@@ -4854,9 +4854,10 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
 
   // Override applies transform, sets visible rect, and disables
   // visual viewport clipping.
-  dev_tools_emulator->ForceViewport(WebFloatPoint(50, 55), 2.f);
+  TransformationMatrix matrix =
+      dev_tools_emulator->ForceViewportForTesting(WebFloatPoint(50, 55), 2.f);
   expected_matrix.MakeIdentity().Scale(2.f).Translate(-50, -55);
-  EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
+  EXPECT_EQ(expected_matrix, matrix);
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
@@ -4865,9 +4866,10 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   EXPECT_FALSE(visual_viewport->ContainerLayer()->MasksToBounds());
 
   // Setting new override discards previous one.
-  dev_tools_emulator->ForceViewport(WebFloatPoint(5.4f, 10.5f), 1.5f);
+  matrix = dev_tools_emulator->ForceViewportForTesting(
+      WebFloatPoint(5.4f, 10.5f), 1.5f);
   expected_matrix.MakeIdentity().Scale(1.5f).Translate(-5.4f, -10.5f);
-  EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
+  EXPECT_EQ(expected_matrix, matrix);
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(100, 150), &visible_rect);
@@ -4877,9 +4879,9 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
 
   // Clearing override restores original transform, visible rect and
   // visual viewport clipping.
-  dev_tools_emulator->ResetViewport();
+  matrix = dev_tools_emulator->ResetViewportForTesting();
   expected_matrix.MakeIdentity();
-  EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
+  EXPECT_EQ(expected_matrix, matrix);
   {
     IntRect visible_rect(1, 2, 3, 4);
     dev_tools_emulator->OverrideVisibleRect(IntSize(), &visible_rect);
@@ -4905,8 +4907,9 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   EXPECT_EQ(expected_matrix, web_view_impl->GetDeviceEmulationTransform());
 
   // Device metrics offset and scale are applied before viewport override.
-  web_view_impl->GetDevToolsEmulator()->ForceViewport(WebFloatPoint(5, 10),
-                                                      1.5f);
+  emulation_params.viewport_offset = WebFloatPoint(5, 10);
+  emulation_params.viewport_scale = 1.5f;
+  web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
       .Scale(1.5f)
       .Translate(-5, -10)
@@ -4933,7 +4936,11 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   web_view_impl->SetPageScaleFactor(1.5f);
   frame_view->LayoutViewport()->SetScrollOffset(
       ScrollOffset(100, 150), kProgrammaticScroll, kScrollBehaviorInstant);
-  dev_tools_emulator->ForceViewport(WebFloatPoint(50, 55), 2.f);
+
+  WebDeviceEmulationParams emulation_params;
+  emulation_params.viewport_offset = WebFloatPoint(50, 55);
+  emulation_params.viewport_scale = 2.f;
+  web_view_impl->EnableDeviceEmulation(emulation_params);
   expected_matrix.MakeIdentity()
       .Scale(2.f)
       .Translate(-50, -55)

@@ -83,7 +83,7 @@ class GCDApiFlowTest : public testing::Test {
 
  private:
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_url_loader_factory_;
 };
@@ -104,7 +104,7 @@ TEST_F(GCDApiFlowTest, SuccessOAuth2) {
 
   gcd_flow_->OnAccessTokenFetchComplete(
       GoogleServiceAuthError::AuthErrorNone(),
-      identity::AccessTokenInfo(
+      signin::AccessTokenInfo(
           "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1),
           std::string() /* No extra information needed for this test */));
 
@@ -122,7 +122,7 @@ TEST_F(GCDApiFlowTest, BadToken) {
   EXPECT_CALL(*mock_delegate_, OnGCDApiFlowError(GCDApiFlow::ERROR_TOKEN));
   gcd_flow_->OnAccessTokenFetchComplete(
       GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP),
-      identity::AccessTokenInfo());
+      signin::AccessTokenInfo());
 }
 
 TEST_F(GCDApiFlowTest, BadJson) {
@@ -134,7 +134,7 @@ TEST_F(GCDApiFlowTest, BadJson) {
 
   gcd_flow_->OnAccessTokenFetchComplete(
       GoogleServiceAuthError::AuthErrorNone(),
-      identity::AccessTokenInfo(
+      signin::AccessTokenInfo(
           "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1),
           std::string() /* No extra information needed for this test */));
 

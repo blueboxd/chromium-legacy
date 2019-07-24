@@ -119,10 +119,6 @@ std::string MultipleDisplayStateToString(MultipleDisplayState state) {
   return "INVALID";
 }
 
-bool IsPhysicalDisplayType(DisplayConnectionType type) {
-  return !(type & DISPLAY_CONNECTION_TYPE_NETWORK);
-}
-
 bool GetContentProtectionMethods(DisplayConnectionType type,
                                  uint32_t* protection_mask) {
   switch (type) {

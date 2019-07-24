@@ -134,7 +134,7 @@ void FeedOfflineBridge::AppendContentMetadata(
   if (!j_snippet.is_null()) {
     metadata.snippet = base::android::ConvertJavaStringToUTF8(env, j_snippet);
   }
-  known_content_metadata_buffer_.push_back(std::move(metadata));
+  known_content_metadata_buffer_.emplace_back(std::move(metadata));
 }
 
 void FeedOfflineBridge::OnGetKnownContentDone(

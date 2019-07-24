@@ -42,7 +42,7 @@ class PrefService;
 //
 // This is currently only used when WKWebView is enabled.
 class AccountConsistencyService : public KeyedService,
-                                  public identity::IdentityManager::Observer,
+                                  public signin::IdentityManager::Observer,
                                   public ActiveStateManager::Observer {
  public:
   // Name of the preference property that persists the domains that have a
@@ -54,7 +54,7 @@ class AccountConsistencyService : public KeyedService,
       PrefService* prefs,
       AccountReconcilor* account_reconcilor,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      identity::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager);
   ~AccountConsistencyService() override;
 
   // Registers the preferences used by AccountConsistencyService.
@@ -151,7 +151,7 @@ class AccountConsistencyService : public KeyedService,
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_account_info) override;
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // ActiveStateManager::Observer implementation.
@@ -170,7 +170,7 @@ class AccountConsistencyService : public KeyedService,
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Identity manager, observed to be notified of primary account signin and
   // signout events.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // Whether a CHROME_CONNECTED cookie request is currently being applied.
   bool applying_cookie_requests_;

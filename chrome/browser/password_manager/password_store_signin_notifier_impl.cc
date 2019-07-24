@@ -9,7 +9,7 @@
 namespace password_manager {
 
 PasswordStoreSigninNotifierImpl::PasswordStoreSigninNotifierImpl(
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : identity_manager_(identity_manager) {
   DCHECK(identity_manager_);
 }

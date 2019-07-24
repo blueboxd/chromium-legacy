@@ -15,7 +15,7 @@
 namespace gcm {
 
 AccountTracker::AccountTracker(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
@@ -203,7 +203,7 @@ void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
 }
 
 AccountIdFetcher::AccountIdFetcher(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     AccountTracker* tracker,
     const std::string& account_key)
@@ -226,12 +226,12 @@ void AccountIdFetcher::Start() {
       account_key_, "gaia_account_tracker", scopes,
       base::BindOnce(&AccountIdFetcher::AccessTokenFetched,
                      base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void AccountIdFetcher::AccessTokenFetched(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   if (error != GoogleServiceAuthError::AuthErrorNone()) {

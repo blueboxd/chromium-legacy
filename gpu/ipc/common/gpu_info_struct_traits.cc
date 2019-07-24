@@ -237,6 +237,8 @@ gpu::mojom::ImageDecodeAcceleratorType EnumTraits<
   switch (image_type) {
     case gpu::ImageDecodeAcceleratorType::kJpeg:
       return gpu::mojom::ImageDecodeAcceleratorType::kJpeg;
+    case gpu::ImageDecodeAcceleratorType::kWebP:
+      return gpu::mojom::ImageDecodeAcceleratorType::kWebP;
     case gpu::ImageDecodeAcceleratorType::kUnknown:
       return gpu::mojom::ImageDecodeAcceleratorType::kUnknown;
   }
@@ -250,6 +252,9 @@ bool EnumTraits<gpu::mojom::ImageDecodeAcceleratorType,
   switch (input) {
     case gpu::mojom::ImageDecodeAcceleratorType::kJpeg:
       *out = gpu::ImageDecodeAcceleratorType::kJpeg;
+      return true;
+    case gpu::mojom::ImageDecodeAcceleratorType::kWebP:
+      *out = gpu::ImageDecodeAcceleratorType::kWebP;
       return true;
     case gpu::mojom::ImageDecodeAcceleratorType::kUnknown:
       *out = gpu::ImageDecodeAcceleratorType::kUnknown;

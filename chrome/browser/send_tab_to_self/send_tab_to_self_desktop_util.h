@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_DESKTOP_UTIL_H_
 
 #include <string>
+
+#include "base/strings/string16.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -63,11 +65,11 @@ void RecordSendTabToSelfDeviceCount(const std::string& entry_point,
                                     const int& device_count);
 
 // Gets the count of valid device number.
-int GetValidDeviceCount(Profile* profile);
+size_t GetValidDeviceCount(Profile* profile);
 
 // Gets the name of the single valid device. Will be called when
 // GetValidDeviceCount() == 1.
-std::string GetSingleTargetDeviceName(Profile* profile);
+base::string16 GetSingleTargetDeviceName(Profile* profile);
 
 }  // namespace send_tab_to_self
 

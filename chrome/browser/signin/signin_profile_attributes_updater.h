@@ -19,10 +19,10 @@ class ProfileAttributesStorage;
 class SigninProfileAttributesUpdater
     : public KeyedService,
       public SigninErrorController::Observer,
-      public identity::IdentityManager::Observer {
+      public signin::IdentityManager::Observer {
  public:
   SigninProfileAttributesUpdater(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       SigninErrorController* signin_error_controller,
       ProfileAttributesStorage* profile_attributes_storage,
       const base::FilePath& profile_path);
@@ -45,11 +45,11 @@ class SigninProfileAttributesUpdater
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   SigninErrorController* signin_error_controller_;
   ProfileAttributesStorage* profile_attributes_storage_;
   const base::FilePath profile_path_;
-  ScopedObserver<identity::IdentityManager, SigninProfileAttributesUpdater>
+  ScopedObserver<signin::IdentityManager, SigninProfileAttributesUpdater>
       identity_manager_observer_;
   ScopedObserver<SigninErrorController, SigninProfileAttributesUpdater>
       signin_error_controller_observer_;

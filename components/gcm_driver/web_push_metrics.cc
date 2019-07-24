@@ -12,4 +12,9 @@ void LogSendWebPushMessageResult(SendWebPushMessageResult result) {
   base::UmaHistogramEnumeration("GCM.SendWebPushMessageResult", result);
 }
 
+void LogSendWebPushMessagePayloadSize(int size) {
+  // Note: The maximum size accepted by FCM is 4096.
+  base::UmaHistogramCounts10000("GCM.SendWebPushMessagePayloadSize", size);
+}
+
 }  // namespace gcm

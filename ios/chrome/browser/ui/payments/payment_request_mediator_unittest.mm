@@ -107,7 +107,7 @@ class PaymentRequestMediatorTest : public PaymentRequestUnitTestBase,
 
   PaymentRequestMediator* mediator() { return mediator_; }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return IdentityManagerFactory::GetForBrowserState(browser_state());
   }
 

@@ -82,7 +82,7 @@ const char kNTPHelpURL[] =
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
   // Observes changes in identity and updates the Identity Disc.
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityObserverBridge;
   // Used to load URLs.
   UrlLoadingService* _urlLoadingService;
@@ -110,7 +110,7 @@ const char kNTPHelpURL[] =
                   templateURLService:(TemplateURLService*)templateURLService
                    urlLoadingService:(UrlLoadingService*)urlLoadingService
                          authService:(AuthenticationService*)authService
-                     identityManager:(identity::IdentityManager*)identityManager
+                     identityManager:(signin::IdentityManager*)identityManager
                           logoVendor:(id<LogoVendor>)logoVendor {
   self = [super init];
   if (self) {
@@ -121,7 +121,7 @@ const char kNTPHelpURL[] =
     _urlLoadingService = urlLoadingService;
     _authService = authService;
     _identityObserverBridge.reset(
-        new identity::IdentityManagerObserverBridge(identityManager, self));
+        new signin::IdentityManagerObserverBridge(identityManager, self));
     // Listen for default search engine changes.
     _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
         self, self.templateURLService);

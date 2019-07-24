@@ -43,7 +43,7 @@
 
 void IdentityManagerFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  identity::IdentityManager::RegisterProfilePrefs(registry);
+  signin::IdentityManager::RegisterProfilePrefs(registry);
 }
 
 IdentityManagerFactory::IdentityManagerFactory()
@@ -59,16 +59,16 @@ IdentityManagerFactory::IdentityManagerFactory()
 IdentityManagerFactory::~IdentityManagerFactory() {}
 
 // static
-identity::IdentityManager* IdentityManagerFactory::GetForProfile(
+signin::IdentityManager* IdentityManagerFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<identity::IdentityManager*>(
+  return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
-identity::IdentityManager* IdentityManagerFactory::GetForProfileIfExists(
+signin::IdentityManager* IdentityManagerFactory::GetForProfileIfExists(
     const Profile* profile) {
-  return static_cast<identity::IdentityManager*>(
+  return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserContext(const_cast<Profile*>(profile),
                                                  false));
 }
@@ -96,7 +96,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  identity::IdentityManagerBuildParams params;
+  signin::IdentityManagerBuildParams params;
   params.account_consistency =
       AccountConsistencyModeManager::GetMethodForProfile(profile),
   params.image_decoder = std::make_unique<ImageDecoderImpl>();
@@ -131,8 +131,8 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
                           base::Unretained(profile));
 #endif
 
-  std::unique_ptr<identity::IdentityManager> identity_manager =
-      identity::BuildIdentityManager(&params);
+  std::unique_ptr<signin::IdentityManager> identity_manager =
+      signin::BuildIdentityManager(&params);
 
   for (Observer& observer : observer_list_)
     observer.IdentityManagerCreated(identity_manager.get());
@@ -142,7 +142,7 @@ KeyedService* IdentityManagerFactory::BuildServiceInstanceFor(
 
 void IdentityManagerFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
-  auto* identity_manager = static_cast<identity::IdentityManager*>(
+  auto* identity_manager = static_cast<signin::IdentityManager*>(
       GetServiceForBrowserContext(context, false));
   if (identity_manager) {
     for (Observer& observer : observer_list_)

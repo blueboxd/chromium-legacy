@@ -23,7 +23,7 @@ class ProfileDownloader;
 // The results are saved in the profile info cache.
 class GAIAInfoUpdateService : public KeyedService,
                               public ProfileDownloaderDelegate,
-                              public identity::IdentityManager::Observer {
+                              public signin::IdentityManager::Observer {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
   ~GAIAInfoUpdateService() override;
@@ -37,7 +37,7 @@ class GAIAInfoUpdateService : public KeyedService,
   // ProfileDownloaderDelegate:
   bool NeedsProfilePicture() const override;
   int GetDesiredImageSideLength() const override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() override;
   std::string GetCachedPictureURL() const override;
   bool IsPreSignin() const override;
@@ -55,7 +55,7 @@ class GAIAInfoUpdateService : public KeyedService,
   void OnUsernameChanged(const std::string& username);
   void ScheduleNextUpdate();
 
-  // Overridden from identity::IdentityManager::Observer:
+  // Overridden from signin::IdentityManager::Observer:
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(

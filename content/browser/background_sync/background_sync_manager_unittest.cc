@@ -257,6 +257,15 @@ class BackgroundSyncManagerTest
         sync_type, last_browser_wakeup_for_periodic_sync);
   }
 
+  void SuspendPeriodicSyncRegistrations(std::set<url::Origin> origins) {
+    GetController()->NoteSuspendedPeriodicSyncOrigins(std::move(origins));
+  }
+
+  void RevivePeriodicSyncRegistrations(url::Origin origin) {
+    GetController()->ReviveSuspendedPeriodicSyncOrigin(origin);
+    test_background_sync_manager()->RevivePeriodicSyncRegistrations(origin);
+  }
+
  protected:
   MOCK_METHOD1(OnEventReceived,
                void(const devtools::proto::BackgroundServiceEvent&));
@@ -559,6 +568,13 @@ class BackgroundSyncManagerTest
   void InitFailedSyncEventTest() {
     SetupForSyncEvent(base::BindRepeating(
         &BackgroundSyncManagerTest::DispatchSyncStatusCallback,
+        base::Unretained(this),
+        blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected));
+  }
+
+  void InitFailedPeriodicSyncEventTest() {
+    SetupForPeriodicSyncEvent(base::BindRepeating(
+        &BackgroundSyncManagerTest::DispatchPeriodicSyncStatusCallback,
         base::Unretained(this),
         blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected));
   }
@@ -1219,6 +1235,43 @@ TEST_F(BackgroundSyncManagerTest, PeriodicSyncFiresWhenExpected) {
 
   EXPECT_EQ(1, periodic_sync_events_called_);
   EXPECT_TRUE(GetRegistration(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, TestSupensionAndRevival) {
+  InitPeriodicSyncEventTest();
+  auto thirteen_hours = base::TimeDelta::FromHours(13);
+  sync_options_2_.min_interval = thirteen_hours.InMilliseconds();
+  sync_options_1_.min_interval = thirteen_hours.InMilliseconds();
+
+  auto origin = url::Origin::Create(GURL(kScope1).GetOrigin());
+
+  SuspendPeriodicSyncRegistrations({origin});
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(Register(sync_options_2_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+  EXPECT_EQ(0, periodic_sync_events_called_);
+
+  // Advance clock.
+  test_clock_.Advance(thirteen_hours);
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, periodic_sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+
+  RevivePeriodicSyncRegistrations(std::move(origin));
+  base::RunLoop().RunUntilIdle();
+
+  // Advance clock.
+  test_clock_.Advance(thirteen_hours);
+  FireReadyEvents();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, periodic_sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_2_));
+  Unregister(sync_options_1_);
+  Unregister(sync_options_2_);
 }
 
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
@@ -2130,6 +2183,56 @@ TEST_F(BackgroundSyncManagerTest, EventsLoggedForRegistration) {
     test_background_sync_manager()->RunOneShotSyncDelayedTask();
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(GetRegistration(sync_options_1_));
+  }
+}
+
+TEST_F(BackgroundSyncManagerTest, EventsLoggedForPeriodicSyncRegistration) {
+  storage_partition_impl_->GetDevToolsBackgroundServicesContext()
+      ->StartRecording(devtools::proto::PERIODIC_BACKGROUND_SYNC);
+
+  SetMaxSyncAttemptsAndRestartManager(3);
+  InitFailedPeriodicSyncEventTest();
+
+  {
+    // We expect a "Registered" event, and a "GotDelay" event.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(2);
+    int thirteen_hours_ms = 13 * 60 * 60 * 1000;
+    sync_options_1_.min_interval = thirteen_hours_ms;
+
+    EXPECT_TRUE(Register(sync_options_1_));
+    EXPECT_TRUE(GetRegistration(sync_options_1_));
+    EXPECT_TRUE(
+        test_background_sync_manager()->IsDelayedTaskScheduledPeriodicSync());
+  }
+
+  test_clock_.Advance(
+      test_background_sync_manager()->delayed_periodic_sync_task_delta());
+  {
+    // Expect a "Fired" event. Dispatch is mocked out, so that event is not
+    // registered by this test.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(1);
+    test_background_sync_manager()->RunPeriodicSyncDelayedTask();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(GetRegistration(sync_options_1_));
+  }
+
+  // The event should succeed now.
+  InitSyncEventTest();
+
+  test_clock_.Advance(
+      test_background_sync_manager()->delayed_periodic_sync_task_delta());
+  {
+    // Expect a "GotDelay" event.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(1);
+    test_background_sync_manager()->RunPeriodicSyncDelayedTask();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(GetRegistration(sync_options_1_));
+  }
+
+  {
+    // Expect a call for "Unregister" event.
+    EXPECT_CALL(*this, OnEventReceived(_)).Times(1);
+    Unregister(sync_options_1_);
   }
 }
 

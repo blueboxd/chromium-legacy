@@ -9,13 +9,13 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #endif
-
-#include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
 
@@ -62,6 +62,10 @@ class CONTENT_EXPORT BackgroundSyncContext {
       blink::mojom::BackgroundSyncType sync_type,
       base::Time last_browser_wakeup_for_periodic_sync,
       base::OnceCallback<void(base::TimeDelta)> callback) = 0;
+
+  // Revives any suspended periodic Background Sync registrations for |origin|.
+  virtual void RevivePeriodicBackgroundSyncRegistrations(
+      url::Origin origin) = 0;
 
  protected:
   virtual ~BackgroundSyncContext() = default;

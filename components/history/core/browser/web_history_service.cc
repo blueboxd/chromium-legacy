@@ -83,7 +83,7 @@ class RequestImpl : public WebHistoryService::Request {
   friend class history::WebHistoryService;
 
   RequestImpl(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const GURL& url,
       const WebHistoryService::CompletionCallback& callback,
@@ -102,7 +102,7 @@ class RequestImpl : public WebHistoryService::Request {
   }
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo access_token_info) {
+                                  signin::AccessTokenInfo access_token_info) {
     access_token_fetcher_.reset();
 
     if (error.state() != GoogleServiceAuthError::NONE) {
@@ -168,11 +168,11 @@ class RequestImpl : public WebHistoryService::Request {
     oauth_scopes.insert(kHistoryOAuthScope);
 
     access_token_fetcher_ =
-        std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+        std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
             "web_history", identity_manager_, oauth_scopes,
             base::BindOnce(&RequestImpl::OnAccessTokenFetchComplete,
                            base::Unretained(this)),
-            identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+            signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
     is_pending_ = true;
   }
 
@@ -227,7 +227,7 @@ class RequestImpl : public WebHistoryService::Request {
     user_agent_ = user_agent;
   }
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The URL of the API endpoint.
@@ -242,7 +242,7 @@ class RequestImpl : public WebHistoryService::Request {
   // The user agent header used with this request.
   std::string user_agent_;
 
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
 
   // The current OAuth2 access token.
@@ -347,7 +347,7 @@ WebHistoryService::Request::~Request() {
 }
 
 WebHistoryService::WebHistoryService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)) {}

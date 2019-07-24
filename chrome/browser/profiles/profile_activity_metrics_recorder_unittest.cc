@@ -6,6 +6,9 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -17,39 +20,62 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromMinutes(5);
+
+}  // namespace
+
 class ProfileActivityMetricsRecorderTest : public testing::Test {
  public:
   ProfileActivityMetricsRecorderTest()
-      : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+      : thread_bundle_(
+            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
     Test::SetUp();
     ASSERT_TRUE(profile_manager_.SetUp());
 
+    metrics::DesktopSessionDurationTracker::Initialize();
+    metrics::DesktopSessionDurationTracker::Get()
+        ->SetInactivityTimeoutForTesting(kInactivityTimeout);
     ProfileActivityMetricsRecorder::Initialize();
+  }
+
+  void TearDown() override {
+    // Clean up the global state, so it can be correctly initialized for the
+    // next test case.
+    ProfileActivityMetricsRecorder::CleanupForTesting();
+    metrics::DesktopSessionDurationTracker::CleanupForTesting();
   }
 
   void ActivateBrowser(Profile* profile) {
     Browser::CreateParams browser_params(profile, false);
-    TestBrowserWindow browser_window;
-    browser_params.window = &browser_window;
-    std::unique_ptr<Browser> browser(Browser::Create(browser_params));
+    browsers_.push_back(CreateBrowserWithTestWindowForParams(&browser_params));
 
-    BrowserList::SetLastActive(browser.get());
+    BrowserList::SetLastActive(browsers_.back().get());
   }
 
   void ActivateIncognitoBrowser(Profile* profile) {
     ActivateBrowser(profile->GetOffTheRecordProfile());
   }
 
+  void SimulateUserEvent() {
+    metrics::DesktopSessionDurationTracker::Get()->OnUserEvent();
+  }
+
   TestingProfileManager* profile_manager() { return &profile_manager_; }
   base::HistogramTester* histograms() { return &histogram_tester_; }
+  content::TestBrowserThreadBundle* thread_bundle() { return &thread_bundle_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
   TestingProfileManager profile_manager_;
   base::HistogramTester histogram_tester_;
+
+  std::vector<std::unique_ptr<Browser>> browsers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileActivityMetricsRecorderTest);
 };
@@ -90,35 +116,69 @@ TEST_F(ProfileActivityMetricsRecorderTest, IncognitoProfile) {
 }
 
 TEST_F(ProfileActivityMetricsRecorderTest, MultipleProfiles) {
+  // Profile 1: Profile is created. This does not affect the histogram.
   Profile* profile1 = profile_manager()->CreateTestingProfile("p1");
+  // Profile 2: Profile is created. This does not affect the histogram.
   Profile* profile2 = profile_manager()->CreateTestingProfile("p2");
   histograms()->ExpectTotalCount("Profile.BrowserActive.PerProfile", 0);
 
-  // The browser of profile 1 is activated for the first time. It is assigned
+  // Profile 1: Browser is activated for the first time. The profile is assigned
   // bucket 1.
   ActivateBrowser(profile1);
   histograms()->ExpectBucketCount("Profile.BrowserActive.PerProfile",
                                   /*bucket=*/1, /*count=*/1);
 
-  // Profile creation doesn't influence the histogram.
+  // Profile 3: Profile is created. This does not affect the histogram.
   Profile* profile3 = profile_manager()->CreateTestingProfile("p3");
   histograms()->ExpectTotalCount("Profile.BrowserActive.PerProfile", 1);
 
+  // Profile 1: Another browser is activated.
   ActivateBrowser(profile1);
   histograms()->ExpectBucketCount("Profile.BrowserActive.PerProfile",
                                   /*bucket=*/1, /*count=*/2);
 
-  // The browser of profile 3 is activated for the first time. It is assigned
+  // Profile 1: Session lasts 2 minutes.
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+
+  // Profile 3: Browser is activated for the first time. The profile is assigned
   // bucket 2.
   ActivateBrowser(profile3);
   histograms()->ExpectBucketCount("Profile.BrowserActive.PerProfile",
                                   /*bucket=*/2, /*count=*/1);
+  // Profile 1: Session ended. The duration(2 minutes) is recorded.
+  histograms()->ExpectBucketCount("Profile.SessionDuration.PerProfile",
+                                  /*bucket=*/1, /*count=*/2);
 
-  // The browser of profile 2 is activated for the first time. It is assigned
+  // Profile 3: Session lasts 2 minutes.
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+
+  // Profile 2: Browser is activated for the first time. The profile is assigned
   // bucket 3.
   ActivateBrowser(profile2);
   histograms()->ExpectBucketCount("Profile.BrowserActive.PerProfile",
                                   /*bucket=*/3, /*count=*/1);
+  // Profile 3: Session ended. The duration(2 minutes) is recorded.
+  histograms()->ExpectBucketCount("Profile.SessionDuration.PerProfile",
+                                  /*bucket=*/2, /*count=*/2);
 
   histograms()->ExpectTotalCount("Profile.BrowserActive.PerProfile", 4);
+}
+
+TEST_F(ProfileActivityMetricsRecorderTest, SessionInactivityNotRecorded) {
+  Profile* profile = profile_manager()->CreateTestingProfile("p1");
+
+  ActivateBrowser(profile);
+  histograms()->ExpectBucketCount("Profile.BrowserActive.PerProfile",
+                                  /*bucket=*/1, /*count=*/1);
+
+  // Wait 2 minutes before doing another user interaction.
+  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  SimulateUserEvent();
+
+  // Stay inactive so the session ends.
+  thread_bundle()->FastForwardBy(kInactivityTimeout * 2);
+
+  // The inactive time is not recorded.
+  histograms()->ExpectBucketCount("Profile.SessionDuration.PerProfile",
+                                  /*bucket=*/1, /*count=*/2);
 }

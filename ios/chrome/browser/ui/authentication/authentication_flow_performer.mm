@@ -256,7 +256,7 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
   if (AuthenticationServiceFactory::GetForBrowserState(browserState)
           ->IsAuthenticatedIdentityManaged()) {
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForBrowserState(browserState);
     base::Optional<AccountInfo> primary_account_info =
         identity_manager->FindExtendedAccountInfoForAccount(

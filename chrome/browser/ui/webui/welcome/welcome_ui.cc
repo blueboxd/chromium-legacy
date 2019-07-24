@@ -5,9 +5,7 @@
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
-#include "build/build_config.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
@@ -18,7 +16,6 @@
 #include "chrome/browser/ui/webui/welcome/nux_helper.h"
 #include "chrome/browser/ui/webui/welcome/welcome_handler.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,22 +24,13 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/web_contents.h"
 #include "net/base/url_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
 namespace {
-
-const bool kIsBranded =
-#if defined(GOOGLE_CHROME_BUILD)
-    true;
-#else
-    false;
-#endif
 
 const char kPreviewBackgroundPath[] = "preview-background.jpg";
 
@@ -81,13 +69,11 @@ void HandleRequestCallback(
 void AddOnboardingStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       // Shared strings.
-      {"acceptText", IDS_WELCOME_ACCEPT_BUTTON},
       {"bookmarkAdded", IDS_ONBOARDING_WELCOME_BOOKMARK_ADDED},
       {"bookmarksAdded", IDS_ONBOARDING_WELCOME_BOOKMARKS_ADDED},
       {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
       {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
       {"defaultBrowserChanged", IDS_ONBOARDING_DEFAULT_BROWSER_CHANGED},
-      {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
       {"headerText", IDS_WELCOME_HEADER},
       {"next", IDS_ONBOARDING_WELCOME_NEXT},
       {"noThanks", IDS_NO_THANKS},
@@ -115,7 +101,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"setDefaultHeader", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_HEADER},
       {"setDefaultSubHeader",
        IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SUB_HEADER},
-      {"setDefaultSkip", IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SKIP},
       {"setDefaultConfirm",
        IDS_ONBOARDING_WELCOME_NUX_SET_AS_DEFAULT_SET_AS_DEFAULT},
 
@@ -148,111 +133,81 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
-  if (nux::IsNuxOnboardingEnabled(profile)) {
-    // Add Onboarding welcome strings.
-    AddOnboardingStrings(html_source);
+  // Add Onboarding welcome strings.
+  AddOnboardingStrings(html_source);
 
-    // Add all Onboarding resources.
-    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-      html_source->AddResourcePath(kOnboardingWelcomeResources[i].name,
-                                   kOnboardingWelcomeResources[i].value);
-    }
+  // Add all Onboarding resources.
+  for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
+    html_source->AddResourcePath(kOnboardingWelcomeResources[i].name,
+                                 kOnboardingWelcomeResources[i].value);
+  }
 
 #if defined(GOOGLE_CHROME_BUILD)
-    // Load unscaled images.
-    html_source->AddResourcePath("images/module_icons/google_dark.svg",
-                                 IDR_WELCOME_MODULE_ICONS_GOOGLE_DARK);
-    html_source->AddResourcePath("images/module_icons/google_light.svg",
-                                 IDR_WELCOME_MODULE_ICONS_GOOGLE_LIGHT);
-    html_source->AddResourcePath("images/module_icons/set_default_dark.svg",
-                                 IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_DARK);
-    html_source->AddResourcePath("images/module_icons/set_default_light.svg",
-                                 IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_LIGHT);
-    html_source->AddResourcePath("images/module_icons/wallpaper_dark.svg",
-                                 IDR_WELCOME_MODULE_ICONS_WALLPAPER_DARK);
-    html_source->AddResourcePath("images/module_icons/wallpaper_light.svg",
-                                 IDR_WELCOME_MODULE_ICONS_WALLPAPER_LIGHT);
-    html_source->AddResourcePath("images/ntp_thumbnails/art.jpg",
-                                 IDR_WELCOME_NTP_THUMBNAILS_ART);
-    html_source->AddResourcePath("images/ntp_thumbnails/cityscape.jpg",
-                                 IDR_WELCOME_NTP_THUMBNAILS_CITYSCAPE);
-    html_source->AddResourcePath("images/ntp_thumbnails/earth.jpg",
-                                 IDR_WELCOME_NTP_THUMBNAILS_EARTH);
-    html_source->AddResourcePath("images/ntp_thumbnails/geometric_shapes.jpg",
-                                 IDR_WELCOME_NTP_THUMBNAILS_GEOMETRIC_SHAPES);
-    html_source->AddResourcePath("images/ntp_thumbnails/landscape.jpg",
-                                 IDR_WELCOME_NTP_THUMBNAILS_LANDSCAPE);
-    html_source->AddResourcePath("images/set_default_dark.svg",
-                                 IDR_WELCOME_SET_DEFAULT_DARK);
-    html_source->AddResourcePath("images/set_default_light.svg",
-                                 IDR_WELCOME_SET_DEFAULT_LIGHT);
+  // Load unscaled images.
+  html_source->AddResourcePath("images/module_icons/google_dark.svg",
+                               IDR_WELCOME_MODULE_ICONS_GOOGLE_DARK);
+  html_source->AddResourcePath("images/module_icons/google_light.svg",
+                               IDR_WELCOME_MODULE_ICONS_GOOGLE_LIGHT);
+  html_source->AddResourcePath("images/module_icons/set_default_dark.svg",
+                               IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_DARK);
+  html_source->AddResourcePath("images/module_icons/set_default_light.svg",
+                               IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_LIGHT);
+  html_source->AddResourcePath("images/module_icons/wallpaper_dark.svg",
+                               IDR_WELCOME_MODULE_ICONS_WALLPAPER_DARK);
+  html_source->AddResourcePath("images/module_icons/wallpaper_light.svg",
+                               IDR_WELCOME_MODULE_ICONS_WALLPAPER_LIGHT);
+  html_source->AddResourcePath("images/ntp_thumbnails/art.jpg",
+                               IDR_WELCOME_NTP_THUMBNAILS_ART);
+  html_source->AddResourcePath("images/ntp_thumbnails/cityscape.jpg",
+                               IDR_WELCOME_NTP_THUMBNAILS_CITYSCAPE);
+  html_source->AddResourcePath("images/ntp_thumbnails/earth.jpg",
+                               IDR_WELCOME_NTP_THUMBNAILS_EARTH);
+  html_source->AddResourcePath("images/ntp_thumbnails/geometric_shapes.jpg",
+                               IDR_WELCOME_NTP_THUMBNAILS_GEOMETRIC_SHAPES);
+  html_source->AddResourcePath("images/ntp_thumbnails/landscape.jpg",
+                               IDR_WELCOME_NTP_THUMBNAILS_LANDSCAPE);
+  html_source->AddResourcePath("images/set_default_dark.svg",
+                               IDR_WELCOME_SET_DEFAULT_DARK);
+  html_source->AddResourcePath("images/set_default_light.svg",
+                               IDR_WELCOME_SET_DEFAULT_LIGHT);
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
-    // chrome://welcome
-    html_source->SetDefaultResource(
-        IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
+  // chrome://welcome
+  html_source->SetDefaultResource(IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
 
 #if defined(OS_WIN)
-    html_source->AddBoolean(
-        "is_win10", base::win::GetVersion() >= base::win::Version::WIN10);
+  html_source->AddBoolean("is_win10",
+                          base::win::GetVersion() >= base::win::Version::WIN10);
 #endif
 
-    // Add the shared bookmark handler for onboarding modules.
-    web_ui->AddMessageHandler(
-        std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
+  // Add the shared bookmark handler for onboarding modules.
+  web_ui->AddMessageHandler(
+      std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
 
-    // Add google apps bookmarking onboarding module.
-    web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
+  // Add google apps bookmarking onboarding module.
+  web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
 
-    // Add NTP custom background onboarding module.
-    web_ui->AddMessageHandler(std::make_unique<nux::NtpBackgroundHandler>());
+  // Add NTP custom background onboarding module.
+  web_ui->AddMessageHandler(std::make_unique<nux::NtpBackgroundHandler>());
 
-    // Add set-as-default onboarding module.
-    web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
+  // Add set-as-default onboarding module.
+  web_ui->AddMessageHandler(std::make_unique<nux::SetAsDefaultHandler>());
 
-    html_source->AddString(
-        "newUserModules",
-        nux::GetNuxOnboardingModules(profile).FindKey("new-user")->GetString());
-    html_source->AddString("returningUserModules",
-                           nux::GetNuxOnboardingModules(profile)
-                               .FindKey("returning-user")
-                               ->GetString());
-    html_source->AddBoolean("signinAllowed", profile->GetPrefs()->GetBoolean(
-                                                 prefs::kSigninAllowed));
-    html_source->SetRequestFilter(
-        base::BindRepeating(&ShouldHandleRequestCallback,
-                            weak_ptr_factory_.GetWeakPtr()),
-        base::BindRepeating(&HandleRequestCallback,
-                            weak_ptr_factory_.GetWeakPtr()));
-    html_source->SetJsonPath("strings.js");
-  } else {
-    // Use default layout for non-DICE or unbranded build.
-    std::string value;
-    bool is_everywhere_variant =
-        (net::GetValueForKeyInQuery(url, "variant", &value) &&
-         value == "everywhere");
-
-    if (kIsBranded) {
-      base::string16 subheader =
-          is_everywhere_variant
-              ? base::string16()
-              : l10n_util::GetStringUTF16(IDS_WELCOME_SUBHEADER);
-      html_source->AddString("subheaderText", subheader);
-    }
-
-    int header_id = is_everywhere_variant ? IDS_WELCOME_HEADER_AFTER_FIRST_RUN
-                                          : IDS_WELCOME_HEADER;
-    html_source->AddString("headerText", l10n_util::GetStringUTF16(header_id));
-    html_source->AddLocalizedString("acceptText", IDS_WELCOME_ACCEPT_BUTTON);
-    html_source->AddLocalizedString("descriptionText", IDS_WELCOME_DESCRIPTION);
-    html_source->AddLocalizedString("declineText", IDS_WELCOME_DECLINE_BUTTON);
-    html_source->AddResourcePath("welcome.js", IDR_WELCOME_JS);
-    html_source->AddResourcePath("welcome.css", IDR_WELCOME_CSS);
-    html_source->SetDefaultResource(IDR_WELCOME_HTML);
-
-    html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
-    html_source->AddResourcePath("logo2x.png", IDR_PRODUCT_LOGO_256);
-  }
+  html_source->AddString(
+      "newUserModules",
+      nux::GetNuxOnboardingModules(profile).FindKey("new-user")->GetString());
+  html_source->AddString("returningUserModules",
+                         nux::GetNuxOnboardingModules(profile)
+                             .FindKey("returning-user")
+                             ->GetString());
+  html_source->AddBoolean(
+      "signinAllowed", profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed));
+  html_source->SetRequestFilter(
+      base::BindRepeating(&ShouldHandleRequestCallback,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&HandleRequestCallback,
+                          weak_ptr_factory_.GetWeakPtr()));
+  html_source->SetJsonPath("strings.js");
 
   content::WebUIDataSource::Add(profile, html_source);
 }

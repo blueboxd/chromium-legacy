@@ -59,7 +59,7 @@ std::string CustodianProfileDownloaderService::GetCachedPictureURL() const {
   return std::string();
 }
 
-identity::IdentityManager*
+signin::IdentityManager*
 CustodianProfileDownloaderService::GetIdentityManager() {
   DCHECK(custodian_profile_);
   return IdentityManagerFactory::GetForProfile(custodian_profile_);

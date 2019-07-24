@@ -126,6 +126,12 @@ const char kClosingLastIncognitoTabDescription[] =
     "Automatically switches to the regular tabs panel in the tab grid after "
     "closing the last incognito tab";
 
+const char kCollectionsCardPresentationStyleName[] =
+    "Card style presentation for Collections.";
+const char kCollectionsCardPresentationStyleDescription[] =
+    "When enabled collections are presented using the new iOS13 card "
+    "style.";
+
 const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";

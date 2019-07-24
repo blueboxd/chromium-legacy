@@ -193,7 +193,8 @@ void UnifiedSystemTray::ShowVolumeSliderBubble() {
 }
 
 void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
-  ShowBubble(false /* show_by_click */);
+  // The settings menu bubble gains focus when |show_by_click| is true.
+  ShowBubble(true /* show_by_click */);
   bubble_->ShowAudioDetailedView();
 }
 

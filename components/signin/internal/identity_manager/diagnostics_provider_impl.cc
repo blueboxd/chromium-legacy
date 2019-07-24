@@ -8,7 +8,7 @@
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 
-namespace identity {
+namespace signin {
 
 DiagnosticsProviderImpl::DiagnosticsProviderImpl(
     ProfileOAuth2TokenService* profile_oauth2_token_service,
@@ -41,4 +41,4 @@ base::TimeDelta DiagnosticsProviderImpl::GetDelayBeforeMakingCookieRequests()
   return gaia_cookie_manager_service_->GetBackoffEntry()->GetTimeUntilRelease();
 }
 
-}  // namespace identity
+}  // namespace signin

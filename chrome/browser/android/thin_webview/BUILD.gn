@@ -15,22 +15,29 @@ source_set("thin_webview") {
 }
 
 android_library("java") {
-  java_files =
-      [ "java/src/org/chromium/chrome/browser/thinwebview/CompositorView.java" ]
+  java_files = [
+    "java/src/org/chromium/chrome/browser/thinwebview/CompositorView.java",
+    "java/src/org/chromium/chrome/browser/thinwebview/ThinWebView.java",
+  ]
 
   deps = [
     "//base:base_java",
+    "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]
 }
 
 android_library("factory_java") {
-  java_files = [ "java/src/org/chromium/chrome/browser/thinwebview/CompositorViewFactory.java" ]
+  java_files = [
+    "java/src/org/chromium/chrome/browser/thinwebview/CompositorViewFactory.java",
+    "java/src/org/chromium/chrome/browser/thinwebview/ThinWebViewFactory.java",
+  ]
 
   deps = [
     ":java",
     "internal:internal_java",
     "//base:base_java",
+    "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]
 }

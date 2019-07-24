@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/search/search_suggest/search_suggest_data.h"
 #include "components/google/core/browser/google_url_tracker.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/http/http_request_headers.h"

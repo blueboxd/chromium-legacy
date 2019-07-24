@@ -15,6 +15,7 @@ class TestAboutPageBrowserProxy extends TestBrowserProxy {
     if (cr.isChromeOS) {
       methodNames.push(
           'getChannelInfo', 'getVersionInfo', 'getRegulatoryInfo',
+          'checkInternetConnection', 'getEnabledReleaseNotes',
           'getHasEndOfLife', 'openOsHelpPage', 'refreshTPMFirmwareUpdateStatus',
           'setChannel');
     }
@@ -134,6 +135,18 @@ if (cr.isChromeOS) {
     this.hasEndOfLife_ = hasEndOfLife;
   };
 
+  /** @param {boolean|Promise} hasReleaseNotes */
+  TestAboutPageBrowserProxy.prototype.setReleaseNotes = function(
+      hasEnabledReleaseNotes) {
+    this.hasReleaseNotes_ = hasEnabledReleaseNotes;
+  };
+
+  /** @param {boolean|Promise} hasInternetConnection */
+  TestAboutPageBrowserProxy.prototype.setInternetConnection = function(
+      hasInternetConnection) {
+    this.hasInternetConnection_ = hasInternetConnection;
+  };
+
   /** @override */
   TestAboutPageBrowserProxy.prototype.getChannelInfo = function() {
     this.methodCalled('getChannelInfo');
@@ -144,6 +157,18 @@ if (cr.isChromeOS) {
   TestAboutPageBrowserProxy.prototype.getVersionInfo = function() {
     this.methodCalled('getVersionInfo');
     return Promise.resolve(this.versionInfo_);
+  };
+
+  /** @override */
+  TestAboutPageBrowserProxy.prototype.getEnabledReleaseNotes = function() {
+    this.methodCalled('getEnabledReleaseNotes');
+    return Promise.resolve(this.hasReleaseNotes_);
+  };
+
+  /** @override */
+  TestAboutPageBrowserProxy.prototype.checkInternetConnection = function() {
+    this.methodCalled('checkInternetConnection');
+    return Promise.resolve(this.hasInternetConnection_);
   };
 
   /** @override */

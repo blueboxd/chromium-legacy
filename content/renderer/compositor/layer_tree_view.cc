@@ -188,18 +188,6 @@ void LayerTreeView::SetNeedsBeginFrame() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-void LayerTreeView::ForceRecalculateRasterScales() {
-  layer_tree_host_->SetNeedsRecalculateRasterScales();
-}
-
-void LayerTreeView::SetHaveScrollEventHandlers(bool has_handlers) {
-  layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
-}
-
-bool LayerTreeView::HaveScrollEventHandlers() const {
-  return layer_tree_host_->have_scroll_event_handlers();
-}
-
 void LayerTreeView::SetLayerTreeFrameSink(
     std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink) {
   if (!layer_tree_frame_sink) {

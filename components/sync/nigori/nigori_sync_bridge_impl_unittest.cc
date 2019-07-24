@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/entity_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -152,7 +153,8 @@ class NigoriSyncBridgeImplTest : public testing::Test {
     auto processor =
         std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
     processor_ = processor.get();
-    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor));
+    bridge_ = std::make_unique<NigoriSyncBridgeImpl>(std::move(processor),
+                                                     &encryptor_);
     bridge_->AddObserver(&observer_);
   }
 
@@ -238,6 +240,7 @@ class NigoriSyncBridgeImplTest : public testing::Test {
   }
 
  private:
+  const FakeEncryptor encryptor_;
   std::unique_ptr<NigoriSyncBridgeImpl> bridge_;
   // Ownership transferred to |bridge_|.
   testing::NiceMock<MockNigoriLocalChangeProcessor>* processor_;
@@ -500,6 +503,8 @@ TEST_P(NigoriSyncBridgeImplTestWithOptionalScryptDerivation,
 
   EXPECT_CALL(*observer(), OnPassphraseAccepted());
   EXPECT_CALL(*observer(), OnCryptographerStateChanged(NotNull()));
+  EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
+                                                   PASSPHRASE_BOOTSTRAP_TOKEN));
   bridge()->SetDecryptionPassphrase(passphrase_key_params.password);
 
   const Cryptographer& cryptographer = bridge()->GetCryptographerForTesting();
@@ -537,6 +542,8 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_CALL(*observer(),
               OnPassphraseTypeChanged(PassphraseType::CUSTOM_PASSPHRASE,
                                       /*passphrase_time=*/NotNullTime()));
+  EXPECT_CALL(*observer(), OnBootstrapTokenUpdated(Ne(std::string()),
+                                                   PASSPHRASE_BOOTSTRAP_TOKEN));
   EXPECT_CALL(*processor(), Put(HasCustomPassphraseNigori()));
   bridge()->SetEncryptionPassphrase(kPassphraseKeyParams.password);
   EXPECT_THAT(bridge()->GetData(), HasCustomPassphraseNigori());

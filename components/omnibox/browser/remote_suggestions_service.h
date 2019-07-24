@@ -19,10 +19,10 @@
 namespace base {
 class Time;
 }
-namespace identity {
+namespace signin {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
-}  // namespace identity
+}  // namespace signin
 class GoogleServiceAuthError;
 class TemplateURLService;
 
@@ -44,7 +44,7 @@ class RemoteSuggestionsService : public KeyedService {
   // |identity_manager| may be null but only unauthenticated requests will
   // issued.
   RemoteSuggestionsService(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   ~RemoteSuggestionsService() override;
@@ -170,7 +170,7 @@ class RemoteSuggestionsService : public KeyedService {
                             StartCallback start_callback,
                             CompletionCallback completion_callback,
                             GoogleServiceAuthError error,
-                            identity::AccessTokenInfo access_token_info);
+                            signin::AccessTokenInfo access_token_info);
 
   // Activates a loader for |request|, wiring it up to |completion_callback|,
   // and calls |start_callback|.  If |request_body| isn't empty, it will be
@@ -183,11 +183,11 @@ class RemoteSuggestionsService : public KeyedService {
       CompletionCallback completion_callback);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // Helper for fetching OAuth2 access tokens. This is non-null when an access
   // token request is currently in progress.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsService);
 };

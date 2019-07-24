@@ -216,7 +216,7 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
                   FilteringBehaviorToString(
                       filter->GetDefaultFilteringBehavior()));
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   // |identity_manager| is null in incognito and guest profiles.
   if (identity_manager) {

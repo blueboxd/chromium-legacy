@@ -10,6 +10,7 @@
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_sync_bridge.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
@@ -18,9 +19,10 @@ namespace syncer {
 
 DeviceInfoSyncServiceImpl::DeviceInfoSyncServiceImpl(
     OnceModelTypeStoreFactory model_type_store_factory,
-    std::unique_ptr<MutableLocalDeviceInfoProvider>
-        local_device_info_provider) {
+    std::unique_ptr<MutableLocalDeviceInfoProvider> local_device_info_provider,
+    std::unique_ptr<DeviceInfoPrefs> device_info_prefs) {
   DCHECK(local_device_info_provider);
+  DCHECK(device_info_prefs);
 
   // Make a copy of the channel to avoid relying on argument evaluation order.
   const version_info::Channel channel =
@@ -32,7 +34,8 @@ DeviceInfoSyncServiceImpl::DeviceInfoSyncServiceImpl(
       std::make_unique<ClientTagBasedModelTypeProcessor>(
           DEVICE_INFO,
           /*dump_stack=*/base::BindRepeating(&ReportUnrecoverableError,
-                                             channel)));
+                                             channel)),
+      std::move(device_info_prefs));
 }
 
 DeviceInfoSyncServiceImpl::~DeviceInfoSyncServiceImpl() {}

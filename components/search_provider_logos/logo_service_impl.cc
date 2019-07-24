@@ -179,7 +179,7 @@ void NotifyAndClear(std::vector<EncodedLogoCallback>* encoded_callbacks,
 
 LogoServiceImpl::LogoServiceImpl(
     const base::FilePath& cache_directory,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     TemplateURLService* template_url_service,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -731,7 +731,7 @@ void LogoServiceImpl::OnURLLoadComplete(const network::SimpleURLLoader* source,
 }
 
 void LogoServiceImpl::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo&,
+    const signin::AccountsInCookieJarInfo&,
     const GoogleServiceAuthError&) {
   // Clear any cached logo, since it may be personalized (e.g. birthday Doodle).
   if (!clock_) {

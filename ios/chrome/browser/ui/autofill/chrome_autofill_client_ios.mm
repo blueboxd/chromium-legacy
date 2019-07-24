@@ -124,7 +124,7 @@ syncer::SyncService* ChromeAutofillClientIOS::GetSyncService() {
   return sync_service_;
 }
 
-identity::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
+signin::IdentityManager* ChromeAutofillClientIOS::GetIdentityManager() {
   return identity_manager_;
 }
 

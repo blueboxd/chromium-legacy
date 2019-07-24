@@ -36,7 +36,6 @@
 #include "components/offline_pages/core/archive_validator.h"
 #include "components/offline_pages/core/background/request_queue_results.h"
 #include "components/offline_pages/core/background/save_page_request.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
@@ -712,7 +711,7 @@ jboolean OfflinePageBridge::IsTemporaryNamespace(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& j_name_space) {
   std::string name_space(ConvertJavaStringToUTF8(env, j_name_space));
-  return (offline_page_model_->GetPolicyController()->IsTemporary(name_space));
+  return GetPolicy(name_space).lifetime_type == LifetimeType::TEMPORARY;
 }
 
 ScopedJavaLocalRef<jobject> OfflinePageBridge::GetOfflinePage(

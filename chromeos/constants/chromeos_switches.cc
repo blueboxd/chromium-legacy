@@ -345,6 +345,11 @@ const char kFakeDriveFsLauncherChrootPath[] =
 const char kFakeDriveFsLauncherSocketPath[] =
     "fake-drivefs-launcher-socket-path";
 
+// Forces Chrome to use CertVerifyProcBuiltin for verification of server
+// certificates, ignoring the status of
+// net::features::kCertVerifierBuiltinFeature.
+const char kForceCertVerifierBuiltin[] = "force-cert-verifier-builtin";
+
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";

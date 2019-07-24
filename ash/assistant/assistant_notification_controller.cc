@@ -9,11 +9,10 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_notification_expiry_monitor.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -206,8 +205,10 @@ void AssistantNotificationController::SetQuietMode(bool enabled) {
 void AssistantNotificationController::OnNotificationAdded(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!VoiceInteractionController::Get()->notification_enabled())
+  if (!assistant_controller_->prefs_controller()->prefs()->GetBoolean(
+          chromeos::assistant::prefs::kAssistantNotificationEnabled)) {
     return;
+  }
 
   // We only show system notifications in the Message Center.
   if (!IsSystemNotification(notification))
@@ -220,8 +221,10 @@ void AssistantNotificationController::OnNotificationAdded(
 void AssistantNotificationController::OnNotificationUpdated(
     const AssistantNotification* notification) {
   // Do not show system notifications if the setting is disabled.
-  if (!VoiceInteractionController::Get()->notification_enabled())
+  if (!assistant_controller_->prefs_controller()->prefs()->GetBoolean(
+          chromeos::assistant::prefs::kAssistantNotificationEnabled)) {
     return;
+  }
 
   // If the notification that was updated is *not* a system notification, we
   // need to ensure that it is removed from the Message Center (given that it

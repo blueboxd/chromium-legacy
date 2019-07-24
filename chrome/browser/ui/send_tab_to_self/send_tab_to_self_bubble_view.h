@@ -11,6 +11,8 @@ namespace send_tab_to_self {
 // This object is responsible for its own lifetime.
 class SendTabToSelfBubbleView {
  public:
+  virtual ~SendTabToSelfBubbleView() = default;
+
   // Called to close the bubble and prevent future callbacks into the
   // controller.
   virtual void Hide() = 0;

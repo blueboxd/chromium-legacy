@@ -3126,11 +3126,6 @@ const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
 const char kEnableAssistantAppSupportDescription[] =
     "Enable the Assistant App Support feature";
 
-const char kEnableAssistantKeyRemappingName[] =
-    "Enable Assistant Key Remapping";
-const char kEnableAssistantKeyRemappingDescription[] =
-    "Allow Assistant key remapping in the keyboard settings.";
-
 const char kEnableAssistantLauncherIntegrationName[] =
     "Assistant & Launcher integration";
 const char kEnableAssistantLauncherIntegrationDescription[] =
@@ -3321,6 +3316,11 @@ const char kPrinterProviderSearchAppDescription[] =
     "Enables Chrome Web Store Gallery app for printer drivers. The app "
     "searches Chrome Web Store for extensions that support printing to a USB "
     "printer with specific USB ID.";
+
+const char kReleaseNotesName[] = "CrOS Release Notes.";
+const char kReleaseNotesDescription[] =
+    "Instructs OS to show notification about CrOS ReleaseNotes on login after "
+    "update, show webview describing new OS features.";
 
 const char kSchedulerConfigurationName[] = "Scheduler Configuration";
 const char kSchedulerConfigurationDescription[] =

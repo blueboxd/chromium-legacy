@@ -57,6 +57,8 @@ cr.define('settings_about_page', function() {
           aboutBrowserProxy.whenCalled('getChannelInfo'),
           aboutBrowserProxy.whenCalled('refreshUpdateStatus'),
           aboutBrowserProxy.whenCalled('refreshTPMFirmwareUpdateStatus'),
+          aboutBrowserProxy.whenCalled('getEnabledReleaseNotes'),
+          aboutBrowserProxy.whenCalled('checkInternetConnection'),
         ]);
       }
 
@@ -276,6 +278,75 @@ cr.define('settings_about_page', function() {
         page.fire('target-channel-changed', BrowserChannel.STABLE);
         assertTrue(page.$.relaunch.hidden);
         assertFalse(page.$.relaunchAndPowerwash.hidden);
+      });
+
+      /**
+       * Test that release notes button can toggled by feature flags.
+       * Test that release notes button handles offline/online mode properly.
+       * page.$$("#") is used to access items inside dom-if.
+       */
+      test('ReleaseNotes', async () => {
+        let releaseNotes = null;
+
+        /**
+         * Checks the visibility of the "release notes" section when online.
+         * @param {boolean} isShowing Whether the section is expected to be
+         *     visible.
+         * @return {!Promise}
+         */
+        async function checkReleaseNotesOnline(isShowing) {
+          await aboutBrowserProxy.whenCalled('getEnabledReleaseNotes');
+          const releaseNotesOnlineEl = page.$$('#releaseNotesOnline');
+          assertTrue(!!releaseNotesOnlineEl);
+          assertEquals(isShowing, !releaseNotesOnlineEl.hidden);
+        }
+
+        /**
+         * Checks the visibility of the "release notes" for offline mode.
+         * @param {boolean} isShowing Whether the section is expected to be
+         *     visible.
+         * @return {!Promise}
+         */
+        async function checkReleaseNotesOffline(isShowing) {
+          await aboutBrowserProxy.whenCalled('getEnabledReleaseNotes');
+          const releaseNotesOfflineEl = page.$$('#releaseNotesOffline');
+          assertTrue(!!releaseNotesOfflineEl);
+          assertEquals(isShowing, !releaseNotesOfflineEl.hidden);
+        }
+
+        /**
+         * Checks the visibility of the "release notes" section when disabled.
+         * @return {!Promise}
+         */
+        async function checkReleaseNotesDisabled() {
+          await aboutBrowserProxy.whenCalled('getEnabledReleaseNotes');
+          const releaseNotesOnlineEl = page.$$('#releaseNotesOnline');
+          assertTrue(!releaseNotesOnlineEl);
+          const releaseNotesOfflineEl = page.$$('#releaseNotesOffline');
+          assertTrue(!releaseNotesOfflineEl);
+        }
+
+        aboutBrowserProxy.setReleaseNotes(false);
+        aboutBrowserProxy.setInternetConnection(false);
+        await initNewPage();
+        await checkReleaseNotesDisabled();
+
+        aboutBrowserProxy.setReleaseNotes(false);
+        aboutBrowserProxy.setInternetConnection(true);
+        await initNewPage();
+        await checkReleaseNotesDisabled();
+
+        aboutBrowserProxy.setReleaseNotes(true);
+        aboutBrowserProxy.setInternetConnection(false);
+        await initNewPage();
+        await checkReleaseNotesOnline(false);
+        await checkReleaseNotesOffline(true);
+
+        aboutBrowserProxy.setReleaseNotes(true);
+        aboutBrowserProxy.setInternetConnection(true);
+        await initNewPage();
+        await checkReleaseNotesOnline(true);
+        await checkReleaseNotesOffline(false);
       });
 
       test('RegulatoryInfo', async () => {

@@ -50,7 +50,7 @@
 #include "components/signin/internal/identity_manager/child_account_info_fetcher_android.h"
 #endif
 
-namespace identity {
+namespace signin {
 namespace {
 
 const char kTestConsumerId[] = "dummy_consumer";
@@ -95,7 +95,7 @@ class CustomFakeOAuth2AccessTokenManager : public FakeOAuth2AccessTokenManager {
   // OAuth2AccessTokenManager:
   void InvalidateAccessTokenImpl(const CoreAccountId& account_id,
                                  const std::string& client_id,
-                                 const ScopeSet& scopes,
+                                 const identity::ScopeSet& scopes,
                                  const std::string& access_token) override {
     if (on_access_token_invalidated_callback_) {
       EXPECT_EQ(expected_account_id_to_invalidate_, account_id);
@@ -207,15 +207,16 @@ class TestIdentityManagerDiagnosticsObserver
       std::move(on_access_token_requested_callback_).Run();
   }
 
-  void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
-                                     const ScopeSet& scopes) override {
+  void OnAccessTokenRemovedFromCache(
+      const CoreAccountId& account_id,
+      const identity::ScopeSet& scopes) override {
     token_remover_account_id_ = account_id;
     token_remover_scopes_ = scopes;
   }
 
   void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                      const std::string& consumer_id,
-                                     const ScopeSet& scopes,
+                                     const identity::ScopeSet& scopes,
                                      GoogleServiceAuthError error,
                                      base::Time expiration_time) override {
     access_token_request_completed_account_id_ = account_id;
@@ -251,7 +252,7 @@ class IdentityManagerTest : public testing::Test {
     IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
     RecreateIdentityManager(
-        signin::AccountConsistencyMethod::kDisabled,
+        AccountConsistencyMethod::kDisabled,
         PrimaryAccountManagerSetup::kWithAuthenticatedAccout);
   }
 
@@ -292,7 +293,7 @@ class IdentityManagerTest : public testing::Test {
   // performing some other setup.
   void RecreateIdentityManager() {
     RecreateIdentityManager(
-        signin::AccountConsistencyMethod::kDisabled,
+        AccountConsistencyMethod::kDisabled,
         PrimaryAccountManagerSetup::kNoAuthenticatedAccount);
   }
 
@@ -302,7 +303,7 @@ class IdentityManagerTest : public testing::Test {
   // IdentityManager and its dependencies, then remakes them. Dependencies that
   // outlive PrimaryAccountManager (e.g. SigninClient) will be reused.
   void RecreateIdentityManager(
-      signin::AccountConsistencyMethod account_consistency,
+      AccountConsistencyMethod account_consistency,
       PrimaryAccountManagerSetup primary_account_manager_setup) {
     // Remove observers first, otherwise IdentityManager destruction might
     // trigger a DCHECK because there are still living observers.
@@ -325,7 +326,7 @@ class IdentityManagerTest : public testing::Test {
         &signin_client_, token_service.get(), account_tracker_service.get(),
         std::make_unique<image_fetcher::FakeImageDecoder>());
 
-    DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
+    DCHECK_EQ(account_consistency, AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by PrimaryAccountManager";
     std::unique_ptr<PrimaryAccountPolicyManager> policy_manager;
 #if !defined(OS_CHROMEOS)
@@ -386,9 +387,8 @@ class IdentityManagerTest : public testing::Test {
                              network::mojom::CookieChangeCause::EXPLICIT);
   }
 
-  void SimulateOAuthMultiloginFinished(
-      GaiaCookieManagerService* manager,
-      signin::SetAccountsInCookieResult error) {
+  void SimulateOAuthMultiloginFinished(GaiaCookieManagerService* manager,
+                                       SetAccountsInCookieResult error) {
     manager->OnSetAccountsFinished(error);
   }
 
@@ -1347,7 +1347,7 @@ TEST_F(IdentityManagerTest, ForceTriggerOnCookieChange) {
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
+  SetListAccountsResponseNoAccounts(test_url_loader_factory());
   // Forces the processing of OnCookieChange and it calls
   // OnGaiaAccountsInCookieUpdated.
   identity_manager()->ForceTriggerOnCookieChange();
@@ -1615,7 +1615,7 @@ TEST_F(IdentityManagerTest,
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
+  SetListAccountsResponseNoAccounts(test_url_loader_factory());
   identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1632,8 +1632,8 @@ TEST_F(IdentityManagerTest,
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
-                                            test_url_loader_factory());
+  SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
+                                    test_url_loader_factory());
   identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1659,9 +1659,8 @@ TEST_F(IdentityManagerTest,
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId,
-                                             kTestEmail2, kTestGaiaId2,
-                                             test_url_loader_factory());
+  SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId, kTestEmail2,
+                                     kTestGaiaId2, test_url_loader_factory());
   identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1702,7 +1701,7 @@ TEST_F(IdentityManagerTest, CallbackSentOnUpdateToSignOutAccountsInCookie) {
     identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
         run_loop.QuitClosure());
 
-    signin::SetListAccountsResponseWithParams(
+    SetListAccountsResponseWithParams(
         {{kTestEmail, kTestGaiaId, true /* valid */,
           signed_out_status.account_1 /* signed_out */, true /* verified */},
          {kTestEmail2, kTestGaiaId2, true /* valid */,
@@ -1760,7 +1759,7 @@ TEST_F(IdentityManagerTest,
       run_loop.QuitClosure());
 
   // Configure list accounts to return a permanent Gaia auth error.
-  signin::SetListAccountsResponseWebLoginRequired(test_url_loader_factory());
+  SetListAccountsResponseWebLoginRequired(test_url_loader_factory());
   identity_manager()->GetGaiaCookieManagerService()->TriggerListAccounts();
   run_loop.Run();
 
@@ -1777,7 +1776,7 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithNoAccounts) {
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseNoAccounts(test_url_loader_factory());
+  SetListAccountsResponseNoAccounts(test_url_loader_factory());
 
   // Do an initial call to GetAccountsInCookieJar(). This call should return no
   // accounts but should also trigger an internal update and eventual
@@ -1805,8 +1804,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithOneAccount) {
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
-                                            test_url_loader_factory());
+  SetListAccountsResponseOneAccount(kTestEmail, kTestGaiaId,
+                                    test_url_loader_factory());
 
   // Do an initial call to GetAccountsInCookieJar(). This call should return no
   // accounts but should also trigger an internal update and eventual
@@ -1842,9 +1841,8 @@ TEST_F(IdentityManagerTest, GetAccountsInCookieJarWithTwoAccounts) {
   identity_manager_observer()->SetOnAccountsInCookieUpdatedCallback(
       run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId,
-                                             kTestEmail2, kTestGaiaId2,
-                                             test_url_loader_factory());
+  SetListAccountsResponseTwoAccounts(kTestEmail, kTestGaiaId, kTestEmail2,
+                                     kTestGaiaId2, test_url_loader_factory());
 
   // Do an initial call to GetAccountsInCookieJar(). This call should return no
   // accounts but should also trigger an internal update and eventual
@@ -1941,11 +1939,11 @@ TEST_F(IdentityManagerTest,
       {kTestAccountId, kTestAccountId.id},
       {kTestAccountId2, kTestAccountId2.id}};
 
-  signin::SetAccountsInCookieResult
+  SetAccountsInCookieResult
       error_from_set_accounts_in_cookie_completed_callback;
   auto completion_callback = base::BindLambdaForTesting(
       [&error_from_set_accounts_in_cookie_completed_callback](
-          signin::SetAccountsInCookieResult error) {
+          SetAccountsInCookieResult error) {
         error_from_set_accounts_in_cookie_completed_callback = error;
       });
 
@@ -1955,10 +1953,10 @@ TEST_F(IdentityManagerTest,
 
   SimulateOAuthMultiloginFinished(
       identity_manager()->GetGaiaCookieManagerService(),
-      signin::SetAccountsInCookieResult::kSuccess);
+      SetAccountsInCookieResult::kSuccess);
 
   EXPECT_EQ(error_from_set_accounts_in_cookie_completed_callback,
-            signin::SetAccountsInCookieResult::kSuccess);
+            SetAccountsInCookieResult::kSuccess);
 }
 
 TEST_F(IdentityManagerTest,
@@ -1969,11 +1967,11 @@ TEST_F(IdentityManagerTest,
       {kTestAccountId, kTestAccountId.id},
       {kTestAccountId2, kTestAccountId2.id}};
 
-  signin::SetAccountsInCookieResult
+  SetAccountsInCookieResult
       error_from_set_accounts_in_cookie_completed_callback;
   auto completion_callback = base::BindLambdaForTesting(
       [&error_from_set_accounts_in_cookie_completed_callback](
-          signin::SetAccountsInCookieResult error) {
+          SetAccountsInCookieResult error) {
         error_from_set_accounts_in_cookie_completed_callback = error;
       });
 
@@ -1982,8 +1980,7 @@ TEST_F(IdentityManagerTest,
       accounts, gaia::GaiaSource::kChrome, std::move(completion_callback));
 
   // Sample an erroneous response.
-  signin::SetAccountsInCookieResult error =
-      signin::SetAccountsInCookieResult::kPersistentError;
+  SetAccountsInCookieResult error = SetAccountsInCookieResult::kPersistentError;
 
   SimulateOAuthMultiloginFinished(
       identity_manager()->GetGaiaCookieManagerService(), error);
@@ -2288,4 +2285,4 @@ TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
 }
 #endif
 
-}  // namespace identity
+}  // namespace signin

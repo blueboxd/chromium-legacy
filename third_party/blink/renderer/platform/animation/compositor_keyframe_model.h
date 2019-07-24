@@ -24,6 +24,7 @@ namespace blink {
 
 class CompositorAnimationCurve;
 class CompositorFloatAnimationCurve;
+class CompositorColorAnimationCurve;
 
 // A compositor driven animation.
 class PLATFORM_EXPORT CompositorKeyframeModel {
@@ -79,6 +80,7 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
   std::unique_ptr<cc::KeyframeModel> ReleaseCcKeyframeModel();
 
   std::unique_ptr<CompositorFloatAnimationCurve> FloatCurveForTesting() const;
+  std::unique_ptr<CompositorColorAnimationCurve> ColorCurveForTesting() const;
 
   const std::string& GetCustomPropertyNameForTesting() const {
     return keyframe_model_->GetCustomPropertyNameForTesting();

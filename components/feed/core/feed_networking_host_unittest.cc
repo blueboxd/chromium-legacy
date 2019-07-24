@@ -78,7 +78,7 @@ class FeedNetworkingHostTest : public testing::Test {
 
   FeedNetworkingHost* service() { return net_service_.get(); }
 
-  identity::IdentityTestEnvironment* identity_env() {
+  signin::IdentityTestEnvironment* identity_env() {
     return &identity_test_env_;
   }
 
@@ -140,7 +140,7 @@ class FeedNetworkingHostTest : public testing::Test {
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<FeedNetworkingHost> net_service_;
   network::TestURLLoaderFactory test_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

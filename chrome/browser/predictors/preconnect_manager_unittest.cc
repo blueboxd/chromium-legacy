@@ -219,6 +219,27 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect) {
   mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
 }
 
+TEST_F(PreconnectManagerTest,
+       TestStartOneUrlPreconnectWithNetworkIsolationKey) {
+  GURL main_frame_url("http://google.com");
+  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin requesting_origin = url::Origin::Create(GURL("http://foo.test"));
+  net::NetworkIsolationKey network_isolation_key(requesting_origin,
+                                                 requesting_origin);
+
+  EXPECT_CALL(*mock_network_context_,
+              ResolveHostProxy(url_to_preconnect.host()));
+  preconnect_manager_->Start(
+      main_frame_url,
+      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, url_to_preconnect, kNormalLoadFlags,
+                                false /* privacy_mode_enabled */,
+                                network_isolation_key));
+  EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
+  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
+}
+
 // Sends preconnect request for a webpage, and stops the request before
 // all pertaining preconnect requests finish. Next, preconnect request
 // for the same webpage is sent again. Verifies that all the preconnects
@@ -599,7 +620,8 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
   bool allow_credentials = false;
 
   EXPECT_CALL(*mock_network_context_, ResolveHostProxy(origin.host()));
-  preconnect_manager_->StartPreconnectUrl(url, allow_credentials);
+  preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
+                                          net::NetworkIsolationKey());
 
   EXPECT_CALL(
       *mock_network_context_,
@@ -609,7 +631,26 @@ TEST_F(PreconnectManagerTest, TestStartPreconnectUrl) {
 
   // Non http url shouldn't be preconnected.
   GURL non_http_url("file:///tmp/index.html");
-  preconnect_manager_->StartPreconnectUrl(non_http_url, allow_credentials);
+  preconnect_manager_->StartPreconnectUrl(non_http_url, allow_credentials,
+                                          net::NetworkIsolationKey());
+}
+
+TEST_F(PreconnectManagerTest, TestStartPreconnectUrlWithNetworkIsolationKey) {
+  GURL url("http://cdn.google.com/script.js");
+  GURL origin("http://cdn.google.com");
+  bool allow_credentials = false;
+  url::Origin requesting_origin = url::Origin::Create(GURL("http://foo.test"));
+  net::NetworkIsolationKey network_isolation_key(requesting_origin,
+                                                 requesting_origin);
+
+  EXPECT_CALL(*mock_network_context_, ResolveHostProxy(origin.host()));
+  preconnect_manager_->StartPreconnectUrl(url, allow_credentials,
+                                          network_isolation_key);
+
+  EXPECT_CALL(*mock_network_context_,
+              PreconnectSockets(1, origin, kPrivateLoadFlags,
+                                !allow_credentials, network_isolation_key));
+  mock_network_context_->CompleteHostLookup(origin.host(), net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {

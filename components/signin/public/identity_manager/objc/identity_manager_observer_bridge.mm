@@ -8,7 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
-namespace identity {
+namespace signin {
 
 IdentityManagerObserverBridge::IdentityManagerObserverBridge(
     IdentityManager* identity_manager,
@@ -58,7 +58,7 @@ void IdentityManagerObserverBridge::OnRefreshTokensLoaded() {
 }
 
 void IdentityManagerObserverBridge::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   if ([delegate_ respondsToSelector:@selector(onAccountsInCookieUpdated:
                                                                   error:)]) {
@@ -74,4 +74,4 @@ void IdentityManagerObserverBridge::OnEndBatchOfRefreshTokenStateChanges() {
   }
 }
 
-}  // namespace identity
+}  // namespace signin

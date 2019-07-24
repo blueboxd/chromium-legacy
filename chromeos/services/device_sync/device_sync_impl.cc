@@ -217,7 +217,7 @@ void DeviceSyncImpl::Factory::SetInstanceForTesting(Factory* test_factory) {
 DeviceSyncImpl::Factory::~Factory() = default;
 
 std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
@@ -300,7 +300,7 @@ void DeviceSyncImpl::PendingSetSoftwareFeatureRequest::InvokeCallback(
 }
 
 DeviceSyncImpl::DeviceSyncImpl(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
     service_manager::Connector* connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,

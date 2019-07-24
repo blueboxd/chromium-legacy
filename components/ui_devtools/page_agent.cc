@@ -4,34 +4,14 @@
 
 #include "components/ui_devtools/page_agent.h"
 
-#include "base/command_line.h"
-#include "components/ui_devtools/ui_element.h"
-
 namespace ui_devtools {
 
 PageAgent::PageAgent(DOMAgent* dom_agent) : dom_agent_(dom_agent) {}
 
 PageAgent::~PageAgent() {}
 
-void PaintRectVector(std::vector<UIElement*> child_elements) {
-  for (auto* element : child_elements) {
-    if (element->type() == UIElementType::VIEW) {
-      element->PaintRect();
-    }
-    PaintRectVector(element->children());
-  }
-}
-
-protocol::Response PageAgent::reload() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          "draw-view-bounds-rects")) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "draw-view-bounds-rects");
-  } else {
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(
-        base::CommandLine::ForCurrentProcess()->argv());
-  }
-  PaintRectVector(dom_agent_->element_root()->children());
+protocol::Response PageAgent::reload(protocol::Maybe<bool> bypass_cache) {
+  NOTREACHED();
   return protocol::Response::OK();
 }
 

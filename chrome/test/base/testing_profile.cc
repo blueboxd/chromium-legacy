@@ -408,7 +408,7 @@ void TestingProfile::Init() {
   BrowserContext::Initialize(this, profile_path_);
 
 #if defined(OS_ANDROID)
-  identity::DisableInteractionWithSystemAccounts();
+  signin::DisableInteractionWithSystemAccounts();
 #endif
 
   // Normally this would happen during browser startup, but for tests

@@ -11,7 +11,7 @@
 class GaiaCookieManagerService;
 class ProfileOAuth2TokenService;
 
-namespace identity {
+namespace signin {
 
 // Concrete implementation of the DiagnosticsProvider interface.
 class DiagnosticsProviderImpl final : public DiagnosticsProvider {
@@ -40,6 +40,6 @@ class DiagnosticsProviderImpl final : public DiagnosticsProvider {
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsProviderImpl);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_DIAGNOSTICS_PROVIDER_IMPL_H_

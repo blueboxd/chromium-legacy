@@ -168,6 +168,15 @@ cvox.ChromeVoxPrefs.prototype.init = function(pullFromLocalStorage) {
       localStorage[pref] = cvox.ChromeVoxPrefs.DEFAULT_PREFS[pref];
     }
   }
+  // Since language switching is currently an experimental feature, ensure that
+  // it is off if the feature flag is absent.
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-experimental-accessibility-chromevox-language-switching',
+      function(enabled) {
+        if (!enabled) {
+          localStorage['languageSwitching'] = false;
+        }
+      });
 };
 
 /**

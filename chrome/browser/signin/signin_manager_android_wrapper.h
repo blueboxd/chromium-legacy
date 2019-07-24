@@ -16,7 +16,7 @@ class SigninManagerAndroidWrapper : public KeyedService {
   SigninManagerAndroidWrapper(
       SigninClient* signin_client,
       PrefService* local_state_prefs_service,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       std::unique_ptr<SigninManagerDelegate> signin_manager_delegate);
 
   ~SigninManagerAndroidWrapper() override;

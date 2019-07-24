@@ -64,6 +64,16 @@ void FakeDeviceInfoTracker::ForcePulseForTest() {
   NOTREACHED();
 }
 
+bool FakeDeviceInfoTracker::IsRecentLocalCacheGuid(
+    const std::string& cache_guid) const {
+  for (const DeviceInfo* device : devices_) {
+    if (device->guid() == cache_guid) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void FakeDeviceInfoTracker::Add(const DeviceInfo* device) {
   devices_.push_back(device);
 }

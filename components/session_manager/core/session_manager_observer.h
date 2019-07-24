@@ -16,6 +16,9 @@ namespace session_manager {
 //     http://crbug.com/657149.
 class SessionManagerObserver : public base::CheckedObserver {
  public:
+  // Inovked when session manager is destroyed.
+  virtual void OnSessionManagerDestroyed() {}
+
   // Invoked when session state is changed.
   virtual void OnSessionStateChanged() {}
 

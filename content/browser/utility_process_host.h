@@ -117,6 +117,9 @@ class CONTENT_EXPORT UtilityProcessHost
   // the identity of the service being launched.
   void SetServiceIdentity(const service_manager::Identity& identity);
 
+  // Provides extra switches to append to the process's command line.
+  void SetExtraCommandLineSwitches(std::vector<std::string> switches);
+
   // Returns a control interface for the running child process.
   mojom::ChildProcess* GetChildProcess();
 
@@ -160,6 +163,9 @@ class CONTENT_EXPORT UtilityProcessHost
   // If this has a value it indicates the process is going to host a mojo
   // service.
   base::Optional<service_manager::Identity> service_identity_;
+
+  // Extra command line switches to append.
+  std::vector<std::string> extra_switches_;
 
   // Indicates whether the process has been successfully launched yet, or if
   // launch failed.

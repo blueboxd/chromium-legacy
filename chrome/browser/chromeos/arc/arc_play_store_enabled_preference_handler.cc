@@ -125,7 +125,7 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
         chrome_launcher_controller->UnpinAppWithID(kPlayStoreAppId);
 
       // Tell Consent Auditor that the Play Store consent was revoked.
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForProfile(profile_);
       // TODO(crbug.com/850297): Fix unrelated tests that are not properly
       // setting up the state of identity_manager and enable the DCHECK instead

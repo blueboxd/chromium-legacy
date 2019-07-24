@@ -16,7 +16,6 @@
 namespace offline_pages {
 
 class ArchiveManager;
-class ClientPolicyController;
 class OfflinePageMetadataStore;
 
 // This task is responsible for checking consistency of persistent pages, mark
@@ -43,7 +42,6 @@ class PersistentPageConsistencyCheckTask : public Task {
   PersistentPageConsistencyCheckTask(
       OfflinePageMetadataStore* store,
       ArchiveManager* archive_manager,
-      ClientPolicyController* policy_controller,
       base::Time check_time,
       PersistentPageConsistencyCheckCallback callback);
   ~PersistentPageConsistencyCheckTask() override;
@@ -58,9 +56,6 @@ class PersistentPageConsistencyCheckTask : public Task {
   OfflinePageMetadataStore* store_;
   // The archive manager storing archive directories. Not owned.
   ArchiveManager* archive_manager_;
-  // The policy controller which is used to acquire names of namespaces. Not
-  // owned.
-  ClientPolicyController* policy_controller_;
   base::Time check_time_;
   // The callback for the task.
   PersistentPageConsistencyCheckCallback callback_;

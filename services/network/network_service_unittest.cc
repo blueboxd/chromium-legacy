@@ -230,9 +230,7 @@ TEST_F(NetworkServiceTest, AuthSchemesNone) {
   EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
 }
 
-// |gssapi_library_name| is only supported on certain POSIX platforms.
-#if BUILDFLAG(USE_KERBEROS) && defined(OS_POSIX) && !defined(OS_ANDROID) && \
-    !defined(OS_CHROMEOS)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
 TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
   const std::string kGssapiLibraryName = "Jim";
   mojom::HttpAuthStaticParamsPtr auth_params =
@@ -249,7 +247,7 @@ TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
   EXPECT_EQ(kGssapiLibraryName,
             GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
 }
-#endif
+#endif  // BUILDFLAG(USE_EXTERNAL_GSSAPI)
 
 TEST_F(NetworkServiceTest, AuthServerWhitelist) {
   // Add one server to the whitelist before creating any NetworkContexts.

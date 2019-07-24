@@ -16,7 +16,7 @@
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -47,7 +47,7 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
  private:
   // AccessTokenFetcher::TokenCallback for PrimaryAccountAccessTokenFetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   // GaiaOAuthClient::Delegate overrides:
   void OnOAuthError() override;
@@ -62,13 +62,13 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
 
   TokenHandleUtil* token_handle_util_ = nullptr;
   AccountId account_id_;
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
 
   Profile* profile_ = nullptr;
   base::TimeTicks tokeninfo_response_start_time_ = base::TimeTicks();
   TokenFetchingCallback callback_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_client_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       profile_shutdown_notification_;

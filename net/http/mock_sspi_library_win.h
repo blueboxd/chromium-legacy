@@ -106,6 +106,8 @@ class MockSSPILibrary : public SSPILibrary {
   std::set<PSecPkgInfoW> expected_freed_packages_;
 };
 
+using MockAuthLibrary = MockSSPILibrary;
+
 }  // namespace net
 
 #endif  // NET_HTTP_MOCK_SSPI_LIBRARY_WIN_H_

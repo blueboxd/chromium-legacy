@@ -210,7 +210,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   explicit TestWebWidgetClient(content::LayerTreeViewDelegate* = nullptr);
   ~TestWebWidgetClient() override = default;
 
-  // WebWidgetClient:
+  // WebWidgetClient implementation.
   void ScheduleAnimation() override { animation_scheduled_ = true; }
   void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void RegisterViewportLayers(const cc::ViewportLayers& layOAers) override;
@@ -226,6 +226,7 @@ class TestWebWidgetClient : public WebWidgetClient {
                                 ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
+  void SetHaveScrollEventHandlers(bool) override;
   void SetEventListenerProperties(
       cc::EventListenerClass event_class,
       cc::EventListenerProperties properties) override;
@@ -235,6 +236,7 @@ class TestWebWidgetClient : public WebWidgetClient {
       override;
   void StartDeferringCommits(base::TimeDelta timeout) override;
   void StopDeferringCommits(cc::PaintHoldingCommitTrigger) override;
+  void DidMeaningfulLayout(WebMeaningfulLayout) override;
 
   content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {
@@ -248,7 +250,8 @@ class TestWebWidgetClient : public WebWidgetClient {
   bool AnimationScheduled() { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
 
-  void DidMeaningfulLayout(WebMeaningfulLayout) override;
+  // Returns the last value given to SetHaveScrollEventHandlers().
+  bool HaveScrollEventHandlers() const { return have_scroll_event_handlers_; }
 
   int VisuallyNonEmptyLayoutCount() const {
     return visually_non_empty_layout_count_;
@@ -270,6 +273,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   LayerTreeViewFactory layer_tree_view_factory_;
   Vector<InjectedScrollGestureData> injected_scroll_gesture_data_;
   bool animation_scheduled_ = false;
+  bool have_scroll_event_handlers_ = false;
   int visually_non_empty_layout_count_ = 0;
   int finished_parsing_layout_count_ = 0;
   int finished_loading_layout_count_ = 0;
@@ -364,6 +368,9 @@ class WebViewHelper {
   WebViewImpl* GetWebView() const { return web_view_; }
   content::LayerTreeView* GetLayerTreeView() const {
     return test_web_widget_client_->layer_tree_view();
+  }
+  TestWebWidgetClient* GetWebWidgetClient() const {
+    return test_web_widget_client_;
   }
 
   WebLocalFrameImpl* LocalMainFrame() const;

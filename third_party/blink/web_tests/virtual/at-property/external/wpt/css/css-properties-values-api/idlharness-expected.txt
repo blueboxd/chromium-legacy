@@ -1,0 +1,20 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS Partial namespace CSS: original namespace defined
+PASS Partial interface CSSRule: original interface defined
+PASS CSSPropertyRule interface: existence and properties of interface object
+PASS CSSPropertyRule interface object length
+PASS CSSPropertyRule interface object name
+PASS CSSPropertyRule interface: existence and properties of interface prototype object
+PASS CSSPropertyRule interface: existence and properties of interface prototype object's "constructor" property
+PASS CSSPropertyRule interface: existence and properties of interface prototype object's @@unscopables property
+FAIL CSSPropertyRule interface: attribute name assert_true: The prototype object must have a property "name" expected true got false
+FAIL CSSPropertyRule interface: attribute syntax assert_true: The prototype object must have a property "syntax" expected true got false
+FAIL CSSPropertyRule interface: attribute inherits assert_true: The prototype object must have a property "inherits" expected true got false
+FAIL CSSPropertyRule interface: attribute initialValue assert_true: The prototype object must have a property "initialValue" expected true got false
+FAIL CSSRule interface: constant PROPERTY_RULE on interface object assert_equals: property has wrong value expected 18 but got 1001
+FAIL CSSRule interface: constant PROPERTY_RULE on interface prototype object assert_equals: property has wrong value expected 18 but got 1001
+PASS CSS namespace: operation escape(CSSOMString)
+PASS CSS namespace: operation registerProperty(PropertyDefinition)
+Harness: the test ran to completion.
+

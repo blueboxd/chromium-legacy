@@ -1429,10 +1429,10 @@ Status ExecutePerformActions(Session* session,
         }
       }
 
-      int init_x, init_y;
-      if (!input_state->GetInteger("x", &init_x) ||
-          !input_state->GetInteger("y", &init_y))
-        return Status(kUnknownError, "invalid input state");
+      int init_x = 0;
+      int init_y = 0;
+      input_state->GetInteger("x", &init_x);
+      input_state->GetInteger("y", &init_y);
 
       if (pointer_type == "mouse" || pointer_type == "pen") {
         longest_mouse_list_size =

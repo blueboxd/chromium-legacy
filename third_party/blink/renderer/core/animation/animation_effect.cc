@@ -88,9 +88,6 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
   double time_to_next_iteration = std::numeric_limits<double>::infinity();
   if (needs_update) {
     const double active_duration = SpecifiedTiming().ActiveDuration();
-    // TODO(yigu): Direction of WorkletAnimation is always forwards based on
-    // the calculation. Need to unify the logic to handle it correctly.
-    // https://crbug.com/896249.
     const AnimationDirection direction =
         (GetAnimation() && GetAnimation()->playbackRate() < 0) ? kBackwards
                                                                : kForwards;

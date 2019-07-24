@@ -125,14 +125,11 @@ void PluginVmManager::LaunchPluginVm() {
   // wait before starting the VM.
   if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN ||
       VmIsStopping(vm_state_)) {
-    ChromeLauncherController* chrome_controller =
-        ChromeLauncherController::instance();
-    // Can be null in tests.
-    if (chrome_controller) {
-      chrome_controller->GetShelfSpinnerController()->AddSpinnerToShelf(
-          kPluginVmAppId,
-          std::make_unique<ShelfSpinnerItemController>(kPluginVmAppId));
-    }
+    ChromeLauncherController::instance()
+        ->GetShelfSpinnerController()
+        ->AddSpinnerToShelf(
+            kPluginVmAppId,
+            std::make_unique<ShelfSpinnerItemController>(kPluginVmAppId));
   }
 
   // Launching Plugin Vm goes through the following steps:
@@ -182,9 +179,10 @@ void PluginVmManager::OnVmStateChanged(
                  vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED ||
              vm_state_ ==
                  vm_tools::plugin_dispatcher::VmState::VM_STATE_SUSPENDED) {
-    // When the VM_STATE_STOPPED or VM_STATE_SUSPENDED signal is received, reset
-    // seneschal handle to indicate that it is no longer valid.
+    // The previous seneschal handle is no longer valid.
     seneschal_server_handle_ = 0;
+
+    ChromeLauncherController::instance()->Close(ash::ShelfID(kPluginVmAppId));
   }
 }
 
@@ -344,12 +342,9 @@ void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
 void PluginVmManager::LaunchFailed(PluginVmLaunchResult result) {
   RecordPluginVmLaunchResultHistogram(result);
 
-  ChromeLauncherController* chrome_controller =
-      ChromeLauncherController::instance();
-  if (chrome_controller) {
-    chrome_controller->GetShelfSpinnerController()->CloseSpinner(
-        kPluginVmAppId);
-  }
+  ChromeLauncherController::instance()
+      ->GetShelfSpinnerController()
+      ->CloseSpinner(kPluginVmAppId);
 }
 
 }  // namespace plugin_vm

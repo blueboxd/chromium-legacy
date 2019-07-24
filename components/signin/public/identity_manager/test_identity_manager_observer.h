@@ -13,9 +13,9 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-namespace identity {
+namespace signin {
 
-// Class that observes events from identity::IdentityManager. It allows setting
+// Class that observes events from IdentityManager. It allows setting
 // |OnceClosure| callbacks to be executed for the observed events and retrieving
 // the potential results and/or errors returned after such events have occurred.
 class TestIdentityManagerObserver : IdentityManager::Observer {
@@ -130,6 +130,6 @@ class TestIdentityManagerObserver : IdentityManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestIdentityManagerObserver);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_TEST_IDENTITY_MANAGER_OBSERVER_H_

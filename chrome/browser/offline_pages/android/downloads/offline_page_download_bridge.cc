@@ -38,8 +38,8 @@
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/download_ui_adapter.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -111,7 +111,7 @@ DownloadUIAdapterDelegate::DownloadUIAdapterDelegate(OfflinePageModel* model)
 
 bool DownloadUIAdapterDelegate::IsVisibleInUI(const ClientId& client_id) {
   const std::string& name_space = client_id.name_space;
-  return model_->GetPolicyController()->IsSupportedByDownload(name_space) &&
+  return GetPolicy(name_space).is_supported_by_download &&
          base::IsValidGUID(client_id.id);
 }
 

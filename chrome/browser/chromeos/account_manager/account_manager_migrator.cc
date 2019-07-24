@@ -88,7 +88,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
  public:
   AccountMigrationBaseStep(const std::string& id,
                            AccountManager* account_manager,
-                           identity::IdentityManager* identity_manager)
+                           signin::IdentityManager* identity_manager)
       : AccountMigrationRunner::Step(id),
         account_manager_(account_manager),
         identity_manager_(identity_manager),
@@ -125,7 +125,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
 
   AccountManager* account_manager() { return account_manager_; }
 
-  identity::IdentityManager* identity_manager() { return identity_manager_; }
+  signin::IdentityManager* identity_manager() { return identity_manager_; }
 
  private:
   // Implementations should use this to start their migration flow, instead of
@@ -154,7 +154,7 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
   AccountManager* const account_manager_;
 
   // Non-owning pointer.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   // A temporary cache of accounts in |AccountManager|, guaranteed to be
   // up-to-date when |StartMigration| is called.
@@ -172,7 +172,7 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
   DeviceAccountMigration(const AccountManager::AccountKey& device_account,
                          const std::string& device_account_raw_email,
                          AccountManager* account_manager,
-                         identity::IdentityManager* identity_manager,
+                         signin::IdentityManager* identity_manager,
                          scoped_refptr<TokenWebData> token_web_data)
       : AccountMigrationBaseStep(kDeviceAccountMigration,
                                  account_manager,
@@ -269,10 +269,10 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
 // to |AccountManager|. The objective is to migrate the account names only. We
 // cannot migrate any credentials (cookies).
 class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
-                                     identity::IdentityManager::Observer {
+                                     signin::IdentityManager::Observer {
  public:
   ContentAreaAccountsMigration(AccountManager* account_manager,
-                               identity::IdentityManager* identity_manager)
+                               signin::IdentityManager* identity_manager)
       : AccountMigrationBaseStep(kContentAreaAccountsMigration,
                                  account_manager,
                                  identity_manager),
@@ -286,7 +286,7 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     identity_manager_->AddObserver(this);
-    identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+    signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
         identity_manager_->GetAccountsInCookieJar();
     if (accounts_in_cookie_jar_info.accounts_are_fresh) {
       OnAccountsInCookieUpdated(
@@ -296,7 +296,7 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
   }
 
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // We should not have reached here without |OnGetAccounts| having been
@@ -326,7 +326,7 @@ class ContentAreaAccountsMigration : public AccountMigrationBaseStep,
   }
 
   // A non-owning pointer to |IdentityManager|.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -343,7 +343,7 @@ class ArcAccountsMigration : public AccountMigrationBaseStep,
                              public arc::ArcSessionManager::Observer {
  public:
   ArcAccountsMigration(AccountManager* account_manager,
-                       identity::IdentityManager* identity_manager,
+                       signin::IdentityManager* identity_manager,
                        arc::ArcAuthService* arc_auth_service)
       : AccountMigrationBaseStep(kArcAccountsMigration,
                                  account_manager,
@@ -523,7 +523,7 @@ void AccountManagerMigrator::AddMigrationSteps() {
       g_browser_process->platform_part()->GetAccountManagerFactory();
   chromeos::AccountManager* account_manager =
       factory->GetAccountManager(profile_->GetPath().value());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
   migration_runner_.AddStep(std::make_unique<DeviceAccountMigration>(

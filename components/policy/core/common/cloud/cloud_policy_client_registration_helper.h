@@ -19,7 +19,7 @@
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -46,7 +46,7 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   // supplied IdentityManager to mint the new token for the userinfo
   // and DM services, using the |account_id|.
   // |callback| is invoked when the registration is complete.
-  void StartRegistration(identity::IdentityManager* identity_manager,
+  void StartRegistration(signin::IdentityManager* identity_manager,
                          const std::string& account_id,
                          const base::Closure& callback);
 

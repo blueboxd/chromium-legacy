@@ -29,11 +29,11 @@ namespace crx_file {
 enum class VerifierFormat;
 }
 
-namespace identity {
+namespace signin {
 class PrimaryAccountAccessTokenFetcher;
 class IdentityManager;
 struct AccessTokenInfo;
-}  // namespace identity
+}  // namespace signin
 
 namespace net {
 class URLRequestStatus;
@@ -135,7 +135,7 @@ class ExtensionDownloader {
   // Sets the IdentityManager instance to be used for OAuth2 authentication on
   // protected Webstore downloads. The IdentityManager instance must be valid to
   // use for the lifetime of this object.
-  void SetIdentityManager(identity::IdentityManager* identity_manager);
+  void SetIdentityManager(signin::IdentityManager* identity_manager);
 
   void set_brand_code(const std::string& brand_code) {
     brand_code_ = brand_code;
@@ -340,7 +340,7 @@ class ExtensionDownloader {
                                            int response_code);
 
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   ManifestFetchData* CreateManifestFetchData(
       const GURL& update_url,
@@ -402,14 +402,14 @@ class ExtensionDownloader {
 
   // May be used to fetch access tokens for protected download requests. May be
   // null. If non-null, guaranteed to outlive this object.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // A Webstore download-scoped access token for the |identity_provider_|'s
   // active account, if any.
   std::string access_token_;
 
   // A pending access token fetcher.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
 
   // Brand code to include with manifest fetch queries if sending ping data.

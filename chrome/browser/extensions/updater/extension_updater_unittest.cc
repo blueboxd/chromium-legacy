@@ -266,7 +266,7 @@ class MockService : public TestExtensionService {
 
   PrefService* pref_service() { return prefs_->pref_service(); }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_.get();
   }
 
@@ -328,7 +328,7 @@ class MockService : public TestExtensionService {
 
   std::unique_ptr<ExtensionDownloader> CreateExtensionDownloaderWithIdentity(
       ExtensionDownloaderDelegate* delegate) {
-    identity_test_env_ = std::make_unique<identity::IdentityTestEnvironment>();
+    identity_test_env_ = std::make_unique<signin::IdentityTestEnvironment>();
     account_info_ = identity_test_env_->MakePrimaryAccountAvailable(
         "bobloblaw@lawblog.example.com");
 
@@ -339,7 +339,7 @@ class MockService : public TestExtensionService {
   }
 
   AccountInfo account_info_;
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
 
   ExtensionDownloaderDelegate* downloader_delegate_override_;
 

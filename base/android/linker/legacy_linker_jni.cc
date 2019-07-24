@@ -67,6 +67,25 @@ class ScopedLibrary {
   crazy_library_t* lib_;
 };
 
+// We identify the abi tag for which the linker is running. This allows
+// us to select the library which matches the abi of the linker.
+
+#if defined(__arm__) && defined(__ARM_ARCH_7A__)
+#define CURRENT_ABI "armeabi-v7a"
+#elif defined(__arm__)
+#define CURRENT_ABI "armeabi"
+#elif defined(__i386__)
+#define CURRENT_ABI "x86"
+#elif defined(__mips__)
+#define CURRENT_ABI "mips"
+#elif defined(__x86_64__)
+#define CURRENT_ABI "x86_64"
+#elif defined(__aarch64__)
+#define CURRENT_ABI "arm64-v8a"
+#else
+#error "Unsupported target abi"
+#endif
+
 // Add a zip archive file path to the context's current search path
 // list. Making it possible to load libraries directly from it.
 JNI_GENERATOR_EXPORT bool
@@ -107,7 +126,7 @@ Java_org_chromium_base_library_1loader_LegacyLinker_nativeLoadLibrary(
     jobject lib_info_obj) {
   String library_name(env, lib_name_obj);
   LOG_INFO("Called for %s, at address 0x%llx", library_name.c_str(),
-           static_cast<unsigned long long>(load_address));
+           load_address);
   crazy_context_t* context = GetCrazyContext();
 
   if (!IsValidAddress(load_address)) {

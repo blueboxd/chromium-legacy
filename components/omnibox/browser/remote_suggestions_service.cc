@@ -87,7 +87,7 @@ std::string FormatRequestBodyExperimentalService(const std::string& current_url,
 }  // namespace
 
 RemoteSuggestionsService::RemoteSuggestionsService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager),
@@ -117,7 +117,7 @@ void RemoteSuggestionsService::CreateSuggestionsRequest(
 }
 
 void RemoteSuggestionsService::StopCreatingSuggestionsRequest() {
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       token_fetcher_deleter(std::move(token_fetcher_));
 }
 
@@ -305,13 +305,13 @@ void RemoteSuggestionsService::CreateExperimentalRequest(
   // Create the oauth2 token fetcher.
   const identity::ScopeSet scopes{
       "https://www.googleapis.com/auth/cusco-chrome-extension"};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "remote_suggestions_service", identity_manager_, scopes,
       base::BindOnce(&RemoteSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(request),
                      std::move(request_body), traffic_annotation,
                      std::move(start_callback), std::move(completion_callback)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void RemoteSuggestionsService::AccessTokenAvailable(
@@ -321,7 +321,7 @@ void RemoteSuggestionsService::AccessTokenAvailable(
     StartCallback start_callback,
     CompletionCallback completion_callback,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 

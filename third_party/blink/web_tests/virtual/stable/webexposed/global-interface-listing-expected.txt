@@ -4657,6 +4657,19 @@ interface Performance : EventTarget
     method setResourceTimingBufferSize
     method toJSON
     setter onresourcetimingbufferfull
+interface PerformanceElementTiming : PerformanceEntry
+    attribute @@toStringTag
+    getter element
+    getter id
+    getter identifier
+    getter intersectionRect
+    getter loadTime
+    getter naturalHeight
+    getter naturalWidth
+    getter renderTime
+    getter url
+    method constructor
+    method toJSON
 interface PerformanceEntry
     attribute @@toStringTag
     getter duration

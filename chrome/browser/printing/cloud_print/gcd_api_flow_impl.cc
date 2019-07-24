@@ -91,7 +91,7 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
 
 GCDApiFlowImpl::GCDApiFlowImpl(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager) {}
 
@@ -102,16 +102,16 @@ void GCDApiFlowImpl::Start(std::unique_ptr<Request> request) {
   identity::ScopeSet oauth_scopes;
   oauth_scopes.insert(request_->GetOAuthScope());
   DCHECK(identity_manager_);
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "cloud_print", identity_manager_, oauth_scopes,
       base::BindOnce(&GCDApiFlowImpl::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void GCDApiFlowImpl::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {

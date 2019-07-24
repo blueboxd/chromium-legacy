@@ -4,7 +4,6 @@
 
 import("//ios/build/config.gni")
 import("//ios/web/js_compile.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -18,16 +17,16 @@ group("all_tests") {
 
 source_set("web") {
   public_deps = [
-    ":service_names",
+    "//ios/web/public/service:service_names",
 
     # TODO(crbug.com/616244): Remove private files from public dependencies.
-    ":services",
     ":threads",
     "//ios/web/navigation:core",
     "//ios/web/net",
     "//ios/web/public",
     "//ios/web/public/download",
     "//ios/web/public/init",
+    "//ios/web/service",
     "//ios/web/web_state:web_state_impl_header",
     "//ios/web/web_state/ui",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
@@ -40,7 +39,6 @@ source_set("web") {
     ":js_resources",
     ":navigation_resources",
     ":resources",
-    ":services",
     ":threads",
     "//base",
     "//ios/web/common",
@@ -53,15 +51,13 @@ source_set("web") {
     "//ios/web/public/security",
     "//ios/web/public/session",
     "//ios/web/security",
+    "//ios/web/service",
     "//ios/web/session",
     "//ios/web/thread",
     "//ios/web/web_state",
     "//ios/web/web_state:web_view_internal_creation_util",
     "//services/network:network_service",
-    "//services/network/public/mojom",
-    "//services/service_manager",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
   ]
 
   sources = [
@@ -70,7 +66,6 @@ source_set("web") {
     "browser_url_rewriter_impl.mm",
     "crw_navigation_item_storage.mm",
     "network_context_owner.cc",
-    "url_scheme_util.mm",
     "web_client.mm",
   ]
 
@@ -93,34 +88,6 @@ source_set("threads") {
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("services") {
-  deps = [
-    ":service_names",
-    "//ios/web/public",
-    "//services/network:network_service",
-    "//services/network/public/mojom",
-    "//services/service_manager",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/mojom",
-  ]
-  sources = [
-    "service_manager_connection_impl.cc",
-    "service_manager_connection_impl.h",
-    "service_manager_context.h",
-    "service_manager_context.mm",
-    "web_browser_manifest.h",
-    "web_browser_manifest.mm",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-mojom("service_names") {
-  sources = [
-    "public/service_names.mojom",
-  ]
 }
 
 source_set("core") {
@@ -270,7 +237,6 @@ source_set("ios_web_general_unittests") {
     "//ios/web/test:test_constants",
     "//ios/web/test:test_support",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
@@ -281,9 +247,7 @@ source_set("ios_web_general_unittests") {
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
     "network_context_owner_unittest.cc",
-    "service_manager_connection_impl_unittest.cc",
     "test/web_test_unittest.mm",
-    "url_scheme_util_unittest.mm",
     "web_client_unittest.mm",
     "web_thread_unittest.cc",
   ]
@@ -316,7 +280,6 @@ source_set("ios_web_navigation_unittests") {
     "//ios/web/test/fakes",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
     "//net:test_support",
-    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",

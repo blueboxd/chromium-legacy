@@ -191,6 +191,7 @@ class AuthenticatorInternalUnrecognizedErrorSheetModel
 
  private:
   // AuthenticatorSheetModelBase:
+  bool IsBackButtonVisible() const override;
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;

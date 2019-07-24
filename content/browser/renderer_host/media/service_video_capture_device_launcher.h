@@ -13,8 +13,8 @@
 
 namespace content {
 
-// Implementation of VideoCaptureDeviceLauncher that uses the "video_capture"
-// service.
+// Implementation of VideoCaptureDeviceLauncher that uses uses
+// video_capture::mojom::VideoCaptureService.
 class CONTENT_EXPORT ServiceVideoCaptureDeviceLauncher
     : public VideoCaptureDeviceLauncher {
  public:

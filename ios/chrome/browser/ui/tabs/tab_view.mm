@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/highlight_button.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -54,6 +55,11 @@ const CGFloat kTitleRightMargin = 0.0;
 const CGFloat kCloseButtonSize = 24.0;
 const CGFloat kFaviconSize = 16.0;
 
+// Returns a default favicon with |UIImageRenderingModeAlwaysTemplate|.
+UIImage* DefaultFaviconImage() {
+  return [[UIImage imageNamed:@"default_favicon"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+}
 }
 
 @interface TabView ()<DropAndNavigateDelegate> {
@@ -88,9 +94,6 @@ const CGFloat kFaviconSize = 16.0;
 
 // Creates the close button, favicon button, and title.
 - (void)createButtonsAndLabel;
-
-// Return the default favicon image based on the current incognito style.
-- (UIImage*)defaultFaviconImage;
 
 // Returns the rect in which to draw the favicon.
 - (CGRect)faviconRectForBounds:(CGRect)bounds;
@@ -170,15 +173,27 @@ const CGFloat kFaviconSize = 16.0;
 
 - (void)setFavicon:(UIImage*)favicon {
   if (!favicon)
-    favicon = [self defaultFaviconImage];
+    favicon = DefaultFaviconImage();
   [_faviconView setImage:favicon];
 }
 
 - (void)setIncognitoStyle:(BOOL)incognitoStyle {
+  if (_incognitoStyle == incognitoStyle) {
+    return;
+  }
   _incognitoStyle = incognitoStyle;
-  _titleLabel.textColor =
-      incognitoStyle ? [UIColor whiteColor] : [UIColor blackColor];
-  [_faviconView setImage:[self defaultFaviconImage]];
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    // When iOS 12 is dropped, only the next line is needed for styling.
+    // Every other check for |incognitoStyle| can be removed, as well as the
+    // incognito specific assets.
+    self.overrideUserInterfaceStyle = _incognitoStyle
+                                          ? UIUserInterfaceStyleDark
+                                          : UIUserInterfaceStyleUnspecified;
+    return;
+  }
+#endif
   [self updateStyleForSelected:self.selected];
 }
 
@@ -228,6 +243,24 @@ const CGFloat kFaviconSize = 16.0;
   // images.
   CGFloat inset = MAX(0.0, (point.y - 56) / -2.2);
   return CGRectContainsPoint(CGRectInset([self bounds], inset, 0), point);
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
+    // This triggers the styling again, where the image is resolved instead of
+    // relying in the system's magic. Radar filled:
+    // b/137942721.hasDifferentColorAppearanceComparedToTraitCollection
+    if ([self.traitCollection
+            hasDifferentColorAppearanceComparedToTraitCollection:
+                previousTraitCollection]) {
+      [self updateStyleForSelected:self.selected];
+    }
+  }
+#endif
 }
 
 #pragma mark - Private
@@ -290,7 +323,7 @@ const CGFloat kFaviconSize = 16.0;
   _faviconView = [[UIImageView alloc] initWithFrame:faviconFrame];
   [_faviconView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_faviconView setContentMode:UIViewContentModeScaleAspectFit];
-  [_faviconView setImage:[self defaultFaviconImage]];
+  [_faviconView setImage:DefaultFaviconImage()];
   [_faviconView setAccessibilityIdentifier:@"Favicon"];
   [self addSubview:_faviconView];
 
@@ -341,29 +374,44 @@ const CGFloat kFaviconSize = 16.0;
 // Updates this tab's style based on the value of |selected| and the current
 // incognito style.
 - (void)updateStyleForSelected:(BOOL)selected {
+  // Style the background image first.
   NSString* state = (selected ? @"foreground" : @"background");
-  NSString* incognito = _incognitoStyle ? @"incognito_" : @"";
+  NSString* incognito = self.incognitoStyle ? @"incognito_" : @"";
   NSString* imageName =
       [NSString stringWithFormat:@"tabstrip_%@%@_tab", incognito, state];
   CGFloat leftInset = kTabBackgroundLeftCapInset;
+  // As of iOS 13 Beta 4, resizable images are flaky for dark mode.
+  // Radar filled: b/137942721.
+  UIImage* resolvedImage = [UIImage imageNamed:imageName
+                                      inBundle:nil
+                 compatibleWithTraitCollection:self.traitCollection];
   UIImage* backgroundImage =
-      StretchableImageFromUIImage([UIImage imageNamed:imageName], leftInset, 0);
-  [_backgroundImageView setImage:backgroundImage];
+      StretchableImageFromUIImage(resolvedImage, leftInset, 0);
+  _backgroundImageView.image = backgroundImage;
 
-  NSString* colorName;
+  // Style the close button tint color.
+  NSString* closeButtonColorName;
   if (selected) {
-    colorName = _incognitoStyle
-                    ? @"tabstrip_active_tab_incognito_close_button_color"
-                    : @"tabstrip_active_tab_close_button_color";
+    closeButtonColorName =
+        self.incognitoStyle
+            ? @"tabstrip_active_tab_incognito_close_button_color"
+            : @"tabstrip_active_tab_close_button_color";
   } else {
-    colorName = @"tabstrip_inactive_tab_close_button_color";
+    closeButtonColorName = @"tabstrip_inactive_tab_close_button_color";
   }
-  _closeButton.tintColor = [UIColor colorNamed:colorName];
-}
+  _closeButton.tintColor = [UIColor colorNamed:closeButtonColorName];
 
-- (UIImage*)defaultFaviconImage {
-  return self.incognitoStyle ? [UIImage imageNamed:@"default_favicon_incognito"]
-                             : [UIImage imageNamed:@"default_favicon"];
+  // Style the favicon tint color and the title label.
+  NSString* faviconColorName;
+  if (selected) {
+    faviconColorName = kTextPrimaryColor;
+  } else {
+    faviconColorName = @"tabstrip_inactive_tab_text_color";
+  }
+  _faviconView.tintColor = self.incognitoStyle && selected
+                               ? [UIColor whiteColor]
+                               : [UIColor colorNamed:faviconColorName];
+  self.titleLabel.textColor = _faviconView.tintColor;
 }
 
 #pragma mark - DropAndNavigateDelegate

@@ -1188,9 +1188,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         <message name="IDS_WELCOME_HEADER" desc="A message which will appear as the header on the Welcome UI if the user has never run Chrome before.">
           Welcome to Chrome
         </message>
-        <message name="IDS_WELCOME_HEADER_AFTER_FIRST_RUN" desc="A message which will appear as the header on the Welcome UI if the user has run Chrome before.">
-          Take Chrome everywhere
-        </message>
       </if>
 
       <!-- Native notifications for Windows 10 -->

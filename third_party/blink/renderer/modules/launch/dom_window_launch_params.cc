@@ -24,6 +24,12 @@ Member<LaunchParams> DOMWindowLaunchParams::launchParams(
   return FromState(&window)->launch_params_;
 }
 
+void DOMWindowLaunchParams::UpdateLaunchFiles(
+    LocalDOMWindow* window,
+    HeapVector<Member<NativeFileSystemHandle>> files) {
+  FromState(window)->launch_params_->SetFiles(std::move(files));
+}
+
 void DOMWindowLaunchParams::Trace(blink::Visitor* visitor) {
   visitor->Trace(launch_params_);
   Supplement<LocalDOMWindow>::Trace(visitor);

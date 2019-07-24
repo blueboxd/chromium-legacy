@@ -28,12 +28,12 @@ const char kRefreshToken[] = "refresh_token";
 const char kRefreshToken2[] = "refresh_token_2";
 const char kSupervisedUserPseudoEmail[] = "managed_user@localhost";
 
-// Class that observes diagnostics updates from identity::IdentityManager.
+// Class that observes diagnostics updates from signin::IdentityManager.
 class TestIdentityManagerDiagnosticsObserver
-    : public identity::IdentityManager::DiagnosticsObserver {
+    : public signin::IdentityManager::DiagnosticsObserver {
  public:
   explicit TestIdentityManagerDiagnosticsObserver(
-      identity::IdentityManager* identity_manager)
+      signin::IdentityManager* identity_manager)
       : identity_manager_(identity_manager) {
     identity_manager_->AddDiagnosticsObserver(this);
   }
@@ -54,7 +54,7 @@ class TestIdentityManagerDiagnosticsObserver
   const std::string& token_remover_source() { return token_remover_source_; }
 
  private:
-  // identity::IdentityManager::DiagnosticsObserver:
+  // signin::IdentityManager::DiagnosticsObserver:
   void OnRefreshTokenUpdatedForAccountFromSource(
       const CoreAccountId& account_id,
       bool is_refresh_token_valid,
@@ -71,7 +71,7 @@ class TestIdentityManagerDiagnosticsObserver
     token_remover_source_ = source;
   }
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   std::string token_updator_account_id_;
   std::string token_updator_source_;
   std::string token_remover_account_id_;
@@ -81,7 +81,7 @@ class TestIdentityManagerDiagnosticsObserver
 
 }  // namespace
 
-namespace identity {
+namespace signin {
 class AccountsMutatorTest : public testing::Test {
  public:
   AccountsMutatorTest()
@@ -92,7 +92,7 @@ class AccountsMutatorTest : public testing::Test {
 
   PrefService* pref_service() { return &prefs_; }
 
-  identity::IdentityManager* identity_manager() {
+  IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 
@@ -113,7 +113,7 @@ class AccountsMutatorTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  IdentityTestEnvironment identity_test_env_;
   TestIdentityManagerDiagnosticsObserver identity_manager_diagnostics_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountsMutatorTest);
@@ -323,8 +323,8 @@ TEST_F(AccountsMutatorTest,
 
   // Set up the primary account.
   std::string primary_account_email("primary.account@example.com");
-  AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
-      identity_manager(), primary_account_email);
+  AccountInfo primary_account_info =
+      MakePrimaryAccountAvailable(identity_manager(), primary_account_email);
 
   // Now try invalidating the primary account, and check that it gets updated.
   base::RunLoop run_loop;
@@ -361,8 +361,8 @@ TEST_F(
 
   // Set up the primary account.
   std::string primary_account_email("primary.account@example.com");
-  AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
-      identity_manager(), primary_account_email);
+  AccountInfo primary_account_info =
+      MakePrimaryAccountAvailable(identity_manager(), primary_account_email);
 
   // Next, add a secondary account.
   base::RunLoop run_loop;
@@ -563,7 +563,7 @@ TEST_F(AccountsMutatorTest, MoveAccount) {
   DCHECK(accounts_mutator());
 
   AccountInfo account_info =
-      identity::MakeAccountAvailable(identity_manager(), kTestEmail);
+      MakeAccountAvailable(identity_manager(), kTestEmail);
   EXPECT_TRUE(
       identity_manager()->HasAccountWithRefreshToken(account_info.account_id));
   EXPECT_FALSE(
@@ -575,14 +575,14 @@ TEST_F(AccountsMutatorTest, MoveAccount) {
   auto* other_accounts_mutator =
       other_identity_test_env.identity_manager()->GetAccountsMutator();
 
-  std::string device_id_1 = signin::GetOrCreateScopedDeviceId(pref_service());
+  std::string device_id_1 = GetOrCreateScopedDeviceId(pref_service());
   EXPECT_FALSE(device_id_1.empty());
 
   accounts_mutator()->MoveAccount(other_accounts_mutator,
                                   account_info.account_id);
   EXPECT_EQ(0U, identity_manager()->GetAccountsWithRefreshTokens().size());
 
-  std::string device_id_2 = signin::GetOrCreateScopedDeviceId(pref_service());
+  std::string device_id_2 = GetOrCreateScopedDeviceId(pref_service());
   EXPECT_FALSE(device_id_2.empty());
   // |device_id_1| and |device_id_2| should be different as the divice ID is
   // recreated in MoveAccount().
@@ -680,4 +680,4 @@ TEST_F(AccountsMutatorTest, RemoveRefreshTokenFromSource) {
             identity_manager_diagnostics_observer()->token_remover_source());
 }
 
-}  // namespace identity
+}  // namespace signin

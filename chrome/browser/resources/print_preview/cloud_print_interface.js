@@ -2,72 +2,70 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('cloudprint');
-
-/**
- * Event types dispatched by the cloudprint interface.
- * @enum {string}
- */
-cloudprint.CloudPrintInterfaceEventType = {
-  INVITES_DONE: 'cloudprint.CloudPrintInterface.INVITES_DONE',
-  INVITES_FAILED: 'cloudprint.CloudPrintInterface.INVITES_FAILED',
-  PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
-  PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
-  PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
-  SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
-  SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
-  SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
-  SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
-  UPDATE_USERS: 'cloudprint.CloudPrintInterface.UPDATE_USERS',
-};
-
-/**
- * @typedef {{
- *   status: number,
- *   errorCode: number,
- *   message: string,
- *   origin: !print_preview.DestinationOrigin,
- * }}
- */
-cloudprint.CloudPrintInterfaceErrorEventDetail;
-
-/**
- * @typedef {{
- *   user: string,
- *   origin: !print_preview.DestinationOrigin,
- *   printers: (!Array<!print_preview.Destination>|undefined),
- *   searchDone: boolean,
- * }}
- */
-cloudprint.CloudPrintInterfaceSearchDoneDetail;
-
-/**
- * @typedef {{
- *   destinationId: string,
- *   origin: !print_preview.DestinationOrigin,
- * }}
- */
-cloudprint.CloudPrintInterfacePrinterFailedDetail;
-
-/**
- * @typedef {{
- *   invitations: !Array<!print_preview.Invitation>,
- *   user: string,
- * }}
- */
-cloudprint.CloudPrintInterfaceInvitesDoneDetail;
-
-/**
- * @typedef {{
- *   invitation: !print_preview.Invitation,
- *   printer: ?print_preview.Destination,
- *   accept: boolean,
- *   user: string,
- * }}
- */
-cloudprint.CloudPrintInterfaceProcessInviteDetail;
-
 cr.define('cloudprint', function() {
+  /**
+   * Event types dispatched by the cloudprint interface.
+   * @enum {string}
+   */
+  const CloudPrintInterfaceEventType = {
+    INVITES_DONE: 'cloudprint.CloudPrintInterface.INVITES_DONE',
+    INVITES_FAILED: 'cloudprint.CloudPrintInterface.INVITES_FAILED',
+    PRINTER_DONE: 'cloudprint.CloudPrintInterface.PRINTER_DONE',
+    PRINTER_FAILED: 'cloudprint.CloudPrintInterface.PRINTER_FAILED',
+    PROCESS_INVITE_DONE: 'cloudprint.CloudPrintInterface.PROCESS_INVITE_DONE',
+    SEARCH_DONE: 'cloudprint.CloudPrintInterface.SEARCH_DONE',
+    SEARCH_FAILED: 'cloudprint.CloudPrintInterface.SEARCH_FAILED',
+    SUBMIT_DONE: 'cloudprint.CloudPrintInterface.SUBMIT_DONE',
+    SUBMIT_FAILED: 'cloudprint.CloudPrintInterface.SUBMIT_FAILED',
+    UPDATE_USERS: 'cloudprint.CloudPrintInterface.UPDATE_USERS',
+  };
+
+  /**
+   * @typedef {{
+   *   status: number,
+   *   errorCode: number,
+   *   message: string,
+   *   origin: !print_preview.DestinationOrigin,
+   * }}
+   */
+  let CloudPrintInterfaceErrorEventDetail;
+
+  /**
+   * @typedef {{
+   *   user: string,
+   *   origin: !print_preview.DestinationOrigin,
+   *   printers: (!Array<!print_preview.Destination>|undefined),
+   *   searchDone: boolean,
+   * }}
+   */
+  let CloudPrintInterfaceSearchDoneDetail;
+
+  /**
+   * @typedef {{
+   *   destinationId: string,
+   *   origin: !print_preview.DestinationOrigin,
+   * }}
+   */
+  let CloudPrintInterfacePrinterFailedDetail;
+
+  /**
+   * @typedef {{
+   *   invitations: !Array<!print_preview.Invitation>,
+   *   user: string,
+   * }}
+   */
+  let CloudPrintInterfaceInvitesDoneDetail;
+
+  /**
+   * @typedef {{
+   *   invitation: !print_preview.Invitation,
+   *   printer: ?print_preview.Destination,
+   *   accept: boolean,
+   *   user: string,
+   * }}
+   */
+  let CloudPrintInterfaceProcessInviteDetail;
+
   /** @interface */
   class CloudPrintInterface {
     /**
@@ -133,5 +131,13 @@ cr.define('cloudprint', function() {
   // Export
   return {
     CloudPrintInterface: CloudPrintInterface,
+    CloudPrintInterfaceErrorEventDetail: CloudPrintInterfaceErrorEventDetail,
+    CloudPrintInterfaceEventType: CloudPrintInterfaceEventType,
+    CloudPrintInterfaceInvitesDoneDetail: CloudPrintInterfaceInvitesDoneDetail,
+    CloudPrintInterfacePrinterFailedDetail:
+        CloudPrintInterfacePrinterFailedDetail,
+    CloudPrintInterfaceProcessInviteDetail:
+        CloudPrintInterfaceProcessInviteDetail,
+    CloudPrintInterfaceSearchDoneDetail: CloudPrintInterfaceSearchDoneDetail,
   };
 });

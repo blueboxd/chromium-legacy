@@ -141,7 +141,7 @@ void RegisterArticleProviderIfEnabled(ContentSuggestionsService* service,
   }
 
   PrefService* pref_service = profile->GetPrefs();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   UrlLanguageHistogram* language_histogram =
       UrlLanguageHistogramFactory::GetForBrowserContext(profile);
@@ -270,7 +270,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       g_browser_process->local_state(), base::DefaultClock::GetInstance());
 
   // Create the ContentSuggestionsService.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);

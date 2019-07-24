@@ -62,6 +62,10 @@ Vector<AtomicString> PerformanceObserver::supportedEntryTypes(
     if (RuntimeEnabledFeatures::EventTimingEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kEvent);
     supportedEntryTypes.push_back(performance_entry_names::kFirstInput);
+    if (RuntimeEnabledFeatures::LargestContentfulPaintEnabled()) {
+      supportedEntryTypes.push_back(
+          performance_entry_names::kLargestContentfulPaint);
+    }
     if (RuntimeEnabledFeatures::LayoutInstabilityAPIEnabled(execution_context))
       supportedEntryTypes.push_back(performance_entry_names::kLayoutShift);
     supportedEntryTypes.push_back(performance_entry_names::kLongtask);

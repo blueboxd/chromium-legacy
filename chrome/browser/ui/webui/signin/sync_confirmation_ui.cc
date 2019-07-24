@@ -64,7 +64,7 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
 
     constexpr int kAccountPictureSize = 68;
     std::string custom_picture_url = profiles::GetPlaceholderAvatarIconUrl();
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     base::Optional<AccountInfo> primary_account_info =
         identity_manager->FindExtendedAccountInfoForAccount(

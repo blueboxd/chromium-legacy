@@ -60,7 +60,7 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
       PrefService* prefs,
       AccountReconcilor* account_reconcilor,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
-      identity::IdentityManager* identity_manager)
+      signin::IdentityManager* identity_manager)
       : AccountConsistencyService(browser_state,
                                   prefs,
                                   account_reconcilor,
@@ -135,7 +135,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
     web_view_load_expection_count_ = 0;
     signin_client_.reset(
         new TestSigninClient(&prefs_, &test_url_loader_factory_));
-    identity_test_env_.reset(new identity::IdentityTestEnvironment(
+    identity_test_env_.reset(new signin::IdentityTestEnvironment(
         /*test_url_loader_factory=*/nullptr, &prefs_,
         signin::AccountConsistencyMethod::kDisabled, signin_client_.get()));
     settings_map_ = new HostContentSettingsMap(
@@ -187,14 +187,14 @@ class AccountConsistencyServiceTest : public PlatformTest {
   }
 
   void SignIn() {
-    identity::MakePrimaryAccountAvailable(
-        identity_test_env_->identity_manager(), "user@gmail.com");
+    signin::MakePrimaryAccountAvailable(identity_test_env_->identity_manager(),
+                                        "user@gmail.com");
     EXPECT_EQ(0, web_view_load_expection_count_);
   }
 
   void SignOutAndSimulateGaiaCookieManagerServiceLogout() {
-    identity::ClearPrimaryAccount(identity_test_env_->identity_manager(),
-                                  identity::ClearPrimaryAccountPolicy::DEFAULT);
+    signin::ClearPrimaryAccount(identity_test_env_->identity_manager(),
+                                signin::ClearPrimaryAccountPolicy::DEFAULT);
     SimulateGaiaCookieManagerServiceLogout(true);
   }
 
@@ -241,7 +241,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   TestWebState web_state_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   // AccountConsistencyService being tested. Actually a
   // FakeAccountConsistencyService to be able to use a mock web view.
   std::unique_ptr<AccountConsistencyService> account_consistency_service_;

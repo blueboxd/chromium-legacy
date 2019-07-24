@@ -4265,12 +4265,8 @@ const ComputedStyle* Element::EnsureComputedStyle(
   if (PseudoElement* element = GetPseudoElement(pseudo_element_specifier))
     return element->EnsureComputedStyle();
 
-  if (!InActiveDocument()) {
-    // FIXME: Try to do better than this. Ensure that styleForElement() works
-    // for elements that are not in the document tree and figure out when to
-    // destroy the computed style for such elements.
+  if (!InActiveDocument())
     return nullptr;
-  }
 
   // EnsureComputedStyle is expected to be called to forcibly compute style for
   // elements in display:none subtrees on otherwise style-clean documents. If
@@ -4296,14 +4292,8 @@ const ComputedStyle* Element::EnsureComputedStyle(
   const ComputedStyle* element_style = GetComputedStyle();
   if (!element_style) {
     if (CanParticipateInFlatTree()) {
-      ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this);
-      if (parent)
+      if (ContainerNode* parent = LayoutTreeBuilderTraversal::Parent(*this))
         parent->EnsureComputedStyle();
-
-      ContainerNode* layout_parent =
-          parent ? LayoutTreeBuilderTraversal::LayoutParent(*this) : nullptr;
-      if (layout_parent)
-        layout_parent->EnsureComputedStyle();
     }
     scoped_refptr<ComputedStyle> new_style = nullptr;
     // TODO(crbug.com/953707): Avoid setting inline style during

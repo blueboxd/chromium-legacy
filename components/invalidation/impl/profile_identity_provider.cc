@@ -17,19 +17,18 @@ class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
  public:
   AccessTokenFetcherAdaptor(const CoreAccountId& active_account_id,
                             const std::string& oauth_consumer_name,
-                            identity::IdentityManager* identity_manager,
+                            signin::IdentityManager* identity_manager,
                             const identity::ScopeSet& scopes,
                             ActiveAccountAccessTokenCallback callback);
   ~AccessTokenFetcherAdaptor() override = default;
 
  private:
   // Invokes |callback_| with (|error|, |access_token_info.token|).
-  void HandleTokenRequestCompletion(
-      GoogleServiceAuthError error,
-      identity::AccessTokenInfo access_token_info);
+  void HandleTokenRequestCompletion(GoogleServiceAuthError error,
+                                    signin::AccessTokenInfo access_token_info);
 
   ActiveAccountAccessTokenCallback callback_;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessTokenFetcherAdaptor);
 };
@@ -37,7 +36,7 @@ class AccessTokenFetcherAdaptor : public ActiveAccountAccessTokenFetcher {
 AccessTokenFetcherAdaptor::AccessTokenFetcherAdaptor(
     const CoreAccountId& active_account_id,
     const std::string& oauth_consumer_name,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const identity::ScopeSet& scopes,
     ActiveAccountAccessTokenCallback callback)
     : callback_(std::move(callback)) {
@@ -45,12 +44,12 @@ AccessTokenFetcherAdaptor::AccessTokenFetcherAdaptor(
       active_account_id, oauth_consumer_name, scopes,
       base::BindOnce(&AccessTokenFetcherAdaptor::HandleTokenRequestCompletion,
                      base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void AccessTokenFetcherAdaptor::HandleTokenRequestCompletion(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   access_token_fetcher_.reset();
 
   std::move(callback_).Run(error, access_token_info.token);
@@ -59,7 +58,7 @@ void AccessTokenFetcherAdaptor::HandleTokenRequestCompletion(
 }  // namespace
 
 ProfileIdentityProvider::ProfileIdentityProvider(
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : identity_manager_(identity_manager) {
   identity_manager_->AddObserver(this);
 }

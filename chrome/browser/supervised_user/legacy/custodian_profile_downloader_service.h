@@ -36,7 +36,7 @@ class CustodianProfileDownloaderService : public KeyedService,
   bool NeedsProfilePicture() const override;
   int GetDesiredImageSideLength() const override;
   std::string GetCachedPictureURL() const override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   network::mojom::URLLoaderFactory* GetURLLoaderFactory() override;
   bool IsPreSignin() const override;
   void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;

@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,11 +65,6 @@ public class WebappDataStorageTest {
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, 0).apply();
 
         mCallbackCalled = false;
-    }
-
-    @After
-    public void tearDown() {
-        mSharedPreferences.edit().clear().apply();
     }
 
     @Test

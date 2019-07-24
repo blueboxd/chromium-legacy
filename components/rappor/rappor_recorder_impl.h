@@ -6,7 +6,7 @@
 #define COMPONENTS_RAPPOR_RAPPOR_RECORDER_IMPL_H_
 
 #include "base/threading/thread_checker.h"
-#include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
+#include "components/rappor/public/mojom/rappor_recorder.mojom.h"
 
 class GURL;
 

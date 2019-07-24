@@ -15,7 +15,7 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
     const String& url,
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp render_time,
-    DOMHighResTimeStamp response_end,
+    DOMHighResTimeStamp load_time,
     const AtomicString& identifier,
     int naturalWidth,
     int naturalHeight,
@@ -27,7 +27,7 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
   DCHECK_GE(naturalHeight, 0);
   DCHECK(element);
   return MakeGarbageCollected<PerformanceElementTiming>(
-      name, url, intersection_rect, render_time, response_end, identifier,
+      name, url, intersection_rect, render_time, load_time, identifier,
       naturalWidth, naturalHeight, id, element);
 }
 
@@ -36,7 +36,7 @@ PerformanceElementTiming::PerformanceElementTiming(
     const String& url,
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp render_time,
-    DOMHighResTimeStamp response_end,
+    DOMHighResTimeStamp load_time,
     const AtomicString& identifier,
     int naturalWidth,
     int naturalHeight,
@@ -46,7 +46,7 @@ PerformanceElementTiming::PerformanceElementTiming(
       element_(element),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       render_time_(render_time),
-      response_end_(response_end),
+      load_time_(load_time),
       identifier_(identifier),
       naturalWidth_(naturalWidth),
       naturalHeight_(naturalHeight),
@@ -72,7 +72,15 @@ Element* PerformanceElementTiming::element() const {
 
 void PerformanceElementTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
+  builder.Add("renderTime", render_time_);
+  builder.Add("loadTime", load_time_);
   builder.Add("intersectionRect", intersection_rect_);
+  builder.Add("identifier", identifier_);
+  builder.Add("naturalWidth", naturalWidth_);
+  builder.Add("naturalHeight", naturalHeight_);
+  builder.Add("id", id_);
+  builder.Add("element", element());
+  builder.Add("url", url_);
 }
 
 void PerformanceElementTiming::Trace(blink::Visitor* visitor) {

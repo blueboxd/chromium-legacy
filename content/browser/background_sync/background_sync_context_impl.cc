@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -154,6 +155,16 @@ void BackgroundSyncContextImpl::GetSoonestWakeupDelta(
                      std::move(callback)));
 }
 
+void BackgroundSyncContextImpl::RevivePeriodicBackgroundSyncRegistrations(
+    url::Origin origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&BackgroundSyncContextImpl::
+                         RevivePeriodicBackgroundSyncRegistrationsOnIOThread,
+                     this, std::move(origin)));
+}
+
 base::TimeDelta BackgroundSyncContextImpl::GetSoonestWakeupDeltaOnIOThread(
     blink::mojom::BackgroundSyncType sync_type,
     base::Time last_browser_wakeup_for_periodic_sync) {
@@ -174,6 +185,16 @@ void BackgroundSyncContextImpl::DidGetSoonestWakeupDelta(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::move(callback).Run(soonest_wakeup_delta);
+}
+
+void BackgroundSyncContextImpl::
+    RevivePeriodicBackgroundSyncRegistrationsOnIOThread(url::Origin origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!background_sync_manager_)
+    return;
+
+  background_sync_manager_->RevivePeriodicSyncRegistrations(std::move(origin));
 }
 
 void BackgroundSyncContextImpl::FireBackgroundSyncEvents(

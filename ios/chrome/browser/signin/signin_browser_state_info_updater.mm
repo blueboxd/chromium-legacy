@@ -18,7 +18,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 SigninBrowserStateInfoUpdater::SigninBrowserStateInfoUpdater(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     const base::FilePath& browser_state_path)
     : identity_manager_(identity_manager),

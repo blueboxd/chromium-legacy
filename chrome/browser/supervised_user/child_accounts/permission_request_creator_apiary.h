@@ -17,10 +17,10 @@
 class GURL;
 class Profile;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 struct AccessTokenInfo;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -29,7 +29,7 @@ class SharedURLLoaderFactory;
 class PermissionRequestCreatorApiary : public PermissionRequestCreator {
  public:
   PermissionRequestCreatorApiary(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PermissionRequestCreatorApiary() override;
 
@@ -53,7 +53,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator {
 
   void OnAccessTokenFetchComplete(Request* request,
                                   GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   void OnSimpleLoaderComplete(RequestList::iterator it,
                               std::unique_ptr<std::string> response_body);
@@ -71,7 +71,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator {
 
   void DispatchResult(RequestList::iterator it, bool success);
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   bool retry_on_network_change_;
 

@@ -7,6 +7,7 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/dummy_producer.h"
@@ -139,8 +140,9 @@ PerfettoTaskRunner* PerfettoTracedProcess::GetTaskRunner() {
 }
 
 // static
-void PerfettoTracedProcess::ResetTaskRunnerForTesting() {
-  GetTaskRunner()->ResetTaskRunnerForTesting(nullptr);
+void PerfettoTracedProcess::ResetTaskRunnerForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  GetTaskRunner()->ResetTaskRunnerForTesting(task_runner);
   // Detaching the sequence_checker_ must happen after we reset the task runner.
   // This is because the Get() could call the constructor (if this is the first
   // call to Get()) which would then PostTask which would create races if we

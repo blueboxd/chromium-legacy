@@ -20,6 +20,7 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/switches.h"
 
 using crx_file::id_util::HashedIdInHex;
@@ -114,8 +115,6 @@ std::string GetDisplayName(Feature::Context context) {
       return "hosted app";
     case Feature::WEBUI_CONTEXT:
       return "webui";
-    case Feature::SERVICE_WORKER_CONTEXT:
-      return "service worker";
     case Feature::LOCK_SCREEN_EXTENSION_CONTEXT:
       return "lock screen app";
   }
@@ -206,7 +205,11 @@ SimpleFeature::ScopedThreadUnsafeAllowlistForTest::
 }
 
 SimpleFeature::SimpleFeature()
-    : component_extensions_auto_granted_(true), is_internal_(false) {}
+    : component_extensions_auto_granted_(true),
+      is_internal_(false),
+      // TODO(crbug.com/979790): This will default to false once the transition
+      // to blocklisting unsupported APIs is complete.
+      disallow_for_service_workers_(true) {}
 
 SimpleFeature::~SimpleFeature() {}
 
@@ -248,7 +251,18 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
       return manifest_availability;
   }
 
-  Availability context_availability = GetContextAvailability(context, url);
+  bool is_for_service_worker = false;
+  if (extension != nullptr && BackgroundInfo::IsServiceWorkerBased(extension) &&
+      url.is_valid()) {
+    const GURL script_url = extension->GetResourceURL(
+        BackgroundInfo::GetBackgroundServiceWorkerScript(extension));
+    if (script_url == url) {
+      is_for_service_worker = true;
+    }
+  }
+
+  Availability context_availability =
+      GetContextAvailability(context, url, is_for_service_worker);
   if (!context_availability.is_available())
     return context_availability;
 
@@ -616,7 +630,8 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
 
 Feature::Availability SimpleFeature::GetContextAvailability(
     Feature::Context context,
-    const GURL& url) const {
+    const GURL& url,
+    bool is_for_service_worker) const {
   // TODO(lazyboy): This isn't quite right for Extension Service Worker
   // extension API calls, since there's no guarantee that the extension is
   // "active" in current renderer process when the API permission check is
@@ -631,6 +646,9 @@ Feature::Availability SimpleFeature::GetContextAvailability(
       !matches_.MatchesURL(url)) {
     return CreateAvailability(INVALID_URL, url);
   }
+
+  if (is_for_service_worker && disallow_for_service_workers_)
+    return CreateAvailability(INVALID_CONTEXT);
 
   return CreateAvailability(IS_AVAILABLE);
 }

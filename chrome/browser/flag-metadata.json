@@ -2933,6 +2933,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "release-notes",
+    "owners": [ "yulunwu" ],
+    "expiry_milestone": 79
+  },
+  {
     "name": "smart-dim-model-v3",
     "owners": [ "amoylan", "jiameng" ],
     "expiry_milestone": 80

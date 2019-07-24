@@ -86,6 +86,12 @@ public class NotificationCompatBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setColor(int argb) {
+        mBuilder.setColor(argb);
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder setTicker(CharSequence text) {
         mBuilder.setTicker(text);
         return this;

@@ -72,7 +72,7 @@ class SyncSessionDurationsMetricsRecorderTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   TestSyncService sync_service_;
   const base::TimeDelta session_time_;
 

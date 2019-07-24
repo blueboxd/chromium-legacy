@@ -695,6 +695,19 @@ std::unique_ptr<Object> GetHeaders(const base::StringPairs& pairs) {
   return Object::fromValue(headers_dict.get(), nullptr);
 }
 
+std::unique_ptr<Object> GetRawHeaders(
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& headers) {
+  std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
+  for (const auto& header : headers) {
+    std::string value;
+    bool merge_with_another = headers_dict->getString(header->key, &value);
+    headers_dict->setString(header->key, merge_with_another
+                                             ? value + '\n' + header->value
+                                             : header->value);
+  }
+  return Object::fromValue(headers_dict.get(), nullptr);
+}
+
 String GetProtocol(const GURL& url, const network::ResourceResponseInfo& info) {
   std::string protocol = info.alpn_negotiated_protocol;
   if (protocol.empty() || protocol == "unknown") {
@@ -2454,26 +2467,26 @@ void NetworkHandler::SetNetworkConditions(
 void NetworkHandler::OnRequestWillBeSentExtraInfo(
     const std::string& devtools_request_id,
     const net::CookieStatusList& request_cookie_list,
-    const std::vector<std::pair<std::string, std::string>>& request_headers) {
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers) {
   if (!enabled_)
     return;
 
   frontend_->RequestWillBeSentExtraInfo(
       devtools_request_id, BuildProtocolBlockedCookies(request_cookie_list),
-      GetHeaders(request_headers));
+      GetRawHeaders(request_headers));
 }
 
 void NetworkHandler::OnResponseReceivedExtraInfo(
     const std::string& devtools_request_id,
     const net::CookieAndLineStatusList& response_cookie_list,
-    const std::vector<std::pair<std::string, std::string>>& response_headers,
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const base::Optional<std::string>& response_headers_text) {
   if (!enabled_)
     return;
 
   frontend_->ResponseReceivedExtraInfo(
       devtools_request_id, BuildProtocolBlockedSetCookies(response_cookie_list),
-      GetHeaders(response_headers),
+      GetRawHeaders(response_headers),
       response_headers_text.has_value() ? response_headers_text.value()
                                         : Maybe<String>());
 }

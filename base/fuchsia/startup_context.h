@@ -6,6 +6,7 @@
 #define BASE_FUCHSIA_STARTUP_CONTEXT_H_
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
 #include <memory>
 
 #include "base/base_export.h"
@@ -26,28 +27,32 @@ class BASE_EXPORT StartupContext {
   explicit StartupContext(::fuchsia::sys::StartupInfo startup_info);
   virtual ~StartupContext();
 
-  // Returns the namespace of services published for use by the component.
-  const ServiceDirectoryClient* incoming_services() const {
-    DCHECK(incoming_services_);
-    return incoming_services_.get();
+  // Returns the ComponentContext for the current component. Note that all
+  // outgoing services should be bound immediately after the first call to this
+  // API, before returning control to the message loop, at which point we will
+  // start processing service connection requests.
+  sys::ComponentContext* component_context() const {
+    return component_context_.get();
   }
 
-  // Returns the outgoing directory into which this component binds services.
-  // Note that all services should be bound immediately after the first call to
-  // this API, before returning control to the message loop, at which point we
-  // will start processing service connection requests.
-  ServiceDirectory* public_services();
+  // TODO(crbug.com/974072): These are legacy ServiceDirectory and
+  // ServiceDirectoryClient. Remove once all clients have been migrated to
+  // sys::OutgoingDirectory and sys::ServiceDirectory.
+  ServiceDirectoryClient* incoming_services() const {
+    return service_directory_client_.get();
+  }
+  ServiceDirectory* public_services() { return service_directory_.get(); }
 
  private:
-  ::fuchsia::sys::StartupInfo startup_info_;
-
-  std::unique_ptr<ServiceDirectoryClient> incoming_services_;
-  std::unique_ptr<ServiceDirectory> public_services_;
-
   // TODO(https://crbug.com/933834): Remove these when we migrate to the new
   // component manager APIs.
   ::fuchsia::sys::ServiceProviderPtr additional_services_;
-  std::unique_ptr<ServiceDirectory> additional_services_directory_;
+  std::unique_ptr<sys::OutgoingDirectory> additional_services_directory_;
+
+  std::unique_ptr<sys::ComponentContext> component_context_;
+
+  std::unique_ptr<ServiceDirectory> service_directory_;
+  std::unique_ptr<ServiceDirectoryClient> service_directory_client_;
 
   DISALLOW_COPY_AND_ASSIGN(StartupContext);
 };

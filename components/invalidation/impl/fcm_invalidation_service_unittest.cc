@@ -207,7 +207,7 @@ class FCMInvalidationServiceTestDelegate {
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<MockInstanceIDDriver> mock_instance_id_driver_;
   std::unique_ptr<MockInstanceID> mock_instance_id_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<invalidation::IdentityProvider> identity_provider_;
   syncer::FCMInvalidationListener* fake_listener_;  // Owned by the service.
   network::TestURLLoaderFactory url_loader_factory_;

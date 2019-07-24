@@ -290,6 +290,7 @@ def parse_args():
   args.xctest = args_json.get('xctest', args.xctest)
   args.xcode_parallelization = args_json.get('xcode_parallelization',
                                              args.xcode_parallelization)
+  args.shards = args_json.get('shards', args.shards)
   test_args.extend(args_json.get('test_args', []))
 
   return args, test_args

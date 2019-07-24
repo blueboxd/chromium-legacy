@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/model/offline_page_test_utils.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -148,12 +149,13 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
   // during each test.
 
   // Make sure no persistent pages are marked as expired.
-  if (!policy_controller()->IsTemporary(setting.name_space))
+  const OfflinePageClientPolicy& policy = GetPolicy(setting.name_space);
+  if (policy.lifetime_type == LifetimeType::PERSISTENT)
     ASSERT_FALSE(setting.expired_page_count);
 
   generator()->SetCreationTime(clock()->Now());
   generator()->SetNamespace(setting.name_space);
-  if (policy_controller()->IsTemporary(setting.name_space)) {
+  if (policy.lifetime_type == LifetimeType::TEMPORARY) {
     generator()->SetArchiveDirectory(TemporaryDir());
   } else {
     generator()->SetArchiveDirectory(PrivateDir());
@@ -164,9 +166,7 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
     AddPage();
   }
 
-  generator()->SetLastAccessTime(
-      clock_.Now() -
-      policy_controller()->GetPolicy(setting.name_space).expiration_period);
+  generator()->SetLastAccessTime(clock_.Now() - policy.expiration_period);
   for (int i = 0; i < setting.expired_page_count; ++i) {
     AddPage();
   }
@@ -174,7 +174,7 @@ void ClearStorageTaskTest::AddPages(const PageSettings& setting) {
 
 void ClearStorageTaskTest::RunClearStorageTask(const base::Time& start_time) {
   auto task = std::make_unique<ClearStorageTask>(
-      store(), archive_manager(), policy_controller(), start_time,
+      store(), archive_manager(), start_time,
       base::BindOnce(&ClearStorageTaskTest::OnClearStorageDone,
                      base::AsWeakPtr(this)));
 
@@ -263,12 +263,11 @@ TEST_F(ClearStorageTaskTest, ClearMultipleTimes) {
 
   // Check preconditions, especially that last_n expiration is longer than
   // bookmark's.
-  OfflinePageClientPolicy bookmark_policy =
-      policy_controller()->GetPolicy(kBookmarkNamespace);
-  OfflinePageClientPolicy last_n_policy =
-      policy_controller()->GetPolicy(kLastNNamespace);
-  OfflinePageClientPolicy download_policy =
-      policy_controller()->GetPolicy(kDownloadNamespace);
+  const OfflinePageClientPolicy& bookmark_policy =
+      GetPolicy(kBookmarkNamespace);
+  const OfflinePageClientPolicy& last_n_policy = GetPolicy(kLastNNamespace);
+  const OfflinePageClientPolicy& download_policy =
+      GetPolicy(kDownloadNamespace);
   ASSERT_EQ(LifetimeType::TEMPORARY, bookmark_policy.lifetime_type);
   ASSERT_EQ(LifetimeType::TEMPORARY, last_n_policy.lifetime_type);
   ASSERT_EQ(LifetimeType::PERSISTENT, download_policy.lifetime_type);

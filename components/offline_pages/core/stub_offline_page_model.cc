@@ -64,9 +64,6 @@ bool StubOfflinePageModel::IsArchiveInInternalDir(
   return archive_directory_.IsParent(file_path);
 }
 
-ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
-  return &policy_controller_;
-}
 OfflineEventLogger* StubOfflinePageModel::GetLogger() {
   return nullptr;
 }

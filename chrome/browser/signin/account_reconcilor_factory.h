@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -51,7 +51,7 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* profile) const override;
 
   std::unique_ptr<signin::ConsistencyCookieManagerBase>
-  CreateConsistencyCookieManager(identity::IdentityManager* identity_manager,
+  CreateConsistencyCookieManager(signin::IdentityManager* identity_manager,
                                  SigninClient* signin_client,
                                  AccountReconcilor* account_reconcilor) const;
 };

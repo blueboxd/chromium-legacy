@@ -553,16 +553,17 @@ void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
   if (base::FeatureList::IsEnabled(kSendTabToSelfBroadcast)) {
     new_local_entries = new_entries;
   } else {
-    // Only pass along entries that are targeted at this device, and not
-    // dismissed or opened.
+    // Only pass along entries that are not dismissed or opened, and are
+    // targeted at this device, which is determined by comparing the cache guid
+    // associated with the entry to each device's local list of recently used
+    // cache_guids
     DCHECK(!change_processor()->TrackedCacheGuid().empty());
     for (const SendTabToSelfEntry* entry : new_entries) {
-      if (entry->GetTargetDeviceSyncCacheGuid() ==
-              change_processor()->TrackedCacheGuid() &&
+      if (device_info_tracker_->IsRecentLocalCacheGuid(
+              entry->GetTargetDeviceSyncCacheGuid()) &&
           !entry->GetNotificationDismissed() && !entry->IsOpened()) {
         new_local_entries.push_back(entry);
         LogLocalDeviceNotified(UMANotifyLocalDevice::LOCAL);
-
       } else {
         LogLocalDeviceNotified(UMANotifyLocalDevice::REMOTE);
       }

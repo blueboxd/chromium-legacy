@@ -215,6 +215,19 @@
             </div>
           </template>
 </if>
+<if expr="chromeos">
+          <template is="dom-if" if="[[hasReleaseNotes_]]">
+            <cr-link-row class="hr" id="releaseNotesOnline"
+                hidden="[[!hasInternetConnection_]]"
+                on-click="onReleaseNotesTap_"
+                label="$i18n{aboutShowReleaseNotes}" external></cr-link-row>
+            <cr-link-row class="hr" id="releaseNotesOffline"
+                hidden="[[hasInternetConnection_]]"
+                on-click="onReleaseNotesTap_"
+                label="$i18n{aboutShowReleaseNotes}"
+                title="$i18n{aboutReleaseNotesOffline}" external></cr-link-row>
+          </template>
+</if>
           <cr-link-row class="hr" id="help" on-click="onHelpTap_"
               label="$i18n{aboutGetHelpUsingChrome}" external></cr-link-row>
 <if expr="_google_chrome">

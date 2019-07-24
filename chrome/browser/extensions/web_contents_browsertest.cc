@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
@@ -148,7 +149,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FrameDataCached) {
 
   // Returns the cached frame data for |rfh|.
   auto get_frame_data = [](content::RenderFrameHost* rfh) {
-    return ExtensionApiFrameIdMap::Get()->GetFrameData(rfh);
+    return ExtensionApiFrameIdMap::Get()->GetFrameData(
+        rfh->GetProcess()->GetID(), rfh->GetRoutingID());
   };
 
   // Adds an iframe with the given |name| and |src| to the given |web_contents|

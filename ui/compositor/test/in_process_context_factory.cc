@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/test/pixel_test_output_surface.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -25,8 +26,11 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
+#include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/direct_layer_tree_frame_sink.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
@@ -156,6 +160,14 @@ struct InProcessContextFactory::PerCompositorData {
 InProcessContextFactory::InProcessContextFactory(
     viz::HostFrameSinkManager* host_frame_sink_manager,
     viz::FrameSinkManagerImpl* frame_sink_manager)
+    : InProcessContextFactory(host_frame_sink_manager,
+                              frame_sink_manager,
+                              features::IsUsingSkiaRenderer()) {}
+
+InProcessContextFactory::InProcessContextFactory(
+    viz::HostFrameSinkManager* host_frame_sink_manager,
+    viz::FrameSinkManagerImpl* frame_sink_manager,
+    bool use_skia_renderer)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
       disable_vsync_(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -166,6 +178,8 @@ InProcessContextFactory::InProcessContextFactory(
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gl::GLSurfaceTestSupport::InitializeOneOff()";
+  if (use_skia_renderer)
+    renderer_settings_.use_skia_renderer = true;
 #if defined(OS_MACOSX)
   renderer_settings_.release_overlay_resources_after_gpu_query = true;
   // Ensure that tests don't wait for frames that will never come.
@@ -229,7 +243,14 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
                                        "UICompositor", support_locking);
 
   std::unique_ptr<viz::OutputSurface> display_output_surface;
-  if (use_test_surface_) {
+
+  if (renderer_settings_.use_skia_renderer) {
+    display_output_surface = viz::SkiaOutputSurfaceImpl::Create(
+        std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
+            viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
+            gpu::kNullSurfaceHandle),
+        renderer_settings_);
+  } else if (use_test_surface_) {
     bool flipped_output_surface = false;
     display_output_surface = std::make_unique<cc::PixelTestOutputSurface>(
         context_provider, flipped_output_surface);

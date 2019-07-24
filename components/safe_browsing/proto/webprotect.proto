@@ -61,4 +61,8 @@ message DeepScanningClientResponse {
 
   // DLP scan specific response info.
   optional DlpDeepScanningClientResponse dlp_scan_response = 2;
+
+  // Token used to correlate requests and responses. This is different than the
+  // FCM token, in that it is unique for each request.
+  optional string token = 3;
 }

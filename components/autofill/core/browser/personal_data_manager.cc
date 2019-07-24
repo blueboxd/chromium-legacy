@@ -266,7 +266,7 @@ void PersonalDataManager::Init(
     scoped_refptr<AutofillWebDataService> profile_database,
     scoped_refptr<AutofillWebDataService> account_database,
     PrefService* pref_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     AutofillProfileValidator* client_profile_validator,
     history::HistoryService* history_service,
     bool is_off_the_record) {

@@ -804,6 +804,10 @@ class SyntheticGestureControllerTestBase {
       num_failure_++;
   }
 
+  bool DispatchTimerRunning() const {
+    return controller_->dispatch_timer_.IsRunning();
+  }
+
   base::TimeDelta GetTotalTime() const { return time_ - start_time_; }
 
   base::test::ScopedTaskEnvironment env_;
@@ -2009,6 +2013,80 @@ TEST_F(SyntheticGestureControllerTest, PointerPenAction) {
   EXPECT_EQ(pointer_pen_target->num_dispatched_pointer_actions(), 5);
   EXPECT_TRUE(
       pointer_pen_target->SyntheticMouseActionDispatchedCorrectly(param, 0));
+}
+
+class MockSyntheticGestureTargetManualAck : public MockSyntheticGestureTarget {
+ public:
+  void WaitForTargetAck(SyntheticGestureParams::GestureType type,
+                        SyntheticGestureParams::GestureSourceType source,
+                        base::OnceClosure callback) const override {
+    if (manually_ack_)
+      target_ack_ = std::move(callback);
+    else
+      std::move(callback).Run();
+  }
+  bool HasOutstandingAck() const { return !target_ack_.is_null(); }
+  void InvokeAck() {
+    DCHECK(HasOutstandingAck());
+    std::move(target_ack_).Run();
+  }
+  void SetManuallyAck(bool manually_ack) { manually_ack_ = manually_ack; }
+
+ private:
+  mutable base::OnceClosure target_ack_;
+  bool manually_ack_ = true;
+};
+
+// Ensure the first time a gesture is queued, we wait for a renderer ACK before
+// starting the gesture. Following gestures should start immediately. This test
+// the renderer_known_to_be_initialized_ bit in the controller.
+TEST_F(SyntheticGestureControllerTest, WaitForRendererInitialization) {
+  CreateControllerAndTarget<MockSyntheticGestureTargetManualAck>();
+
+  auto* target = static_cast<MockSyntheticGestureTargetManualAck*>(target_);
+
+  EXPECT_FALSE(target->HasOutstandingAck());
+
+  SyntheticTapGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.duration_ms = 123;
+  params.position.SetPoint(87, -124);
+
+  // Queue the first gesture.
+  {
+    auto gesture = std::make_unique<SyntheticTapGesture>(params);
+    QueueSyntheticGesture(std::move(gesture));
+
+    // We should have received a WaitForTargetAck and the dispatch timer won't
+    // start until that's ACK'd.
+    EXPECT_TRUE(target->HasOutstandingAck());
+    EXPECT_FALSE(DispatchTimerRunning());
+
+    target->InvokeAck();
+
+    // The timer should now be running.
+    EXPECT_FALSE(target->HasOutstandingAck());
+    EXPECT_TRUE(DispatchTimerRunning());
+  }
+
+  // Finish the gesture.
+  {
+    target->SetManuallyAck(false);
+    FlushInputUntilComplete();
+    target->SetManuallyAck(true);
+    EXPECT_FALSE(DispatchTimerRunning());
+  }
+
+  // Queue the second gesture.
+  {
+    auto gesture = std::make_unique<SyntheticTapGesture>(params);
+    QueueSyntheticGesture(std::move(gesture));
+
+    // This time, because we've already sent a gesuture to the renderer,
+    // there's no need to wait for an ACK before starting the dispatch timer.
+    EXPECT_FALSE(target->HasOutstandingAck());
+    EXPECT_TRUE(DispatchTimerRunning());
+  }
 }
 
 }  // namespace content

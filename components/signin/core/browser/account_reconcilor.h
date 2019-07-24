@@ -42,7 +42,7 @@ class SigninClient;
 
 class AccountReconcilor : public KeyedService,
                           public content_settings::Observer,
-                          public identity::IdentityManager::Observer {
+                          public signin::IdentityManager::Observer {
  public:
   // When an instance of this class exists, the account reconcilor is suspended.
   // It will automatically restart when all instances of Lock have been
@@ -94,7 +94,7 @@ class AccountReconcilor : public KeyedService,
   };
 
   AccountReconcilor(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       SigninClient* client,
       std::unique_ptr<signin::AccountReconcilorDelegate> delegate);
   ~AccountReconcilor() override;
@@ -286,15 +286,14 @@ class AccountReconcilor : public KeyedService,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
-
-  // Overridden from identity::IdentityManager::Observer.
+  // Overridden from signin::IdentityManager::Observer.
   void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnRefreshTokensLoaded() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnAccountsCookieDeletedByUserAction() override;
 
@@ -332,7 +331,7 @@ class AccountReconcilor : public KeyedService,
   std::unique_ptr<signin::AccountReconcilorDelegate> delegate_;
 
   // The IdentityManager associated with this reconcilor.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/time/time.h"
 
@@ -33,6 +34,12 @@ enum class LifetimeType {
 struct OfflinePageClientPolicy {
   OfflinePageClientPolicy(std::string namespace_val,
                           LifetimeType lifetime_type_val);
+  static OfflinePageClientPolicy CreateTemporary(
+      const std::string& name_space,
+      const base::TimeDelta& expiration_period);
+  static OfflinePageClientPolicy CreatePersistent(
+      const std::string& name_space);
+
   OfflinePageClientPolicy(const OfflinePageClientPolicy& other);
   ~OfflinePageClientPolicy();
 
@@ -80,6 +87,15 @@ struct OfflinePageClientPolicy {
   // SavePageRequestURL.
   bool defer_background_fetch_while_page_is_active = false;
 };
+
+// Get the client policy for |name_space|.
+const OfflinePageClientPolicy& GetPolicy(const std::string& name_space);
+// Returns a list of all known namespaces.
+const std::vector<std::string>& GetAllPolicyNamespaces();
+// Returns a list of all temporary namespaces.
+const std::vector<std::string>& GetTemporaryPolicyNamespaces();
+// Returns a list of all persistent namespaces.
+const std::vector<std::string>& GetPersistentPolicyNamespaces();
 
 }  // namespace offline_pages
 

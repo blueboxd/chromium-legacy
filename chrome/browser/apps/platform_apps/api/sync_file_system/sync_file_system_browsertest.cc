@@ -40,7 +40,7 @@ class FakeDriveServiceFactory
   ~FakeDriveServiceFactory() override {}
 
   std::unique_ptr<drive::DriveServiceInterface> CreateDriveService(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::SequencedTaskRunner* blocking_task_runner) override {
     std::unique_ptr<drive::FakeDriveService> drive_service(
@@ -82,7 +82,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     std::unique_ptr<drive_backend::SyncEngine::DriveServiceFactory>
         drive_service_factory(new FakeDriveServiceFactory(this));
 
-    identity_test_env_.reset(new identity::IdentityTestEnvironment);
+    identity_test_env_.reset(new signin::IdentityTestEnvironment);
 
     remote_service_ = new drive_backend::SyncEngine(
         base::ThreadTaskRunnerHandle::Get(),  // ui_task_runner
@@ -136,7 +136,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     run_loop.Run();
   }
 
-  identity::IdentityManager* identity_manager() const {
+  signin::IdentityManager* identity_manager() const {
     return identity_test_env_->identity_manager();
   }
 
@@ -144,7 +144,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;
 
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_env_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
 
   drive_backend::SyncEngine* remote_service_;
 

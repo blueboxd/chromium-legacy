@@ -50,7 +50,6 @@ class TestWallpaperControllerClient : public WallpaperControllerClient {
 
   // WallpaperControllerClient:
   void OpenWallpaperPicker() override { open_count_++; }
-  void OnFirstWallpaperAnimationFinished() override {}
 
  private:
   size_t open_count_ = 0;

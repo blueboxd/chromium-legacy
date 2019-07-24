@@ -43,13 +43,12 @@ class IOThreadCacheCounter {
     STEP_GET_BACKEND,  // Get the disk_cache::Backend instance.
     STEP_COUNT,        // Run CalculateSizeOfAllEntries() on it.
     STEP_CALLBACK,     // Respond on the UI thread.
-    STEP_DONE          // Calculation completed.
   };
 
   void CountInternal(int64_t rv) {
     DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
-    while (rv != net::ERR_IO_PENDING && next_step_ != STEP_DONE) {
+    while (rv != net::ERR_IO_PENDING) {
       // In case of an error, skip to the last step.
       if (rv < 0)
         next_step_ = STEP_CALLBACK;
@@ -83,7 +82,6 @@ class IOThreadCacheCounter {
         }
 
         case STEP_CALLBACK: {
-          next_step_ = STEP_DONE;
           result_ = rv;
 
           base::PostTaskWithTraits(
@@ -91,11 +89,10 @@ class IOThreadCacheCounter {
               base::BindOnce(&IOThreadCacheCounter::OnCountingFinished,
                              base::Unretained(this)));
 
-          break;
-        }
-
-        case STEP_DONE: {
-          NOTREACHED();
+          // Return instead of break.
+          // The task above deletes this object; app would crash if this object
+          // is deleted before reentrance of the loop.
+          return;
         }
       }
     }

@@ -18,7 +18,7 @@ namespace syncer {
 class SyncService;
 }  // namespace syncer
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -28,7 +28,7 @@ class SigninErrorController;
 
 // All dependencies must out live this class.
 - (instancetype)initWithSyncService:(syncer::SyncService*)syncService
-                    identityManager:(identity::IdentityManager*)identityManager
+                    identityManager:(signin::IdentityManager*)identityManager
               signinErrorController:
                   (SigninErrorController*)SigninErrorController
     NS_DESIGNATED_INITIALIZER;

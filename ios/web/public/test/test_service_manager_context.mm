@@ -4,7 +4,7 @@
 
 #include "ios/web/public/test/test_service_manager_context.h"
 
-#include "ios/web/service_manager_context.h"
+#include "ios/web/service/service_manager_context.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

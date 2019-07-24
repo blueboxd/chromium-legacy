@@ -249,7 +249,7 @@ void PrivetPrinterHandler::StartPrint(
   privet_local_print_operation_->SetPageSize(page_size);
   privet_local_print_operation_->SetData(print_data);
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile_);
   if (identity_manager) {
     privet_local_print_operation_->SetUsername(

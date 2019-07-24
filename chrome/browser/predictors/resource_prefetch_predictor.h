@@ -16,6 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -28,6 +29,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/common/resource_type.h"
+#include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
 
 class PredictorsHandler;
@@ -54,12 +56,23 @@ class ResourcePrefetcherManager;
 // Stores all values needed to trigger a preconnect/preresolve job to a single
 // origin.
 struct PreconnectRequest {
-  PreconnectRequest(const GURL& origin, int num_sockets);
+  // |network_isolation_key| specifies the key that network requests for the
+  // preconnected URL are expected to use. If a request is issued with a
+  // different key, it may not use the preconnected socket. It has no effect
+  // when |num_sockets| == 0.
+  //
+  // TODO(https://crbug.com/966896): Update consumers and make
+  // |network_isolation_key| a mandatory argument.
+  PreconnectRequest(const GURL& origin,
+                    int num_sockets,
+                    net::NetworkIsolationKey network_isolation_key =
+                        net::NetworkIsolationKey());
 
   GURL origin;
   // A zero-value means that we need to preresolve a host only.
   int num_sockets = 0;
   bool allow_credentials = true;
+  net::NetworkIsolationKey network_isolation_key;
 };
 
 // Stores a result of preconnect prediction. The |requests| vector is the main
@@ -224,7 +237,7 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   // Updates information about final redirect destination for the |key| in
   // |redirect_data| and correspondingly updates the predictor database.
   void LearnRedirect(const std::string& key,
-                     const std::string& final_redirect,
+                     const GURL& final_redirect,
                      RedirectDataMap* redirect_data);
 
   void LearnOrigins(const std::string& host,

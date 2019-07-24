@@ -23,7 +23,7 @@ int ContextProviderMain() {
       directory, &context_provider);
 
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(
-      directory->debug(), &context_provider);
+      directory->outgoing_directory()->debug_dir(), &context_provider);
 
   base::RunLoop run_loop;
   cr_fuchsia::LifecycleImpl lifecycle(directory, run_loop.QuitClosure());

@@ -156,6 +156,8 @@ class ScriptContext {
     return service_worker_version_id_;
   }
 
+  bool IsForServiceWorker() const;
+
   // Sets the URL of this ScriptContext. Usually this will automatically be set
   // on construction, unless this isn't constructed with enough information to
   // determine the URL (e.g. frame was null).

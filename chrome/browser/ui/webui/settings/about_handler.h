@@ -85,6 +85,15 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void HandleOpenHelpPage(const base::ListValue* args);
 
 #if defined(OS_CHROMEOS)
+  // Checks if ReleaseNotes is enabled.
+  void HandleGetEnabledReleaseNotes(const base::ListValue* args);
+
+  // Checks if system is connected to internet.
+  void HandleCheckInternetConnection(const base::ListValue* args);
+
+  // Opens the release notes app. |args| must be empty.
+  void HandleLaunchReleaseNotes(const base::ListValue* args);
+
   // Opens the help page. |args| must be empty.
   void HandleOpenOsHelpPage(const base::ListValue* args);
 

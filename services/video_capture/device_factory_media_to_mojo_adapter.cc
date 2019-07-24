@@ -99,11 +99,6 @@ DeviceFactoryMediaToMojoAdapter::DeviceFactoryMediaToMojoAdapter(
 
 DeviceFactoryMediaToMojoAdapter::~DeviceFactoryMediaToMojoAdapter() = default;
 
-void DeviceFactoryMediaToMojoAdapter::SetServiceRef(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
-  service_ref_ = std::move(service_ref);
-}
-
 void DeviceFactoryMediaToMojoAdapter::GetDeviceInfos(
     GetDeviceInfosCallback callback) {
   capture_system_->GetDeviceInfosAsync(
@@ -170,7 +165,6 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
     const std::string& device_id,
     mojom::DeviceRequest device_request,
     CreateDeviceCallback callback) {
-  DCHECK(service_ref_);
   std::unique_ptr<media::VideoCaptureDevice> media_device =
       capture_system_->CreateDevice(device_id);
   if (media_device == nullptr) {
@@ -184,11 +178,11 @@ void DeviceFactoryMediaToMojoAdapter::CreateAndAddNewDevice(
 
 #if defined(OS_CHROMEOS)
   device_entry.device = std::make_unique<DeviceMediaToMojoAdapter>(
-      service_ref_->Clone(), std::move(media_device),
-      jpeg_decoder_factory_callback_, jpeg_decoder_task_runner_);
+      std::move(media_device), jpeg_decoder_factory_callback_,
+      jpeg_decoder_task_runner_);
 #else
-  device_entry.device = std::make_unique<DeviceMediaToMojoAdapter>(
-      service_ref_->Clone(), std::move(media_device));
+  device_entry.device =
+      std::make_unique<DeviceMediaToMojoAdapter>(std::move(media_device));
 #endif  // defined(OS_CHROMEOS)
   device_entry.binding = std::make_unique<mojo::Binding<mojom::Device>>(
       device_entry.device.get(), std::move(device_request));

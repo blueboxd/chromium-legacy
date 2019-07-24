@@ -62,8 +62,8 @@ base::string16 SendTabToSelfBubbleController::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_CONTEXT_MENU_SEND_TAB_TO_SELF);
 }
 
-std::vector<TargetDeviceInfo> SendTabToSelfBubbleController::GetValidDevices()
-    const {
+const std::vector<TargetDeviceInfo>&
+SendTabToSelfBubbleController::GetValidDevices() const {
   return valid_devices_;
 }
 
@@ -91,7 +91,7 @@ SendTabToSelfBubbleController::SendTabToSelfBubbleController() = default;
 SendTabToSelfBubbleController::SendTabToSelfBubbleController(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
-  this->FetchDeviceInfo();
+  FetchDeviceInfo();
 }
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {

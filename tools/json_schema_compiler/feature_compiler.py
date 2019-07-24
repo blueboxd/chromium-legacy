@@ -150,7 +150,6 @@ FEATURE_GRAMMAR = (
           'blessed_extension': 'Feature::BLESSED_EXTENSION_CONTEXT',
           'blessed_web_page': 'Feature::BLESSED_WEB_PAGE_CONTEXT',
           'content_script': 'Feature::CONTENT_SCRIPT_CONTEXT',
-          'extension_service_worker': 'Feature::SERVICE_WORKER_CONTEXT',
           'lock_screen_extension': 'Feature::LOCK_SCREEN_EXTENSION_CONTEXT',
           'web_page': 'Feature::WEB_PAGE_CONTEXT',
           'webui': 'Feature::WEBUI_CONTEXT',
@@ -169,6 +168,9 @@ FEATURE_GRAMMAR = (
         'allow_empty': True,
         'subtype': str
       }
+    },
+    'disallow_for_service_workers': {
+      bool: {}
     },
     'extension_types': {
       list: {

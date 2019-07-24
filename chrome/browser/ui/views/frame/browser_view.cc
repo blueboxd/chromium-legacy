@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
@@ -1163,6 +1164,8 @@ void BrowserView::FocusToolbar() {
 }
 
 ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
+
   BrowserActionsContainer* container =
       toolbar_button_provider_->GetBrowserActionsContainer();
   return container ? container->toolbar_actions_bar() : nullptr;

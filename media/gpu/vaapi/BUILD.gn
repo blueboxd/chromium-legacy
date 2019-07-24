@@ -65,6 +65,8 @@ source_set("vaapi") {
     "vaapi_vp8_accelerator.h",
     "vaapi_vp9_accelerator.cc",
     "vaapi_vp9_accelerator.h",
+    "vaapi_webp_decoder.cc",
+    "vaapi_webp_decoder.h",
     "vaapi_wrapper.cc",
     "vaapi_wrapper.h",
     "vp8_encoder.cc",
@@ -139,6 +141,24 @@ source_set("vaapi") {
   }
 }
 
+source_set("vaapi_test_utils") {
+  testonly = true
+  sources = [
+    "test_utils.cc",
+    "test_utils.h",
+  ]
+  deps = [
+    ":vaapi",
+    "//base",
+    "//media",
+    "//testing/gtest",
+    "//third_party/libyuv:libyuv",
+  ]
+  public_deps = [
+    "//ui/gfx/geometry",
+  ]
+}
+
 source_set("unit_test") {
   testonly = true
   sources = [
@@ -164,6 +184,7 @@ source_set("jpeg_decoder_unit_test") {
   ]
   deps = [
     ":vaapi",
+    ":vaapi_test_utils",
     ":vaapi_utils_unittest",
     "//base",
     "//media:test_support",
@@ -172,6 +193,27 @@ source_set("jpeg_decoder_unit_test") {
     "//third_party/libyuv:libyuv",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/codec",
+    "//ui/gfx/geometry",
+  ]
+  if (is_chromeos) {
+    deps += [ "//media/capture:chromeos_test_utils" ]
+  }
+}
+
+source_set("webp_decoder_unit_test") {
+  testonly = true
+  sources = [
+    "vaapi_webp_decoder_unittest.cc",
+  ]
+  deps = [
+    ":vaapi",
+    ":vaapi_test_utils",
+    "//base",
+    "//media:test_support",
+    "//media/parsers",
+    "//testing/gtest",
+    "//third_party/libwebp:libwebp_webp",
+    "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
   if (is_chromeos) {

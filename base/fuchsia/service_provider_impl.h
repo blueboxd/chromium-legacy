@@ -17,6 +17,10 @@
 #include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
 
+namespace sys {
+class OutgoingDirectory;
+}  // namespace sys
+
 namespace base {
 namespace fuchsia {
 
@@ -25,6 +29,11 @@ namespace fuchsia {
 // TODO(https://crbug.com/920920): Remove this when ServiceProvider is gone.
 class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
  public:
+  // Constructor that creates ServiceProvider for public services in the
+  // specified OutgoingDirectory.
+  static std::unique_ptr<ServiceProviderImpl> CreateForOutgoingDirectory(
+      sys::OutgoingDirectory* outgoing_directory);
+
   explicit ServiceProviderImpl(
       fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory);
   ~ServiceProviderImpl() override;

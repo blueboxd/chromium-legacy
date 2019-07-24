@@ -12,18 +12,6 @@
  */
 
 /**
- * The type of the internal tracking entry. TODO(dbeam): move this back to
- * EventTracker.Entry when https://github.com/google/closure-compiler/issues/544
- * is fixed.
- * @typedef {{target: !EventTarget,
- *            eventType: string,
- *            listener: (EventListener|Function),
- *            capture: boolean}}
- */
-// eslint-disable-next-line no-var
-var EventTrackerEntry;
-
-/**
  * Create an EventTracker to track a set of events.
  * EventTracker instances are typically tied 1:1 with other objects or
  * DOM elements whose listeners should be removed when the object is disposed
@@ -32,11 +20,20 @@ var EventTrackerEntry;
  */
 function EventTracker() {
   /**
-   * @type {Array<EventTrackerEntry>}
+   * @type {Array<EventTracker.Entry>}
    * @private
    */
   this.listeners_ = [];
 }
+
+/**
+ * The type of the internal tracking entry.
+ * @typedef {{target: !EventTarget,
+ *            eventType: string,
+ *            listener: (EventListener|Function),
+ *            capture: boolean}}
+ */
+EventTracker.Entry;
 
 EventTracker.prototype = {
   /**
@@ -85,7 +82,7 @@ EventTracker.prototype = {
 /**
  * Remove a single event listener given it's tracking entry. It's up to the
  * caller to ensure the entry is removed from listeners_.
- * @param {EventTrackerEntry} h The entry describing the listener to remove.
+ * @param {EventTracker.Entry} h The entry describing the listener to remove.
  * @private
  */
 EventTracker.removeEventListener_ = function(h) {

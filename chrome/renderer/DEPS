@@ -30,7 +30,7 @@ include_rules = [
   "+components/plugins/renderer",
   "+components/printing/common",
   "+components/printing/renderer",
-  "+components/rappor/public/interfaces",
+  "+components/rappor/public/mojom",
   "+components/safe_browsing/common",
   "+components/safe_browsing/features.h",
   "+components/safe_browsing/renderer",

@@ -2,70 +2,69 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('management');
-/**
- * @typedef {{
- *   name: string,
- *   permissions: !Array<string>
- * }}
- */
-management.Extension;
-
-/** @enum {string} */
-management.ReportingType = {
-  SECURITY: 'security',
-  DEVICE: 'device',
-  USER: 'user',
-  USER_ACTIVITY: 'user-activity',
-  EXTENSIONS: 'extensions'
-};
-
-/**
- * @typedef {{
- *   messageId: string,
- *   reportingType: !management.ReportingType,
- * }}
- */
-management.BrowserReportingResponse;
-
-/**
- * @typedef {{
- *   browserManagementNotice: string,
- *   extensionReportingTitle: string,
- *   pageSubtitle: string,
- *   managed: boolean,
- *   overview: string,
- *   customerLogo: string,
- * }}
- */
-management.ManagedDataResponse;
-
-// <if expr="chromeos">
-/**
- * @enum {string} Look at ToJSDeviceReportingType usage in
- *    management_ui_handler.cc for more details.
- */
-management.DeviceReportingType = {
-  SUPERVISED_USER: 'supervised user',
-  DEVICE_ACTIVITY: 'device activity',
-  STATISTIC: 'device statistics',
-  DEVICE: 'device',
-  LOGS: 'logs',
-  PRINT: 'print',
-  CROSTINI: 'crostini'
-};
-
-
-/**
- * @typedef {{
- *   messageId: string,
- *   reportingType: !management.DeviceReportingType,
- * }}
- */
-management.DeviceReportingResponse;
-// </if>
-
 cr.define('management', function() {
+  /**
+   * @typedef {{
+   *   name: string,
+   *   permissions: !Array<string>
+   * }}
+   */
+  let Extension;
+
+  /** @enum {string} */
+  const ReportingType = {
+    SECURITY: 'security',
+    DEVICE: 'device',
+    USER: 'user',
+    USER_ACTIVITY: 'user-activity',
+    EXTENSIONS: 'extensions'
+  };
+
+  /**
+   * @typedef {{
+   *   messageId: string,
+   *   reportingType: !management.ReportingType,
+   * }}
+   */
+  let BrowserReportingResponse;
+
+  /**
+   * @typedef {{
+   *   browserManagementNotice: string,
+   *   extensionReportingTitle: string,
+   *   pageSubtitle: string,
+   *   managed: boolean,
+   *   overview: string,
+   *   customerLogo: string,
+   * }}
+   */
+  let ManagedDataResponse;
+
+  // <if expr="chromeos">
+  /**
+   * @enum {string} Look at ToJSDeviceReportingType usage in
+   *    management_ui_handler.cc for more details.
+   */
+  const DeviceReportingType = {
+    SUPERVISED_USER: 'supervised user',
+    DEVICE_ACTIVITY: 'device activity',
+    STATISTIC: 'device statistics',
+    DEVICE: 'device',
+    LOGS: 'logs',
+    PRINT: 'print',
+    CROSTINI: 'crostini'
+  };
+
+
+  /**
+   * @typedef {{
+   *   messageId: string,
+   *   reportingType: !management.DeviceReportingType,
+   * }}
+   */
+  let DeviceReportingResponse;
+  // </if>
+
   /** @interface */
   class ManagementBrowserProxy {
     /** @return {!Promise<!Array<!management.Extension>>} */
@@ -128,7 +127,15 @@ cr.define('management', function() {
   cr.addSingletonGetter(ManagementBrowserProxyImpl);
 
   return {
+    BrowserReportingResponse: BrowserReportingResponse,
+    // <if expr="chromeos">
+    DeviceReportingResponse: DeviceReportingResponse,
+    DeviceReportingType: DeviceReportingType,
+    // </if>
+    Extension: Extension,
+    ManagedDataResponse: ManagedDataResponse,
+    ManagementBrowserProxyImpl: ManagementBrowserProxyImpl,
     ManagementBrowserProxy: ManagementBrowserProxy,
-    ManagementBrowserProxyImpl: ManagementBrowserProxyImpl
+    ReportingType: ReportingType,
   };
 });

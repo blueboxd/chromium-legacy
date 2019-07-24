@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/web/web_surrounding_text.h"
+#include "third_party/blink/renderer/core/editing/surrounding_text.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -35,7 +35,7 @@ void SurroundingTextImpl::BindToReceiver(
 void SurroundingTextImpl::GetTextSurroundingSelection(
     uint32_t max_length,
     GetTextSurroundingSelectionCallback callback) {
-  blink::WebSurroundingText surrounding_text(frame_, max_length);
+  blink::SurroundingText surrounding_text(frame_->GetFrame(), max_length);
 
   if (surrounding_text.IsEmpty()) {
     // |surrounding_text| might not be correctly initialized, for example if

@@ -138,7 +138,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   FakeWebStateListDelegate web_state_list_delegate_;
   TestUrlLoadingService* url_loader_;
   AuthenticationServiceFake* auth_service_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
  private:
   std::unique_ptr<web::TestWebState> test_web_state_;

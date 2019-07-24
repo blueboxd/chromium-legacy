@@ -39,7 +39,7 @@ class TestAutofillClient : public AutofillClient {
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
@@ -174,7 +174,7 @@ class TestAutofillClient : public AutofillClient {
 
  private:
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   syncer::SyncService* test_sync_service_ = nullptr;
   TestAddressNormalizer test_address_normalizer_;
   TestPersonalDataManager test_personal_data_manager_;

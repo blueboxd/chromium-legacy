@@ -107,7 +107,7 @@ const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 }  // namespace
 
 SuggestionsServiceImpl::SuggestionsServiceImpl(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<SuggestionsStore> suggestions_store,
@@ -342,17 +342,17 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
     return;
 
   identity::ScopeSet scopes{GaiaConstants::kChromeSyncOAuth2Scope};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "suggestions_service", identity_manager_, scopes,
       base::BindOnce(&SuggestionsServiceImpl::AccessTokenAvailable,
                      base::Unretained(this), url),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void SuggestionsServiceImpl::AccessTokenAvailable(
     const GURL& url,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 

@@ -103,7 +103,7 @@ class WebViewSyncControllerObserverBridge
 
 @implementation CWVSyncController {
   syncer::SyncService* _syncService;
-  identity::IdentityManager* _identityManager;
+  signin::IdentityManager* _identityManager;
   SigninErrorController* _signinErrorController;
   std::unique_ptr<ios_web_view::WebViewSyncControllerObserverBridge> _observer;
 
@@ -115,7 +115,7 @@ class WebViewSyncControllerObserverBridge
 @synthesize currentIdentity = _currentIdentity;
 
 - (instancetype)initWithSyncService:(syncer::SyncService*)syncService
-                    identityManager:(identity::IdentityManager*)identityManager
+                    identityManager:(signin::IdentityManager*)identityManager
               signinErrorController:
                   (SigninErrorController*)signinErrorController {
   self = [super init];
@@ -177,7 +177,7 @@ class WebViewSyncControllerObserverBridge
 - (void)stopSyncAndClearIdentity {
   auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
   primaryAccountMutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   _currentIdentity = nil;

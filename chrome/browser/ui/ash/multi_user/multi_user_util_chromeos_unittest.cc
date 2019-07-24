@@ -73,7 +73,7 @@ class MultiUserUtilTest : public ChromeAshTestBase {
 
   TestingProfile* profile() { return profile_.get(); }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
@@ -93,7 +93,7 @@ class MultiUserUtilTest : public ChromeAshTestBase {
 // revoked. (On Chrome OS we don't force to end the session in this case.)
 TEST_F(MultiUserUtilTest, ReturnValidAccountIdIfTokenRevoked) {
   std::string account_id = AddUserAndSignIn(kTestAccountEmail);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       identity_test_env()->identity_manager();
 
   EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));

@@ -10,7 +10,7 @@
 namespace signin {
 
 ConsistencyCookieManagerAndroid::ConsistencyCookieManagerAndroid(
-    identity::IdentityManager* identity_manager,
+    IdentityManager* identity_manager,
     SigninClient* signin_client,
     AccountReconcilor* reconcilor)
     : ConsistencyCookieManagerBase(signin_client, reconcilor) {

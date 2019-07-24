@@ -432,6 +432,7 @@ bool ExecuteFileTask(Profile* profile,
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
                              extensions::AppLaunchSource::kSourceFileHandler);
       params.override_url = GURL(task.action_id);
+      params.launch_files = std::move(paths);
       OpenApplication(params);
     }
     if (!done.is_null())

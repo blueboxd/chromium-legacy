@@ -53,9 +53,6 @@ const base::Feature kEnableAssistantAlarmTimerManager{
 const base::Feature kEnablePowerManager{"ChromeOSAssistantEnablePowerManager",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAssistantKeyRemapping{"AssistantKeyRemapping",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables sending a screen context request ("What's on my screen?" and
 // metalayer selection) as a text query. This is as opposed to sending
 // the request as a contextual cards request.
@@ -93,10 +90,6 @@ bool IsFeedbackUiEnabled() {
 
 bool IsInAssistantNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kInAssistantNotifications);
-}
-
-bool IsKeyRemappingEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantKeyRemapping);
 }
 
 bool IsMediaSessionIntegrationEnabled() {

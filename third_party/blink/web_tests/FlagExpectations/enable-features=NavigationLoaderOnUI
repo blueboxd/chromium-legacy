@@ -1,9 +1,2 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
 # See https://crbug.com/824840
-
-# service worker
-Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
-Bug(none) virtual/not-omt-sw-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
-Bug(none) virtual/omt-worker-fetch/external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Skip ]
-
-Bug(none) http/tests/misc/xhtml.php [ Failure ]

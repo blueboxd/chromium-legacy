@@ -765,6 +765,7 @@ jumbo_static_library("extensions") {
     "//chrome/common/extensions/api",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing/db:util",
+    "//components/signin/core/browser",
     "//content/public/browser",
   ]
   deps = [
@@ -835,7 +836,6 @@ jumbo_static_library("extensions") {
     "//components/search_engines",
     "//components/services/unzip/public/cpp",
     "//components/sessions",
-    "//components/signin/core/browser",
     "//components/signin/public/identity_manager",
     "//components/spellcheck/browser",
     "//components/storage_monitor",

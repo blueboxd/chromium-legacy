@@ -211,7 +211,7 @@
                                : [UIColor whiteColor];
   [cancelButton setTitle:l10n_util::GetNSString(IDS_CANCEL)
                 forState:UIControlStateNormal];
-  [cancelButton setContentHuggingPriority:UILayoutPriorityDefaultHigh
+  [cancelButton setContentHuggingPriority:UILayoutPriorityRequired
                                   forAxis:UILayoutConstraintAxisHorizontal];
   [cancelButton
       setContentCompressionResistancePriority:UILayoutPriorityRequired

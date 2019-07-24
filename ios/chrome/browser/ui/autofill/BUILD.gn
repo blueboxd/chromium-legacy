@@ -58,6 +58,7 @@ source_set("autofill") {
     "//ios/public/provider/chrome/browser",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web/common",
     "//ios/web/public/deprecated",
     "//ios/web/public/js_messaging",
     "//ui/base",

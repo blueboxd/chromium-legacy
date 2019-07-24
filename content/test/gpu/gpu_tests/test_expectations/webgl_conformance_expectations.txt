@@ -196,7 +196,6 @@ crbug.com/582083 [ win nvidia opengl ] conformance/* [ RetryOnFailure ]
 # Win / OpenGL / AMD failures
 crbug.com/649824 [ win amd opengl ] conformance/attribs/gl-bindAttribLocation-aliasing.html [ Skip ]
 crbug.com/angleproject/1007 [ win amd opengl ] conformance/glsl/misc/shader-struct-scope.html [ Skip ]
-crbug.com/angleproject/1007 [ win amd opengl no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
 crbug.com/angleproject/1007 [ win amd opengl ] conformance/glsl/misc/struct-nesting-of-variable-names.html [ Failure ]
 crbug.com/angleproject/1506 [ win amd opengl ] conformance/rendering/clipping-wide-points.html [ Failure ]
 
@@ -375,13 +374,11 @@ crbug.com/642822 [ linux amd ] conformance/rendering/clipping-wide-points.html [
 
 # AMD Radeon 6450 and/or R7 240
 crbug.com/479260 [ linux amd no-angle ] conformance/extensions/angle-instanced-arrays.html [ Failure ]
-crbug.com/479952 [ linux amd no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # Linux passthrough AMD
 crbug.com/960808 [ linux amd passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Linux passthrough AMD OpenGL
-crbug.com/angleproject/1007 [ linux amd opengl passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Skip ]
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]
 crbug.com/965594 [ linux amd opengl passthrough ] conformance/more/conformance/webGLArrays.html [ RetryOnFailure ]
 
@@ -417,6 +414,7 @@ crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminanc
 crbug.com/733599 [ android no-angle ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/834933 [ android android-chromium no-angle ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/891456 [ android ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 
 # This crashes in Android WebView on the Nexus 6, preventing the
 # suite from running further. Rather than add multiple
@@ -436,7 +434,6 @@ crbug.com/559342 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/bugs/stru
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/matrices/glsl-mat4-to-mat3.html [ Failure ]
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/shader-struct-scope.html [ Failure ]
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/shader-with-vec4-vec3-vec4-conditional.html [ Failure ]
-crbug.com/611943 [ android qualcomm-adreno-(tm)-330 no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 crbug.com/611943 [ android qualcomm-adreno-(tm)-330 ] conformance/glsl/misc/struct-equals.html [ Failure ]
 crbug.com/478572 [ android qualcomm-adreno-(tm)-330 ] deqp/data/gles2/shaders/linkage.html [ Failure ]
 [ android qualcomm-adreno-(tm)-330 no-passthrough ] WebglExtension_OES_texture_float_linear [ Failure ]
@@ -494,7 +491,6 @@ crbug.com/611945 [ qualcomm-adreno-(tm)-430 android ] conformance/glsl/bugs/samp
 # The list of tests which may be that future test is very long. It is
 # almost (but not quite) every webgl conformance test.
 crbug.com/614550 [ android qualcomm-adreno-(tm)-420 ] conformance/glsl/misc/shader-struct-scope.html [ Skip ]
-crbug.com/611945 [ android qualcomm-adreno-(tm)-420 no-passthrough ] conformance/glsl/misc/shaders-with-invariance.html [ Failure ]
 
 # bindBufferBadArgs is causing the GPU thread to crash, taking
 # down the WebView shell, causing the next test to fail and
@@ -526,7 +522,6 @@ crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
 crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
-crbug.com/891456 [ android nvidia ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ RetryOnFailure ]
 
 # Flaky timeout on android_n5x_swarming_rel and
 # android-marshmallow-arm64-rel.
@@ -538,6 +533,7 @@ crbug.com/981579 [ android opengles ] conformance/textures/misc/tex-video-using-
 crbug.com/981579 [ android android-chromium opengles ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/986808 [ android opengles ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 
 # Misc failures
 crbug.com/angleproject/2988 [ android opengles ] conformance/context/context-size-change.html [ Failure ]

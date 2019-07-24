@@ -27,17 +27,17 @@ class PasswordStoreSigninNotifierImplTest : public testing::Test {
     store_->ShutdownOnUIThread();
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return &identity_test_env_;
   }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env()->identity_manager();
   }
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   scoped_refptr<MockPasswordStore> store_;
 };
 

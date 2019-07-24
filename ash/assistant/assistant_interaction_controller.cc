@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
+#include "ash/assistant/assistant_prefs_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
@@ -21,8 +22,6 @@
 #include "ash/assistant/util/histogram_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -702,7 +701,8 @@ void AssistantInteractionController::OnUiVisible(
             assistant_controller_->ui_controller()->model()->visibility());
 
   const bool launch_with_mic_open =
-      VoiceInteractionController::Get()->launch_with_mic_open();
+      assistant_controller_->prefs_controller()->prefs()->GetBoolean(
+          chromeos::assistant::prefs::kAssistantLaunchWithMicOpen);
   const bool prefer_voice = launch_with_mic_open || IsTabletMode();
 
   // We don't explicitly start a new voice interaction if the entry point

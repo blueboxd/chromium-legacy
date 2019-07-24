@@ -71,7 +71,7 @@ class PersonalDataManager : public KeyedService,
                             public AutofillWebDataServiceObserverOnUISequence,
                             public history::HistoryServiceObserver,
                             public syncer::SyncServiceObserver,
-                            public identity::IdentityManager::Observer,
+                            public signin::IdentityManager::Observer,
                             public AccountInfoGetter {
  public:
   explicit PersonalDataManager(const std::string& app_locale);
@@ -89,7 +89,7 @@ class PersonalDataManager : public KeyedService,
   void Init(scoped_refptr<AutofillWebDataService> profile_database,
             scoped_refptr<AutofillWebDataService> account_database,
             PrefService* pref_service,
-            identity::IdentityManager* identity_manager,
+            signin::IdentityManager* identity_manager,
             AutofillProfileValidator* client_profile_validator,
             history::HistoryService* history_service,
             bool is_off_the_record);
@@ -123,7 +123,7 @@ class PersonalDataManager : public KeyedService,
   CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
   bool IsSyncFeatureEnabled() const override;
 
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   void OnAccountsCookieDeletedByUserAction() override;
 
   // Returns the current sync status.
@@ -771,7 +771,7 @@ class PersonalDataManager : public KeyedService,
   AutofillProfileValidator* client_profile_validator_ = nullptr;
 
   // The identity manager that this instance uses. Must outlive this instance.
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
 
   // The sync service this instances uses. Must outlive this instance.
   syncer::SyncService* sync_service_ = nullptr;

@@ -16,6 +16,8 @@
 #include "base/i18n/message_formatter.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -60,9 +62,11 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/image_source.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/browser/ui/webui/help/version_updater_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -416,6 +420,18 @@ void AboutHandler::RegisterMessages() {
       "getHasEndOfLife",
       base::BindRepeating(&AboutHandler::HandleGetHasEndOfLife,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getEnabledReleaseNotes",
+      base::BindRepeating(&AboutHandler::HandleGetEnabledReleaseNotes,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "launchReleaseNotes",
+      base::BindRepeating(&AboutHandler::HandleLaunchReleaseNotes,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "checkInternetConnection",
+      base::BindRepeating(&AboutHandler::HandleCheckInternetConnection,
+                          base::Unretained(this)));
 #endif
 #if defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback(
@@ -514,6 +530,40 @@ void AboutHandler::HandleOpenHelpPage(const base::ListValue* args) {
 }
 
 #if defined(OS_CHROMEOS)
+void AboutHandler::HandleGetEnabledReleaseNotes(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(base::FeatureList::IsEnabled(
+                                chromeos::features::kReleaseNotes)));
+}
+
+void AboutHandler::HandleCheckInternetConnection(const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  const chromeos::NetworkState* network =
+      network_state_handler->DefaultNetwork();
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(network && network->IsOnline()));
+}
+
+void AboutHandler::HandleLaunchReleaseNotes(const base::ListValue* args) {
+  DCHECK(args->empty());
+  chromeos::NetworkStateHandler* network_state_handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  const chromeos::NetworkState* network =
+      network_state_handler->DefaultNetwork();
+  if (network && network->IsOnline()) {
+    base::RecordAction(
+        base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
+    chrome::LaunchReleaseNotes(Profile::FromWebUI(web_ui()));
+  }
+}
 
 void AboutHandler::HandleOpenOsHelpPage(const base::ListValue* args) {
   DCHECK(args->empty());

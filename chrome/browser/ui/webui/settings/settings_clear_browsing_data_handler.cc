@@ -339,7 +339,7 @@ void ClearBrowsingDataHandler::OnStateChanged(syncer::SyncService* sync) {
 }
 
 void ClearBrowsingDataHandler::UpdateSyncState() {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   FireWebUIListener(
       "update-sync-state",

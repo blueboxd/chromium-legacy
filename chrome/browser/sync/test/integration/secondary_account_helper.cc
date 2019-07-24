@@ -71,17 +71,17 @@ void SignInSecondaryAccount(
     Profile* profile,
     network::TestURLLoaderFactory* test_url_loader_factory,
     const std::string& email) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   AccountInfo account_info =
-      identity::MakeAccountAvailable(identity_manager, email);
-  identity::SetCookieAccounts(identity_manager, test_url_loader_factory,
-                              {{account_info.email, account_info.gaia}});
+      signin::MakeAccountAvailable(identity_manager, email);
+  signin::SetCookieAccounts(identity_manager, test_url_loader_factory,
+                            {{account_info.email, account_info.gaia}});
 }
 
 #if !defined(OS_CHROMEOS)
 void MakeAccountPrimary(Profile* profile, const std::string& email) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   base::Optional<AccountInfo> maybe_account =
       identity_manager->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(

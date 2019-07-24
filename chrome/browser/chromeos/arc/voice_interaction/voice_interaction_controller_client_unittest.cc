@@ -102,26 +102,10 @@ TEST_F(VoiceInteractionControllerClientTest, PrefChangeSendsNotification) {
   ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionHotwordEnabled));
   EXPECT_EQ(true, ash::VoiceInteractionController::Get()->hotword_enabled());
 
-  // Default setting is true.
-  ASSERT_EQ(true,
-            prefs->GetBoolean(prefs::kVoiceInteractionNotificationEnabled));
-  prefs->SetBoolean(prefs::kVoiceInteractionNotificationEnabled, false);
-  ASSERT_EQ(false,
-            prefs->GetBoolean(prefs::kVoiceInteractionNotificationEnabled));
-  EXPECT_EQ(false,
-            ash::VoiceInteractionController::Get()->notification_enabled());
-
   ASSERT_EQ("", prefs->GetString(language::prefs::kApplicationLocale));
   prefs->SetString(language::prefs::kApplicationLocale, "en-CA");
   ASSERT_EQ("en-CA", prefs->GetString(language::prefs::kApplicationLocale));
   EXPECT_EQ("en-CA", ash::VoiceInteractionController::Get()->locale());
-
-  ASSERT_EQ(false,
-            prefs->GetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen));
-  prefs->SetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen, true);
-  ASSERT_EQ(true, prefs->GetBoolean(prefs::kVoiceInteractionLaunchWithMicOpen));
-  EXPECT_EQ(true,
-            ash::VoiceInteractionController::Get()->launch_with_mic_open());
 }
 
 }  // namespace arc

@@ -21,7 +21,7 @@ namespace identity {
 
 class IdentityService : public service_manager::Service {
  public:
-  IdentityService(IdentityManager* identity_manager,
+  IdentityService(signin::IdentityManager* identity_manager,
                   service_manager::mojom::ServiceRequest request);
   ~IdentityService() override;
 
@@ -41,7 +41,7 @@ class IdentityService : public service_manager::Service {
 
   service_manager::ServiceBinding service_binding_;
 
-  IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   mojo::StrongBindingSet<mojom::IdentityAccessor> identity_accessor_bindings_;
 

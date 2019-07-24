@@ -5,9 +5,14 @@
 #include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
+#include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_types.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace notifications {
 namespace {
@@ -34,6 +39,23 @@ base::Optional<FirstAndLastIters> FindFirstAndLastNotificationShownToday(
                          return lhs.create_time < rhs;
                        });
   return base::make_optional<FirstAndLastIters>(first, last - 1);
+}
+
+// Converts SkBitmap to String.
+std::string ConvertIconToStringOnIOThread(SkBitmap image) {
+  base::AssertLongCPUWorkAllowed();
+  std::vector<unsigned char> image_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(std::move(image), false, &image_data);
+  std::string result(image_data.begin(), image_data.end());
+  return result;
+}
+
+// Converts SkBitmap to String.
+SkBitmap ConvertStringToIconOnIOThread(std::string data) {
+  SkBitmap image;
+  gfx::PNGCodec::Decode(reinterpret_cast<const unsigned char*>(data.data()),
+                        data.length(), &image);
+  return image;
 }
 }  // namespace
 
@@ -111,6 +133,26 @@ std::unique_ptr<ClientState> CreateNewClientState(
   client_state->type = type;
   client_state->current_max_daily_show = config.initial_daily_shown_per_type;
   return client_state;
+}
+
+// Converts SkBitmap to String.
+void ConvertIconToString(SkBitmap image,
+                         base::OnceCallback<void(std::string)> callback) {
+  DCHECK(callback);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&ConvertIconToStringOnIOThread, std::move(image)),
+      std::move(callback));
+}
+
+// Converts String to SkBitmap.
+void ConvertStringToIcon(std::string data,
+                         base::OnceCallback<void(SkBitmap)> callback) {
+  DCHECK(callback);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&ConvertStringToIconOnIOThread, std::move(data)),
+      std::move(callback));
 }
 
 }  // namespace notifications

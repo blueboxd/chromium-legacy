@@ -77,6 +77,7 @@ void ShowFeedbackPage(Browser* browser,
 
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
+void LaunchReleaseNotes(Profile* profile);
 void ShowBetaForum(Browser* browser);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);

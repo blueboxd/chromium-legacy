@@ -2169,6 +2169,79 @@ EVENT_TYPE(SOCKS5_HANDSHAKE_READ)
 // ------------------------------------------------------------------------
 // HTTP Authentication
 // ------------------------------------------------------------------------
+//
+// Structure of common GSSAPI / SSPI values.
+// -----------------------------------------
+// For convenience some structured GSSAPI/SSPI values are serialized
+// consistently across different events. They are explained below.
+//
+// ** GSSAPI Status:
+//
+// A major/minor status code returned by a GSSAPI function. The major status
+// code indicates the GSSAPI level error, while the minor code provides a
+// mechanism specific error code if a specific GSSAPI mechanism was involved in
+// the error.
+//
+// The status value has the following structure:
+//   {
+//     "function": <name of GSSAPI function that returned the error>
+//     "major_status": {
+//       "status" : <status value as a number>,
+//       "message": [
+//          <list of strings hopefully explaining what that number means>
+//       ]
+//     },
+//     "minor_status": {
+//       "status" : <status value as a number>,
+//       "message": [
+//          <list of strings hopefully explaining what that number means>
+//       ]
+//     }
+//   }
+//
+// ** OID:
+//
+// An ASN.1 OID that's used for GSSAPI is serialized thusly:
+//   {
+//     "oid":    <symbolic name of OID if it is known>
+//     "length": <length in bytes of serialized OID>,
+//     "bytes":  <serialized bytes of OID encoded via NetLogBinaryValue()>
+//   }
+//
+// ** GSS Display Name:
+//
+// A serialization of GSSAPI principal name to something that can be consumed by
+// humans. If the encoding of the string is not UTF-8 (since there's no
+// requirement that they use any specific encoding) the field is serialized
+// using NetLogBinaryValue().
+//   {
+//     "name" : <GSSAPI principal name>
+//     "type" : <OID indicating type of name. See OID above.>
+//     "error": <If the display name lookup operation failed, then this field
+//               contains the error in the form of a GSSAPI Status.>
+//   }
+//
+// ** GSSAPI Context Description
+//
+// A serialization of the GSSAPI context. It takes the following form:
+//   {
+//     "source"  : <GSS Display Name for the source of the authentication
+//                  attempt.  In practice this is always the user's identity.>
+//     "target"  : <GSS Display Name for the target of the authentication
+//                  attempt.  This the target server or proxy service
+//                  principal.>
+//     "open"    : <Boolean indicating whether the context is "open", which
+//                  means that the handshake is still in progress. In
+//                  particular, the flags, lifetime, and mechanism fields are
+//                  not considered final until "open" is false.
+//     "lifetime": <A decimal string indicating the lifetime in seconds of the
+//                  authentication context. The identity as established by this
+//                  handshake is only valid for this long since the time at
+//                  which it was established.>
+//     "mechanism":<OID indicating inner authentication mechanism.>
+//     "flags"    :<Flags. See RFC 2744 Section 5.19 for meanings. Flag
+//                  bitmasks can be found in RFC 2744 Appendix A.>
+//   }
 
 // Lifetime event for HttpAuthController.
 //
@@ -2212,11 +2285,56 @@ EVENT_TYPE(AUTH_GENERATE_TOKEN)
 //  }
 EVENT_TYPE(AUTH_HANDLE_CHALLENGE)
 
+// An attempt was made to load an authentication library.
+//
+// If the request succeeded, the parameters are:
+//   {
+//     "library_name": <Name of library>
+//   }
+// Otherwise, the parameters are:
+//   {
+//     "library_name": <Name of library>
+//     "load_error": <An error string>
+//   }
+EVENT_TYPE(AUTH_LIBRARY_LOAD)
+
+// A required method was not found while attempting to load an authentication
+// library.
+//
+// Parameters are:
+//   {
+//     "library_name": <Name of the library where the method lookup failed>
+//     "method": <Name of method that was not found>
+//   }
+EVENT_TYPE(AUTH_LIBRARY_BIND_FAILED)
+
+// Construction of the GSSAPI service principal name.
+//
+// Parameters:
+//   {
+//     "spn": <Service principal name as a string>
+//     "status":  <GSSAPI Status. See GSSAPI Status above. This is field is only
+//                 logged if the operation failed.>
+//   }
+EVENT_TYPE(AUTH_LIBRARY_IMPORT_NAME)
+
+// Initialize security context.
+//
+// This operation involves invoking an external library which may perform disk,
+// IPC, and network IO as a part of its work.
+//
+// The END phase has the following parameters.
+//   {
+//     "context": <GSSAPI Context Description>,
+//     "status":  <GSSAPI Status if the operation failed>
+//   }
+EVENT_TYPE(AUTH_LIBRARY_INIT_SEC_CTX)
+
 // The channel bindings generated for the connection.
 //  {
-//       "token": <Hex encoded RFC 5929 'tls-server-endpoint' channel binding
-//                 token. Could be empty if one could not be generated (e.g.
-//                 because the underlying channel was not TLS>
+//     "token": <Hex encoded RFC 5929 'tls-server-endpoint' channel binding
+//               token. Could be empty if one could not be generated (e.g.
+//               because the underlying channel was not TLS.)>
 //  }
 EVENT_TYPE(AUTH_CHANNEL_BINDINGS)
 

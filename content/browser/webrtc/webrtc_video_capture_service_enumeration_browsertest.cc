@@ -6,7 +6,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/video_capture_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -16,11 +16,8 @@
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/public/mojom/devices_changed_observer.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
@@ -75,18 +72,18 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   ~WebRtcVideoCaptureServiceEnumerationBrowserTest() override {}
 
   void ConnectToService() {
-    connector_->BindInterface(video_capture::mojom::kServiceName, &provider_);
     video_capture::mojom::DevicesChangedObserverPtr observer;
     devices_changed_observer_binding_.Bind(mojo::MakeRequest(&observer));
     switch (GetParam().api_to_use) {
       case ServiceApi::kSingleClient:
-        provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
+        GetVideoCaptureService().ConnectToDeviceFactory(
+            mojo::MakeRequest(&factory_));
         factory_->RegisterVirtualDevicesChangedObserver(
             std::move(observer),
             false /*raise_event_if_virtual_devices_already_present*/);
         break;
       case ServiceApi::kMultiClient:
-        provider_->ConnectToVideoSourceProvider(
+        GetVideoCaptureService().ConnectToVideoSourceProvider(
             mojo::MakeRequest(&video_source_provider_));
         video_source_provider_->RegisterVirtualDevicesChangedObserver(
             std::move(observer),
@@ -166,7 +163,6 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   void DisconnectFromService() {
     factory_ = nullptr;
     video_source_provider_ = nullptr;
-    provider_ = nullptr;
   }
 
   void EnumerateDevicesInRendererAndVerifyDeviceCount(
@@ -218,13 +214,8 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
 
     NavigateToURL(shell(),
                   GURL(embedded_test_server()->GetURL(kVideoCaptureHtmlFile)));
-
-    auto* connector = GetSystemConnector();
-    ASSERT_TRUE(connector);
-    connector_ = connector->Clone();
   }
 
-  std::unique_ptr<service_manager::Connector> connector_;
   std::map<std::string, video_capture::mojom::TextureVirtualDevicePtr>
       texture_devices_by_id_;
   std::map<std::string,
@@ -236,7 +227,6 @@ class WebRtcVideoCaptureServiceEnumerationBrowserTest
   mojo::Binding<video_capture::mojom::DevicesChangedObserver>
       devices_changed_observer_binding_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  video_capture::mojom::DeviceFactoryProviderPtr provider_;
   video_capture::mojom::DeviceFactoryPtr factory_;
   video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
   base::OnceClosure closure_to_be_called_on_devices_changed_;

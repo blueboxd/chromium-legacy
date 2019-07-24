@@ -41,8 +41,10 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
+import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -84,7 +86,10 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private static final String PREF_SYNC_CATEGORY = "sync_category";
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
+    private static final String PREF_SYNC_DISABLED_BY_ADMINISTRATOR =
+            "sync_disabled_by_administrator";
     private static final String PREF_SYNC_REQUESTED = "sync_requested";
+    private static final String PREF_MANAGE_SYNC = "manage_sync";
 
     private static final String PREF_SERVICES_CATEGORY = "services_category";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
@@ -122,7 +127,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
     private PreferenceCategory mSyncCategory;
     private Preference mSyncErrorCard;
+    private Preference mSyncDisabledByAdministrator;
     private ChromeSwitchPreference mSyncRequested;
+    private ChromeBasePreference mManageSync;
 
     private ChromeSwitchPreference mSearchSuggestions;
     private ChromeSwitchPreference mNavigationError;
@@ -181,8 +188,12 @@ public class SyncAndServicesPreferences extends PreferenceFragment
                 getActivity(), R.drawable.ic_sync_error_40dp, R.color.default_red));
         mSyncErrorCard.setOnPreferenceClickListener(
                 SyncPreferenceUtils.toOnClickListener(this, this::onSyncErrorCardClicked));
+        mSyncDisabledByAdministrator = findPreference(PREF_SYNC_DISABLED_BY_ADMINISTRATOR);
+        mSyncDisabledByAdministrator.setIcon(
+                ManagedPreferencesUtils.getManagedByEnterpriseIconId());
         mSyncRequested = (ChromeSwitchPreference) findPreference(PREF_SYNC_REQUESTED);
         mSyncRequested.setOnPreferenceChangeListener(this);
+        mManageSync = (ChromeBasePreference) findPreference(PREF_MANAGE_SYNC);
 
         mSearchSuggestions = (ChromeSwitchPreference) findPreference(PREF_SEARCH_SUGGESTIONS);
         mSearchSuggestions.setOnPreferenceChangeListener(this);
@@ -524,8 +535,19 @@ public class SyncAndServicesPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(mSyncCategory);
             return;
         }
+
         getPreferenceScreen().addPreference(mManageYourGoogleAccount);
         getPreferenceScreen().addPreference(mSyncCategory);
+        if (ProfileSyncService.get().isSyncDisabledByEnterprisePolicy()) {
+            mSyncCategory.addPreference(mSyncDisabledByAdministrator);
+            mSyncCategory.removePreference(mSyncErrorCard);
+            mSyncCategory.removePreference(mSyncRequested);
+            mSyncCategory.removePreference(mManageSync);
+            return;
+        }
+        mSyncCategory.removePreference(mSyncDisabledByAdministrator);
+        mSyncCategory.addPreference(mSyncRequested);
+        mSyncCategory.addPreference(mManageSync);
 
         mCurrentSyncError = getSyncError();
         if (mCurrentSyncError == SyncError.NO_ERROR) {

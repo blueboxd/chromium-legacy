@@ -105,7 +105,8 @@ class SharingService : public KeyedService,
   void UnregisterDevice();
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
-  void OnMessageSent(const std::string& message_guid,
+  void OnMessageSent(base::TimeTicks start_time,
+                     const std::string& message_guid,
                      base::Optional<std::string> message_id);
   void InvokeSendMessageCallback(const std::string& message_guid, bool result);
 
@@ -127,6 +128,9 @@ class SharingService : public KeyedService,
 
   // Map of random GUID to SendMessageCallback.
   std::map<std::string, SendMessageCallback> send_message_callbacks_;
+
+  // Map of FCM message_id to time at start of send message request to FCM.
+  std::map<std::string, base::TimeTicks> send_message_times_;
 
   // Map of FCM message_id to random GUID.
   std::map<std::string, std::string> message_guids_;

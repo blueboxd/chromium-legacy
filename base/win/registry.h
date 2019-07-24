@@ -142,13 +142,6 @@ class BASE_EXPORT RegKey {
  private:
   class Watcher;
 
-  // Calls RegDeleteKeyEx on supported platforms, alternatively falls back to
-  // RegDeleteKey.
-  static LONG RegDeleteKeyExWrapper(HKEY hKey,
-                                    const char16* lpSubKey,
-                                    REGSAM samDesired,
-                                    DWORD Reserved);
-
   // Recursively deletes a key and all of its subkeys.
   static LONG RegDelRecurse(HKEY root_key, const char16* name, REGSAM access);
 

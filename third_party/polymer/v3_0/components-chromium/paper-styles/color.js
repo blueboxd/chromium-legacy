@@ -19,30 +19,50 @@ const template = html`
 
       /* Material Design color palette for Google products */
 
-      --google-red-100: #f4c7c3;
-      --google-red-300: #e67c73;
-      --google-red-500: #db4437;
-      --google-red-700: #c53929;
+      --google-red-100-rgb: 244, 199, 195;  /* #f4c7c3 */
+      --google-red-100: rgb(var(--google-red-100-rgb));
+      --google-red-300-rgb: 230, 124, 115;  /* #e67c73 */
+      --google-red-300: rgb(var(--google-red-300-rgb));
+      --google-red-500-rgb: 219, 68, 55;  /* #db4437 */
+      --google-red-500: rgb(var(--google-red-500-rgb));
+      --google-red-700-rgb: 197, 57, 41;  /* #c53929 */
+      --google-red-700: rgb(var(--google-red-700-rgb));
 
-      --google-blue-100: #c6dafc;
-      --google-blue-300: #7baaf7;
-      --google-blue-500: #4285f4;
-      --google-blue-700: #3367d6;
+      --google-blue-100-rgb: 198, 218, 252;  /* #c6dafc */
+      --google-blue-100: rgb(var(--google-blue-100-rgb));
+      --google-blue-300-rgb: 123, 170, 247;  /* #7baaf7 */
+      --google-blue-300: rgb(var(--google-blue-300-rgb));
+      --google-blue-500-rgb: 66, 133, 244;  /* #4285f4 */
+      --google-blue-500: rgb(var(--google-blue-500-rgb));
+      --google-blue-700-rgb: 51, 103, 214;  /* #3367d6 */
+      --google-blue-700: rgb(var(--google-blue-700-rgb));
 
-      --google-green-100: #b7e1cd;
-      --google-green-300: #57bb8a;
-      --google-green-500: #0f9d58;
-      --google-green-700: #0b8043;
+      --google-green-100-rgb: 183, 225, 205;  /* #b7e1cd */
+      --google-green-100: rgb(var(--google-green-100-rgb));
+      --google-green-300-rgb: 87, 187, 138;  /* #57bb8a */
+      --google-green-300: rgb(var(--google-green-300-rgb));
+      --google-green-500-rgb: 15, 157, 88;  /* #0f9d58 */
+      --google-green-500: rgb(var(--google-green-500-rgb));
+      --google-green-700-rgb: 11, 128, 67;  /* #0b8043 */
+      --google-green-700: rgb(var(--google-green-700-rgb));
 
-      --google-yellow-100: #fce8b2;
-      --google-yellow-300: #f7cb4d;
-      --google-yellow-500: #f4b400;
-      --google-yellow-700: #f09300;
+      --google-yellow-100-rgb: 252, 232, 178;  /* #fce8b2 */
+      --google-yellow-100: rgb(var(--google-yellow-100-rgb));
+      --google-yellow-300-rgb: 247, 203, 77;  /* #f7cb4d */
+      --google-yellow-300: rgb(var(--google-yellow-300-rgb));
+      --google-yellow-500-rgb: 244, 180, 0;  /* #f4b400 */
+      --google-yellow-500: rgb(var(--google-yellow-500-rgb));
+      --google-yellow-700-rgb: 240, 147, 0;  /* #f09300 */
+      --google-yellow-700: rgb(var(--google-yellow-700-rgb));
 
-      --google-grey-100: #f5f5f5;
-      --google-grey-300: #e0e0e0;
-      --google-grey-500: #9e9e9e;
-      --google-grey-700: #616161;
+      --google-grey-100-rgb: 245, 245, 245;  /* #f5f5f5 */
+      --google-grey-100: rgb(var(--google-grey-100-rgb));
+      --google-grey-300-rgb: 224, 224, 224;  /* #e0e0e0 */
+      --google-grey-300: rgb(var(--google-grey-300-rgb));
+      --google-grey-500-rgb: 158, 158, 158;  /* #9e9e9e */
+      --google-grey-500: rgb(var(--google-grey-500-rgb));
+      --google-grey-700-rgb: 97, 97, 97;  /* #616161 */
+      --google-grey-700: rgb(var(--google-grey-700-rgb));
 
       /* Material Design color palette from online spec document */
 

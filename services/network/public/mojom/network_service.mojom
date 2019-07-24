@@ -13,6 +13,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/host_resolver.mojom";
+import "services/network/public/mojom/http_raw_headers.mojom";
 import "services/network/public/mojom/net_log.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
@@ -171,6 +172,27 @@ interface NetworkServiceClient {
                                    string auth_negotiate_android_account_type,
                                    string spn) =>
                                    (int32 result, string auth_token);
+
+  // Called to send raw header information and information about excluded
+  // cookies. Only called when |devtool_request_id| is available to the
+  // URLLoader.
+  OnRawRequest(
+    int32 process_id,
+    int32 routing_id,
+    string devtool_request_id,
+    array<CookieWithStatus> cookies_with_status,
+    array<HttpRawHeaderPair> headers);
+
+  // Called to send information about the cookies blocked from storage from a
+  // received response. Only called when |devtool_request_id| is available to
+  // the URLLoader.
+  OnRawResponse(
+    int32 process_id,
+    int32 routing_id,
+    string devtool_request_id,
+    array<CookieAndLineWithStatus> cookies_with_status,
+    array<HttpRawHeaderPair> headers,
+    string? raw_response_headers);
 };
 
 // Values for configuring HTTP authentication that can only be set once.
@@ -180,8 +202,10 @@ struct HttpAuthStaticParams {
   // behavior of NetworkService when no HttpAuthStaticParams is specified.
   array<string> supported_schemes;
 
-  // File name the GSSAPI library to load. Only supported on
-  // (OS_POSIX && !OS_ANDROID && !OS_CHROMEOS && OS_IOS) platforms.
+  // File name the GSSAPI library to load. Only supported on platforms where an
+  // external GSSAPI library is necessary for Kerberos/SPNEGO support. See the
+  // |use_external_gssapi| variable definition in //net/BUILD.gn for details on
+  // platforms where this setting is applicable.
   string gssapi_library_name;
 };
 

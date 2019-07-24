@@ -87,6 +87,8 @@ CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPrioritizeBootstrapTasks;
 CONTENT_EXPORT extern const base::Feature kProactivelySwapBrowsingInstance;
 CONTENT_EXPORT extern const base::Feature
+    kProcessSharingWithDefaultSiteInstances;
+CONTENT_EXPORT extern const base::Feature
     kProcessSharingWithStrictSiteInstances;
 CONTENT_EXPORT extern const base::Feature kRasterInducingScroll;
 CONTENT_EXPORT extern const base::Feature kReducedReferrerGranularity;

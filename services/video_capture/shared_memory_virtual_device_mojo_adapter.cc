@@ -29,11 +29,9 @@ void OnNewBufferAcknowleged(
 namespace video_capture {
 
 SharedMemoryVirtualDeviceMojoAdapter::SharedMemoryVirtualDeviceMojoAdapter(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     mojom::ProducerPtr producer,
     bool send_buffer_handles_to_producer_as_raw_file_descriptors)
-    : service_ref_(std::move(service_ref)),
-      producer_(std::move(producer)),
+    : producer_(std::move(producer)),
       send_buffer_handles_to_producer_as_raw_file_descriptors_(
           send_buffer_handles_to_producer_as_raw_file_descriptors),
       buffer_pool_(new media::VideoCaptureBufferPoolImpl(

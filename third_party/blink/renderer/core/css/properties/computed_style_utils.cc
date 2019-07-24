@@ -67,7 +67,7 @@ CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
 
 CSSValue* ComputedStyleUtils::ValueForOffset(const ComputedStyle& style,
                                              const LayoutObject* layout_object,
-                                             Node* styled_node,
+                                             const Node* styled_node,
                                              bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled()) {
@@ -219,7 +219,7 @@ const CSSValue* ComputedStyleUtils::ValueForFillRepeat(EFillRepeat x_repeat,
 const CSSValueList* ComputedStyleUtils::ValuesForBackgroundShorthand(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* result = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.BackgroundLayers();
@@ -508,7 +508,7 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
 }
 
 CSSValue* ComputedStyleUtils::MinWidthOrMinHeightAuto(
-    Node* styled_node,
+    const Node* styled_node,
     const ComputedStyle& style) {
   LayoutObject* layout_object =
       styled_node ? styled_node->GetLayoutObject() : nullptr;
@@ -2204,7 +2204,7 @@ CSSValueList* ComputedStyleUtils::ValuesForShorthandProperty(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (unsigned i = 0; i < shorthand.length(); ++i) {
@@ -2221,7 +2221,7 @@ CSSValueList* ComputedStyleUtils::ValuesForGridShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
   for (unsigned i = 0; i < shorthand.length(); ++i) {
@@ -2238,7 +2238,7 @@ CSSValueList* ComputedStyleUtils::ValuesForSidesShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   // Assume the properties are in the usual order top, right, bottom, left.
@@ -2278,7 +2278,7 @@ CSSValuePair* ComputedStyleUtils::ValuesForInlineBlockShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   const CSSValue* start_value =
       shorthand.properties()[0]->CSSValueFromComputedStyle(
@@ -2299,7 +2299,7 @@ CSSValuePair* ComputedStyleUtils::ValuesForPlaceShorthand(
     const StylePropertyShorthand& shorthand,
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   const CSSValue* align_value =
       shorthand.properties()[0]->CSSValueFromComputedStyle(
@@ -2325,7 +2325,7 @@ static CSSValue* ExpandNoneLigaturesValue() {
 CSSValue* ComputedStyleUtils::ValuesForFontVariantProperty(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) {
   enum VariantShorthandCases {
     kAllNormal,

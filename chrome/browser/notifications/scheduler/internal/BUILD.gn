@@ -69,6 +69,7 @@ source_set("lib") {
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//skia",
+    "//ui/gfx/codec",
   ]
 }
 

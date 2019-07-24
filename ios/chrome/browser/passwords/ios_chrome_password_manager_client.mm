@@ -53,7 +53,7 @@ const syncer::SyncService* GetSyncService(
   return ProfileSyncServiceFactory::GetForBrowserStateIfExists(browser_state);
 }
 
-const identity::IdentityManager* GetIdentityManager(
+const signin::IdentityManager* GetIdentityManager(
     ios::ChromeBrowserState* browser_state) {
   return IdentityManagerFactory::GetForBrowserState(browser_state);
 }

@@ -91,7 +91,7 @@ class UnifiedConsentServiceTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;
   std::unique_ptr<UnifiedConsentService> consent_service_;
   std::unique_ptr<ScopedUnifiedConsent> scoped_unified_consent_;

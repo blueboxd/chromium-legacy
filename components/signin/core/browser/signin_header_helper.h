@@ -42,7 +42,7 @@ extern const char kDiceResponseHeader[];
 // perform.
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.signin
-enum GAIAServiceType {
+enum GAIAServiceType : int {
   GAIA_SERVICE_TYPE_NONE = 0,    // No Gaia response header.
   GAIA_SERVICE_TYPE_SIGNOUT,     // Logout all existing sessions.
   GAIA_SERVICE_TYPE_INCOGNITO,   // Open an incognito tab.

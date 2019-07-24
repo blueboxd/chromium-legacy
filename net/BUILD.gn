@@ -80,7 +80,7 @@ buildflag_header("buildflags") {
     "ENABLE_WEBSOCKETS=$enable_websockets",
     "INCLUDE_TRANSPORT_SECURITY_STATE_PRELOAD_LIST=$include_transport_security_state_preload_list",
     "USE_KERBEROS=$use_kerberos",
-    "DLOPEN_KERBEROS=$use_external_gssapi",
+    "USE_EXTERNAL_GSSAPI=$use_external_gssapi",
     "TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED=$trial_comparison_cert_verifier_supported",
     "BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED=$builtin_cert_verifier_feature_supported",
   ]

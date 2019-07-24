@@ -144,7 +144,7 @@ std::string ChromePaymentRequestDelegate::GetAuthenticatedEmail() const {
   // authenticated.
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (identity_manager && identity_manager->HasPrimaryAccount())
     return identity_manager->GetPrimaryAccountInfo().email;

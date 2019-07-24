@@ -203,6 +203,8 @@ public class TabCountProvider {
     }
 
     private void updateTabCount() {
+        if (!mTabModelSelector.isTabStateInitialized()) return;
+
         final int tabCount =
                 mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter().getCount();
         final boolean isIncognito = mTabModelSelector.isIncognitoSelected();

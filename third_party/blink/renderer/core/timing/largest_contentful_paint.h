@@ -19,7 +19,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
  public:
   LargestContentfulPaint(double render_time,
                          uint64_t size,
-                         double response_end,
+                         double load_time,
                          const AtomicString& id,
                          const String& url,
                          Element*);
@@ -30,7 +30,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
 
   uint64_t size() const { return size_; }
   DOMHighResTimeStamp renderTime() const { return render_time_; }
-  DOMHighResTimeStamp responseEnd() const { return response_end_; }
+  DOMHighResTimeStamp loadTime() const { return load_time_; }
   const AtomicString& id() const { return id_; }
   const String& url() const { return url_; }
   Element* element() const;
@@ -42,7 +42,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
 
   uint64_t size_;
   DOMHighResTimeStamp render_time_;
-  DOMHighResTimeStamp response_end_;
+  DOMHighResTimeStamp load_time_;
   AtomicString id_;
   String url_;
   WeakMember<Element> element_;

@@ -4,8 +4,6 @@
 
 package org.chromium.components.minidump_uploader;
 
-import android.support.test.InstrumentationRegistry;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -51,8 +49,6 @@ public class CrashTestRule implements TestRule {
     }
 
     private void setUp() throws Exception {
-        ContextUtils.initApplicationContextForTests(
-                InstrumentationRegistry.getTargetContext().getApplicationContext());
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         if (mCacheDir == null) {
             mCacheDir = getExistingCacheDir();

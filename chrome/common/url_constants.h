@@ -56,6 +56,9 @@ extern const char kChooserUsbOverviewURL[];
 // Link to the forum for Chrome Beta.
 extern const char kChromeBetaForumURL[];
 
+// Link to the release notes page managed by marketing.
+extern const char kChromeReleaseNotesURL[];
+
 // General help links for Chrome, opened using various actions.
 extern const char kChromeHelpViaKeyboardURL[];
 extern const char kChromeHelpViaMenuURL[];

@@ -126,7 +126,7 @@ void ChildAccountService::AddChildStatusReceivedCallback(
 }
 
 ChildAccountService::AuthState ChildAccountService::GetGoogleAuthState() {
-  identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+  signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
       identity_manager_->GetAccountsInCookieJar();
   if (!accounts_in_cookie_jar_info.accounts_are_fresh)
     return AuthState::PENDING;
@@ -305,7 +305,7 @@ void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
 }
 
 void ChildAccountService::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   google_auth_state_observers_.Notify();
 }

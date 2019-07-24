@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "ui/display/manager/apply_content_protection_task.h"
 #include "ui/display/manager/display_layout_manager.h"
-#include "ui/display/manager/display_util.h"
 #include "ui/display/manager/query_content_protection_task.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
@@ -79,10 +78,7 @@ void ContentProtectionManager::QueryContentProtection(
     QueryContentProtectionCallback callback) {
   DCHECK(disabled() || GetContentProtections(client_id));
 
-  // Exclude virtual displays so that protected content will not be recaptured
-  // through the cast stream.
-  const DisplaySnapshot* display = GetDisplay(display_id);
-  if (disabled() || !display || !IsPhysicalDisplayType(display->type())) {
+  if (disabled() || !GetDisplay(display_id)) {
     std::move(callback).Run(/*success=*/false, DISPLAY_CONNECTION_TYPE_NONE,
                             CONTENT_PROTECTION_METHOD_NONE);
     return;
@@ -277,11 +273,6 @@ void ContentProtectionManager::QueueDisplaySecurityQueries() {
   for (DisplaySnapshot* display : layout_manager_->GetDisplayStates()) {
     int64_t display_id = display->display_id();
 
-    if (!IsPhysicalDisplayType(display->type())) {
-      NotifyDisplaySecurityObservers(display_id, /*secure=*/false);
-      continue;
-    }
-
     QueueTask(std::make_unique<QueryContentProtectionTask>(
         layout_manager_, native_display_delegate_, display_id,
         base::BindOnce(&ContentProtectionManager::OnDisplaySecurityQueried,
@@ -300,18 +291,12 @@ void ContentProtectionManager::OnDisplaySecurityQueried(
                         (protection_mask != CONTENT_PROTECTION_METHOD_NONE ||
                          connection_mask == DISPLAY_CONNECTION_TYPE_INTERNAL);
 
-    NotifyDisplaySecurityObservers(display_id, secure);
+    for (Observer& observer : observers_)
+      observer.OnDisplaySecurityChanged(display_id, secure);
   }
 
   if (status != Task::Status::KILLED)
     DequeueTask();
-}
-
-void ContentProtectionManager::NotifyDisplaySecurityObservers(
-    int64_t display_id,
-    bool secure) {
-  for (Observer& observer : observers_)
-    observer.OnDisplaySecurityChanged(display_id, secure);
 }
 
 }  // namespace display

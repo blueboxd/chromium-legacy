@@ -133,9 +133,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // wallpapers at login screen).
   bool ShouldShowInitialAnimation();
 
-  // Notifies the controller that the wallpaper animation has finished.
-  void OnWallpaperAnimationFinished();
-
   // Returns true if the active user is allowed to open the wallpaper picker.
   bool CanOpenWallpaperPicker();
 

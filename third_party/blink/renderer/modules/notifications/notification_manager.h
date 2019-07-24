@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -53,7 +55,8 @@ class NotificationManager final
       const String& token,
       mojom::blink::NotificationDataPtr notification_data,
       mojom::blink::NotificationResourcesPtr notification_resources,
-      mojom::blink::NonPersistentNotificationListenerPtr event_listener);
+      mojo::PendingRemote<mojom::blink::NonPersistentNotificationListener>
+          event_listener);
 
   // Closes the notification that was most recently displayed with this token.
   void CloseNonPersistentNotification(const String& token);
@@ -89,9 +92,10 @@ class NotificationManager final
       const Vector<String>& notification_ids,
       Vector<mojom::blink::NotificationDataPtr> notification_datas);
 
-  // Returns an initialized NotificationServicePtr. A connection will be
+  // Returns an initialized NotificationService remote. A connection will be
   // established the first time this method is called.
-  const mojom::blink::NotificationServicePtr& GetNotificationService();
+  const mojo::Remote<mojom::blink::NotificationService>&
+  GetNotificationService();
 
   void OnPermissionRequestComplete(
       ScriptPromiseResolver* resolver,
@@ -101,7 +105,7 @@ class NotificationManager final
   void OnNotificationServiceConnectionError();
   void OnPermissionServiceConnectionError();
 
-  mojom::blink::NotificationServicePtr notification_service_;
+  mojo::Remote<mojom::blink::NotificationService> notification_service_;
   mojom::blink::PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationManager);

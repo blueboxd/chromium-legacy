@@ -24,7 +24,7 @@ class AvatarToolbarButton : public ToolbarButton,
                             public AvatarButtonErrorControllerDelegate,
                             public BrowserListObserver,
                             public ProfileAttributesStorage::Observer,
-                            public identity::IdentityManager::Observer,
+                            public signin::IdentityManager::Observer,
                             public ui::MaterialDesignControllerObserver {
  public:
   explicit AvatarToolbarButton(Browser* browser);
@@ -64,7 +64,7 @@ class AvatarToolbarButton : public ToolbarButton,
   // IdentityManager::Observer:
   // Needed if the first sync promo account should be displayed.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
@@ -95,7 +95,7 @@ class AvatarToolbarButton : public ToolbarButton,
   ScopedObserver<BrowserList, BrowserListObserver> browser_list_observer_;
   ScopedObserver<ProfileAttributesStorage, AvatarToolbarButton>
       profile_observer_;
-  ScopedObserver<identity::IdentityManager, AvatarToolbarButton>
+  ScopedObserver<signin::IdentityManager, AvatarToolbarButton>
       identity_manager_observer_;
   ScopedObserver<ui::MaterialDesignController, AvatarToolbarButton>
       md_observer_{this};

@@ -24,14 +24,15 @@ ServiceWorkerNetworkProviderForSharedWorker::Create(
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory,
     bool is_secure_context,
     std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
-  DCHECK(info);
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForSharedWorker(
           is_secure_context, std::move(response_override)));
-  provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-      std::move(info->client_request), std::move(info->host_ptr_info),
-      std::move(controller_info), std::move(fallback_loader_factory));
+  if (info) {
+    provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
+        blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+        std::move(info->client_request), std::move(info->host_ptr_info),
+        std::move(controller_info), std::move(fallback_loader_factory));
+  }
   return provider;
 }
 

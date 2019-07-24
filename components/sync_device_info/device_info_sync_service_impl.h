@@ -13,15 +13,18 @@
 
 namespace syncer {
 
+class DeviceInfoPrefs;
 class DeviceInfoSyncBridge;
 class MutableLocalDeviceInfoProvider;
 
 class DeviceInfoSyncServiceImpl : public DeviceInfoSyncService {
  public:
   // |local_device_info_provider| must not be null.
+  // |device_info_prefs| must not be null.
   DeviceInfoSyncServiceImpl(OnceModelTypeStoreFactory model_type_store_factory,
                             std::unique_ptr<MutableLocalDeviceInfoProvider>
-                                local_device_info_provider);
+                                local_device_info_provider,
+                            std::unique_ptr<DeviceInfoPrefs> device_info_prefs);
   ~DeviceInfoSyncServiceImpl() override;
 
   // DeviceInfoSyncService implementation.

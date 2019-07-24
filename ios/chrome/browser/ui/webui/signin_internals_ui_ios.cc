@@ -74,9 +74,9 @@ bool SignInInternalsUIIOS::OverrideHandleWebUIIOSMessage(
       std::vector<const base::Value*> args{&status};
       web_ui()->CallJavascriptFunction(
           "chrome.signin.getSigninInfo.handleReply", args);
-      identity::IdentityManager* identity_manager =
+      signin::IdentityManager* identity_manager =
           IdentityManagerFactory::GetForBrowserState(browser_state);
-      identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+      signin::AccountsInCookieJarInfo accounts_in_cookie_jar =
           identity_manager->GetAccountsInCookieJar();
       if (accounts_in_cookie_jar.accounts_are_fresh) {
         about_signin_internals->OnAccountsInCookieUpdated(

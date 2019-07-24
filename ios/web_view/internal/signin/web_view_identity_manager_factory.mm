@@ -30,7 +30,7 @@ namespace ios_web_view {
 
 void WebViewIdentityManagerFactory::RegisterBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  identity::IdentityManager::RegisterProfilePrefs(registry);
+  signin::IdentityManager::RegisterProfilePrefs(registry);
 }
 
 WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
@@ -43,9 +43,9 @@ WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
 WebViewIdentityManagerFactory::~WebViewIdentityManagerFactory() {}
 
 // static
-identity::IdentityManager* WebViewIdentityManagerFactory::GetForBrowserState(
+signin::IdentityManager* WebViewIdentityManagerFactory::GetForBrowserState(
     WebViewBrowserState* browser_state) {
-  return static_cast<identity::IdentityManager*>(
+  return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
@@ -71,7 +71,7 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
   IOSWebViewSigninClient* client =
       WebViewSigninClientFactory::GetForBrowserState(browser_state);
 
-  identity::IdentityManagerBuildParams params;
+  signin::IdentityManagerBuildParams params;
   params.account_consistency = signin::AccountConsistencyMethod::kDisabled;
   params.device_accounts_provider =
       std::make_unique<WebViewDeviceAccountsProviderImpl>(client);
@@ -81,7 +81,7 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
   params.profile_path = base::FilePath();
   params.signin_client = client;
 
-  return identity::BuildIdentityManager(&params);
+  return signin::BuildIdentityManager(&params);
 }
 
 }  // namespace ios_web_view

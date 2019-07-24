@@ -71,7 +71,7 @@ class DiceTurnSyncOnHelperShutdownNotifierFactory
   DISALLOW_COPY_AND_ASSIGN(DiceTurnSyncOnHelperShutdownNotifierFactory);
 };
 
-AccountInfo GetAccountInfo(identity::IdentityManager* identity_manager,
+AccountInfo GetAccountInfo(signin::IdentityManager* identity_manager,
                            const std::string& account_id) {
   auto maybe_account_info =
       identity_manager->FindAccountInfoForAccountWithRefreshTokenByAccountId(
@@ -80,7 +80,7 @@ AccountInfo GetAccountInfo(identity::IdentityManager* identity_manager,
                                         : AccountInfo();
 }
 
-class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
+class TokensLoadedCallbackRunner : public signin::IdentityManager::Observer {
  public:
   // Calls |callback| when tokens are loaded.
   static void RunWhenLoaded(Profile* profile,
@@ -99,7 +99,7 @@ class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
   }
 
  private:
-  TokensLoadedCallbackRunner(identity::IdentityManager* identity_manager,
+  TokensLoadedCallbackRunner(signin::IdentityManager* identity_manager,
                              KeyedServiceShutdownNotifier* shutdown_notifier,
                              base::OnceClosure callback)
       : identity_manager_(identity_manager),
@@ -112,7 +112,7 @@ class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
     scoped_identity_manager_observer_.Add(identity_manager_);
   }
 
-  // identity::IdentityManager::Observer implementation:
+  // signin::IdentityManager::Observer implementation:
   void OnRefreshTokensLoaded() override {
     std::move(callback_).Run();
     delete this;
@@ -120,8 +120,8 @@ class TokensLoadedCallbackRunner : public identity::IdentityManager::Observer {
 
   void OnShutdown() { delete this; }
 
-  identity::IdentityManager* identity_manager_;
-  ScopedObserver<identity::IdentityManager, TokensLoadedCallbackRunner>
+  signin::IdentityManager* identity_manager_;
+  ScopedObserver<signin::IdentityManager, TokensLoadedCallbackRunner>
       scoped_identity_manager_observer_;
   base::OnceClosure callback_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
@@ -499,7 +499,7 @@ void DiceTurnSyncOnHelper::FinishSyncSetupAndDelete(
           identity_manager_->GetPrimaryAccountMutator();
       DCHECK(primary_account_mutator);
       primary_account_mutator->ClearPrimaryAccount(
-          identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
           signin_metrics::ABORT_SIGNIN,
           signin_metrics::SignoutDelete::IGNORE_METRIC);
       AbortAndDelete();

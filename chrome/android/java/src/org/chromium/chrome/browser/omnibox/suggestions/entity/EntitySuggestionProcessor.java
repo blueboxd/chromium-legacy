@@ -114,8 +114,8 @@ public class EntitySuggestionProcessor implements SuggestionProcessor {
         models.add(model);
         mPendingImageRequests.put(url, models);
 
-        mImageFetcher.fetchImage(url, "EntitySuggestionProcessor", mEntityImageSizePx,
-                mEntityImageSizePx, (Bitmap bitmap) -> {
+        mImageFetcher.fetchImage(url, ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME,
+                mEntityImageSizePx, mEntityImageSizePx, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
 
                     final List<PropertyModel> pendingModels = mPendingImageRequests.remove(url);

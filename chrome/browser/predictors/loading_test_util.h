@@ -36,7 +36,7 @@ class MockResourcePrefetchPredictor : public ResourcePrefetchPredictor {
 };
 
 void InitializeRedirectStat(RedirectStat* redirect,
-                            const std::string& url,
+                            const GURL& url,
                             int number_of_hits,
                             int number_of_misses,
                             int consecutive_misses);

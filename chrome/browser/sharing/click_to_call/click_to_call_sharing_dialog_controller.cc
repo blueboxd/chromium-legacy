@@ -5,6 +5,7 @@
 #include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
 
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_constants.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_dialog.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "url/url_util.h"
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
 using App = ClickToCallSharingDialogController::App;
@@ -137,9 +139,17 @@ void ClickToCallSharingDialogController::OnDeviceChosen(
   send_failed_ = false;
   UpdateIcon();
 
+  std::string phone_number_string(phone_url_.GetContent());
+  url::RawCanonOutputT<base::char16> unescaped_phone_number;
+  url::DecodeURLEscapeSequences(
+      phone_number_string.data(), phone_number_string.size(),
+      url::DecodeURLMode::kUTF8OrIsomorphic, &unescaped_phone_number);
+
   SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
-      phone_url_.GetContent());
+      base::UTF16ToUTF8(base::string16(unescaped_phone_number.data(),
+                                       unescaped_phone_number.length())));
+
   sharing_service_->SendMessageToDevice(
       device.guid(), kSharingClickToCallMessageTTL, std::move(sharing_message),
       base::Bind(&ClickToCallSharingDialogController::OnMessageSentToDevice,

@@ -140,7 +140,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         std::string new_authenticator_id) = 0;
     virtual void FidoAuthenticatorPairingModeChanged(
         base::StringPiece authenticator_id,
-        bool is_in_pairing_mode) = 0;
+        bool is_in_pairing_mode,
+        base::string16 display_name) = 0;
 
     // SupportsPIN returns true if this observer supports collecting a PIN from
     // the user. If this function returns false, |CollectPIN| and

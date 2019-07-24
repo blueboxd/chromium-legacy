@@ -263,11 +263,11 @@ class ProfileSyncServiceTest : public ::testing::Test {
     return profile_sync_service_bundle_.identity_provider();
   }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return profile_sync_service_bundle_.identity_manager();
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return profile_sync_service_bundle_.identity_test_env();
   }
 
@@ -535,7 +535,7 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
   account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   // Wait for PSS to be notified that the primary account has gone away.
@@ -799,7 +799,7 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   DCHECK(account_mutator);
 
   account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());

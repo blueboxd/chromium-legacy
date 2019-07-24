@@ -415,7 +415,7 @@ class UserCloudPolicyManagerChromeOSTest
     // token using the IdentityManager and forwards it to the
     // UserCloudPolicyManagerChromeOS. This service is automatically created
     // for regular Profiles but not for testing Profiles.
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile_);
     ASSERT_TRUE(identity_manager);
     token_forwarder_ = std::make_unique<UserCloudPolicyTokenForwarder>(
@@ -433,7 +433,7 @@ class UserCloudPolicyManagerChromeOSTest
     return &test_system_url_loader_factory_;
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
 

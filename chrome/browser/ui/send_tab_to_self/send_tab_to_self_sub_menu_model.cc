@@ -41,7 +41,7 @@ static_assert(
 
 // Returns true if the command id identifies a non-link contextual menu item.
 bool IsShareTabCommandId(int command_id) {
-  return (command_id >= kShareTabCommandId && command_id < kShareLinkCommandId);
+  return command_id >= kShareTabCommandId && command_id < kShareLinkCommandId;
 }
 
 // Returns true if the command id identifies a link contextual menu item.
@@ -53,7 +53,8 @@ bool IsShareLinkCommandId(int command_id) {
 int CommandIdToVectorIndex(int command_id) {
   if (IsShareTabCommandId(command_id)) {
     return command_id - kShareTabCommandId;
-  } else if (IsShareLinkCommandId(command_id)) {
+  }
+  if (IsShareLinkCommandId(command_id)) {
     return command_id - kShareLinkCommandId;
   }
   return -1;
@@ -84,6 +85,11 @@ struct SendTabToSelfSubMenuModel::ValidDeviceItem {
   std::string device_name;
   std::string cache_guid;
 };
+
+SendTabToSelfSubMenuModel::SendTabToSelfSubMenuModel(
+    content::WebContents* tab,
+    SendTabToSelfMenuType menu_type)
+    : SendTabToSelfSubMenuModel(tab, menu_type, GURL()) {}
 
 SendTabToSelfSubMenuModel::SendTabToSelfSubMenuModel(
     content::WebContents* tab,
@@ -155,14 +161,8 @@ void SendTabToSelfSubMenuModel::BuildDeviceItem(const std::string& device_name,
                                                 const std::string& cache_guid,
                                                 int index) {
   ValidDeviceItem item(device_name, cache_guid);
-  int command_id;
-  if (menu_type_ == kLink) {
-    // Generates command ids for sharing a link.
-    command_id = index + kShareLinkCommandId;
-  } else {
-    // Generates command ids for sharing a tab.
-    command_id = index + kShareTabCommandId;
-  }
+  int command_id =
+      (menu_type_ == kTab) ? kShareTabCommandId : kShareLinkCommandId + index;
   InsertItemAt(index, command_id, base::UTF8ToUTF16(device_name));
   valid_device_items_.push_back(item);
 }

@@ -40,6 +40,8 @@ class CORE_EXPORT ImageElementTiming final
 
   static ImageElementTiming& From(LocalDOMWindow&);
 
+  void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
+
   // Called when the LayoutObject has been painted. This method might queue a
   // swap promise to compute and report paint timestamps.
   void NotifyImagePainted(
@@ -64,7 +66,8 @@ class CORE_EXPORT ImageElementTiming final
       Node*,
       const LayoutObject&,
       const ImageResourceContent& cached_image,
-      const PropertyTreeState& current_paint_chunk_properties);
+      const PropertyTreeState& current_paint_chunk_properties,
+      base::TimeTicks load_time);
 
   // Callback for the swap promise. Reports paint timestamps.
   void ReportImagePaintSwapTime(WebWidgetClient::SwapResult,
@@ -107,11 +110,20 @@ class CORE_EXPORT ImageElementTiming final
   // Vector containing the element timing infos that will be reported during the
   // next swap promise callback.
   HeapVector<Member<ElementTimingInfo>> element_timings_;
+  struct ImageInfo {
+    // HashMap values require default constructor so we set default value for
+    // |load_time|.
+    ImageInfo(base::TimeTicks load_time = base::TimeTicks())
+        : load_time_(load_time), is_painted_(false) {}
+
+    base::TimeTicks load_time_;
+    bool is_painted_;
+  };
+  typedef std::pair<const LayoutObject*, const ImageResourceContent*> RecordId;
   // Hashmap of pairs of elements, LayoutObjects (for the elements) and
   // ImageResourceContent (for the src) which correspond to either images or
   // background images whose paint has been observed.
-  WTF::HashSet<std::pair<const LayoutObject*, const ImageResourceContent*>>
-      images_notified_;
+  WTF::HashMap<RecordId, ImageInfo> images_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageElementTiming);
 };

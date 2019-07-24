@@ -11,6 +11,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
+#include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -32,12 +33,12 @@ TEST(HttpAuthNegotiateAndroidTest, GenerateAuthToken) {
   prefs.set_auth_android_negotiate_account_type(
       "org.chromium.test.DummySpnegoAuthenticator");
   HttpAuthNegotiateAndroid auth(&prefs);
-  EXPECT_TRUE(auth.Init());
+  EXPECT_TRUE(auth.Init(NetLogWithSource()));
 
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, callback.GetResult(
-                    auth.GenerateAuthToken(nullptr, "Dummy", std::string(),
-                                           &auth_token, callback.callback())));
+  EXPECT_EQ(OK, callback.GetResult(auth.GenerateAuthToken(
+                    nullptr, "Dummy", std::string(), &auth_token,
+                    NetLogWithSource(), callback.callback())));
 
   EXPECT_EQ("Negotiate DummyToken", auth_token);
 

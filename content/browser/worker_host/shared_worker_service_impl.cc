@@ -19,6 +19,7 @@
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -38,7 +39,6 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "url/origin.h"
@@ -213,6 +213,11 @@ void SharedWorkerServiceImpl::CreateWorker(
       appcache_handle->core();
   weak_host->SetAppCacheHandle(std::move(appcache_handle));
 
+  auto service_worker_handle = std::make_unique<ServiceWorkerNavigationHandle>(
+      storage_partition_->GetServiceWorkerContext());
+  auto* service_worker_handle_raw = service_worker_handle.get();
+  weak_host->SetServiceWorkerHandle(std::move(service_worker_handle));
+
   // Fetch classic shared worker script with "same-origin" credentials mode.
   // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
   //
@@ -225,8 +230,9 @@ void SharedWorkerServiceImpl::CreateWorker(
       weak_host->instance()->constructor_origin(), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       ResourceType::kSharedWorker, service_worker_context_,
-      appcache_handle_core, std::move(blob_url_loader_factory),
-      url_loader_factory_override_, storage_partition_,
+      service_worker_handle_raw, appcache_handle_core,
+      std::move(blob_url_loader_factory), url_loader_factory_override_,
+      storage_partition_,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
                      weak_factory_.GetWeakPtr(), std::move(instance), weak_host,
                      std::move(client), client_process_id, frame_id,
@@ -240,8 +246,6 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     int process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -260,7 +264,6 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
 
   StartWorker(std::move(instance), std::move(host), std::move(client),
               process_id, frame_id, message_port,
-              std::move(service_worker_provider_info),
               std::move(subresource_loader_factories),
               std::move(main_script_load_params), std::move(controller),
               std::move(controller_service_worker_object_host));
@@ -273,8 +276,6 @@ void SharedWorkerServiceImpl::StartWorker(
     int client_process_id,
     int frame_id,
     const blink::MessagePortChannel& message_port,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -303,8 +304,7 @@ void SharedWorkerServiceImpl::StartWorker(
   blink::mojom::SharedWorkerFactoryPtr factory;
   BindInterface(worker_process_host, &factory);
 
-  host->Start(std::move(factory), std::move(service_worker_provider_info),
-              std::move(main_script_load_params),
+  host->Start(std::move(factory), std::move(main_script_load_params),
               std::move(subresource_loader_factories), std::move(controller),
               std::move(controller_service_worker_object_host));
   host->AddClient(std::move(client), client_process_id, frame_id, message_port);

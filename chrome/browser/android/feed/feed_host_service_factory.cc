@@ -78,7 +78,7 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(context);
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   std::string api_key;
   if (google_apis::IsGoogleChromeAPIKeyUsed()) {

@@ -70,7 +70,6 @@ public final class SearchEngineChoiceNotificationTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ContextUtils.initApplicationContextForTests(mContext);
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
 
         ChromeFeatureList.setTestFeatures(new HashMap<String, Boolean>());
         ShadowRecordHistogram.reset();

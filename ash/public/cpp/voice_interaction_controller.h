@@ -42,21 +42,12 @@ class ASH_PUBLIC_EXPORT VoiceInteractionController
   // Called when the hotword listening is enabled/disabled.
   virtual void NotifyHotwordEnabled(bool enabled);
 
-  // Called when the hotword is set to always on/only with power source.
-  virtual void NotifyHotwordAlwaysOn(bool always_on);
-
   // Notify if voice interaction feature is allowed or not. e.g. not allowed
   // if disabled by policy.
   virtual void NotifyFeatureAllowed(mojom::AssistantAllowedState state);
 
-  // Called when the notification is enabled/disabled.
-  virtual void NotifyNotificationEnabled(bool enabled);
-
   // Called when the locale is changed.
   virtual void NotifyLocaleChanged(const std::string& locale);
-
-  // Called when the launch with mic open state is changed.
-  virtual void NotifyLaunchWithMicOpen(bool launch_with_mic_open);
 
   // Called when Google Play Store is enabled/disabled.
   virtual void NotifyArcPlayStoreEnabledChanged(bool enabled);
@@ -72,19 +63,9 @@ class ASH_PUBLIC_EXPORT VoiceInteractionController
   void RemoveLocalObserver(DefaultVoiceInteractionObserver* observer);
   void InitObserver(mojom::VoiceInteractionObserver* observer);
 
-  bool notification_enabled() const { return notification_enabled_; }
-
-  bool launch_with_mic_open() const { return launch_with_mic_open_; }
-
   void FlushForTesting();
 
  private:
-  // Whether notification is enabled.
-  bool notification_enabled_ = false;
-
-  // Whether the Assistant should launch with mic open;
-  bool launch_with_mic_open_ = false;
-
   mojo::BindingSet<mojom::VoiceInteractionController> bindings_;
 
   mojo::InterfacePtrSet<mojom::VoiceInteractionObserver> observers_;

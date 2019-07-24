@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/animation/compositor_color_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
 #include "third_party/blink/renderer/platform/animation/compositor_float_keyframe.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
@@ -1582,6 +1583,54 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_EQ(20, keyframes[1]->Value());
   EXPECT_EQ(TimingFunction::Type::LINEAR,
             keyframes[1]->GetTimingFunctionForTesting()->GetType());
+}
+
+TEST_P(AnimationCompositorAnimationsTest,
+       CreateSimpleCustomColorPropertyAnimation) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  RegisterProperty(GetDocument(), "--foo", "<color>", "rgb(0, 0, 0)", false);
+  SetCustomProperty("--foo", "rgb(0, 0, 0)");
+
+  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
+      CreateReplaceOpKeyframe("--foo", "rgb(0, 0, 0)", 0),
+      CreateReplaceOpKeyframe("--foo", "rgb(0, 255, 0)", 1.0));
+
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      ConvertToCompositorAnimation(*effect);
+  EXPECT_EQ(compositor_target_property::CSS_CUSTOM_PROPERTY,
+            keyframe_model->TargetProperty());
+
+  std::unique_ptr<CompositorColorAnimationCurve> keyframed_color_curve =
+      keyframe_model->ColorCurveForTesting();
+
+  CompositorColorAnimationCurve::Keyframes keyframes =
+      keyframed_color_curve->KeyframesForTesting();
+  ASSERT_EQ(2UL, keyframes.size());
+
+  EXPECT_EQ(0, keyframes[0]->Time());
+  EXPECT_EQ(SkColorSetRGB(0, 0, 0), keyframes[0]->Value());
+  EXPECT_EQ(TimingFunction::Type::LINEAR,
+            keyframes[0]->GetTimingFunctionForTesting()->GetType());
+
+  EXPECT_EQ(1.0, keyframes[1]->Time());
+  EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), keyframes[1]->Value());
+  EXPECT_EQ(TimingFunction::Type::LINEAR,
+            keyframes[1]->GetTimingFunctionForTesting()->GetType());
+}
+
+TEST_P(AnimationCompositorAnimationsTest, MixedCustomPropertyAnimation) {
+  ScopedOffMainThreadCSSPaintForTest off_main_thread_css_paint(true);
+
+  RegisterProperty(GetDocument(), "--foo", "<number> | <color>", "0", false);
+  SetCustomProperty("--foo", "0");
+
+  StringKeyframeEffectModel* effect = CreateKeyframeEffectModel(
+      CreateReplaceOpKeyframe("--foo", "20", 0),
+      CreateReplaceOpKeyframe("--foo", "rgb(0, 255, 0)", 1.0));
+
+  EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *effect) &
+              CompositorAnimations::kMixedKeyframeValueTypes);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,

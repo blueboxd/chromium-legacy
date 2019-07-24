@@ -164,7 +164,6 @@ ResolutionPair GetMaxResolutionsForGUIDs(
     const std::vector<GUID>& valid_guids,
     const std::vector<gfx::Size>& resolutions_to_test,
     DXGI_FORMAT format) {
-  TRACE_EVENT0("gpu,startup", "GetMaxResolutionsForGUIDs");
   ResolutionPair result(default_max, gfx::Size());
 
   // Enumerate supported video profiles and look for the profile.
@@ -208,12 +207,15 @@ ResolutionPair GetMaxResolutionsForGUIDs(
   return result;
 }
 
+// TODO(tmathmeyer) refactor this so that we don'ty call
+// GetMaxResolutionsForGUIDS so many times.
 void GetResolutionsForDecoders(std::vector<GUID> h264_guids,
                                ComD3D11Device device,
                                const gpu::GpuDriverBugWorkarounds& workarounds,
                                ResolutionPair* h264_resolutions,
                                ResolutionPair* vp9_0_resolutions,
                                ResolutionPair* vp9_2_resolutions) {
+  TRACE_EVENT0("gpu,startup", "GetResolutionsForDecoders");
   if (base::win::GetVersion() > base::win::Version::WIN7) {
     // To detect if a driver supports the desired resolutions, we try and create
     // a DXVA decoder instance for that resolution and profile. If that succeeds

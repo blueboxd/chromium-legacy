@@ -21,18 +21,19 @@ cr.define('chrome.sync', function() {
   /**
    * Decorates the quick search controls
    *
-   * @param {Array of DOM elements} quickLinkArray The <a> object which
+   * @param {!NodeList<!Element>} quickLinkArray The <a> object which
    *     will be given a link to a quick filter option.
+   * @param {!HTMLButtonElement} submitControl
    * @param {!HTMLInputElement} queryControl The <input> object of
    *     type=search where user's query is typed.
    */
   var decorateQuickQueryControls = function(quickLinkArray, submitControl,
                                             queryControl) {
-    for (var index = 0; index < allLinks.length; ++index) {
-      var quickQuery = allLinks[index].getAttribute('data-query');
+    for (var index = 0; index < quickLinkArray.length; ++index) {
+      var quickQuery = quickLinkArray[index].getAttribute('data-query');
       var quickQueryFunction = createDoQueryFunction(queryControl,
           submitControl, quickQuery);
-      allLinks[index].addEventListener('click', quickQueryFunction);
+      quickLinkArray[index].addEventListener('click', quickQueryFunction);
     }
   };
 
@@ -40,7 +41,7 @@ cr.define('chrome.sync', function() {
    * Runs a search with the given query.
    *
    * @param {string} query The regex to do the search with.
-   * @param {function} callback The callback called with the search results;
+   * @param {!Function} callback The callback called with the search results.
    *     not called if doSearch() is called again while the search is running.
    */
   var doSearch = function(query, callback) {
@@ -76,7 +77,7 @@ cr.define('chrome.sync', function() {
    *     where the user can click to submit the query.
    * @param {!HTMLElement} statusControl The <span> object display the
    *     search status.
-   * @param {!HTMLElement} listControl The <list> object which holds
+   * @param {!HTMLElement} resultsControl The <list> object which holds
    *     the list of returned results.
    * @param {!HTMLPreElement} detailsControl The <pre> object which
    *     holds the details of the selected result.

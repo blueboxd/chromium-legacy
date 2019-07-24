@@ -278,11 +278,6 @@ enum NotificationType {
   // which was installed.
   NOTIFICATION_APP_INSTALLED_TO_NTP,
 
-#if defined(OS_CHROMEOS)
-  // Sent when wallpaper show animation has finished.
-  NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-#endif
-
   // Note:-
   // Currently only Content and Chrome define and use notifications.
   // Custom notifications not belonging to Content and Chrome should start

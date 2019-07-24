@@ -55,9 +55,8 @@ enum LoginMethodAndSyncState {
 constexpr char kFakeAccountIdForRemovedAccount[] = "0000000000000";
 
 // Returns the account id associated with |identity|.
-std::string ChromeIdentityToAccountID(
-    identity::IdentityManager* identity_manager,
-    ChromeIdentity* identity) {
+std::string ChromeIdentityToAccountID(signin::IdentityManager* identity_manager,
+                                      ChromeIdentity* identity) {
   std::string gaia_id = base::SysNSStringToUTF8([identity gaiaID]);
   auto maybe_account =
       identity_manager->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
@@ -72,7 +71,7 @@ std::string ChromeIdentityToAccountID(
 AuthenticationService::AuthenticationService(
     PrefService* pref_service,
     SyncSetupService* sync_setup_service,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     syncer::SyncService* sync_service)
     : pref_service_(pref_service),
       sync_setup_service_(sync_setup_service),
@@ -166,7 +165,7 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
   swap(cached_mdm_infos_, cached_mdm_infos);
 
   if (!cached_mdm_infos.empty()) {
-    identity::DeviceAccountsSynchronizer* device_accounts_synchronizer =
+    signin::DeviceAccountsSynchronizer* device_accounts_synchronizer =
         identity_manager_->GetDeviceAccountsSynchronizer();
     for (const auto& cached_mdm_info : cached_mdm_infos) {
       device_accounts_synchronizer->ReloadAccountFromSystem(
@@ -224,11 +223,10 @@ bool AuthenticationService::HaveAccountsChanged() const {
 
 void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   if (identity_manager_->GetAccountIdMigrationState() ==
-      identity::IdentityManager::AccountIdMigrationState::
-          MIGRATION_NOT_STARTED) {
+      signin::IdentityManager::AccountIdMigrationState::MIGRATION_NOT_STARTED) {
     return;
   }
-  DCHECK_EQ(identity::IdentityManager::AccountIdMigrationState::MIGRATION_DONE,
+  DCHECK_EQ(signin::IdentityManager::AccountIdMigrationState::MIGRATION_DONE,
             identity_manager_->GetAccountIdMigrationState());
   if (pref_service_->GetBoolean(prefs::kSigninLastAccountsMigrated)) {
     // Already migrated.
@@ -362,7 +360,7 @@ void AuthenticationService::SignOut(
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
   DCHECK(account_mutator);
   account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);
   breakpad_helper::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();

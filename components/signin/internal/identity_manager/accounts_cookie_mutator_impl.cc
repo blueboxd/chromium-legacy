@@ -11,7 +11,7 @@
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-namespace identity {
+namespace signin {
 
 AccountsCookieMutatorImpl::AccountsCookieMutatorImpl(
     GaiaCookieManagerService* gaia_cookie_manager_service,
@@ -44,7 +44,7 @@ void AccountsCookieMutatorImpl::AddAccountToCookieWithToken(
 void AccountsCookieMutatorImpl::SetAccountsInCookie(
     const std::vector<CoreAccountId>& account_ids,
     gaia::GaiaSource source,
-    base::OnceCallback<void(signin::SetAccountsInCookieResult)>
+    base::OnceCallback<void(SetAccountsInCookieResult)>
         set_accounts_in_cookies_completed_callback) {
   std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair> accounts;
   for (const auto& account_id : account_ids) {
@@ -63,4 +63,4 @@ void AccountsCookieMutatorImpl::LogOutAllAccounts(gaia::GaiaSource source) {
   gaia_cookie_manager_service_->LogOutAllAccounts(source);
 }
 
-}  // namespace identity
+}  // namespace signin

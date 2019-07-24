@@ -234,16 +234,29 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsIncognito() override;
 
   // Checks if pinging should be enabled based on the |trigger_type|,
-  // |password_type| and user state, updates |reason| accordingly.
+  // |password_type| and |username|, updates |reason| accordingly.
+  // The |username| can be an email or a username for a non-GAIA or
+  // saved-password reuse. No validation has been done on it.
   bool IsPingingEnabled(LoginReputationClientRequest::TriggerType trigger_type,
                         PasswordType password_type,
+                        const std::string& username,
                         RequestOutcome* reason) override;
 
-  // If user enabled history syncing.
+  // If current profile has enabled history syncing.
   bool IsHistorySyncEnabled() override;
 
-  // If current user account is syncing.
-  bool IsAccountSyncing() override;
+  // If primary account is syncing.
+  bool IsPrimaryAccountSyncing() const override;
+
+  // If primary account is signed in.
+  bool IsPrimaryAccountSignedIn() const override;
+
+  // If a domain is not defined for the primary account. This means the primary
+  // account is a Gmail account.
+  bool IsPrimaryAccountGmail() const override;
+
+  // If non sync account is currently still signed in.
+  bool IsOtherGaiaAccountSignedIn(const std::string& username) const override;
 
   // If user is under advanced protection.
   bool IsUnderAdvancedProtection() override;

@@ -149,6 +149,7 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
     return;
   }
 
+  LogSendWebPushMessagePayloadSize(message.payload.size());
   std::unique_ptr<network::SimpleURLLoader> url_loader = BuildURLLoader(
       fcm_token, message.time_to_live, *auth_header, message.payload);
   url_loader->DownloadToString(

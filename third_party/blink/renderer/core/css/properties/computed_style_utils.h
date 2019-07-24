@@ -58,7 +58,7 @@ class ComputedStyleUtils {
   static const CSSValueList* ValuesForBackgroundShorthand(
       const ComputedStyle&,
       const LayoutObject*,
-      Node*,
+      const Node*,
       bool allow_visited_style);
   static const CSSValue* BackgroundRepeatOrWebkitMaskRepeat(const FillLayer*);
   static const CSSValue* BackgroundPositionOrWebkitMaskPosition(
@@ -85,9 +85,9 @@ class ComputedStyleUtils {
 
   static CSSValue* ValueForOffset(const ComputedStyle&,
                                   const LayoutObject*,
-                                  Node*,
+                                  const Node*,
                                   bool allow_visited_style);
-  static CSSValue* MinWidthOrMinHeightAuto(Node*, const ComputedStyle&);
+  static CSSValue* MinWidthOrMinHeightAuto(const Node*, const ComputedStyle&);
   static CSSValue* ValueForPositionOffset(const ComputedStyle&,
                                           const CSSProperty&,
                                           const LayoutObject*);
@@ -179,32 +179,32 @@ class ComputedStyleUtils {
   static CSSValueList* ValuesForShorthandProperty(const StylePropertyShorthand&,
                                                   const ComputedStyle&,
                                                   const LayoutObject*,
-                                                  Node*,
+                                                  const Node*,
                                                   bool allow_visited_style);
   static CSSValueList* ValuesForGridShorthand(const StylePropertyShorthand&,
                                               const ComputedStyle&,
                                               const LayoutObject*,
-                                              Node*,
+                                              const Node*,
                                               bool allow_visited_style);
   static CSSValueList* ValuesForSidesShorthand(const StylePropertyShorthand&,
                                                const ComputedStyle&,
                                                const LayoutObject*,
-                                               Node*,
+                                               const Node*,
                                                bool allow_visited_style);
   static CSSValuePair* ValuesForInlineBlockShorthand(
       const StylePropertyShorthand&,
       const ComputedStyle&,
       const LayoutObject*,
-      Node*,
+      const Node*,
       bool allow_visited_style);
   static CSSValuePair* ValuesForPlaceShorthand(const StylePropertyShorthand&,
                                                const ComputedStyle&,
                                                const LayoutObject*,
-                                               Node*,
+                                               const Node*,
                                                bool allow_visited_style);
   static CSSValue* ValuesForFontVariantProperty(const ComputedStyle&,
                                                 const LayoutObject*,
-                                                Node*,
+                                                const Node*,
                                                 bool allow_visited_style);
   static CSSValue* ScrollCustomizationFlagsToCSSValue(
       scroll_customization::ScrollDirection);

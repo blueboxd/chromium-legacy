@@ -44,6 +44,9 @@ class DeviceInfoTracker {
   // A temporary function to to allow tests to ensure active devices.
   // TODO(crbug/948784) remove this function after architecture work.
   virtual void ForcePulseForTest() = 0;
+  // Returns if the provided |cache_guid| is the current device cache_guid for
+  // the current device or was of the recently used.
+  virtual bool IsRecentLocalCacheGuid(const std::string& cache_guid) const = 0;
 };
 
 }  // namespace syncer

@@ -615,12 +615,6 @@ bool WallpaperControllerImpl::ShouldShowInitialAnimation() {
   return true;
 }
 
-void WallpaperControllerImpl::OnWallpaperAnimationFinished() {
-  // TODO(crbug.com/875128): Remove this after web-ui login code is removed.
-  if (wallpaper_controller_client_ && is_first_wallpaper_)
-    wallpaper_controller_client_->OnFirstWallpaperAnimationFinished();
-}
-
 bool WallpaperControllerImpl::CanOpenWallpaperPicker() {
   return ShouldShowWallpaperSetting() &&
          !IsActiveUserWallpaperControlledByPolicy();

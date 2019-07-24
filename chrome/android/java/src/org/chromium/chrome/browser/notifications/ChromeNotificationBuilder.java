@@ -31,6 +31,8 @@ public interface ChromeNotificationBuilder {
 
     ChromeNotificationBuilder setSmallIcon(Icon icon);
 
+    ChromeNotificationBuilder setColor(int argb);
+
     ChromeNotificationBuilder setTicker(CharSequence text);
 
     ChromeNotificationBuilder setLocalOnly(boolean localOnly);

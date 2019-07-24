@@ -177,6 +177,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   base::Time GetSoonestPeriodicSyncEventTimeForOrigin(
       const url::Origin& origin) const;
 
+  // Revive any pending periodic Background Sync registrations for |origin|.
+  void RevivePeriodicSyncRegistrations(url::Origin origin);
+
  protected:
   BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context,
@@ -395,8 +398,18 @@ class CONTENT_EXPORT BackgroundSyncManager
   void SetMaxSyncAttemptsImpl(int max_sync_attempts,
                               base::OnceClosure callback);
 
-  // Whether an event should be logged for debuggability.
+  // Whether an event should be logged for debuggability, for |sync_type|.
   bool ShouldLogToDevTools(blink::mojom::BackgroundSyncType sync_type);
+
+  void ReviveOriginImpl(url::Origin origin, base::OnceClosure callback);
+  void ReviveDidGetNextEventDelay(int64_t service_worker_registration_id,
+                                  BackgroundSyncRegistration registration,
+                                  base::OnceClosure done_closure,
+                                  base::TimeDelta delay);
+  void ReviveDidStoreRegistration(int64_t service_worker_registration_id,
+                                  base::OnceClosure done_closure,
+                                  blink::ServiceWorkerStatusCode status);
+  void DidReceiveDelaysForSuspendedRegistrations(base::OnceClosure callback);
 
   base::OnceClosure MakeEmptyCompletion();
 

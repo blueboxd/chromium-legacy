@@ -52,7 +52,8 @@ class MockDesktopSessionObserver
   void OnSessionStarted(base::TimeTicks session_start) override {
     session_started_count_ = true;
   }
-  void OnSessionEnded(base::TimeDelta session_length) override {
+  void OnSessionEnded(base::TimeDelta session_length,
+                      base::TimeTicks session_end) override {
     session_ended_count_ = true;
   }
 

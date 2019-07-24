@@ -13,6 +13,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/unguessable_token.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
+#include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -694,7 +695,7 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
   auth_negotiate->set_can_delegate(can_delegate);
 
   auto auth_token = std::make_unique<std::string>();
-  auth_negotiate_raw->GenerateAuthToken(
+  auth_negotiate_raw->GenerateAuthTokenAndroid(
       nullptr, spn, std::string(), auth_token.get(),
       base::BindOnce(&FinishGenerateNegotiateAuthToken,
                      std::move(auth_negotiate), std::move(auth_token),
@@ -702,4 +703,26 @@ void NetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
+void NetworkServiceClient::OnRawRequest(
+    int32_t process_id,
+    int32_t routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {
+  devtools_instrumentation::OnRequestWillBeSentExtraInfo(
+      process_id, routing_id, devtools_request_id, cookies_with_status,
+      headers);
+}
+
+void NetworkServiceClient::OnRawResponse(
+    int32_t process_id,
+    int32_t routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+    const base::Optional<std::string>& raw_response_headers) {
+  devtools_instrumentation::OnResponseReceivedExtraInfo(
+      process_id, routing_id, devtools_request_id, cookies_with_status, headers,
+      raw_response_headers);
+}
 }  // namespace content

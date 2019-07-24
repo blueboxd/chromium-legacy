@@ -92,15 +92,15 @@ void ArcAuthContext::Prepare(const PrepareCallback& callback) {
   StartFetchers();
 }
 
-std::unique_ptr<identity::AccessTokenFetcher>
+std::unique_ptr<signin::AccessTokenFetcher>
 ArcAuthContext::CreateAccessTokenFetcher(
     const std::string& consumer_name,
     const identity::ScopeSet& scopes,
-    identity::AccessTokenFetcher::TokenCallback callback) {
+    signin::AccessTokenFetcher::TokenCallback callback) {
   DCHECK(identity_manager_->HasAccountWithRefreshToken(account_id_));
   return identity_manager_->CreateAccessTokenFetcherForAccount(
       account_id_, consumer_name, scopes, std::move(callback),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void ArcAuthContext::OnRefreshTokenUpdatedForAccount(

@@ -308,9 +308,10 @@ void FidoRequestHandlerBase::AuthenticatorPairingModeChanged(
   if (it == active_authenticators_.end())
     return;
 
-  if (observer_)
-    observer_->FidoAuthenticatorPairingModeChanged(device_id,
-                                                   is_in_pairing_mode);
+  if (observer_) {
+    observer_->FidoAuthenticatorPairingModeChanged(
+        device_id, is_in_pairing_mode, it->second->GetDisplayName());
+  }
 }
 
 void FidoRequestHandlerBase::AddAuthenticator(

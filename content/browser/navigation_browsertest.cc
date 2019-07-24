@@ -55,6 +55,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/dns/mock_host_resolver.h"
@@ -252,6 +253,23 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
     NavigationBaseBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+};
+
+class NetworkIsolationNavigationBrowserTest
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<bool> {
+ protected:
+  void SetUpOnMainThread() override {
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          net::features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          net::features::kAppendFrameOriginToNetworkIsolationKey);
+    }
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ContentBrowserTest::SetUpOnMainThread();
+  }
 
   // Navigate to |url| and for each ResourceRequest record its
   // trusted_network_isolation_key. Stop listening after |final_resource| has
@@ -292,10 +310,12 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
     // Wait until the last resource we care about has been requested.
     run_loop.Run();
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         NavigationBrowserTest,
+                         NetworkIsolationNavigationBrowserTest,
                          ::testing::Bool());
 
 // Ensure that browser initiated basic navigations work.
@@ -831,7 +851,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   EXPECT_EQ("\"done\"", done);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                        BrowserNavigationNetworkIsolationKey) {
   std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
   std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
@@ -845,11 +865,11 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
             network_isolation_keys[url]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-                kUpdateTopFrameAndInitiatingFrameOrigin,
+                kUpdateTopFrameAndFrameOrigin,
             update_network_isolation_key_on_redirects[url]);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
                        RenderNavigationNetworkIsolationKey) {
   std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
   std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
@@ -863,11 +883,12 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
             network_isolation_keys[url]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-                kUpdateTopFrameAndInitiatingFrameOrigin,
+                kUpdateTopFrameAndFrameOrigin,
             update_network_isolation_key_on_redirects[url]);
 }
 
-IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubframeNetworkIsolationKey) {
+IN_PROC_BROWSER_TEST_P(NetworkIsolationNavigationBrowserTest,
+                       SubframeNetworkIsolationKey) {
   std::map<GURL, net::NetworkIsolationKey> network_isolation_keys;
   std::map<GURL, network::mojom::UpdateNetworkIsolationKeyOnRedirect>
       update_network_isolation_key_on_redirects;
@@ -882,12 +903,13 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubframeNetworkIsolationKey) {
   EXPECT_EQ(net::NetworkIsolationKey(origin, origin),
             network_isolation_keys[url]);
   EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::
-                kUpdateTopFrameAndInitiatingFrameOrigin,
+                kUpdateTopFrameAndFrameOrigin,
             update_network_isolation_key_on_redirects[url]);
   EXPECT_EQ(net::NetworkIsolationKey(origin, iframe_origin),
             network_isolation_keys[iframe_document]);
-  EXPECT_EQ(network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate,
-            update_network_isolation_key_on_redirects[iframe_document]);
+  EXPECT_EQ(
+      network::mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateFrameOrigin,
+      update_network_isolation_key_on_redirects[iframe_document]);
 }
 
 // Helper class to extract the initiator values from URLLoaderFactory calls

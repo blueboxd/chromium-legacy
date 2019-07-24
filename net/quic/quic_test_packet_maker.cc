@@ -1383,13 +1383,35 @@ QuicTestPacketMaker::MakePriorityPacket(uint64_t packet_number,
   }
   int weight = spdy::Spdy3PriorityToHttp2Weight(priority);
   bool exclusive = client_headers_include_h2_stream_dependency_;
-  spdy::SpdyPriorityIR priority_frame(id, parent_stream_id, weight, exclusive);
-  spdy::SpdySerializedFrame spdy_frame(
-      spdy_request_framer_.SerializeFrame(priority_frame));
+  if (!VersionUsesQpack(version_.transport_version)) {
+    spdy::SpdyPriorityIR priority_frame(id, parent_stream_id, weight,
+                                        exclusive);
+    spdy::SpdySerializedFrame spdy_frame(
+        spdy_request_framer_.SerializeFrame(priority_frame));
 
-  quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
-      quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
-      quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+    quic::QuicStreamFrame quic_frame = GenerateNextStreamFrame(
+        quic::QuicUtils::GetHeadersStreamId(version_.transport_version), false,
+        quic::QuicStringPiece(spdy_frame.data(), spdy_frame.size()));
+    InitializeHeader(packet_number, should_include_version);
+    return MakePacket(header_, quic::QuicFrame(quic_frame));
+  }
+  quic::PriorityFrame frame;
+  frame.weight = weight;
+  frame.exclusive = true;
+  frame.prioritized_element_id = id;
+  frame.element_dependency_id = parent_stream_id;
+  frame.dependency_type = quic::REQUEST_STREAM;
+  frame.prioritized_type =
+      quic::QuicUtils::IsServerInitiatedStreamId(version_.transport_version, id)
+          ? quic::PUSH_STREAM
+          : quic::REQUEST_STREAM;
+  std::unique_ptr<char[]> buffer;
+  quic::QuicByteCount frame_length =
+      http_encoder_.SerializePriorityFrame(frame, &buffer);
+  std::string priority_data = std::string(buffer.get(), frame_length);
+
+  quic::QuicStreamFrame quic_frame =
+      GenerateNextStreamFrame(2, false, priority_data);
   InitializeHeader(packet_number, should_include_version);
   return MakePacket(header_, quic::QuicFrame(quic_frame));
 }

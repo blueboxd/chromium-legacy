@@ -11,7 +11,6 @@
 #include "base/values.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/services/assistant/public/features.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -150,9 +149,7 @@ void KeyboardHandler::UpdateShowKeys() {
   keyboard_params.SetKey("hasInternalKeyboard",
                          base::Value(keyboards_state.has_internal_keyboard));
 
-  const bool show_assistant_key_settings =
-      chromeos::assistant::features::IsKeyRemappingEnabled() &&
-      ui::DeviceKeyboardHasAssistantKey();
+  const bool show_assistant_key_settings = ui::DeviceKeyboardHasAssistantKey();
   keyboard_params.SetKey("hasAssistantKey",
                          base::Value(show_assistant_key_settings));
 

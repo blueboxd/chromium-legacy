@@ -41,7 +41,7 @@ public class NewTabPageControllerTest {
 
     @Before
     public void setUp() {
-        mController = mChromeUiRule.launchIntoNewTabPage();
+        mController = mChromeUiRule.launchIntoNewTabPageOnFirstRun();
     }
 
     @Test

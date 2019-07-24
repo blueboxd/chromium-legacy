@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 
+#include "chrome/browser/chromeos/extensions/default_web_app_ids.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -21,7 +22,8 @@ namespace app_list {
 namespace {
 
 constexpr char const* kAppIdsHiddenInLauncher[] = {
-    extension_misc::kChromeCameraAppId};
+    extension_misc::kChromeCameraAppId,
+    chromeos::default_web_apps::kReleaseNotesAppId};
 
 }  // namespace
 

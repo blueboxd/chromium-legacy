@@ -32,11 +32,15 @@ class InProcessContextFactory : public ContextFactory,
                                 public ContextFactoryPrivate {
  public:
   // Both |host_frame_sink_manager| and |frame_sink_manager| must outlive the
-  // ContextFactory.
+  // ContextFactory. The constructor without |use_skia_renderer| will use
+  // SkiaRenderer if the feature is enabled.
   // TODO(crbug.com/657959): |frame_sink_manager| should go away and we should
   // use the LayerTreeFrameSink from the HostFrameSinkManager.
   InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
                           viz::FrameSinkManagerImpl* frame_sink_manager);
+  InProcessContextFactory(viz::HostFrameSinkManager* host_frame_sink_manager,
+                          viz::FrameSinkManagerImpl* frame_sink_manager,
+                          bool use_skia_renderer);
   ~InProcessContextFactory() override;
 
   viz::FrameSinkManagerImpl* GetFrameSinkManager() {

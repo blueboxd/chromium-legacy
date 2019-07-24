@@ -590,7 +590,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   CheckNoUkm();
 }
 
-// Test that the heuristics are triggered even with net errors.
+// Test that the heuristics are not triggered even with net errors.
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        NetError_SiteEngagement_Interstitial) {
   // Create a test server that returns invalid responses.
@@ -603,10 +603,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // Advance clock to force a fetch of new engaged sites list.
   test_clock()->Advance(base::TimeDelta::FromHours(1));
 
-  TestMetricsRecordedAndMaybeInterstitialShown(
-      browser(), custom_test_server.GetURL("sité1.com", "/title1.html"),
-      custom_test_server.GetURL("site1.com", "/"),
-      NavigationSuggestionEvent::kMatchSiteEngagement);
+  TestInterstitialNotShown(
+      browser(), custom_test_server.GetURL("sité1.com", "/title1.html"));
 }
 
 // Same as NetError_SiteEngagement_Interstitial, but triggered by a top domain.
@@ -617,61 +615,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   custom_test_server.RegisterRequestHandler(
       base::BindRepeating(&NetworkErrorResponseHandler));
   ASSERT_TRUE(custom_test_server.Start());
-
-  TestMetricsRecordedAndMaybeInterstitialShown(
-      browser(), GetURL("googlé.com"), GetURLWithoutPath("google.com"),
-      NavigationSuggestionEvent::kMatchTopSite);
-}
-
-// Verify that, after dismissing a lookalike warning when enabled, the user
-// sees a net error when applicable.
-IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
-                       NetError_SiteEngagement_NetErrorAfterDismiss) {
-  // Create a test server that returns invalid responses.
-  net::EmbeddedTestServer custom_test_server;
-  custom_test_server.RegisterRequestHandler(
-      base::BindRepeating(&NetworkErrorResponseHandler));
-  ASSERT_TRUE(custom_test_server.Start());
-
-  SetEngagementScore(browser(), GURL("http://site1.com"), kHighEngagement);
-  // Advance clock to force a fetch of new engaged sites list.
-  test_clock()->Advance(base::TimeDelta::FromHours(1));
-  NavigateToURLSync(browser(),
-                    custom_test_server.GetURL("sité1.com", "/title1.html"));
-  if (ui_enabled()) {
-    SendInterstitialCommandSync(browser(),
-                                SecurityInterstitialCommand::CMD_PROCEED);
-  }
-
-  EXPECT_GE(ui_test_utils::FindInPage(
-                browser()->tab_strip_model()->GetActiveWebContents(),
-                base::ASCIIToUTF16("ERR_EMPTY_RESPONSE"), true, true, nullptr,
-                nullptr),
-            1);
-}
-
-// Same as NetError_SiteEngagement_NetErrorAfterDismiss, but navigates to a top
-// domain instead.
-IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
-                       NetError_TopDomain_NetErrorAfterDismiss) {
-  // Create a test server that returns invalid responses.
-  net::EmbeddedTestServer custom_test_server;
-  custom_test_server.RegisterRequestHandler(
-      base::BindRepeating(&NetworkErrorResponseHandler));
-  ASSERT_TRUE(custom_test_server.Start());
-
-  NavigateToURLSync(browser(),
-                    custom_test_server.GetURL("googlé.com", "/title1.html"));
-  if (ShouldExpectInterstitial(NavigationSuggestionEvent::kMatchTopSite)) {
-    SendInterstitialCommandSync(browser(),
-                                SecurityInterstitialCommand::CMD_PROCEED);
-  }
-
-  EXPECT_GE(ui_test_utils::FindInPage(
-                browser()->tab_strip_model()->GetActiveWebContents(),
-                base::ASCIIToUTF16("ERR_EMPTY_RESPONSE"), true, true, nullptr,
-                nullptr),
-            1);
+  TestInterstitialNotShown(browser(),
+                           custom_test_server.GetURL("googlé.com", "/"));
 }
 
 // Navigate to a domain whose visual representation looks like a domain with a
@@ -1045,7 +990,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   LoadAndCheckInterstitialAt(browser(), kNavigatedUrl);
 }
 
-// Verify reloading the page does not result in dismissing an interstitial.
+// Verify reloading the page results in dismissing an interstitial.
 // Regression test for crbug/941886.
 IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
                        RefreshDoesntDismiss) {
@@ -1063,7 +1008,7 @@ IN_PROC_BROWSER_TEST_F(LookalikeUrlInterstitialPageBrowserTest,
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   navigation_observer.Wait();
 
-  EXPECT_EQ(LookalikeUrlInterstitialPage::kTypeForTesting,
-            GetInterstitialType(web_contents));
-  EXPECT_FALSE(IsUrlShowing(browser()));
+  EXPECT_EQ(nullptr, GetInterstitialType(web_contents));
+  EXPECT_TRUE(IsUrlShowing(browser()));
+  EXPECT_EQ(GetURL("example.com"), web_contents->GetURL());
 }

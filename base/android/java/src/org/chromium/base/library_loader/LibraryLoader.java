@@ -4,8 +4,6 @@
 
 package org.chromium.base.library_loader;
 
-import static org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -27,9 +25,11 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.File;
@@ -83,9 +83,6 @@ public class LibraryLoader {
     // Shared preferences key for the reached code profiler.
     private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
 
-    private static final EnumeratedHistogramSample sRelinkerCountHistogram =
-            new EnumeratedHistogramSample("ChromiumAndroidLinker.RelinkerFallbackCount", 2);
-
     // The singleton instance of LibraryLoader. Never null (not final for tests).
     private static LibraryLoader sInstance = new LibraryLoader();
 
@@ -119,6 +116,31 @@ public class LibraryLoader {
     // The number of milliseconds it took to load all the native libraries, which
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
+
+    /**
+     * Call this method to determine if this chromium project must
+     * use this linker. If not, System.loadLibrary() should be used to load
+     * libraries instead.
+     */
+    public static boolean useCrazyLinker() {
+        // A non-monochrome APK (such as ChromePublic.apk) can be installed on N+ in these
+        // circumstances:
+        // * installing APK manually
+        // * after OTA from M to N
+        // * side-installing Chrome (possibly from another release channel)
+        // * Play Store bugs leading to incorrect APK flavor being installed
+        // * installing other Chromium-based browsers
+        //
+        // For Chrome builds regularly shipped to users on N+, the system linker (or the Android
+        // Framework) provides the necessary functionality to load without crazylinker. The
+        // crazylinker is risky to auto-enable on newer Android releases, as it may interfere with
+        // regular library loading. See http://crbug.com/980304 as example.
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.N) return false;
+
+        // The auto-generated NativeLibraries.sUseLinker variable will be true if the
+        // build has not explicitly disabled Linker features.
+        return NativeLibraries.sUseLinker;
+    }
 
     /**
      * Call this method to determine if the chromium project must load the library
@@ -189,15 +211,16 @@ public class LibraryLoader {
      */
     public void preloadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
-            if (useChromiumLinker()) return;
-            preloadAlreadyLocked(appContext.getApplicationInfo());
+            if (!useCrazyLinker()) {
+                preloadAlreadyLocked(appContext.getApplicationInfo());
+            }
         }
     }
 
     private void preloadAlreadyLocked(ApplicationInfo appInfo) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.preloadAlreadyLocked")) {
             // Preloader uses system linker, we shouldn't preload if Chromium linker is used.
-            assert !useChromiumLinker();
+            assert !useCrazyLinker();
             if (mLibraryPreloader != null && !mLibraryPreloaderCalled) {
                 mLibraryPreloader.loadLibrary(appInfo);
                 mLibraryPreloaderCalled = true;
@@ -303,14 +326,6 @@ public class LibraryLoader {
         }
     }
 
-    static void incrementRelinkerCountHitHistogram() {
-        sRelinkerCountHistogram.record(1);
-    }
-
-    static void incrementRelinkerCountNotHitHistogram() {
-        sRelinkerCountHistogram.record(0);
-    }
-
     // Experience shows that on some devices, the system sometimes fails to extract native libraries
     // at installation or update time from the APK. This function will extract the library and
     // return the extracted file path.
@@ -334,7 +349,7 @@ public class LibraryLoader {
 
                 long startTime = SystemClock.uptimeMillis();
 
-                if (useChromiumLinker() && !inZygote) {
+                if (useCrazyLinker() && !inZygote) {
                     // Load libraries using the Chromium linker.
                     Linker linker = Linker.getInstance();
 
@@ -364,13 +379,11 @@ public class LibraryLoader {
                         try {
                             // Load the library using this Linker. May throw UnsatisfiedLinkError.
                             loadLibraryWithCustomLinkerAlreadyLocked(linker, libFilePath);
-                            incrementRelinkerCountNotHitHistogram();
                         } catch (UnsatisfiedLinkError e) {
                             if (!isInZipFile()
                                     && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                                 loadLibraryWithCustomLinkerAlreadyLocked(
                                         linker, getExtractedLibraryPath(appInfo, library));
-                                incrementRelinkerCountHitHistogram();
                             } else {
                                 Log.e(TAG, "Unable to load library: " + library);
                                 throw(e);
@@ -567,7 +580,7 @@ public class LibraryLoader {
     // Called after all native initializations are complete.
     public void onBrowserNativeInitializationComplete() {
         synchronized (mLock) {
-            if (useChromiumLinker()) {
+            if (useCrazyLinker()) {
                 RecordHistogram.recordTimesHistogram(
                         "ChromiumAndroidLinker.BrowserLoadTime", mLibraryLoadTimeMs);
             }
@@ -580,19 +593,10 @@ public class LibraryLoader {
     // RecordChromiumAndroidLinkerRendererHistogram() will record it correctly.
     public void registerRendererProcessHistogram() {
         synchronized (mLock) {
-            if (useChromiumLinker()) {
+            if (useCrazyLinker()) {
                 nativeRecordRendererLibraryLoadTime(mLibraryLoadTimeMs);
             }
         }
-    }
-
-    /**
-     * Call this method to determine if this chromium project must
-     * use this linker. If not, System.loadLibrary() should be used to load
-     * libraries instead.
-     */
-    public static boolean useChromiumLinker() {
-        return NativeLibraries.sUseLinker;
     }
 
     /**
@@ -623,6 +627,11 @@ public class LibraryLoader {
                 Log.w(TAG, "failed to set UBSAN_OPTIONS", e);
             }
         }
+    }
+
+    @CalledByNative
+    public static void onUmaRecordingReadyInRenderer() {
+        CachedMetrics.commitCachedMetrics();
     }
 
     // Android system sometimes fails to extract libraries from APK (https://crbug.com/806998).

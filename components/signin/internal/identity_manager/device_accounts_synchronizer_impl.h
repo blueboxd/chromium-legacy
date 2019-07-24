@@ -9,7 +9,7 @@
 
 class OAuth2TokenServiceDelegate;
 
-namespace identity {
+namespace signin {
 
 // Concrete implementation of DeviceAccountsSynchronizer interface.
 class DeviceAccountsSynchronizerImpl : public DeviceAccountsSynchronizer {
@@ -26,6 +26,6 @@ class DeviceAccountsSynchronizerImpl : public DeviceAccountsSynchronizer {
   OAuth2TokenServiceDelegate* token_service_delegate_ = nullptr;
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_DEVICE_ACCOUNTS_SYNCHRONIZER_IMPL_H_

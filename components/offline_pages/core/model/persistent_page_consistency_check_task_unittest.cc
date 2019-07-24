@@ -92,8 +92,7 @@ TEST_F(PersistentPageConsistencyCheckTaskTest,
               PublishedArchiveId{page5.system_download_id, page5.file_path})));
 
   RunTask(std::make_unique<PersistentPageConsistencyCheckTask>(
-      store(), archive_manager(), policy_controller(), base::Time::Now(),
-      callback.Get()));
+      store(), archive_manager(), base::Time::Now(), callback.Get()));
 
   EXPECT_EQ(4LL, store_test_util()->GetPageCount());
   EXPECT_EQ(1UL, test_utils::GetFileCountInDirectory(PrivateDir()));
@@ -146,8 +145,7 @@ TEST_F(PersistentPageConsistencyCheckTaskTest,
                                 page.system_download_id, page.file_path})));
 
   RunTask(std::make_unique<PersistentPageConsistencyCheckTask>(
-      store(), archive_manager(), policy_controller(), base::Time::Now(),
-      callback.Get()));
+      store(), archive_manager(), base::Time::Now(), callback.Get()));
 
   EXPECT_FALSE(store_test_util()->GetPageByOfflineId(page.offline_id));
   histogram_tester()->ExpectUniqueSample(

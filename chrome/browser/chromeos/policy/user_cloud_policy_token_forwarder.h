@@ -25,7 +25,7 @@ class SequencedTaskRunner;
 class TimeDelta;
 }  // namespace base
 
-namespace identity {
+namespace signin {
 class PrimaryAccountAccessTokenFetcher;
 }
 
@@ -54,7 +54,7 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
   // so this object will be Shutdown() first and these pointers can be used
   // until that point.
   UserCloudPolicyTokenForwarder(UserCloudPolicyManagerChromeOS* manager,
-                                identity::IdentityManager* identity_manager);
+                                signin::IdentityManager* identity_manager);
   ~UserCloudPolicyTokenForwarder() override;
 
   // KeyedService:
@@ -82,15 +82,15 @@ class UserCloudPolicyTokenForwarder : public KeyedService,
  private:
   void StartRequest();
   void OnAccessTokenFetchCompleted(GoogleServiceAuthError error,
-                                   identity::AccessTokenInfo token_info);
+                                   signin::AccessTokenInfo token_info);
 
   UserCloudPolicyManagerChromeOS* manager_;
-  identity::IdentityManager* identity_manager_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  signin::IdentityManager* identity_manager_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
 
   // Last fetched OAuth token.
-  base::Optional<identity::AccessTokenInfo> oauth_token_;
+  base::Optional<signin::AccessTokenInfo> oauth_token_;
 
   // Timer that measures time to the next OAuth token refresh. Not initialized
   // if token refresh is not scheduled.

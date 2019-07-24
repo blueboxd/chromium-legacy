@@ -149,6 +149,12 @@
       Report an issue
     </message>
   </if>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES" desc="Warning that internet connection is required to display Chrome OS release notes.">
+      Internet connection required
+  </message>
+  <message name="IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES" desc="Text of the button which shows user the release notes.">
+    See what's new
+  </message>
   <message name="IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED" desc="Status label: About to start checking for updates">
     Checking for updates
   </message>
@@ -2185,7 +2191,7 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_CHANGE" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to change a PIN.">
       Change
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to enter a PIN.">
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_ENTER" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for dialog button to enter a PIN; note that in this context, 'Enter' refers to the act of entering a PIN, not the name of a key on the keyboard." meaning="Enter a PIN into the device. [Verb]">
       Enter
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_BUTTON_UNLOCK" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for button to unlock the SIM card.">

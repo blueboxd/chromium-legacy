@@ -11,8 +11,8 @@
 
 namespace content {
 
-// Implementation of LaunchedVideoCaptureDevice that uses the "video_capture"
-// service.
+// Implementation of LaunchedVideoCaptureDevice that uses
+// video_capture::mojom::VideoCaptureService.
 class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
  public:
   ServiceLaunchedVideoCaptureDevice(

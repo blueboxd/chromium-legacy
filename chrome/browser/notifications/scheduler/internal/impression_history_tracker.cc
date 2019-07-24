@@ -201,8 +201,6 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
       ++it;
     }
 
-    // TODO(xingliu): Use scheduling params to determine ImpressionResult.
-    // https://crbug.com/968880
     switch (impression->feedback) {
       case UserFeedback::kDismiss:
         dismisses.emplace_back(impression);
@@ -210,8 +208,8 @@ void ImpressionHistoryTrackerImpl::AnalyzeImpressionHistory(
             &dismisses, impression->create_time - config_.dismiss_duration);
 
         // Three consecutive dismisses will result in suppression.
-        ApplyNegativeImpressions(client_state, &dismisses,
-                                 config_.dismiss_count);
+        CheckConsecutiveUserAction(client_state, &dismisses,
+                                   config_.dismiss_count);
         break;
       case UserFeedback::kClick:
         OnClickInternal(impression->guid, false /*update_db*/);
@@ -254,6 +252,75 @@ void ImpressionHistoryTrackerImpl::PruneImpressionByCreateTime(
   }
 }
 
+void ImpressionHistoryTrackerImpl::GenerateImpressionResult(
+    Impression* impression) {
+  DCHECK(impression);
+  auto it = impression->impression_mapping.find(impression->feedback);
+  if (it != impression->impression_mapping.end()) {
+    // Use client defined impression mapping.
+    impression->impression = it->second;
+  } else {
+    // Use default mapping from user feedback to impression result.
+    switch (impression->feedback) {
+      case UserFeedback::kClick:
+      case UserFeedback::kHelpful:
+        impression->impression = ImpressionResult::kPositive;
+        break;
+      case UserFeedback::kDismiss:
+      case UserFeedback::kIgnore:
+        impression->impression = ImpressionResult::kNeutral;
+        break;
+      case UserFeedback::kNotHelpful:
+        impression->impression = ImpressionResult::kNegative;
+        break;
+      case UserFeedback::kNoFeedback:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
+void ImpressionHistoryTrackerImpl::UpdateThrottling(ClientState* client_state,
+                                                    Impression* impression) {
+  DCHECK(client_state);
+  DCHECK(impression);
+
+  // Affect the notification throttling.
+  switch (impression->impression) {
+    case ImpressionResult::kPositive:
+      ApplyPositiveImpression(client_state, impression);
+      break;
+    case ImpressionResult::kNegative:
+      ApplyNegativeImpression(client_state, impression);
+      break;
+    case ImpressionResult::kNeutral:
+      break;
+    case ImpressionResult::kInvalid:
+      NOTREACHED();
+      break;
+  }
+}
+
+void ImpressionHistoryTrackerImpl::CheckConsecutiveUserAction(
+    ClientState* client_state,
+    std::deque<Impression*>* impressions,
+    size_t num_actions) {
+  if (impressions->size() < num_actions)
+    return;
+
+  // Suppress the notification if the user performed consecutive operations that
+  // generates negative impressions.
+  for (size_t i = 0, size = impressions->size(); i < size; ++i) {
+    Impression* impression = (*impressions)[i];
+    if (impression->integrated)
+      continue;
+
+    impression->integrated = true;
+    SetNeedsUpdate(client_state->type, true);
+    GenerateImpressionResult(impression);
+  }
+}
+
 void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
     ClientState* client_state,
     Impression* impression) {
@@ -261,9 +328,9 @@ void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
   if (impression->integrated)
     return;
 
+  DCHECK_EQ(impression->impression, ImpressionResult::kPositive);
   SetNeedsUpdate(client_state->type, true);
   impression->integrated = true;
-  impression->impression = ImpressionResult::kPositive;
 
   // A positive impression directly releases the suppression.
   if (client_state->suppression_info.has_value()) {
@@ -279,37 +346,15 @@ void ImpressionHistoryTrackerImpl::ApplyPositiveImpression(
                          config_.max_daily_shown_per_type);
 }
 
-void ImpressionHistoryTrackerImpl::ApplyNegativeImpressions(
-    ClientState* client_state,
-    std::deque<Impression*>* impressions,
-    size_t num_actions) {
-  if (impressions->size() < num_actions)
-    return;
-
-  // Suppress the notification if the user performed consecutive operations that
-  // generates negative impressions.
-  for (size_t i = 0, size = impressions->size(); i < size; ++i) {
-    if ((*impressions)[i]->integrated)
-      continue;
-
-    (*impressions)[i]->integrated = true;
-
-    // Each user feedback after |num_action| will apply a new negative
-    // impression.
-    if (i + 1 >= num_actions)
-      ApplyNegativeImpression(client_state, (*impressions)[i]);
-  }
-}
-
 void ImpressionHistoryTrackerImpl::ApplyNegativeImpression(
     ClientState* client_state,
     Impression* impression) {
   if (impression->integrated)
     return;
 
+  DCHECK_EQ(impression->impression, ImpressionResult::kNegative);
   SetNeedsUpdate(client_state->type, true);
   impression->integrated = true;
-  impression->impression = ImpressionResult::kNegative;
 
   // Suppress the notification, the user will not see this type of notification
   // for a while.
@@ -403,8 +448,10 @@ void ImpressionHistoryTrackerImpl::OnClickInternal(
   if (it == client_states_.end())
     return;
   ClientState* client_state = it->second.get();
-  ApplyPositiveImpression(client_state, impression);
   impression->feedback = UserFeedback::kClick;
+  GenerateImpressionResult(impression);
+  SetNeedsUpdate(impression->type, true);
+  UpdateThrottling(client_state, impression);
 
   if (update_db && MaybeUpdateDb(client_state->type))
     NotifyImpressionUpdate();
@@ -424,17 +471,19 @@ void ImpressionHistoryTrackerImpl::OnButtonClickInternal(
   ClientState* client_state = it->second.get();
   switch (button_type) {
     case ActionButtonType::kHelpful:
-      ApplyPositiveImpression(client_state, impression);
       impression->feedback = UserFeedback::kHelpful;
       break;
     case ActionButtonType::kUnhelpful:
-      ApplyNegativeImpression(client_state, impression);
       impression->feedback = UserFeedback::kNotHelpful;
       break;
     case ActionButtonType::kUnknownAction:
       NOTIMPLEMENTED();
       break;
   }
+
+  GenerateImpressionResult(impression);
+  SetNeedsUpdate(impression->type, true);
+  UpdateThrottling(client_state, impression);
 
   if (update_db && MaybeUpdateDb(client_state->type))
     NotifyImpressionUpdate();
@@ -452,9 +501,12 @@ void ImpressionHistoryTrackerImpl::OnDismissInternal(
     return;
   ClientState* client_state = it->second.get();
 
-  AnalyzeImpressionHistory(client_state);
+  impression->feedback = UserFeedback::kDismiss;
+  SetNeedsUpdate(impression->type, true);
 
-  if (update_db && MaybeUpdateDb(client_state->type))
+  // Check consecutive dismisses.
+  AnalyzeImpressionHistory(client_state);
+  if (MaybeUpdateDb(impression->type))
     NotifyImpressionUpdate();
 }
 

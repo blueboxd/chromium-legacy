@@ -17,7 +17,7 @@ enum class SourceForRefreshTokenOperation;
 
 struct CoreAccountId;
 
-namespace identity {
+namespace signin {
 
 // AccountsMutator is the interface to support seeding of account info and
 // mutation of refresh tokens for the user's Gaia accounts.
@@ -77,6 +77,6 @@ class AccountsMutator {
   DISALLOW_COPY_AND_ASSIGN(AccountsMutator);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCOUNTS_MUTATOR_H_

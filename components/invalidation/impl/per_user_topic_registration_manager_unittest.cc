@@ -187,7 +187,7 @@ class PerUserTopicRegistrationManagerTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   TestingPrefServiceSimple pref_service_;
 
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<invalidation::ProfileIdentityProvider> identity_provider_;
 
   RegistrationManagerStateObserver state_observer_;

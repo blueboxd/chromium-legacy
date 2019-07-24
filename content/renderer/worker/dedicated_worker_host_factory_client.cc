@@ -120,7 +120,6 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
         subresource_loader_factory_bundle_info,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info) {
   DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
-  DCHECK(service_worker_provider_info);
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factory_bundle_info);
 
@@ -132,12 +131,14 @@ void DedicatedWorkerHostFactoryClient::OnScriptLoadStarted(
               std::move(subresource_loader_factory_bundle_info)));
 
   DCHECK(!service_worker_provider_context_);
-  service_worker_provider_context_ =
-      base::MakeRefCounted<ServiceWorkerProviderContext>(
-          blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
-          std::move(service_worker_provider_info->client_request),
-          std::move(service_worker_provider_info->host_ptr_info),
-          std::move(controller_info), subresource_loader_factory_bundle_);
+  if (service_worker_provider_info) {
+    service_worker_provider_context_ =
+        base::MakeRefCounted<ServiceWorkerProviderContext>(
+            blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker,
+            std::move(service_worker_provider_info->client_request),
+            std::move(service_worker_provider_info->host_ptr_info),
+            std::move(controller_info), subresource_loader_factory_bundle_);
+  }
 
   // Initialize the response override for the main worker script loaded by the
   // browser process.

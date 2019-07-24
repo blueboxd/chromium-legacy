@@ -431,27 +431,6 @@ void ScrollAnimator::NotifyCompositorAnimationFinished(int group_id) {
     std::move(on_finish_).Run();
 }
 
-void ScrollAnimator::NotifyAnimationTakeover(
-    double monotonic_time,
-    double animation_start_time,
-    std::unique_ptr<cc::AnimationCurve> curve) {
-  // If there is already an animation running and the compositor asks to take
-  // over an animation, do nothing to avoid judder.
-  if (HasRunningAnimation())
-    return;
-
-  cc::ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
-      curve->ToScrollOffsetAnimationCurve();
-  ScrollOffset target_value(scroll_offset_animation_curve->target_value().x(),
-                            scroll_offset_animation_curve->target_value().y());
-  if (WillAnimateToOffset(target_value)) {
-    animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
-        scroll_offset_animation_curve);
-    start_time_ =
-        base::TimeTicks() + base::TimeDelta::FromSecondsD(animation_start_time);
-  }
-}
-
 void ScrollAnimator::CancelAnimation() {
   ScrollAnimatorCompositorCoordinator::CancelAnimation();
   if (on_finish_)

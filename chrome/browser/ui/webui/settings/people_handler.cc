@@ -343,7 +343,7 @@ void PeopleHandler::OnJavascriptAllowed() {
       prefs::kSigninAllowed,
       base::Bind(&PeopleHandler::UpdateSyncStatus, base::Unretained(this)));
 
-  identity::IdentityManager* identity_manager(
+  signin::IdentityManager* identity_manager(
       IdentityManagerFactory::GetInstance()->GetForProfile(profile_));
   if (identity_manager)
     identity_manager_observer_.Add(identity_manager);
@@ -388,7 +388,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     // then sign in again.
 
     identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-        identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
         signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
         signin_metrics::SignoutDelete::IGNORE_METRIC);
   }
@@ -812,7 +812,7 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
                          : signin_metrics::SignoutDelete::KEEPING;
 
       identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-          identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+          signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
           signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS, delete_metric);
     } else {
       DCHECK(!delete_profile)
@@ -889,7 +889,7 @@ void PeopleHandler::CloseSyncSetup() {
             IdentityManagerFactory::GetForProfile(profile_)
                 ->GetPrimaryAccountMutator()
                 ->ClearPrimaryAccount(
-                    identity::PrimaryAccountMutator::ClearAccountsAction::
+                    signin::PrimaryAccountMutator::ClearAccountsAction::
                         kDefault,
                     signin_metrics::ABORT_SIGNIN,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);

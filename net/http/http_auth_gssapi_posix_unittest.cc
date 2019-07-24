@@ -16,6 +16,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/mock_gssapi_library_posix.h"
+#include "net/log/net_log_with_source.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/net_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -86,31 +89,74 @@ void UnexpectedCallback(int result) {
 }  // namespace
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
+  BoundTestNetLog log;
   // TODO(ahendrickson): Manipulate the libraries and paths to test each of the
   // libraries we expect, and also whether or not they have the interface
   // functions we want.
   std::unique_ptr<GSSAPILibrary> gssapi(new GSSAPISharedLibrary(std::string()));
   DCHECK(gssapi.get());
-  EXPECT_TRUE(gssapi.get()->Init());
+  EXPECT_TRUE(gssapi.get()->Init(log.bound()));
+
+  // Should've logged a AUTH_LIBRARY_LOAD event, but not
+  // AUTH_LIBRARY_BIND_FAILED.
+  auto entries = log.GetEntries();
+  auto offset = ExpectLogContainsSomewhere(
+      entries, 0u, NetLogEventType::AUTH_LIBRARY_LOAD, NetLogEventPhase::BEGIN);
+  offset = ExpectLogContainsSomewhereAfter(entries, offset,
+                                           NetLogEventType::AUTH_LIBRARY_LOAD,
+                                           NetLogEventPhase::END);
+  ASSERT_LT(offset, entries.size());
+
+  auto& entry = entries[offset];
+  const std::string* library_name = entry.params.FindStringKey("library_name");
+  const std::string* load_result = entry.params.FindStringPath("load_result");
+  ASSERT_TRUE(library_name);
+  EXPECT_FALSE(library_name->empty());
+  EXPECT_FALSE(load_result);  // No load_result since it succeeded.
 }
 
-#if BUILDFLAG(DLOPEN_KERBEROS)
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
+  BoundTestNetLog log;
+
   std::unique_ptr<GSSAPILibrary> gssapi(
       new GSSAPISharedLibrary("/this/library/does/not/exist"));
-  EXPECT_FALSE(gssapi.get()->Init());
+  EXPECT_FALSE(gssapi.get()->Init(log.bound()));
+
+  auto entries = log.GetEntries();
+  auto offset = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::AUTH_LIBRARY_LOAD, NetLogEventPhase::END);
+  ASSERT_LT(offset, entries.size());
+
+  auto& entry = entries[offset];
+  const std::string* load_result = entry.params.FindStringKey("load_result");
+  ASSERT_TRUE(load_result);
+  EXPECT_FALSE(load_result->empty());
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
+  BoundTestNetLog log;
   base::FilePath module;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
   auto basename = base::GetNativeLibraryName("test_gssapi");
   module = module.AppendASCII(basename);
   auto gssapi = std::make_unique<GSSAPISharedLibrary>(module.value());
-  EXPECT_TRUE(gssapi.get()->Init());
+  EXPECT_TRUE(gssapi.get()->Init(log.bound()));
+
+  auto entries = log.GetEntries();
+  auto offset = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::AUTH_LIBRARY_LOAD, NetLogEventPhase::END);
+  ASSERT_LT(offset, entries.size());
+
+  auto& entry = entries[offset];
+  const std::string* load_result = entry.params.FindStringKey("load_result");
+  const std::string* library_name = entry.params.FindStringKey("library_name");
+  EXPECT_FALSE(load_result);
+  ASSERT_TRUE(library_name);
+  EXPECT_EQ(*library_name, module.AsUTF8Unsafe());
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
+  BoundTestNetLog log;
   base::FilePath module;
   ASSERT_TRUE(base::PathService::Get(base::DIR_MODULE, &module));
   auto basename = base::GetNativeLibraryName("test_badgssapi");
@@ -125,19 +171,25 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
   //
   // To resolve this issue, make sure that //net:test_badgssapi target in
   // //net/BUILD.gn should have an empty `deps` and an empty `libs`.
-  EXPECT_FALSE(gssapi.get()->Init());
+  EXPECT_FALSE(gssapi.get()->Init(log.bound()));
 
-  // Logs something like "gss_import_name" during loading process.
-  // TODO(asanka): Once GSSAPI library loading starts emitting NetLogs verify
-  // that the missing method is correctly identified.
+  auto entries = log.GetEntries();
+  auto offset = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::AUTH_LIBRARY_BIND_FAILED,
+      NetLogEventPhase::NONE);
+  ASSERT_LT(offset, entries.size());
+
+  auto& entry = entries[offset];
+  const std::string* method = entry.params.FindStringKey("method");
+  ASSERT_TRUE(method);
+  EXPECT_EQ(*method, "gss_import_name");
 }
-#endif  // DLOPEN_KERBEROS
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {
   std::unique_ptr<test::MockGSSAPILibrary> mock_library(
       new test::MockGSSAPILibrary);
   DCHECK(mock_library.get());
-  mock_library->Init();
+  mock_library->Init(NetLogWithSource());
   const char kAuthResponse[] = "Mary had a little lamb";
   test::GssContextMockImpl context1(
       "localhost",                         // Source name
@@ -233,6 +285,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_FirstRound) {
 }
 
 TEST(HttpAuthGSSAPITest, ParseChallenge_TwoRounds) {
+  BoundTestNetLog log;
   // The first round should just have "Negotiate", and the second round should
   // have a valid base64 token associated with it.
   test::MockGSSAPILibrary mock_library;
@@ -247,15 +300,30 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_TwoRounds) {
   // Generate an auth token and create another thing.
   EstablishInitialContext(&mock_library);
   std::string auth_token;
-  EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(
-                    nullptr, "HTTP/intranet.google.com", std::string(),
-                    &auth_token, base::BindOnce(&UnexpectedCallback)));
+  EXPECT_EQ(
+      OK, auth_gssapi.GenerateAuthToken(nullptr, "HTTP/intranet.google.com",
+                                        std::string(), &auth_token, log.bound(),
+                                        base::BindOnce(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());
   EXPECT_EQ(HttpAuth::AUTHORIZATION_RESULT_ACCEPT,
             auth_gssapi.ParseChallenge(&second_challenge));
+
+  auto entries = log.GetEntries();
+  auto offset = ExpectLogContainsSomewhere(
+      entries, 0, NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX,
+      NetLogEventPhase::END);
+  // There should be two of these.
+  offset = ExpectLogContainsSomewhere(
+      entries, offset, NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX,
+      NetLogEventPhase::END);
+  ASSERT_LT(offset, entries.size());
+  const std::string* source =
+      entries[offset].params.FindStringPath("context.source.name");
+  ASSERT_TRUE(source);
+  EXPECT_EQ("localhost", *source);
 }
 
 TEST(HttpAuthGSSAPITest, ParseChallenge_UnexpectedTokenFirstRound) {
@@ -285,9 +353,10 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_MissingTokenSecondRound) {
 
   EstablishInitialContext(&mock_library);
   std::string auth_token;
-  EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(
-                    nullptr, "HTTP/intranet.google.com", std::string(),
-                    &auth_token, base::BindOnce(&UnexpectedCallback)));
+  EXPECT_EQ(OK,
+            auth_gssapi.GenerateAuthToken(
+                nullptr, "HTTP/intranet.google.com", std::string(), &auth_token,
+                NetLogWithSource(), base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());
@@ -309,9 +378,10 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_NonBase64EncodedToken) {
 
   EstablishInitialContext(&mock_library);
   std::string auth_token;
-  EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(
-                    nullptr, "HTTP/intranet.google.com", std::string(),
-                    &auth_token, base::BindOnce(&UnexpectedCallback)));
+  EXPECT_EQ(OK,
+            auth_gssapi.GenerateAuthToken(
+                nullptr, "HTTP/intranet.google.com", std::string(), &auth_token,
+                NetLogWithSource(), base::BindOnce(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
                                               second_challenge_text.end());
@@ -334,7 +404,7 @@ TEST(HttpAuthGSSAPITest, OidToValue_Known) {
       {
         "oid"   : "GSS_C_NT_ANONYMOUS",
         "length": 6,
-        "bytes" : "0x0000:  2b06 0105 0603                           +.....\n"
+        "bytes" : "KwYBBQYD"
       }
   )");
   ASSERT_TRUE(expected.has_value());
@@ -347,7 +417,7 @@ TEST(HttpAuthGSSAPITest, OidToValue_Unknown) {
   auto expected = base::JSONReader::Read(R"(
       {
         "length": 6,
-        "bytes" : "0x0000:  2b06 0105 0605                           +.....\n"
+        "bytes" : "KwYBBQYF"
       }
   )");
   ASSERT_TRUE(expected.has_value());

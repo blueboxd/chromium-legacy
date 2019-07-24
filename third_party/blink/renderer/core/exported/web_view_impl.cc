@@ -2877,7 +2877,6 @@ void WebViewImpl::SetDeviceEmulationTransform(
   if (transform == device_emulation_transform_)
     return;
   device_emulation_transform_ = transform;
-  GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
   UpdateDeviceEmulationTransform();
 }
 
@@ -2887,11 +2886,14 @@ TransformationMatrix WebViewImpl::GetDeviceEmulationTransform() const {
 
 void WebViewImpl::EnableDeviceEmulation(
     const WebDeviceEmulationParams& params) {
-  dev_tools_emulator_->EnableDeviceEmulation(params);
+  TransformationMatrix device_emulation_transform =
+      dev_tools_emulator_->EnableDeviceEmulation(params);
+  SetDeviceEmulationTransform(device_emulation_transform);
 }
 
 void WebViewImpl::DisableDeviceEmulation() {
   dev_tools_emulator_->DisableDeviceEmulation();
+  SetDeviceEmulationTransform(TransformationMatrix());
 }
 
 void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
@@ -3113,11 +3115,21 @@ void WebViewImpl::PageScaleFactorChanged() {
       viewport.Scale(), viewport.IsPinchGestureActive(),
       MinimumPageScaleFactor(), MaximumPageScaleFactor());
   AsView().client->PageScaleFactorChanged(viewport.Scale());
-  dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+
+  if (dev_tools_emulator_->HasViewportOverride()) {
+    TransformationMatrix device_emulation_transform =
+        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+    SetDeviceEmulationTransform(device_emulation_transform);
+  }
 }
 
 void WebViewImpl::MainFrameScrollOffsetChanged() {
-  dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+  DCHECK(MainFrameImpl());
+  if (dev_tools_emulator_->HasViewportOverride()) {
+    TransformationMatrix device_emulation_transform =
+        dev_tools_emulator_->MainFrameScrollOrScaleChanged();
+    SetDeviceEmulationTransform(device_emulation_transform);
+  }
 }
 
 void WebViewImpl::SetBackgroundColorOverride(SkColor color) {
@@ -3434,15 +3446,27 @@ void WebViewImpl::SendScrollEndEventFromImplSide(
 }
 
 void WebViewImpl::UpdateDeviceEmulationTransform() {
-  if (!visual_viewport_container_layer_)
-    return;
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // This method may be called before a document lifecycle update runs, and
+    // attaches the |visual_viewport_container_layer_|. In that case, we will
+    // save the new transform and apply it when the container layer is attached.
+    // This is also null when CompositeAfterPaint is enabled.
+    if (visual_viewport_container_layer_) {
+      visual_viewport_container_layer_->SetTransform(
+          device_emulation_transform_);
+    }
+  }
 
-  // When the device emulation transform is updated, to avoid incorrect
-  // scales and fuzzy raster from the compositor, force all content to
-  // pick ideal raster scales.
-  visual_viewport_container_layer_->SetTransform(device_emulation_transform_);
-  if (layer_tree_view_)
-    layer_tree_view_->ForceRecalculateRasterScales();
+  GetPage()->GetVisualViewport().SetNeedsPaintPropertyUpdate();
+
+  if (MainFrameImpl()) {
+    // When the device emulation transform is updated, to avoid incorrect
+    // scales and fuzzy raster from the compositor, force all content to
+    // pick ideal raster scales.
+    // TODO(wjmaclean): This is only done on the main frame's widget currently,
+    // it should update all local frames.
+    AsWidget().client->ForceRecalculateRasterScales();
+  }
 }
 
 PageScheduler* WebViewImpl::Scheduler() const {

@@ -223,7 +223,7 @@ void BatchRequestConfigurator::Commit() {
 }
 
 DriveAPIService::DriveAPIService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,

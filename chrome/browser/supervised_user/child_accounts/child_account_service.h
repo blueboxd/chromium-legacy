@@ -33,7 +33,7 @@ class Profile;
 // supervised user experience, fetch information about the parent(s)).
 class ChildAccountService : public KeyedService,
                             public FamilyInfoFetcher::Consumer,
-                            public identity::IdentityManager::Observer,
+                            public signin::IdentityManager::Observer,
                             public SupervisedUserService::Delegate {
  public:
   enum class AuthState { AUTHENTICATED, NOT_AUTHENTICATED, PENDING };
@@ -78,7 +78,7 @@ class ChildAccountService : public KeyedService,
   // Sets whether the signed-in account is a child account.
   void SetIsChildAccount(bool is_child_account);
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
   void OnExtendedAccountInfoRemoved(const AccountInfo& info) override;
 
@@ -89,7 +89,7 @@ class ChildAccountService : public KeyedService,
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   void StartFetchingFamilyInfo();
@@ -114,7 +114,7 @@ class ChildAccountService : public KeyedService,
   base::OneShotTimer family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   base::CallbackList<void()> google_auth_state_observers_;
 

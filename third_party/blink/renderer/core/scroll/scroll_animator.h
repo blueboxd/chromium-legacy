@@ -137,14 +137,6 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
   // Returns whether or not the animation was sent to the compositor.
   virtual bool SendAnimationToCompositor();
 
-  void NotifyAnimationTakeover(double monotonic_time,
-                               double animation_start_time,
-                               std::unique_ptr<cc::AnimationCurve>) override;
-
-  std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
-  const base::TickClock* const tick_clock_;
-  base::TimeTicks start_time_;
-
  private:
   // Returns true if the animation was scheduled successfully. If animation
   // could not be scheduled (e.g. because the frame is detached), scrolls
@@ -161,6 +153,10 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
   // only when there is no animation running and we are not starting one
   // because we are already at targetPos.
   bool WillAnimateToOffset(const ScrollOffset& target_pos);
+
+  std::unique_ptr<CompositorScrollOffsetAnimationCurve> animation_curve_;
+  const base::TickClock* const tick_clock_;
+  base::TimeTicks start_time_;
 
   ScrollOffset target_offset_;
   ScrollGranularity last_granularity_;

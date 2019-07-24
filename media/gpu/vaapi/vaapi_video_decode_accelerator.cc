@@ -5,10 +5,9 @@
 #include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 
 #include <string.h>
+#include <va/va.h>
 
 #include <memory>
-
-#include <va/va.h>
 
 #include "base/bind.h"
 #include "base/cpu.h"

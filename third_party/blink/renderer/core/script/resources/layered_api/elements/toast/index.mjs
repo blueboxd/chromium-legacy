@@ -13,6 +13,7 @@
 import * as reflection from '../internal/reflection.mjs';
 
 const DEFAULT_DURATION = 3000;
+const TYPES = new Set(['success', 'warning', 'error']);
 
 function stylesheetFactory() {
   let stylesheet;
@@ -37,6 +38,18 @@ function stylesheetFactory() {
 
         .default-closebutton {
           user-select: none;
+        }
+
+        :host([type=success i]) {
+          border-color: green;
+        }
+
+        :host([type=warning i]) {
+          border-color: orange;
+        }
+
+        :host([type=error i]) {
+          border-color: red;
         }
       `);
       // TODO(jacksteinberg): use offset-block-end: / offset-inline-end: over bottom: / right:
@@ -127,6 +140,25 @@ export class StdToastElement extends HTMLElement {
     }
   }
 
+  get type() {
+    const typeAttr = this.getAttribute('type');
+    if (typeAttr === null) {
+      return '';
+    }
+
+    const typeAttrLower = typeAttr.toLowerCase();
+
+    if (TYPES.has(typeAttrLower)) {
+      return typeAttrLower;
+    }
+
+    return '';
+  }
+
+  set type(val) {
+    this.setAttribute('type', val);
+  }
+
   show({duration = DEFAULT_DURATION} = {}) {
     this.setAttribute('open', '');
     clearTimeout(this.#timeoutID);
@@ -179,7 +211,13 @@ delete StdToastElement.prototype.connectedCallback;
 export function showToast(message, options = {}) {
   const toast = new StdToastElement(message);
 
-  const {action, closeButton, ...showOptions} = options;
+  const {
+    action,
+    closeButton,
+    type,
+    ...showOptions
+  } = options;
+
   if (isElement(action)) {
     toast.action = action;
   } else if (action !== undefined) {
@@ -195,6 +233,10 @@ export function showToast(message, options = {}) {
 
   if (closeButton !== undefined) {
     toast.closeButton = closeButton;
+  }
+
+  if (type !== undefined) {
+    toast.type = type;
   }
 
   document.body.append(toast);

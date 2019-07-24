@@ -45,7 +45,7 @@ class LocalDiscoveryUIHandler
       public cloud_print::PrivetRegisterOperation::Delegate,
       public cloud_print::PrivetDeviceLister::Delegate,
       public cloud_print::CloudPrintPrinterList::Delegate,
-      public identity::IdentityManager::Observer {
+      public signin::IdentityManager::Observer {
  public:
   // Class used to set a URLLoaderFactory that should be used when making
   // network requests. Create one instance of this object with the
@@ -91,7 +91,7 @@ class LocalDiscoveryUIHandler
       const cloud_print::CloudPrintPrinterList::DeviceList& devices) override;
   void OnDeviceListUnavailable() override;
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(

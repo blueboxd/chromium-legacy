@@ -62,6 +62,20 @@ class AshColorProvider {
     kFocusRing,
   };
 
+  // Attributes of ripple, includes the base color, opacity of inkdrop and
+  // highlight.
+  struct RippleAttributes {
+    RippleAttributes(SkColor color,
+                     float opacity_of_inkdrop,
+                     float opacity_of_highlight)
+        : base_color(color),
+          inkdrop_opacity(opacity_of_inkdrop),
+          highlight_opacity(opacity_of_highlight) {}
+    const SkColor base_color;
+    const float inkdrop_opacity;
+    const float highlight_opacity;
+  };
+
   AshColorProvider();
   ~AshColorProvider();
 
@@ -69,6 +83,10 @@ class AshColorProvider {
   SkColor GetShieldLayerColor(ShieldLayerType type) const;
   SkColor GetBaseLayerColor(BaseLayerType type) const;
   SkColor GetControlsLayerColor(ControlsLayerType type) const;
+
+  // Gets the attributes of ripple on |bg_color|. |bg_color| is the background
+  // color of the UI element that wants to show inkdrop.
+  RippleAttributes GetRippleAttributes(SkColor bg_color) const;
 
   AshColorMode color_mode() const { return color_mode_; }
 

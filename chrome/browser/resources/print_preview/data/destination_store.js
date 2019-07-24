@@ -818,7 +818,8 @@ cr.define('print_preview', function() {
 
     /**
      * Initiates loading of destinations.
-     * @param{print_preview.PrinterType} type The type of destinations to load.
+     * @param {!print_preview.PrinterType} type The type of destinations to
+     *     load.
      * @private
      */
     startLoadDestinations_(type) {
@@ -1328,7 +1329,7 @@ cr.define('print_preview', function() {
     /**
      * Called when a printer or printers are detected after sending getPrinters
      * from the native layer.
-     * @param {print_preview.PrinterType} type The type of printer(s) added.
+     * @param {!print_preview.PrinterType} type The type of printer(s) added.
      * @param {!Array<!print_preview.LocalDestinationInfo |
      *                !print_preview.PrivetPrinterDescription |
      *                !print_preview.ProvisionalDestinationInfo>} printers

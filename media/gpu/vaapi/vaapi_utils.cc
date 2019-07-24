@@ -4,10 +4,10 @@
 
 #include "media/gpu/vaapi/vaapi_utils.h"
 
+#include <va/va.h>
+
 #include <type_traits>
 #include <utility>
-
-#include <va/va.h>
 
 #include "base/logging.h"
 #include "base/numerics/ranges.h"

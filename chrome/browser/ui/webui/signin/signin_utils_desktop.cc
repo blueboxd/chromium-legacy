@@ -47,7 +47,7 @@ bool CanOfferSignin(Profile* profile,
       return false;
 
     // Make sure this username is not prohibited by policy.
-    if (!identity::IsUsernameAllowedByPatternFromPrefs(
+    if (!signin::IsUsernameAllowedByPatternFromPrefs(
             g_browser_process->local_state(), email)) {
       if (error_message) {
         error_message->assign(

@@ -19,12 +19,12 @@ suite('<app-management-arc-permission-view>', () => {
 
   async function clickPermissionToggle(permissionType) {
     getPermissionCrToggleByType(arcPermissionView, permissionType).click();
-    await fakeHandler.$.flushForTesting();
+    await fakeHandler.flushPipesForTesting();
   }
 
   async function clickPermissionItem(permissionType) {
     getPermissionItemByType(arcPermissionView, permissionType).click();
-    await fakeHandler.$.flushForTesting();
+    await fakeHandler.flushPipesForTesting();
   }
 
   setup(async () => {

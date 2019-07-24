@@ -104,9 +104,7 @@ customize.IDS = {
   EDIT_BG: 'edit-bg',
   EDIT_BG_DIALOG: 'edit-bg-dialog',
   EDIT_BG_DIVIDER: 'edit-bg-divider',
-  EDIT_BG_ICON: 'edit-bg-icon',
   EDIT_BG_MENU: 'edit-bg-menu',
-  EDIT_BG_TEXT: 'edit-bg-text',
   MENU_BACK_CIRCLE: 'menu-back-circle',
   MENU_CANCEL: 'menu-cancel',
   MENU_DONE: 'menu-done',
@@ -142,8 +140,6 @@ customize.CLASSES = {
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
   COLLECTION_TILE_BG: 'bg-sel-tile-bg',
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
-  // Extended and elevated style for entry point.
-  ENTRY_POINT_ENHANCED: 'ep-enhanced',
   IMAGE_DIALOG: 'is-img-sel',
   ON_IMAGE_MENU: 'on-img-menu',
   OPTION: 'bg-option',

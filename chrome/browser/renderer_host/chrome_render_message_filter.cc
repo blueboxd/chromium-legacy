@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/buildflags/buildflags.h"
+#include "net/base/network_isolation_key.h"
 #include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -130,12 +131,17 @@ void ChromeRenderMessageFilter::OnPreconnect(const GURL& url,
     return;
   }
 
-  if (preconnect_manager_initialized_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&predictors::PreconnectManager::StartPreconnectUrl,
-                       preconnect_manager_, url, allow_credentials));
-  }
+  if (!preconnect_manager_initialized_)
+    return;
+
+  // TODO(mmenke):  Use process and frame ids to populate NetworkIsolationKey.
+  // May also need to think about enabling cross-site preconnects, though that
+  // will result in at least some cross-site information leakage.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&predictors::PreconnectManager::StartPreconnectUrl,
+                     preconnect_manager_, url, allow_credentials,
+                     net::NetworkIsolationKey()));
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(

@@ -581,11 +581,11 @@ class DiceBrowsingDataRemoverBrowserTest
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
     if (is_primary) {
       DCHECK(!identity_manager->HasPrimaryAccount());
-      return identity::MakePrimaryAccountAvailable(identity_manager,
-                                                   account_id + "@gmail.com");
+      return signin::MakePrimaryAccountAvailable(identity_manager,
+                                                 account_id + "@gmail.com");
     }
     auto account_info =
-        identity::MakeAccountAvailable(identity_manager, account_id);
+        signin::MakeAccountAvailable(identity_manager, account_id);
     DCHECK(
         identity_manager->HasAccountWithRefreshToken(account_info.account_id));
     return account_info;
@@ -627,7 +627,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncToken) {
   // Clear cookies.
   RemoveAndWait(content::BrowsingDataRemover::DATA_TYPE_COOKIES);
   // Check that the Sync account was not removed and Sync was paused.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   EXPECT_TRUE(
       identity_manager->HasAccountWithRefreshToken(primary_account.account_id));
@@ -685,7 +685,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowsingDataRemoverBrowserTest, SyncTokenError) {
   AccountInfo primary_account =
       AddAccountToProfile(kAccountId, profile, /*is_primary=*/true);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, primary_account.account_id,
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::

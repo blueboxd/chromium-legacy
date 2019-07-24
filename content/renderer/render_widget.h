@@ -432,6 +432,7 @@ class CONTENT_EXPORT RenderWidget
   void RequestUnbufferedInputEvents() override;
   void SetHasPointerRawUpdateEventHandlers(bool has_handlers) override;
   void SetHasTouchEventHandlers(bool has_handlers) override;
+  void SetHaveScrollEventHandlers(bool have_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
   void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
@@ -455,6 +456,7 @@ class CONTENT_EXPORT RenderWidget
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
+  void ForceRecalculateRasterScales() override;
   void RequestDecode(const cc::PaintImage& image,
                      base::OnceCallback<void(bool)> callback) override;
   void NotifySwapTime(ReportTimeCallback callback) override;

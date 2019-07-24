@@ -1462,9 +1462,8 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
 
   // TODO(http://crbug.com/980774): Investigate if this is necessary.
   if (!request->frame_data) {
-    content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+    request->frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(
         request->render_process_id, request->frame_id);
-    request->frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(rfh);
   }
   event_details->SetFrameData(request->frame_data.value());
   DispatchEventToListeners(browser_context, std::move(listeners_to_dispatch),

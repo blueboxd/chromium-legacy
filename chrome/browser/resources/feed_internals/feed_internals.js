@@ -6,7 +6,7 @@
 
 /**
  * Reference to the backend.
- * @type {feedInternals.mojom.PageHandlerProxy}
+ * @type {feedInternals.mojom.PageHandlerRemote}
  */
 let pageHandler = null;
 
@@ -153,7 +153,7 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup backend mojo.
-  pageHandler = feedInternals.mojom.PageHandler.getProxy();
+  pageHandler = feedInternals.mojom.PageHandler.getRemote();
 
   updatePageWithProperties();
   updatePageWithUserClass();

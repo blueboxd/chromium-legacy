@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Tue, 23 Jul 2019 15:11:19 -0700
+Subject: [PATCH 5/5] Fix bad chrome_sqlite3_free
+
+Backports https://www.sqlite.org/src/info/f60a83069168899d
+
+Bug: 979950
+---
+ third_party/sqlite/patched/src/btree.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/patched/src/btree.c b/third_party/sqlite/patched/src/btree.c
+index 23cb6bb3b083..887be63bd7d0 100644
+--- a/third_party/sqlite/patched/src/btree.c
++++ b/third_party/sqlite/patched/src/btree.c
+@@ -8724,7 +8724,12 @@ int sqlite3BtreeInsert(
+       ** new entry uses overflow pages, as the insertCell() call below is
+       ** necessary to add the PTRMAP_OVERFLOW1 pointer-map entry.  */
+       assert( rc==SQLITE_OK ); /* clearCell never fails when nLocal==nPayload */
+-      if( oldCell+szNew > pPage->aDataEnd ) return SQLITE_CORRUPT_BKPT;
++      if( oldCell < pPage->aData+pPage->hdrOffset+10 ){
++        return SQLITE_CORRUPT_BKPT;
++      }
++      if( oldCell+szNew > pPage->aDataEnd ){
++        return SQLITE_CORRUPT_BKPT;
++      }
+       memcpy(oldCell, newCell, szNew);
+       return SQLITE_OK;
+     }
+-- 
+2.22.0.657.g960e92d24f-goog
+

@@ -101,7 +101,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ios::ChromeBrowserState* _browserState;  // Weak.
   SyncSetupService* _syncSetupService;     // Weak.
   std::unique_ptr<SyncObserverBridge> _syncObserver;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   AuthenticationFlow* _authenticationFlow;
   // Whether switching sync account is allowed on the screen.
@@ -228,7 +228,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserver.reset(new SyncObserverBridge(self, syncService));
-    _identityManagerObserver.reset(new identity::IdentityManagerObserverBridge(
+    _identityManagerObserver.reset(new signin::IdentityManagerObserverBridge(
         IdentityManagerFactory::GetForBrowserState(_browserState), self));
     _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
@@ -1019,7 +1019,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self updateTableView];
 }
 
-#pragma mark identity::IdentityManagerObserverBridgeDelegate
+#pragma mark signin::IdentityManagerObserverBridgeDelegate
 
 - (void)onEndBatchOfRefreshTokenStateChanges {
   if (_authenticationOperationInProgress) {

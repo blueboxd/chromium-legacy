@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
@@ -1773,8 +1772,8 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           index, IDC_SEND_TAB_TO_SELF_SINGLE_TARGET,
           l10n_util::GetStringFUTF16(
               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
-              base::UTF8ToUTF16(send_tab_to_self::GetSingleTargetDeviceName(
-                  location_bar_view_->profile()))));
+              send_tab_to_self::GetSingleTargetDeviceName(
+                  location_bar_view_->profile())));
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kOmniboxMenu,
           SendTabToSelfClickResult::kShowDeviceList);

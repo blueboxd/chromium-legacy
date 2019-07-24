@@ -235,6 +235,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
+
+  void MainFrameScrollOffsetChanged(LocalFrame& main_frame) const override {}
 };
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {

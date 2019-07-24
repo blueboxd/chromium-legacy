@@ -87,6 +87,9 @@ cr.define('cr.login', function() {
     'obfuscatedOwnerId',         // Obfuscated device owner ID, if needed.
     'extractSamlPasswordAttributes',  // If enabled attempts to extract password
                                       // attributes from the SAML response.
+    'ignoreCrOSIdpSetting',  // If set to true, causes Gaia to ignore 3P
+                             // SAML IdP SSO redirection policies (and
+                             // redirect to SAML IdPs by default).
 
     // The email fields allow for the following possibilities:
     //
@@ -571,6 +574,9 @@ cr.define('cr.login', function() {
         // ChromeOS embedded signin page uses 'hd' (hosted domain) as the query
         // argument to show an email domain.
         url = appendParam(url, 'hd', data.emailDomain);
+      }
+      if (data.ignoreCrOSIdpSetting === true) {
+        url = appendParam(url, 'ignoreCrOSIdpSetting', 'true');
       }
       return url;
     }

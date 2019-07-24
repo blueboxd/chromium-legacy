@@ -37,7 +37,7 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
     std::string fake_sync_username;
     std::string expected_result;
     const syncer::SyncService* sync_service;
-    const identity::IdentityManager* identity_manager;
+    const signin::IdentityManager* identity_manager;
   } kTestCases[] = {
       {TestCase::NOT_SYNCING_PASSWORDS, "a@example.org", std::string(),
        sync_service(), identity_manager()},

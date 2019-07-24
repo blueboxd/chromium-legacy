@@ -84,11 +84,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // sequence. This is used to simulate a security key that truncates strings
     // at a pre-defined byte length without concern for UTF-8 validity of the
     // result.
-    bool allow_invalid_utf8_in_credential_entities = true;
+    bool allow_invalid_utf8_in_credential_entities = false;
   };
 
   VirtualCtap2Device();
-  explicit VirtualCtap2Device(scoped_refptr<State> state, const Config& config);
+  VirtualCtap2Device(scoped_refptr<State> state, const Config& config);
   ~VirtualCtap2Device() override;
 
   // FidoDevice:
@@ -96,9 +96,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   CancelToken DeviceTransact(std::vector<uint8_t> command,
                              DeviceCallback cb) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
-
-  void SetAuthenticatorSupportedOptions(
-      const AuthenticatorSupportedOptions& options);
 
  private:
   base::Optional<CtapDeviceResponseCode> OnMakeCredential(

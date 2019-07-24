@@ -152,7 +152,6 @@ void IconCacherImpl::OnPopularSitesFaviconDownloaded(
     const image_fetcher::RequestMetadata& metadata) {
   if (fetched_image.IsEmpty()) {
     FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/false);
-    UMA_HISTOGRAM_BOOLEAN("NewTabPage.TileFaviconFetchSuccess.Popular", false);
     return;
   }
 
@@ -163,7 +162,6 @@ void IconCacherImpl::OnPopularSitesFaviconDownloaded(
   }
   SaveIconForSite(site, fetched_image);
   FinishRequestAndNotifyIconAvailable(site.url, /*newly_available=*/true);
-  UMA_HISTOGRAM_BOOLEAN("NewTabPage.TileFaviconFetchSuccess.Popular", true);
 }
 
 void IconCacherImpl::SaveAndNotifyDefaultIconForSite(
@@ -276,9 +274,6 @@ void IconCacherImpl::OnGetLargeIconOrFallbackStyleFinished(
 void IconCacherImpl::OnMostLikelyFaviconDownloaded(
     const GURL& request_url,
     favicon_base::GoogleFaviconServerRequestStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.TileFaviconFetchStatus.Server", status,
-      favicon_base::GoogleFaviconServerRequestStatus::COUNT);
   FinishRequestAndNotifyIconAvailable(
       request_url,
       status == favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);

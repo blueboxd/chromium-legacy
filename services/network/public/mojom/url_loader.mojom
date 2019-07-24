@@ -77,13 +77,13 @@ enum UpdateNetworkIsolationKeyOnRedirect {
   kDoNotUpdate,
 
   // The updated network isolation key will take the redirected url's origin as
-  // the top frame origin and initiating frame origin.
-  kUpdateTopFrameAndInitiatingFrameOrigin,
+  // the top frame origin and frame origin.
+  kUpdateTopFrameAndFrameOrigin,
 
   // The updated network isolation key will take existing
   // |trusted_network_isolation_key|'s top frame origin and redirected url's
-  // origin as the initiating frame origin.
-  kUpdateInitiatingFrameOrigin
+  // origin as the frame origin.
+  kUpdateFrameOrigin
 };
 
 // Typemapped to network::ResourceRequest.

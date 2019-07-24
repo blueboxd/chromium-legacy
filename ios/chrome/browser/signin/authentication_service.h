@@ -30,12 +30,12 @@ class SyncSetupService;
 // AuthenticationService is the Chrome interface to the iOS shared
 // authentication library.
 class AuthenticationService : public KeyedService,
-                              public identity::IdentityManager::Observer,
+                              public signin::IdentityManager::Observer,
                               public ios::ChromeIdentityService::Observer {
  public:
   AuthenticationService(PrefService* pref_service,
                         SyncSetupService* sync_setup_service,
-                        identity::IdentityManager* identity_manager,
+                        signin::IdentityManager* identity_manager,
                         syncer::SyncService* sync_service);
   ~AuthenticationService() override;
 
@@ -176,7 +176,7 @@ class AuthenticationService : public KeyedService,
   // authenticated identity was removed.
   void ComputeHaveAccountsChanged(bool should_prompt);
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnEndBatchOfRefreshTokenStateChanges() override;
 
   // ChromeIdentityServiceObserver implementation.
@@ -193,7 +193,7 @@ class AuthenticationService : public KeyedService,
   // Pointer to the KeyedServices used by AuthenticationService.
   PrefService* pref_service_ = nullptr;
   SyncSetupService* sync_setup_service_ = nullptr;
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
   syncer::SyncService* sync_service_ = nullptr;
 
   // Whether Initialized has been called.
@@ -215,7 +215,7 @@ class AuthenticationService : public KeyedService,
                  ios::ChromeIdentityService::Observer>
       identity_service_observer_;
 
-  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
 
   base::WeakPtrFactory<AuthenticationService> weak_pointer_factory_;

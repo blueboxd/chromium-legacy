@@ -54,14 +54,19 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
 
-  // Called when the request fails for the given |reason|. Embedders may return
-  // true if they want AuthenticatorImpl to hold off from resolving the WebAuthn
-  // request with an error, e.g. because they want the user to dismiss an error
-  // dialog first. In this case, embedders *must* eventually invoke the
-  // FidoRequestHandlerBase::CancelCallback in order to resolve the request.
-  // Returning false causes AuthenticatorImpl to resolve the request with the
-  // error right away.
-  virtual bool DoesBlockRequestOnFailure(InterestingFailureReason reason);
+  // Called when the request fails for the given |reason|.  |authenticator|
+  // points to the FidoAuthenticator used in the request that resulted in the
+  // error. It may be nullptr if |reason| is kTimeout.
+  //
+  // Embedders may return true if they want AuthenticatorImpl to hold off from
+  // resolving the WebAuthn request with an error, e.g. because they want the
+  // user to dismiss an error dialog first. In this case, embedders *must*
+  // eventually invoke the FidoRequestHandlerBase::CancelCallback in order to
+  // resolve the request. Returning false causes AuthenticatorImpl to resolve
+  // the request with the error right away.
+  virtual bool DoesBlockRequestOnFailure(
+      const ::device::FidoAuthenticator* authenticator,
+      InterestingFailureReason reason);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
   // actions, namely: cancel the request, start the request over, initiate BLE
@@ -172,8 +177,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
   void FidoAuthenticatorIdChanged(base::StringPiece old_authenticator_id,
                                   std::string new_authenticator_id) override;
-  void FidoAuthenticatorPairingModeChanged(base::StringPiece authenticator_id,
-                                           bool is_in_pairing_mode) override;
+  void FidoAuthenticatorPairingModeChanged(
+      base::StringPiece authenticator_id,
+      bool is_in_pairing_mode,
+      base::string16 display_name) override;
   bool SupportsPIN() const override;
   void CollectPIN(
       base::Optional<int> attempts,

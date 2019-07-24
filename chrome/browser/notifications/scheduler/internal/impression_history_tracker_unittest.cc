@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/test/fake_clock.h"
 #include "chrome/browser/notifications/scheduler/test/test_utils.h"
@@ -23,6 +24,7 @@ namespace notifications {
 namespace {
 
 const char kGuid1[] = "guid1";
+const char kTimeStr[] = "04/25/20 01:00:00 AM";
 
 struct TestCase {
   // Input data that will be pushed to the target class.
@@ -233,7 +235,7 @@ TEST_F(ImpressionHistoryTrackerTest, AddImpression) {
   tracker()->AddImpression(SchedulerClientType::kTest2, kGuid1);
   VerifyClientStates(test_case);
 
-  SetNow("04/25/20 01:00:00 AM");
+  SetNow(kTimeStr);
 
   EXPECT_CALL(*store(), Update(_, _, _));
   EXPECT_CALL(*delegate(), OnImpressionUpdated());
@@ -254,12 +256,15 @@ TEST_F(ImpressionHistoryTrackerTest, ClickNoImpression) {
   VerifyClientStates(test_case);
 }
 
+// Defines the expected state of impression data after certain user action.
 struct UserActionTestParam {
   ImpressionResult impression_result = ImpressionResult::kInvalid;
   UserFeedback user_feedback = UserFeedback::kNoFeedback;
   int current_max_daily_show = 0;
   base::Optional<ActionButtonType> button_type;
-  base::Optional<SuppressionInfo> suppression_info;
+  bool integrated = false;
+  bool has_suppression = false;
+  std::map<UserFeedback, ImpressionResult> impression_mapping;
 };
 
 class ImpressionHistoryTrackerUserActionTest
@@ -273,28 +278,51 @@ class ImpressionHistoryTrackerUserActionTest
   DISALLOW_COPY_AND_ASSIGN(ImpressionHistoryTrackerUserActionTest);
 };
 
-// TODO(xingliu): Add test for unhelpful/dismiss.
 const UserActionTestParam kUserActionTestParams[] = {
+    // Click.
     {ImpressionResult::kPositive, UserFeedback::kClick, 3, base::nullopt,
-     base::nullopt},
+     true /*integrated*/, false /*has_suppression*/},
+    // Helpful button.
     {ImpressionResult::kPositive, UserFeedback::kHelpful, 3,
-     ActionButtonType::kHelpful, base::nullopt}};
+     ActionButtonType::kHelpful, true /*integrated*/,
+     false /*has_suppression*/},
+    // Unhelpful button.
+    {ImpressionResult::kNegative, UserFeedback::kNotHelpful, 0,
+     ActionButtonType::kUnhelpful, true /*integrated*/,
+     true /*has_suppression*/},
+    // One dismiss.
+    {ImpressionResult::kInvalid, UserFeedback::kDismiss, 2, base::nullopt,
+     false /*integrated*/, false /*has_suppression*/},
+    // Click with negative impression result from impression mapping.
+    {ImpressionResult::kNegative,
+     UserFeedback::kClick,
+     0,
+     base::nullopt,
+     true /*integrated*/,
+     true /*has_suppression*/,
+     {{UserFeedback::kClick,
+       ImpressionResult::kNegative}} /*impression_mapping*/}};
 
 // User actions like clicks should update the ClientState data accordingly.
 TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
+  clock()->SetNow(base::Time::UnixEpoch());
   TestCase test_case = CreateDefaultTestCase();
   Impression impression = CreateImpression(base::Time::Now(), kGuid1);
   DCHECK(!test_case.input.empty());
+  impression.impression_mapping = GetParam().impression_mapping;
   test_case.input.front().impressions.emplace_back(impression);
 
   impression.impression = GetParam().impression_result;
-  impression.integrated = true;
+  impression.integrated = GetParam().integrated;
   impression.feedback = GetParam().user_feedback;
 
   test_case.expected.front().current_max_daily_show =
       GetParam().current_max_daily_show;
   test_case.expected.front().impressions.emplace_back(impression);
-  test_case.expected.front().suppression_info = GetParam().suppression_info;
+  if (GetParam().has_suppression) {
+    test_case.expected.front().suppression_info =
+        SuppressionInfo(base::Time::UnixEpoch(), config().suppression_duration);
+  }
 
   CreateTracker(test_case);
   InitTrackerWithData(test_case);
@@ -302,11 +330,14 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
   EXPECT_CALL(*delegate(), OnImpressionUpdated());
 
   // Trigger user action.
-  if (GetParam().user_feedback == UserFeedback::kClick)
+  if (GetParam().user_feedback == UserFeedback::kClick) {
     tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
-  else if (GetParam().button_type.has_value())
+  } else if (GetParam().button_type.has_value()) {
     tracker()->OnActionClick(SchedulerClientType::kTest1, kGuid1,
                              GetParam().button_type.value());
+  } else if (GetParam().user_feedback == UserFeedback::kDismiss) {
+    tracker()->OnDismiss(SchedulerClientType::kTest1, kGuid1);
+  }
 
   VerifyClientStates(test_case);
 }

@@ -431,6 +431,67 @@ TEST_P(ParameterizedLayoutTextTest, GetTextBoxInfoWithGeneratedContent) {
   EXPECT_EQ(LayoutRect(20, 0, 20, 10), boxes_remaining[1].local_rect);
 }
 
+// For http://crbug.com/985488
+TEST_P(ParameterizedLayoutTextTest, GetTextBoxInfoWithHidden) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        font: 10px/1 Ahem;
+        overflow-x: hidden;
+        white-space: nowrap;
+        width: 9ch;
+      }
+    </style>
+    <div id="target">  abcde  fghij  </div>
+  )HTML");
+  const Element& target = *GetElementById("target");
+  const LayoutText& layout_text =
+      *To<Text>(target.firstChild())->GetLayoutObject();
+
+  auto boxes = layout_text.GetTextBoxInfo();
+  EXPECT_EQ(2u, boxes.size());
+
+  EXPECT_EQ(2u, boxes[0].dom_start_offset);
+  EXPECT_EQ(6u, boxes[0].dom_length);
+  EXPECT_EQ(LayoutRect(0, 0, 60, 10), boxes[0].local_rect);
+
+  EXPECT_EQ(9u, boxes[1].dom_start_offset);
+  EXPECT_EQ(5u, boxes[1].dom_length);
+  EXPECT_EQ(LayoutRect(60, 0, 50, 10), boxes[1].local_rect);
+}
+
+// For http://crbug.com/985488
+TEST_P(ParameterizedLayoutTextTest, GetTextBoxInfoWithEllipsis) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        font: 10px/1 Ahem;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 9ch;
+      }
+    </style>
+    <div id="target">  abcde  fghij  </div>
+  )HTML");
+  const Element& target = *GetElementById("target");
+  const LayoutText& layout_text =
+      *To<Text>(target.firstChild())->GetLayoutObject();
+
+  auto boxes = layout_text.GetTextBoxInfo();
+  EXPECT_EQ(2u, boxes.size());
+
+  EXPECT_EQ(2u, boxes[0].dom_start_offset);
+  EXPECT_EQ(6u, boxes[0].dom_length);
+  EXPECT_EQ(LayoutRect(0, 0, 60, 10), boxes[0].local_rect);
+
+  EXPECT_EQ(9u, boxes[1].dom_start_offset);
+  EXPECT_EQ(5u, boxes[1].dom_length);
+  EXPECT_EQ(LayoutRect(60, 0, 50, 10), boxes[1].local_rect);
+}
+
 TEST_P(ParameterizedLayoutTextTest,
        IsBeforeAfterNonCollapsedCharacterNoLineWrap) {
   // Basic tests

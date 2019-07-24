@@ -13,7 +13,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 
 SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     ProfileAttributesStorage* profile_attributes_storage,
     const base::FilePath& profile_path)

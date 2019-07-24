@@ -60,8 +60,7 @@ class MockCookieManager
            network::mojom::CookieManager::SetCanonicalCookieCallback callback));
 };
 
-class FakeConsistencyCookieManager
-    : public signin::ConsistencyCookieManagerBase {
+class FakeConsistencyCookieManager : public ConsistencyCookieManagerBase {
  public:
   FakeConsistencyCookieManager(SigninClient* signin_client,
                                AccountReconcilor* reconcilor)
@@ -108,7 +107,7 @@ class ConsistencyCookieManagerTest : public ::testing::Test {
   MockCookieManager* mock_cookie_manager_ = nullptr;
 
   TestSigninClient signin_client_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<AccountReconcilor> reconcilor_;
 };
 

@@ -61,7 +61,6 @@ public class VariationsSeedFetcherTest {
                 .getServerConnection(VariationsSeedFetcher.VariationsPlatform.ANDROID, sRestrict,
                         sMilestone, sChannel);
         mPrefs = ContextUtils.getAppSharedPreferences();
-        mPrefs.edit().clear().apply();
     }
 
     @After

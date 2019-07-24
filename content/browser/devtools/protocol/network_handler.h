@@ -191,11 +191,11 @@ class NetworkHandler : public DevToolsDomainHandler,
   void OnRequestWillBeSentExtraInfo(
       const std::string& devtools_request_id,
       const net::CookieStatusList& request_cookie_list,
-      const std::vector<std::pair<std::string, std::string>>& request_headers);
+      const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers);
   void OnResponseReceivedExtraInfo(
       const std::string& devtools_request_id,
       const net::CookieAndLineStatusList& response_cookie_list,
-      const std::vector<std::pair<std::string, std::string>>& response_headers,
+      const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
       const base::Optional<std::string>& response_headers_text);
 
   bool enabled() const { return enabled_; }

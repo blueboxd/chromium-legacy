@@ -1,0 +1,7 @@
+Testing accessibility in the DOM breakpoints pane.
+Setting DOM breakpoints.
+DOM breakpoints pane text content: Subtree modifiedNode removedNo breakpoints
+Running the axe-core linter on the DOM breakpoints pane.
+aXe violations: []
+
+

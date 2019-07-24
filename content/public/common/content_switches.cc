@@ -345,9 +345,6 @@ const char kEnableBlinkFeatures[]           = "enable-blink-features";
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
 const char kEnableCaretBrowsing[] = "enable-caret-browsing";
 
-// Enable default SiteInstance to be used for all unisolated sites.
-const char kEnableDefaultSiteInstance[] = "enable-default-site-instance";
-
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";

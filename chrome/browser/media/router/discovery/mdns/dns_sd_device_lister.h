@@ -10,13 +10,14 @@
 
 #include "base/macros.h"
 #include "chrome/browser/local_discovery/service_discovery_device_lister.h"
-#include "chrome/browser/media/router/discovery/mdns/dns_sd_delegate.h"
 
 namespace local_discovery {
 class ServiceDiscoveryClient;
 }  // local_discovery
 
 namespace media_router {
+
+class DnsSdDelegate;
 
 // Manages a watcher for a specific MDNS/DNS-SD service type and notifies
 // a delegate of changes to watched services.
@@ -35,6 +36,7 @@ class DnsSdDeviceLister
   void Reset();
 
  protected:
+  // local_discovery::ServiceDiscoveryDeviceLister::Delegate:
   void OnDeviceChanged(
       const std::string& service_type,
       bool added,
@@ -52,7 +54,7 @@ class DnsSdDeviceLister
 
   // The client and service type used to create |device_lister_|.
   local_discovery::ServiceDiscoveryClient* const service_discovery_client_;
-  std::string service_type_;
+  const std::string service_type_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsSdDeviceLister);
 };

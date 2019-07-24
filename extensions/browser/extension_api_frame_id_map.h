@@ -123,10 +123,12 @@ class ExtensionApiFrameIdMap {
       content::WebContents* web_contents,
       int frame_id);
 
-  // Retrieves the FrameData for a given |rfh|. The map may be updated with the
-  // result if the map did not contain the FrameData before the lookup.
-  // If |rfh| is nullptr, then the map is not modified.
-  FrameData GetFrameData(content::RenderFrameHost* rfh) WARN_UNUSED_RESULT;
+  // Retrieves the FrameData for a given |render_process_id| and
+  // |render_frame_id|. The map may be updated with the result if the map did
+  // not contain the FrameData before the lookup. If a RenderFrameHost is not
+  // found, then the map is not modified.
+  FrameData GetFrameData(int render_process_id,
+                         int render_frame_id) WARN_UNUSED_RESULT;
 
   // Initializes the FrameData for the given |rfh|.
   void InitializeRenderFrameData(content::RenderFrameHost* rfh);
@@ -199,19 +201,21 @@ class ExtensionApiFrameIdMap {
   virtual FrameData KeyToValue(const RenderFrameIdKey& key) const;
 
   // Looks up the data for the given |key| and adds it to the |frame_data_map_|.
-  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key);
-
-  // Implementation of CacheFrameData(RenderFrameHost), separated for testing.
-  void CacheFrameData(const RenderFrameIdKey& key);
-
-  // Implementation of RemoveFrameData(RenderFrameHost), separated for testing.
-  void RemoveFrameData(const RenderFrameIdKey& key);
+  // If |check_deleted_frames| is true, |deleted_frame_data_map_| will also be
+  // used.
+  FrameData LookupFrameDataOnUI(const RenderFrameIdKey& key,
+                                bool check_deleted_frames);
 
   std::unique_ptr<ExtensionApiFrameIdMapHelper> helper_;
 
   // This map holds a mapping of render frame key to FrameData.
   // TODO(http://crbug.com/980774): Investigate if this is still needed.
   FrameDataMap frame_data_map_;
+
+  // Holds mappings of render frame key to FrameData from frames that have been
+  // recently deleted. These are kept for a short time so beacon requests that
+  // continue after a frame is unloaded can access the FrameData.
+  FrameDataMap deleted_frame_data_map_;
 
   // The set of pending main frame navigations for which ReadyToCommitNavigation
   // has been fired. Only used on the UI thread. This is needed to clear state

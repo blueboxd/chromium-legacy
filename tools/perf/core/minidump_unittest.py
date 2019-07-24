@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import time
 
 from telemetry.testing import tab_test_case
@@ -14,14 +15,13 @@ import py_utils
 class BrowserMinidumpTest(tab_test_case.TabTestCase):
   @decorators.Isolated
   # ChromeOS and Android are currently hard coded to return None for minidump
-  # paths, so disable on those platforms. Windows 7 doesn't find any minidump
-  # paths for some reason.
-  @decorators.Disabled('chromeos', 'android', 'win7', 'linux')
+  # paths, so disable on those platforms.
+  @decorators.Disabled('chromeos', 'android')
   def testSymbolizeMinidump(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var sam = "car";', 'sam')
     self._browser.tabs.New().Navigate('chrome://gpucrash', timeout=5)
-    crash_minidump_path = self._browser.GetMostRecentMinidumpPath()
+    crash_minidump_path = self._browser.GetRecentMinidumpPathWithTimeout()
     self.assertIsNotNone(crash_minidump_path)
 
     if crash_minidump_path is not None:
@@ -88,16 +88,12 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
       self.assertTrue(crash_function in sections[4])
 
   @decorators.Isolated
-  # Disabled on Mac 10.12 (Sierra) due to it not getting a stack trace to
-  # symbolize from the second crash.
-  # Test is flaky on 10.13 (HighSierra). See https://crbug.com/986644.
-  @decorators.Disabled('chromeos', 'android', 'win7', 'sierra', 'linux',
-                       'highsierra')
+  @decorators.Disabled('chromeos', 'android')
   def testMultipleCrashMinidumps(self):
     # Wait for the browser to restart fully before crashing
     self._LoadPageThenWait('var cat = "dog";', 'cat')
     self._browser.tabs.New().Navigate('chrome://gpucrash', timeout=5)
-    first_crash_path = self._browser.GetMostRecentMinidumpPath()
+    first_crash_path = self._browser.GetRecentMinidumpPathWithTimeout()
 
     self.assertIsNotNone(first_crash_path)
     if first_crash_path is not None:
@@ -122,7 +118,11 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self._LoadPageThenWait('var foo = "bar";', 'foo')
 
     self._browser.tabs.New().Navigate('chrome://gpucrash', timeout=5)
-    second_crash_path = self._browser.GetMostRecentMinidumpPath()
+    # Make the oldest allowable timestamp slightly after the first dump's
+    # timestamp so we don't get the first one returned to us again
+    oldest_ts = os.path.getmtime(first_crash_path) + 1
+    second_crash_path = self._browser.GetRecentMinidumpPathWithTimeout(
+        oldest_ts=oldest_ts)
     self.assertIsNotNone(second_crash_path)
     if second_crash_path is not None:
       logging.info('testMultipleCrashMinidumps: second crash most recent path'

@@ -11,7 +11,7 @@
 #include "chrome/browser/android/signin/signin_manager_delegate.h"
 #include "components/signin/public/identity_manager/account_info.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -104,7 +104,7 @@ class ChromeSigninManagerDelegate : public SigninManagerDelegate {
 
   Profile* const profile_ = nullptr;
 
-  identity::IdentityManager* const identity_manager_ = nullptr;
+  signin::IdentityManager* const identity_manager_ = nullptr;
   policy::UserCloudPolicyManager* const user_cloud_policy_manager_ = nullptr;
   policy::UserPolicySigninService* const user_policy_signin_service_ = nullptr;
 

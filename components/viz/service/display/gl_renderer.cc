@@ -867,6 +867,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     const gfx::Transform& backdrop_filter_bounds_transform) {
   DCHECK(ShouldApplyBackdropFilters(params->backdrop_filters));
   DCHECK(params->backdrop_filter_quality);
+  DCHECK(!params->filters)
+      << "Filters should always be in a separate Effect node";
   const RenderPassDrawQuad* quad = params->quad;
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
@@ -874,19 +876,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
       (params->background_rect.top_right() - unclipped_rect.top_right()) +
       (params->background_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  // Update the backdrop filter to include opacity.
-  cc::FilterOperations backdrop_filters_plus_opacity =
-      *params->backdrop_filters;
-  DCHECK(!params->filters)
-      << "Filters should always be in a separate Effect node";
-  if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_opacity.Append(
-        cc::FilterOperation::CreateOpacityFilter(
-            quad->shared_quad_state->opacity));
-  }
-
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters_plus_opacity, gfx::SizeF(params->background_rect.size()),
+      *params->backdrop_filters, gfx::SizeF(params->background_rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -971,6 +962,12 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     surface->getCanvas()->resetMatrix();
   }
 
+  SkPaint paint;
+  // Paint the filtered backdrop image with opacity.
+  if (quad->shared_quad_state->opacity < 1.0) {
+    paint.setImageFilter(
+        SkiaHelper::BuildOpacityFilter(quad->shared_quad_state->opacity));
+  }
   // Apply the mask image, if present, to filtered backdrop content. Note that
   // this needs to be performed here, in addition to elsewhere, because of the
   // order of operations:
@@ -979,7 +976,6 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
   //   2. Render the parent render pass (containing the "backdrop image" to be
   //      filtered).
   //   3. Run this code, to filter, and possibly mask, the backdrop image.
-  SkPaint paint;
   const SkImage* mask_image = nullptr;
   base::Optional<DisplayResourceProvider::ScopedReadLockSkImage>
       backdrop_image_lock;

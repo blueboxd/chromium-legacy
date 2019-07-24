@@ -20,8 +20,9 @@ class MediaPerceptionAPIDelegateChromeOS
   void LoadCrOSComponent(
       const api::media_perception_private::ComponentType& type,
       LoadCrOSComponentCallback load_callback) override;
-  void BindDeviceFactoryProviderToVideoCaptureService(
-      video_capture::mojom::DeviceFactoryProviderPtr* provider) override;
+  void BindVideoSourceProvider(
+      mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver)
+      override;
   void SetMediaPerceptionRequestHandler(
       MediaPerceptionRequestHandler handler) override;
   void ForwardMediaPerceptionRequest(

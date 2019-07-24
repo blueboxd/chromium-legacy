@@ -18,7 +18,6 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
@@ -97,8 +96,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr
-          service_worker_provider_info,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
@@ -113,8 +110,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       int client_process_id,
       int frame_id,
       const blink::MessagePortChannel& message_port,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr
-          service_worker_provider_info,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,

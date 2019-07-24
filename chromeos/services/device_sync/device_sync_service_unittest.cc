@@ -409,7 +409,7 @@ class FakeRemoteDeviceProviderFactory
  public:
   FakeRemoteDeviceProviderFactory(
       const multidevice::RemoteDeviceList& initial_devices,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       FakeCryptAuthDeviceManagerFactory* fake_cryptauth_device_manager_factory,
       FakeCryptAuthEnrollmentManagerFactory*
           fake_cryptauth_enrollment_manager_factory,
@@ -462,7 +462,7 @@ class FakeRemoteDeviceProviderFactory
  private:
   const multidevice::RemoteDeviceList& initial_devices_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   FakeCryptAuthDeviceManagerFactory* fake_cryptauth_device_manager_factory_;
   FakeCryptAuthEnrollmentManagerFactory*
       fake_cryptauth_enrollment_manager_factory_;
@@ -562,7 +562,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
 
     // DeviceSyncImpl::Factory:
     std::unique_ptr<DeviceSyncBase> BuildInstance(
-        identity::IdentityManager* identity_manager,
+        signin::IdentityManager* identity_manager,
         gcm::GCMDriver* gcm_driver,
         service_manager::Connector* connector,
         const GcmDeviceInfoProvider* gcm_device_info_provider,
@@ -611,7 +611,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
     //       starts up since this is a CrOS-only service, and CrOS requires that
     //       the user logs in.
     identity_test_environment_ =
-        std::make_unique<identity::IdentityTestEnvironment>();
+        std::make_unique<signin::IdentityTestEnvironment>();
     identity_test_environment_->MakePrimaryAccountAvailable(kTestEmail);
 
     fake_cryptauth_gcm_manager_factory_ =
@@ -1160,7 +1160,7 @@ class DeviceSyncServiceTest : public ::testing::TestWithParam<bool> {
   std::unique_ptr<FakeSoftwareFeatureManagerFactory>
       fake_software_feature_manager_factory_;
 
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_environment_;
+  std::unique_ptr<signin::IdentityTestEnvironment> identity_test_environment_;
   std::unique_ptr<gcm::FakeGCMDriver> fake_gcm_driver_;
   std::unique_ptr<FakeGcmDeviceInfoProvider> fake_gcm_device_info_provider_;
 

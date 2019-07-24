@@ -5,17 +5,35 @@
 #include "content/browser/worker_host/worker_script_loader.h"
 
 #include "base/bind.h"
+#include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_request_handler.h"
+#include "content/browser/worker_host/worker_script_fetch_initiator.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
+
+namespace {
+void CancelRequestOnIO(int process_id,
+                       int request_id,
+                       base::OnceClosure ui_continuation) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(ResourceDispatcherHostImpl::Get());
+  ResourceDispatcherHostImpl::Get()->CancelRequest(process_id, request_id);
+  if (ui_continuation)
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             std::move(ui_continuation));
+}
+}  // namespace
 
 WorkerScriptLoader::WorkerScriptLoader(
     int process_id,
@@ -24,8 +42,11 @@ WorkerScriptLoader::WorkerScriptLoader(
     uint32_t options,
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
-    base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+    base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle /* UI */,
+    base::WeakPtr<ServiceWorkerNavigationHandleCore>
+        service_worker_handle_core /* IO */,
     base::WeakPtr<AppCacheHost> appcache_host,
+    const BrowserContextGetter& browser_context_getter,
     const ResourceContextGetter& resource_context_getter,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -35,22 +56,38 @@ WorkerScriptLoader::WorkerScriptLoader(
       options_(options),
       resource_request_(resource_request),
       client_(std::move(client)),
-      service_worker_provider_host_(service_worker_provider_host),
+      service_worker_handle_(std::move(service_worker_handle)),
+      service_worker_handle_core_(std::move(service_worker_handle_core)),
+      browser_context_getter_(browser_context_getter),
       resource_context_getter_(resource_context_getter),
       default_loader_factory_(std::move(default_loader_factory)),
       traffic_annotation_(traffic_annotation),
       url_loader_client_binding_(this) {
-  if (service_worker_provider_host_) {
-    std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-        ServiceWorkerRequestHandler::CreateForWorker(
-            resource_request_, service_worker_provider_host_.get());
-    if (service_worker_interceptor)
-      interceptors_.push_back(std::move(service_worker_interceptor));
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+
+  std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    if (!service_worker_handle_) {
+      // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
+      Abort();
+      return;
+    }
+    service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorkerUI(
+        resource_request_, process_id, service_worker_handle_.get());
+  } else {
+    if (!service_worker_handle_core_) {
+      // The DedicatedWorkerHost or SharedWorkerHost is already destroyed.
+      Abort();
+      return;
+    }
+    service_worker_interceptor = ServiceWorkerRequestHandler::CreateForWorkerIO(
+        resource_request_, process_id_, service_worker_handle_core_.get());
   }
 
-  // TODO(http://crbug.com/824858): Run interceptors on UI thread.
-  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled() &&
-      appcache_host) {
+  if (service_worker_interceptor)
+    interceptors_.push_back(std::move(service_worker_interceptor));
+
+  if (appcache_host) {
     std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
         AppCacheRequestHandler::InitializeForMainResourceNetworkService(
             resource_request_, appcache_host);
@@ -61,26 +98,46 @@ WorkerScriptLoader::WorkerScriptLoader(
   Start();
 }
 
-WorkerScriptLoader::~WorkerScriptLoader() = default;
+WorkerScriptLoader::~WorkerScriptLoader() {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+}
 
 base::WeakPtr<WorkerScriptLoader> WorkerScriptLoader::GetWeakPtr() {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   return weak_factory_.GetWeakPtr();
 }
 
+void WorkerScriptLoader::Abort() {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+  CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+}
+
 void WorkerScriptLoader::Start() {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   DCHECK(!completed_);
 
-  ResourceContext* resource_context = resource_context_getter_.Run();
-  if (!resource_context) {
-    CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
-    return;
+  BrowserContext* browser_context = nullptr;
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    browser_context = browser_context_getter_.Run();
+    if (!browser_context) {
+      Abort();
+      return;
+    }
   }
 
-  // TODO(http://crbug.com/824840): Support interceptors on the UI thread.
+  ResourceContext* resource_context = nullptr;
+  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    resource_context = resource_context_getter_.Run();
+    if (!resource_context) {
+      Abort();
+      return;
+    }
+  }
+
   if (interceptor_index_ < interceptors_.size()) {
     auto* interceptor = interceptors_[interceptor_index_++].get();
     interceptor->MaybeCreateLoader(
-        resource_request_, nullptr, resource_context,
+        resource_request_, browser_context, resource_context,
         base::BindOnce(&WorkerScriptLoader::MaybeStartLoader,
                        weak_factory_.GetWeakPtr(), interceptor),
         base::BindOnce(&WorkerScriptLoader::LoadFromNetwork,
@@ -94,6 +151,7 @@ void WorkerScriptLoader::Start() {
 void WorkerScriptLoader::MaybeStartLoader(
     NavigationLoaderInterceptor* interceptor,
     SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   DCHECK(!completed_);
   DCHECK(interceptor);
 
@@ -127,6 +185,7 @@ void WorkerScriptLoader::MaybeStartLoader(
 }
 
 void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   DCHECK(!completed_);
 
   default_loader_used_ = true;
@@ -149,6 +208,7 @@ void WorkerScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   DCHECK(!new_url.has_value()) << "Redirect with modified URL was not "
                                   "supported yet. crbug.com/845683";
   DCHECK(redirect_info_);
@@ -174,9 +234,17 @@ void WorkerScriptLoader::FollowRedirect(
 
   // Cancel the request on ResourceDispatcherHost so that we can fall back
   // to network again.
-  DCHECK(ResourceDispatcherHostImpl::Get());
-  ResourceDispatcherHostImpl::Get()->CancelRequest(process_id_, request_id_);
-
+  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    // Hop to the IO thread to touch ResourceDispatcherHost. We continue on
+    // the UI thread in Start().
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::IO},
+        base::BindOnce(&CancelRequestOnIO, process_id_, request_id_,
+                       base::BindOnce(&WorkerScriptLoader::Start,
+                                      weak_factory_.GetWeakPtr())));
+    return;
+  }
+  CancelRequestOnIO(process_id_, request_id_, /*ui_continuation=*/{});
   Start();
 }
 
@@ -190,16 +258,19 @@ void WorkerScriptLoader::ProceedWithResponse() {
 // state or propagating state to a new URLLoader upon redirect.
 void WorkerScriptLoader::SetPriority(net::RequestPriority priority,
                                      int32_t intra_priority_value) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   if (url_loader_)
     url_loader_->SetPriority(priority, intra_priority_value);
 }
 
 void WorkerScriptLoader::PauseReadingBodyFromNet() {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   if (url_loader_)
     url_loader_->PauseReadingBodyFromNet();
 }
 
 void WorkerScriptLoader::ResumeReadingBodyFromNet() {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   if (url_loader_)
     url_loader_->ResumeReadingBodyFromNet();
 }
@@ -212,12 +283,14 @@ void WorkerScriptLoader::ResumeReadingBodyFromNet() {
 
 void WorkerScriptLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   client_->OnReceiveResponse(response_head);
 }
 
 void WorkerScriptLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   if (--redirect_limit_ == 0) {
     CommitCompleted(
         network::URLLoaderCompletionStatus(net::ERR_TOO_MANY_REDIRECTS));
@@ -232,25 +305,30 @@ void WorkerScriptLoader::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     OnUploadProgressCallback ack_callback) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   client_->OnUploadProgress(current_position, total_size,
                             std::move(ack_callback));
 }
 
 void WorkerScriptLoader::OnReceiveCachedMetadata(mojo_base::BigBuffer data) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   client_->OnReceiveCachedMetadata(std::move(data));
 }
 
 void WorkerScriptLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   client_->OnTransferSizeUpdated(transfer_size_diff);
 }
 
 void WorkerScriptLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle consumer) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   client_->OnStartLoadingResponseBody(std::move(consumer));
 }
 
 void WorkerScriptLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   CommitCompleted(status);
 }
 
@@ -262,6 +340,8 @@ bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
     network::mojom::URLLoaderPtr* response_url_loader,
     network::mojom::URLLoaderClientRequest* response_client_request,
     ThrottlingURLLoader* url_loader) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
+
   // TODO(crbug/898755): This is odd that NavigationLoaderInterceptor::
   // MaybeCreateLoader() is called directly from WorkerScriptLoader. But
   // NavigationLoaderInterceptor::MaybeCreateLoaderForResponse() is called from
@@ -288,11 +368,18 @@ bool WorkerScriptLoader::MaybeCreateLoaderForResponse(
 
 void WorkerScriptLoader::CommitCompleted(
     const network::URLLoaderCompletionStatus& status) {
+  DCHECK_CURRENTLY_ON(WorkerScriptFetchInitiator::GetLoaderThreadID());
   DCHECK(!completed_);
   completed_ = true;
 
-  if (service_worker_provider_host_ && status.error_code == net::OK)
-    service_worker_provider_host_->CompleteWebWorkerPreparation();
+  if (status.error_code == net::OK) {
+    if (service_worker_handle_) {
+      service_worker_handle_->OnBeginWorkerCommit();
+    } else if (service_worker_handle_core_) {
+      service_worker_handle_core_->OnBeginWorkerCommit();
+    }
+  }
+
   client_->OnComplete(status);
 
   // We're done. Ensure we no longer send messages to our client, and no longer

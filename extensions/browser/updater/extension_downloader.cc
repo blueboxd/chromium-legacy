@@ -320,7 +320,7 @@ void ExtensionDownloader::DoStartAllPending() {
 }
 
 void ExtensionDownloader::SetIdentityManager(
-    identity::IdentityManager* identity_manager) {
+    signin::IdentityManager* identity_manager) {
   identity_manager_ = identity_manager;
 }
 
@@ -1005,11 +1005,11 @@ void ExtensionDownloader::CreateExtensionLoader() {
       // It is safe to use Unretained(this) here given that the callback
       // will not be invoked if this object is deleted.
       access_token_fetcher_ =
-          std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+          std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
               kTokenServiceConsumerId, identity_manager_, webstore_scopes,
               base::BindOnce(&ExtensionDownloader::OnAccessTokenFetchComplete,
                              base::Unretained(this)),
-              identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+              signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
       return;
     }
     extension_loader_resource_request_->headers.SetHeader(
@@ -1236,7 +1236,7 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
 
 void ExtensionDownloader::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   access_token_fetcher_.reset();
 
   if (error.state() != GoogleServiceAuthError::NONE) {

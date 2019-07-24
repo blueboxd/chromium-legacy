@@ -2,114 +2,113 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('print_preview');
-
-/**
- * @typedef {{selectSaveAsPdfDestination: boolean,
- *            layoutSettings.portrait: boolean,
- *            pageRange: string,
- *            headersAndFooters: boolean,
- *            backgroundColorsAndImages: boolean,
- *            margins: number}}
- * @see chrome/browser/printing/print_preview_pdf_generated_browsertest.cc
- */
-print_preview.PreviewSettings;
-
-/**
- * @typedef {{
- *   deviceName: string,
- *   printerName: string,
- *   printerDescription: (string | undefined),
- *   cupsEnterprisePrinter: (boolean | undefined),
- *   printerOptions: (Object | undefined),
- *   policies: (print_preview.Policies | undefined),
- * }}
- */
-print_preview.LocalDestinationInfo;
-
-/**
- * @typedef {{
- *   isInKioskAutoPrintMode: boolean,
- *   isInAppKioskMode: boolean,
- *   uiLocale: string,
- *   thousandsDelimeter: string,
- *   decimalDelimeter: string,
- *   unitType: !print_preview.MeasurementSystemUnitType,
- *   previewModifiable: boolean,
- *   documentTitle: string,
- *   documentHasSelection: boolean,
- *   shouldPrintSelectionOnly: boolean,
- *   printerName: string,
- *   headerFooter: (boolean | undefined),
- *   isHeaderFooterManaged: boolean,
- *   serializedAppStateStr: ?string,
- *   serializedDefaultDestinationSelectionRulesStr: ?string,
- *   cloudPrintURL: (string | undefined),
- *   userAccounts: (Array<string> | undefined),
- *   syncAvailable: boolean
- * }}
- * @see corresponding field name definitions in print_preview_handler.cc
- */
-print_preview.NativeInitialSettings;
-
-/**
- * @typedef {{
- *   serviceName: string,
- *   name: string,
- *   hasLocalPrinting: boolean,
- *   isUnregistered: boolean,
- *   cloudID: string,
- * }}
- * @see PrintPreviewHandler::FillPrinterDescription in print_preview_handler.cc
- */
-print_preview.PrivetPrinterDescription;
-
-/**
- * @typedef {{
- *   printer:(print_preview.PrivetPrinterDescription |
- *            print_preview.LocalDestinationInfo |
- *            undefined),
- *   capabilities: !print_preview.Cdd,
- * }}
- */
-print_preview.CapabilitiesResponse;
-
-/**
- * @typedef {{
- *   printerId: string,
- *   success: boolean,
- *   capabilities: !print_preview.Cdd,
- *   policies: (print_preview.Policies | undefined),
- * }}
- */
-print_preview.PrinterSetupResponse;
-
-/**
- * @typedef {{
- *   extensionId: string,
- *   extensionName: string,
- *   id: string,
- *   name: string,
- *   description: (string|undefined),
- * }}
- */
-print_preview.ProvisionalDestinationInfo;
-
-/**
- * Printer types for capabilities and printer list requests.
- * Should match PrinterType in print_preview_handler.h
- * @enum {number}
- */
-print_preview.PrinterType = {
-  PRIVET_PRINTER: 0,
-  EXTENSION_PRINTER: 1,
-  PDF_PRINTER: 2,
-  LOCAL_PRINTER: 3,
-  CLOUD_PRINTER: 4
-};
-
 cr.define('print_preview', function() {
   'use strict';
+
+  /**
+   * @typedef {{selectSaveAsPdfDestination: boolean,
+   *            layoutSettings.portrait: boolean,
+   *            pageRange: string,
+   *            headersAndFooters: boolean,
+   *            backgroundColorsAndImages: boolean,
+   *            margins: number}}
+   * @see chrome/browser/printing/print_preview_pdf_generated_browsertest.cc
+   */
+  let PreviewSettings;
+
+  /**
+   * @typedef {{
+   *   deviceName: string,
+   *   printerName: string,
+   *   printerDescription: (string | undefined),
+   *   cupsEnterprisePrinter: (boolean | undefined),
+   *   printerOptions: (Object | undefined),
+   *   policies: (print_preview.Policies | undefined),
+   * }}
+   */
+  let LocalDestinationInfo;
+
+  /**
+   * @typedef {{
+   *   isInKioskAutoPrintMode: boolean,
+   *   isInAppKioskMode: boolean,
+   *   uiLocale: string,
+   *   thousandsDelimeter: string,
+   *   decimalDelimeter: string,
+   *   unitType: !print_preview.MeasurementSystemUnitType,
+   *   previewModifiable: boolean,
+   *   documentTitle: string,
+   *   documentHasSelection: boolean,
+   *   shouldPrintSelectionOnly: boolean,
+   *   printerName: string,
+   *   headerFooter: (boolean | undefined),
+   *   isHeaderFooterManaged: boolean,
+   *   serializedAppStateStr: ?string,
+   *   serializedDefaultDestinationSelectionRulesStr: ?string,
+   *   cloudPrintURL: (string | undefined),
+   *   userAccounts: (Array<string> | undefined),
+   *   syncAvailable: boolean
+   * }}
+   * @see corresponding field name definitions in print_preview_handler.cc
+   */
+  let NativeInitialSettings;
+
+  /**
+   * @typedef {{
+   *   serviceName: string,
+   *   name: string,
+   *   hasLocalPrinting: boolean,
+   *   isUnregistered: boolean,
+   *   cloudID: string,
+   * }}
+   * @see PrintPreviewHandler::FillPrinterDescription in
+   * print_preview_handler.cc
+   */
+  let PrivetPrinterDescription;
+
+  /**
+   * @typedef {{
+   *   printer:(print_preview.PrivetPrinterDescription |
+   *            print_preview.LocalDestinationInfo |
+   *            undefined),
+   *   capabilities: !print_preview.Cdd,
+   * }}
+   */
+  let CapabilitiesResponse;
+
+  /**
+   * @typedef {{
+   *   printerId: string,
+   *   success: boolean,
+   *   capabilities: !print_preview.Cdd,
+   *   policies: (print_preview.Policies | undefined),
+   * }}
+   */
+  let PrinterSetupResponse;
+
+  /**
+   * @typedef {{
+   *   extensionId: string,
+   *   extensionName: string,
+   *   id: string,
+   *   name: string,
+   *   description: (string|undefined),
+   * }}
+   */
+  let ProvisionalDestinationInfo;
+
+  /**
+   * Printer types for capabilities and printer list requests.
+   * Should match PrinterType in print_preview_handler.h
+   * @enum {number}
+   */
+  const PrinterType = {
+    PRIVET_PRINTER: 0,
+    EXTENSION_PRINTER: 1,
+    PDF_PRINTER: 2,
+    LOCAL_PRINTER: 3,
+    CLOUD_PRINTER: 4
+  };
 
   /**
    * An interface to the native Chromium printing system layer.
@@ -324,6 +323,14 @@ cr.define('print_preview', function() {
 
   // Export
   return {
-    NativeLayer: NativeLayer
+    CapabilitiesResponse: CapabilitiesResponse,
+    LocalDestinationInfo: LocalDestinationInfo,
+    NativeInitialSettings: NativeInitialSettings,
+    NativeLayer: NativeLayer,
+    PreviewSettings: PreviewSettings,
+    PrinterSetupResponse: PrinterSetupResponse,
+    PrinterType: PrinterType,
+    PrivetPrinterDescription: PrivetPrinterDescription,
+    ProvisionalDestinationInfo: ProvisionalDestinationInfo,
   };
 });

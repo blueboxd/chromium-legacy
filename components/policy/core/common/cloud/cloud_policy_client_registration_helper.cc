@@ -33,20 +33,20 @@ class CloudPolicyClientRegistrationHelper::IdentityManagerHelper {
  public:
   IdentityManagerHelper() = default;
 
-  void FetchAccessToken(identity::IdentityManager* identity_manager,
+  void FetchAccessToken(signin::IdentityManager* identity_manager,
                         const std::string& username,
                         const StringCallback& callback);
 
  private:
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   StringCallback callback_;
-  std::unique_ptr<identity::AccessTokenFetcher> access_token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
 };
 
 void CloudPolicyClientRegistrationHelper::IdentityManagerHelper::
-    FetchAccessToken(identity::IdentityManager* identity_manager,
+    FetchAccessToken(signin::IdentityManager* identity_manager,
                      const std::string& account_id,
                      const StringCallback& callback) {
   DCHECK(!access_token_fetcher_);
@@ -65,12 +65,12 @@ void CloudPolicyClientRegistrationHelper::IdentityManagerHelper::
       base::BindOnce(&CloudPolicyClientRegistrationHelper::
                          IdentityManagerHelper::OnAccessTokenFetchComplete,
                      base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void CloudPolicyClientRegistrationHelper::IdentityManagerHelper::
     OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                               identity::AccessTokenInfo token_info) {
+                               signin::AccessTokenInfo token_info) {
   DCHECK(access_token_fetcher_);
   access_token_fetcher_.reset();
 
@@ -95,7 +95,7 @@ CloudPolicyClientRegistrationHelper::~CloudPolicyClientRegistrationHelper() {
 }
 
 void CloudPolicyClientRegistrationHelper::StartRegistration(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const std::string& account_id,
     const base::Closure& callback) {
   DVLOG(1) << "Starting registration process with account_id";

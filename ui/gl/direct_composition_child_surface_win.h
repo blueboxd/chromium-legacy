@@ -12,11 +12,15 @@
 
 #include "ui/gl/gl_surface_egl.h"
 
+namespace gfx {
+class VSyncProvider;
+}  // namespace gfx
+
 namespace gl {
 
 class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
  public:
-  DirectCompositionChildSurfaceWin();
+  explicit DirectCompositionChildSurfaceWin(gfx::VSyncProvider* vsync_provider);
 
   static bool UseSwapChainFrameStatistics();
 
@@ -39,11 +43,6 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
               ColorSpace color_space,
               bool has_alpha) override;
   bool SetEnableDCLayers(bool enable) override;
-
-  void UpdateVSyncParameters(base::TimeTicks vsync_time,
-                             base::TimeDelta vsync_interval);
-  bool HasPendingFrames() const;
-  void CheckPendingFrames();
 
   const Microsoft::WRL::ComPtr<IDCompositionSurface>& dcomp_surface() const {
     return dcomp_surface_;
@@ -76,6 +75,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
     // Presentation callback enqueued in SwapBuffers().
     PresentationCallback callback;
   };
+  void CheckPendingFrames();
   void EnqueuePendingFrame(PresentationCallback callback);
   void ClearPendingFrames();
 
@@ -109,6 +109,7 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   // be called on the device.
   uint64_t dcomp_surface_serial_ = 0;
 
+  gfx::VSyncProvider* const vsync_provider_;
   base::TimeTicks last_vsync_time_;
   base::TimeDelta last_vsync_interval_ = base::TimeDelta::FromSecondsD(1. / 60);
 

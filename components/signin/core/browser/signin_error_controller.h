@@ -21,7 +21,7 @@
 // AuthStatusProvider to report their current authentication state, and should
 // invoke AuthStatusChanged() when their authentication state may have changed.
 class SigninErrorController : public KeyedService,
-                              public identity::IdentityManager::Observer {
+                              public signin::IdentityManager::Observer {
  public:
   enum class AccountMode {
     // Signin error controller monitors all the accounts. When multiple accounts
@@ -42,7 +42,7 @@ class SigninErrorController : public KeyedService,
   };
 
   SigninErrorController(AccountMode mode,
-                        identity::IdentityManager* identity_manager);
+                        signin::IdentityManager* identity_manager);
   ~SigninErrorController() override;
 
   // KeyedService implementation:
@@ -75,7 +75,7 @@ class SigninErrorController : public KeyedService,
       const std::string& prev_account_id,
       const GoogleServiceAuthError::State& prev_error_state);
 
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   void OnEndBatchOfRefreshTokenStateChanges() override;
   void OnErrorStateOfRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info,
@@ -86,9 +86,9 @@ class SigninErrorController : public KeyedService,
       const CoreAccountInfo& previous_primary_account_info) override;
 
   const AccountMode account_mode_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
-  ScopedObserver<identity::IdentityManager, SigninErrorController>
+  ScopedObserver<signin::IdentityManager, SigninErrorController>
       scoped_identity_manager_observer_;
 
   // The account that generated the last auth error.

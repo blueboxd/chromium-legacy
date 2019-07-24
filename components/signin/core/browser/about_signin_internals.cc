@@ -206,7 +206,7 @@ std::string GetAccountConsistencyDescription(
 }  // anonymous namespace
 
 AboutSigninInternals::AboutSigninInternals(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     signin::AccountConsistencyMethod account_consistency)
     : identity_manager_(identity_manager),
@@ -465,7 +465,7 @@ void AboutSigninInternals::OnPrimaryAccountCleared(
 }
 
 void AboutSigninInternals::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   if (error.state() != GoogleServiceAuthError::NONE)
     return;
@@ -596,7 +596,7 @@ void AboutSigninInternals::SigninStatus::AddRefreshTokenEvent(
 
 std::unique_ptr<base::DictionaryValue>
 AboutSigninInternals::SigninStatus::ToValue(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     SigninErrorController* signin_error_controller,
     SigninClient* signin_client,
     signin::AccountConsistencyMethod account_consistency) {

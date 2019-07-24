@@ -25,7 +25,7 @@
 #include "ios/web/public/init/web_main_parts.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_client.h"
-#include "ios/web/service_manager_context.h"
+#include "ios/web/service/service_manager_context.h"
 #include "ios/web/web_sub_thread.h"
 #include "ios/web/web_thread_impl.h"
 #include "ios/web/webui/url_data_manager_ios.h"

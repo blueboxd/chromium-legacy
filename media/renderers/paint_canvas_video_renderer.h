@@ -17,6 +17,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/media_export.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
@@ -198,14 +199,22 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // to the visible size of the VideoFrame. Its contents are generated lazily.
     cc::PaintImage paint_image;
 
-    // A SkImage that contain the source texture for |paint_image|. This can be
-    // either the source VideoFrame's texture (if wraps_video_frame_texture is
-    // true) or a newly allocated texture (if wraps_video_frame_texture is
-    // false) if a copy or conversion was necessary.
-    // This is only set if the VideoFrame was texture-backed.
-    sk_sp<SkImage> source_image;
+    // The context provider used to generate |source_mailbox| and
+    // |source_texture|. This is only set if the VideoFrame was texture-backed.
+    scoped_refptr<viz::ContextProvider> context_provider;
 
-    // The allocated size of |source_image|.
+    // The mailbox for the source texture. This can be either the source
+    // VideoFrame's texture (if |wraps_video_frame_texture| is true) or a newly
+    // allocated shared image (if |wraps_video_frame_texture| is false) if a
+    // copy or conversion was necessary.
+    // This is only set if the VideoFrame was texture-backed.
+    gpu::Mailbox source_mailbox;
+
+    // The texture ID created when importing |source_mailbox|.
+    // This is only set if the VideoFrame was texture-backed.
+    uint32_t source_texture = 0;
+
+    // The allocated size of |source_mailbox|.
     // This is only set if the VideoFrame was texture-backed.
     gfx::Size coded_size;
 
@@ -214,8 +223,8 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // This is only set if the VideoFrame was texture-backed.
     gfx::Rect visible_rect;
 
-    // Whether |source_image| directly points to a texture of the VideoFrame
-    // (if true), or to an allocated texture (if false).
+    // Whether |source_mailbox| directly points to a texture of the VideoFrame
+    // (if true), or to an allocated shared image (if false).
     bool wraps_video_frame_texture = false;
   };
 

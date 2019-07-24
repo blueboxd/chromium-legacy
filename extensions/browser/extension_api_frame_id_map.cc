@@ -188,36 +188,35 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::LookupFrameDataOnUI(
-    const RenderFrameIdKey& key) {
+    const RenderFrameIdKey& key,
+    bool check_deleted_frames) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  bool lookup_successful = false;
-  FrameData data;
   FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(key);
-  if (frame_id_iter != frame_data_map_.end()) {
-    lookup_successful = true;
-    data = frame_id_iter->second;
-  } else {
-    data = KeyToValue(key);
-    // Don't save invalid values in the map.
-    if (data.frame_id != kInvalidFrameId) {
-      lookup_successful = true;
-      auto kvpair = FrameDataMap::value_type(key, data);
-      frame_data_map_.insert(kvpair);
-    }
+
+  if (frame_id_iter != frame_data_map_.end())
+    return frame_id_iter->second;
+
+  if (check_deleted_frames) {
+    frame_id_iter = deleted_frame_data_map_.find(key);
+    if (frame_id_iter != deleted_frame_data_map_.end())
+      return frame_id_iter->second;
   }
+
+  FrameData data = KeyToValue(key);
+  // Don't save invalid values in the map.
+  if (data.frame_id != kInvalidFrameId)
+    frame_data_map_.insert({key, data});
+
   return data;
 }
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
-    content::RenderFrameHost* rfh) {
+    int render_process_id,
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!rfh)
-    return FrameData();
-
-  const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  return LookupFrameDataOnUI(key);
+  const RenderFrameIdKey key(render_process_id, render_frame_id);
+  return LookupFrameDataOnUI(key, true /* check_deleted_frames */);
 }
 
 void ExtensionApiFrameIdMap::InitializeRenderFrameData(
@@ -227,12 +226,8 @@ void ExtensionApiFrameIdMap::InitializeRenderFrameData(
   DCHECK(rfh->IsRenderFrameLive());
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  CacheFrameData(key);
+  LookupFrameDataOnUI(key, false /* check_deleted_frames */);
   DCHECK(frame_data_map_.find(key) != frame_data_map_.end());
-}
-
-void ExtensionApiFrameIdMap::CacheFrameData(const RenderFrameIdKey& key) {
-  LookupFrameDataOnUI(key);
 }
 
 void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
@@ -241,7 +236,23 @@ void ExtensionApiFrameIdMap::OnRenderFrameDeleted(
   DCHECK(rfh);
 
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  RemoveFrameData(key);
+  // TODO(http://crbug.com/522129): This is necessary right now because beacon
+  // requests made in window.onunload may start after this has been called.
+  // Delay the RemoveFrameData() call, so we will still have the frame data
+  // cached when the beacon request comes in.
+  auto iter = frame_data_map_.find(key);
+  if (iter == frame_data_map_.end())
+    return;
+
+  deleted_frame_data_map_.insert({key, iter->second});
+  frame_data_map_.erase(key);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](ExtensionApiFrameIdMap* self, const RenderFrameIdKey& key) {
+            self->deleted_frame_data_map_.erase(key);
+          },
+          base::Unretained(this), key));
 }
 
 void ExtensionApiFrameIdMap::UpdateTabAndWindowId(
@@ -348,12 +359,6 @@ bool ExtensionApiFrameIdMap::HasCachedFrameDataForTesting(
 size_t ExtensionApiFrameIdMap::GetFrameDataCountForTesting() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return frame_data_map_.size();
-}
-
-void ExtensionApiFrameIdMap::RemoveFrameData(const RenderFrameIdKey& key) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  frame_data_map_.erase(key);
 }
 
 }  // namespace extensions

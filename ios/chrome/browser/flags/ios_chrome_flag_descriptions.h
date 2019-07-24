@@ -97,6 +97,11 @@ extern const char kBrowserTaskSchedulerDescription[];
 extern const char kClosingLastIncognitoTabName[];
 extern const char kClosingLastIncognitoTabDescription[];
 
+// Title and description for the flag that controls whether Collections are
+// presented using the new iOS13 Card style or the custom legacy one.
+extern const char kCollectionsCardPresentationStyleName[];
+extern const char kCollectionsCardPresentationStyleDescription[];
+
 // Title and description for the flag to enable Contextual Search.
 extern const char kContextualSearch[];
 extern const char kContextualSearchDescription[];

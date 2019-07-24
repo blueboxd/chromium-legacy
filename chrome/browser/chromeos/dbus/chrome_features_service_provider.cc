@@ -107,9 +107,13 @@ void ChromeFeaturesServiceProvider::IsFeatureEnabled(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
   static const base::Feature constexpr* kFeatureLookup[] = {
-      &features::kUsbbouncer, &features::kUsbguard,
-      &arc::kNativeBridgeExperimentFeature, &arc::kFilePickerExperimentFeature,
-      &arc::kCustomTabsExperimentFeature, &arc::kPrintSpoolerExperimentFeature,
+      &features::kUsbbouncer,
+      &features::kUsbguard,
+      &arc::kBootCompletedBroadcastFeature,
+      &arc::kCustomTabsExperimentFeature,
+      &arc::kFilePickerExperimentFeature,
+      &arc::kNativeBridgeExperimentFeature,
+      &arc::kPrintSpoolerExperimentFeature,
   };
 
   dbus::MessageReader reader(method_call);

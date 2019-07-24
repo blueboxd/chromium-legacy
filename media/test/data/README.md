@@ -819,11 +819,35 @@ ffmpeg -i red.webm -i a500hz.webm -map 0 -map 1 red-a500hz.webm
 
 ### WebP Test Files
 
+#### BlackAndWhite_criss-cross_pattern_2015x2015.webp
+A lossy WebP encoded image of 2015x2015. Created by gildekel@ using Gimp.
+
 #### bouncy_ball.webp
-An animated (extended) WebP encoded image of 450x450. Created by gildekel@ using Gimp.
+An animated (extended) WebP encoded image of 450x450. Created by gildekel@
+using Gimp.
 
 #### red_green_gradient_lossy.webp
 A lossy WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.
+
+#### RGB_noise_2015x2015.webp
+A lossy WebP encoded image of 2015x2015 that contains RGB noise. Created by
+gildekel@ using Gimp.
+
+#### RGB_noise_large_pixels_115x115.webp
+A lossy WebP encoded image of 115x115 that contains large pixels RGB noise.
+Created by gildekel@ using Gimp.
+
+#### RGB_noise_large_pixels_2015x2015.webp
+A lossy WebP encoded image of 2015x2015 that contains large pixels RGB noise.
+Created by gildekel@ using Gimp.
+
+#### RGB_noise_large_pixels_4000x4000.webp
+A lossy WebP encoded image of 4000x4000 that contains large pixels RGB noise.
+Created by gildekel@ using Gimp.
+
+#### solid_green_2015x2015.webp
+A lossy WebP encoded image of 2015x2015 of solid bright green. Created by
+gildekel@ using Gimp.
 
 #### yellow_pink_gradient_lossless.webp
 A lossless WebP encoded image of 3000x3000. Created by gildekel@ using Gimp.

@@ -50,7 +50,7 @@ std::string ProfileInfoWatcher::GetAuthenticatedUsername() const {
   return username;
 }
 
-identity::IdentityManager* ProfileInfoWatcher::GetIdentityManager() const {
+signin::IdentityManager* ProfileInfoWatcher::GetIdentityManager() const {
   return IdentityManagerFactory::GetForProfile(profile_);
 }
 

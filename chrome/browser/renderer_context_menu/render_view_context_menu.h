@@ -71,8 +71,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
                                        bool is_checked);
 
   // Range of command IDs to use for the items in the send tab to self submenu.
-  static const int kMinSendTabToSelfSubMenuCommandId =
-      send_tab_to_self::SendTabToSelfSubMenuModel::kMinCommandId;
   static const int kMaxSendTabToSelfSubMenuCommandId =
       send_tab_to_self::SendTabToSelfSubMenuModel::kMaxCommandId;
 

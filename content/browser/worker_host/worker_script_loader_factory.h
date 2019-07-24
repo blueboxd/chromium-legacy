@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WORKER_HOST_WORKER_SCRIPT_LOADER_FACTORY_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -16,7 +17,9 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class AppCacheHost;
-class ServiceWorkerProviderHost;
+class BrowserContext;
+class ServiceWorkerNavigationHandle;
+class ServiceWorkerNavigationHandleCore;
 class ResourceContext;
 class WorkerScriptLoader;
 
@@ -26,8 +29,8 @@ class WorkerScriptLoader;
 // It's an error to call CreateLoaderAndStart() more than a total of one time
 // across this object or any of its clones.
 //
-// This is created per one web worker. All functions of this class must be
-// called on the IO thread.
+// This is created per one web worker. It lives on the UI thread when
+// NavigationLoaderOnUI is enabled, and the IO thread otherwise.
 class CONTENT_EXPORT WorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
@@ -35,14 +38,28 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
   // the IO thread.
   using ResourceContextGetter = base::RepeatingCallback<ResourceContext*(void)>;
 
+  // Returns the browser context, or nullptr during shutdown. Must be called on
+  // the UI thread.
+  using BrowserContextGetter = base::RepeatingCallback<BrowserContext*(void)>;
+
   // |loader_factory| is used to load the script if the load is not intercepted
   // by a feature like service worker. Typically it will load the script from
   // the NetworkService. However, it may internally contain non-NetworkService
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
+  //
+  // NavigationLoaderOnUI:
+  // |service_worker_handle| and |browser_context_getter| can be
+  // used.
+  //
+  // Non-NavigationLoaderOnUI:
+  // |service_worker_handle_core| and |resource_context_getter| can
+  // be used.
   WorkerScriptLoaderFactory(
       int process_id,
-      base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
+      ServiceWorkerNavigationHandle* service_worker_handle,
+      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       base::WeakPtr<AppCacheHost> appcache_host,
+      const BrowserContextGetter& browser_context_getter,
       const ResourceContextGetter& resource_context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~WorkerScriptLoaderFactory() override;
@@ -62,8 +79,10 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
 
  private:
   const int process_id_;
-  base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
+  base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
+  base::WeakPtr<ServiceWorkerNavigationHandleCore> service_worker_handle_core_;
   base::WeakPtr<AppCacheHost> appcache_host_;
+  BrowserContextGetter browser_context_getter_;
   ResourceContextGetter resource_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 

@@ -386,9 +386,9 @@
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
+#include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "services/audio/public/mojom/constants.mojom.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/ash_service_registry.h"
@@ -2349,11 +2349,9 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
 #if defined(OS_MACOSX)
-  // On Mac, the video-capture and audio services require a CFRunLoop, provided
-  // by a UI message loop, to run AVFoundation and CoreAudio code.
-  // See https://crbug.com/834581
-  if (identity.name() == video_capture::mojom::kServiceName ||
-      identity.name() == audio::mojom::kServiceName)
+  // On Mac, the audio service requires a CFRunLoop, provided by a UI message
+  // loop, to run AVFoundation and CoreAudio code. See https://crbug.com/834581.
+  if (identity.name() == audio::mojom::kServiceName)
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);
 #endif
 }
@@ -4289,6 +4287,8 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     auto url_to_apps_throttle =
 #if defined(OS_CHROMEOS)
         chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
+#elif defined(OS_MACOSX)
+        apps::MacAppsNavigationThrottle::MaybeCreate(handle);
 #else
         apps::AppsNavigationThrottle::MaybeCreate(handle);
 #endif

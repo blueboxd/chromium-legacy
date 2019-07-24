@@ -49,7 +49,7 @@ class UserPolicySigninServiceBase : public KeyedService,
                                     public CloudPolicyClient::Observer,
                                     public CloudPolicyService::Observer,
                                     public content::NotificationObserver,
-                                    public identity::IdentityManager::Observer {
+                                    public signin::IdentityManager::Observer {
  public:
   // The callback invoked once policy registration is complete. Passed
   // |dm_token| and |client_id| parameters are empty if policy registration
@@ -68,7 +68,7 @@ class UserPolicySigninServiceBase : public KeyedService,
       PrefService* local_state,
       DeviceManagementService* device_management_service,
       UserCloudPolicyManager* policy_manager,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
   ~UserPolicySigninServiceBase() override;
 
@@ -84,7 +84,7 @@ class UserPolicySigninServiceBase : public KeyedService,
       scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory,
       const PolicyFetchCallback& callback);
 
-  // identity::IdentityManager::Observer implementation:
+  // signin::IdentityManager::Observer implementation:
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 
@@ -150,7 +150,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   // Convenience helpers to get the associated UserCloudPolicyManager and
   // IdentityManager.
   UserCloudPolicyManager* policy_manager() { return policy_manager_; }
-  identity::IdentityManager* identity_manager() { return identity_manager_; }
+  signin::IdentityManager* identity_manager() { return identity_manager_; }
 
   content::NotificationRegistrar* registrar() { return &registrar_; }
 
@@ -158,7 +158,7 @@ class UserPolicySigninServiceBase : public KeyedService,
   // Weak pointer to the UserCloudPolicyManager and IdentityManager this service
   // is associated with.
   UserCloudPolicyManager* policy_manager_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   content::NotificationRegistrar registrar_;
 

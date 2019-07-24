@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 17 Jul 2019 14:52:39 -0700
-Subject: [PATCH 2/4] Fix Heap-Buffer-Overflow
+Subject: [PATCH 2/5] Fix Heap-Buffer-Overflow
 
     Backports https://www.sqlite.org/src/info/bd9a47a3a2997bfb
 

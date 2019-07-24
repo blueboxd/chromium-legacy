@@ -454,21 +454,15 @@ UIColor* BackgroundColor() {
     _buttonNewTab.autoresizingMask = (UIViewAutoresizingFlexibleRightMargin |
                                       UIViewAutoresizingFlexibleBottomMargin);
     _buttonNewTab.imageView.contentMode = UIViewContentModeCenter;
-    UIImage* buttonNewTabImage = nil;
-    UIImage* buttonNewTabPressedImage = nil;
 
-    if (_style == INCOGNITO) {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab_incognito"];
-      buttonNewTabPressedImage =
-          [UIImage imageNamed:@"tabstrip_new_tab_incognito_pressed"];
-    } else {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
-      buttonNewTabPressedImage =
-          [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
-    }
+    UIImage* buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
     [_buttonNewTab setImage:buttonNewTabImage forState:UIControlStateNormal];
+
+    UIImage* buttonNewTabPressedImage =
+        [UIImage imageNamed:@"tabstrip_new_tab_pressed"];
     [_buttonNewTab setImage:buttonNewTabPressedImage
                    forState:UIControlStateHighlighted];
+
     UIEdgeInsets imageInsets = UIEdgeInsetsMake(
         kNewTabButtonTopImageInset, kNewTabButtonHorizontalImageInset,
         kNewTabButtonBottomImageInset, kNewTabButtonHorizontalImageInset);

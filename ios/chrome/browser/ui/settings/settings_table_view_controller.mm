@@ -174,7 +174,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   ios::ChromeBrowserState* _browserState;  // weak
   // Bridge for TemplateURLServiceObserver.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserverBridge;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityObserverBridge;
   std::unique_ptr<SyncObserverBridge> _syncObserverBridge;
   // Whether the impression of the Signin button has already been recorded.
@@ -257,13 +257,13 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     _searchEngineObserverBridge.reset(new SearchEngineObserverBridge(
         self,
         ios::TemplateURLServiceFactory::GetForBrowserState(_browserState)));
-    identity::IdentityManager* identityManager =
+    signin::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
     // It is expected that |identityManager| should never be nil except in
     // tests. In that case, the tests should be fixed.
     DCHECK(identityManager);
     _identityObserverBridge.reset(
-        new identity::IdentityManagerObserverBridge(identityManager, self));
+        new signin::IdentityManagerObserverBridge(identityManager, self));
     syncer::SyncService* syncService =
         ProfileSyncServiceFactory::GetForBrowserState(_browserState);
     _syncObserverBridge.reset(new SyncObserverBridge(self, syncService));

@@ -49,7 +49,7 @@ resource_packages_id_mapping = [
 # Modules shipped in Chrome Modern (Android L+).
 chrome_modern_module_descs = []
 if (enable_vr) {
-  chrome_modern_module_descs += [ vr_module_desc ]
+  chrome_modern_module_descs += [ vr_chrome_modern_module_desc ]
 }
 if (dfmify_dev_ui) {
   chrome_modern_module_descs += [ dev_ui_module_desc ]
@@ -57,6 +57,10 @@ if (dfmify_dev_ui) {
 
 # Modules shipped in Monochrome (Android N+).
 monochrome_module_descs = chrome_modern_module_descs
+if (enable_vr) {
+  monochrome_module_descs -= [ vr_chrome_modern_module_desc ]
+  monochrome_module_descs += [ vr_module_desc ]
+}
 if (enable_arcore) {
   monochrome_module_descs += [ ar_module_desc ]
 }

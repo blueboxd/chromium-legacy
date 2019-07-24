@@ -62,6 +62,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/settings/autofill/features.h"
+#import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -578,6 +579,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSettingsAddPaymentMethodName,
      flag_descriptions::kSettingsAddPaymentMethodDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSettingsAddPaymentMethod)},
+    {"collections-card-presentation-style",
+     flag_descriptions::kCollectionsCardPresentationStyleName,
+     flag_descriptions::kCollectionsCardPresentationStyleDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kCollectionsCardPresentationStyle)},
 };
 
 // Add all switches from experimental flags to |command_line|.

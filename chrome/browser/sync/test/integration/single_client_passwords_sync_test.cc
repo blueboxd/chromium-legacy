@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientPasswordsSyncTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_EQ(1, GetPasswordCount(0));
 #if defined(CHROMEOS)
-  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
 #endif  // defined(CHROMEOS)
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   ASSERT_EQ(2, GetPasswordCount(0));
 #if defined(CHROMEOS)
-  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
 #endif  // defined(CHROMEOS)

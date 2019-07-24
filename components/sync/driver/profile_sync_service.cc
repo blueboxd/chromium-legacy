@@ -880,7 +880,7 @@ void ProfileSyncService::OnEngineInitialized(
 
   // Check for a cookie jar mismatch.
   if (identity_manager_) {
-    identity::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+    signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
         identity_manager_->GetAccountsInCookieJar();
     if (accounts_in_cookie_jar_info.accounts_are_fresh) {
       OnAccountsInCookieUpdated(accounts_in_cookie_jar_info,
@@ -964,7 +964,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
         // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
         DCHECK(account_mutator);
         account_mutator->ClearPrimaryAccount(
-            identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+            signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
             signin_metrics::SERVER_FORCED_DISABLE,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
       }
@@ -1478,7 +1478,7 @@ void ProfileSyncService::OnSyncRequestedPrefChange(bool is_sync_requested) {
 }
 
 void ProfileSyncService::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   OnAccountsInCookieUpdatedWithCallback(
       accounts_in_cookie_jar_info.signed_in_accounts, base::Closure());

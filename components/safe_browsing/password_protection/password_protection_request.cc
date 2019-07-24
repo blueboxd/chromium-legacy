@@ -72,7 +72,6 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& password_form_frame_url,
     const std::string& username,
     PasswordType password_type,
-    bool is_account_syncing,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType type,
     bool password_field_exists,
@@ -84,7 +83,6 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       password_form_frame_url_(password_form_frame_url),
       username_(username),
       password_type_(password_type),
-      is_primary_account_syncing_(is_account_syncing),
       matching_domains_(matching_domains),
       trigger_type_(type),
       password_field_exists_(password_field_exists),
@@ -239,13 +237,13 @@ void PasswordProtectionRequest::FillRequestProto() {
       }
       if (base::FeatureList::IsEnabled(
               safe_browsing::kPasswordProtectionForSignedInUsers)) {
-        ReusedPasswordAccountType* reused_password_account_type =
-            reuse_event->mutable_reused_password_account_type();
-        // TODO(crbug/914410): Add account_type.
-        reused_password_account_type->set_is_account_syncing(
-            is_primary_account_syncing_);
+        ReusedPasswordAccountType password_account_type_to_add =
+            password_protection_service_
+                ->GetPasswordProtectionReusedPasswordAccountType(
+                    password_type_);
+        *reuse_event->mutable_reused_password_account_type() =
+            password_account_type_to_add;
       }
-
       break;
     }
     default:
@@ -464,13 +462,12 @@ void PasswordProtectionRequest::Finish(
   if (outcome != RequestOutcome::CANCELED) {
     ReusedPasswordAccountType password_account_type =
         password_protection_service_
-            ->GetPasswordProtectionReusedPasswordAccountType(
-                password_type_,
-                (password_protection_service_->GetAccountInfo()).hosted_domain);
+            ->GetPasswordProtectionReusedPasswordAccountType(password_type_);
     if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
       LogPasswordOnFocusRequestOutcome(outcome);
     } else {
       LogPasswordEntryRequestOutcome(outcome, password_account_type);
+      // TODO(crbug/914410): Account for non sync users.
       if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
             web_contents_, outcome, response.get());

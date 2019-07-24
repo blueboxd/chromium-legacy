@@ -2642,7 +2642,7 @@ enum class EnterTabSwitcherSnapshotResult {
   ios::ChromeBrowserState* browserState = [self currentBrowserState];
   if (browserState->IsOffTheRecord())
     return nil;
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);

@@ -18,7 +18,7 @@ namespace test {
 
 namespace {
 
-constexpr int64_t kDisplayIds[] = {123, 456};
+constexpr int64_t kDisplayIds[] = {123, 456, 789};
 const DisplayMode kDisplayMode{gfx::Size(1366, 768), false, 60.0f};
 
 }  // namespace
@@ -64,6 +64,12 @@ class ContentProtectionManagerTest : public testing::Test {
     displays_[1] = FakeDisplaySnapshot::Builder()
                        .SetId(kDisplayIds[1])
                        .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
+                       .SetCurrentMode(kDisplayMode.Clone())
+                       .Build();
+
+    displays_[2] = FakeDisplaySnapshot::Builder()
+                       .SetId(kDisplayIds[2])
+                       .SetType(DISPLAY_CONNECTION_TYPE_VGA)
                        .SetCurrentMode(kDisplayMode.Clone())
                        .Build();
 
@@ -122,7 +128,7 @@ class ContentProtectionManagerTest : public testing::Test {
   uint32_t connection_mask_ = DISPLAY_CONNECTION_TYPE_NONE;
   uint32_t protection_mask_ = CONTENT_PROTECTION_METHOD_NONE;
 
-  std::unique_ptr<DisplaySnapshot> displays_[2];
+  std::unique_ptr<DisplaySnapshot> displays_[3];
 
   DISALLOW_COPY_AND_ASSIGN(ContentProtectionManagerTest);
 };
@@ -671,6 +677,82 @@ TEST_F(ContentProtectionManagerTest, NoSecurityPollingIfInternalDisplayOnly) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true}}),
+            observer.security_changes());
+}
+
+TEST_F(ContentProtectionManagerTest, AnalogDisplaySecurity) {
+  UpdateDisplays(3);
+  TestObserver observer(&manager_);
+
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true},
+                             {kDisplayIds[1], false},
+                             {kDisplayIds[2], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  auto id = manager_.RegisterClient();
+  EXPECT_TRUE(id);
+
+  native_display_delegate_.set_run_async(true);
+
+  for (int64_t display_id : kDisplayIds) {
+    manager_.ApplyContentProtection(
+        id, display_id, CONTENT_PROTECTION_METHOD_HDCP,
+        base::BindOnce(
+            &ContentProtectionManagerTest::ApplyContentProtectionCallback,
+            base::Unretained(this)));
+  }
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(observer.security_changes().empty());
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Analog display is never secure.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true},
+                             {kDisplayIds[1], true},
+                             {kDisplayIds[2], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  layout_manager_.set_display_state(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR);
+  TriggerDisplayConfiguration();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Internal display is not secure if mirrored to an analog display.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], false},
+                             {kDisplayIds[1], false},
+                             {kDisplayIds[2], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  layout_manager_.set_display_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
+  TriggerDisplayConfiguration();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true},
+                             {kDisplayIds[1], true},
+                             {kDisplayIds[2], false}}),
+            observer.security_changes());
+  observer.Reset();
+
+  manager_.UnregisterClient(id);
+
+  // Timer should be stopped when no client requests protection.
+  EXPECT_FALSE(TriggerDisplaySecurityTimeout());
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified when client unregisters.
+  EXPECT_EQ(SecurityChanges({{kDisplayIds[0], true},
+                             {kDisplayIds[1], false},
+                             {kDisplayIds[2], false}}),
             observer.security_changes());
 }
 

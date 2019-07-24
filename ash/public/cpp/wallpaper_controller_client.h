@@ -14,12 +14,6 @@ class ASH_PUBLIC_EXPORT WallpaperControllerClient {
  public:
   // Opens the wallpaper picker window.
   virtual void OpenWallpaperPicker() = 0;
-
-  // Notifies the client that the animation of the first wallpaper since the
-  // controller initialization has completed.
-  // TODO(crbug.com/875128): Remove this after web-ui login code is completely
-  // removed.
-  virtual void OnFirstWallpaperAnimationFinished() = 0;
 };
 
 }  // namespace ash

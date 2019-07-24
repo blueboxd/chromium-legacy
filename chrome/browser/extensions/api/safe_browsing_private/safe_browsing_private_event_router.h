@@ -21,7 +21,7 @@ namespace extensions {
 class EventRouter;
 }
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -103,7 +103,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   std::string GetProfileUserName();
 
   content::BrowserContext* context_;
-  identity::IdentityManager* identity_manager_ = nullptr;
+  signin::IdentityManager* identity_manager_ = nullptr;
   EventRouter* event_router_ = nullptr;
   std::unique_ptr<policy::CloudPolicyClient> client_;
 

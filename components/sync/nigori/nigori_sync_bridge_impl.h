@@ -24,6 +24,8 @@
 
 namespace syncer {
 
+class Encryptor;
+
 // USS implementation of SyncEncryptionHandler.
 // This class holds the current Nigori state and processes incoming changes and
 // queries:
@@ -36,8 +38,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                              public NigoriSyncBridge,
                              public SyncEncryptionHandler {
  public:
-  explicit NigoriSyncBridgeImpl(
-      std::unique_ptr<NigoriLocalChangeProcessor> processor);
+  // |encryptor| must be not null and must outlive this object.
+  NigoriSyncBridgeImpl(std::unique_ptr<NigoriLocalChangeProcessor> processor,
+                       const Encryptor* encryptor);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -89,6 +92,13 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // |custom_passphrase_key_derivation_params_|. Should be called only if
   // |passphrase_type_| is an explicit passphrase.
   KeyDerivationParams GetKeyDerivationParamsForPendingKeys() const;
+
+  // Persists Nigori derived from explicit passphrase into preferences, in case
+  // error occurs during serialization/encryption, corresponding preference
+  // just won't be updated.
+  void MaybeNotifyBootstrapTokenUpdated() const;
+
+  const Encryptor* const encryptor_;
 
   const std::unique_ptr<NigoriLocalChangeProcessor> processor_;
 

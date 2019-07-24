@@ -263,32 +263,29 @@ TEST(CoordinateTest, GetSurroundingRect) {
   constexpr int kDocWidth = 1000;
 
   // Test various position, sizes, and document width.
-  pp::Rect rect(0, 100, 200, 300);
-  rect =
-      GetSurroundingRect(rect, kSingleViewInsets, kDocWidth, kBottomSeparator);
+  pp::Rect rect = GetSurroundingRect(100, 300, kSingleViewInsets, kDocWidth,
+                                     kBottomSeparator);
   EXPECT_EQ(0, rect.x());
   EXPECT_EQ(97, rect.y());
   EXPECT_EQ(1000, rect.width());
   EXPECT_EQ(314, rect.height());
 
-  rect.SetRect(1000, 40, 5000, 200);
-  rect =
-      GetSurroundingRect(rect, kSingleViewInsets, kDocWidth, kBottomSeparator);
+  rect = GetSurroundingRect(40, 200, kSingleViewInsets, kDocWidth,
+                            kBottomSeparator);
   EXPECT_EQ(0, rect.x());
   EXPECT_EQ(37, rect.y());
   EXPECT_EQ(1000, rect.width());
   EXPECT_EQ(214, rect.height());
 
-  rect.SetRect(-100, 200, 300, 500);
-  rect =
-      GetSurroundingRect(rect, kSingleViewInsets, kDocWidth, kBottomSeparator);
+  rect = GetSurroundingRect(200, 500, kSingleViewInsets, kDocWidth,
+                            kBottomSeparator);
   EXPECT_EQ(0, rect.x());
   EXPECT_EQ(197, rect.y());
   EXPECT_EQ(1000, rect.width());
   EXPECT_EQ(514, rect.height());
 
-  rect.SetRect(10, -100, 4000, 300);
-  rect = GetSurroundingRect(rect, kSingleViewInsets, 200, kBottomSeparator);
+  rect =
+      GetSurroundingRect(-100, 300, kSingleViewInsets, 200, kBottomSeparator);
   EXPECT_EQ(0, rect.x());
   EXPECT_EQ(-103, rect.y());
   EXPECT_EQ(200, rect.width());

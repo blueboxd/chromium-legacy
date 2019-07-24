@@ -109,8 +109,8 @@ TEST_F(DeletePageTaskTest, OfflinePageItemIsPopulated) {
   // Run DeletePageTask for to delete the page.
   PageCriteria criteria;
   criteria.offline_ids = std::vector<int64_t>{page1.offline_id};
-  auto task = DeletePageTask::CreateTaskWithCriteria(
-      store(), *policy_controller(), criteria, delete_page_callback());
+  auto task = DeletePageTask::CreateTaskWithCriteria(store(), criteria,
+                                                     delete_page_callback());
   RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -152,7 +152,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
   });
 
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
-      store(), *policy_controller(), delete_page_callback(), predicate);
+      store(), delete_page_callback(), predicate);
   RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -201,7 +201,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
       base::BindRepeating([](const GURL& url) -> bool { return false; });
 
   auto task = DeletePageTask::CreateTaskMatchingUrlPredicateForCachedPages(
-      store(), *policy_controller(), delete_page_callback(), predicate);
+      store(), delete_page_callback(), predicate);
   RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -243,7 +243,7 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
   EXPECT_TRUE(base::PathExists(page3.file_path));
 
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
-      store(), *policy_controller(), delete_page_callback(), page);
+      store(), delete_page_callback(), page);
   RunTask(std::move(task));
 
   EXPECT_EQ(DeletePageResult::SUCCESS, last_delete_page_result());
@@ -281,7 +281,7 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
   EXPECT_TRUE(base::PathExists(page3.file_path));
 
   auto task = DeletePageTask::CreateTaskDeletingForPageLimit(
-      store(), *policy_controller(), delete_page_callback(), page);
+      store(), delete_page_callback(), page);
   RunTask(std::move(task));
 
   // Since there's no limit for page per url of Download Namespace, the result

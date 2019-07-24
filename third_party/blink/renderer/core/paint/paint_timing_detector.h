@@ -50,6 +50,7 @@ class CORE_EXPORT PaintTimingDetector
       const PropertyTreeState& current_paint_chunk_properties);
   inline static void NotifyTextPaint(const IntRect& text_visual_rect);
 
+  void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);
   void NotifyPaintFinished();

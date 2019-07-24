@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -43,6 +44,10 @@ std::unique_ptr<app_list::AppContextMenu> AppServiceAppItem::MakeAppContextMenu(
     case apps::mojom::AppType::kWeb:
       return std::make_unique<app_list::ExtensionAppContextMenu>(
           delegate, profile, app_id, controller, is_platform_app);
+
+    case apps::mojom::AppType::kMacNative:
+      NOTREACHED() << "Should not be trying to make a menu for a native app";
+      return nullptr;
   }
 
   return nullptr;

@@ -34,6 +34,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 class GoogleServiceAuthError;
+class PrefChangeRegistrar;
 class PrefService;
 
 namespace base {
@@ -129,10 +130,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
+  // Called when the hotword always on status is changed from the pref service.
+  void OnAssistantHotwordAlwaysOn();
+
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionSettingsEnabled(bool enabled) override;
   void OnVoiceInteractionHotwordEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override;
   void OnLocaleChanged(const std::string& locale) override;
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
@@ -218,6 +221,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
 
   std::unique_ptr<PrefService> pref_service_;
+
+  // Observes user profile prefs for the Assistant.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 

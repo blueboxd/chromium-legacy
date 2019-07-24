@@ -606,12 +606,11 @@ TEST_F(FidoMakeCredentialHandlerTest, IncorrectRpIdHash) {
 // keys in AuthenicatorSelectionCriteria.
 TEST_F(FidoMakeCredentialHandlerTest,
        SuccessfulMakeCredentialWithResidentKeyOption) {
-  auto device = std::make_unique<VirtualCtap2Device>();
-  AuthenticatorSupportedOptions option;
-  option.supports_resident_key = true;
-  option.user_verification_availability = AuthenticatorSupportedOptions::
-      UserVerificationAvailability::kSupportedAndConfigured;
-  device->SetAuthenticatorSupportedOptions(std::move(option));
+  VirtualCtap2Device::Config config;
+  config.resident_key_support = true;
+  config.internal_uv_support = true;
+  auto state = base::MakeRefCounted<VirtualFidoDevice::State>();
+  state->fingerprints_enrolled = true;
 
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
@@ -620,7 +619,8 @@ TEST_F(FidoMakeCredentialHandlerTest,
               UserVerificationRequirement::kPreferred));
 
   discovery()->WaitForCallToStartAndSimulateSuccess();
-  discovery()->AddDevice(std::move(device));
+  discovery()->AddDevice(std::make_unique<VirtualCtap2Device>(
+      std::move(state), std::move(config)));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();

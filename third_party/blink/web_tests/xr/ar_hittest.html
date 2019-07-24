@@ -7,6 +7,7 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_asserts.js"></script>
 <script src="../xr/resources/xr-internal-device-mocking.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas />
@@ -42,7 +43,7 @@ let testFunction = function(session, fakeDeviceController, t) {
             // Test that hit results are what we expected.
             assert_equals(hitResults.length, 1);
             assert_equals(hitResults[0].hitMatrix.length, 16);
-            assert_matrices_approx_equal(
+            assert_matrix_approx_equals(
               hitResults[0].hitMatrix,
               expectedHitMatrix,
               FLOAT_EPSILON,

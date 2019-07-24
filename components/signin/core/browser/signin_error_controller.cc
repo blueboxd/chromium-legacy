@@ -8,7 +8,7 @@
 
 SigninErrorController::SigninErrorController(
     AccountMode mode,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : account_mode_(mode),
       identity_manager_(identity_manager),
       scoped_identity_manager_observer_(this),

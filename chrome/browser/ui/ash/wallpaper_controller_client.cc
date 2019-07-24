@@ -9,7 +9,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_util.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -26,7 +25,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
@@ -499,13 +497,6 @@ void WallpaperControllerClient::OpenWallpaperPicker() {
                       extensions::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
                       extensions::AppLaunchSource::kSourceChromeInternal));
-}
-
-void WallpaperControllerClient::OnFirstWallpaperAnimationFinished() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
 }
 
 bool WallpaperControllerClient::ShouldShowUserNamesOnLogin() const {

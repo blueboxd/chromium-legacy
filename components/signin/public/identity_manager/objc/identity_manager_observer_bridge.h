@@ -29,13 +29,13 @@
 - (void)onRefreshTokenRemovedForAccount:(const std::string&)accountId;
 - (void)onRefreshTokensLoaded;
 - (void)onAccountsInCookieUpdated:
-            (const identity::AccountsInCookieJarInfo&)accountsInCookieJarInfo
+            (const signin::AccountsInCookieJarInfo&)accountsInCookieJarInfo
                             error:(const GoogleServiceAuthError&)error;
 - (void)onEndBatchOfRefreshTokenStateChanges;
 
 @end
 
-namespace identity {
+namespace signin {
 
 // Bridge class that listens for |IdentityManager| notifications and
 // passes them to its Objective-C delegate.
@@ -57,7 +57,7 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
       const CoreAccountId& account_id) override;
   void OnRefreshTokensLoaded() override;
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnEndBatchOfRefreshTokenStateChanges() override;
 
@@ -70,6 +70,6 @@ class IdentityManagerObserverBridge : public IdentityManager::Observer {
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerObserverBridge);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_OBJC_IDENTITY_MANAGER_OBSERVER_BRIDGE_H_

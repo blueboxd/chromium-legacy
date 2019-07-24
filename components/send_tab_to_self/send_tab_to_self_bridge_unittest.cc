@@ -94,6 +94,12 @@ class SendTabToSelfBridgeTest : public testing::Test {
       : store_(syncer::ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()) {
     scoped_feature_list_.InitAndEnableFeature(kSendTabToSelfShowSendingUI);
     SetLocalDeviceCacheGuid(kLocalDeviceCacheGuid);
+    local_device_ = std::make_unique<syncer::DeviceInfo>(
+        kLocalDeviceCacheGuid, "device", "72", "agent",
+        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
+        clock()->Now() - base::TimeDelta::FromDays(1),
+        /*send_tab_to_self_receiving_enabled=*/true);
+    AddTestDevice(local_device_.get());
   }
 
   // Initialized the bridge based on the current local device and store. Can
@@ -203,6 +209,8 @@ class SendTabToSelfBridgeTest : public testing::Test {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  std::unique_ptr<syncer::DeviceInfo> local_device_;
+
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfBridgeTest);
 };
 
@@ -253,6 +261,7 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesAddTwoSpecifics) {
 
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
   InitializeBridge();
+
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
                            kLocalDeviceCacheGuid);
@@ -273,6 +282,7 @@ TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneAdd) {
 // Tests that the send tab to self entry is correctly removed.
 TEST_F(SendTabToSelfBridgeTest, ApplySyncChangesOneDeletion) {
   InitializeBridge();
+
   SendTabToSelfEntry entry("guid1", GURL("http://www.example.com/"), "title",
                            AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
                            kLocalDeviceCacheGuid);
@@ -565,17 +575,17 @@ TEST_F(SendTabToSelfBridgeTest,
       /*enabled_features=*/{kSendTabToSelfShowSendingUI},
       /*disabled_features=*/{kSendTabToSelfBroadcast});
 
+  const std::string kRemoteGuid = "RemoteDevice";
   InitializeBridge();
-  SetLocalDeviceCacheGuid("Device1");
 
   // Add on entry targeting this device and another targeting another device.
   syncer::EntityChangeList remote_input;
   SendTabToSelfEntry entry1("guid1", GURL("http://www.example.com/"), "title",
                             AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
-                            "Device1");
+                            kLocalDeviceCacheGuid);
   SendTabToSelfEntry entry2("guid2", GURL("http://www.example.com/"), "title",
                             AdvanceAndGetTime(), AdvanceAndGetTime(), "device",
-                            "Device2");
+                            kRemoteGuid);
   remote_input.push_back(
       syncer::EntityChange::CreateAdd("guid1", MakeEntityData(entry1)));
   remote_input.push_back(

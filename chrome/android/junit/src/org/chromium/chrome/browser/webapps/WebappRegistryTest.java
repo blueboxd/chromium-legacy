@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,11 +85,6 @@ public class WebappRegistryTest {
         mSharedPreferences.edit().putLong(KEY_LAST_CLEANUP, INITIAL_TIME).commit();
 
         mCallbackCalled = false;
-    }
-
-    @After
-    public void tearDown() {
-        mSharedPreferences.edit().clear().apply();
     }
 
     private void registerWebapp(String webappId,

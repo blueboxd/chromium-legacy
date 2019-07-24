@@ -318,7 +318,8 @@
       },
       {
         "args": [
-          "--vpython-dir=../../vpython_dir_linux_amd64"
+          "--vpython-dir=../../vpython_dir_linux_amd64",
+          "--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT"
         ],
         "merge": {
           "args": [],

@@ -91,7 +91,7 @@ class UserPolicySigninServiceTest : public testing::Test {
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         test_account_id_(AccountId::FromUserEmailGaiaId(
             kTestUser,
-            identity::GetTestGaiaIdForEmail(kTestUser))),
+            signin::GetTestGaiaIdForEmail(kTestUser))),
         register_completed_(false) {}
 
   MOCK_METHOD1(OnPolicyRefresh, void(bool));
@@ -265,7 +265,7 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_EQ(dm_token_, expected_dm_token);
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 

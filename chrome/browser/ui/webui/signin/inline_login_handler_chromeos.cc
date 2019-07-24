@@ -124,6 +124,12 @@ void InlineLoginHandlerChromeOS::SetExtraInitParams(
   params.SetKey("constrained", base::Value("1"));
   params.SetKey("flow", base::Value("crosAddAccount"));
   params.SetBoolean("dontResizeNonEmbeddedPages", true);
+
+  // For in-session login flows, request Gaia to ignore third party SAML IdP SSO
+  // redirection policies (and redirect to SAML IdPs by default), otherwise some
+  // managed users will not be able to login to Chrome OS at all. Please check
+  // https://crbug.com/984525 and https://crbug.com/984525#c20 for more context.
+  params.SetBoolean("ignoreCrOSIdpSetting", true);
 }
 
 void InlineLoginHandlerChromeOS::CompleteLogin(const std::string& email,

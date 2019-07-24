@@ -5,15 +5,14 @@
 #include "media/gpu/vaapi/vaapi_video_encode_accelerator.h"
 
 #include <string.h>
+#include <va/va.h>
+#include <va/va_enc_h264.h>
+#include <va/va_enc_vp8.h>
 
 #include <algorithm>
 #include <memory>
 #include <type_traits>
 #include <utility>
-
-#include <va/va.h>
-#include <va/va_enc_h264.h>
-#include <va/va_enc_vp8.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

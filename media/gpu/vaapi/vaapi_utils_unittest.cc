@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <va/va.h>
+
 #include <memory>
 #include <vector>
-
-#include <va/va.h>
 
 // This has to be included first.
 // See http://code.google.com/p/googletest/issues/detail?id=371

@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_CAST_MEDIA_ROUTE_PROVIDER_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PROVIDERS_CAST_CAST_MEDIA_ROUTE_PROVIDER_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
@@ -16,6 +20,10 @@ namespace cast_channel {
 class CastMessageHandler;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace url {
 class Origin;
 }
@@ -24,6 +32,7 @@ namespace media_router {
 
 class CastActivityManager;
 class CastSessionTracker;
+class DataDecoder;
 
 // MediaRouteProvider for Cast sinks. This class may be created on any sequence.
 // All other methods, however, must be called on the task runner provided

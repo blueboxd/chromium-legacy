@@ -58,8 +58,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/about_signin_internals.h"
-#include "components/signin/core/browser/signin_header_helper.h"
-#include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
@@ -251,7 +249,7 @@ void OnSyncSetupComplete(Profile* profile,
                          const std::string& username,
                          const std::string& password) {
   DCHECK(signin_util::IsForceSigninEnabled());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   bool has_primary_account = identity_manager->HasPrimaryAccount();
   if (has_primary_account && !password.empty()) {
@@ -358,7 +356,7 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       AboutSigninInternalsFactory::GetForProfile(profile_);
   about_signin_internals->OnRefreshTokenReceived("Successful");
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
   std::string primary_email = identity_manager->GetPrimaryAccountInfo().email;
@@ -442,7 +440,7 @@ void InlineSigninHelper::UntrustedSigninConfirmed(
 
 void InlineSigninHelper::CreateSyncStarter(const std::string& refresh_token) {
   DCHECK(signin_util::IsForceSigninEnabled());
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (identity_manager->HasPrimaryAccount()) {
     // Already signed in, nothing to do.

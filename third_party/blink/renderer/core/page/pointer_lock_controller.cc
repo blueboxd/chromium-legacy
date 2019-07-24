@@ -141,7 +141,7 @@ void PointerLockController::DidLosePointerLock() {
   if (pointer_lock_document && pointer_lock_document->GetFrame()) {
     pointer_lock_document->GetFrame()
         ->GetEventHandler()
-        .SetMousePositionForPointerUnlock(pointer_lock_screen_position_);
+        .ResetMousePositionForPointerUnlock();
   }
 
   ClearElement();

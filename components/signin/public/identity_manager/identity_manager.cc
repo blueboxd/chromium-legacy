@@ -28,7 +28,7 @@
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
 
-namespace identity {
+namespace signin {
 
 namespace {
 
@@ -186,7 +186,7 @@ std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
     const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
-    const ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(account_id, oauth_consumer_name,
@@ -199,7 +199,7 @@ IdentityManager::CreateAccessTokenFetcherForAccount(
     const CoreAccountId& account_id,
     const std::string& oauth_consumer_name,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
@@ -213,7 +213,7 @@ IdentityManager::CreateAccessTokenFetcherForClient(
     const std::string& client_id,
     const std::string& client_secret,
     const std::string& oauth_consumer_name,
-    const ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     AccessTokenFetcher::TokenCallback callback,
     AccessTokenFetcher::Mode mode) {
   return std::make_unique<AccessTokenFetcher>(
@@ -223,7 +223,7 @@ IdentityManager::CreateAccessTokenFetcherForClient(
 
 void IdentityManager::RemoveAccessTokenFromCache(
     const CoreAccountId& account_id,
-    const ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     const std::string& access_token) {
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
 }
@@ -340,14 +340,14 @@ IdentityManager::FindAccountInfoForAccountWithRefreshTokenByGaiaId(
   return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
 }
 
-std::unique_ptr<signin::UbertokenFetcher>
+std::unique_ptr<UbertokenFetcher>
 IdentityManager::CreateUbertokenFetcherForAccount(
     const CoreAccountId& account_id,
-    signin::UbertokenFetcher::CompletionCallback callback,
+    UbertokenFetcher::CompletionCallback callback,
     gaia::GaiaSource source,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     bool bount_to_channel_id) {
-  return std::make_unique<signin::UbertokenFetcherImpl>(
+  return std::make_unique<UbertokenFetcherImpl>(
       account_id, token_service_.get(), std::move(callback), source,
       url_loader_factory, bount_to_channel_id);
 }
@@ -648,7 +648,7 @@ void IdentityManager::OnGaiaCookieDeletedByUserAction() {
 
 void IdentityManager::OnAccessTokenRequested(const CoreAccountId& account_id,
                                              const std::string& consumer_id,
-                                             const ScopeSet& scopes) {
+                                             const identity::ScopeSet& scopes) {
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnAccessTokenRequested(account_id, consumer_id, scopes);
   }
@@ -657,7 +657,7 @@ void IdentityManager::OnAccessTokenRequested(const CoreAccountId& account_id,
 void IdentityManager::OnFetchAccessTokenComplete(
     const CoreAccountId& account_id,
     const std::string& consumer_id,
-    const ScopeSet& scopes,
+    const identity::ScopeSet& scopes,
     GoogleServiceAuthError error,
     base::Time expiration_time) {
   for (auto& observer : diagnostics_observer_list_)
@@ -666,7 +666,7 @@ void IdentityManager::OnFetchAccessTokenComplete(
 }
 
 void IdentityManager::OnAccessTokenRemoved(const CoreAccountId& account_id,
-                                           const ScopeSet& scopes) {
+                                           const identity::ScopeSet& scopes) {
   for (auto& observer : diagnostics_observer_list_)
     observer.OnAccessTokenRemovedFromCache(account_id, scopes);
 }
@@ -702,4 +702,4 @@ void IdentityManager::OnAccountRemoved(const AccountInfo& info) {
   UpdateUnconsentedPrimaryAccount();
 }
 
-}  // namespace identity
+}  // namespace signin

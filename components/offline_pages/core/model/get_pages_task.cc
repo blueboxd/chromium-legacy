@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -86,11 +85,9 @@ GetPagesTask::ReadResult::ReadResult(const ReadResult& other) = default;
 GetPagesTask::ReadResult::~ReadResult() = default;
 
 GetPagesTask::GetPagesTask(OfflinePageMetadataStore* store,
-                           const ClientPolicyController* policy_controller,
                            const PageCriteria& criteria,
                            MultipleOfflinePageItemCallback callback)
     : store_(store),
-      policy_controller_(policy_controller),
       criteria_(criteria),
       callback_(std::move(callback)) {
   DCHECK(store_);
@@ -101,7 +98,7 @@ GetPagesTask::~GetPagesTask() = default;
 
 void GetPagesTask::Run() {
   store_->Execute(base::BindOnce(&GetPagesTask::ReadPagesWithCriteriaSync,
-                                 policy_controller_, std::move(criteria_)),
+                                 std::move(criteria_)),
                   base::BindOnce(&GetPagesTask::CompleteWithResult,
                                  weak_ptr_factory_.GetWeakPtr()),
                   ReadResult());
@@ -129,7 +126,6 @@ void GetPagesTask::CompleteWithResult(ReadResult result) {
 //   the db is loaded to memory, and disk access will likely dwarf any
 //   other query optimizations.
 ReadResult GetPagesTask::ReadPagesWithCriteriaSync(
-    const ClientPolicyController* policy_controller,
     const PageCriteria& criteria,
     sql::Database* db) {
   ReadResult result;
@@ -186,7 +182,7 @@ ReadResult GetPagesTask::ReadPagesWithCriteriaSync(
   // want to find, and then search that string for the row's namespace and
   // client_id respectively.
   std::vector<std::string> potential_namespaces =
-      PotentiallyMatchingNamespaces(*policy_controller, criteria);
+      PotentiallyMatchingNamespaces(criteria);
   if (!potential_namespaces.empty()) {
     statement.BindBool(param++, false);
     statement.BindString(param++, base::JoinString(potential_namespaces, ""));
@@ -239,12 +235,11 @@ ReadResult GetPagesTask::ReadPagesWithCriteriaSync(
   while (statement.Step()) {
     // Initially, read just the client ID to avoid creating the offline item
     // if it's filtered out.
-    if (!MeetsCriteria(*policy_controller, criteria,
-                       OfflinePageClientId(statement))) {
+    if (!MeetsCriteria(criteria, OfflinePageClientId(statement))) {
       continue;
     }
     OfflinePageItem item = MakeOfflinePageItem(statement);
-    if (!MeetsCriteria(*policy_controller, criteria, item))
+    if (!MeetsCriteria(criteria, item))
       continue;
 
     result.pages.push_back(std::move(item));

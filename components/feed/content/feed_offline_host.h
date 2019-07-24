@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "components/feed/core/content_metadata.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
@@ -130,10 +131,13 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
 
   // Holds all consumers of GetKnownContent(). It is assumed that there's an
   // outstanding GetKnownContent() if and only if this vector is not empty.
-  std::vector<GetKnownContentCallback> pending_known_content_callbacks_;
+  std::vector<SuggestionsProvider::SuggestionCallback>
+      pending_known_content_callbacks_;
 
   // Calls all OfflineStatusListeners with the updated status.
   NotifyStatusChangeCallback notify_status_change_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<FeedOfflineHost> weak_factory_{this};
 

@@ -874,48 +874,83 @@ class HostedAppFileHandlingTest : public HostedAppTest {
         {});
   }
 
+  base::FilePath NewTestFilePath() {
+    // CreateTemporaryFile blocks, temporarily allow blocking.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    base::FilePath test_file_path;
+    base::CreateTemporaryFile(&test_file_path);
+    return test_file_path;
+  }
+
+  std::string InstallFileHandlingPWA() {
+    DCHECK_EQ(web_app_info_.app_url, GURL());
+    GURL url = GetSecureAppURL();
+
+    web_app_info_.app_url = url;
+    web_app_info_.scope = url.GetWithoutFilename();
+    web_app_info_.title = base::ASCIIToUTF16("A Hosted App");
+    web_app_info_.file_handler = blink::Manifest::FileHandler();
+    web_app_info_.file_handler->action =
+        https_server()->GetURL("app.com", "/ssl/blank_page.html");
+
+    {
+      std::vector<blink::Manifest::FileFilter> filters;
+      blink::Manifest::FileFilter text = {
+          base::ASCIIToUTF16("text"),
+          {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
+      filters.push_back(text);
+      web_app_info_.file_handler->files = std::move(filters);
+    }
+
+    app_ = InstallBookmarkApp(web_app_info_);
+    return app_->id();
+  }
+
+  content::WebContents* LaunchWithFiles(
+      const std::string& app_id,
+      const std::vector<base::FilePath>& files) {
+    AppLaunchParams params(browser()->profile(), app_id,
+                           extensions::LaunchContainer::kLaunchContainerWindow,
+                           WindowOpenDisposition::NEW_WINDOW,
+                           extensions::AppLaunchSource::kSourceFileHandler);
+    params.launch_files = files;
+
+    content::TestNavigationObserver navigation_observer(
+        web_app_info_.file_handler->action);
+    navigation_observer.StartWatchingNewWebContents();
+
+    content::WebContents* web_contents =
+        OpenApplicationWindow(params, web_app_info_.file_handler->action);
+    navigation_observer.Wait();
+    return web_contents;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  WebApplicationInfo web_app_info_;
 };
 
 IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest, PWAsCanViewLaunchParams) {
   ASSERT_TRUE(https_server()->Start());
 
-  GURL url = GetSecureAppURL();
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = url;
-  web_app_info.scope = url.GetWithoutFilename();
-  web_app_info.title = base::ASCIIToUTF16("A Hosted App");
-  web_app_info.file_handler = blink::Manifest::FileHandler();
-  web_app_info.file_handler->action =
-      GURL(https_server()->GetURL("app.com", "/ssl/blank_page.html"));
-
-  {
-    std::vector<blink::Manifest::FileFilter> filters;
-    blink::Manifest::FileFilter text = {
-        base::ASCIIToUTF16("text"),
-        {base::ASCIIToUTF16(".txt"), base::ASCIIToUTF16("text/*")}};
-    filters.push_back(text);
-    web_app_info.file_handler->files = std::move(filters);
-  }
-
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  AppLaunchParams params(browser()->profile(), app->id(),
-                         extensions::LaunchContainer::kLaunchContainerWindow,
-                         WindowOpenDisposition::NEW_WINDOW,
-                         extensions::AppLaunchSource::kSourceFileHandler);
-
-  content::TestNavigationObserver navigation_observer(
-      web_app_info.file_handler->action);
-  navigation_observer.StartWatchingNewWebContents();
-
-  content::WebContents* web_contents =
-      OpenApplicationWindow(params, web_app_info.file_handler->action);
-  navigation_observer.Wait();
-
+  const std::string app_id = InstallFileHandlingPWA();
+  content::WebContents* web_contents = LaunchWithFiles(app_id, {});
   EXPECT_EQ(0, content::EvalJs(web_contents, "launchParams.files.length"));
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppFileHandlingTest,
+                       PWAsCanReceiveFileLaunchParams) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const std::string app_id = InstallFileHandlingPWA();
+  base::FilePath test_file_path = NewTestFilePath();
+  content::WebContents* web_contents =
+      LaunchWithFiles(app_id, {test_file_path});
+
+  EXPECT_EQ(1, content::EvalJs(web_contents, "launchParams.files.length"));
+  EXPECT_EQ(test_file_path.BaseName().value(),
+            content::EvalJs(web_contents, "launchParams.files[0].name"));
 }
 
 #if !defined(OS_ANDROID)

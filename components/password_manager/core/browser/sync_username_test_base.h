@@ -38,13 +38,13 @@ class SyncUsernameTestBase : public testing::Test {
 
   const syncer::SyncService* sync_service() const { return &sync_service_; }
 
-  const identity::IdentityManager* identity_manager() {
+  const signin::IdentityManager* identity_manager() {
     return identity_test_env_.identity_manager();
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_env_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
 };
 

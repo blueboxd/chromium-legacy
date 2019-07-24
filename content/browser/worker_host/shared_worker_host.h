@@ -38,6 +38,7 @@ class URLLoaderFactoryBundleInfo;
 namespace content {
 
 class AppCacheNavigationHandle;
+class ServiceWorkerNavigationHandle;
 class ServiceWorkerObjectHost;
 class SharedWorkerContentSettingsProxyImpl;
 class SharedWorkerInstance;
@@ -69,10 +70,6 @@ class CONTENT_EXPORT SharedWorkerHost
 
   // Starts the SharedWorker in the renderer process.
   //
-  // |service_worker_provider_info| is sent to the renderer process and contains
-  // information about its ServiceWorkerProviderHost, the browser-side host for
-  // supporting the shared worker as a service worker client.
-  //
   // |main_script_load_params| is sent to the renderer process and to be used to
   // load the shared worker main script pre-requested by the browser process.
   //
@@ -86,8 +83,6 @@ class CONTENT_EXPORT SharedWorkerHost
   // to |controller_service_worker_object_host|.
   void Start(
       blink::mojom::SharedWorkerFactoryPtr factory,
-      blink::mojom::ServiceWorkerProviderInfoForClientPtr
-          service_worker_provider_info,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
@@ -114,6 +109,8 @@ class CONTENT_EXPORT SharedWorkerHost
 
   void SetAppCacheHandle(
       std::unique_ptr<AppCacheNavigationHandle> appcache_handle);
+  void SetServiceWorkerHandle(
+      std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle);
 
   SharedWorkerInstance* instance() { return instance_.get(); }
   int worker_process_id() const { return worker_process_id_; }
@@ -203,6 +200,8 @@ class CONTENT_EXPORT SharedWorkerHost
   // The handle owns the precreated AppCacheHost until it's claimed by the
   // renderer after main script loading finishes.
   std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
+
+  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   Phase phase_ = Phase::kInitial;
 

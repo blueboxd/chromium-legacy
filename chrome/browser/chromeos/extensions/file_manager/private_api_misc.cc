@@ -385,7 +385,7 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::Run() {
   std::vector<std::string> scopes;
   scopes.emplace_back(kCWSScope);
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details_.GetProfile());
 
   if (!identity_manager) {

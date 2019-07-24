@@ -52,12 +52,12 @@ class SyncAuthManagerTest : public testing::Test {
                                              base::DoNothing());
   }
 
-  identity::IdentityTestEnvironment* identity_env() { return &identity_env_; }
+  signin::IdentityTestEnvironment* identity_env() { return &identity_env_; }
 
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_env_;
+  signin::IdentityTestEnvironment identity_env_;
 };
 
 TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
@@ -160,7 +160,7 @@ TEST_F(SyncAuthManagerTest, ForwardsSecondaryAccountEvents) {
 
   // Make the account primary.
   EXPECT_CALL(account_state_changed, Run());
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_env()->identity_manager()->GetPrimaryAccountMutator();
   primary_account_mutator->SetPrimaryAccount(account_info.account_id);
 

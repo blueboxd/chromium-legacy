@@ -84,7 +84,7 @@ int FindDiceSigninTab(TabStripModel* tab_strip, const GURL& signin_url) {
 
 // Returns the promo action to be used when signing with a new account.
 signin_metrics::PromoAction GetPromoActionForNewAccount(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     signin::AccountConsistencyMethod account_consistency) {
   if (account_consistency != signin::AccountConsistencyMethod::kDice)
     return signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE;
@@ -268,7 +268,7 @@ void SigninViewController::ShowDiceEnableSyncTab(
   signin_metrics::Reason reason =
       signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
   std::string email_to_use = email_hint;
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(browser->profile());
   if (identity_manager->HasPrimaryAccount()) {
     reason = signin_metrics::Reason::REASON_REAUTHENTICATION;

@@ -65,6 +65,16 @@ ImageElementTiming::ImageElementTiming(LocalDOMWindow& window)
       GetSupplementable()->document()));
 }
 
+void ImageElementTiming::NotifyImageFinished(
+    const LayoutObject& layout_object,
+    const ImageResourceContent* cached_image) {
+  if (!internal::IsExplicitlyRegisteredForTiming(&layout_object))
+    return;
+
+  images_notified_.Set(std::make_pair(&layout_object, cached_image),
+                       ImageInfo(base::TimeTicks::Now()));
+}
+
 void ImageElementTiming::NotifyImagePainted(
     const LayoutObject* layout_object,
     const ImageResourceContent* cached_image,
@@ -74,11 +84,13 @@ void ImageElementTiming::NotifyImagePainted(
   if (!internal::IsExplicitlyRegisteredForTiming(layout_object))
     return;
 
-  auto result =
-      images_notified_.insert(std::make_pair(layout_object, cached_image));
-  if (result.is_new_entry && cached_image) {
+  auto it = images_notified_.find(std::make_pair(layout_object, cached_image));
+  DCHECK(it != images_notified_.end());
+  if (!it->value.is_painted_ && cached_image) {
+    it->value.is_painted_ = true;
     NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
-                               *cached_image, current_paint_chunk_properties);
+                               *cached_image, current_paint_chunk_properties,
+                               it->value.load_time_);
   }
 }
 
@@ -86,7 +98,8 @@ void ImageElementTiming::NotifyImagePaintedInternal(
     Node* node,
     const LayoutObject& layout_object,
     const ImageResourceContent& cached_image,
-    const PropertyTreeState& current_paint_chunk_properties) {
+    const PropertyTreeState& current_paint_chunk_properties,
+    base::TimeTicks load_time) {
   LocalFrame* frame = GetSupplementable()->GetFrame();
   DCHECK(frame == layout_object.GetDocument().GetFrame());
   DCHECK(node);
@@ -134,7 +147,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
       // Create an entry with a |startTime| of 0.
       performance->AddElementTiming(
           ImagePaintString(), url.GetString(), intersection_rect,
-          base::TimeTicks(), cached_image.LoadResponseEnd(), attr,
+          base::TimeTicks(), load_time, attr,
           cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id,
           element);
     }
@@ -149,7 +162,7 @@ void ImageElementTiming::NotifyImagePaintedInternal(
                                 ? url.GetString().Left(kInlineImageMaxChars)
                                 : url.GetString();
   element_timings_.emplace_back(MakeGarbageCollected<ElementTimingInfo>(
-      image_url, intersection_rect, cached_image.LoadResponseEnd(), attr,
+      image_url, intersection_rect, load_time, attr,
       cached_image.IntrinsicSize(kDoNotRespectImageOrientation), id, element));
   // Only queue a swap promise when |element_timings_| was empty. All of the
   // records in |element_timings_| will be processed when the promise succeeds
@@ -180,11 +193,20 @@ void ImageElementTiming::NotifyBackgroundImagePainted(
   if (!cached_image || !cached_image->IsLoaded())
     return;
 
-  auto result =
-      images_notified_.insert(std::make_pair(layout_object, cached_image));
-  if (result.is_new_entry) {
-    NotifyImagePaintedInternal(node, *layout_object, *cached_image,
-                               current_paint_chunk_properties);
+  std::pair<const LayoutObject*, const ImageResourceContent*> pair =
+      std::make_pair(layout_object, cached_image);
+  auto it = images_notified_.find(pair);
+  // TODO(crbug.com/986891): ideally |images_notified_| would always be able to
+  // find the pair here. However, for some background images that is currently
+  // not possible. Therefore, in those cases we create the entry here with
+  // loadTime of 0. Once the bug is fixed, we should replace that with a DCHECK.
+  if (it == images_notified_.end())
+    images_notified_.Set(pair, ImageInfo(base::TimeTicks()));
+  if (!it->value.is_painted_ && cached_image) {
+    it->value.is_painted_ = true;
+    NotifyImagePaintedInternal(layout_object->GetNode(), *layout_object,
+                               *cached_image, current_paint_chunk_properties,
+                               it->value.load_time_);
   }
 }
 

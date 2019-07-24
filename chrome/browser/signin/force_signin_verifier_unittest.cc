@@ -20,14 +20,14 @@ class ForceSigninVerifierWithAccessToInternalsForTesting
     : public ForceSigninVerifier {
  public:
   explicit ForceSigninVerifierWithAccessToInternalsForTesting(
-      identity::IdentityManager* identity_manager)
+      signin::IdentityManager* identity_manager)
       : ForceSigninVerifier(identity_manager) {}
 
   bool IsDelayTaskPosted() { return GetOneShotTimerForTesting()->IsRunning(); }
 
   int FailureCount() { return GetBackoffEntryForTesting()->failure_count(); }
 
-  identity::PrimaryAccountAccessTokenFetcher* access_token_fetcher() {
+  signin::PrimaryAccountAccessTokenFetcher* access_token_fetcher() {
     return GetAccessTokenFetcherForTesting();
   }
 
@@ -147,7 +147,7 @@ void SpinCurrentSequenceTaskRunner() {
 
 TEST(ForceSigninVerifierTest, OnGetTokenSuccess) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -176,7 +176,7 @@ TEST(ForceSigninVerifierTest, OnGetTokenSuccess) {
 
 TEST(ForceSigninVerifierTest, OnGetTokenPersistentFailure) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -206,7 +206,7 @@ TEST(ForceSigninVerifierTest, OnGetTokenPersistentFailure) {
 
 TEST(ForceSigninVerifierTest, OnGetTokenTransientFailure) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -235,7 +235,7 @@ TEST(ForceSigninVerifierTest, OnGetTokenTransientFailure) {
 
 TEST(ForceSigninVerifierTest, OnLostConnection) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -259,7 +259,7 @@ TEST(ForceSigninVerifierTest, OnLostConnection) {
 
 TEST(ForceSigninVerifierTest, OnReconnected) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -283,7 +283,7 @@ TEST(ForceSigninVerifierTest, OnReconnected) {
 
 TEST(ForceSigninVerifierTest, GetNetworkStatusAsync) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -305,7 +305,7 @@ TEST(ForceSigninVerifierTest, GetNetworkStatusAsync) {
 
 TEST(ForceSigninVerifierTest, LaunchVerifierWithoutNetwork) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -334,7 +334,7 @@ TEST(ForceSigninVerifierTest, LaunchVerifierWithoutNetwork) {
 
 TEST(ForceSigninVerifierTest, ChangeNetworkFromWIFITo4GWithOnGoingRequest) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 
@@ -365,7 +365,7 @@ TEST(ForceSigninVerifierTest, ChangeNetworkFromWIFITo4GWithOnGoingRequest) {
 
 TEST(ForceSigninVerifierTest, ChangeNetworkFromWIFITo4GWithFinishedRequest) {
   base::test::ScopedTaskEnvironment scoped_task_env;
-  identity::IdentityTestEnvironment identity_test_env;
+  signin::IdentityTestEnvironment identity_test_env;
   const AccountInfo account_info =
       identity_test_env.MakePrimaryAccountAvailable("email@test.com");
 

@@ -21,10 +21,10 @@
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 
-namespace identity {
+namespace signin {
 class AccessTokenFetcher;
 struct AccessTokenInfo;
-}  // namespace identity
+}  // namespace signin
 
 namespace extensions {
 
@@ -48,7 +48,7 @@ namespace extensions {
 class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public GaiaWebAuthFlow::Delegate,
                                      public IdentityMintRequestQueue::Request,
-                                     public identity::IdentityManager::Observer,
+                                     public signin::IdentityManager::Observer,
 #if defined(OS_CHROMEOS)
                                      public OAuth2AccessTokenManager::Consumer,
 #endif
@@ -90,7 +90,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 #endif
 
   void OnAccessTokenFetchCompleted(GoogleServiceAuthError error,
-                                   identity::AccessTokenInfo access_token_info);
+                                   signin::AccessTokenInfo access_token_info);
 
   // Invoked on completion of the access token fetcher.
   // Exposed for testing.
@@ -113,7 +113,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
 
   // Pending fetcher for an access token for |token_key_.account_id| (via
   // IdentityManager).
-  std::unique_ptr<identity::AccessTokenFetcher>
+  std::unique_ptr<signin::AccessTokenFetcher>
       token_key_account_access_token_fetcher_;
 
  private:
@@ -136,11 +136,11 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // Called when the AccountInfo that this instance should use is available.
   void OnReceivedExtensionAccountInfo(const CoreAccountInfo* account_info);
 
-  // identity::IdentityManager::Observer implementation:
+  // signin::IdentityManager::Observer implementation:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
   void OnPrimaryAccountSet(
       const CoreAccountInfo& primary_account_info) override;
@@ -218,7 +218,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       identity_api_shutdown_subscription_;
 
-  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       scoped_identity_manager_observer_;
 
   // This class can be listening to account changes, but only for one type of

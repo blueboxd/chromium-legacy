@@ -7,6 +7,7 @@
 <script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
 <script src="../external/wpt/resources/chromium/webxr-test.js"></script>
 <script src="../external/wpt/webxr/resources/webxr_test_constants.js"></script>
+<script src="../external/wpt/webxr/resources/webxr_test_asserts.js"></script>
 <script src="../xr/resources/xr-test-utils.js"></script>
 <canvas />
 
@@ -47,8 +48,8 @@ let testFunction = function(session, fakeDeviceController, t) {
         if (counter == 0) {
           session.requestAnimationFrame(onFrame);
 
-          assert_matrices_approx_equal(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
-          assert_matrices_approx_equal(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrix_approx_equals(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrix_approx_equals(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
 
           // Update the near and far depths for the session.
           session.updateRenderState({
@@ -57,8 +58,8 @@ let testFunction = function(session, fakeDeviceController, t) {
 
           // The projection matrices the views report should not take into
           // account the new session depth values this frame.
-          assert_matrices_approx_equal(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
-          assert_matrices_approx_equal(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrix_approx_equals(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrix_approx_equals(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
         } else {
           // New depth values should be retained between frames.
           assert_equals(session.renderState.depthNear, 1.0);
@@ -66,8 +67,8 @@ let testFunction = function(session, fakeDeviceController, t) {
 
           // Projection matricies should now reflect the new depth values, i.e.
           // have changed.
-          assert_matrices_significantly_not_equal(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
-          assert_matrices_significantly_not_equal(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrix_significantly_not_equals(pose.views[0].projectionMatrix, VALID_PROJECTION_MATRIX);
+          assert_matrix_significantly_not_equals(pose.views[1].projectionMatrix, VALID_PROJECTION_MATRIX);
           resolve();
         }
         counter++;

@@ -195,9 +195,6 @@ TEST_F(IconCacherTestPopularSites, LargeCached) {
   WaitForMainThreadTasksToFinish();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::IconType::kTouchIcon));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
-              IsEmpty());
 }
 
 TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchSucceeded) {
@@ -217,9 +214,6 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchSucceeded) {
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::IconType::kTouchIcon));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
-              ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, SmallNotCachedAndFetchSucceeded) {
@@ -257,9 +251,6 @@ TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchFailed) {
   WaitForMainThreadTasksToFinish();
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::IconType::kFavicon));
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::IconType::kTouchIcon));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
-              ElementsAre(Bucket(/*bucket=*/false, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, HandlesEmptyCallbacksNicely) {
@@ -274,9 +265,6 @@ TEST_F(IconCacherTestPopularSites, HandlesEmptyCallbacksNicely) {
   EXPECT_FALSE(IconIsCachedFor(site_.url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(site_.url, favicon_base::IconType::kTouchIcon));
   // The histogram gets reported despite empty callbacks.
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
-              ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, ProvidesDefaultIconAndSucceedsWithFetching) {
@@ -321,11 +309,6 @@ TEST_F(IconCacherTestPopularSites, ProvidesDefaultIconAndSucceedsWithFetching) {
   EXPECT_THAT(
       GetCachedIconFor(site_.url, favicon_base::IconType::kTouchIcon).Size(),
       Eq(gfx::Size(128, 128)));  // Compares dimensions, not objects.
-  // The histogram gets reported only once (for the downloaded icon, not for the
-  // default one).
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchSuccess.Popular"),
-              ElementsAre(Bucket(/*bucket=*/true, /*count=*/1)));
 }
 
 TEST_F(IconCacherTestPopularSites, LargeNotCachedAndFetchPerformedOnlyOnce) {
@@ -379,9 +362,6 @@ TEST_F(IconCacherTestMostLikely, Cached) {
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(page_url, favicon_base::IconType::kTouchIcon));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchStatus.Server"),
-              IsEmpty());
 }
 
 TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
@@ -413,12 +393,6 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchSucceeded) {
   loop.Run();
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(page_url, favicon_base::IconType::kTouchIcon));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchStatus.Server"),
-              ElementsAre(Bucket(
-                  /*bucket=*/static_cast<int>(
-                      favicon_base::GoogleFaviconServerRequestStatus::SUCCESS),
-                  /*count=*/1)));
 }
 
 TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
@@ -448,13 +422,6 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchFailed) {
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kTouchIcon));
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "NewTabPage.TileFaviconFetchStatus.Server"),
-              ElementsAre(Bucket(
-                  /*bucket=*/static_cast<int>(
-                      favicon_base::GoogleFaviconServerRequestStatus::
-                          FAILURE_CONNECTION_ERROR),
-                  /*count=*/1)));
 }
 
 TEST_F(IconCacherTestMostLikely, HandlesEmptyCallbacksNicely) {

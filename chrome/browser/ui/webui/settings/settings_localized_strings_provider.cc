@@ -475,6 +475,10 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("aboutGetHelpUsingChromeOs",
                                   IDS_SETTINGS_GET_HELP_USING_CHROME_OS);
   html_source->AddLocalizedString("aboutOsProductTitle", IDS_PRODUCT_OS_NAME);
+  html_source->AddLocalizedString("aboutReleaseNotesOffline",
+                                  IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES);
+  html_source->AddLocalizedString("aboutShowReleaseNotes",
+                                  IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES);
   if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
     html_source->AddLocalizedString("aboutGetHelpUsingChrome",
                                     IDS_SETTINGS_GET_HELP_USING_CHROME);

@@ -31,10 +31,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
-}  // namespace identity
+}  // namespace signin
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -59,7 +59,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
                                public syncer::SyncServiceObserver {
  public:
   SuggestionsServiceImpl(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       syncer::SyncService* sync_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<SuggestionsStore> suggestions_store,
@@ -140,7 +140,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
   // Called when an access token request completes (successfully or not).
   void AccessTokenAvailable(const GURL& url,
                             GoogleServiceAuthError error,
-                            identity::AccessTokenInfo access_token_info);
+                            signin::AccessTokenInfo access_token_info);
 
   // Issues a network request for suggestions (fetch, blacklist, or clear
   // blacklist, depending on |url|).
@@ -174,7 +174,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   base::ThreadChecker thread_checker_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   syncer::SyncService* sync_service_;
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
@@ -200,7 +200,7 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   // Helper for fetching OAuth2 access tokens. This is non-null iff an access
   // token request is currently in progress.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   // Contains the current suggestions fetch request. Will only have a value
   // while a request is pending, and will be reset by |OnURLFetchComplete| or

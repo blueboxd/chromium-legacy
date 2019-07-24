@@ -359,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOffer) {
 IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, CanOfferProfileConnected) {
   auto* identity_manager =
       IdentityManagerFactory::GetForProfile(browser()->profile());
-  identity::MakePrimaryAccountAvailable(identity_manager, "foo@gmail.com");
+  signin::MakePrimaryAccountAvailable(identity_manager, "foo@gmail.com");
   EnableSigninAllowed(true);
 
   std::string error_message;
@@ -505,7 +505,7 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   }
 
  protected:
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return identity_test_env_profile_adaptor_->identity_test_env()
         ->identity_manager();
   }

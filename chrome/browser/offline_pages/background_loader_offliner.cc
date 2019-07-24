@@ -28,6 +28,7 @@
 #include "components/offline_pages/core/background/offliner_policy.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/renovations/page_renovation_loader.h"
@@ -147,10 +148,8 @@ bool BackgroundLoaderOffliner::LoadAndSave(
     return false;
   }
 
-  ClientPolicyController* policy_controller =
-      offline_page_model_->GetPolicyController();
-  if (policy_controller->RequiresSpecificUserSettings(
-          request.client_id().name_space) &&
+  if (GetPolicy(request.client_id().name_space)
+          .requires_specific_user_settings &&
       (AreThirdPartyCookiesBlocked(browser_context_) ||
        IsNetworkPredictionDisabled(browser_context_))) {
     DVLOG(1) << "WARNING: Unable to load when 3rd party cookies blocked or "
@@ -261,9 +260,8 @@ void BackgroundLoaderOffliner::CanDownload(
   // If we want to proceed with the file download, fail with
   // DOWNLOAD_THROTTLED. If we don't want to proceed with the file download,
   // fail with LOADING_FAILED_DOWNLOAD.
-  if (offline_page_model_->GetPolicyController()
-          ->AllowsConversionToBackgroundFileDownload(
-              pending_request_.get()->client_id().name_space)) {
+  if (GetPolicy(pending_request_.get()->client_id().name_space)
+          .allows_conversion_to_background_file_download) {
     should_allow_downloads = true;
     final_status = Offliner::RequestStatus::DOWNLOAD_THROTTLED;
   }

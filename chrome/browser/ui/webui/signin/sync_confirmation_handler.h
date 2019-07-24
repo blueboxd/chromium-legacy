@@ -19,12 +19,12 @@ namespace base {
 class ListValue;
 }
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
 class SyncConfirmationHandler : public content::WebUIMessageHandler,
-                                public identity::IdentityManager::Observer,
+                                public signin::IdentityManager::Observer,
                                 public BrowserListObserver {
  public:
   // Creates a SyncConfirmationHandler for the |browser|. All strings in the
@@ -38,7 +38,7 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   // BrowserListObserver:
@@ -103,7 +103,7 @@ class SyncConfirmationHandler : public content::WebUIMessageHandler,
   // and their respective GRD IDs.
   std::unordered_map<std::string, int> string_to_grd_id_map_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandler);
 };

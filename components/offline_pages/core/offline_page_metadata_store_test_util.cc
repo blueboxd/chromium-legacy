@@ -94,7 +94,7 @@ OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(int64_t offline_id) {
   criteria.offline_ids = std::vector<int64_t>{offline_id};
   OfflinePageItem* page = nullptr;
   auto task = std::make_unique<GetPagesTask>(
-      store(), nullptr, criteria,
+      store(), criteria,
       base::BindOnce(
           [](OfflinePageItem** out_page,
              const std::vector<OfflinePageItem>& cb_pages) {

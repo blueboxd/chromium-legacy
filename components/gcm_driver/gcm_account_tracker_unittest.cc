@@ -206,7 +206,7 @@ class GCMAccountTrackerTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 
   std::unique_ptr<GCMAccountTracker> tracker_;
 };

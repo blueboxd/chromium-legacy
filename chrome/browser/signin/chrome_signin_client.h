@@ -98,9 +98,9 @@ class ChromeSigninClient
       const base::FilePath& profile_path);
   void OnCloseBrowsersAborted(const base::FilePath& profile_path);
 
-  // identity::PrimaryAccountAccessTokenFetcher callback
+  // signin::PrimaryAccountAccessTokenFetcher callback
   void OnAccessTokenAvailable(GoogleServiceAuthError error,
-                              identity::AccessTokenInfo access_token_info);
+                              signin::AccessTokenInfo access_token_info);
 
   Profile* profile_;
 
@@ -117,7 +117,7 @@ class ChromeSigninClient
 #endif
 
   std::unique_ptr<gaia::GaiaOAuthClient> oauth_client_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher_;
 
   scoped_refptr<network::SharedURLLoaderFactory>

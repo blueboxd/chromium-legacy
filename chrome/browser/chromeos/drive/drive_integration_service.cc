@@ -693,7 +693,7 @@ DriveIntegrationService::DriveIntegrationService(
     return;
   }
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
   if (test_drive_service) {
@@ -1148,7 +1148,7 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
     return;
   }
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   drive_service_->Initialize(identity_manager->GetPrimaryAccountId());
 

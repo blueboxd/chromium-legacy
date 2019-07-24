@@ -67,9 +67,10 @@ enum AppType {
   kUnknown = 0,
   kArc,        // Android app.
   kBuiltIn,    // Built-in app.
-  kCrostini,   // Linux app.
+  kCrostini,   // Linux (via Crostini) app.
   kExtension,  // Extension-backed app.
   kWeb,        // Web app.
+  kMacNative,  // Native Mac app.
 };
 
 // Whether an app is ready to launch, i.e. installed.

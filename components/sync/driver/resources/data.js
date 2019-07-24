@@ -52,14 +52,14 @@ var allFields = [
 function versionToDateString(version) {
   // TODO(mmontgomery): ugly? Hacky? Is there a better way?
   var epochLength = Date.now().toString().length;
-  var epochTime = parseInt(version.slice(0, epochLength));
+  var epochTime = parseInt(version.slice(0, epochLength), 10);
   var date = new Date(epochTime);
   return date.toString();
 }
 
 /**
  * @param {!Object} node A JavaScript represenation of a sync entity.
- * @return {string} A string representation of the sync entity.
+ * @return {!Array<string>} A string representation of the sync entity.
  */
 function serializeNode(node) {
   return allFields.map(function(field) {

@@ -42,7 +42,7 @@ constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
 constexpr char kShowMenuPromoKey[] = "showMenuPromo";
 
 bool IsUserSignedIn(Profile* profile) {
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   return identity_manager && identity_manager->HasPrimaryAccount();
 }

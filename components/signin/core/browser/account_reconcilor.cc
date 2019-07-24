@@ -80,7 +80,7 @@ std::vector<gaia::ListedAccount> FilterUnverifiedAccounts(
 // Revokes tokens for all accounts in chrome_accounts but the primary account.
 // Returns true if tokens were revoked, and false if the function did nothing.
 bool RevokeAllSecondaryTokens(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     signin::AccountReconcilorDelegate::RevokeTokenOption revoke_option,
     const CoreAccountId& primary_account,
     bool is_account_consistency_enforced,
@@ -141,7 +141,7 @@ CoreAccountId PickFirstGaiaAccount(
 // Returns true if gaia_accounts contains an invalid account that is unknown to
 // the identity manager.
 bool HasUnknownInvalidAccountInCookie(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const std::vector<gaia::ListedAccount>& gaia_accounts) {
   for (const gaia::ListedAccount& account : gaia_accounts) {
     if (!account.valid &&
@@ -182,7 +182,7 @@ AccountReconcilor::ScopedSyncedDataDeletion::~ScopedSyncedDataDeletion() {
 }
 
 AccountReconcilor::AccountReconcilor(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     SigninClient* client,
     std::unique_ptr<signin::AccountReconcilorDelegate> delegate)
     : delegate_(std::move(delegate)),
@@ -476,7 +476,7 @@ void AccountReconcilor::StartReconcile() {
 
   // Rely on the IdentityManager to manage calls to and responses from
   // ListAccounts.
-  identity::AccountsInCookieJarInfo accounts_in_cookie_jar =
+  signin::AccountsInCookieJarInfo accounts_in_cookie_jar =
       identity_manager_->GetAccountsInCookieJar();
   if (accounts_in_cookie_jar.accounts_are_fresh) {
     OnAccountsInCookieUpdated(
@@ -548,7 +548,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
 }
 
 void AccountReconcilor::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   const std::vector<gaia::ListedAccount>& accounts(
       accounts_in_cookie_jar_info.signed_in_accounts);

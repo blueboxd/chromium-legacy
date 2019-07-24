@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/in_product_help/in_product_help.h"
 #include "chrome/common/buildflags.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
@@ -65,6 +64,10 @@ class Extension;
 
 namespace gfx {
 class Size;
+}
+
+namespace signin {
+struct ManageAccountsParams;
 }
 
 namespace signin_metrics {

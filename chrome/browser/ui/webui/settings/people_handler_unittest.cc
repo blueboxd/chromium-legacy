@@ -363,7 +363,7 @@ class PeopleHandlerTest : public ChromeRenderViewHostTestHarness {
     return std::string(kTestUser);
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
@@ -1049,7 +1049,7 @@ TEST_F(PeopleHandlerTest_UnifiedConsentDisabled, ShowSigninOnAuthError) {
       primary_account_info.is_under_advanced_protection,
       signin_metrics::SourceForRefreshTokenOperation::kUnknown);
 
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, primary_account_info.account_id,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 

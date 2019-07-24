@@ -8,6 +8,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.junit.Assert;
@@ -61,14 +62,17 @@ public class BookmarkReorderTest extends BookmarkTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "https://crbug.com/986915")
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testBookmarkFolderIcon(boolean nightModeEnabled) throws Exception {
-        Assert.assertTrue("Expected Bookmark Reordering to be enabled", ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS));
+        Assert.assertTrue("Expected Bookmark Reordering to be enabled",
+                          ChromeFeatureList.isEnabled(ChromeFeatureList.REORDER_BOOKMARKS));
         super.testBookmarkFolderIcon(nightModeEnabled);
     }
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/986915")
     public void testEndIconVisibilityInSelectionMode() throws Exception {
         BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         addBookmark(TEST_TITLE_A, TEST_URL_A);

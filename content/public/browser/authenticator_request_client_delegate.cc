@@ -17,6 +17,7 @@ AuthenticatorRequestClientDelegate::~AuthenticatorRequestClientDelegate() =
     default;
 
 bool AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
+    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   return false;
 }
@@ -102,7 +103,8 @@ void AuthenticatorRequestClientDelegate::FidoAuthenticatorIdChanged(
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorPairingModeChanged(
     base::StringPiece authenticator_id,
-    bool is_in_pairing_mode) {}
+    bool is_in_pairing_mode,
+    base::string16 display_name) {}
 
 bool AuthenticatorRequestClientDelegate::SupportsPIN() const {
   return false;

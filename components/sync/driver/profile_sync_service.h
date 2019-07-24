@@ -70,7 +70,7 @@ class ProfileSyncService : public SyncService,
                            public SyncPrefObserver,
                            public DataTypeManagerObserver,
                            public UnrecoverableErrorHandler,
-                           public identity::IdentityManager::Observer {
+                           public signin::IdentityManager::Observer {
  public:
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
   // will begin syncing without the user needing to confirm sync settings.
@@ -89,7 +89,7 @@ class ProfileSyncService : public SyncService,
     ~InitParams();
 
     std::unique_ptr<SyncClient> sync_client;
-    identity::IdentityManager* identity_manager = nullptr;
+    signin::IdentityManager* identity_manager = nullptr;
     std::vector<invalidation::IdentityProvider*>
         invalidations_identity_providers;
     StartBehavior start_behavior = MANUAL_START;
@@ -185,7 +185,7 @@ class ProfileSyncService : public SyncService,
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Similar to above but with a callback that will be invoked on completion.
@@ -371,7 +371,7 @@ class ProfileSyncService : public SyncService,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address and sign-out upon error.
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   // The user-configurable knobs. Non-null between Initialize() and Shutdown().
   std::unique_ptr<SyncUserSettingsImpl> user_settings_;

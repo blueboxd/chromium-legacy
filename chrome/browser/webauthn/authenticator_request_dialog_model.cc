@@ -131,6 +131,10 @@ void AuthenticatorRequestDialogModel::StartFlow(
 }
 
 void AuthenticatorRequestDialogModel::StartOver() {
+  if (!request_may_start_over_) {
+    NOTREACHED();
+    return;
+  }
   ephemeral_state_.Reset();
 
   for (auto& observer : observers_)
@@ -215,8 +219,13 @@ void AuthenticatorRequestDialogModel::
     return;
   }
 
-  // There is no AuthenticatorReference for the Windows authenticator,
-  // hence directly call DispatchRequestAsyncInternal here.
+  // The StartOver() logic does not work in combination with the Windows API.
+  // Therefore do not show a retry button on any error sheet shown after the
+  // Windows API call returns.
+  request_may_start_over_ = false;
+
+  // There is no AuthenticatorReference for the Windows authenticator, hence
+  // directly call DispatchRequestAsyncInternal here.
   DispatchRequestAsyncInternal(
       transport_availability()->win_native_api_authenticator_id);
 
@@ -585,9 +594,10 @@ void AuthenticatorRequestDialogModel::DispatchRequestAsyncInternal(
 
 void AuthenticatorRequestDialogModel::UpdateAuthenticatorReferencePairingMode(
     base::StringPiece authenticator_id,
-    bool is_in_pairing_mode) {
+    bool is_in_pairing_mode,
+    base::string16 display_name) {
   ephemeral_state_.saved_authenticators_.ChangeAuthenticatorPairingMode(
-      authenticator_id, is_in_pairing_mode);
+      authenticator_id, is_in_pairing_mode, display_name);
 }
 
 // SelectAccount is called to trigger an account selection dialog.

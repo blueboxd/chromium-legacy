@@ -206,7 +206,7 @@ class SupervisedUserServiceTest : public ::testing::Test {
                         base::Unretained(result_holder)));
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_environment_adaptor_->identity_test_env();
   }
 

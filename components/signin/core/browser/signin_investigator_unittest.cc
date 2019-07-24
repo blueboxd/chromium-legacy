@@ -35,7 +35,7 @@ class FakeProvider : public SigninInvestigator::DependencyProvider {
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
 };
 }  // namespace
 

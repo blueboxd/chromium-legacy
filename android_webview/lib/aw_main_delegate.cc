@@ -53,7 +53,6 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
-#include "services/network/public/cpp/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -200,10 +199,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     features.DisableIfNotSet(features::kBackgroundFetch);
 
     features.DisableIfNotSet(features::kAndroidSurfaceControl);
-
-    // Network service for WebView is still being evaluated. Once enabled
-    // by default the following line can be deleted.
-    features.DisableIfNotSet(network::features::kNetworkService);
 
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.

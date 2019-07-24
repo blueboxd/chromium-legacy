@@ -31,7 +31,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/zlib/google/compression_utils.h"
 
-using IdentityManager = identity::IdentityManager;
+using IdentityManager = signin::IdentityManager;
 
 namespace {
 
@@ -69,7 +69,7 @@ class NetworkFetch {
   void StartAccessTokenFetch();
   void AccessTokenFetchFinished(base::TimeTicks token_start_ticks,
                                 GoogleServiceAuthError error,
-                                identity::AccessTokenInfo access_token_info);
+                                signin::AccessTokenInfo access_token_info);
   void StartLoader();
   std::unique_ptr<network::SimpleURLLoader> MakeLoader();
   void SetRequestHeaders(network::ResourceRequest* request) const;
@@ -81,7 +81,7 @@ class NetworkFetch {
   std::string access_token_;
   const std::vector<uint8_t> request_body_;
   IdentityManager* const identity_manager_;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
   FeedNetworkingHost::ResponseCallback done_callback_;
   network::SharedURLLoaderFactory* loader_factory_;
@@ -129,17 +129,17 @@ void NetworkFetch::StartAccessTokenFetch() {
   identity::ScopeSet scopes{kAuthenticationScope};
   // It's safe to pass base::Unretained(this) since deleting the token fetcher
   // will prevent the callback from being completed.
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "feed", identity_manager_, scopes,
       base::BindOnce(&NetworkFetch::AccessTokenFetchFinished,
                      base::Unretained(this), tick_clock_->NowTicks()),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void NetworkFetch::AccessTokenFetchFinished(
     base::TimeTicks token_start_ticks,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.Network.TokenFetchStatus",
                             error.state(), GoogleServiceAuthError::NUM_STATES);
 
@@ -290,7 +290,7 @@ void NetworkFetch::OnSimpleLoaderComplete(
 }
 
 FeedNetworkingHost::FeedNetworkingHost(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const std::string& api_key,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const base::TickClock* tick_clock)

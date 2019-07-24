@@ -74,6 +74,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
       blink::mojom::BackgroundSyncType sync_type,
       base::Time last_browser_wakeup_for_periodic_sync,
       base::OnceCallback<void(base::TimeDelta)> callback) override;
+  void RevivePeriodicBackgroundSyncRegistrations(url::Origin origin) override;
 
  protected:
   friend class base::RefCountedDeleteOnSequence<BackgroundSyncContextImpl>;
@@ -113,6 +114,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl
   void DidGetSoonestWakeupDelta(
       base::OnceCallback<void(base::TimeDelta)> callback,
       base::TimeDelta soonest_wakeup_delta);
+
+  void RevivePeriodicBackgroundSyncRegistrationsOnIOThread(url::Origin origin);
 
   // The services are owned by this. They're either deleted
   // during ShutdownOnIO or when the channel is closed via

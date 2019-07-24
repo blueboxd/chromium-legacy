@@ -158,7 +158,8 @@
   },
   "browserAction": {
     "dependencies": ["manifest:browser_action"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   // This API is whitelisted on stable and should not be enabled for a wider
   // audience without resolving security issues raised in API proposal and
@@ -262,7 +263,8 @@
   },
   "contextMenus": {
     "dependencies": ["permission:contextMenus"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "contextMenusInternal": {
     "internal": true,
@@ -393,7 +395,8 @@
     "contexts": ["blessed_extension"]
   },
   "extension.getURL": {
-    "contexts": ["blessed_extension", "unblessed_extension", "content_script", "extension_service_worker"]
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
+    "disallow_for_service_workers": false
   },
   "extension.getViews": [
     {
@@ -708,7 +711,8 @@
   "tabs": [{
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   }, {
     "channel": "stable",
     "contexts": ["webui"],
@@ -769,7 +773,8 @@
   },
   "webNavigation": {
     "dependencies": ["permission:webNavigation"],
-    "contexts": ["blessed_extension", "extension_service_worker"]
+    "contexts": ["blessed_extension"],
+    "disallow_for_service_workers": false
   },
   "webrtcAudioPrivate": {
     "dependencies": ["permission:webrtcAudioPrivate"],

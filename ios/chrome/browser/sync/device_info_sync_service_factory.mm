@@ -13,6 +13,7 @@
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/sync/model/model_type_store_service.h"
+#include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_sync_service_impl.h"
 #include "components/sync_device_info/local_device_info_provider_impl.h"
 #include "ios/chrome/browser/application_context.h"
@@ -83,9 +84,11 @@ DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
           base::BindRepeating(
               &send_tab_to_self::IsReceivingEnabledByUserOnThisDevice,
               browser_state->GetPrefs()));
+  auto device_prefs =
+      std::make_unique<syncer::DeviceInfoPrefs>(browser_state->GetPrefs());
 
   return std::make_unique<syncer::DeviceInfoSyncServiceImpl>(
       ModelTypeStoreServiceFactory::GetForBrowserState(browser_state)
           ->GetStoreFactory(),
-      std::move(local_device_info_provider));
+      std::move(local_device_info_provider), std::move(device_prefs));
 }

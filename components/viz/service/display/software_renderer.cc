@@ -17,6 +17,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
+#include "components/viz/common/skia_helper.h"
 #include "components/viz/common/viz_utils.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
@@ -803,21 +804,13 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  // Update the backdrop filter to include opacity.
-  cc::FilterOperations backdrop_filters_plus_opacity = *backdrop_filters;
   DCHECK(!regular_filters)
       << "Filters should always be in a separate Effect node";
-  if (quad->shared_quad_state->opacity < 1.0) {
-    backdrop_filters_plus_opacity.Append(
-        cc::FilterOperation::CreateOpacityFilter(
-            quad->shared_quad_state->opacity));
-  }
-
   gfx::Rect bitmap_rect =
       gfx::Rect(0, 0, backdrop_bitmap.width(), backdrop_bitmap.height());
   sk_sp<SkImageFilter> filter =
       cc::RenderSurfaceFilters::BuildImageFilter(
-          backdrop_filters_plus_opacity,
+          *backdrop_filters,
           gfx::SizeF(bitmap_rect.width(), bitmap_rect.height()),
           clipping_offset)
           ->cached_sk_filter_;
@@ -844,9 +837,16 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
     canvas.resetMatrix();
   }
 
+  // Paint the filtered backdrop image with opacity.
+  SkPaint paint;
+  if (quad->shared_quad_state->opacity < 1.0) {
+    paint.setImageFilter(
+        SkiaHelper::BuildOpacityFilter(quad->shared_quad_state->opacity));
+  }
+
   // Now paint the pre-filtered image onto the canvas.
   SkRect bitmap_skrect = RectToSkRect(bitmap_rect);
-  canvas.drawImageRect(filtered_image, bitmap_skrect, bitmap_skrect, nullptr);
+  canvas.drawImageRect(filtered_image, bitmap_skrect, bitmap_skrect, &paint);
 
   return SkImage::MakeFromBitmap(bitmap)->makeShader(
       content_tile_mode, content_tile_mode, &filter_backdrop_transform);

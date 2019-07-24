@@ -85,7 +85,10 @@ fi
 echo 'Stripping unnecessary prefixed CSS rules...'
 python ../v1_0/css_strip_prefixes.py --file_extension=js
 
-# TODO rgbify_hex_vars.py
+echo 'Generating -rgb versions of --google-* vars in paper-style/colors.js...'
+python ../v1_0/rgbify_hex_vars.py --filter-prefix=google --replace \
+    components-chromium/paper-styles/color.js
+
 # TODO create components summary
 # TODO generate gn
 # TODO find unused elements?

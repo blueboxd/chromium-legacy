@@ -233,6 +233,7 @@ void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
 
   screen_name[0] = std::toupper(screen_name[0]);
   std::string histogram_name = "OOBE.StepCompletionTime." + screen_name;
+
   // Equivalent to using UMA_HISTOGRAM_MEDIUM_TIMES. UMA_HISTOGRAM_MEDIUM_TIMES
   // can not be used here, because |histogram_name| is calculated dynamically
   // and changes from call to call.
@@ -715,10 +716,8 @@ void WizardController::OnScreenExit(OobeScreenId screen, int exit_code) {
 
   VLOG(1) << "Wizard screen " << screen << " exited with code: " << exit_code;
 
-  if (IsOOBEStepToTrack(screen)) {
-    RecordUMAHistogramForOOBEStepCompletionTime(
-        screen, base::Time::Now() - screen_show_times_[screen]);
-  }
+  RecordUMAHistogramForOOBEStepCompletionTime(
+      screen, base::Time::Now() - screen_show_times_[screen]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1301,9 +1300,8 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     current_screen_->SetConfiguration(nullptr);
   }
 
-  const OobeScreenId screen = new_current->screen_id();
-  if (IsOOBEStepToTrack(screen))
-    screen_show_times_[screen] = base::Time::Now();
+  // Record show time for UMA.
+  screen_show_times_[new_current->screen_id()] = base::Time::Now();
 
   previous_screen_ = current_screen_;
   current_screen_ = new_current;
@@ -1538,16 +1536,6 @@ void WizardController::SetZeroDelays() {
 // static
 bool WizardController::IsZeroDelayEnabled() {
   return g_using_zero_delays;
-}
-
-// static
-bool WizardController::IsOOBEStepToTrack(OobeScreenId screen_id) {
-  return (screen_id == HIDDetectionView::kScreenId ||
-          screen_id == WelcomeView::kScreenId ||
-          screen_id == UpdateView::kScreenId ||
-          screen_id == EulaView::kScreenId ||
-          screen_id == OobeScreen::SCREEN_SPECIAL_LOGIN ||
-          screen_id == WrongHWIDScreenView::kScreenId);
 }
 
 // static

@@ -9,7 +9,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace identity {
+namespace signin {
 
 class IdentityTestEnvironmentTest : public testing::Test {
  public:
@@ -30,15 +30,15 @@ class IdentityTestEnvironmentTest : public testing::Test {
 
 TEST_F(IdentityTestEnvironmentTest,
        IdentityTestEnvironmentCancelsPendingRequestsOnDestruction) {
-  std::unique_ptr<identity::IdentityTestEnvironment> identity_test_environment =
-      std::make_unique<identity::IdentityTestEnvironment>();
+  std::unique_ptr<IdentityTestEnvironment> identity_test_environment =
+      std::make_unique<IdentityTestEnvironment>();
 
   identity_test_environment->MakePrimaryAccountAvailable("primary@example.com");
   AccessTokenFetcher::TokenCallback callback = base::BindOnce(
       [](GoogleServiceAuthError error, AccessTokenInfo access_token_info) {});
   std::set<std::string> scopes{"scope"};
 
-  std::unique_ptr<identity::AccessTokenFetcher> fetcher =
+  std::unique_ptr<AccessTokenFetcher> fetcher =
       identity_test_environment->identity_manager()
           ->CreateAccessTokenFetcherForAccount(
               identity_test_environment->identity_manager()
@@ -54,4 +54,4 @@ TEST_F(IdentityTestEnvironmentTest,
   fetcher.reset();
 }
 
-}  // namespace identity
+}  // namespace signin

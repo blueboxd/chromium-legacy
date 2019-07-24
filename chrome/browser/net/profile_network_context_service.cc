@@ -55,6 +55,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif
@@ -101,6 +102,10 @@ Profile* GetPrimaryProfile() {
 }
 
 bool ShouldUseBuiltinCertVerifier(Profile* profile) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kForceCertVerifierBuiltin))
+    return true;
+
   if (chromeos::ProfileHelper::Get()->IsSigninProfile(profile) ||
       chromeos::ProfileHelper::Get()->IsLockScreenAppProfile(profile)) {
     // No need to override the feature-set setting through policy for sign-in
@@ -181,8 +186,8 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
 
 #if defined(OS_CHROMEOS)
   using_builtin_cert_verifier_ = ShouldUseBuiltinCertVerifier(profile_);
-  DVLOG(1) << "Using " << (using_builtin_cert_verifier_ ? "built-in" : "legacy")
-           << " cert verifier.";
+  VLOG(0) << "Using " << (using_builtin_cert_verifier_ ? "built-in" : "legacy")
+          << " cert verifier.";
 #endif
   // When any of the following CT preferences change, we schedule an update
   // to aggregate the actual update using a |ct_policy_update_timer_|.

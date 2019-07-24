@@ -34,7 +34,7 @@ syncer::SyncService* TestAutofillClient::GetSyncService() {
   return test_sync_service_;
 }
 
-identity::IdentityManager* TestAutofillClient::GetIdentityManager() {
+signin::IdentityManager* TestAutofillClient::GetIdentityManager() {
   return identity_test_env_.identity_manager();
 }
 

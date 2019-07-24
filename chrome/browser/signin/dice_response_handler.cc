@@ -226,7 +226,7 @@ DiceResponseHandler* DiceResponseHandler::GetForProfile(Profile* profile) {
 
 DiceResponseHandler::DiceResponseHandler(
     SigninClient* signin_client,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     AccountReconcilor* account_reconcilor,
     AboutSigninInternals* about_signin_internals,
     signin::AccountConsistencyMethod account_consistency,

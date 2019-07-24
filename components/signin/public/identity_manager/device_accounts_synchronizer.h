@@ -7,7 +7,7 @@
 
 #include "google_apis/gaia/core_account_id.h"
 
-namespace identity {
+namespace signin {
 
 // DeviceAccountsSynchronizer is the interface to support seeding the accounts
 // information from a device-level store.
@@ -36,6 +36,6 @@ class DeviceAccountsSynchronizer {
       delete;
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_DEVICE_ACCOUNTS_SYNCHRONIZER_H_

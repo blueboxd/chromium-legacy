@@ -52,8 +52,16 @@ ServiceWorkerRequestHandler::CreateForNavigationUI(
     return nullptr;
   }
 
+  ServiceWorkerNavigationLoaderInterceptorParams params;
+  params.resource_type = request_info.is_main_frame ? ResourceType::kMainFrame
+                                                    : ResourceType::kSubFrame;
+  params.skip_service_worker = request_info.begin_params->skip_service_worker;
+  params.is_main_frame = request_info.is_main_frame;
+  params.are_ancestors_secure = request_info.are_ancestors_secure;
+  params.frame_tree_node_id = request_info.frame_tree_node_id;
+
   return std::make_unique<ServiceWorkerNavigationLoaderInterceptor>(
-      request_info, navigation_handle);
+      params, navigation_handle);
 }
 
 // static
@@ -98,14 +106,16 @@ ServiceWorkerRequestHandler::CreateForNavigationIO(
 
 // static
 std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerRequestHandler::CreateForWorker(
+ServiceWorkerRequestHandler::CreateForWorkerUI(
     const network::ResourceRequest& resource_request,
-    ServiceWorkerProviderHost* host) {
-  DCHECK(host);
-  DCHECK(resource_request.resource_type ==
-             static_cast<int>(ResourceType::kWorker) ||
-         resource_request.resource_type ==
-             static_cast<int>(ResourceType::kSharedWorker))
+    int process_id,
+    ServiceWorkerNavigationHandle* navigation_handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto resource_type =
+      static_cast<ResourceType>(resource_request.resource_type);
+  DCHECK(resource_type == ResourceType::kWorker ||
+         resource_type == ResourceType::kSharedWorker)
       << resource_request.resource_type;
 
   // Create the handler even for insecure HTTP since it's used in the
@@ -115,9 +125,62 @@ ServiceWorkerRequestHandler::CreateForWorker(
     return nullptr;
   }
 
+  ServiceWorkerNavigationLoaderInterceptorParams params;
+  params.resource_type = resource_type;
+  params.skip_service_worker = resource_request.skip_service_worker;
+  params.process_id = process_id;
+
+  return std::make_unique<ServiceWorkerNavigationLoaderInterceptor>(
+      params, navigation_handle);
+}
+
+// static
+std::unique_ptr<NavigationLoaderInterceptor>
+ServiceWorkerRequestHandler::CreateForWorkerIO(
+    const network::ResourceRequest& resource_request,
+    int process_id,
+    ServiceWorkerNavigationHandleCore* navigation_handle_core) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Create the handler even for insecure HTTP since it's used in the
+  // case of redirect to HTTPS.
+  if (!resource_request.url.SchemeIsHTTPOrHTTPS() &&
+      !OriginCanAccessServiceWorkers(resource_request.url)) {
+    return nullptr;
+  }
+
+  auto provider_info = blink::mojom::ServiceWorkerProviderInfoForClient::New();
+  if (!navigation_handle_core->context_wrapper())
+    return nullptr;
+  ServiceWorkerContextCore* context =
+      navigation_handle_core->context_wrapper()->context();
+  if (!context)
+    return nullptr;
+
+  auto resource_type =
+      static_cast<ResourceType>(resource_request.resource_type);
+  auto provider_type = blink::mojom::ServiceWorkerProviderType::kUnknown;
+  switch (resource_type) {
+    case ResourceType::kWorker:
+      provider_type =
+          blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker;
+      break;
+    case ResourceType::kSharedWorker:
+      provider_type = blink::mojom::ServiceWorkerProviderType::kForSharedWorker;
+      break;
+    default:
+      NOTREACHED() << resource_request.resource_type;
+      return nullptr;
+  }
+
+  // Initialize the SWProviderHost.
+  base::WeakPtr<ServiceWorkerProviderHost> host =
+      ServiceWorkerProviderHost::PreCreateForWebWorker(
+          context->AsWeakPtr(), process_id, provider_type, &provider_info);
+  navigation_handle_core->OnCreatedProviderHost(host, std::move(provider_info));
+
   return std::make_unique<ServiceWorkerControlleeRequestHandler>(
-      host->context(), host->AsWeakPtr(),
-      static_cast<ResourceType>(resource_request.resource_type),
+      context->AsWeakPtr(), host, resource_type,
       resource_request.skip_service_worker);
 }
 

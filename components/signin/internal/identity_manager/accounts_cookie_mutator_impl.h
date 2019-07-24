@@ -18,7 +18,7 @@ namespace gaia {
 enum class GaiaSource;
 }
 
-namespace identity {
+namespace signin {
 
 // Concrete implementation of the AccountsCookieMutator interface.
 class AccountsCookieMutatorImpl : public AccountsCookieMutator {
@@ -42,7 +42,7 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
   void SetAccountsInCookie(
       const std::vector<CoreAccountId>& account_ids,
       gaia::GaiaSource source,
-      base::OnceCallback<void(signin::SetAccountsInCookieResult)>
+      base::OnceCallback<void(SetAccountsInCookieResult)>
           set_accounts_in_cookies_completed_callback) override;
 
   void TriggerCookieJarUpdate() override;
@@ -56,6 +56,6 @@ class AccountsCookieMutatorImpl : public AccountsCookieMutator {
   DISALLOW_COPY_AND_ASSIGN(AccountsCookieMutatorImpl);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_ACCOUNTS_COOKIE_MUTATOR_IMPL_H_

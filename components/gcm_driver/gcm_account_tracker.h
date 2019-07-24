@@ -18,10 +18,10 @@
 #include "components/gcm_driver/gcm_connection_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 
-namespace identity {
+namespace signin {
 struct AccessTokenInfo;
 class IdentityManager;
-}
+}  // namespace signin
 
 namespace base {
 class Time;
@@ -76,7 +76,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // |account_tracker| is used to deliver information about the accounts present
   // in the browser context to |driver|.
   GCMAccountTracker(std::unique_ptr<AccountTracker> account_tracker,
-                    identity::IdentityManager* identity_manager,
+                    signin::IdentityManager* identity_manager,
                     GCMDriver* driver);
   ~GCMAccountTracker() override;
 
@@ -107,7 +107,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   void OnAccessTokenFetchCompleteForAccount(
       std::string account_id,
       GoogleServiceAuthError error,
-      identity::AccessTokenInfo access_token_info);
+      signin::AccessTokenInfo access_token_info);
 
   // GCMConnectionObserver overrides.
   void OnConnected(const net::IPEndPoint& ip_endpoint) override;
@@ -142,7 +142,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // Account tracker.
   std::unique_ptr<AccountTracker> account_tracker_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   GCMDriver* driver_;
 
@@ -156,7 +156,7 @@ class GCMAccountTracker : public AccountTracker::Observer,
   // completion or upon signout of the account for which the request is being
   // made.
   using AccountIDToTokenFetcherMap =
-      std::map<std::string, std::unique_ptr<identity::AccessTokenFetcher>>;
+      std::map<std::string, std::unique_ptr<signin::AccessTokenFetcher>>;
   AccountIDToTokenFetcherMap pending_token_requests_;
 
   // Creates weak pointers used to postpone reporting tokens. See

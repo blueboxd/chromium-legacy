@@ -5,7 +5,6 @@
 #ifndef SERVICES_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 #define SERVICES_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 
-#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
 
 #if defined(OS_CHROMEOS)
@@ -16,8 +15,6 @@ namespace video_capture {
 
 class DeviceFactory : public mojom::DeviceFactory {
  public:
-  virtual void SetServiceRef(
-      std::unique_ptr<service_manager::ServiceContextRef> service_ref) = 0;
 #if defined(OS_CHROMEOS)
   virtual void BindCrosImageCaptureRequest(
       cros::mojom::CrosImageCaptureRequest request) = 0;

@@ -6,19 +6,16 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/video_capture_service.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "media/base/media_switches.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,18 +77,16 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   ~WebRtcVideoCaptureSharedDeviceBrowserTest() override {}
 
   void OpenDeviceViaService() {
-    connector_->BindInterface(video_capture::mojom::kServiceName,
-                              &device_factory_provider_);
     switch (GetParam().api_to_use) {
       case ServiceApi::kSingleClient:
-        device_factory_provider_->ConnectToDeviceFactory(
+        GetVideoCaptureService().ConnectToDeviceFactory(
             mojo::MakeRequest(&device_factory_));
         device_factory_->GetDeviceInfos(base::BindOnce(
             &WebRtcVideoCaptureSharedDeviceBrowserTest::OnDeviceInfosReceived,
             weak_factory_.GetWeakPtr(), GetParam().buffer_type_to_request));
         break;
       case ServiceApi::kMultiClient:
-        device_factory_provider_->ConnectToVideoSourceProvider(
+        GetVideoCaptureService().ConnectToVideoSourceProvider(
             mojo::MakeRequest(&video_source_provider_));
         video_source_provider_->GetSourceInfos(base::BindOnce(
             &WebRtcVideoCaptureSharedDeviceBrowserTest::OnSourceInfosReceived,
@@ -130,18 +125,11 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   void Initialize() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
-    auto* connector = GetSystemConnector();
-    ASSERT_TRUE(connector);
-    // We need to clone it so that we can use the clone on a different thread.
-    connector_ = connector->Clone();
-
     mock_receiver_ = std::make_unique<video_capture::MockReceiver>(
         mojo::MakeRequest(&receiver_proxy_));
   }
 
   scoped_refptr<base::TaskRunner> main_task_runner_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<video_capture::MockReceiver> mock_receiver_;
 
  private:
@@ -204,7 +192,6 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
 
   // For single-client API case only
   video_capture::mojom::DeviceFactoryPtr device_factory_;

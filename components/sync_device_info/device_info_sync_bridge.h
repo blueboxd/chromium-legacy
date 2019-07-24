@@ -28,6 +28,8 @@ class DeviceInfoSpecifics;
 
 namespace syncer {
 
+class DeviceInfoPrefs;
+
 // Sync bridge implementation for DEVICE_INFO model type. Handles storage of
 // device info and associated sync metadata, applying/merging foreign changes,
 // and allows public read access.
@@ -38,7 +40,8 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
       std::unique_ptr<MutableLocalDeviceInfoProvider>
           local_device_info_provider,
       OnceModelTypeStoreFactory store_factory,
-      std::unique_ptr<ModelTypeChangeProcessor> change_processor);
+      std::unique_ptr<ModelTypeChangeProcessor> change_processor,
+      std::unique_ptr<DeviceInfoPrefs> device_info_prefs);
   ~DeviceInfoSyncBridge() override;
 
   LocalDeviceInfoProvider* GetLocalDeviceInfoProvider();
@@ -67,6 +70,7 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   int CountActiveDevices() const override;
+  bool IsRecentLocalCacheGuid(const std::string& cache_guid) const override;
 
   // For testing only.
   bool IsPulseTimerRunningForTest() const;
@@ -138,6 +142,8 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
 
   // Used to update our local device info once every pulse interval.
   base::OneShotTimer pulse_timer_;
+
+  const std::unique_ptr<DeviceInfoPrefs> device_info_prefs_;
 
   base::WeakPtrFactory<DeviceInfoSyncBridge> weak_ptr_factory_{this};
 

@@ -21,7 +21,7 @@ using testing::CallbackToFunctor;
 using testing::InvokeWithoutArgs;
 using testing::StrictMock;
 
-namespace identity {
+namespace signin {
 
 namespace {
 
@@ -398,4 +398,4 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
 }
 
-}  // namespace identity
+}  // namespace signin

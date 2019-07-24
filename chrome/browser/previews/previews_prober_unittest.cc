@@ -16,6 +16,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -63,6 +64,7 @@ class TestPreviewsProber : public PreviewsProber {
       const net::HttpRequestHeaders headers,
       const RetryPolicy& retry_policy,
       const TimeoutPolicy& timeout_policy,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const size_t max_cache_entries,
       base::TimeDelta revalidate_cache_after,
       const base::TickClock* tick_clock,
@@ -76,6 +78,7 @@ class TestPreviewsProber : public PreviewsProber {
                        headers,
                        retry_policy,
                        timeout_policy,
+                       traffic_annotation,
                        max_cache_entries,
                        revalidate_cache_after,
                        tick_clock,
@@ -125,8 +128,9 @@ class PreviewsProberTest : public testing::Test {
             delegate, test_shared_loader_factory_, &test_prefs_,
             PreviewsProber::ClientName::kLitepages, kTestUrl,
             PreviewsProber::HttpMethod::kGet, headers, retry_policy,
-            timeout_policy, 1, kCacheRevalidateAfter,
-            thread_bundle_.GetMockTickClock(), thread_bundle_.GetMockClock());
+            timeout_policy, TRAFFIC_ANNOTATION_FOR_TESTS, 1,
+            kCacheRevalidateAfter, thread_bundle_.GetMockTickClock(),
+            thread_bundle_.GetMockClock());
     prober->SetOnCompleteCallback(base::BindRepeating(
         &PreviewsProberTest::OnProbeComplete, base::Unretained(this)));
     return prober;

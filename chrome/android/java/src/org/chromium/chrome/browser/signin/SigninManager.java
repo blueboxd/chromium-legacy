@@ -26,10 +26,12 @@ import org.chromium.base.annotations.JCaller;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.task.PostTask;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -338,8 +340,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     }
 
     private void notifySignInAllowedChanged() {
-        // TODO(crbug.com/981470) Use PostTask and CurrentThread traits.
-        ThreadUtils.postOnUiThread(() -> {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             for (SignInAllowedObserver observer : mSignInAllowedObservers) {
                 observer.onSignInAllowedChanged();
             }
@@ -523,15 +524,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             mCallbacksWaitingForPendingOperation.add(runnable);
             return;
         }
-        // TODO(crbug.com/981470) Use PostTask and CurrentThread traits
-        ThreadUtils.postOnUiThread(runnable);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, runnable);
     }
 
     private void notifyCallbacksWaitingForOperation() {
         ThreadUtils.assertOnUiThread();
         for (Runnable callback : mCallbacksWaitingForPendingOperation) {
-            // TODO(crbug.com/981470) Use PostTask and CurrentThread traits.
-            ThreadUtils.postOnUiThread(callback);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback);
         }
         mCallbacksWaitingForPendingOperation.clear();
     }
@@ -665,8 +664,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         assert mSignOutState != null;
 
         if (mSignOutState.mCallback != null) {
-            // TODO(crbug.com/981470) Use PostTask and CurrentThread traits.
-            ThreadUtils.postOnUiThread(mSignOutState.mCallback);
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mSignOutState.mCallback);
         }
         mSignOutState = null;
         notifyCallbacksWaitingForOperation();

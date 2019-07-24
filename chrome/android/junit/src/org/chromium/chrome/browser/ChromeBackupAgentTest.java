@@ -33,23 +33,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.AsyncInitTaskRunner;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content_public.common.ContentProcessInfo;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -63,7 +61,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Unit tests for {@link org.chromium.chrome.browser.ChromeBackupAgent}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ChromeBackupAgentTest.BackupManagerShadow.class})
 public class ChromeBackupAgentTest {
     /**
@@ -87,7 +85,6 @@ public class ChromeBackupAgentTest {
         }
     }
 
-    private Context mContext;
     private ChromeBackupAgent mAgent;
     private AsyncInitTaskRunner mTaskRunner;
 
@@ -99,20 +96,8 @@ public class ChromeBackupAgentTest {
         editor.apply();
     }
 
-    private void clearPrefs() {
-        ContextUtils.getAppSharedPreferences().edit().clear().apply();
-    }
-
     @Before
     public void setUp() {
-        // Set up the context.
-        mContext = RuntimeEnvironment.application.getApplicationContext();
-        ContextUtils.initApplicationContextForTests(mContext);
-        CommandLine.init(null);
-
-        // Clear any app preferences
-        clearPrefs();
-
         // Create the agent to test; override the native calls and fetching the task runner, and
         // spy on the agent to allow us to validate calls to these methods.
         mAgent = spy(new ChromeBackupAgent() {
@@ -585,7 +570,7 @@ public class ChromeBackupAgentTest {
 
         // Prove that the value equalTo held in the app preferences (and not, for example, in a
         // static).
-        clearPrefs();
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
         assertThat(ChromeBackupAgent.getRestoreStatus(),
                 equalTo(ChromeBackupAgent.RestoreStatus.NO_RESTORE));
 
@@ -617,7 +602,7 @@ public class ChromeBackupAgentTest {
         ChromeBackupAgent agent = new ChromeBackupAgent();
         ChromeBrowserInitializer initializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(initializer);
-        assertTrue(agent.initializeBrowser(mContext));
+        assertTrue(agent.initializeBrowser(ContextUtils.getApplicationContext()));
     }
 
     /**
@@ -630,7 +615,7 @@ public class ChromeBackupAgentTest {
         ChromeBackupAgent agent = new ChromeBackupAgent();
         ChromeBrowserInitializer initializer = mock(ChromeBrowserInitializer.class);
         ChromeBrowserInitializer.setForTesting(initializer);
-        assertFalse(agent.initializeBrowser(mContext));
+        assertFalse(agent.initializeBrowser(ContextUtils.getApplicationContext()));
         verifyNoMoreInteractions(initializer);
     }
 }

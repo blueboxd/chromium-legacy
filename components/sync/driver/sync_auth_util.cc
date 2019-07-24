@@ -19,9 +19,8 @@ SyncAccountInfo::SyncAccountInfo(const CoreAccountInfo& account_info,
                                  bool is_primary)
     : account_info(account_info), is_primary(is_primary) {}
 
-SyncAccountInfo DetermineAccountToUse(
-    identity::IdentityManager* identity_manager,
-    bool allow_secondary_accounts) {
+SyncAccountInfo DetermineAccountToUse(signin::IdentityManager* identity_manager,
+                                      bool allow_secondary_accounts) {
   // If there is a "primary account", i.e. the user explicitly chose to
   // sign-in to Chrome, then always use that account.
   if (identity_manager->HasPrimaryAccount()) {

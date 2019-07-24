@@ -420,7 +420,8 @@ bool ContentSettingsObserver::AllowWriteToClipboard(bool default_value) {
       extension_dispatcher_->script_context_set().GetCurrent();
   if (current_context) {
     if (current_context->effective_context_type() ==
-        extensions::Feature::BLESSED_EXTENSION_CONTEXT) {
+            extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
+        !current_context->IsForServiceWorker()) {
       allowed = true;
     } else {
       allowed |= current_context->HasAPIPermission(

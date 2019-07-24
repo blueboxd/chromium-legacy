@@ -12,6 +12,8 @@ specific_include_rules = {
   ],
   "image_decode_accelerator_proxy.cc": [
     "+media/parsers/jpeg_parser.h",
+    "+media/parsers/vp8_parser.h",
+    "+media/parsers/webp_parser.h",
   ],
   "raster_in_process_context_tests.cc": [
     "+components/viz/common/resources/resource_format.h",

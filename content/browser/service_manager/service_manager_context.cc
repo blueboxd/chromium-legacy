@@ -87,8 +87,6 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/tracing_service.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
-#include "services/video_capture/service_impl.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
 
@@ -317,13 +315,6 @@ void RegisterInProcessService(
     const InProcessServiceFactory& factory) {
   GetInProcessServiceMap()[service_name] = base::BindRepeating(
       &LaunchInProcessService, std::move(task_runner), factory);
-}
-
-std::unique_ptr<service_manager::Service> CreateVideoCaptureService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<video_capture::ServiceImpl>(
-      std::move(request), base::CreateSingleThreadTaskRunnerWithTraits(
-                              {content::BrowserThread::UI}));
 }
 
 void CreateInProcessAudioService(
@@ -641,20 +632,6 @@ ServiceManagerContext::ServiceManagerContext(
     RegisterInProcessService(media_session::mojom::kServiceName,
                              base::SequencedTaskRunnerHandle::Get(),
                              base::BindRepeating(&CreateMediaSessionService));
-  }
-
-  if (features::IsVideoCaptureServiceEnabledForBrowserProcess()) {
-    RegisterInProcessService(
-        video_capture::mojom::kServiceName,
-#if defined(OS_WIN)
-        base::CreateCOMSTATaskRunnerWithTraits(
-#else
-        base::CreateSingleThreadTaskRunnerWithTraits(
-#endif
-            base::TaskTraits({base::MayBlock(), base::WithBaseSyncPrimitives(),
-                              base::TaskPriority::BEST_EFFORT}),
-            base::SingleThreadTaskRunnerThreadMode::DEDICATED),
-        base::BindRepeating(&CreateVideoCaptureService));
   }
 
 #if defined(OS_LINUX)

@@ -151,7 +151,7 @@ class AuthenticationServiceTest : public PlatformTest {
         browser_state_.get());
   }
 
-  identity::IdentityManager* identity_manager() {
+  signin::IdentityManager* identity_manager() {
     return IdentityManagerFactory::GetForBrowserState(browser_state_.get());
   }
 
@@ -330,16 +330,16 @@ TEST_F(AuthenticationServiceTest, StoreAndGetAccountsInPrefs) {
   ASSERT_EQ(2u, accounts.size());
 
   switch (identity_manager()->GetAccountIdMigrationState()) {
-    case identity::IdentityManager::MIGRATION_NOT_STARTED:
+    case signin::IdentityManager::MIGRATION_NOT_STARTED:
       EXPECT_EQ("foo2@foo.com", accounts[0]);
       EXPECT_EQ("foo@foo.com", accounts[1]);
       break;
-    case identity::IdentityManager::MIGRATION_IN_PROGRESS:
-    case identity::IdentityManager::MIGRATION_DONE:
+    case signin::IdentityManager::MIGRATION_IN_PROGRESS:
+    case signin::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0]);
       EXPECT_EQ("fooID", accounts[1]);
       break;
-    case identity::IdentityManager::NUM_MIGRATION_STATES:
+    case signin::IdentityManager::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
       break;
   }
@@ -363,16 +363,16 @@ TEST_F(AuthenticationServiceTest,
   ASSERT_EQ(2u, accounts.size());
 
   switch (identity_manager()->GetAccountIdMigrationState()) {
-    case identity::IdentityManager::MIGRATION_NOT_STARTED:
+    case signin::IdentityManager::MIGRATION_NOT_STARTED:
       EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
       EXPECT_EQ("foo@foo.com", accounts[1].account_id);
       break;
-    case identity::IdentityManager::MIGRATION_IN_PROGRESS:
-    case identity::IdentityManager::MIGRATION_DONE:
+    case signin::IdentityManager::MIGRATION_IN_PROGRESS:
+    case signin::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0].account_id);
       EXPECT_EQ("fooID", accounts[1].account_id);
       break;
-    case identity::IdentityManager::NUM_MIGRATION_STATES:
+    case signin::IdentityManager::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
       break;
   }
@@ -388,18 +388,18 @@ TEST_F(AuthenticationServiceTest,
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
   switch (identity_manager()->GetAccountIdMigrationState()) {
-    case identity::IdentityManager::MIGRATION_NOT_STARTED:
+    case signin::IdentityManager::MIGRATION_NOT_STARTED:
       EXPECT_EQ("foo2@foo.com", accounts[0].account_id);
       EXPECT_EQ("foo3@foo.com", accounts[1].account_id);
       EXPECT_EQ("foo@foo.com", accounts[2].account_id);
       break;
-    case identity::IdentityManager::MIGRATION_IN_PROGRESS:
-    case identity::IdentityManager::MIGRATION_DONE:
+    case signin::IdentityManager::MIGRATION_IN_PROGRESS:
+    case signin::IdentityManager::MIGRATION_DONE:
       EXPECT_EQ("foo2ID", accounts[0].account_id);
       EXPECT_EQ("foo3ID", accounts[1].account_id);
       EXPECT_EQ("fooID", accounts[2].account_id);
       break;
-    case identity::IdentityManager::NUM_MIGRATION_STATES:
+    case signin::IdentityManager::NUM_MIGRATION_STATES:
       FAIL() << "NUM_MIGRATION_STATES is not a real migration state.";
       break;
   }
@@ -475,7 +475,7 @@ TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {
 
 TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   if (identity_manager()->GetAccountIdMigrationState() ==
-      identity::IdentityManager::MIGRATION_NOT_STARTED) {
+      signin::IdentityManager::MIGRATION_NOT_STARTED) {
     // The account tracker is not migratable. Skip the test as the accounts
     // cannot be migrated.
     return;
@@ -484,7 +484,7 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   // Force the migration state to MIGRATION_NOT_STARTED before signing in.
   browser_state_->GetPrefs()->SetInteger(
       prefs::kAccountIdMigrationState,
-      identity::IdentityManager::MIGRATION_NOT_STARTED);
+      signin::IdentityManager::MIGRATION_NOT_STARTED);
   browser_state_->GetPrefs()->SetBoolean(prefs::kSigninLastAccountsMigrated,
                                          false);
 
@@ -498,8 +498,7 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
 
   // Migrate the accounts.
   browser_state_->GetPrefs()->SetInteger(
-      prefs::kAccountIdMigrationState,
-      identity::IdentityManager::MIGRATION_DONE);
+      prefs::kAccountIdMigrationState, signin::IdentityManager::MIGRATION_DONE);
 
   // Reload all credentials to find account info with the refresh token.
   // If it tries to find refresh token with gaia ID after
@@ -535,14 +534,14 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   SetCachedMDMInfo(identity(0), user_info);
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
 
   // MDM error for |identity_| is being cleared and the error state of refresh
   // token will be updated.
   {
     bool notification_received = false;
-    identity::TestIdentityManagerObserver observer(identity_manager());
+    signin::TestIdentityManagerObserver observer(identity_manager());
     observer.SetOnErrorStateOfRefreshTokenUpdatedCallback(
         base::BindLambdaForTesting([&]() { notification_received = true; }));
 
@@ -557,7 +556,7 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
   // MDM error has already been cleared, no notification will be sent.
   {
     bool notification_received = false;
-    identity::TestIdentityManagerObserver observer(identity_manager());
+    signin::TestIdentityManagerObserver observer(identity_manager());
     observer.SetOnErrorStateOfRefreshTokenUpdatedCallback(
         base::BindLambdaForTesting([&]() { notification_received = true; }));
 
@@ -588,7 +587,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
   authentication_service()->SignIn(identity(0));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
 
   NSDictionary* user_info1 = @{ @"foo" : @1 };
@@ -624,7 +623,7 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
   authentication_service()->SignIn(identity(0));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
 
   NSDictionary* user_info1 = @{ @"foo" : @1 };
@@ -682,7 +681,7 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
   authentication_service()->SignIn(identity(0));
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager(), base::SysNSStringToUTF8([identity(0) gaiaID]), error);
 
   NSDictionary* user_info = [NSDictionary dictionary];

@@ -42,9 +42,10 @@ public final class EngagementTimeUtilTest {
 
     @Test
     public void timeSinceLastEngagement_shouldReportElapsedTimeBetweenTimestamps() {
+        long currentTimeMillis = System.currentTimeMillis();
         assertEquals(TEST_ELAPSED_MS,
                 mEngagementTimeUtil.timeSinceLastEngagement(
-                        System.currentTimeMillis() - (2L * TEST_ELAPSED_MS),
-                        System.currentTimeMillis() - TEST_ELAPSED_MS));
+                        currentTimeMillis - (2L * TEST_ELAPSED_MS),
+                        currentTimeMillis - TEST_ELAPSED_MS));
     }
 }

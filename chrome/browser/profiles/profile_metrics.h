@@ -10,7 +10,6 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 
 class Profile;
 class ProfileManager;
@@ -22,6 +21,10 @@ class FilePath;
 namespace profile_metrics {
 enum class BrowserProfileType;
 struct Counts;
+}
+
+namespace signin {
+enum GAIAServiceType : int;
 }
 
 class ProfileMetrics {

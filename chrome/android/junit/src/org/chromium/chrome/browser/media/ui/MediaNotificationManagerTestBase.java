@@ -31,7 +31,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
@@ -134,9 +133,6 @@ public class MediaNotificationManagerTestBase {
 
         mMockForegroundServiceUtils = mock(ForegroundServiceUtils.class);
         ForegroundServiceUtils.setInstanceForTesting(mMockForegroundServiceUtils);
-
-        // Init the command line to avoid assertion failure in |SysUtils#isLowEndDevice()|.
-        CommandLine.init(null);
     }
 
     @After

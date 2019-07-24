@@ -127,7 +127,7 @@ class SyncAuthTest : public SyncTest {
     // Disable retries so that we instantly trigger the case where
     // ProfileSyncService must pick up where OAuth2TokenService left off (in
     // terms of retries).
-    identity::DisableAccessTokenFetchRetries(
+    signin::DisableAccessTokenFetchRetries(
         IdentityManagerFactory::GetForProfile(GetProfile(0)));
   }
 

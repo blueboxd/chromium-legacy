@@ -14,9 +14,9 @@ namespace invalidation {
 
 // An identity provider implementation that's backed by IdentityManager
 class ProfileIdentityProvider : public IdentityProvider,
-                                public identity::IdentityManager::Observer {
+                                public signin::IdentityManager::Observer {
  public:
-  ProfileIdentityProvider(identity::IdentityManager* identity_manager);
+  ProfileIdentityProvider(signin::IdentityManager* identity_manager);
   ~ProfileIdentityProvider() override;
 
   // IdentityProvider:
@@ -30,14 +30,14 @@ class ProfileIdentityProvider : public IdentityProvider,
                              const std::string& access_token) override;
   void SetActiveAccountId(const CoreAccountId& account_id) override;
 
-  // identity::IdentityManager::Observer:
+  // signin::IdentityManager::Observer:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
   void OnRefreshTokenRemovedForAccount(
       const CoreAccountId& account_id) override;
 
  private:
-  identity::IdentityManager* const identity_manager_;
+  signin::IdentityManager* const identity_manager_;
 
   CoreAccountId active_account_id_;
 

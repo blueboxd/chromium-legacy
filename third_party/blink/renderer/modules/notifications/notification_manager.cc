@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/notifications/notification_manager.h"
 
+#include <utility>
+
 #include "base/numerics/safe_conversions.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
@@ -117,7 +119,8 @@ void NotificationManager::DisplayNonPersistentNotification(
     const String& token,
     mojom::blink::NotificationDataPtr notification_data,
     mojom::blink::NotificationResourcesPtr notification_resources,
-    mojom::blink::NonPersistentNotificationListenerPtr event_listener) {
+    mojo::PendingRemote<mojom::blink::NonPersistentNotificationListener>
+        event_listener) {
   DCHECK(!token.IsEmpty());
   DCHECK(notification_resources);
   GetNotificationService()->DisplayNonPersistentNotification(
@@ -224,7 +227,7 @@ void NotificationManager::DidGetNotifications(
   resolver->Resolve(notifications);
 }
 
-const mojom::blink::NotificationServicePtr&
+const mojo::Remote<mojom::blink::NotificationService>&
 NotificationManager::GetNotificationService() {
   if (!notification_service_) {
     if (auto* provider = GetSupplementable()->GetInterfaceProvider()) {
@@ -232,9 +235,9 @@ NotificationManager::GetNotificationService() {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner =
           GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI);
       provider->GetInterface(
-          mojo::MakeRequest(&notification_service_, std::move(task_runner)));
+          notification_service_.BindNewPipeAndPassReceiver(task_runner));
 
-      notification_service_.set_connection_error_handler(
+      notification_service_.set_disconnect_handler(
           WTF::Bind(&NotificationManager::OnNotificationServiceConnectionError,
                     WrapWeakPersistent(this)));
     }

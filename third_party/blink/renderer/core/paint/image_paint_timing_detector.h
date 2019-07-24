@@ -49,6 +49,7 @@ class ImageRecord : public base::SupportsWeakPtr<ImageRecord> {
   unsigned insertion_index;
   // The time of the first paint after fully loaded. 0 means not painted yet.
   base::TimeTicks paint_time = base::TimeTicks();
+  base::TimeTicks load_time = base::TimeTicks();
   bool loaded = false;
 };
 
@@ -75,6 +76,10 @@ class CORE_EXPORT ImageRecordsManager {
     invisible_images_.erase(&object);
   }
 
+  inline void RemoveImageFinishedRecord(const RecordId& record_id) {
+    image_finished_times_.erase(record_id);
+  }
+
   inline void RemoveVisibleRecord(const RecordId& record_id) {
     base::WeakPtr<ImageRecord> record =
         visible_images_.find(record_id)->value->AsWeakPtr();
@@ -93,6 +98,16 @@ class CORE_EXPORT ImageRecordsManager {
   }
   bool IsRecordedInvisibleImage(const LayoutObject& object) const {
     return invisible_images_.Contains(&object);
+  }
+
+  void NotifyImageFinished(const RecordId& record_id) {
+    // TODO(npm): Ideally NotifyImageFinished() would only be called when the
+    // record has not yet been inserted in |image_finished_times_| but that's
+    // not currently the case. If we plumb some information from
+    // ImageResourceContent we may be able to ensure that this call does not
+    // require the Contains() check, which would save time.
+    if (!image_finished_times_.Contains(record_id))
+      image_finished_times_.insert(record_id, base::TimeTicks::Now());
   }
 
   inline bool IsVisibleImageLoaded(const RecordId& record_id) const {
@@ -156,6 +171,9 @@ class CORE_EXPORT ImageRecordsManager {
   // |ImageRecord|s waiting for paint time are stored in this queue
   // until they get a swap time.
   Deque<base::WeakPtr<ImageRecord>> images_queued_for_paint_time_;
+  // Map containing timestamps of when LayoutObject::ImageNotifyFinished is
+  // first called.
+  HashMap<RecordId, base::TimeTicks> image_finished_times_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };
@@ -190,11 +208,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
                    const IntSize& intrinsic_size,
                    const ImageResourceContent&,
                    const PropertyTreeState& current_paint_chunk_properties);
-  void RecordBackgroundImage(
-      const LayoutObject&,
-      const IntSize& intrinsic_size,
-      const ImageResourceContent& cached_image,
-      const PropertyTreeState& current_paint_chunk_properties);
+  void NotifyImageFinished(const LayoutObject&, const ImageResourceContent*);
   void OnPaintFinished();
   void LayoutObjectWillBeDestroyed(const LayoutObject&);
   void NotifyImageRemoved(const LayoutObject&, const ImageResourceContent*);

@@ -95,12 +95,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   const char kPrimaryAccountEmail[] = "primary@email.com";
   const char kSecondaryAccountEmail[] = "secondary@email.com";
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  AccountInfo primary_account_info = identity::MakePrimaryAccountAvailable(
+  AccountInfo primary_account_info = signin::MakePrimaryAccountAvailable(
       identity_manager, kPrimaryAccountEmail);
   AccountInfo secondary_account_info =
-      identity::MakeAccountAvailable(identity_manager, kSecondaryAccountEmail);
+      signin::MakeAccountAvailable(identity_manager, kSecondaryAccountEmail);
 
   // Sync is running.
   syncer::SyncService* sync_service =
@@ -132,11 +132,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SyncError) {
   ASSERT_TRUE(SetGaiaCookieForProfile(profile));
   // Set a Sync account with authentication error.
   const char kAccountEmail[] = "account@email.com";
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   AccountInfo account_info =
-      identity::MakePrimaryAccountAvailable(identity_manager, kAccountEmail);
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      signin::MakePrimaryAccountAvailable(identity_manager, kAccountEmail);
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, account_info.account_id,
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, NotSyncing) {
   const char kAccountEmail[] = "account@email.com";
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   AccountInfo account_info =
-      identity::MakeAccountAvailable(identity_manager, kAccountEmail);
+      signin::MakeAccountAvailable(identity_manager, kAccountEmail);
   // Clear browsing data.
   auto function = base::MakeRefCounted<BrowsingDataRemoveFunction>();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(

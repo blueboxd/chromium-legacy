@@ -39,12 +39,34 @@ void VerifySerialNumber(const std::string& serial_number) {
 #endif
 }
 
+// Controls the way of Profile creation which affects report.
+enum ProfileStatus {
+  // Idle Profile does not generate full report.
+  kIdle,
+  // Active Profile generates full report.
+  kActive,
+  // Active Profile generate large full report.
+  kActiveWithContent,
+};
+
 // Verify the name is in the set. Remove the name from the set afterwards.
 void FindAndRemoveProfileName(std::set<std::string>* names,
                               const std::string& name) {
   auto it = names->find(name);
   EXPECT_NE(names->end(), it);
   names->erase(it);
+}
+
+void AddExtensionToProfile(TestingProfile* profile) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+
+  std::string extension_name =
+      "a super super super super super super super super super super super "
+      "super super super super super super long extension name";
+  extension_registry->AddEnabled(extensions::ExtensionBuilder(extension_name)
+                                     .SetID("abcdefghijklmnoabcdefghijklmnoab")
+                                     .Build());
 }
 
 #endif
@@ -71,19 +93,28 @@ class ReportGeneratorTest : public ::testing::Test {
   // |is_active| is true. Otherwise, information is only put into
   // ProfileAttributesStorage.
   std::set<std::string> CreateProfiles(int number,
-                                       bool is_active,
-                                       int start_index = 0) {
+                                       ProfileStatus status,
+                                       int start_index = 0,
+                                       bool with_extension = false) {
     std::set<std::string> profile_names;
     for (int i = start_index; i < number; i++) {
       std::string profile_name =
           std::string(kProfile) + base::NumberToString(i);
-      if (is_active) {
-        profile_manager_.CreateTestingProfile(profile_name);
-      } else {
-        profile_manager_.profile_attributes_storage()->AddProfile(
-            profile_manager()->profiles_dir().AppendASCII(profile_name),
-            base::ASCIIToUTF16(profile_name), std::string(), base::string16(),
-            0, std::string(), EmptyAccountId());
+      switch (status) {
+        case kIdle:
+          profile_manager_.profile_attributes_storage()->AddProfile(
+              profile_manager()->profiles_dir().AppendASCII(profile_name),
+              base::ASCIIToUTF16(profile_name), std::string(), base::string16(),
+              0, std::string(), EmptyAccountId());
+          break;
+        case kActive:
+          profile_manager_.CreateTestingProfile(profile_name);
+          break;
+        case kActiveWithContent:
+          TestingProfile* profile =
+              profile_manager_.CreateTestingProfile(profile_name);
+          AddExtensionToProfile(profile);
+          break;
       }
       profile_names.insert(profile_name);
     }
@@ -152,7 +183,7 @@ class ReportGeneratorTest : public ::testing::Test {
 };
 
 TEST_F(ReportGeneratorTest, GenerateBasicReport) {
-  auto profile_names = CreateProfiles(/*number*/ 2, /*is_active=*/false);
+  auto profile_names = CreateProfiles(/*number*/ 2, kIdle);
 
   auto requests = GenerateRequests();
   EXPECT_EQ(1u, requests.size());
@@ -179,10 +210,9 @@ TEST_F(ReportGeneratorTest, GenerateBasicReport) {
 }
 
 TEST_F(ReportGeneratorTest, GenerateActiveProfiles) {
-  auto inactive_profiles_names =
-      CreateProfiles(/*number*/ 2, /*is_active=*/false);
+  auto inactive_profiles_names = CreateProfiles(/*number*/ 2, kIdle);
   auto active_profiles_names =
-      CreateProfiles(/*number*/ 2, /*is_active=*/true, /*start_index*/ 2);
+      CreateProfiles(/*number*/ 2, kActive, /*start_index*/ 2);
 
   auto requests = GenerateRequests();
   EXPECT_EQ(1u, requests.size());
@@ -192,7 +222,7 @@ TEST_F(ReportGeneratorTest, GenerateActiveProfiles) {
 }
 
 TEST_F(ReportGeneratorTest, BasicReportIsTooBig) {
-  CreateProfiles(/*number*/ 2, /*is_active=*/false);
+  CreateProfiles(/*number*/ 2, kIdle);
 
   // Set a super small limitation.
   generator()->SetMaximumReportSizeForTesting(5);
@@ -202,8 +232,9 @@ TEST_F(ReportGeneratorTest, BasicReportIsTooBig) {
   EXPECT_EQ(0u, requests.size());
 }
 
-TEST_F(ReportGeneratorTest, DISABLED_ReportSeparation) {
-  auto profile_names = CreateProfiles(/*number*/ 2, /*is_active=*/true);
+TEST_F(ReportGeneratorTest, ReportSeparation) {
+  auto profile_names =
+      CreateProfiles(/*number*/ 2, kActiveWithContent, /*start_index*/ 0);
 
   // Set the limitation just below the size of the report so that it needs to be
   // separated into two requests later.
@@ -229,20 +260,8 @@ TEST_F(ReportGeneratorTest, DISABLED_ReportSeparation) {
 }
 
 TEST_F(ReportGeneratorTest, ProfileReportIsTooBig) {
-  TestingProfile* first_profile =
-      profile_manager()->CreateTestingProfile(kProfile);
-  std::set<std::string> first_profile_name = {kProfile};
-
-  // Add more things into the Profile to make the report bigger.
-  extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(first_profile);
-
-  std::string extension_name =
-      "a super super super super super super super super super super super "
-      "super super super super super super long extension name";
-  extension_registry->AddEnabled(extensions::ExtensionBuilder(extension_name)
-                                     .SetID("abcdefghijklmnoabcdefghijklmnoab")
-                                     .Build());
+  std::set<std::string> first_profile_name =
+      CreateProfiles(/*number*/ 1, kActiveWithContent, /*start_index*/ 0);
 
   // Set the limitation just below the size of the report.
   auto requests = GenerateRequests();
@@ -250,7 +269,8 @@ TEST_F(ReportGeneratorTest, ProfileReportIsTooBig) {
   generator()->SetMaximumReportSizeForTesting(requests[0]->ByteSizeLong() - 30);
 
   // Add a smaller Profile.
-  auto second_profile_name = CreateProfiles(/*number*/ 1, /*is_active=*/true);
+  auto second_profile_name =
+      CreateProfiles(/*number*/ 1, kActive, /*start_index*/ 1);
 
   requests = GenerateRequests();
 

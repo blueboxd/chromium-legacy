@@ -32,11 +32,13 @@ import com.google.android.libraries.feed.api.host.stream.TooltipApi;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -257,10 +259,15 @@ public class FeedNewTabPage extends NewTabPage {
      * @param activity The containing {@link ChromeActivity}.
      * @param nativePageHost The host for this native page.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
+     * @param activityTabProvider Allows us to check if we are the current tab.
+     * @param activityLifecycleDispatcher Allows us to subscribe to backgrounding events.
      */
     public FeedNewTabPage(ChromeActivity activity, NativePageHost nativePageHost,
-            TabModelSelector tabModelSelector, SigninManager signinManager) {
-        super(activity, nativePageHost, tabModelSelector);
+            TabModelSelector tabModelSelector, SigninManager signinManager,
+            ActivityTabProvider activityTabProvider,
+            ActivityLifecycleDispatcher activityLifecycleDispatcher) {
+        super(activity, nativePageHost, tabModelSelector, activityTabProvider,
+                activityLifecycleDispatcher);
 
         Resources resources = activity.getResources();
         mDefaultMargin =

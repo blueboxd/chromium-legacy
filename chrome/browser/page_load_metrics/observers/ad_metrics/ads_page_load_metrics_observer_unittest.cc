@@ -1128,6 +1128,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetrics) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1500 / 30000);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -1182,6 +1186,10 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1500 / 30000);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -1240,6 +1248,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsOnActivation) {
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
   test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1000 / 30000);
+  test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName,
       1000);
   test_ukm_recorder().ExpectEntryMetric(
@@ -1293,6 +1305,9 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestNoReportingWhenAlwaysBackgrounded) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 0);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName, 0);
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_PreActivationName));
   EXPECT_FALSE(test_ukm_recorder().EntryHasMetric(
@@ -1330,6 +1345,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsNoInteractive) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 500 / 30000);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
@@ -1373,6 +1392,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, TestCpuTimingMetricsShortTimeframes) {
   EXPECT_EQ(1u, entries.size());
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kCpuTime_TotalName, 1500);
+  test_ukm_recorder().ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AdFrameLoad::kCpuTime_PeakWindowedPercentName,
+      100 * 1500 / 30000);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {

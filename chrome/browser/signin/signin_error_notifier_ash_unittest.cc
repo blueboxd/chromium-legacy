@@ -67,11 +67,11 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
 
   void SetAuthError(const std::string& account_id,
                     const GoogleServiceAuthError& error) {
-    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+    signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_test_env()->identity_manager(), account_id, error);
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_profile_adaptor_->identity_test_env();
   }
 

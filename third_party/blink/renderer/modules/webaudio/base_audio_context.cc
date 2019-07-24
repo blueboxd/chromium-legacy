@@ -40,13 +40,13 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
 #include "third_party/blink/renderer/modules/webaudio/biquad_filter_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_merger_node.h"
 #include "third_party/blink/renderer/modules/webaudio/channel_splitter_node.h"
@@ -138,8 +138,8 @@ void BaseAudioContext::Initialize() {
     // only create the listener if the destination node exists.
     listener_ = MakeGarbageCollected<AudioListener>(*this);
 
-    if (Tracker())
-      Tracker()->DidCreateBaseAudioContext(this);
+    if (GraphTracer())
+      GraphTracer()->DidCreateBaseAudioContext(this);
 
     FFTFrame::Initialize(sampleRate());
   }
@@ -162,8 +162,8 @@ void BaseAudioContext::Uninitialize() {
   // BaseAudioContextTracker needs a valid AudioDestinationNode because it
   // may use destination-related data (e.g. sample rate and channel count)
   // to populate the devtool protocol object.
-  if (Tracker())
-    Tracker()->DidDestroyBaseAudioContext(this);
+  if (GraphTracer())
+    GraphTracer()->DidDestroyBaseAudioContext(this);
 
   // This stops the audio thread and all audio rendering.
   if (destination_node_)
@@ -655,8 +655,8 @@ void BaseAudioContext::SetContextState(AudioContextState new_state) {
         ->PostTask(FROM_HERE, WTF::Bind(&BaseAudioContext::NotifyStateChange,
                                         WrapPersistent(this)));
 
-    if (Tracker())
-      Tracker()->DidChangeBaseAudioContext(this);
+    if (GraphTracer())
+      GraphTracer()->DidChangeBaseAudioContext(this);
   }
 }
 
@@ -891,8 +891,8 @@ int32_t BaseAudioContext::CallbackBufferSize() {
   return destination_handler.GetCallbackBufferSize();
 }
 
-BaseAudioContextTracker* BaseAudioContext::Tracker() {
-  return BaseAudioContextTracker::FromDocument(*GetDocument());
+AudioGraphTracer* BaseAudioContext::GraphTracer() {
+  return AudioGraphTracer::FromDocument(*GetDocument());
 }
 
 }  // namespace blink

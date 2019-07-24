@@ -62,7 +62,6 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
         &mock_source_provider_, mojo::MakeRequest(&source_provider_));
     service_connection_ = base::MakeRefCounted<RefCountedVideoSourceProvider>(
         std::move(source_provider_),
-        video_capture::mojom::DeviceFactoryProviderPtr(),
         release_connection_cb_.Get());
 
     launcher_ = std::make_unique<ServiceVideoCaptureDeviceLauncher>(

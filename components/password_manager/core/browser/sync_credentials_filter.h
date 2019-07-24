@@ -16,7 +16,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/sync/driver/sync_service.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -28,7 +28,7 @@ class SyncCredentialsFilter : public CredentialsFilter {
   using SyncServiceFactoryFunction =
       base::RepeatingCallback<const syncer::SyncService*(void)>;
   using IdentityManagerFactoryFunction =
-      base::RepeatingCallback<const identity::IdentityManager*(void)>;
+      base::RepeatingCallback<const signin::IdentityManager*(void)>;
 
   // Implements protection of sync credentials. Uses |client| to get the last
   // commited entry URL for a check against GAIA reauth site. Uses the factory

@@ -50,7 +50,7 @@ enum PrinterType {
 
 // The handler for Javascript messages related to the print preview dialog.
 class PrintPreviewHandler : public content::WebUIMessageHandler,
-                            public identity::IdentityManager::Observer {
+                            public signin::IdentityManager::Observer {
  public:
   PrintPreviewHandler();
   ~PrintPreviewHandler() override;
@@ -62,7 +62,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // IdentityManager::Observer implementation.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
   // Called when print preview failed. |request_id| identifies the request that
@@ -337,7 +337,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
 
   // Pointer to the identity manager service so that print preview can listen
   // for GAIA cookie changes.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // Handles requests for cloud printers. Created lazily by calling
   // GetPrinterHandler().

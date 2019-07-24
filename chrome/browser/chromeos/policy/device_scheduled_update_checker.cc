@@ -112,8 +112,7 @@ base::TimeDelta CalculateNextDailyUpdateCheckTimerDelay(
       return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMillisecondsD(
-      update_checker_internal::GetDiffInMs(*update_check_cal, *cur_cal));
+  return update_checker_internal::GetDiff(*update_check_cal, *cur_cal);
 }
 
 // Calculates the next update check timer delay from |cur_time| in a weekly
@@ -176,8 +175,7 @@ base::TimeDelta CalculateNextWeeklyUpdateCheckTimerDelay(
     }
   }
 
-  return base::TimeDelta::FromMillisecondsD(
-      update_checker_internal::GetDiffInMs(*update_check_cal, *cur_cal));
+  return update_checker_internal::GetDiff(*update_check_cal, *cur_cal);
 }
 
 // Calculates the next update check timer delay from |cur_time| in a monthly
@@ -203,8 +201,7 @@ base::TimeDelta CalculateNextMonthlyUpdateCheckTimerDelay(
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMillisecondsD(
-      update_checker_internal::GetDiffInMs(*update_check_cal, *cur_cal));
+  return update_checker_internal::GetDiff(*update_check_cal, *cur_cal);
 }
 
 }  // namespace
@@ -285,13 +282,14 @@ base::Time IcuToBaseTime(const icu::Calendar& time) {
   return result;
 }
 
-double GetDiffInMs(const icu::Calendar& a, const icu::Calendar& b) {
+base::TimeDelta GetDiff(const icu::Calendar& a, const icu::Calendar& b) {
   UErrorCode status = U_ZERO_ERROR;
   UDate a_ms = a.getTime(status);
   DCHECK(U_SUCCESS(status));
   UDate b_ms = b.getTime(status);
   DCHECK(U_SUCCESS(status));
-  return a_ms - b_ms;
+  DCHECK(a_ms >= b_ms);
+  return base::TimeDelta::FromMilliseconds(a_ms - b_ms);
 }
 
 std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,
@@ -416,11 +414,14 @@ DeviceScheduledUpdateChecker::DeviceScheduledUpdateChecker(
       os_and_policies_update_checker_(
           base::BindRepeating(&DeviceScheduledUpdateChecker::GetTicksSinceBoot,
                               base::Unretained(this))) {
+  chromeos::system::TimezoneSettings::GetInstance()->AddObserver(this);
   // Check if policy already exists.
   OnScheduledUpdateCheckDataChanged();
 }
 
-DeviceScheduledUpdateChecker::~DeviceScheduledUpdateChecker() = default;
+DeviceScheduledUpdateChecker::~DeviceScheduledUpdateChecker() {
+  chromeos::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
+}
 
 DeviceScheduledUpdateChecker::ScheduledUpdateCheckData::
     ScheduledUpdateCheckData() = default;
@@ -449,6 +450,14 @@ void DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired() {
   os_and_policies_update_checker_.Start(
       base::BindOnce(&DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
                      base::Unretained(this)));
+}
+
+void DeviceScheduledUpdateChecker::TimezoneChanged(
+    const icu::TimeZone& time_zone) {
+  // Anytime the time zone changes, the update check timer delay should be
+  // recalculated and the timer should be started with updated values according
+  // to the new time zone.
+  MaybeStartUpdateCheckTimer();
 }
 
 void DeviceScheduledUpdateChecker::OnScheduledUpdateCheckDataChanged() {

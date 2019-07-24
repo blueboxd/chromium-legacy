@@ -18,8 +18,8 @@
 #include "components/offline_pages/core/background/request_notifier.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
+#include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/visuals_decoder.h"
@@ -35,20 +35,17 @@ namespace offline_pages {
 namespace {
 
 bool RequestsMatchesGuid(const std::string& guid,
-                         ClientPolicyController* policy_controller,
                          const SavePageRequest& request) {
   return request.client_id().id == guid &&
-         policy_controller->IsSupportedByDownload(
-             request.client_id().name_space);
+         GetPolicy(request.client_id().name_space).is_supported_by_download;
 }
 
 std::vector<int64_t> FilterRequestsByGuid(
     std::vector<std::unique_ptr<SavePageRequest>> requests,
-    const std::string& guid,
-    ClientPolicyController* policy_controller) {
+    const std::string& guid) {
   std::vector<int64_t> request_ids;
   for (const auto& request : requests) {
-    if (RequestsMatchesGuid(guid, policy_controller, *request))
+    if (RequestsMatchesGuid(guid, *request))
       request_ids.push_back(request->request_id());
   }
   return request_ids;
@@ -125,8 +122,8 @@ void DownloadUIAdapter::OfflinePageAdded(OfflinePageModel* model,
   if (!delegate_->IsVisibleInUI(added_page.client_id))
     return;
 
-  bool is_suggested = model->GetPolicyController()->IsSuggested(
-      added_page.client_id.name_space);
+  const bool is_suggested =
+      GetPolicy(added_page.client_id.name_space).is_suggested;
 
   OfflineItem offline_item(
       OfflineItemConversions::CreateOfflineItem(added_page, is_suggested));
@@ -357,10 +354,8 @@ void DownloadUIAdapter::OnPageGetForThumbnailAdded(
   if (!page)
     return;
 
-  bool is_suggested =
-      model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
-  auto offline_item =
-      OfflineItemConversions::CreateOfflineItem(*page, is_suggested);
+  auto offline_item = OfflineItemConversions::CreateOfflineItem(
+      *page, GetPolicy(page->client_id.name_space).is_suggested);
 
   offline_items_collection::UpdateDelta update_delta;
   update_delta.visuals_changed = true;
@@ -389,8 +384,8 @@ void DownloadUIAdapter::OnPageGetForGetItem(
     const std::vector<OfflinePageItem>& pages) {
   if (!pages.empty()) {
     const OfflinePageItem* page = &pages[0];
-    bool is_suggested =
-        model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
+    const bool is_suggested =
+        GetPolicy(page->client_id.name_space).is_suggested;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
                                   OfflineItemConversions::CreateOfflineItem(
@@ -430,8 +425,7 @@ void DownloadUIAdapter::OnPageGetForOpenItem(
   if (pages.empty())
     return;
   const OfflinePageItem* page = &pages[0];
-  bool is_suggested =
-      model_->GetPolicyController()->IsSuggested(page->client_id.name_space);
+  const bool is_suggested = GetPolicy(page->client_id.name_space).is_suggested;
   OfflineItem item =
       OfflineItemConversions::CreateOfflineItem(*page, is_suggested);
   delegate_->OpenItem(item, page->offline_id, location);
@@ -447,11 +441,7 @@ void DownloadUIAdapter::RemoveItem(const ContentId& id) {
 }
 
 void DownloadUIAdapter::CancelDownload(const ContentId& id) {
-  auto predicate =
-      base::BindRepeating(&RequestsMatchesGuid, id.id,
-                          // Since RequestCoordinator is calling us back,
-                          // binding its policy controller is safe.
-                          request_coordinator_->GetPolicyController());
+  auto predicate = base::BindRepeating(&RequestsMatchesGuid, id.id);
   request_coordinator_->RemoveRequestsIf(predicate, base::DoNothing());
 }
 
@@ -466,8 +456,8 @@ void DownloadUIAdapter::PauseDownload(const ContentId& id) {
 void DownloadUIAdapter::PauseDownloadContinuation(
     const std::string& guid,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  request_coordinator_->PauseRequests(FilterRequestsByGuid(
-      std::move(requests), guid, request_coordinator_->GetPolicyController()));
+  request_coordinator_->PauseRequests(
+      FilterRequestsByGuid(std::move(requests), guid));
 }
 
 void DownloadUIAdapter::ResumeDownload(const ContentId& id,
@@ -486,8 +476,8 @@ void DownloadUIAdapter::ResumeDownload(const ContentId& id,
 void DownloadUIAdapter::ResumeDownloadContinuation(
     const std::string& guid,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  request_coordinator_->ResumeRequests(FilterRequestsByGuid(
-      std::move(requests), guid, request_coordinator_->GetPolicyController()));
+  request_coordinator_->ResumeRequests(
+      FilterRequestsByGuid(std::move(requests), guid));
 }
 
 void DownloadUIAdapter::OnOfflinePagesLoaded(
@@ -497,10 +487,8 @@ void DownloadUIAdapter::OnOfflinePagesLoaded(
   for (const auto& page : pages) {
     if (delegate_->IsVisibleInUI(page.client_id)) {
       std::string guid = page.client_id.id;
-      bool is_suggested =
-          model_->GetPolicyController()->IsSuggested(page.client_id.name_space);
-      offline_items->push_back(
-          OfflineItemConversions::CreateOfflineItem(page, is_suggested));
+      offline_items->push_back(OfflineItemConversions::CreateOfflineItem(
+          page, GetPolicy(page.client_id.name_space).is_suggested));
     }
   }
   request_coordinator_->GetAllRequests(base::BindOnce(

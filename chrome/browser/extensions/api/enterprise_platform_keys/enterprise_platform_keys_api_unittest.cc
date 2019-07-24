@@ -174,7 +174,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   // Derived classes can override this method to set the required authenticated
   // user in the IdentityManager class.
   virtual void SetAuthenticatedUser() {
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         kUserEmail);
   }
@@ -588,7 +588,7 @@ class EPKChallengeMachineKeyUnmanagedUserTest
     : public EPKChallengeMachineKeyTest {
  protected:
   void SetAuthenticatedUser() override {
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         account_id_.GetUserEmail());
   }
@@ -601,7 +601,7 @@ class EPKChallengeMachineKeyUnmanagedUserTest
   const std::string email = "test@chromium.com";
   const AccountId account_id_ =
       AccountId::FromUserEmailGaiaId(email,
-                                     identity::GetTestGaiaIdForEmail(email));
+                                     signin::GetTestGaiaIdForEmail(email));
 };
 
 TEST_F(EPKChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
@@ -612,7 +612,7 @@ TEST_F(EPKChallengeMachineKeyUnmanagedUserTest, UserNotManaged) {
 class EPKChallengeUserKeyUnmanagedUserTest : public EPKChallengeUserKeyTest {
  protected:
   void SetAuthenticatedUser() override {
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
         account_id_.GetUserEmail());
   }
@@ -625,7 +625,7 @@ class EPKChallengeUserKeyUnmanagedUserTest : public EPKChallengeUserKeyTest {
   const std::string email = "test@chromium.com";
   const AccountId account_id_ =
       AccountId::FromUserEmailGaiaId(email,
-                                     identity::GetTestGaiaIdForEmail(email));
+                                     signin::GetTestGaiaIdForEmail(email));
 };
 
 TEST_F(EPKChallengeUserKeyUnmanagedUserTest, UserNotManaged) {

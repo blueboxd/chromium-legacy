@@ -79,3 +79,7 @@ void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index) {
       index,
       /*value_max=*/20);
 }
+
+void LogSharingMessageAckTime(base::TimeDelta time) {
+  base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
+}

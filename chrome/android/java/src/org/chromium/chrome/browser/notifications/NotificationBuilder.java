@@ -89,6 +89,14 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     }
 
     @Override
+    public ChromeNotificationBuilder setColor(int argb) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mBuilder.setColor(argb);
+        }
+        return this;
+    }
+
+    @Override
     public ChromeNotificationBuilder setTicker(CharSequence text) {
         mBuilder.setTicker(text);
         return this;

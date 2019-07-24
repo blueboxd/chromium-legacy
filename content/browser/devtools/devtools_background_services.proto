@@ -19,9 +19,10 @@ enum BackgroundService {
   PUSH_MESSAGING = 4;
   NOTIFICATIONS = 5;
   PAYMENT_HANDLER = 6;
+  PERIODIC_BACKGROUND_SYNC = 7;
 
   // Keep as last, must have the largest tag value.
-  COUNT = 7;
+  COUNT = 8;
 }
 
 // A proto for storing the background service event with common metadata for

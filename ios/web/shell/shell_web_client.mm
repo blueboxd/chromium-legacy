@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/bind.h"
-#include "ios/web/public/service_names.mojom.h"
+#include "ios/web/public/service/service_names.mojom.h"
 #include "ios/web/public/user_agent.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/shell/shell_web_main_parts.h"

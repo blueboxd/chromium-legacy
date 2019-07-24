@@ -123,7 +123,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  identity::IdentityTestEnvironment* identity_test_env() {
+  signin::IdentityTestEnvironment* identity_test_env() {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
@@ -165,7 +165,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     ASSERT_TRUE(call_data.arg1()->GetAsString(&event));
     EXPECT_EQ("account-image-changed", event);
 
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile());
     base::Optional<AccountInfo> primary_account =
         identity_manager->FindExtendedAccountInfoForAccount(

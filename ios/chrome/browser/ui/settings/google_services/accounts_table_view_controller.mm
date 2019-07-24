@@ -86,7 +86,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ios::ChromeBrowserState* _browserState;  // weak
   BOOL _closeSettingsOnAddAccount;
   std::unique_ptr<SyncObserverBridge> _syncObserver;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserver;
   // Modal alert for sign out.
   AlertCoordinator* _alertCoordinator;
@@ -140,7 +140,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       _syncObserver.reset(new SyncObserverBridge(self, syncService));
     }
     _identityManagerObserver =
-        std::make_unique<identity::IdentityManagerObserverBridge>(
+        std::make_unique<signin::IdentityManagerObserverBridge>(
             IdentityManagerFactory::GetForBrowserState(_browserState), self);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -219,7 +219,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierAccounts];
   [model setHeader:[self header]
       forSectionWithIdentifier:SectionIdentifierAccounts];
-  identity::IdentityManager* identityManager =
+  signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(_browserState);
   for (const auto& account : identityManager->GetAccountsWithRefreshTokens()) {
     ChromeIdentity* identity = ios::GetChromeBrowserProvider()
@@ -526,7 +526,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* continueButtonTitle =
       l10n_util::GetNSString(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
   if ([self authService] -> IsAuthenticatedIdentityManaged()) {
-    identity::IdentityManager* identityManager =
+    signin::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
     base::Optional<AccountInfo> accountInfo =
         identityManager->FindExtendedAccountInfoForAccount(

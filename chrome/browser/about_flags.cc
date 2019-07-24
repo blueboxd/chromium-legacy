@@ -3530,11 +3530,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAssistantAppSupportDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAppSupport)},
 
-    {"enable-assistant-key-remapping",
-     flag_descriptions::kEnableAssistantKeyRemappingName,
-     flag_descriptions::kEnableAssistantKeyRemappingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantKeyRemapping)},
-
     {"enable-assistant-media-session-integration",
      flag_descriptions::kEnableAssistantMediaSessionIntegrationName,
      flag_descriptions::kEnableAssistantMediaSessionIntegrationDescription,
@@ -4041,6 +4036,12 @@ const FeatureEntry kFeatureEntries[] = {
          kAutofillSaveCreditCardUsesImprovedMessagingVariations,
          "AutofillSaveCreditCardUsesImprovedMessaging")},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+#if defined(OS_CHROMEOS)
+    {"release-notes", flag_descriptions::kReleaseNotesName,
+     flag_descriptions::kReleaseNotesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kReleaseNotes)},
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
     {"smart-dim-model-v3", flag_descriptions::kSmartDimModelV3Name,

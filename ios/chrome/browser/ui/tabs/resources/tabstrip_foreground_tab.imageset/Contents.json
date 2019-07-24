@@ -4,7 +4,18 @@
             "idiom": "ipad",
             "scale": "2x",
             "filename": "tabstrip_foreground_tab@2x~ipad.png"
-        }
+        },
+        {
+          "idiom" : "universal",
+          "filename" : "tabstrip_foreground_tab_dark@2x~ipad.png",
+          "appearances" : [
+            {
+              "appearance" : "luminosity",
+              "value" : "dark"
+            }
+          ],
+          "scale" : "2x"
+      }
     ],
     "info": {
         "version": 1,

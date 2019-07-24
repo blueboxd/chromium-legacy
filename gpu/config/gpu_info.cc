@@ -55,9 +55,13 @@ const char* ImageDecodeAcceleratorTypeToString(
   switch (type) {
     case gpu::ImageDecodeAcceleratorType::kJpeg:
       return "JPEG";
+    case gpu::ImageDecodeAcceleratorType::kWebP:
+      return "WebP";
     case gpu::ImageDecodeAcceleratorType::kUnknown:
       return "Unknown";
   }
+  NOTREACHED() << "Invalid ImageDecodeAcceleratorType.";
+  return "";
 }
 
 const char* ImageDecodeAcceleratorSubsamplingToString(

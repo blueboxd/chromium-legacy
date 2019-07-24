@@ -23,7 +23,7 @@
                                       IdentityManagerObserverBridgeDelegate> {
   bool _isIncognito;
   ios::ChromeBrowserState* _browserState;
-  std::unique_ptr<identity::IdentityManagerObserverBridge>
+  std::unique_ptr<signin::IdentityManagerObserverBridge>
       _identityManagerObserverBridge;
 }
 
@@ -52,7 +52,7 @@
     if (!_isIncognito) {
       _browserState = browserState;
       _identityManagerObserverBridge.reset(
-          new identity::IdentityManagerObserverBridge(
+          new signin::IdentityManagerObserverBridge(
               IdentityManagerFactory::GetForBrowserState(_browserState), self));
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
           initWithBrowserState:_browserState
@@ -93,7 +93,7 @@
           shouldDisplaySigninPromoViewWithAccessPoint:
               signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER
                                          browserState:_browserState]) {
-    identity::IdentityManager* identityManager =
+    signin::IdentityManager* identityManager =
         IdentityManagerFactory::GetForBrowserState(_browserState);
     self.shouldShowSigninPromo = !identityManager->HasPrimaryAccount();
   }

@@ -59,7 +59,7 @@ class SyncUIUtilTest : public testing::Test {
 // return.
 std::pair<sync_ui_util::MessageType, sync_ui_util::ActionType>
 SetUpDistinctCase(TestSyncService* service,
-                  identity::IdentityManager* identity_manager,
+                  signin::IdentityManager* identity_manager,
                   int case_number) {
   switch (case_number) {
     case STATUS_CASE_SETUP_IN_PROGRESS: {
@@ -85,10 +85,10 @@ SetUpDistinctCase(TestSyncService* service,
 
       // Make sure to fail authentication with an error in this case.
       std::string account_id = identity_manager->GetPrimaryAccountId();
-      identity::SetRefreshTokenForPrimaryAccount(identity_manager);
+      signin::SetRefreshTokenForPrimaryAccount(identity_manager);
       service->SetAuthenticatedAccountInfo(
           identity_manager->GetPrimaryAccountInfo());
-      identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+      signin::UpdatePersistentErrorOfRefreshTokenForAccount(
           identity_manager, account_id,
           GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR));
       service->SetDisableReasons(syncer::SyncService::DISABLE_REASON_NONE);
@@ -193,10 +193,9 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     std::unique_ptr<Profile> profile = BuildTestingProfile();
 
     IdentityTestEnvironmentProfileAdaptor env_adaptor(profile.get());
-    identity::IdentityTestEnvironment* environment =
+    signin::IdentityTestEnvironment* environment =
         env_adaptor.identity_test_env();
-    identity::IdentityManager* identity_manager =
-        environment->identity_manager();
+    signin::IdentityManager* identity_manager = environment->identity_manager();
 
     // Need a primary account signed in before calling SetUpDistinctCase().
     environment->MakePrimaryAccountAvailable(kTestUser);
@@ -318,9 +317,9 @@ TEST_F(SyncUIUtilTest, IgnoreSyncErrorForNonSyncAccount) {
   std::unique_ptr<Profile> profile = BuildTestingProfile();
 
   IdentityTestEnvironmentProfileAdaptor env_adaptor(profile.get());
-  identity::IdentityTestEnvironment* environment =
+  signin::IdentityTestEnvironment* environment =
       env_adaptor.identity_test_env();
-  identity::IdentityManager* identity_manager = environment->identity_manager();
+  signin::IdentityManager* identity_manager = environment->identity_manager();
   AccountInfo primary_account_info =
       environment->MakePrimaryAccountAvailable(kTestUser);
 
@@ -345,7 +344,7 @@ TEST_F(SyncUIUtilTest, IgnoreSyncErrorForNonSyncAccount) {
   EXPECT_EQ(message, sync_ui_util::MessageType::SYNCED);
 
   // Add an error to the secondary account.
-  identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+  signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, secondary_account_info.account_id,
       GoogleServiceAuthError(
           GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));

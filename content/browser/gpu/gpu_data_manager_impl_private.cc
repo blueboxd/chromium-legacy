@@ -359,6 +359,8 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
           if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kDisableGpu))
             *reason += "through commandline switch --disable-gpu.";
+          else if (hardware_disabled_by_fallback_)
+            *reason += "due to frequent crashes.";
           else
             *reason += "in chrome://settings.";
         }
@@ -904,6 +906,7 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
 #else
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_ACCELERATED:
+      hardware_disabled_by_fallback_ = true;
       DisableHardwareAcceleration();
       break;
     case gpu::GpuMode::SWIFTSHADER:

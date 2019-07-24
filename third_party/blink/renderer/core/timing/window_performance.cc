@@ -391,7 +391,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
                                          const String& url,
                                          const FloatRect& rect,
                                          base::TimeTicks start_time,
-                                         base::TimeTicks response_end,
+                                         base::TimeTicks load_time,
                                          const AtomicString& identifier,
                                          const IntSize& intrinsic_size,
                                          const AtomicString& id,
@@ -399,7 +399,7 @@ void WindowPerformance::AddElementTiming(const AtomicString& name,
   DCHECK(RuntimeEnabledFeatures::ElementTimingEnabled(GetExecutionContext()));
   PerformanceElementTiming* entry = PerformanceElementTiming::Create(
       name, url, rect, MonotonicTimeToDOMHighResTimeStamp(start_time),
-      MonotonicTimeToDOMHighResTimeStamp(response_end), identifier,
+      MonotonicTimeToDOMHighResTimeStamp(load_time), identifier,
       intrinsic_size.Width(), intrinsic_size.Height(), id, element);
   if (HasObserverFor(PerformanceEntry::kElement)) {
     UseCounter::Count(GetExecutionContext(),
@@ -442,13 +442,13 @@ void WindowPerformance::AddLayoutJankFraction(double jank_fraction,
 void WindowPerformance::OnLargestContentfulPaintUpdated(
     base::TimeTicks paint_time,
     uint64_t paint_size,
-    base::TimeTicks response_end,
+    base::TimeTicks load_time,
     const AtomicString& id,
     const String& url,
     Element* element) {
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
       MonotonicTimeToDOMHighResTimeStamp(paint_time), paint_size,
-      MonotonicTimeToDOMHighResTimeStamp(response_end), id, url, element);
+      MonotonicTimeToDOMHighResTimeStamp(load_time), id, url, element);
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);

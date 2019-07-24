@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, NoReauthAfterSignout) {
         IdentityManagerFactory::GetForProfile(profile)
             ->GetPrimaryAccountMutator();
     primary_account_mutator->ClearPrimaryAccount(
-        identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
         signin_metrics::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
         signin_metrics::SignoutDelete::DELETED);
 
@@ -239,7 +239,7 @@ IN_PROC_BROWSER_TEST_P(SigninUtilWinBrowserTest, FixReauth) {
 
     // Make sure the profile stays signed in, but in an auth error state.
     auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+    signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_manager, identity_manager->GetPrimaryAccountId(),
         GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
             GoogleServiceAuthError::InvalidGaiaCredentialsReason::

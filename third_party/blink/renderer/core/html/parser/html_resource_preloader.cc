@@ -115,27 +115,25 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
     case ResourceType::kVideo:
     case ResourceType::kManifest:
     case ResourceType::kMock:
-      if (GetFieldTrialParamByFeatureAsBool(
-              features::kLightweightNoStatePrefetch, "skip_other", false)) {
-        return false;
-      }
-      break;
+      return !GetFieldTrialParamByFeatureAsBool(
+          features::kLightweightNoStatePrefetch, "skip_other", false);
     case ResourceType::kImage:
       return false;
     case ResourceType::kCSSStyleSheet:
-      break;
+      return true;
     case ResourceType::kScript:
+      // We might skip all script.
       if (GetFieldTrialParamByFeatureAsBool(
               features::kLightweightNoStatePrefetch, "skip_script", false)) {
-        // TODO(ryansturm): Add an arm to block async script only.
-        // https://crbug.com/934466
         return false;
       }
-      break;
-  }
 
-  // Skip lazy-loaded resources.
-  return preload->DeferOption() == FetchParameters::DeferOption::kNoDefer;
+      // Otherwise, we might skip async/deferred script.
+      return !GetFieldTrialParamByFeatureAsBool(
+                 features::kLightweightNoStatePrefetch, "skip_async_script",
+                 false) ||
+             preload->DeferOption() == FetchParameters::DeferOption::kNoDefer;
+  }
 }
 
 }  // namespace blink

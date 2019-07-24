@@ -28,6 +28,29 @@ SyntheticGestureController::~SyntheticGestureController() {
     GestureCompleted(SyntheticGesture::GESTURE_FINISHED);
 }
 
+void SyntheticGestureController::EnsureRendererInitialized(
+    base::OnceClosure on_completed) {
+  if (renderer_known_to_be_initialized_)
+    return;
+
+  base::OnceClosure wrapper = base::BindOnce(
+      [](base::WeakPtr<SyntheticGestureController> weak_ptr,
+         base::OnceClosure on_completed) {
+        if (weak_ptr)
+          weak_ptr->renderer_known_to_be_initialized_ = true;
+
+        std::move(on_completed).Run();
+      },
+      weak_ptr_factory_.GetWeakPtr(), std::move(on_completed));
+
+  // TODO(bokan): This will wait for the renderer to produce a frame and the
+  // GPU to present it but we should really be waiting for hit testing data to
+  // have been updated in the browser. https://crbug.com/985374.
+  gesture_target_->WaitForTargetAck(
+      SyntheticGestureParams::WAIT_FOR_INPUT_PROCESSED,
+      SyntheticGestureParams::DEFAULT_INPUT, std::move(wrapper));
+}
+
 void SyntheticGestureController::QueueSyntheticGesture(
     std::unique_ptr<SyntheticGesture> synthetic_gesture,
     OnGestureCompleteCallback completion_callback) {
@@ -55,7 +78,7 @@ void SyntheticGestureController::QueueSyntheticGesture(
                               complete_immediately);
 
   if (was_empty)
-    StartGesture(*pending_gesture_queue_.FrontGesture());
+    StartGesture();
 }
 
 void SyntheticGestureController::StartTimer(bool high_frequency) {
@@ -98,12 +121,35 @@ bool SyntheticGestureController::DispatchNextEvent(base::TimeTicks timestamp) {
   return !pending_gesture_queue_.IsEmpty();
 }
 
-void SyntheticGestureController::StartGesture(const SyntheticGesture& gesture) {
-  TRACE_EVENT_ASYNC_BEGIN0("input,benchmark",
-                           "SyntheticGestureController::running",
-                           &gesture);
-  if (!dispatch_timer_.IsRunning())
+void SyntheticGestureController::StartGesture() {
+  if (!renderer_known_to_be_initialized_) {
+    base::OnceClosure on_initialized = base::BindOnce(
+        [](base::WeakPtr<SyntheticGestureController> weak_ptr) {
+          if (!weak_ptr)
+            return;
+
+          // The renderer_known_to_be_initialized_ bit should be flipped before
+          // this callback is invoked in EnsureRendererInitialized so we don't
+          // call EnsureRendererInitialized again.
+          DCHECK(weak_ptr->renderer_known_to_be_initialized_);
+          weak_ptr->StartGesture();
+        },
+        weak_ptr_factory_.GetWeakPtr());
+
+    // We don't yet know whether the renderer is ready for input. Force it to
+    // produce a compositor frame and once it does we'll callback into this
+    // function to start the gesture.
+    EnsureRendererInitialized(std::move(on_initialized));
+    return;
+  }
+
+  if (!dispatch_timer_.IsRunning()) {
+    DCHECK(!pending_gesture_queue_.IsEmpty());
+    const SyntheticGesture& gesture = *pending_gesture_queue_.FrontGesture();
+    TRACE_EVENT_ASYNC_BEGIN0("input,benchmark",
+                             "SyntheticGestureController::running", &gesture);
     StartTimer(gesture.AllowHighFrequencyDispatch());
+  }
 }
 
 void SyntheticGestureController::StopGesture(const SyntheticGesture& gesture,
@@ -137,7 +183,7 @@ void SyntheticGestureController::GestureCompleted(
   pending_gesture_queue_.FrontCallback().Run(result);
   pending_gesture_queue_.Pop();
   if (!pending_gesture_queue_.IsEmpty())
-    StartGesture(*pending_gesture_queue_.FrontGesture());
+    StartGesture();
 }
 
 SyntheticGestureController::GestureAndCallbackQueue::GestureAndCallbackQueue() {

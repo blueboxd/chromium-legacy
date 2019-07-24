@@ -32,7 +32,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
       ServiceWorkerContextWrapper* context_wrapper);
   ~ServiceWorkerNavigationHandleCore();
 
-  // Called when a ServiceWorkerProviderHost was created for the navigation.
+  // Called when a ServiceWorkerProviderHost was created.
   void OnCreatedProviderHost(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info);
@@ -40,6 +40,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
   // Called when the navigation is ready to commit, set the 2 IDs for the
   // pre-created provider host.
   void OnBeginNavigationCommit(int render_process_id, int render_frame_id);
+
+  void OnBeginWorkerCommit();
 
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
@@ -65,6 +67,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
   ServiceWorkerControlleeRequestHandler* interceptor() {
     return interceptor_.get();
   }
+
+  base::WeakPtr<ServiceWorkerNavigationHandleCore> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   /////////////////////////////////////////////////////////////////////////////
 
  private:
@@ -74,6 +81,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
 
   // NavigationLoaderOnUI:
   std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor_;
+
+  base::WeakPtrFactory<ServiceWorkerNavigationHandleCore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandleCore);
 };

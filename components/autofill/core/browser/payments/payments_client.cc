@@ -876,7 +876,7 @@ PaymentsClient::MigrationRequestDetails::~MigrationRequestDetails() {}
 
 PaymentsClient::PaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     AccountInfoGetter* account_info_getter,
     bool is_off_the_record)
     : url_loader_factory_(url_loader_factory),
@@ -1079,7 +1079,7 @@ void PaymentsClient::OnSimpleLoaderCompleteInternal(int response_code,
 
 void PaymentsClient::AccessTokenFetchFinished(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 
@@ -1122,7 +1122,7 @@ void PaymentsClient::StartTokenFetch(bool invalidate_old) {
       account_id, kTokenFetchId, payments_scopes,
       base::BindOnce(&PaymentsClient::AccessTokenFetchFinished,
                      base::Unretained(this)),
-      identity::AccessTokenFetcher::Mode::kImmediate);
+      signin::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void PaymentsClient::SetOAuth2TokenAndStartRequest() {

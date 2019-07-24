@@ -69,7 +69,7 @@ class AndroidManagementClientTest : public testing::Test {
   std::unique_ptr<AndroidManagementClient> client_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
-  identity::IdentityTestEnvironment identity_test_environment_;
+  signin::IdentityTestEnvironment identity_test_environment_;
 };
 
 TEST_F(AndroidManagementClientTest, CheckAndroidManagementCall) {

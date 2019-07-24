@@ -21,11 +21,32 @@ const char kAssistantConsentStatus[] =
 // This preference should only be changed in browser.
 const char kAssistantDisabledByPolicy[] =
     "settings.assistant.disabled_by_policy";
+// A preference that indicates the user has chosen to always keep hotword
+// listening on even without DSP support.
+// This preference should only be changed in browser.
+const char kAssistantHotwordAlwaysOn[] =
+    "settings.voice_interaction.hotword.always_on";
+// A preference that indicates whether microphone should be open when the
+// Assistant launches.
+// This preference should only be changed in browser.
+const char kAssistantLaunchWithMicOpen[] =
+    "settings.voice_interaction.launch_with_mic_open";
+// A preference that indicates the user has allowed the Assistant services
+// to send notification.
+// This preference should only be changed in browser.
+const char kAssistantNotificationEnabled[] =
+    "settings.voice_interaction.notification.enabled";
 
 void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kAssistantConsentStatus,
                                 ConsentStatus::kUnknown, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(kAssistantDisabledByPolicy, false,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantHotwordAlwaysOn, false,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantLaunchWithMicOpen, false,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(kAssistantNotificationEnabled, true,
                                 PrefRegistry::PUBLIC);
 }
 
@@ -38,6 +59,9 @@ void RegisterProfilePrefsForeign(PrefRegistrySimple* registry, bool for_test) {
   }
   registry->RegisterForeignPref(kAssistantConsentStatus);
   registry->RegisterForeignPref(kAssistantDisabledByPolicy);
+  registry->RegisterForeignPref(kAssistantHotwordAlwaysOn);
+  registry->RegisterForeignPref(kAssistantLaunchWithMicOpen);
+  registry->RegisterForeignPref(kAssistantNotificationEnabled);
 }
 
 }  // namespace prefs

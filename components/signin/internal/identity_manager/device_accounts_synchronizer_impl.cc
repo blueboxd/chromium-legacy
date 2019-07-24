@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 
-namespace identity {
+namespace signin {
 
 DeviceAccountsSynchronizerImpl::DeviceAccountsSynchronizerImpl(
     OAuth2TokenServiceDelegate* token_service_delegate)
@@ -26,4 +26,4 @@ void DeviceAccountsSynchronizerImpl::ReloadAccountFromSystem(
   token_service_delegate_->ReloadAccountFromSystem(account_id);
 }
 
-}  // namespace identity
+}  // namespace signin

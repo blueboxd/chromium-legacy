@@ -25,7 +25,7 @@ namespace chromeos {
 // OAuth2 refresh tokens or pre-authenticated cookie jar.
 class OAuth2LoginManager : public KeyedService,
                            public OAuth2LoginVerifier::Delegate,
-                           public identity::IdentityManager::Observer {
+                           public signin::IdentityManager::Observer {
  public:
   // Session restore states.
   enum SessionRestoreState {
@@ -152,7 +152,7 @@ class OAuth2LoginManager : public KeyedService,
       const std::vector<gaia::ListedAccount>& accounts) override;
   void OnListAccountsFailure(bool connection_error) override;
 
-  // identity::IdentityManager::Observer implementation:
+  // signin::IdentityManager::Observer implementation:
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
 
@@ -161,7 +161,7 @@ class OAuth2LoginManager : public KeyedService,
   void CompleteAuthentication();
 
   // Retrieves IdentityManager for |user_profile_|.
-  identity::IdentityManager* GetIdentityManager();
+  signin::IdentityManager* GetIdentityManager();
 
   // Retrieves the primary account for |user_profile_|.
   std::string GetPrimaryAccountId();

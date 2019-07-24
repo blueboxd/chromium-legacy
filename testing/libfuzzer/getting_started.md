@@ -117,6 +117,10 @@ INFO: A corpus is not provided, starting from an empty corpus
 For more information about libFuzzer's output, please refer to [its own
 documentation].
 
+*Note*: if you observe an `odr-violation` error in the log, please try setting
+the following environment variable: `ASAN_OPTIONS=detect_odr_violation=0` and
+running the fuzz target again.
+
 ### Symbolize Stacktrace
 
 If your fuzz target crashes when running locally and you see non-symbolized

@@ -1550,6 +1550,19 @@ void RenderWidgetHostImpl::QueueSyntheticGestureCompleteImmediately(
   }
 }
 
+void RenderWidgetHostImpl::EnsureReadyForSyntheticGestures(
+    base::OnceClosure on_ready) {
+  CreateSyntheticGestureControllerIfNecessary();
+  if (synthetic_gesture_controller_) {
+    synthetic_gesture_controller_->EnsureRendererInitialized(
+        std::move(on_ready));
+  } else {
+    // If we couldn't create a SyntheticGestureController then we won't ever be
+    // ready.  Invoke the callback to unblock the calling code.
+    std::move(on_ready).Run();
+  }
+}
+
 void RenderWidgetHostImpl::SetCursor(const WebCursor& cursor) {
   if (!view_)
     return;

@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
+#include "chrome/browser/chromeos/release_notes/release_notes_notification.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/u2f_notification.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -342,6 +343,9 @@ class UserSessionManager
   // Shows U2F notification if necessary.
   void MaybeShowU2FNotification();
 
+  // Shows Release Notes notification if necessary.
+  void MaybeShowReleaseNotesNotification(Profile* profile);
+
  protected:
   // Protected for testability reasons.
   UserSessionManager();
@@ -651,6 +655,8 @@ class UserSessionManager
   std::unique_ptr<ChildPolicyObserver> child_policy_observer_;
 
   std::unique_ptr<U2FNotification> u2f_notification_;
+
+  std::unique_ptr<ReleaseNotesNotification> release_notes_notification_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_;
 

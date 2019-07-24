@@ -14,9 +14,11 @@
 namespace ui {
 namespace {
 
-bool IsLiveRegion(const AXTreeObserver::Change& change) {
+bool IsActiveLiveRegion(const AXTreeObserver::Change& change) {
   return change.node->data().HasStringAttribute(
-      ax::mojom::StringAttribute::kLiveStatus);
+             ax::mojom::StringAttribute::kLiveStatus) &&
+         change.node->data().GetStringAttribute(
+             ax::mojom::StringAttribute::kLiveStatus) != "off";
 }
 
 bool IsContainedInLiveRegion(const AXTreeObserver::Change& change) {
@@ -517,16 +519,12 @@ void AXEventGenerator::OnAtomicUpdateFinished(
       continue;
     }
 
-    if (IsLiveRegion(change)) {
-      if (IsAlert(change.node->data().role)) {
-        AddEvent(change.node, Event::ALERT);
-      } else if (change.node->data().GetStringAttribute(
-                     ax::mojom::StringAttribute::kLiveStatus) != "off") {
-        AddEvent(change.node, Event::LIVE_REGION_CREATED);
-      }
-    } else if (IsContainedInLiveRegion(change)) {
+    if (IsAlert(change.node->data().role))
+      AddEvent(change.node, Event::ALERT);
+    else if (IsActiveLiveRegion(change))
+      AddEvent(change.node, Event::LIVE_REGION_CREATED);
+    else if (IsContainedInLiveRegion(change))
       FireLiveRegionEvents(change.node);
-    }
   }
 
   FireActiveDescendantEvents();

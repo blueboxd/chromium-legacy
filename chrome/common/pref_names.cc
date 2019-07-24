@@ -913,6 +913,10 @@ const char kLastChildScreenTimeSaved[] = "last_child_screen_time_saved";
 // Last time that the kChildScreenTime pref was reset.
 const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 
+// Last patch on which patch notes were shown.
+const char kReleaseNotesLastShownMilestone[] =
+    "last_release_notes_shown_milestone";
+
 // Boolean pref indicating whether the NTLM authentication protocol should be
 // enabled when mounting an SMB share with a user credential by the Network File
 // Shares for Chrome OS feature.

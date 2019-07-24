@@ -26,12 +26,12 @@ class SigninClient;
 //
 // This class implements parts of the sign-in flow, to make sure that policy
 // is available before sign-in completes.
-class SigninManagerAndroid : public identity::IdentityManager::Observer {
+class SigninManagerAndroid : public signin::IdentityManager::Observer {
  public:
   SigninManagerAndroid(
       SigninClient* signin_client,
       PrefService* local_state_prefs_service,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       std::unique_ptr<SigninManagerDelegate> signin_manager_delegate);
 
   ~SigninManagerAndroid() override;
@@ -67,7 +67,7 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
 
@@ -84,7 +84,7 @@ class SigninManagerAndroid : public identity::IdentityManager::Observer {
   // State, not in user prefs.
   BooleanPrefMember force_browser_signin_;
 
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   std::unique_ptr<SigninManagerDelegate> signin_manager_delegate_;
 

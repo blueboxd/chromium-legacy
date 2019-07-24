@@ -80,13 +80,14 @@ pp::Rect GetScreenRect(const pp::Rect& rect,
   return pp::Rect(x, y, right - x, bottom - y);
 }
 
-pp::Rect GetSurroundingRect(const pp::Rect& rect,
+pp::Rect GetSurroundingRect(int page_y,
+                            int page_height,
                             const PageInsetSizes& inset_sizes,
                             int doc_width,
                             int bottom_separator) {
   return pp::Rect(
-      0, rect.y() - inset_sizes.top, doc_width,
-      rect.height() + inset_sizes.top + inset_sizes.bottom + bottom_separator);
+      0, page_y - inset_sizes.top, doc_width,
+      page_height + inset_sizes.top + inset_sizes.bottom + bottom_separator);
 }
 
 pp::Rect GetLeftRectForTwoUpView(const pp::Size& rect_size,

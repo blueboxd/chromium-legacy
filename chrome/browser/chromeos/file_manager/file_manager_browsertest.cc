@@ -1184,10 +1184,10 @@ class MultiProfileFilesAppBrowserTest : public FileManagerBrowserTestBase {
         account_id, base::UTF8ToUTF16(info.display_name));
     Profile* profile =
         chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash);
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     if (!identity_manager->HasPrimaryAccount())
-      identity::MakePrimaryAccountAvailable(identity_manager, info.email);
+      signin::MakePrimaryAccountAvailable(identity_manager, info.email);
   }
 
   GuestMode GetGuestMode() const override { return NOT_IN_GUEST_MODE; }

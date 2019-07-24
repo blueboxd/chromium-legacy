@@ -9,16 +9,20 @@
 
 #include <stdint.h>
 
+#include <set>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_sync/background_sync_metrics.h"
+#include "chrome/browser/engagement/site_engagement_observer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/background_sync_registration.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "url/gurl.h"
 
 namespace content {
 struct BackgroundSyncParameters;
@@ -33,6 +37,7 @@ class SiteEngagementService;
 class GURL;
 
 class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
+                                     public SiteEngagementObserver,
                                      public KeyedService {
  public:
   static const char kFieldTrialName[];
@@ -92,6 +97,15 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       content::BackgroundSyncParameters* parameters) override;
   std::unique_ptr<BackgroundSyncEventKeepAlive>
   CreateBackgroundSyncEventKeepAlive() override;
+  void NoteSuspendedPeriodicSyncOrigins(
+      std::set<url::Origin> suspended_origins) override;
+
+  // SiteEngagementObserver overrides.
+  void OnEngagementEvent(
+      content::WebContents* web_contents,
+      const GURL& url,
+      double score,
+      SiteEngagementService::EngagementType engagement_type) override;
 
  private:
   // Gets the site engagement penalty for |url|, which is inversely proportional
@@ -99,7 +113,7 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   // the less often periodic sync events will be fired.
   // Returns kEngagementLevelNonePenalty if the engagement level is
   // blink::mojom::EngagementLevel::NONE.
-  int GetSiteEngagementPenalty(const GURL& url) const;
+  int GetSiteEngagementPenalty(const GURL& url);
 
   // Once we've identified the minimum number of hours between each periodicsync
   // event for an origin, every delay calculated for the origin should be a
@@ -113,6 +127,8 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
   SiteEngagementService* site_engagement_service_;
 
   BackgroundSyncMetrics background_sync_metrics_;
+
+  std::set<url::Origin> suspended_periodic_sync_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImpl);
 };

@@ -253,7 +253,7 @@ void MockGSSAPILibrary::ExpectSecurityContext(
   expected_security_queries_.push_back(security_query);
 }
 
-bool MockGSSAPILibrary::Init() {
+bool MockGSSAPILibrary::Init(const NetLogWithSource&) {
   return true;
 }
 

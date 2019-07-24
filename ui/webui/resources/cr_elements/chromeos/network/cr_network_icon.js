@@ -88,8 +88,7 @@ Polymer({
     }
 
     if (!this.isListItem &&
-        (!connectionState ||
-         connectionState == mojom.ConnectionStateType.kNotConnected)) {
+        connectionState == mojom.ConnectionStateType.kNotConnected) {
       return prefix + 'not-connected';
     }
 

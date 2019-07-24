@@ -32,9 +32,6 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   void OnVoiceInteractionContextEnabled(bool enabled) override {
     context_enabled_ = enabled;
   }
-  void OnVoiceInteractionHotwordAlwaysOn(bool always_on) override {
-    hotword_always_on_ = always_on;
-  }
   void OnVoiceInteractionHotwordEnabled(bool enabled) override {
     hotword_enabled_ = enabled;
   }
@@ -51,7 +48,6 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   }
   bool settings_enabled() const { return settings_enabled_; }
   bool context_enabled() const { return context_enabled_; }
-  bool hotword_always_on() const { return hotword_always_on_; }
   bool hotword_enabled() const { return hotword_enabled_; }
   bool arc_play_store_enabled() const { return arc_play_store_enabled_; }
 
@@ -65,7 +61,6 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   mojom::VoiceInteractionState state_ = mojom::VoiceInteractionState::STOPPED;
   bool settings_enabled_ = false;
   bool context_enabled_ = false;
-  bool hotword_always_on_ = false;
   bool hotword_enabled_ = false;
   bool arc_play_store_enabled_ = false;
 
@@ -130,13 +125,6 @@ TEST_F(VoiceInteractionControllerTest, NotifyContextEnabled) {
   controller()->FlushForTesting();
   // The observers should be notified.
   EXPECT_TRUE(observer()->context_enabled());
-}
-
-TEST_F(VoiceInteractionControllerTest, NotifyHotwordAlwaysOn) {
-  controller()->NotifyHotwordAlwaysOn(true);
-  controller()->FlushForTesting();
-  // The observers should be notified.
-  EXPECT_TRUE(observer()->hotword_always_on());
 }
 
 TEST_F(VoiceInteractionControllerTest, NotifyHotwordEnabled) {

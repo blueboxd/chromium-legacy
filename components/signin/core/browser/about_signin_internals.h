@@ -23,7 +23,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/identity/public/cpp/scope_set.h"
 
-namespace identity {
+namespace signin {
 struct AccountsInCookieJarInfo;
 }
 
@@ -39,8 +39,8 @@ using TimedSigninStatusValue = std::pair<std::string, std::string>;
 class AboutSigninInternals : public KeyedService,
                              public content_settings::Observer,
                              SigninErrorController::Observer,
-                             identity::IdentityManager::Observer,
-                             identity::IdentityManager::DiagnosticsObserver {
+                             signin::IdentityManager::Observer,
+                             signin::IdentityManager::DiagnosticsObserver {
  public:
   class Observer {
    public:
@@ -52,7 +52,7 @@ class AboutSigninInternals : public KeyedService,
     virtual void OnCookieAccountsFetched(const base::DictionaryValue* info) = 0;
   };
 
-  AboutSigninInternals(identity::IdentityManager* identity_manager,
+  AboutSigninInternals(signin::IdentityManager* identity_manager,
                        SigninErrorController* signin_error_controller,
                        signin::AccountConsistencyMethod account_consistency);
   ~AboutSigninInternals() override;
@@ -92,9 +92,9 @@ class AboutSigninInternals : public KeyedService,
   //  }
   std::unique_ptr<base::DictionaryValue> GetSigninStatus();
 
-  // identity::IdentityManager::Observer implementations.
+  // signin::IdentityManager::Observer implementations.
   void OnAccountsInCookieUpdated(
-      const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
 
  private:
@@ -176,7 +176,7 @@ class AboutSigninInternals : public KeyedService,
     //       }],
     //  }
     std::unique_ptr<base::DictionaryValue> ToValue(
-        identity::IdentityManager* identity_manager,
+        signin::IdentityManager* identity_manager,
         SigninErrorController* signin_error_controller,
         SigninClient* signin_client,
         signin::AccountConsistencyMethod account_consistency);
@@ -225,7 +225,7 @@ class AboutSigninInternals : public KeyedService,
                                const std::string& resource_identifier) override;
 
   // Weak pointer to the identity manager.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   // Weak pointer to the client.
   SigninClient* client_;

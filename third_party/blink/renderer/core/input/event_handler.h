@@ -297,9 +297,9 @@ class CORE_EXPORT EventHandler final
 
   void SetIsFallbackCursorModeOn(bool is_on);
 
-  // Set the last mouse position so that next movemove after unlock will be
-  // calculated from the lock position.
-  void SetMousePositionForPointerUnlock(FloatPoint lock_position_in_screen);
+  // Reset the last mouse position so that movement after unlock will be
+  // restart from the lock position.
+  void ResetMousePositionForPointerUnlock();
 
  private:
   enum NoCursorChangeType { kNoCursorChange };

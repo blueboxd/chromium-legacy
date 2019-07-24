@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
@@ -289,6 +290,8 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     DCHECK(URLLoaded());
     EXPECT_EQ(0, GetScrollTop());
 
+    EnsureInitializedForSyntheticGestures();
+
     int scroll_height =
         ExecuteScriptAndExtractInt("document.documentElement.scrollHeight");
     EXPECT_EQ(expected_scroll_height_after_scroll, scroll_height);
@@ -406,6 +409,22 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     // Runs until we get the OnSyntheticGestureCompleted callback
     run_loop_->Run();
     run_loop_.reset();
+  }
+
+  // Sends a no-op gesture to the page to ensure the SyntheticGestureController
+  // is initialized. We need to do this if the first sent gesture happens when
+  // the main thread is janked, otherwise the initialization won't happen
+  // because of the blocked main thread.
+  void EnsureInitializedForSyntheticGestures() {
+    DCHECK(URLLoaded());
+
+    base::RunLoop run_loop;
+
+    GetWidgetHost()->EnsureReadyForSyntheticGestures(
+        base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+
+    // Runs until we get the OnSyntheticGestureCompleted callback
+    run_loop.Run();
   }
 
   void CheckScrollOffset(

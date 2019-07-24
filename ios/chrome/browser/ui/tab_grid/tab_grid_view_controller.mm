@@ -657,27 +657,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   styler.tableViewBackgroundColor = UIColorFromRGB(kGridBackgroundColor);
   styler.cellHighlightColor =
       [UIColor colorWithWhite:0 alpha:kGridDarkThemeCellHighlightColorAlpha];
-  // For iOS 13, setting the overrideUserInterfaceStyle to dark forces the use
-  // of dark mode colors for all the colors in this view. However, this
-  // override is not available on pre-iOS 13 devices, so the dark mode colors
-  // must be provided manually.
-  if (@available(iOS 13, *)) {
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
-    self.remoteTabsViewController.overrideUserInterfaceStyle =
-        UIUserInterfaceStyleDark;
-#endif
-  } else {
-    styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
-    styler.headerFooterTitleColor =
-        UIColorFromRGB(kGridDarkThemeCellTitleColor);
-    styler.cellDetailColor = UIColorFromRGB(kGridDarkThemeCellDetailColor,
-                                            kGridDarkThemeCellDetailAlpha);
-    styler.headerFooterDetailColor = UIColorFromRGB(
-        kGridDarkThemeCellDetailColor, kGridDarkThemeCellDetailAlpha);
-    styler.tintColor = UIColorFromRGB(kGridDarkThemeCellTintColor);
-    styler.solidButtonTextColor =
-        UIColorFromRGB(kGridDarkThemeCellSolidButtonTextColor);
-  }
+  // To make using the compile guards easier, use a separate method.
+  [self setupRemoteTabsViewControllerForDarkModeWithStyler:styler];
   self.remoteTabsViewController.styler = styler;
 
   UIView* contentView = self.scrollContentView;
@@ -700,6 +681,32 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         constraintEqualToAnchor:self.view.widthAnchor],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
+}
+
+// The iOS 13 compile guards are much easier to use in a separate function that
+// can be returned from.
+- (void)setupRemoteTabsViewControllerForDarkModeWithStyler:
+    (ChromeTableViewStyler*)styler {
+  // For iOS 13, setting the overrideUserInterfaceStyle to dark forces the use
+  // of dark mode colors for all the colors in this view. However, this
+  // override is not available on pre-iOS 13 devices, so the dark mode colors
+  // must be provided manually.
+#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
+  if (@available(iOS 13, *)) {
+    self.remoteTabsViewController.overrideUserInterfaceStyle =
+        UIUserInterfaceStyleDark;
+    return;
+  }
+#endif
+  styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
+  styler.headerFooterTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
+  styler.cellDetailColor = UIColorFromRGB(kGridDarkThemeCellDetailColor,
+                                          kGridDarkThemeCellDetailAlpha);
+  styler.headerFooterDetailColor = UIColorFromRGB(
+      kGridDarkThemeCellDetailColor, kGridDarkThemeCellDetailAlpha);
+  styler.tintColor = UIColorFromRGB(kGridDarkThemeCellTintColor);
+  styler.solidButtonTextColor =
+      UIColorFromRGB(kGridDarkThemeCellSolidButtonTextColor);
 }
 
 // Adds the top toolbar and sets constraints.

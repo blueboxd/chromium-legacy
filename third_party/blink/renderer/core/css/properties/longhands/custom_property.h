@@ -45,7 +45,7 @@ class CORE_EXPORT CustomProperty : public Variable {
       const ComputedStyle&,
       const SVGComputedStyle&,
       const LayoutObject*,
-      Node* styled_node,
+      const Node* styled_node,
       bool allow_visited_style) const override;
 
   bool IsRegistered() const { return registration_; }

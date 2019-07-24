@@ -1,4 +1,1 @@
 # These tests currently fail when run with --enable-features=NavigationLoaderOnUI
-
-# https://crbug.com/978617
--GcmApiTest.*

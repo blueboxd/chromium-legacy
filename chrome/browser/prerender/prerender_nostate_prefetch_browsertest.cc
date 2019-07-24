@@ -320,6 +320,7 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchAllResourceTypes) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
                       1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 1);
@@ -351,6 +352,7 @@ IN_PROC_BROWSER_TEST_F(HTMLOnlyNoStatePrefetchBrowserTest, PrefetchHTMLOnly) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
                       1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
@@ -384,6 +386,43 @@ IN_PROC_BROWSER_TEST_F(HTMLCSSNoStatePrefetchBrowserTest, PrefetchHTMLCSS) {
   WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
                       1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
+}
+
+// Test and Test Class for lightweight prefetch under the HTML+CSS+SyncScript
+// configuration.
+class HTMLCSSSyncScriptNoStatePrefetchBrowserTest
+    : public NoStatePrefetchBrowserTest {
+ public:
+  void SetUp() override {
+    std::map<std::string, std::string> parameters;
+    parameters["skip_other"] = "true";
+    parameters["skip_async_script"] = "true";
+    feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
+    NoStatePrefetchBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Checks that the expected resource types are fetched via NoState Prefetch.
+IN_PROC_BROWSER_TEST_F(HTMLCSSSyncScriptNoStatePrefetchBrowserTest,
+                       PrefetchHTMLCSSSyncScript) {
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPageMultipleResourceTypes,
+                       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
+                      1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);
@@ -418,6 +457,7 @@ IN_PROC_BROWSER_TEST_F(HTMLCSSScriptNoStatePrefetchBrowserTest,
   WaitForRequestCount(src_server()->GetURL(kPrefetchPageMultipleResourceTypes),
                       1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchScript), 1);
+  WaitForRequestCount(src_server()->GetURL(kPrefetchScript2), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchPng), 0);
   WaitForRequestCount(src_server()->GetURL(kPrefetchCss), 1);
   WaitForRequestCount(src_server()->GetURL(kPrefetchFont), 0);

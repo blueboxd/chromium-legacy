@@ -114,7 +114,7 @@ SkColor GetLogoColor(const ThemeBackgroundInfo& theme_info) {
                               !theme_info.custom_background_url.is_empty();
   if (theme_info.logo_alternate && !has_background_image) {
     logo_color = GetContrastingColorForBackground(theme_info.background_color,
-                                                  /*luminosity_change=*/0.4f);
+                                                  /*luminosity_change=*/0.3f);
   }
 
   return logo_color;

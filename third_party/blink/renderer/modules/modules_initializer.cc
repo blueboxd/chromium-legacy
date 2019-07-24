@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
+#include "third_party/blink/renderer/modules/launch/web_launch_service_impl.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_manager.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
@@ -78,7 +79,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/vr/navigator_vr.h"
 #include "third_party/blink/renderer/modules/vr/vr_controller.h"
-#include "third_party/blink/renderer/modules/webaudio/base_audio_context_tracker.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/inspector_web_audio_agent.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
@@ -161,6 +162,10 @@ void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
         &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+  }
+  if (RuntimeEnabledFeatures::FileHandlingEnabled()) {
+    frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
+        &WebLaunchServiceImpl::Create, WrapWeakPersistent(&frame)));
   }
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &InstallationServiceImpl::Create, WrapWeakPersistent(&frame)));
@@ -298,7 +303,7 @@ void ModulesInitializer::ProvideModulesToPage(Page& page,
   ::blink::ProvideDatabaseClientTo(page,
                                    MakeGarbageCollected<DatabaseClient>());
   StorageNamespace::ProvideSessionStorageNamespaceTo(page, client);
-  BaseAudioContextTracker::ProvideToPage(page);
+  AudioGraphTracer::ProvideAudioGraphTracerTo(page);
 }
 
 void ModulesInitializer::ForceNextWebGLContextCreationToFail() const {

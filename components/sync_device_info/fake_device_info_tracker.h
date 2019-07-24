@@ -32,6 +32,7 @@ class FakeDeviceInfoTracker : public DeviceInfoTracker {
   void RemoveObserver(Observer* observer) override;
   int CountActiveDevices() const override;
   void ForcePulseForTest() override;
+  bool IsRecentLocalCacheGuid(const std::string& cache_guid) const override;
 
   // Adds a new DeviceInfo entry to |devices_|.
   void Add(const DeviceInfo* device);

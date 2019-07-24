@@ -141,8 +141,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // used by the Negotiate authentication handler.
   static std::unique_ptr<HttpAuthHandlerRegistryFactory> CreateDefault(
       const HttpAuthPreferences* prefs = nullptr
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
       const std::string& gssapi_library_name = ""
 #endif
@@ -204,8 +203,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   static std::unique_ptr<HttpAuthHandlerRegistryFactory> Create(
       const HttpAuthPreferences* prefs,
       const std::vector<std::string>& auth_schemes
-#if (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)) || \
-    defined(OS_FUCHSIA)
+#if BUILDFLAG(USE_EXTERNAL_GSSAPI)
       ,
       const std::string& gssapi_library_name = ""
 #endif

@@ -2495,7 +2495,6 @@ crbug.com/626703 external/wpt/css/css-text/word-break/word-break-normal-tdd-000.
 
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-001.html [ Failure ]
 crbug.com/972992 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-003.html [ Failure ]
-crbug.com/974371 external/wpt/css/css-text/white-space/white-space-pre-wrap-trailing-spaces-006.html [ Failure ]
 
 # The 'overflow-wrap: anywhere' feature is not implemented yet
 crbug.com/905315 external/wpt/css/css-text/overflow-wrap/overflow-wrap-anywhere-001.html [ Skip ]
@@ -3262,14 +3261,12 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.h
 
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
-crbug.com/626703 external/wpt/webxr/xrWebGLLayer_viewports.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-linethrough-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
-crbug.com/626703 external/wpt/webxr/xrWebGLLayer_framebuffer.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]
@@ -3400,7 +3397,6 @@ crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-r
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer-when-downgrade/http-rp/same-origin/http-https/iframe-tag/no-redirect/upgrade-protocol.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-http/a-tag/no-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/cross-origin/http-https/iframe-tag/swap-origin-redirect/cross-origin.http.html [ Timeout ]
-crbug.com/626703 [ Retina ] virtual/at-property/external/wpt/css/css-properties-values-api/idlharness.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/no-referrer/attr-referrer/same-origin/http-https/script-tag/keep-origin-redirect/generic.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/http-rp/same-origin/http-https/iframe-tag/swap-origin-redirect/same-origin-insecure.http.html [ Timeout ]
 crbug.com/626703 [ Retina ] virtual/blink-cors/external/wpt/referrer-policy/origin-when-cross-origin/meta-referrer/cross-origin/http-http/iframe-tag/keep-origin-redirect/cross-origin.http.html [ Timeout ]
@@ -6090,11 +6086,6 @@ crbug.com/949445 [ Mac ] fast/forms/text/input-text-scroll-left-on-blur.html [ F
 # Sheriff 2019-04-09
 crbug.com/946335 [ Linux Mac ] fast/filesystem/file-writer-abort-depth.html [ Pass Crash ]
 
-# Sheriff 2019-04-10
-crbug.com/951638 [ Linux ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
-crbug.com/951638 [ Mac10.13 Debug ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
-crbug.com/951638 [ Win7 ] virtual/mouseevent_fractional/fast/events/mouse-right-coords-in-zoom-and-scroll-right.html [ Pass Failure ]
-
 # Sheriff 2019-04-11
 crbug.com/802029 [ Mac10.13 Debug ] fast/dom/shadow/focus-controller-recursion-crash.html [ Pass Timeout ]
 
@@ -6337,8 +6328,6 @@ crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass
 
 # Sheriff 2019-07-22
 crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
-crbug.com/986019 [ Linux ] virtual/threaded/animations/play-state.html [ Pass Timeout ]
-crbug.com/986019 [ Linux ] virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
 
 # ecosystem-infra sheriff 2019-07-22
 crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
@@ -6352,3 +6341,9 @@ crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/web-animati
 crbug.com/986666 animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 crbug.com/986666 virtual/threaded/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
 crbug.com/986666 virtual/disable-blink-gen-property-trees/animations/web-animations/animation-state-changes-negative-playback-rate.html [ Pass Failure ]
+
+# Sheriff 2019-07-24
+crbug.com/986019 animations/play-state.html [ Pass Timeout ]
+crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Timeout ]
+crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
+crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ Failure ]

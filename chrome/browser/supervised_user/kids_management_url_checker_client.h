@@ -20,10 +20,10 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 struct AccessTokenInfo;
-}  // namespace identity
+}  // namespace signin
 
 struct KidsManagementURLCheckerResponse;
 
@@ -38,7 +38,7 @@ class KidsManagementURLCheckerClient
   KidsManagementURLCheckerClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& country,
-      identity::IdentityManager* identity_manager);
+      signin::IdentityManager* identity_manager);
   ~KidsManagementURLCheckerClient() override;
 
   // Checks whether an |url| is restricted according to KidsManagement
@@ -58,10 +58,10 @@ class KidsManagementURLCheckerClient
 
   void OnAccessTokenFetchComplete(CheckList::iterator it,
                                   GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo token_info);
+                                  signin::AccessTokenInfo token_info);
 
   void OnSimpleLoaderComplete(CheckList::iterator it,
-                              identity::AccessTokenInfo token_info,
+                              signin::AccessTokenInfo token_info,
                               std::unique_ptr<std::string> response_body);
 
   void DispatchResult(CheckList::iterator it,
@@ -70,7 +70,7 @@ class KidsManagementURLCheckerClient
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   const std::string country_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
   CheckList checks_in_progress_;
 

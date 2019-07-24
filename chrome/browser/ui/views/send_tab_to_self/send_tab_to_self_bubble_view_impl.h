@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BUBBLE_VIEW_IMPL_H_
 #define CHROME_BROWSER_UI_VIEWS_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_BUBBLE_VIEW_IMPL_H_
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -21,7 +23,7 @@ class Canvas;
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 namespace send_tab_to_self {
 
@@ -35,13 +37,6 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
                                     public views::ButtonListener,
                                     public LocationBarBubbleDelegateView {
  public:
-  // The valid device button height.
-  static constexpr int kDeviceButtonHeight = 56;
-  // Maximum number of buttons that are shown without scroll. If the device
-  // number is larger than kMaximumButtons, the bubble content will be
-  // scrollable.
-  static constexpr int kMaximumButtons = 5;
-
   // Bubble will be anchored to |anchor_view|.
   SendTabToSelfBubbleViewImpl(views::View* anchor_view,
                               const gfx::Point& anchor_point,
@@ -88,7 +83,7 @@ class SendTabToSelfBubbleViewImpl : public SendTabToSelfBubbleView,
   void CreateScrollView();
 
   // Populates the scroll view containing valid devices.
-  void PopulateScrollView(const std::vector<TargetDeviceInfo> devices);
+  void PopulateScrollView(const std::vector<TargetDeviceInfo>& devices);
 
   // Handles the action when a target device has been pressed.
   void DevicePressed(size_t index);

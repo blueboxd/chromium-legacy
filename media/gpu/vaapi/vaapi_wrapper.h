@@ -12,12 +12,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <va/va.h>
 
 #include <set>
 #include <string>
 #include <vector>
-
-#include <va/va.h>
 
 #include "base/files/file.h"
 #include "base/gtest_prod_util.h"
@@ -101,8 +100,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // Return the supported video decode profiles.
   static VideoDecodeAccelerator::SupportedProfiles GetSupportedDecodeProfiles();
 
-  // Return true when JPEG decode is supported.
-  static bool IsJpegDecodeSupported();
+  // Return true when decoding using |va_profile| is supported.
+  static bool IsDecodeSupported(VAProfile va_profile);
 
   // Returns the supported internal formats for decoding using |va_profile|. If
   // decoding is not supported for that profile, returns InternalFormats{}.

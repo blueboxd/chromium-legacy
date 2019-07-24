@@ -191,7 +191,6 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
                            Feature::BLESSED_WEB_PAGE_CONTEXT,
                            Feature::CONTENT_SCRIPT_CONTEXT,
                            Feature::LOCK_SCREEN_EXTENSION_CONTEXT,
-                           Feature::SERVICE_WORKER_CONTEXT,
                            Feature::WEB_PAGE_CONTEXT,
                            Feature::WEBUI_CONTEXT,
                            Feature::UNBLESSED_EXTENSION_CONTEXT};

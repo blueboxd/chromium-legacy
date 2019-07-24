@@ -94,7 +94,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -140,7 +139,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/quirks/quirks_manager.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
@@ -949,7 +947,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
       OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
 
   bool connection_error = false;
-  identity::IdentityManager* const identity_manager =
+  signin::IdentityManager* const identity_manager =
       IdentityManagerFactory::GetForProfile(user_profile);
   switch (state) {
     case OAuth2LoginManager::SESSION_RESTORE_DONE:
@@ -1307,7 +1305,7 @@ void UserSessionManager::InitProfilePreferences(
     // not be available when unlocking a previously opened profile, or when
     // creating a supervised users.  However, in these cases the gaia_id should
     // be already available in the account tracker.
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     std::string gaia_id = user_context.GetGaiaID();
     if (gaia_id.empty()) {
@@ -2210,6 +2208,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Show legacy U2F notification if applicable.
   MaybeShowU2FNotification();
 
+  // Show Release Notes notification if applicable.
+  MaybeShowReleaseNotesNotification(profile);
+
   g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
       ->GetTPMAutoUpdateModePolicyHandler()
@@ -2321,6 +2322,7 @@ void UserSessionManager::Shutdown() {
   first_run::GoodiesDisplayer::Delete();
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
+  release_notes_notification_.reset();
 }
 
 void UserSessionManager::SetSwitchesForUser(
@@ -2347,6 +2349,18 @@ void UserSessionManager::MaybeShowU2FNotification() {
   if (!u2f_notification_) {
     u2f_notification_ = std::make_unique<U2FNotification>();
     u2f_notification_->Check();
+  }
+}
+
+void UserSessionManager::MaybeShowReleaseNotesNotification(Profile* profile) {
+  if (!base::FeatureList::IsEnabled(features::kReleaseNotes))
+    return;
+  if (!ProfileHelper::IsPrimaryProfile(profile))
+    return;
+  if (!release_notes_notification_) {
+    release_notes_notification_ =
+        std::make_unique<ReleaseNotesNotification>(profile);
+    release_notes_notification_->MaybeShowReleaseNotes();
   }
 }
 

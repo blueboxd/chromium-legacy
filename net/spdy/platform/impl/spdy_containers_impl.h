@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/small_map.h"
 #include "base/strings/string_piece.h"
 #include "net/third_party/quiche/src/common/simple_linked_hash_map.h"
 
@@ -33,6 +34,12 @@ using SpdyStringPieceHashImpl = base::StringPieceHash;
 inline size_t SpdyHashStringPairImpl(SpdyStringPiece a, SpdyStringPiece b) {
   return base::StringPieceHash()(a) ^ base::StringPieceHash()(b);
 }
+
+// A map which is faster than (for example) hash_map for a certain number of
+// unique key-value-pair elements, and upgrades itself to unordered_map when
+// runs out of space.
+template <typename Key, typename Value, size_t Size>
+using SpdySmallMapImpl = base::small_map<std::unordered_map<Key, Value>, Size>;
 
 }  // namespace spdy
 

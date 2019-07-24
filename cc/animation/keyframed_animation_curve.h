@@ -164,12 +164,15 @@ class CC_ANIMATION_EXPORT KeyframedColorAnimationCurve
   // BackgrounColorAnimationCurve implementation
   SkColor GetValue(base::TimeDelta t) const override;
 
+  using Keyframes = std::vector<std::unique_ptr<ColorKeyframe>>;
+  const Keyframes& keyframes_for_testing() const { return keyframes_; }
+
  private:
   KeyframedColorAnimationCurve();
 
   // Always sorted in order of increasing time. No two keyframes have the
   // same time.
-  std::vector<std::unique_ptr<ColorKeyframe>> keyframes_;
+  Keyframes keyframes_;
   std::unique_ptr<TimingFunction> timing_function_;
   double scaled_duration_;
 };

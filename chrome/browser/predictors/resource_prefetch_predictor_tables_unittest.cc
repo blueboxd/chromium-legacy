@@ -69,8 +69,10 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestOriginStatsAreEqual(const std::vector<OriginStat>& lhs,
                                const std::vector<OriginStat>& rhs) const;
 
-  void AddKey(RedirectDataMap* m, const std::string& key) const;
+  void AddKey(RedirectDataMap* m, const GURL& url) const;
   void AddKey(OriginDataMap* m, const std::string& key) const;
+
+  std::string GetKeyForRedirectStat(const RedirectStat& stat) const;
 
   RedirectDataMap test_host_redirect_data_;
   OriginDataMap test_origin_data_;
@@ -140,7 +142,7 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteData() {
 
   RedirectDataMap expected_host_redirect_data;
   OriginDataMap expected_origin_data;
-  AddKey(&expected_host_redirect_data, "bbc.com");
+  AddKey(&expected_host_redirect_data, GURL("http://bbc.com"));
   AddKey(&expected_origin_data, "abc.xyz");
 
   TestRedirectDataAreEqual(expected_host_redirect_data,
@@ -150,10 +152,10 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteData() {
 
 void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   RedirectData microsoft = CreateRedirectData("microsoft.com", 21);
-  InitializeRedirectStat(microsoft.add_redirect_endpoints(), "m.microsoft.com",
-                         5, 7, 1);
-  InitializeRedirectStat(microsoft.add_redirect_endpoints(), "microsoft.org", 7,
-                         2, 0);
+  InitializeRedirectStat(microsoft.add_redirect_endpoints(),
+                         GURL("https://m.microsoft.com"), 5, 7, 1);
+  InitializeRedirectStat(microsoft.add_redirect_endpoints(),
+                         GURL("https://microsoft.org"), 7, 2, 0);
 
   tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&LoadingPredictorKeyValueTable<RedirectData>::UpdateData,
@@ -174,7 +176,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   RedirectDataMap expected_host_redirect_data;
   OriginDataMap expected_origin_data;
 
-  AddKey(&expected_host_redirect_data, "bbc.com");
+  AddKey(&expected_host_redirect_data, GURL("https://bbc.com"));
   expected_host_redirect_data.insert(
       std::make_pair("microsoft.com", microsoft));
 
@@ -225,16 +227,19 @@ void ResourcePrefetchPredictorTablesTest::TestRedirectsAreEqual(
 
   std::map<std::string, RedirectStat> lhs_index;
   // Repeated redirects are not allowed.
-  for (const auto& r : lhs)
-    EXPECT_TRUE(lhs_index.insert(std::make_pair(r.url(), r)).second);
+  for (const auto& r : lhs) {
+    EXPECT_TRUE(
+        lhs_index.insert(std::make_pair(GetKeyForRedirectStat(r), r)).second)
+        << " r.url()=" << r.url();
+  }
 
   for (const auto& r : rhs) {
-    auto lhs_it = lhs_index.find(r.url());
+    auto lhs_it = lhs_index.find(GetKeyForRedirectStat(r));
     if (lhs_it != lhs_index.end()) {
       EXPECT_EQ(r, lhs_it->second);
       lhs_index.erase(lhs_it);
     } else {
-      ADD_FAILURE() << r.url();
+      ADD_FAILURE() << r.url() << " " << r.url_scheme();
     }
   }
 
@@ -282,8 +287,8 @@ void ResourcePrefetchPredictorTablesTest::TestOriginStatsAreEqual(
 }
 
 void ResourcePrefetchPredictorTablesTest::AddKey(RedirectDataMap* m,
-                                                 const std::string& key) const {
-  auto it = test_host_redirect_data_.find(key);
+                                                 const GURL& url) const {
+  auto it = test_host_redirect_data_.find(url.host());
   EXPECT_TRUE(it != test_host_redirect_data_.end());
   m->insert(*it);
 }
@@ -293,6 +298,11 @@ void ResourcePrefetchPredictorTablesTest::AddKey(OriginDataMap* m,
   auto it = test_origin_data_.find(key);
   EXPECT_TRUE(it != test_origin_data_.end());
   m->insert(*it);
+}
+
+std::string ResourcePrefetchPredictorTablesTest::GetKeyForRedirectStat(
+    const RedirectStat& stat) const {
+  return stat.url() + "," + stat.url_scheme();
 }
 
 void ResourcePrefetchPredictorTablesTest::DeleteAllData() {
@@ -318,14 +328,22 @@ void ResourcePrefetchPredictorTablesTest::GetAllData(
 void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
   {  // Host redirect data.
     RedirectData bbc = CreateRedirectData("bbc.com", 9);
-    InitializeRedirectStat(bbc.add_redirect_endpoints(), "www.bbc.com", 8, 4,
-                           1);
-    InitializeRedirectStat(bbc.add_redirect_endpoints(), "m.bbc.com", 5, 8, 0);
-    InitializeRedirectStat(bbc.add_redirect_endpoints(), "bbc.co.uk", 1, 3, 0);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(),
+                           GURL("https://www.bbc.com"), 8, 4, 1);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(),
+                           GURL("https://m.bbc.com"), 5, 8, 0);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(),
+                           GURL("https://bbc.co.uk"), 1, 3, 0);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(),
+                           GURL("http://www.bbc.com"), 8, 4, 1);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(),
+                           GURL("http://m.bbc.com"), 5, 8, 0);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(),
+                           GURL("http://bbc.co.uk"), 1, 3, 0);
 
     RedirectData microsoft = CreateRedirectData("microsoft.com", 10);
     InitializeRedirectStat(microsoft.add_redirect_endpoints(),
-                           "www.microsoft.com", 10, 0, 0);
+                           GURL("https://www.microsoft.com"), 10, 0, 0);
 
     test_host_redirect_data_.clear();
     test_host_redirect_data_.insert(std::make_pair(bbc.primary_key(), bbc));

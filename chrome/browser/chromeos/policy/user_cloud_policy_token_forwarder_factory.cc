@@ -33,7 +33,7 @@ KeyedService* UserCloudPolicyTokenForwarderFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   UserCloudPolicyManagerChromeOS* manager =
       profile->GetUserCloudPolicyManagerChromeOS();
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   if (!manager || !identity_manager)
     return nullptr;

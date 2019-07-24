@@ -11,7 +11,7 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"

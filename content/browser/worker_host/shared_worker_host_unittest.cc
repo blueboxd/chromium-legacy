@@ -13,6 +13,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/worker_host/mock_shared_worker.h"
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
 #include "content/browser/worker_host/shared_worker_instance.h"
@@ -76,13 +77,6 @@ class SharedWorkerHostTest : public testing::Test {
 
   void StartWorker(SharedWorkerHost* host,
                    blink::mojom::SharedWorkerFactoryPtr factory) {
-    auto provider_info =
-        blink::mojom::ServiceWorkerProviderInfoForClient::New();
-    ServiceWorkerProviderHost::PreCreateForWebWorker(
-        helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
-        blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-        &provider_info);
-
     auto main_script_load_params =
         blink::mojom::WorkerMainScriptLoadParams::New();
     auto subresource_loader_factories =
@@ -97,8 +91,21 @@ class SharedWorkerHostTest : public testing::Test {
     subresource_loader_params->pending_appcache_loader_factory =
         loader_factory_ptr.PassInterface();
 
-    host->Start(std::move(factory), std::move(provider_info),
-                std::move(main_script_load_params),
+    // Set up for service worker.
+    auto service_worker_handle =
+        std::make_unique<ServiceWorkerNavigationHandle>(
+            helper_->context_wrapper());
+    auto provider_info =
+        blink::mojom::ServiceWorkerProviderInfoForClient::New();
+    base::WeakPtr<ServiceWorkerProviderHost> service_worker_host =
+        ServiceWorkerProviderHost::PreCreateForWebWorker(
+            helper_->context()->AsWeakPtr(), mock_render_process_host_.GetID(),
+            blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
+            &provider_info);
+    service_worker_handle->OnCreatedProviderHost(std::move(provider_info));
+    host->SetServiceWorkerHandle(std::move(service_worker_handle));
+
+    host->Start(std::move(factory), std::move(main_script_load_params),
                 std::move(subresource_loader_factories),
                 nullptr /* controller */,
                 nullptr /* controller_service_worker_object_host */);

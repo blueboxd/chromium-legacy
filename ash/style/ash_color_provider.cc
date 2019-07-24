@@ -9,10 +9,15 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 
 namespace ash {
 
 namespace {
+
+// Opacity of the light/dark ink ripple.
+constexpr float kLightInkRippleOpacity = 0.08f;
+constexpr float kDarkInkRippleOpacity = 0.06f;
 
 // Gets the color mode value from feature flag "--ash-color-mode".
 AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
@@ -96,6 +101,15 @@ SkColor AshColorProvider::GetControlsLayerColor(ControlsLayerType type) const {
       break;
   }
   return SelectColorOnMode(light_color, dark_color);
+}
+
+AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
+    SkColor bg_color) const {
+  const SkColor base_color = color_utils::GetColorWithMaxContrast(bg_color);
+  const float opacity = color_utils::IsDark(base_color)
+                            ? kDarkInkRippleOpacity
+                            : kLightInkRippleOpacity;
+  return RippleAttributes(base_color, opacity, opacity);
 }
 
 SkColor AshColorProvider::SelectColorOnMode(SkColor light_color,

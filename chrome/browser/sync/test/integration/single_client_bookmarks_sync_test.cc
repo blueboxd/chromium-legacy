@@ -759,7 +759,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
   ASSERT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
 
 #if defined(CHROMEOS)
-  // identity::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
+  // signin::SetRefreshTokenForPrimaryAccount() is needed on ChromeOS in order
   // to get a non-empty refresh token on startup.
   GetClient(0)->SignInPrimaryAccount();
 #endif  // defined(CHROMEOS)

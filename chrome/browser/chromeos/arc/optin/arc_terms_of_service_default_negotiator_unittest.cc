@@ -63,7 +63,7 @@ class ArcTermsOfServiceDefaultNegotiatorTest
     BrowserWithTestWindowTest::SetUp();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<chromeos::FakeChromeUserManager>());
-    identity::MakePrimaryAccountAvailable(
+    signin::MakePrimaryAccountAvailable(
         IdentityManagerFactory::GetForProfile(profile()),
         "testing@account.com");
 

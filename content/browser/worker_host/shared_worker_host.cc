@@ -16,6 +16,7 @@
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/worker_host/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/worker_host/shared_worker_instance.h"
@@ -166,8 +167,6 @@ void SharedWorkerHost::SetNetworkFactoryForTesting(
 
 void SharedWorkerHost::Start(
     blink::mojom::SharedWorkerFactoryPtr factory,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr
-        service_worker_provider_info,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
@@ -175,7 +174,6 @@ void SharedWorkerHost::Start(
     base::WeakPtr<ServiceWorkerObjectHost>
         controller_service_worker_object_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(service_worker_provider_info);
   DCHECK(main_script_load_params);
   DCHECK(subresource_loader_factories);
   DCHECK(!subresource_loader_factories->pending_default_factory());
@@ -246,7 +244,7 @@ void SharedWorkerHost::Start(
   factory_->CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
       std::move(renderer_preferences), std::move(preference_watcher_request),
-      std::move(content_settings), std::move(service_worker_provider_info),
+      std::move(content_settings), service_worker_handle_->TakeProviderInfo(),
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,
@@ -518,6 +516,12 @@ void SharedWorkerHost::SetAppCacheHandle(
     std::unique_ptr<AppCacheNavigationHandle> appcache_handle) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   appcache_handle_ = std::move(appcache_handle);
+}
+
+void SharedWorkerHost::SetServiceWorkerHandle(
+    std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  service_worker_handle_ = std::move(service_worker_handle);
 }
 
 void SharedWorkerHost::OnClientConnectionLost() {

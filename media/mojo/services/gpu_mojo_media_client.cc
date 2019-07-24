@@ -228,7 +228,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
         auto frame_converter = std::make_unique<MailboxVideoFrameConverter>(
             base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
                                 base::Unretained(frame_pool.get())),
-            std::move(gpu_task_runner_),
+            gpu_task_runner_,
             base::BindOnce(&GetCommandBufferStub, gpu_task_runner_,
                            media_gpu_channel_manager_,
                            command_buffer_id->channel_token,

@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 
@@ -118,13 +119,13 @@ void OnRequestWillBeSentExtraInfo(
     int routing_id,
     const std::string& devtools_request_id,
     const net::CookieStatusList& request_cookie_list,
-    const std::vector<std::pair<std::string, std::string>>& request_headers);
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers);
 void OnResponseReceivedExtraInfo(
     int process_id,
     int routing_id,
     const std::string& devtools_request_id,
     const net::CookieAndLineStatusList& response_cookie_list,
-    const std::vector<std::pair<std::string, std::string>>& response_headers,
+    const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const base::Optional<std::string>& response_headers_text);
 
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(

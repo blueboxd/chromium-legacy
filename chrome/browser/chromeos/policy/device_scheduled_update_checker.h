@@ -24,10 +24,11 @@ namespace policy {
 
 // This class listens for changes in the scheduled update check policy and then
 // manages recurring update checks based on the policy.
-class DeviceScheduledUpdateChecker {
+class DeviceScheduledUpdateChecker
+    : public chromeos::system::TimezoneSettings::Observer {
  public:
   explicit DeviceScheduledUpdateChecker(chromeos::CrosSettings* cros_settings);
-  virtual ~DeviceScheduledUpdateChecker();
+  ~DeviceScheduledUpdateChecker() override;
 
   // Frequency at which the update check should occur.
   enum class Frequency {
@@ -62,6 +63,9 @@ class DeviceScheduledUpdateChecker {
     // happen.
     base::TimeTicks next_update_check_time_ticks;
   };
+
+  // chromeos::system::TimezoneSettings::Observer implementation.
+  void TimezoneChanged(const icu::TimeZone& time_zone) override;
 
  protected:
   // Called when |update_check_timer_| fires. Triggers an update check and
@@ -147,8 +151,9 @@ ParseScheduledUpdate(const base::Value& value);
 // Converts an icu::Calendar to base::Time. Assumes |time| is valid.
 base::Time IcuToBaseTime(const icu::Calendar& time);
 
-// Calculates the difference in milliseconds of |a| - |b|.
-double GetDiffInMs(const icu::Calendar& a, const icu::Calendar& b);
+// Calculates the difference in milliseconds of |a| - |b|. Caller has to ensure
+// |a| >= |b|.
+base::TimeDelta GetDiff(const icu::Calendar& a, const icu::Calendar& b);
 
 // Converts |cur_time| to ICU time in the time zone |tz|.
 std::unique_ptr<icu::Calendar> ConvertUtcToTzIcuTime(base::Time cur_time,

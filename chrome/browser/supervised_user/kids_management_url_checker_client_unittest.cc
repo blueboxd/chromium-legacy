@@ -110,7 +110,7 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::string account_id_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::unique_ptr<KidsManagementURLCheckerClient> url_classifier_;

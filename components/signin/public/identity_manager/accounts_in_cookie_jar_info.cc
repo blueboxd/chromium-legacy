@@ -4,7 +4,7 @@
 
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 
-namespace identity {
+namespace signin {
 
 AccountsInCookieJarInfo::AccountsInCookieJarInfo() = default;
 
@@ -27,4 +27,4 @@ AccountsInCookieJarInfo::AccountsInCookieJarInfo(
 
 AccountsInCookieJarInfo::~AccountsInCookieJarInfo() = default;
 
-}  // namespace identity
+}  // namespace signin

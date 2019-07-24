@@ -132,7 +132,7 @@ public final class ChildProcessLauncherHelperImpl {
                             ContentChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
                     connectionBundle.putLong(
                             ContentChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-                    if (LibraryLoader.useChromiumLinker()) {
+                    if (LibraryLoader.useCrazyLinker()) {
                         connectionBundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
                                 Linker.getInstance().getSharedRelros());
                     }
@@ -596,7 +596,7 @@ public final class ChildProcessLauncherHelperImpl {
     private static void initLinker() {
         assert LauncherThread.runningOnLauncherThread();
         if (sLinkerInitialized) return;
-        if (LibraryLoader.useChromiumLinker()) {
+        if (LibraryLoader.useCrazyLinker()) {
             sLinkerLoadAddress = Linker.getInstance().getBaseLoadAddress();
             if (sLinkerLoadAddress == 0) {
                 Log.i(TAG, "Shared RELRO support disabled!");
@@ -617,8 +617,7 @@ public final class ChildProcessLauncherHelperImpl {
         if (Linker.areTestsEnabled()) {
             Linker linker = Linker.getInstance();
             return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros,
-                    linker.getTestRunnerClassNameForTesting(),
-                    linker.getImplementationForTesting());
+                    linker.getTestRunnerClassNameForTesting());
         } else {
             return new ChromiumLinkerParams(sLinkerLoadAddress, waitForSharedRelros);
         }

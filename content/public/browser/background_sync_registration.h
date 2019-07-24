@@ -62,6 +62,12 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   void set_origin(const url::Origin& origin) { origin_ = origin; }
 
+  bool is_suspended() const {
+    if (sync_type() == blink::mojom::BackgroundSyncType::ONE_SHOT)
+      return false;
+    return delay_until_.is_max();
+  }
+
  private:
   blink::mojom::SyncRegistrationOptions options_;
   blink::mojom::BackgroundSyncState sync_state_ =

@@ -175,7 +175,7 @@ ukm::UkmRecorder* PaymentRequest::GetUkmRecorder() {
 }
 
 std::string PaymentRequest::GetAuthenticatedEmail() const {
-  const identity::IdentityManager* identity_manager =
+  const signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserStateIfExists(browser_state_);
   if (identity_manager && identity_manager->HasPrimaryAccount())
     return identity_manager->GetPrimaryAccountInfo().email;

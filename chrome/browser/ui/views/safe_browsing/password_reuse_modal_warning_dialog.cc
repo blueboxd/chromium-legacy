@@ -52,7 +52,6 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   // |service| maybe NULL in tests.
   if (service_)
     service_->AddObserver(this);
-
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));

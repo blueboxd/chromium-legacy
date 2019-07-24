@@ -67,21 +67,12 @@ class WebLayerTreeView {
                                         float bottom_height,
                                         bool shrink_viewport) {}
 
-  // Flow control and scheduling ---------------------------------------
-
-  // For when the embedder itself change scales on the page (e.g. devtools)
-  // and wants all of the content at the new scale to be crisp.
-  virtual void ForceRecalculateRasterScales() {}
-
   // Input properties ---------------------------------------------------
-  virtual void SetHaveScrollEventHandlers(bool) {}
 
   // Returns the FrameSinkId of the widget associated with this layer tree view.
   virtual viz::FrameSinkId GetFrameSinkId() { return viz::FrameSinkId(); }
 
   // Debugging / dangerous ---------------------------------------------
-
-  virtual bool HaveScrollEventHandlers() const { return false; }
 
   virtual int LayerTreeId() const { return 0; }
 

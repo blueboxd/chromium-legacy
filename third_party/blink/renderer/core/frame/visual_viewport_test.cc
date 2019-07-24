@@ -17,6 +17,7 @@
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -2564,21 +2565,26 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
 TEST_P(VisualViewportTest, DeviceEmulationTransformNode) {
   InitializeWithAndroidSettings();
 
-  TransformationMatrix emulation_transform = TransformationMatrix();
-  emulation_transform.Translate(314, 159);
-  WebView()->SetDeviceEmulationTransform(emulation_transform);
+  WebDeviceEmulationParams params;
+  params.viewport_offset = WebFloatPoint(314, 159);
+  params.viewport_scale = 1.f;
+  WebView()->EnableDeviceEmulation(params);
 
   WebView()->MainFrameWidget()->Resize(IntSize(400, 400));
   NavigateTo("about:blank");
   UpdateAllLifecyclePhases();
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode()->Translation2D(),
-            emulation_transform.To2DTranslation());
+
+  TransformationMatrix expected_transform = TransformationMatrix();
+  expected_transform.Translate(-params.viewport_offset.x,
+                               -params.viewport_offset.y);
+  EXPECT_EQ(expected_transform.To2DTranslation(),
+            visual_viewport.GetDeviceEmulationTransformNode()->Translation2D());
 
   // Set an identity device emulation transform and ensure the transform
   // paint property node is cleared.
-  WebView()->SetDeviceEmulationTransform(TransformationMatrix());
+  WebView()->EnableDeviceEmulation(WebDeviceEmulationParams());
   UpdateAllLifecyclePhases();
   EXPECT_EQ(visual_viewport.GetDeviceEmulationTransformNode(), nullptr);
 }

@@ -363,7 +363,19 @@ typedef NSString* NSAppearanceName;
 
 BASE_EXPORT extern NSAppearanceName const NSAppearanceNameDarkAqua;
 
-#endif
+#endif  // MAC_OS_X_VERSION_10_14
+
+#if !defined(MAC_OS_X_VERSION_10_15) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
+
+@interface SFUniversalLink : NSObject
+- (instancetype)initWithWebpageURL:(NSURL*)url;
+@property(readonly) NSURL* webpageURL;
+@property(readonly) NSURL* applicationURL;
+@property(getter=isEnabled) BOOL enabled;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_15
 
 // ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the

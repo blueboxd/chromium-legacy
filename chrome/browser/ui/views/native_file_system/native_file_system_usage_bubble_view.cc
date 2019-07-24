@@ -6,6 +6,7 @@
 
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/unicodestring.h"
+#include "base/stl_util.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
 #include "chrome/browser/ui/browser.h"
@@ -247,6 +248,18 @@ void NativeFileSystemUsageBubbleView::ShowBubble(
       BrowserView::GetBrowserViewForBrowser(browser)
           ->toolbar_button_provider()
           ->GetOmniboxPageActionIconContainerView();
+
+  // Writable directories are generally also readable, but we don't want to
+  // display the same directory twice. So filter out any writable directories
+  // from the readable directories list.
+  std::set<base::FilePath> writable_directories(
+      usage.writable_directories.begin(), usage.writable_directories.end());
+  std::vector<base::FilePath> readable_directories;
+  for (base::FilePath& path : usage.readable_directories) {
+    if (!base::Contains(writable_directories, path))
+      readable_directories.push_back(std::move(path));
+  }
+  usage.readable_directories = readable_directories;
 
   bubble_ = new NativeFileSystemUsageBubbleView(
       anchor_view, gfx::Point(), web_contents, origin, std::move(usage));

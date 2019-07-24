@@ -39,7 +39,6 @@ class DeletePageTask : public Task {
 
   static std::unique_ptr<DeletePageTask> CreateTaskWithCriteria(
       OfflinePageMetadataStore* store,
-      const ClientPolicyController& policy_controller,
       const PageCriteria& criteria,
       DeletePageTask::DeletePageTaskCallback callback);
 
@@ -47,7 +46,6 @@ class DeletePageTask : public Task {
   static std::unique_ptr<DeletePageTask>
   CreateTaskMatchingUrlPredicateForCachedPages(
       OfflinePageMetadataStore* store,
-      const ClientPolicyController& policy_controller,
       DeletePageTask::DeletePageTaskCallback callback,
       const UrlPredicate& predicate);
 
@@ -57,7 +55,6 @@ class DeletePageTask : public Task {
   // Returns nullptr if there's no page limit per url of the page's namespace.
   static std::unique_ptr<DeletePageTask> CreateTaskDeletingForPageLimit(
       OfflinePageMetadataStore* store,
-      const ClientPolicyController& policy_controller,
       DeletePageTask::DeletePageTaskCallback callback,
       const OfflinePageItem& page);
 

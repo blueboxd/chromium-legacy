@@ -23,7 +23,7 @@
 #include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
 #endif
 
-namespace identity {
+namespace signin {
 
 namespace {
 
@@ -220,8 +220,8 @@ AccountInfo MakeAccountAvailableWithCookies(
   // as tokens finish loading.
   WaitForLoadCredentialsToComplete(identity_manager);
 
-  identity::SetCookieAccounts(identity_manager, test_url_loader_factory,
-                              {{email, gaia_id}});
+  SetCookieAccounts(identity_manager, test_url_loader_factory,
+                    {{email, gaia_id}});
 
   account_tracker_service->SeedAccountInfo(gaia_id, email);
 
@@ -268,12 +268,13 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
   run_loop.Run();
 }
 
-void SetCookieAccounts(IdentityManager* identity_manager,
-                       network::TestURLLoaderFactory* test_url_loader_factory,
-                       const std::vector<CookieParams>& cookie_accounts) {
+void SetCookieAccounts(
+    IdentityManager* identity_manager,
+    network::TestURLLoaderFactory* test_url_loader_factory,
+    const std::vector<CookieParamsForTest>& cookie_accounts) {
   // Convert |cookie_accounts| to the format list_accounts_test_utils wants.
-  std::vector<signin::CookieParams> gaia_cookie_accounts;
-  for (const CookieParams& params : cookie_accounts) {
+  std::vector<CookieParams> gaia_cookie_accounts;
+  for (const CookieParamsForTest& params : cookie_accounts) {
     gaia_cookie_accounts.push_back({params.email, params.gaia_id,
                                     /*valid=*/true, /*signed_out=*/false,
                                     /*verified=*/true});
@@ -283,8 +284,8 @@ void SetCookieAccounts(IdentityManager* identity_manager,
   TestIdentityManagerObserver cookie_observer(identity_manager);
   cookie_observer.SetOnAccountsInCookieUpdatedCallback(run_loop.QuitClosure());
 
-  signin::SetListAccountsResponseWithParams(gaia_cookie_accounts,
-                                            test_url_loader_factory);
+  SetListAccountsResponseWithParams(gaia_cookie_accounts,
+                                    test_url_loader_factory);
 
   GaiaCookieManagerService* cookie_manager =
       identity_manager->GetGaiaCookieManagerService();
@@ -372,4 +373,4 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
   account_tracker_service->SetAccountInfoFromUserInfo(account_id, &user_info);
 }
 
-}  // namespace identity
+}  // namespace signin

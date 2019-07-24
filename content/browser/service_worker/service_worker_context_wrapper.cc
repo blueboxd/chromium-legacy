@@ -290,6 +290,11 @@ void ServiceWorkerContextWrapper::set_storage_partition(
   process_manager_->set_storage_partition(storage_partition_);
 }
 
+BrowserContext* ServiceWorkerContextWrapper::browser_context() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return process_manager()->browser_context();
+}
+
 ResourceContext* ServiceWorkerContextWrapper::resource_context() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return resource_context_;
@@ -1116,19 +1121,6 @@ void ServiceWorkerContextWrapper::AddObserver(
 void ServiceWorkerContextWrapper::RemoveObserver(
     ServiceWorkerContextCoreObserver* observer) {
   core_observer_list_->RemoveObserver(observer);
-}
-
-base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerContextWrapper::PreCreateHostForWorker(
-    int process_id,
-    blink::mojom::ServiceWorkerProviderType provider_type,
-    blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!context_core_)
-    return nullptr;
-  return ServiceWorkerProviderHost::PreCreateForWebWorker(
-      context_core_->AsWeakPtr(), process_id, provider_type, out_provider_info);
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {

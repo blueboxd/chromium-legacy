@@ -371,7 +371,7 @@ class ChromeSigninViewControllerTest
   UIWindow* window_;
   ChromeSigninViewController* vc_;
   consent_auditor::FakeConsentAuditor* fake_consent_auditor_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   base::MockOneShotTimer* mock_timer_ptr_ = nullptr;
   FakeChromeSigninViewControllerDelegate* vc_delegate_;
 };

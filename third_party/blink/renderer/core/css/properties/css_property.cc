@@ -28,10 +28,10 @@ std::unique_ptr<CrossThreadStyleValue>
 CSSProperty::CrossThreadStyleValueFromComputedStyle(
     const ComputedStyle& computed_style,
     const LayoutObject* layout_object,
-    Node* node,
+    const Node* styled_node,
     bool allow_visited_style) const {
   const CSSValue* css_value = CSSValueFromComputedStyle(
-      computed_style, layout_object, node, allow_visited_style);
+      computed_style, layout_object, styled_node, allow_visited_style);
   if (!css_value)
     return std::make_unique<CrossThreadUnsupportedValue>("");
   CSSStyleValue* style_value =
@@ -45,7 +45,7 @@ CSSProperty::CrossThreadStyleValueFromComputedStyle(
 const CSSValue* CSSProperty::CSSValueFromComputedStyle(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
-    Node* styled_node,
+    const Node* styled_node,
     bool allow_visited_style) const {
   const SVGComputedStyle& svg_style = style.SvgStyle();
   const CSSProperty& resolved_property =

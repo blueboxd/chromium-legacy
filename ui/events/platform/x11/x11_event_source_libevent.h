@@ -20,25 +20,25 @@ namespace ui {
 // X11 currently.
 class EVENTS_EXPORT XEventDispatcher {
  public:
+  // Sends XEvent to XEventDispatcher for handling. Returns true if the XEvent
+  // was dispatched, otherwise false. After the first XEventDispatcher returns
+  // true XEvent dispatching stops.
+  virtual bool DispatchXEvent(XEvent* xevent) = 0;
+
   // XEventDispatchers can be used to test if they are able to process next
   // translated event sent by a PlatformEventSource. If so, they must make a
   // promise internally to process next event sent by PlatformEventSource.
-  virtual void CheckCanDispatchNextPlatformEvent(XEvent* xev) = 0;
+  virtual void CheckCanDispatchNextPlatformEvent(XEvent* xev);
 
   // Tells that an event has been dispatched and an event handling promise must
   // be removed.
-  virtual void PlatformEventDispatchFinished() = 0;
+  virtual void PlatformEventDispatchFinished();
 
   // Returns PlatformEventDispatcher if this XEventDispatcher is associated with
   // a PlatformEventDispatcher as well. Used to explicitly add a
   // PlatformEventDispatcher during a call from an XEventDispatcher to
   // AddXEventDispatcher.
-  virtual PlatformEventDispatcher* GetPlatformEventDispatcher() = 0;
-
-  // Sends XEvent to XEventDispatcher for handling. Returns true if the XEvent
-  // was dispatched, otherwise false. After the first XEventDispatcher returns
-  // true XEvent dispatching stops.
-  virtual bool DispatchXEvent(XEvent* xevent) = 0;
+  virtual PlatformEventDispatcher* GetPlatformEventDispatcher();
 
  protected:
   virtual ~XEventDispatcher() {}

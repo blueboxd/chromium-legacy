@@ -112,4 +112,19 @@ void TestNetworkServiceClient::OnGenerateHttpNegotiateAuthToken(
 }
 #endif
 
+void TestNetworkServiceClient::OnRawRequest(
+    int32_t process_id,
+    int32_t routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers) {}
+
+void TestNetworkServiceClient::OnRawResponse(
+    int32_t process_id,
+    int32_t routing_id,
+    const std::string& devtools_request_id,
+    const net::CookieAndLineStatusList& cookies_with_status,
+    std::vector<network::mojom::HttpRawHeaderPairPtr> headers,
+    const base::Optional<std::string>& raw_response_headers) {}
+
 }  // namespace network

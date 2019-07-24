@@ -28,7 +28,7 @@ namespace network {
 class TestURLLoaderFactory;
 }
 
-namespace identity {
+namespace signin {
 
 class IdentityManagerDependenciesOwner;
 class TestIdentityManagerObserver;
@@ -71,8 +71,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   IdentityTestEnvironment(
       network::TestURLLoaderFactory* test_url_loader_factory = nullptr,
       sync_preferences::TestingPrefServiceSyncable* pref_service = nullptr,
-      signin::AccountConsistencyMethod account_consistency =
-          signin::AccountConsistencyMethod::kDisabled,
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled,
       TestSigninClient* test_signin_client = nullptr);
 
   ~IdentityTestEnvironment() override;
@@ -154,7 +154,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
 
   // Puts the given accounts into the Gaia cookie, replacing any previous
   // accounts. Blocks until the accounts have been set.
-  void SetCookieAccounts(const std::vector<CookieParams>& cookie_accounts);
+  void SetCookieAccounts(
+      const std::vector<CookieParamsForTest>& cookie_accounts);
 
   // When this is set, access token requests will be automatically granted with
   // an access token value of "access_token".
@@ -296,7 +297,7 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   IdentityTestEnvironment(
       std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,
       network::TestURLLoaderFactory* test_url_loader_factory,
-      signin::AccountConsistencyMethod account_consistency);
+      AccountConsistencyMethod account_consistency);
 
   // Constructs an IdentityTestEnvironment that uses the supplied
   // |identity_manager|.
@@ -353,8 +354,8 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
       SigninClient* signin_client,
       PrefService* pref_service,
       base::FilePath user_data_dir,
-      signin::AccountConsistencyMethod account_consistency =
-          signin::AccountConsistencyMethod::kDisabled);
+      AccountConsistencyMethod account_consistency =
+          AccountConsistencyMethod::kDisabled);
 
   // Shared constructor initialization logic.
   void Initialize();
@@ -364,6 +365,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironment);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_TEST_ENVIRONMENT_H_

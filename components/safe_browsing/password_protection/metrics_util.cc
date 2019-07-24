@@ -64,9 +64,7 @@ void LogPasswordEntryRequestOutcome(
 
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
-  bool is_gmail_user =
-      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
-  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
+  bool is_primary_account_password = password_account_type.is_account_syncing();
   // TODO(crbug/914410): Differentiate between primary and syncing accounts for
   // UMA.
   if (is_primary_account_password) {
@@ -93,22 +91,15 @@ void LogPasswordOnFocusRequestOutcome(RequestOutcome outcome) {
 void LogPasswordAlertModeOutcome(
     RequestOutcome outcome,
     ReusedPasswordAccountType password_account_type) {
-  bool is_gsuite_user =
-      password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
-  bool is_gmail_user =
-      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
-  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
-
-  if (is_primary_account_password) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry",
-        outcome);
-  } else {
-    DCHECK_EQ(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE,
-              password_account_type.account_type());
+  if (password_account_type.account_type() ==
+      ReusedPasswordAccountType::NON_GAIA_ENTERPRISE) {
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordProtection.PasswordAlertModeOutcome."
         "NonGaiaEnterprisePasswordEntry",
+        outcome);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordProtection.PasswordAlertModeOutcome.GSuiteSyncPasswordEntry",
         outcome);
   }
 }
@@ -130,11 +121,10 @@ void LogPasswordProtectionVerdict(
     LoginReputationClientRequest::TriggerType trigger_type,
     ReusedPasswordAccountType password_account_type,
     VerdictType verdict_type) {
+  // TODO(crbug/914410): Account for non sync users.
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
-  bool is_gmail_user =
-      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
-  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
+  bool is_primary_account_password = password_account_type.is_account_syncing();
   switch (trigger_type) {
     case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
       UMA_HISTOGRAM_ENUMERATION(
@@ -199,11 +189,11 @@ void LogWarningAction(WarningUIType ui_type,
       ui_type == WarningUIType::INTERSTITIAL) {
     return;
   }
+
+  // TODO(crbug/914410): Account for non sync users.
   bool is_gsuite_user =
       password_account_type.account_type() == ReusedPasswordAccountType::GSUITE;
-  bool is_gmail_user =
-      password_account_type.account_type() == ReusedPasswordAccountType::GMAIL;
-  bool is_primary_account_password = is_gsuite_user || is_gmail_user;
+  bool is_primary_account_password = password_account_type.is_account_syncing();
   switch (ui_type) {
     case WarningUIType::PAGE_INFO:
       if (is_primary_account_password) {

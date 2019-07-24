@@ -19,6 +19,11 @@ constexpr char kShowtimeAppId[] = "eoccpgmpiempcflglfokeengliildkag";
 // web_app::GenerateAppIdFromURL(GURL("https://canvas.apps.chrome/")).
 constexpr char kCanvasAppId[] = "ieailfmhaghpphfffooibmlghaeopach";
 
+// Generated as
+// web_app::GenerateAppIdFromURL(GURL(
+// "https://google.com/chromebook/whatsnew/embedded/")).
+constexpr char kReleaseNotesAppId[] = "kddjchdmnnpakappplfnloipgcbioilo";
+
 }  // namespace default_web_apps
 }  // namespace chromeos
 

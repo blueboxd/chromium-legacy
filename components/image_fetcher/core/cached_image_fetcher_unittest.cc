@@ -53,10 +53,9 @@ constexpr char kImageData[] = "data";
 constexpr char kImageDataOther[] = "other";
 
 const char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
-const char kCacheLoadHistogramName[] =
-    "CachedImageFetcher.ImageLoadFromCacheTime";
+const char kCacheLoadHistogramName[] = "ImageFetcher.ImageLoadFromCacheTime";
 const char kNetworkLoadHistogramName[] =
-    "CachedImageFetcher.ImageLoadFromNetworkTime";
+    "ImageFetcher.ImageLoadFromNetworkTime";
 
 }  // namespace
 

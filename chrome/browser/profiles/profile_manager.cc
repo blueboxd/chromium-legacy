@@ -78,6 +78,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/default_search_manager.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -1587,7 +1588,7 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
     return;
   }
 
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
   base::string16 username = base::UTF8ToUTF16(account_info.email);
@@ -1621,10 +1622,9 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(
                 base::IgnoreResult(
-                    &identity::PrimaryAccountMutator::ClearPrimaryAccount),
+                    &signin::PrimaryAccountMutator::ClearPrimaryAccount),
                 base::Unretained(account_mutator),
-                identity::PrimaryAccountMutator::ClearAccountsAction::
-                    kRemoveAll,
+                signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
                 signin_metrics::AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
                 signin_metrics::SignoutDelete::IGNORE_METRIC));
       }

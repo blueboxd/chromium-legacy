@@ -1031,32 +1031,32 @@ PASS WebSocket interface: operation send(USVString)
 PASS WebSocket interface: operation send(Blob)
 PASS WebSocket interface: operation send(ArrayBuffer)
 PASS WebSocket interface: operation send(ArrayBufferView)
-PASS WebSocket must be primary interface of new WebSocket("wss://foo")
-PASS Stringification of new WebSocket("wss://foo")
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "url" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "CONNECTING" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "OPEN" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "CLOSING" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "CLOSED" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "readyState" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "bufferedAmount" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "onopen" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "onerror" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "onclose" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "extensions" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "protocol" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "close(unsigned short, USVString)" with the proper type
-PASS WebSocket interface: calling close(unsigned short, USVString) on new WebSocket("wss://foo") with too few arguments must throw TypeError
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "onmessage" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "binaryType" with the proper type
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "send(USVString)" with the proper type
-PASS WebSocket interface: calling send(USVString) on new WebSocket("wss://foo") with too few arguments must throw TypeError
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "send(Blob)" with the proper type
-PASS WebSocket interface: calling send(Blob) on new WebSocket("wss://foo") with too few arguments must throw TypeError
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "send(ArrayBuffer)" with the proper type
-PASS WebSocket interface: calling send(ArrayBuffer) on new WebSocket("wss://foo") with too few arguments must throw TypeError
-PASS WebSocket interface: new WebSocket("wss://foo") must inherit property "send(ArrayBufferView)" with the proper type
-PASS WebSocket interface: calling send(ArrayBufferView) on new WebSocket("wss://foo") with too few arguments must throw TypeError
+PASS WebSocket must be primary interface of new WebSocket("wss://nonexistent.web-platform.test")
+PASS Stringification of new WebSocket("wss://nonexistent.web-platform.test")
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "url" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "CONNECTING" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "OPEN" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "CLOSING" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "CLOSED" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "readyState" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "bufferedAmount" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "onopen" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "onerror" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "onclose" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "extensions" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "protocol" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "close(unsigned short, USVString)" with the proper type
+PASS WebSocket interface: calling close(unsigned short, USVString) on new WebSocket("wss://nonexistent.web-platform.test") with too few arguments must throw TypeError
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "onmessage" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "binaryType" with the proper type
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "send(USVString)" with the proper type
+PASS WebSocket interface: calling send(USVString) on new WebSocket("wss://nonexistent.web-platform.test") with too few arguments must throw TypeError
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "send(Blob)" with the proper type
+PASS WebSocket interface: calling send(Blob) on new WebSocket("wss://nonexistent.web-platform.test") with too few arguments must throw TypeError
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "send(ArrayBuffer)" with the proper type
+PASS WebSocket interface: calling send(ArrayBuffer) on new WebSocket("wss://nonexistent.web-platform.test") with too few arguments must throw TypeError
+PASS WebSocket interface: new WebSocket("wss://nonexistent.web-platform.test") must inherit property "send(ArrayBufferView)" with the proper type
+PASS WebSocket interface: calling send(ArrayBufferView) on new WebSocket("wss://nonexistent.web-platform.test") with too few arguments must throw TypeError
 PASS CloseEvent interface: existence and properties of interface object
 PASS CloseEvent interface object length
 PASS CloseEvent interface object name

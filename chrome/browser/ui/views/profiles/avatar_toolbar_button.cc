@@ -239,7 +239,7 @@ void AvatarToolbarButton::OnProfileNameChanged(
 }
 
 void AvatarToolbarButton::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   UpdateIcon();
 }
@@ -384,7 +384,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() const {
 #if !defined(OS_CHROMEOS)
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (identity_manager && identity_manager->HasPrimaryAccount() &&
       profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {

@@ -65,7 +65,7 @@ class AwAutofillClient : public autofill::AutofillClient,
       override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   autofill::FormDataImporter* GetFormDataImporter() override;
   autofill::payments::PaymentsClient* GetPaymentsClient() override;
   autofill::StrikeDatabase* GetStrikeDatabase() override;

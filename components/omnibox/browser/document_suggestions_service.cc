@@ -60,7 +60,7 @@ std::string BuildDocumentSuggestionRequest(const base::string16& query) {
 }  // namespace
 
 DocumentSuggestionsService::DocumentSuggestionsService(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : url_loader_factory_(url_loader_factory),
       identity_manager_(identity_manager),
@@ -116,17 +116,17 @@ void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
   std::string scope = "https://www.googleapis.com/auth/cloud_search.query";
   identity::ScopeSet scopes;
   scopes.insert(scope);
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "document_suggestions_service", identity_manager_, scopes,
       base::BindOnce(&DocumentSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(request),
                      std::move(request_body), traffic_annotation,
                      std::move(start_callback), std::move(completion_callback)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void DocumentSuggestionsService::StopCreatingDocumentSuggestionsRequest() {
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       token_fetcher_deleter(std::move(token_fetcher_));
 }
 
@@ -137,7 +137,7 @@ void DocumentSuggestionsService::AccessTokenAvailable(
     StartCallback start_callback,
     CompletionCallback completion_callback,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
   token_fetcher_.reset();
 

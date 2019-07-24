@@ -91,15 +91,14 @@ const char kHistogramLargestImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
 const char kHistogramLargestTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
-const char kHistogramLargestContentPaint[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint";
-const char kHistogramLargestContentPaintContentType[] =
-    "PageLoad.Experimental.PaintTiming.LargestContentPaint.ContentType";
-const char kHistogramLargestContentPaintAllFrames[] =
-    "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint."
-    "AllFrames";
-const char kHistogramLargestContentPaintAllFramesContentType[] =
-    "PageLoad.Experimental.PaintTiming.LargestContentPaint.AllFrames."
+const char kHistogramLargestContentfulPaint[] =
+    "PageLoad.PaintTiming.NavigationToLargestContentfulPaint";
+const char kHistogramLargestContentfulPaintContentType[] =
+    "PageLoad.Internal.PaintTiming.LargestContentfulPaint.ContentType";
+const char kHistogramLargestContentfulPaintMainFrame[] =
+    "PageLoad.PaintTiming.NavigationToLargestContentfulPaint.MainFrame";
+const char kHistogramLargestContentfulPaintMainFrameContentType[] =
+    "PageLoad.Internal.PaintTiming.LargestContentfulPaint.MainFrame."
     "ContentType";
 const char kHistogramTimeToInteractive[] =
     "PageLoad.Experimental.NavigationToInteractive";
@@ -789,7 +788,7 @@ void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
 // collected yet. This is meant to be called at the end of a page lifetime, for
 // example, when the user is navigating away from the page.
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::mojom::PageLoadTiming& main_frame_timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   // Log time to first foreground / time to first background. Log counts that we
   // started a relevant page load in the foreground / background.
@@ -799,27 +798,29 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
   }
 
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->largest_image_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestImagePaint,
-                        timing.paint_timing->largest_image_paint.value());
+          main_frame_timing.paint_timing->largest_image_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramLargestImagePaint,
+        main_frame_timing.paint_timing->largest_image_paint.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->largest_text_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
-                        timing.paint_timing->largest_text_paint.value());
+          main_frame_timing.paint_timing->largest_text_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramLargestTextPaint,
+        main_frame_timing.paint_timing->largest_text_paint.value());
   }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;
   PageLoadMetricsObserver::LargestContentType largest_content_type;
   if (AssignTimeAndSizeForLargestContentfulPaint(
-          timing.paint_timing, &largest_content_paint_time,
+          main_frame_timing.paint_timing, &largest_content_paint_time,
           &largest_content_paint_size, &largest_content_type) &&
       WasStartedInForegroundOptionalEventInForeground(
           largest_content_paint_time, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentPaint,
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaintMainFrame,
                         largest_content_paint_time.value());
     UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramLargestContentPaintContentType,
+        internal::kHistogramLargestContentfulPaintMainFrameContentType,
         largest_content_type);
   }
 
@@ -827,41 +828,40 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
       largest_contentful_paint_handler_.MergeMainFrameAndSubframes();
   if (!paint.IsEmpty() &&
       WasStartedInForegroundOptionalEventInForeground(paint.Time(), info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentPaintAllFrames,
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestContentfulPaint,
                         paint.Time().value());
     UMA_HISTOGRAM_ENUMERATION(
-        internal::kHistogramLargestContentPaintAllFramesContentType,
-        paint.Type());
+        internal::kHistogramLargestContentfulPaintContentType, paint.Type());
   }
 
-  if (timing.paint_timing->first_paint &&
-      !timing.paint_timing->first_meaningful_paint) {
+  if (main_frame_timing.paint_timing->first_paint &&
+      !main_frame_timing.paint_timing->first_meaningful_paint) {
     RecordFirstMeaningfulPaintStatus(
-        timing.paint_timing->first_contentful_paint
+        main_frame_timing.paint_timing->first_contentful_paint
             ? internal::FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_NETWORK_STABLE
             : internal::
                   FIRST_MEANINGFUL_PAINT_DID_NOT_REACH_FIRST_CONTENTFUL_PAINT);
   }
 
-  if (timing.paint_timing->first_paint &&
-      !timing.interactive_timing->interactive) {
+  if (main_frame_timing.paint_timing->first_paint &&
+      !main_frame_timing.interactive_timing->interactive) {
     RecordTimeToInteractiveStatus(
-        timing.paint_timing->first_meaningful_paint
+        main_frame_timing.paint_timing->first_meaningful_paint
             ? internal::TIME_TO_INTERACTIVE_DID_NOT_REACH_QUIESCENCE
             : internal::
                   TIME_TO_INTERACTIVE_DID_NOT_REACH_FIRST_MEANINGFUL_PAINT);
   }
 
-  if (timing.interactive_timing->longest_input_timestamp) {
-    DCHECK(timing.interactive_timing->longest_input_delay);
+  if (main_frame_timing.interactive_timing->longest_input_timestamp) {
+    DCHECK(main_frame_timing.interactive_timing->longest_input_delay);
     UMA_HISTOGRAM_CUSTOM_TIMES(
         internal::kHistogramLongestInputDelay,
-        timing.interactive_timing->longest_input_delay.value(),
+        main_frame_timing.interactive_timing->longest_input_delay.value(),
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
         50);
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramLongestInputTimestamp,
-        timing.interactive_timing->longest_input_timestamp.value());
+        main_frame_timing.interactive_timing->longest_input_timestamp.value());
   }
 }
 

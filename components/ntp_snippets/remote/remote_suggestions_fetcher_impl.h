@@ -27,10 +27,10 @@ namespace base {
 class Value;
 }  // namespace base
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
-}  // namespace identity
+}  // namespace signin
 
 namespace language {
 class UrlLanguageHistogram;
@@ -47,7 +47,7 @@ class UserClassifier;
 class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
  public:
   RemoteSuggestionsFetcherImpl(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefService* pref_service,
       language::UrlLanguageHistogram* language_histogram,
@@ -85,7 +85,7 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
 
   void AccessTokenFetchFinished(base::Time token_start_time,
                                 GoogleServiceAuthError error,
-                                identity::AccessTokenInfo access_token_info);
+                                signin::AccessTokenInfo access_token_info);
   void AccessTokenError(const GoogleServiceAuthError& error);
 
   void JsonRequestDone(std::unique_ptr<internal::JsonRequest> request,
@@ -108,9 +108,9 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
       OptionalFetchedCategories fetched_categories);
 
   // Authentication for signed-in users.
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
 
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher> token_fetcher_;
 
   // Holds the URL loader factory
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

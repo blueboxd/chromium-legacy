@@ -1828,7 +1828,7 @@ void RenderWidgetHostInputEventRouter::DispatchEventToTarget(
   if (target && target->ScreenRectIsUnstableFor(event))
     event.SetTargetFrameMovedRecently();
   if (blink::WebInputEvent::IsMouseEventType(event.GetType())) {
-    if (event.GetType() == blink::WebInputEvent::kMouseDown) {
+    if (target && event.GetType() == blink::WebInputEvent::kMouseDown) {
       mouse_down_post_transformed_coordinate_.SetPoint(target_location->x(),
                                                        target_location->y());
       last_mouse_down_target_ = target;

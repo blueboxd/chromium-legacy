@@ -63,7 +63,7 @@ struct PermissionRequestCreatorApiary::Request {
   std::string request_type;
   std::string object_ref;
   SuccessCallback callback;
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       access_token_fetcher;
   std::string access_token;
   bool access_token_expired;
@@ -82,7 +82,7 @@ PermissionRequestCreatorApiary::Request::Request(
 PermissionRequestCreatorApiary::Request::~Request() {}
 
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
@@ -162,18 +162,18 @@ void PermissionRequestCreatorApiary::StartFetching(Request* request) {
   // will not be invoked if this object is deleted. Likewise, |request|
   // only comes from |requests_|, which are owned by this object too.
   request->access_token_fetcher =
-      std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
           "permissions_creator", identity_manager_, scopes,
           base::BindOnce(
               &PermissionRequestCreatorApiary::OnAccessTokenFetchComplete,
               base::Unretained(this), request),
-          identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
 void PermissionRequestCreatorApiary::OnAccessTokenFetchComplete(
     Request* request,
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   auto it = requests_.begin();
   while (it != requests_.end()) {
     if (request->access_token_fetcher.get() ==

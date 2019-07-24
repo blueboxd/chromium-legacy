@@ -49,7 +49,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   PrefService* GetPrefs() override;
   syncer::SyncService* GetSyncService() override;
-  identity::IdentityManager* GetIdentityManager() override;
+  signin::IdentityManager* GetIdentityManager() override;
   FormDataImporter* GetFormDataImporter() override;
   payments::PaymentsClient* GetPaymentsClient() override;
   StrikeDatabase* GetStrikeDatabase() override;
@@ -126,7 +126,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   ios::ChromeBrowserState* browser_state_;
   web::WebState* web_state_;
   __weak id<AutofillClientIOSBridge> bridge_;
-  identity::IdentityManager* identity_manager_;
+  signin::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;

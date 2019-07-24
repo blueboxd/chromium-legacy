@@ -20,17 +20,17 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace identity {
+namespace signin {
 class AccessTokenFetcher;
 struct AccessTokenInfo;
-}
+}  // namespace signin
 
 class ProfileDownloaderDelegate;
 
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
 class ProfileDownloader : public ImageDecoder::ImageRequest,
-                          public identity::IdentityManager::Observer {
+                          public signin::IdentityManager::Observer {
  public:
   enum PictureStatus {
     PICTURE_SUCCESS,
@@ -92,16 +92,16 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
 
   void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
-  // Overriden from ImageDecoder::ImageRequest:
+  // Overridden from ImageDecoder::ImageRequest:
   void OnImageDecoded(const SkBitmap& decoded_image) override;
   void OnDecodeImageFailed() override;
 
-  // Overriden from identity::IdentityManager::Observer:
+  // Overridden from signin::IdentityManager::Observer:
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
   // Callback for AccessTokenFetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
-                                  identity::AccessTokenInfo access_token_info);
+                                  signin::AccessTokenInfo access_token_info);
 
   // Issues the first request to get user profile image.
   void StartFetchingImage();
@@ -119,12 +119,12 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   std::string account_id_;
   std::string auth_token_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
-  std::unique_ptr<identity::AccessTokenFetcher> oauth2_access_token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> oauth2_access_token_fetcher_;
   AccountInfo account_info_;
   SkBitmap profile_picture_;
   PictureStatus picture_status_;
-  identity::IdentityManager* identity_manager_;
-  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+  signin::IdentityManager* identity_manager_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       identity_manager_observer_;
   bool waiting_for_account_info_;
 

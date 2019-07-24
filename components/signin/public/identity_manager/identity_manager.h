@@ -43,7 +43,7 @@ class GaiaCookieManagerService;
 class PrimaryAccountManager;
 class ProfileOAuth2TokenService;
 
-namespace identity {
+namespace signin {
 
 class AccountsMutator;
 class AccountsCookieMutator;
@@ -54,7 +54,7 @@ class DeviceAccountsSynchronizer;
 class DiagnosticsProvider;
 class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
-struct CookieParams;
+struct CookieParamsForTest;
 
 // Gives access to information about the user's Google identities. See
 // ./README.md for detailed documentation.
@@ -192,7 +192,7 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
-      const ScopeSet& scopes,
+      const identity::ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
@@ -202,7 +202,7 @@ class IdentityManager : public KeyedService,
       const CoreAccountId& account_id,
       const std::string& oauth_consumer_name,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const ScopeSet& scopes,
+      const identity::ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
@@ -214,7 +214,7 @@ class IdentityManager : public KeyedService,
       const std::string& client_id,
       const std::string& client_secret,
       const std::string& oauth_consumer_name,
-      const ScopeSet& scopes,
+      const identity::ScopeSet& scopes,
       AccessTokenFetcher::TokenCallback callback,
       AccessTokenFetcher::Mode mode) WARN_UNUSED_RESULT;
 
@@ -223,7 +223,7 @@ class IdentityManager : public KeyedService,
   // request for |account_id| and |scopes| will fetch a new token from the
   // network. Otherwise, is a no-op.
   void RemoveAccessTokenFromCache(const CoreAccountId& account_id,
-                                  const ScopeSet& scopes,
+                                  const identity::ScopeSet& scopes,
                                   const std::string& access_token);
 
   // Provides the information of all accounts that have refresh tokens.
@@ -293,9 +293,9 @@ class IdentityManager : public KeyedService,
 
   // Creates an UbertokenFetcher given the passed-in information, allowing
   // to specify a custom |url_loader_factory| as well.
-  std::unique_ptr<signin::UbertokenFetcher> CreateUbertokenFetcherForAccount(
+  std::unique_ptr<UbertokenFetcher> CreateUbertokenFetcherForAccount(
       const CoreAccountId& account_id,
-      signin::UbertokenFetcher::CompletionCallback callback,
+      UbertokenFetcher::CompletionCallback callback,
       gaia::GaiaSource source,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       bool bound_to_channel_id = true);
@@ -338,19 +338,20 @@ class IdentityManager : public KeyedService,
     // Called when receiving request for access token.
     virtual void OnAccessTokenRequested(const CoreAccountId& account_id,
                                         const std::string& consumer_id,
-                                        const ScopeSet& scopes) {}
+                                        const identity::ScopeSet& scopes) {}
 
     // Called when an access token request is completed. Contains diagnostic
     // information about the access token request.
     virtual void OnAccessTokenRequestCompleted(const CoreAccountId& account_id,
                                                const std::string& consumer_id,
-                                               const ScopeSet& scopes,
+                                               const identity::ScopeSet& scopes,
                                                GoogleServiceAuthError error,
                                                base::Time expiration_time) {}
 
     // Called when an access token was removed.
-    virtual void OnAccessTokenRemovedFromCache(const CoreAccountId& account_id,
-                                               const ScopeSet& scopes) {}
+    virtual void OnAccessTokenRemovedFromCache(
+        const CoreAccountId& account_id,
+        const identity::ScopeSet& scopes) {}
 
     // Called when a new refresh token is available. Contains diagnostic
     // information about the source of the operation.
@@ -522,7 +523,7 @@ class IdentityManager : public KeyedService,
   friend void SetCookieAccounts(
       IdentityManager* identity_manager,
       network::TestURLLoaderFactory* test_url_loader_factory,
-      const std::vector<identity::CookieParams>& cookie_accounts);
+      const std::vector<CookieParamsForTest>& cookie_accounts);
 
   friend void SimulateSuccessfulFetchOfAccountInfo(
       IdentityManager* identity_manager,
@@ -639,14 +640,14 @@ class IdentityManager : public KeyedService,
   // OAuth2AccessTokenManager::DiagnosticsObserver
   void OnAccessTokenRequested(const CoreAccountId& account_id,
                               const std::string& consumer_id,
-                              const ScopeSet& scopes) override;
+                              const identity::ScopeSet& scopes) override;
   void OnFetchAccessTokenComplete(const CoreAccountId& account_id,
                                   const std::string& consumer_id,
-                                  const ScopeSet& scopes,
+                                  const identity::ScopeSet& scopes,
                                   GoogleServiceAuthError error,
                                   base::Time expiration_time) override;
   void OnAccessTokenRemoved(const CoreAccountId& account_id,
-                            const ScopeSet& scopes) override;
+                            const identity::ScopeSet& scopes) override;
 
   // ProfileOAuth2TokenService callbacks:
   void OnRefreshTokenAvailableFromSource(const CoreAccountId& account_id,
@@ -697,6 +698,6 @@ class IdentityManager : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);
 };
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_MANAGER_H_

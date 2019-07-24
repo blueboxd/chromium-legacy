@@ -206,6 +206,22 @@ std::unique_ptr<HttpResponse> HandleSetCookie(const HttpRequest& request) {
   return http_response;
 }
 
+// /set-invalid-cookie
+// Sets invalid response cookies "\x01" (chosen via fuzzer to not be a parsable
+// cookie).
+std::unique_ptr<HttpResponse> HandleSetInvalidCookie(
+    const HttpRequest& request) {
+  auto http_response = std::make_unique<BasicHttpResponse>();
+  http_response->set_content_type("text/html");
+  std::string content;
+  GURL request_url = request.GetURL();
+
+  http_response->AddCustomHeader("Set-Cookie", "\x01");
+
+  http_response->set_content("TEST");
+  return http_response;
+}
+
 // /set-many-cookies?N
 // Sets N cookies in the response.
 std::unique_ptr<HttpResponse> HandleSetManyCookies(const HttpRequest& request) {
@@ -365,6 +381,9 @@ std::unique_ptr<HttpResponse> HandleAuthBasic(const HttpRequest& request) {
                                    "Basic realm=\"" + realm + "\"");
     if (query.find("set-cookie-if-challenged") != query.end())
       http_response->AddCustomHeader("Set-Cookie", "got_challenged=true");
+    if (query.find("set-secure-cookie-if-challenged") != query.end())
+      http_response->AddCustomHeader("Set-Cookie",
+                                     "got_challenged=true;Secure");
     http_response->set_content(base::StringPrintf(
         "<html><head><title>Denied: %s</title></head>"
         "<body>auth=%s<p>b64str=%s<p>username: %s<p>userpass: %s<p>"
@@ -535,6 +554,27 @@ std::unique_ptr<HttpResponse> HandleServerRedirectWithCookie(
   http_response->set_code(redirect_code);
   http_response->AddCustomHeader("Location", dest);
   http_response->AddCustomHeader("Set-Cookie", "server-redirect=true");
+  http_response->set_content_type("text/html");
+  http_response->set_content(base::StringPrintf(
+      "<html><head></head><body>Redirecting to %s</body></html>",
+      dest.c_str()));
+  return http_response;
+}
+
+// /server-redirect-with-secure-cookie?URL
+// Returns a server redirect to URL, and sets the cookie
+// server-redirect=true;Secure.
+std::unique_ptr<HttpResponse> HandleServerRedirectWithSecureCookie(
+    HttpStatusCode redirect_code,
+    const HttpRequest& request) {
+  GURL request_url = request.GetURL();
+  std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
+  RequestQuery query = ParseQuery(request_url);
+
+  auto http_response = std::make_unique<BasicHttpResponse>();
+  http_response->set_code(redirect_code);
+  http_response->AddCustomHeader("Location", dest);
+  http_response->AddCustomHeader("Set-Cookie", "server-redirect=true;Secure");
   http_response->set_content_type("text/html");
   http_response->set_content(base::StringPrintf(
       "<html><head></head><body>Redirecting to %s</body></html>",
@@ -753,6 +793,8 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/set-cookie", &HandleSetCookie));
   server->RegisterDefaultHandler(
+      PREFIXED_HANDLER("/set-invalid-cookie", &HandleSetInvalidCookie));
+  server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/set-many-cookies", &HandleSetManyCookies));
   server->RegisterDefaultHandler(
       PREFIXED_HANDLER("/expect-and-set-cookie", &HandleExpectAndSetCookie));
@@ -783,6 +825,9 @@ void RegisterDefaultHandlers(EmbeddedTestServer* server) {
   server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
       "/server-redirect-with-cookie", &HandleServerRedirectWithCookie,
       HTTP_MOVED_PERMANENTLY));
+  server->RegisterDefaultHandler(SERVER_REDIRECT_HANDLER(
+      "/server-redirect-with-secure-cookie",
+      &HandleServerRedirectWithSecureCookie, HTTP_MOVED_PERMANENTLY));
 
   server->RegisterDefaultHandler(
       base::BindRepeating(&HandleCrossSiteRedirect, server));

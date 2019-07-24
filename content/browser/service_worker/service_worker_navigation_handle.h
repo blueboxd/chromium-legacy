@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
@@ -15,8 +16,9 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandleCore;
 
 // This class is used to manage the lifetime of ServiceWorkerProviderHosts
-// created during navigation. This is a UI thread class, with a pendant class
-// on the IO thread, the ServiceWorkerNavigationHandleCore.
+// created for main resource requests (navigations and web workers). This is a
+// UI thread class, with a pendant class on the IO thread, the
+// ServiceWorkerNavigationHandleCore.
 //
 // The lifetime of the ServiceWorkerNavigationHandle, the
 // ServiceWorkerNavigationHandleCore and the ServiceWorkerProviderHost are the
@@ -45,7 +47,9 @@ class ServiceWorkerNavigationHandleCore;
 //   the provider info which in turn leads to the destruction of an unclaimed
 //   ServiceWorkerProviderHost, and posts a task to destroy the
 //   ServiceWorkerNavigationHandleCore on the IO thread.
-class ServiceWorkerNavigationHandle {
+//
+// TODO(falken): Rename ServiceWorkerMainResourceHandle.
+class CONTENT_EXPORT ServiceWorkerNavigationHandle {
  public:
   explicit ServiceWorkerNavigationHandle(
       ServiceWorkerContextWrapper* context_wrapper);
@@ -67,14 +71,25 @@ class ServiceWorkerNavigationHandle {
       int render_frame_id,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr* out_provider_info);
 
+  void OnBeginWorkerCommit();
+
+  blink::mojom::ServiceWorkerProviderInfoForClientPtr TakeProviderInfo() {
+    return std::move(provider_info_);
+  }
+
   ServiceWorkerNavigationHandleCore* core() const { return core_; }
 
   const ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
   }
 
+  base::WeakPtr<ServiceWorkerNavigationHandle> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  private:
   blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info_;
+
   // TODO(leonhsl): Use std::unique_ptr<ServiceWorkerNavigationHandleCore,
   // BrowserThread::DeleteOnIOThread> instead.
   ServiceWorkerNavigationHandleCore* core_;

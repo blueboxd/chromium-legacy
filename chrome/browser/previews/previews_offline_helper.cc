@@ -274,11 +274,10 @@ void PreviewsOfflineHelper::OfflinePageAdded(
 
 void PreviewsOfflineHelper::OfflinePageDeleted(
     const offline_pages::OfflinePageItem& deleted_page) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Has no effect if the url was never in the dictionary.
-  available_pages_->RemoveKey(HashURL(deleted_page.url));
-  UpdatePref();
+  // Do nothing. OfflinePageModel calls |OfflinePageDeleted| when pages are
+  // refreshed, but because we only key on URL and not the offline page id, it
+  // is difficult to tell when this happens. So instead, it's ok if we
+  // over-trigger for a few pages until the next DB query.
 }
 
 void PreviewsOfflineHelper::UpdatePref() {

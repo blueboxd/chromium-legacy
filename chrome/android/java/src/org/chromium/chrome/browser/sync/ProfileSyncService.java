@@ -419,6 +419,16 @@ public class ProfileSyncService {
     }
 
     /**
+     * Checks whether Sync is disabled by enterprise policy (through prefs) or account policy
+     * received from the sync server.
+     *
+     * @return true if Sync is disabled, false otherwise.
+     */
+    public boolean isSyncDisabledByEnterprisePolicy() {
+        return nativeIsSyncDisabledByEnterprisePolicy(mNativeProfileSyncServiceAndroid);
+    }
+
+    /**
      * Instances of this class keep sync paused until {@link #close} is called. Use
      * {@link ProfileSyncService#getSetupInProgressHandle} to create. Please note that
      * {@link #close} should be called on every instance of this class.
@@ -650,6 +660,8 @@ public class ProfileSyncService {
     private native boolean nativeIsSyncRequested(long nativeProfileSyncServiceAndroid);
     private native boolean nativeCanSyncFeatureStart(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsSyncDisabledByEnterprisePolicy(
+            long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasUnrecoverableError(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsPassphrasePrompted(long nativeProfileSyncServiceAndroid);

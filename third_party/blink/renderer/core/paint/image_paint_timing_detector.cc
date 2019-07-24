@@ -169,6 +169,7 @@ void ImagePaintTimingDetector::NotifyImageRemoved(
   if (!is_recording_)
     return;
   RecordId record_id = std::make_pair(&object, cached_image);
+  records_manager_.RemoveImageFinishedRecord(record_id);
   if (!records_manager_.IsRecordedVisibleImage(record_id))
     return;
   records_manager_.RemoveVisibleRecord(record_id);
@@ -280,12 +281,25 @@ void ImagePaintTimingDetector::RecordImage(
   }
 }
 
+void ImagePaintTimingDetector::NotifyImageFinished(
+    const LayoutObject& object,
+    const ImageResourceContent* cached_image) {
+  RecordId record_id = std::make_pair(&object, cached_image);
+  records_manager_.NotifyImageFinished(record_id);
+}
+
 ImageRecordsManager::ImageRecordsManager()
     : size_ordered_set_(&LargeImageFirst) {}
 
 void ImageRecordsManager::OnImageLoaded(const RecordId& record_id,
                                         unsigned current_frame_index) {
   base::WeakPtr<ImageRecord> record = FindVisibleRecord(record_id);
+  DCHECK(record);
+  // TODO(crbug.com/986891): some background images are not being tracked
+  // properly, so we cannot add a DCHECK that |image_finished_times| contains
+  // |record_id|. Once that bug is fixed, we should add that check, as otherwise
+  // we'll be exposing a loadTime of 0.
+  record->load_time = image_finished_times_.at(record_id);
   OnImageLoadedInternal(record, current_frame_index);
 }
 

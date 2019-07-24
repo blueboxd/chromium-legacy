@@ -24,9 +24,10 @@ enum class DevToolsBackgroundService {
   kPushMessaging = 4,
   kNotifications = 5,
   kPaymentHandler = 6,
+  kPeriodicBackgroundSync = 7,
 
   // Keep at the end.
-  kMaxValue = kPaymentHandler,
+  kMaxValue = kPeriodicBackgroundSync,
 };
 
 // This class is responsible for persisting the debugging events for the

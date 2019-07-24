@@ -51,10 +51,10 @@ using RefreshTokenRemovedCallback =
 // Helper IdentityManager::Observer that forwards some events to the
 // callback passed to the constructor.
 class ClearPrimaryAccountTestObserver
-    : public identity::IdentityManager::Observer {
+    : public signin::IdentityManager::Observer {
  public:
   ClearPrimaryAccountTestObserver(
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       PrimaryAccountClearedCallback on_primary_account_cleared,
       RefreshTokenRemovedCallback on_refresh_token_removed)
       : on_primary_account_cleared_(std::move(on_primary_account_cleared)),
@@ -65,7 +65,7 @@ class ClearPrimaryAccountTestObserver
     scoped_observer_.Add(identity_manager);
   }
 
-  // identity::IdentityManager::Observer implementation.
+  // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(const CoreAccountInfo& account_info) override {
     on_primary_account_cleared_.Run(account_info);
   }
@@ -78,7 +78,7 @@ class ClearPrimaryAccountTestObserver
  private:
   PrimaryAccountClearedCallback on_primary_account_cleared_;
   RefreshTokenRemovedCallback on_refresh_token_removed_;
-  ScopedObserver<identity::IdentityManager, identity::IdentityManager::Observer>
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
       scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearPrimaryAccountTestObserver);
@@ -96,16 +96,16 @@ class ClearPrimaryAccountTestObserver
 // take place, or whether an auth error should happen, useful for some tests.
 void RunClearPrimaryAccountTest(
     signin::AccountConsistencyMethod account_consistency_method,
-    identity::PrimaryAccountMutator::ClearAccountsAction account_action,
+    signin::PrimaryAccountMutator::ClearAccountsAction account_action,
     RemoveAccountExpectation account_expectation,
     AuthExpectation auth_expection = AuthExpectation::kAuthNormal) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment(
+  signin::IdentityTestEnvironment environment(
       /*test_url_loader_factory=*/nullptr, /*pref_service=*/nullptr,
       account_consistency_method);
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -130,7 +130,7 @@ void RunClearPrimaryAccountTest(
   if (auth_expection == AuthExpectation::kAuthError) {
     // Set primary account to have authentication error.
     SetRefreshTokenForPrimaryAccount(identity_manager);
-    identity::UpdatePersistentErrorOfRefreshTokenForAccount(
+    signin::UpdatePersistentErrorOfRefreshTokenForAccount(
         identity_manager, account_info.account_id,
         GoogleServiceAuthError(
             GoogleServiceAuthError::State::INVALID_GAIA_CREDENTIALS));
@@ -214,10 +214,10 @@ using PrimaryAccountMutatorTest = PlatformTest;
 // Checks that setting the primary account works.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+  signin::IdentityTestEnvironment environment;
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -240,10 +240,10 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
 // the identity service.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+  signin::IdentityTestEnvironment environment;
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -258,10 +258,10 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
 // Checks that setting the primary account fails if the account is unknown.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_UnknownAccount) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+  signin::IdentityTestEnvironment environment;
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -280,10 +280,10 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_UnknownAccount) {
 // primary account.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_AlreadyHasPrimaryAccount) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+  signin::IdentityTestEnvironment environment;
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -315,11 +315,11 @@ TEST_F(PrimaryAccountMutatorTest,
   base::test::ScopedTaskEnvironment task_environment;
 
   sync_preferences::TestingPrefServiceSyncable pref_service;
-  identity::IdentityTestEnvironment environment(
+  signin::IdentityTestEnvironment environment(
       /*test_url_loader_factory=*/nullptr, &pref_service);
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -340,10 +340,10 @@ TEST_F(PrimaryAccountMutatorTest,
 
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+  signin::IdentityTestEnvironment environment;
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -354,7 +354,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
   // Trying to signout an account that hasn't signed in first should fail.
   EXPECT_FALSE(identity_manager->HasPrimaryAccount());
   EXPECT_FALSE(primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC));
 
@@ -364,17 +364,17 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
 
   EXPECT_FALSE(identity_manager->HasPrimaryAccount());
   EXPECT_FALSE(primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC));
 }
 
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default) {
   base::test::ScopedTaskEnvironment task_environment;
-  identity::IdentityTestEnvironment environment;
+  signin::IdentityTestEnvironment environment;
 
-  identity::IdentityManager* identity_manager = environment.identity_manager();
-  identity::PrimaryAccountMutator* primary_account_mutator =
+  signin::IdentityManager* identity_manager = environment.identity_manager();
+  signin::PrimaryAccountMutator* primary_account_mutator =
       identity_manager->GetPrimaryAccountMutator();
 
   // Abort the test if the current platform does not support mutation of the
@@ -401,7 +401,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default) {
             primary_account_info.account_id);
 
   EXPECT_TRUE(primary_account_mutator->ClearPrimaryAccount(
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC));
 
@@ -422,7 +422,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_KeepAll) {
        kTestedAccountConsistencyMethods) {
     RunClearPrimaryAccountTest(
         account_consistency_method,
-        identity::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
+        signin::PrimaryAccountMutator::ClearAccountsAction::kKeepAll,
         RemoveAccountExpectation::kKeepAll);
   }
 }
@@ -434,7 +434,7 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_RemoveAll) {
        kTestedAccountConsistencyMethods) {
     RunClearPrimaryAccountTest(
         account_consistency_method,
-        identity::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
+        signin::PrimaryAccountMutator::ClearAccountsAction::kRemoveAll,
         RemoveAccountExpectation::kRemoveAll);
   }
 }
@@ -446,7 +446,7 @@ TEST_F(PrimaryAccountMutatorTest,
        ClearPrimaryAccount_Default_DisabledConsistency) {
   RunClearPrimaryAccountTest(
       signin::AccountConsistencyMethod::kDisabled,
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       RemoveAccountExpectation::kRemoveAll);
 }
 
@@ -457,7 +457,7 @@ TEST_F(PrimaryAccountMutatorTest,
        ClearPrimaryAccount_Default_MirrorConsistency) {
   RunClearPrimaryAccountTest(
       signin::AccountConsistencyMethod::kMirror,
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       RemoveAccountExpectation::kRemoveAll);
 }
 
@@ -467,7 +467,7 @@ TEST_F(PrimaryAccountMutatorTest,
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default_DiceConsistency) {
   RunClearPrimaryAccountTest(
       signin::AccountConsistencyMethod::kDice,
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       RemoveAccountExpectation::kKeepAll);
 }
 
@@ -478,6 +478,6 @@ TEST_F(PrimaryAccountMutatorTest,
        ClearPrimaryAccount_Default_DiceConsistency_AuthError) {
   RunClearPrimaryAccountTest(
       signin::AccountConsistencyMethod::kDice,
-      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
+      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       RemoveAccountExpectation::kRemovePrimary, AuthExpectation::kAuthError);
 }

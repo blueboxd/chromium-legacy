@@ -843,15 +843,18 @@ Status ExecuteElementScreenshot(Session* session,
       "({x: document.documentElement.scrollLeft || document.body.scrollLeft,"
       "  y: document.documentElement.scrollTop || document.body.scrollTop,"
       "  height: document.documentElement.clientHeight,"
-      "  width: document.documentElement.clientWidth})",
+      "  width: document.documentElement.clientWidth,"
+      "  device_pixel_ratio: window.devicePixelRatio})",
       &browser_info);
   if (status.IsError())
     return status;
 
-  int scroll_left = browser_info->FindKey("x")->GetInt();
-  int scroll_top = browser_info->FindKey("y")->GetInt();
+  double scroll_left = browser_info->FindKey("x")->GetDouble();
+  double scroll_top = browser_info->FindKey("y")->GetDouble();
   double viewport_height = browser_info->FindKey("height")->GetDouble();
   double viewport_width = browser_info->FindKey("width")->GetDouble();
+  double device_pixel_ratio =
+         browser_info->FindKey("device_pixel_ratio")->GetDouble();
 
   std::unique_ptr<base::DictionaryValue> clip_dict =
       base::DictionaryValue::From(std::move(clip));
@@ -861,14 +864,14 @@ Status ExecuteElementScreenshot(Session* session,
   // element, but its x and y are relative to containing frame. We replace them
   // with the x and y relative to top-level document origin, as expected by
   // CaptureScreenshot.
-  clip_dict->SetInteger("x", location.x + scroll_left);
-  clip_dict->SetInteger("y", location.y + scroll_top);
-  clip_dict->SetDouble("scale", 1.0);
+  clip_dict->SetDouble("x", location.x + scroll_left);
+  clip_dict->SetDouble("y", location.y + scroll_top);
+  clip_dict->SetDouble("scale", 1 / device_pixel_ratio);
   // Crop screenshot by viewport if element is larger than viewport
-  clip_dict->SetInteger(
+  clip_dict->SetDouble(
       "height",
       std::min(viewport_height, clip_dict->FindKey("height")->GetDouble()));
-  clip_dict->SetInteger(
+  clip_dict->SetDouble(
       "width",
       std::min(viewport_width, clip_dict->FindKey("width")->GetDouble()));
   base::DictionaryValue screenshot_params;

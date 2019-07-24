@@ -27,6 +27,7 @@
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
@@ -107,7 +108,8 @@ bool Service::ShouldEnableHotword() {
 
   // Disable hotword if hotword is not set to always on and power source is not
   // connected.
-  if (!dsp_available && !assistant_state_.hotword_always_on().value() &&
+  if (!dsp_available &&
+      !pref_service_->GetBoolean(prefs::kAssistantHotwordAlwaysOn) &&
       !power_source_connected_) {
     return false;
   }
@@ -194,6 +196,14 @@ void Service::OnLockStateChanged(bool locked) {
   UpdateListeningState();
 }
 
+void Service::OnAssistantHotwordAlwaysOn() {
+  // No need to update hotword status if power source is connected.
+  if (power_source_connected_)
+    return;
+
+  UpdateAssistantManagerState();
+}
+
 void Service::OnVoiceInteractionSettingsEnabled(bool enabled) {
   UpdateAssistantManagerState();
 }
@@ -214,18 +224,11 @@ void Service::OnLockedFullScreenStateChanged(bool enabled) {
   UpdateListeningState();
 }
 
-void Service::OnVoiceInteractionHotwordAlwaysOn(bool always_on) {
-  // No need to update hotword status if power source is connected.
-  if (power_source_connected_)
-    return;
-
-  UpdateAssistantManagerState();
-}
-
 void Service::UpdateAssistantManagerState() {
+  if (!pref_service_)
+    return;
   if (!assistant_state_.hotword_enabled().has_value() ||
       !assistant_state_.settings_enabled().has_value() ||
-      !assistant_state_.hotword_always_on().has_value() ||
       !assistant_state_.locale().has_value() ||
       (!access_token_.has_value() && !is_signed_out_mode_) ||
       !assistant_state_.arc_play_store_enabled().has_value()) {
@@ -296,9 +299,19 @@ void Service::Init(mojom::ClientPtr client,
 
 void Service::OnPrefServiceConnected(
     std::unique_ptr<::PrefService> pref_service) {
-  // TODO(b/110211045): Switch to user pref service after migrating other
-  // Assistant related prefs.
+  // TODO(b/110211045): Add testing support for Assistant prefs.
+  if (!pref_service_)
+    return;
+
   pref_service_ = std::move(pref_service);
+
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service_.get());
+
+  pref_change_registrar_->Add(
+      chromeos::assistant::prefs::kAssistantHotwordAlwaysOn,
+      base::BindRepeating(&Service::OnAssistantHotwordAlwaysOn,
+                          base::Unretained(this)));
 }
 
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {

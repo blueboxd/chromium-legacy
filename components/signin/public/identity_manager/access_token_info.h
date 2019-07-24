@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-namespace identity {
+namespace signin {
 
 // Container for a valid access token plus associated metadata.
 struct AccessTokenInfo {
@@ -37,6 +37,6 @@ struct AccessTokenInfo {
 // Defined for testing purposes only.
 bool operator==(const AccessTokenInfo& lhs, const AccessTokenInfo& rhs);
 
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_ACCESS_TOKEN_INFO_H_

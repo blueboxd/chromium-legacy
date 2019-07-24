@@ -158,7 +158,7 @@ bool IsPrimaryGaiaAccount(const std::string& gaia_id) {
 }
 
 bool IsPrimaryOrDeviceLocalAccount(
-    const identity::IdentityManager* identity_manager,
+    const signin::IdentityManager* identity_manager,
     const std::string& account_name) {
   // |GetPrimaryUser| is fine because ARC is only available on the first
   // (Primary) account that participates in multi-signin.

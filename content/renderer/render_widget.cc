@@ -3303,6 +3303,11 @@ void RenderWidget::SetHasTouchEventHandlers(bool has_handlers) {
   Send(new WidgetHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
+void RenderWidget::SetHaveScrollEventHandlers(bool have_handlers) {
+  layer_tree_view_->layer_tree_host()->SetHaveScrollEventHandlers(
+      have_handlers);
+}
+
 void RenderWidget::SetNeedsLowLatencyInput(bool needs_low_latency) {
   if (input_event_queue_)
     input_event_queue_->SetNeedsLowLatency(needs_low_latency);
@@ -3393,6 +3398,10 @@ void RenderWidget::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
   base::TimeDelta duration = base::TimeDelta::FromSecondsD(duration_sec);
   layer_tree_view_->layer_tree_host()->StartPageScaleAnimation(
       target_offset, use_anchor, new_page_scale, duration);
+}
+
+void RenderWidget::ForceRecalculateRasterScales() {
+  layer_tree_view_->layer_tree_host()->SetNeedsRecalculateRasterScales();
 }
 
 void RenderWidget::RequestDecode(const cc::PaintImage& image,

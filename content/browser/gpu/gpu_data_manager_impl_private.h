@@ -201,6 +201,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // What the gpu process is being run for.
   gpu::GpuMode gpu_mode_ = gpu::GpuMode::HARDWARE_ACCELERATED;
 
+  // Used to tell if the gpu was disabled due to process crashes.
+  bool hardware_disabled_by_fallback_ = false;
+
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.
   bool update_histograms_ = true;

@@ -635,6 +635,7 @@
       'android-kitkat-arm-rel': 'android_release_trybot',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
+      'android-oreo-arm64-rel': 'android_release_trybot_arm64_webview_google',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android-binary-size': 'android_binary_size',
@@ -662,11 +663,11 @@
       'gpu-fyi-try-android-m-nexus-9-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-n-nvidia-shield-tv-64': 'gpu_tests_android_release_trybot_arm64',
       'gpu-fyi-try-android-p-pixel-2-32': 'gpu_tests_android_release_trybot',
-      'gpu-fyi-try-android-p-pixel-2-32-vk': 'gpu_tests_android_vulkan_release_trybot',
-      'gpu-fyi-try-android-p-pixel-2-32-deqp-vk': 'deqp_android_vulkan_release_trybot',
-      'gpu-fyi-try-android-p-pixel-2-64-vk': 'gpu_tests_android_vulkan_release_trybot_arm64',
-      'gpu-fyi-try-android-p-pixel-2-64-deqp-vk': 'deqp_android_vulkan_release_trybot_arm64',
       'gpu-fyi-try-android-p-pixel-2-skv-32': 'gpu_tests_android_release_trybot',
+      'gpu-fyi-try-android-q-pixel-2-deqp-vk-32': 'deqp_android_vulkan_release_trybot',
+      'gpu-fyi-try-android-q-pixel-2-deqp-vk-64': 'deqp_android_vulkan_release_trybot_arm64',
+      'gpu-fyi-try-android-q-pixel-2-vk-32': 'gpu_tests_android_vulkan_release_trybot',
+      'gpu-fyi-try-android-q-pixel-2-vk-64': 'gpu_tests_android_vulkan_release_trybot_arm64',
       'linux_android_dbg_ng': 'android_debug_trybot',
       'try-nougat-phone-tester': 'android_debug_trybot_arm64',
       'android-oreo-arm64-dbg': 'android_debug_trybot_arm64',
@@ -860,7 +861,7 @@
       'win7-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
-      'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86',
+      'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86_compile_only',
       'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'win_chromium_dbg_ng': 'gpu_tests_debug_trybot_x86',
       'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot',
@@ -1098,6 +1099,11 @@
 
     'android_release_trybot_arm64': [
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
+    ],
+
+    'android_release_trybot_arm64_webview_google': [
+      'android', 'release_trybot', 'arm64', 'strip_debug_info',
+      'webview_google',
     ],
 
     'android_shared_release_bot_x64': [
@@ -1551,8 +1557,8 @@
       'gpu_tests', 'debug_trybot', 'x86',
     ],
 
-    'gpu_tests_debug_trybot_x86': [
-      'gpu_tests', 'debug_trybot', 'x86',
+    'gpu_tests_debug_trybot_x86_compile_only': [
+      'gpu_tests', 'debug_trybot', 'x86', 'compile_only',
     ],
 
     'gpu_tests_release_bot_minimal_symbols': [

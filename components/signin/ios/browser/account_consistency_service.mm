@@ -222,7 +222,7 @@ AccountConsistencyService::AccountConsistencyService(
     PrefService* prefs,
     AccountReconcilor* account_reconcilor,
     scoped_refptr<content_settings::CookieSettings> cookie_settings,
-    identity::IdentityManager* identity_manager)
+    signin::IdentityManager* identity_manager)
     : browser_state_(browser_state),
       prefs_(prefs),
       account_reconcilor_(account_reconcilor),
@@ -489,7 +489,7 @@ void AccountConsistencyService::OnPrimaryAccountCleared(
 }
 
 void AccountConsistencyService::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   AddChromeConnectedCookies();
 }

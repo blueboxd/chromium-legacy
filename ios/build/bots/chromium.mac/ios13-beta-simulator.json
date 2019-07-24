@@ -76,34 +76,6 @@
       }
     },
     {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
-      "device type": "iPhone X",
-      "os": "11.4",
-      "xcode build version": "10e1001",
-      "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      }
-    },
-    {
-      "xcode parallelization": true,
-      "include": "eg2_tests.json",
-      "device type": "iPad (6th generation)",
-      "os": "11.4",
-      "xcode build version": "10e1001",
-      "pool":"Chrome",
-      "host os": "Mac-10.14.4",
-      "optional_dimensions": {
-          "60": [{
-            "host os": "Mac-10.14.5"
-          }]
-      }
-    },
-    {
       "include": "common_tests.json",
       "device type": "iPhone X",
       "os": "13.0",

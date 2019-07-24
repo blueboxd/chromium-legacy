@@ -211,7 +211,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
   MockTokenService* token_service() { return &mock_token_service_; }
 
  protected:
-  void OnOAuthMultiloginFinished(signin::SetAccountsInCookieResult result) {
+  void OnOAuthMultiloginFinished(SetAccountsInCookieResult result) {
     DCHECK(!callback_called_);
     callback_called_ = true;
     result_ = result;
@@ -220,7 +220,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   bool callback_called_ = false;
-  signin::SetAccountsInCookieResult result_;
+  SetAccountsInCookieResult result_;
 
   TestingPrefServiceSimple pref_service_;
   MockCookieManager* mock_cookie_manager_;  // Owned by test_signin_client_
@@ -254,7 +254,7 @@ TEST_F(OAuthMultiloginHelperTest, Success) {
   url_loader()->AddResponse(multilogin_url(), kMultiloginSuccessResponse);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Multiple cookies in the multilogin response.
@@ -289,7 +289,7 @@ TEST_F(OAuthMultiloginHelperTest, MultipleCookies) {
                             kMultiloginSuccessResponseTwoCookies);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Multiple cookies in the multilogin response.
@@ -326,7 +326,7 @@ TEST_F(OAuthMultiloginHelperTest, SuccessWithExternalCcResult) {
   EXPECT_FALSE(
       url_loader()->IsPending(multilogin_url_with_external_cc_result()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Failure to get the access token.
@@ -339,7 +339,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountAccessTokenFailure) {
       kAccountId,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kPersistentError, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kPersistentError, result_);
 }
 
 // Retry on transient errors in the multilogin call.
@@ -375,7 +375,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountTransientMultiloginError) {
   url_loader()->AddResponse(multilogin_url(), kMultiloginSuccessResponse);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Stop retrying after too many transient errors in the multilogin call.
@@ -400,7 +400,7 @@ TEST_F(OAuthMultiloginHelperTest,
 
   // Failure after exceeding the maximum number of retries.
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kTransientError, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kTransientError, result_);
 }
 
 // Persistent error in the multilogin call.
@@ -420,7 +420,7 @@ TEST_F(OAuthMultiloginHelperTest, OneAccountPersistentMultiloginError) {
   url_loader()->AddResponse(multilogin_url(), "blah");  // Unexpected response.
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kPersistentError, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kPersistentError, result_);
 }
 
 // Retry on "invalid token" in the multilogin response.
@@ -468,7 +468,7 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenError) {
   url_loader()->AddResponse(multilogin_url(), kMultiloginSuccessResponse);
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kSuccess, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kSuccess, result_);
 }
 
 // Retry on "invalid token" in the multilogin response.
@@ -505,7 +505,7 @@ TEST_F(OAuthMultiloginHelperTest, InvalidTokenErrorMaxRetries) {
   // The maximum number of retries is reached, fail.
   EXPECT_FALSE(url_loader()->IsPending(multilogin_url()));
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(signin::SetAccountsInCookieResult::kTransientError, result_);
+  EXPECT_EQ(SetAccountsInCookieResult::kTransientError, result_);
 }
 
 }  // namespace signin

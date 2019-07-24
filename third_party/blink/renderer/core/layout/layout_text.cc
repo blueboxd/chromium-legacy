@@ -293,9 +293,17 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   Vector<TextBoxInfo> results;
   if (const NGOffsetMapping* mapping = GetNGOffsetMapping()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    bool in_hidden_for_paint = false;
     for (const NGPaintFragment* fragment : fragments) {
       const auto& text_fragment =
           To<NGPhysicalTextFragment>(fragment->PhysicalFragment());
+      if (text_fragment.IsHiddenForPaint()) {
+        in_hidden_for_paint = true;
+      } else if (in_hidden_for_paint) {
+        // Because of we finished original fragments (not painted), we should
+        // ignore truncated fragments (actually painted).
+        break;
+      }
       // When the corresponding DOM range contains collapsed whitespaces, NG
       // produces one fragment but legacy produces multiple text boxes broken at
       // collapsed whitespaces. We break the fragment at collapsed whitespaces

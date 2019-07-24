@@ -55,4 +55,12 @@ void ServiceWorkerNavigationHandle::OnBeginNavigationCommit(
   *out_provider_info = std::move(provider_info_);
 }
 
+void ServiceWorkerNavigationHandle::OnBeginWorkerCommit() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::IO},
+      base::BindOnce(&ServiceWorkerNavigationHandleCore::OnBeginWorkerCommit,
+                     base::Unretained(core_)));
+}
+
 }  // namespace content

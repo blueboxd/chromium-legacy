@@ -77,15 +77,9 @@ void ConfigureDisplaysTask::Run() {
       size_t index = pending_request_indexes_.front();
       DisplayConfigureRequest* request = &requests_[index];
       pending_request_indexes_.pop();
-      // Non-native displays do not require configuration through the
-      // NativeDisplayDelegate.
-      if (!IsPhysicalDisplayType(request->display->type())) {
-        OnConfigured(index, true);
-      } else {
-        delegate_->Configure(*request->display, request->mode, request->origin,
-                             base::Bind(&ConfigureDisplaysTask::OnConfigured,
-                                        weak_ptr_factory_.GetWeakPtr(), index));
-      }
+      delegate_->Configure(*request->display, request->mode, request->origin,
+                           base::Bind(&ConfigureDisplaysTask::OnConfigured,
+                                      weak_ptr_factory_.GetWeakPtr(), index));
     }
   }
 

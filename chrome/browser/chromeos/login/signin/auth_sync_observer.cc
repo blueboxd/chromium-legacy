@@ -68,7 +68,7 @@ void AuthSyncObserver::OnStateChanged(syncer::SyncService* sync) {
 void AuthSyncObserver::OnErrorChanged() {
   // This notification could have come for any account but we are only
   // interested in errors for the Primary Account.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   HandleAuthError(identity_manager->GetErrorStateOfRefreshTokenForAccount(
       identity_manager->GetPrimaryAccountId()));

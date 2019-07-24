@@ -65,6 +65,18 @@ class BackgroundSyncProxy::Core {
     controller->ScheduleBrowserWakeUp(sync_type);
   }
 
+  void SendSuspendedPeriodicSyncOrigins(
+      std::set<url::Origin> suspended_origins) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!browser_context())
+      return;
+
+    auto* controller = browser_context()->GetBackgroundSyncController();
+    DCHECK(controller);
+
+    controller->NoteSuspendedPeriodicSyncOrigins(std::move(suspended_origins));
+  }
+
  private:
   base::WeakPtr<BackgroundSyncProxy> io_parent_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -93,6 +105,16 @@ void BackgroundSyncProxy::ScheduleBrowserWakeUp(
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
                            base::BindOnce(&Core::ScheduleBrowserWakeUp,
                                           ui_core_weak_ptr_, sync_type));
+}
+
+void BackgroundSyncProxy::SendSuspendedPeriodicSyncOrigins(
+    std::set<url::Origin> suspended_origins) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&Core::SendSuspendedPeriodicSyncOrigins, ui_core_weak_ptr_,
+                     std::move(suspended_origins)));
 }
 
 }  // namespace content

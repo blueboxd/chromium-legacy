@@ -535,7 +535,7 @@ void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    identity::IdentityManager* identity_manager) {
+    signin::IdentityManager* identity_manager) {
   std::string country;
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();

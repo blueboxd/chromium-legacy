@@ -136,14 +136,14 @@ class JourneyInfoFetcherTest : public testing::Test {
     return &test_url_loader_factory_;
   }
 
-  identity::IdentityTestEnvironment& identity_test_env() {
+  signin::IdentityTestEnvironment& identity_test_env() {
     return identity_test_env_;
   }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
-  identity::IdentityTestEnvironment identity_test_env_;
+  signin::IdentityTestEnvironment identity_test_env_;
   MockFetchResponseAvailableCallback mock_callback_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<JourneyInfoFetcher> journey_info_fetcher_;

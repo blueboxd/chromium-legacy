@@ -54,7 +54,7 @@ OAuthMultiloginHelper::OAuthMultiloginHelper(
     ProfileOAuth2TokenService* token_service,
     const std::vector<GaiaCookieManagerService::AccountIdGaiaIdPair>& accounts,
     const std::string& external_cc_result,
-    base::OnceCallback<void(signin::SetAccountsInCookieResult)> callback)
+    base::OnceCallback<void(SetAccountsInCookieResult)> callback)
     : signin_client_(signin_client),
       token_service_(token_service),
       accounts_(accounts),
@@ -84,7 +84,7 @@ void OAuthMultiloginHelper::StartFetchingTokens() {
   for (const auto& account : accounts_)
     account_ids.push_back(account.first);
 
-  token_fetcher_ = std::make_unique<signin::OAuthMultiloginTokenFetcher>(
+  token_fetcher_ = std::make_unique<OAuthMultiloginTokenFetcher>(
       signin_client_, token_service_, account_ids,
       base::BindOnce(&OAuthMultiloginHelper::OnAccessTokensSuccess,
                      base::Unretained(this)),
@@ -114,10 +114,9 @@ void OAuthMultiloginHelper::OnAccessTokensSuccess(
 void OAuthMultiloginHelper::OnAccessTokensFailure(
     const GoogleServiceAuthError& error) {
   token_fetcher_.reset();
-  std::move(callback_).Run(
-      error.IsTransientError()
-          ? signin::SetAccountsInCookieResult::kTransientError
-          : signin::SetAccountsInCookieResult::kPersistentError);
+  std::move(callback_).Run(error.IsTransientError()
+                               ? SetAccountsInCookieResult::kTransientError
+                               : SetAccountsInCookieResult::kPersistentError);
   // Do not add anything below this line, because this may be deleted.
 }
 
@@ -166,9 +165,9 @@ void OAuthMultiloginHelper::OnOAuthMultiloginFinished(
     StartFetchingTokens();
     return;
   }
-  std::move(callback_).Run(
-      is_transient_error ? signin::SetAccountsInCookieResult::kTransientError
-                         : signin::SetAccountsInCookieResult::kPersistentError);
+  std::move(callback_).Run(is_transient_error
+                               ? SetAccountsInCookieResult::kTransientError
+                               : SetAccountsInCookieResult::kPersistentError);
   // Do not add anything below this line, because this may be deleted.
 }
 
@@ -219,7 +218,7 @@ void OAuthMultiloginHelper::OnCookieSet(
   }
   UMA_HISTOGRAM_BOOLEAN("Signin.SetCookieSuccess", success);
   if (cookies_to_set_.empty())
-    std::move(callback_).Run(signin::SetAccountsInCookieResult::kSuccess);
+    std::move(callback_).Run(SetAccountsInCookieResult::kSuccess);
   // Do not add anything below this line, because this may be deleted.
 }
 

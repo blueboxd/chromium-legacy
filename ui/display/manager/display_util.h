@@ -37,11 +37,6 @@ GetDisplayPower(const std::vector<DisplaySnapshot*>& displays,
 // Returns a string describing |state|.
 std::string MultipleDisplayStateToString(MultipleDisplayState state);
 
-// Returns whether the DisplayConnectionType |type| is a physically connected
-// display. Currently only DISPLAY_CONNECTION_TYPE_NETWORK return false.
-// All other types return true.
-bool IsPhysicalDisplayType(DisplayConnectionType type);
-
 // Sets bits in |protection_mask| for each ContentProtectionMethod supported by
 // the display |type|. Returns false for unknown display types.
 bool GetContentProtectionMethods(DisplayConnectionType type,

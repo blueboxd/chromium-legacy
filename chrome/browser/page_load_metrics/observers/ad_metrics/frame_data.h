@@ -34,15 +34,6 @@ class FrameData {
     kMaxValue = kAnyVisibility,
   };
 
-  // Whether or not the frame size intervention would have triggered on
-  // this frame.  These values are persisted to logs. Entries should not be
-  // renumbered and numeric values should never be reused.
-  enum class FrameSizeInterventionStatus {
-    kNone = 0,
-    kTriggered = 1,
-    kMaxValue = kTriggered,
-  };
-
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused. For any additions, also update the
   // corresponding PageEndReason enum in enums.xml.
@@ -79,9 +70,6 @@ class FrameData {
     kPlayed = 1,
     kMaxValue = kPlayed,
   };
-
-  // Maximum number of bytes allowed to be loaded by a frame.
-  static const int kFrameSizeInterventionByteThreshold = 1050 * 1024;
 
   // Window over which to consider cpu time spent in an ad_frame.
   static constexpr base::TimeDelta kCpuWindowSize =
@@ -179,10 +167,6 @@ class FrameData {
 
   gfx::Size frame_size() const { return frame_size_; }
 
-  FrameSizeInterventionStatus size_intervention_status() const {
-    return size_intervention_status_;
-  }
-
   MediaStatus media_status() const { return media_status_; }
 
   void set_media_status(MediaStatus media_status) {
@@ -264,10 +248,6 @@ class FrameData {
   gfx::Size frame_size_;
   url::Origin origin_;
   MediaStatus media_status_ = MediaStatus::kNotPlayed;
-
-  // Indicates whether or not this frame would have triggered a size
-  // intervention.
-  FrameSizeInterventionStatus size_intervention_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameData);
 };

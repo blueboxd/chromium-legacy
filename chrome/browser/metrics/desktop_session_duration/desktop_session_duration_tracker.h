@@ -24,7 +24,8 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
    public:
     virtual ~Observer() {}
     virtual void OnSessionStarted(base::TimeTicks session_start) {}
-    virtual void OnSessionEnded(base::TimeDelta session_length) {}
+    virtual void OnSessionEnded(base::TimeDelta session_length,
+                                base::TimeTicks session_end) {}
   };
 
   // Creates the |DesktopSessionDurationTracker| instance and initializes the

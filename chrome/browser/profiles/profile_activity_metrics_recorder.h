@@ -8,27 +8,37 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/time/time.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
 class Browser;
+class Profile;
 
-namespace base {
-template <typename T>
-class NoDestructor;
-}
-
-class ProfileActivityMetricsRecorder : public BrowserListObserver {
+class ProfileActivityMetricsRecorder
+    : public BrowserListObserver,
+      public metrics::DesktopSessionDurationTracker::Observer {
  public:
   // Initializes a |ProfileActivityMetricsRecorder| object and starts
   // tracking/recording.
   static void Initialize();
 
+  // Cleans up any global state for testing.
+  static void CleanupForTesting();
+
   // BrowserListObserver overrides:
   void OnBrowserSetLastActive(Browser* browser) override;
 
+  // metrics::DesktopSessionDurationTracker::Observer overrides:
+  void OnSessionEnded(base::TimeDelta session_length,
+                      base::TimeTicks session_end) override;
+
  private:
-  friend class base::NoDestructor<ProfileActivityMetricsRecorder>;
   ProfileActivityMetricsRecorder();
+  ~ProfileActivityMetricsRecorder() override;
+
+  Profile* last_active_profile_ = nullptr;
+  base::TimeTicks profile_session_start_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileActivityMetricsRecorder);
 };

@@ -58,6 +58,10 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_features.h"
+#endif
+
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -69,17 +73,22 @@ const char* const kChromeSettingsSubPages[] = {
     chrome::kLanguageOptionsSubPage,  chrome::kPasswordManagerSubPage,
     chrome::kPaymentsSubPage,         chrome::kResetProfileSettingsSubPage,
     chrome::kSearchEnginesSubPage,    chrome::kSyncSetupSubPage,
-#if defined(OS_CHROMEOS)
-    chrome::kAccessibilitySubPage,    chrome::kBluetoothSubPage,
-    chrome::kDateTimeSubPage,         chrome::kDisplaySubPage,
-    chrome::kInternetSubPage,         chrome::kPowerSubPage,
-    chrome::kStylusSubPage,
-#else
+#if !defined(OS_CHROMEOS)
     chrome::kCreateProfileSubPage,    chrome::kImportDataSubPage,
     chrome::kManageProfileSubPage,    chrome::kPeopleSubPage,
 #endif
 };
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_CHROMEOS)
+const char* const kChromeOSSettingsSubPages[] = {
+    chrome::kAccessibilitySubPage, chrome::kBluetoothSubPage,
+    chrome::kDateTimeSubPage,      chrome::kDisplaySubPage,
+    chrome::kInternetSubPage,      chrome::kNativePrintingSettingsSubPage,
+    chrome::kPowerSubPage,         chrome::kStylusSubPage,
+    chrome::kWiFiSettingsSubPage,
+};
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -224,6 +233,18 @@ std::vector<base::string16> ChromeAutocompleteProviderClient::GetBuiltinURLs() {
   for (size_t i = 0; i < base::size(kChromeSettingsSubPages); i++) {
     builtins.push_back(settings +
                        base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  // TODO(crbug/950007): Delete this after the settings split is complete since
+  // the OS setting routes should not show up as an autocomplete suggestion in
+  // browser.
+  if (!base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)) {
+    for (size_t i = 0; i < base::size(kChromeOSSettingsSubPages); i++) {
+      builtins.push_back(settings +
+                         base::ASCIIToUTF16(kChromeOSSettingsSubPages[i]));
+    }
   }
 #endif
 

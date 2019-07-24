@@ -172,15 +172,14 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
     : GLSurfaceEGL(),
       child_window_(parent_window),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      root_surface_(new DirectCompositionChildSurfaceWin()),
+      root_surface_(new DirectCompositionChildSurfaceWin(vsync_provider.get())),
       layer_tree_(std::make_unique<DCLayerTree>(
           settings.disable_nv12_dynamic_textures,
           settings.disable_larger_than_screen_overlays)),
-      vsync_provider_(std::move(vsync_provider)),
-      vsync_callback_(std::move(vsync_callback)),
       presentation_helper_(
-          std::make_unique<GLSurfacePresentationHelper>(vsync_provider_.get())),
-      weak_ptr_factory_(this) {}
+          std::make_unique<GLSurfacePresentationHelper>(vsync_provider.get())),
+      vsync_provider_(std::move(vsync_provider)),
+      vsync_callback_(std::move(vsync_callback)) {}
 
 DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
   Destroy();
@@ -396,27 +395,17 @@ bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
   if (!root_surface_->Initialize(GLSurfaceFormat()))
     return false;
 
-  if (root_surface_->UseSwapChainFrameStatistics()) {
-    // Save weak ptr on main thread before any use on vsync thread.
-    main_thread_vsync_callback_ = base::BindRepeating(
-        &DirectCompositionSurfaceWin::HandleVSyncOnMainThread,
-        weak_ptr_factory_.GetWeakPtr());
-  }
-
-  if ((SupportsGpuVSync() && vsync_callback_) || main_thread_vsync_callback_) {
-    vsync_thread_ = std::make_unique<VSyncThreadWin>(
-        window_, d3d11_device_,
-        base::BindRepeating(
-            &DirectCompositionSurfaceWin::HandleVSyncOnVSyncThread,
-            base::Unretained(this)));
-  }
+  if (SupportsGpuVSync() && vsync_callback_)
+    vsync_thread_ = VSyncThreadWin::GetInstance();
 
   return true;
 }
 
 void DirectCompositionSurfaceWin::Destroy() {
-  // Destroy vsync thread because joining it could issue callbacks.
-  vsync_thread_ = nullptr;
+  if (vsync_thread_) {
+    vsync_thread_->RemoveObserver(this);
+    vsync_thread_ = nullptr;
+  }
   // Destroy presentation helper first because its dtor calls GetHandle.
   presentation_helper_ = nullptr;
   root_surface_->Destroy();
@@ -459,14 +448,11 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     callback.Reset();
   }
 
-  gfx::SwapResult swap_result = root_surface_->SwapBuffers(std::move(callback));
-
-  if (swap_result == gfx::SwapResult::SWAP_ACK &&
+  gfx::SwapResult swap_result;
+  if (root_surface_->SwapBuffers(std::move(callback)) ==
+          gfx::SwapResult::SWAP_ACK &&
       layer_tree_->CommitAndClearPendingOverlays(root_surface_.get())) {
-    if (vsync_thread_) {
-      vsync_thread_->SetEnabled(root_surface_->HasPendingFrames() ||
-                                vsync_callback_enabled_);
-    }
+    swap_result = gfx::SwapResult::SWAP_ACK;
   } else {
     swap_result = gfx::SwapResult::SWAP_FAILED;
   }
@@ -547,34 +533,17 @@ bool DirectCompositionSurfaceWin::SupportsGpuVSync() const {
 
 void DirectCompositionSurfaceWin::SetGpuVSyncEnabled(bool enabled) {
   DCHECK(vsync_thread_);
-  if (vsync_callback_enabled_ == enabled)
-    return;
-  vsync_callback_enabled_ = enabled;
-  vsync_thread_->SetEnabled(root_surface_->HasPendingFrames() ||
-                            vsync_callback_enabled_);
-}
-
-void DirectCompositionSurfaceWin::HandleVSyncOnVSyncThread(
-    base::TimeTicks vsync_time,
-    base::TimeDelta vsync_interval) {
-  if (vsync_callback_)
-    vsync_callback_.Run(vsync_time, vsync_interval);
-
-  if (main_thread_vsync_callback_) {
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(main_thread_vsync_callback_, vsync_time,
-                                  vsync_interval));
+  if (enabled) {
+    vsync_thread_->AddObserver(this);
+  } else {
+    vsync_thread_->RemoveObserver(this);
   }
 }
 
-void DirectCompositionSurfaceWin::HandleVSyncOnMainThread(
-    base::TimeTicks vsync_time,
-    base::TimeDelta vsync_interval) {
-  // Check pending frames in root surface in case client stops issuing swaps.
-  root_surface_->UpdateVSyncParameters(vsync_time, vsync_interval);
-  root_surface_->CheckPendingFrames();
-  vsync_thread_->SetEnabled(root_surface_->HasPendingFrames() ||
-                            vsync_callback_enabled_);
+void DirectCompositionSurfaceWin::OnVSync(base::TimeTicks vsync_time,
+                                          base::TimeDelta interval) {
+  DCHECK(vsync_callback_);
+  vsync_callback_.Run(vsync_time, interval);
 }
 
 scoped_refptr<base::TaskRunner>

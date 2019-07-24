@@ -69,6 +69,7 @@ void BaseRenderingContext2D::RealizeSaves() {
 
 void BaseRenderingContext2D::save() {
   state_stack_.back()->Save();
+  ValidateStateStack();
 }
 
 void BaseRenderingContext2D::restore() {
@@ -124,6 +125,7 @@ void BaseRenderingContext2D::UnwindStateStack() {
         sk_canvas->restore();
     }
   }
+  ValidateStateStack();
 }
 
 void BaseRenderingContext2D::Reset() {

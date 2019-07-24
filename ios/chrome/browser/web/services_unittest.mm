@@ -9,7 +9,7 @@
 #include "components/services/unzip/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/mojom/unzipper.mojom.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
-#include "ios/web/public/service_manager_connection.h"
+#include "ios/web/public/service/service_manager_connection.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/test_service_manager_context.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"

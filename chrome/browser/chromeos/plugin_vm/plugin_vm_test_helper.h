@@ -40,6 +40,10 @@ class PluginVmTestHelper {
   // enterprise enrolled so that manual testing of PluginVm is easier.
   void AllowPluginVmForManualTesting();
 
+  // Fakes the Plugin VM window being opened or closed.
+  void OpenShelfItem();
+  void CloseShelfItem();
+
  private:
   TestingProfile* testing_profile_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;

@@ -154,7 +154,7 @@ const CSSValue* CustomProperty::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    Node* styled_node,
+    const Node*,
     bool allow_visited_style) const {
   if (registration_) {
     const CSSValue* value = style.GetVariableValue(name_, IsInherited());

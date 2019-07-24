@@ -19,7 +19,7 @@
 class Profile;
 class Browser;
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -33,7 +33,7 @@ const int kUpgradeWelcomeTutorialShowMax = 1;
 // Returns the username of the authenticated user or an empty string if there is
 // no authenticated user.
 base::string16 GetAuthenticatedUsername(
-    const identity::IdentityManager* identity_manager);
+    const signin::IdentityManager* identity_manager);
 
 // Initializes signin-related preferences.
 void InitializePrefsForProfile(Profile* profile);

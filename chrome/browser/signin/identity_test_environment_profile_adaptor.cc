@@ -72,7 +72,7 @@ IdentityTestEnvironmentProfileAdaptor::BuildIdentityManagerForTests(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  return identity::IdentityTestEnvironment::BuildIdentityManagerForTests(
+  return signin::IdentityTestEnvironment::BuildIdentityManagerForTests(
       ChromeSigninClientFactory::GetForProfile(profile), profile->GetPrefs(),
       profile->GetPath());
 }

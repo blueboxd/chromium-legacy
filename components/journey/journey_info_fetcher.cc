@@ -19,7 +19,7 @@ const char kChromeSyncScope[] = "https://www.googleapis.com/auth/chromememex";
 }  // namespace
 
 JourneyInfoFetcher::JourneyInfoFetcher(
-    identity::IdentityManager* identity_manager,
+    signin::IdentityManager* identity_manager,
     const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory)
     : identity_manager_(identity_manager), loader_factory_(loader_factory) {}
 
@@ -42,18 +42,18 @@ void JourneyInfoFetcher::RequestOAuthTokenService() {
     return;
 
   OAuth2AccessTokenManager::ScopeSet scopes{kChromeSyncScope};
-  token_fetcher_ = std::make_unique<identity::PrimaryAccountAccessTokenFetcher>(
+  token_fetcher_ = std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
       "journey_info", identity_manager_, scopes,
       base::BindOnce(&JourneyInfoFetcher::AccessTokenFetchFinished,
                      base::Unretained(this)),
-      identity::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+      signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 }
 
 void JourneyInfoFetcher::AccessTokenFetchFinished(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo access_token_info) {
+    signin::AccessTokenInfo access_token_info) {
   DCHECK(token_fetcher_);
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
+  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       token_fetcher_deleter(std::move(token_fetcher_));
 
   if (error.state() != GoogleServiceAuthError::NONE) {

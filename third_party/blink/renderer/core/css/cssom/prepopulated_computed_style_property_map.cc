@@ -18,7 +18,7 @@ namespace blink {
 PrepopulatedComputedStylePropertyMap::PrepopulatedComputedStylePropertyMap(
     const Document& document,
     const ComputedStyle& style,
-    Node* styled_node,
+    const Node* styled_node,
     const Vector<CSSPropertyID>& native_properties,
     const Vector<AtomicString>& custom_properties)
     : StylePropertyMapReadOnlyMainThread(), styled_node_(styled_node) {

@@ -39,7 +39,7 @@ SyncedSessionsObserverBridge::SyncedSessionsObserverBridge(
 
 SyncedSessionsObserverBridge::~SyncedSessionsObserverBridge() {}
 
-#pragma mark - identity::IdentityManager::Observer
+#pragma mark - signin::IdentityManager::Observer
 
 void SyncedSessionsObserverBridge::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {

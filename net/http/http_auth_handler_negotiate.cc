@@ -131,7 +131,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   if (!http_auth_preferences()->AllowGssapiLibraryLoad())
     return ERR_UNSUPPORTED_AUTH_SCHEME;
 #endif
-  if (!auth_library_->Init()) {
+  if (!auth_library_->Init(net_log)) {
     is_unsupported_ = true;
     return ERR_UNSUPPORTED_AUTH_SCHEME;
   }
@@ -185,7 +185,7 @@ bool HttpAuthHandlerNegotiate::AllowsExplicitCredentials() {
 bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
                                     const SSLInfo& ssl_info) {
 #if defined(OS_POSIX)
-  if (!auth_system_->Init()) {
+  if (!auth_system_->Init(net_log())) {
     VLOG(1) << "can't initialize GSSAPI library";
     return false;
   }
@@ -387,7 +387,7 @@ int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
   AuthCredentials* credentials = has_credentials_ ? &credentials_ : nullptr;
   return auth_system_->GenerateAuthToken(
-      credentials, spn_, channel_bindings_, auth_token_,
+      credentials, spn_, channel_bindings_, auth_token_, net_log(),
       base::BindOnce(&HttpAuthHandlerNegotiate::OnIOComplete,
                      base::Unretained(this)));
 }

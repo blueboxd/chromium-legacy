@@ -1089,7 +1089,7 @@ WebContents* PrintPreviewHandler::GetInitiator() const {
 }
 
 void PrintPreviewHandler::OnAccountsInCookieUpdated(
-    const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+    const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
     const GoogleServiceAuthError& error) {
   base::Value account_list(base::Value::Type::LIST);
   const std::vector<gaia::ListedAccount>& accounts =

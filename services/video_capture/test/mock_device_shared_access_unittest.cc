@@ -12,11 +12,10 @@
 #include "media/capture/video/mock_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
+#include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/video_source_provider_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +33,7 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   MockDeviceSharedAccessTest()
       : mock_receiver_1_(mojo::MakeRequest(&receiver_1_)),
         mock_receiver_2_(mojo::MakeRequest(&receiver_2_)),
-        next_arbitrary_frame_feedback_id_(123),
-        service_keepalive_(nullptr, base::nullopt) {}
+        next_arbitrary_frame_feedback_id_(123) {}
   ~MockDeviceSharedAccessTest() override {}
 
   void SetUp() override {
@@ -55,7 +53,6 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
     service_device_factory_ = std::make_unique<DeviceFactoryMediaToMojoAdapter>(
         std::move(video_capture_system));
 #endif  // defined(OS_CHROMEOS)
-    service_device_factory_->SetServiceRef(service_keepalive_.CreateRef());
     source_provider_ = std::make_unique<VideoSourceProviderImpl>(
         service_device_factory_.get(), base::DoNothing());
 
@@ -268,7 +265,6 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   int32_t next_arbitrary_frame_feedback_id_;
 
  private:
-  service_manager::ServiceKeepalive service_keepalive_;
 };
 
 // This alias ensures test output is easily attributed to this service's tests.

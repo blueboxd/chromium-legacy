@@ -41,6 +41,7 @@ class PDFiumDocument;
 
 namespace draw_utils {
 class ShadowMatrix;
+struct PageInsetSizes;
 }
 
 class PDFiumEngine : public PDFEngine,
@@ -267,18 +268,33 @@ class PDFiumEngine : public PDFEngine,
   // PDFiumPage because we might not have that structure when we need this.
   pp::Size GetPageSize(int index);
 
+  // Helper function for getting the inset sizes for the current layout. If
+  // |two_up_view_| is true, the configuration of inset sizes depends on
+  // the position of the page, specified by |page_index| and |num_of_pages|.
+  draw_utils::PageInsetSizes GetInsetSizes(size_t page_index,
+                                           size_t num_of_pages) const;
+
   // If |two_up_view_| is false, enlarges |page_size| with inset sizes for
-  // single-view. If |two_up_view_| is true, gets the appropriate two-up view
-  // inset sizes for the position of the page (dependent on |page_index| and
-  // |num_of_pages|) and then enlarges |page_size|.
-  void EnlargePage(size_t page_index, size_t num_of_pages, pp::Size* page_size);
+  // single-view. If |two_up_view_| is true, calls GetInsetSizes() with
+  // |page_index| and |num_of_pages|, and uses the returned inset sizes to
+  // enlarge |page_size|.
+  void EnlargePage(size_t page_index,
+                   size_t num_of_pages,
+                   pp::Size* page_size) const;
 
   // Similar to EnlargePage(), but insets a |rect|. Also multiplies the inset
   // sizes by |multiplier|, using the ceiling of the result.
   void InsetPage(size_t page_index,
                  size_t num_of_pages,
                  double multiplier,
-                 pp::Rect* rect);
+                 pp::Rect* rect) const;
+
+  // If |two_up_view_| is true, returns the index of the page beside
+  // |page_index| page. Returns base::nullopt if there is no adjacent page or
+  // if |two_up_view_| is false.
+  base::Optional<size_t> GetAdjacentPageIndexForTwoUpView(
+      size_t page_index,
+      size_t num_of_pages) const;
 
   void GetAllScreenRectsUnion(const std::vector<PDFiumRange>& rect_range,
                               const pp::Point& offset_point,

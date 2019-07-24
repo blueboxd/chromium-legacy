@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -42,7 +42,7 @@ class AuthenticationServiceFake : public AuthenticationService {
  private:
   AuthenticationServiceFake(PrefService* pref_service,
                             SyncSetupService* sync_setup_service,
-                            identity::IdentityManager* identity_manager,
+                            signin::IdentityManager* identity_manager,
                             syncer::SyncService* sync_service);
 
   __strong ChromeIdentity* authenticated_identity_;

@@ -128,26 +128,20 @@ function highlightReferencedFlag() {
 }
 
 /**
- * Asks the C++ FlagsDOMHandler to get details about the available experimental
- * features and return detailed data about the configuration. The
- * FlagsDOMHandler should reply to returnFlagsExperiments() (below).
+ * Gets details and configuration about the available features. The
+ * |returnExperimentalFeatures()| will be called with reply.
  */
 function requestExperimentalFeaturesData() {
   chrome.send('requestExperimentalFeatures');
 }
 
-/**
- * Asks the C++ FlagsDOMHandler to restart the browser (restoring tabs).
- */
+/** Restart browser and restore tabs. */
 function restartBrowser() {
   chrome.send('restartBrowser');
 }
 
-/**
- * Reset all flags to their default values and refresh the UI.
- */
+/** Reset all flags to their default values and refresh the UI. */
 function resetAllFlags() {
-  // Asks the C++ FlagsDOMHandler to reset all flags to default values.
   chrome.send('resetAllFlags');
   showRestartToast(true);
   requestExperimentalFeaturesData();
@@ -248,7 +242,6 @@ function experimentChangesUiUpdates(node, index) {
  * @param {boolean} enable Whether to enable or disable the experiment.
  */
 function handleEnableExperimentalFeature(node, enable) {
-  // Tell the C++ FlagsDOMHandler to enable/disable the experiment.
   chrome.send('enableExperimentalFeature', [String(node.internal_name),
                                             String(enable)]);
   experimentChangesUiUpdates(node, enable ? 1 : 0);
@@ -266,7 +259,6 @@ function handleSetOriginListFlag(node, value) {
  * @param {number} index The index of the option that was selected.
  */
 function handleSelectExperimentalFeatureChoice(node, index) {
-  // Tell the C++ FlagsDOMHandler to enable the selected choice.
   chrome.send('enableExperimentalFeature',
               [String(node.internal_name) + '@' + index, 'true']);
   experimentChangesUiUpdates(node, index);

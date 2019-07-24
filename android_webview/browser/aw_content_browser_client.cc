@@ -994,7 +994,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
       // Manages its own lifetime.
       new android_webview::AwProxyingURLLoaderFactory(
-          0 /* process_id */, std::move(request), nullptr, nullptr,
+          0 /* process_id */, std::move(request), nullptr,
           true /* intercept_only */);
     } else {
       base::PostTaskWithTraits(
@@ -1003,7 +1003,7 @@ bool AwContentBrowserClient::HandleExternalProtocol(
               [](network::mojom::URLLoaderFactoryRequest request) {
                 // Manages its own lifetime.
                 new android_webview::AwProxyingURLLoaderFactory(
-                    0 /* process_id */, std::move(request), nullptr, nullptr,
+                    0 /* process_id */, std::move(request), nullptr,
                     true /* intercept_only */);
               },
               std::move(request)));
@@ -1069,8 +1069,7 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy, process_id,
                      std::move(proxied_receiver),
-                     std::move(target_factory_info),
-                     nullptr /* AwInterceptedRequestHandler */));
+                     std::move(target_factory_info)));
   return true;
 }
 
@@ -1088,8 +1087,7 @@ void AwContentBrowserClient::WillCreateURLLoaderFactoryForAppCacheSubresource(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
                      render_process_id, std::move(factory_receiver),
-                     std::move(pending_proxy),
-                     nullptr /* AwInterceptedRequestHandler */));
+                     std::move(pending_proxy)));
 }
 
 uint32_t AwContentBrowserClient::GetWebSocketOptions(

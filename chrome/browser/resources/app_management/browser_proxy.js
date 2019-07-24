@@ -8,7 +8,7 @@ cr.define('app_management', function() {
       /** @type {appManagement.mojom.PageCallbackRouter} */
       this.callbackRouter = new appManagement.mojom.PageCallbackRouter();
 
-      /** @type {appManagement.mojom.PageHandlerInterface} */
+      /** @type {appManagement.mojom.PageHandlerRemote} */
       this.handler = null;
 
       const urlParams = new URLSearchParams(window.location.search);
@@ -26,8 +26,9 @@ cr.define('app_management', function() {
           });
         }
 
-        this.handler = new app_management.FakePageHandler(
-            this.callbackRouter.$.createProxy());
+        this.fakeHandler = new app_management.FakePageHandler(
+            this.callbackRouter.$.bindNewPipeAndPassRemote());
+        this.handler = this.fakeHandler.getRemote();
 
         const permissionOptions = {};
         permissionOptions[PwaPermissionType.CONTENT_SETTINGS_TYPE_GEOLOCATION] =
@@ -106,14 +107,14 @@ cr.define('app_management', function() {
               ),
         ];
 
-        this.handler.setApps(appList);
+        this.fakeHandler.setApps(appList);
 
       } else {
-        this.handler = new appManagement.mojom.PageHandlerProxy();
-        const factory = appManagement.mojom.PageHandlerFactory.getProxy();
+        this.handler = new appManagement.mojom.PageHandlerRemote();
+        const factory = appManagement.mojom.PageHandlerFactory.getRemote();
         factory.createPageHandler(
-            this.callbackRouter.$.createProxy(),
-            this.handler.$.createRequest());
+            this.callbackRouter.$.bindNewPipeAndPassRemote(),
+            this.handler.$.bindNewPipeAndPassReceiver());
       }
     }
   }

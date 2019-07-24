@@ -367,7 +367,8 @@ class AuthenticatorRequestDialogModel {
 
   void UpdateAuthenticatorReferencePairingMode(
       base::StringPiece authenticator_id,
-      bool is_in_pairing_mode);
+      bool is_in_pairing_mode,
+      base::string16 display_name);
 
   // SelectAccount is called to trigger an account selection dialog.
   void SelectAccount(
@@ -420,6 +421,8 @@ class AuthenticatorRequestDialogModel {
   }
 
   const std::string& relying_party_id() const { return relying_party_id_; }
+
+  bool request_may_start_over() const { return request_may_start_over_; }
 
  private:
   // Contains the state that will be reset when calling StartOver(). StartOver()
@@ -493,6 +496,11 @@ class AuthenticatorRequestDialogModel {
       selection_callback_;
 
   bool incognito_mode_ = false;
+
+  // request_may_start_over_ indicates whether a button to retry the request
+  // should be included on the dialog sheet shown when encountering certain
+  // errors.
+  bool request_may_start_over_ = true;
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 

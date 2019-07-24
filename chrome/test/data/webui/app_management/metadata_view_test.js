@@ -49,7 +49,7 @@ suite('<app-management-metadata-view>', function() {
 
         // Toggle from false to true.
         toggle.click();
-        await fakeHandler.$.flushForTesting();
+        await fakeHandler.flushPipesForTesting();
 
         // Check that the isPinned field of the app has changed.
         expectEquals(OptionalBool.kTrue, metadataView.app_.isPinned);
@@ -59,7 +59,7 @@ suite('<app-management-metadata-view>', function() {
 
         // Toggle from true to false.
         toggle.click();
-        await fakeHandler.$.flushForTesting();
+        await fakeHandler.flushPipesForTesting();
 
         // Check that the isPinned field of the app has changed.
         expectEquals(OptionalBool.kFalse, metadataView.app_.isPinned);

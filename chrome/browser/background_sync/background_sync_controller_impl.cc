@@ -13,9 +13,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/background_sync_context.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/background_sync_registration.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/storage_partition.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -43,7 +47,8 @@ const char BackgroundSyncControllerImpl::kMinPeriodicSyncEventsInterval[] =
     "min_periodic_sync_events_interval_sec";
 
 BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
-    : profile_(profile),
+    : SiteEngagementObserver(SiteEngagementService::Get(profile)),
+      profile_(profile),
       site_engagement_service_(SiteEngagementService::Get(profile)),
       background_sync_metrics_(
           ukm::UkmBackgroundRecorderFactory::GetForProfile(profile_)) {
@@ -52,6 +57,36 @@ BackgroundSyncControllerImpl::BackgroundSyncControllerImpl(Profile* profile)
 }
 
 BackgroundSyncControllerImpl::~BackgroundSyncControllerImpl() = default;
+
+void BackgroundSyncControllerImpl::OnEngagementEvent(
+    content::WebContents* web_contents,
+    const GURL& url,
+    double score,
+    SiteEngagementService::EngagementType engagement_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (score == 0.0)
+    return;
+
+  auto origin = url::Origin::Create(url);
+  auto iter = suspended_periodic_sync_origins_.find(origin);
+  if (iter == suspended_periodic_sync_origins_.end())
+    return;
+
+  suspended_periodic_sync_origins_.erase(iter);
+
+  auto* storage_partition = content::BrowserContext::GetStoragePartitionForSite(
+      profile_, url, /* can_create= */ false);
+  if (!storage_partition)
+    return;
+
+  auto* background_sync_context = storage_partition->GetBackgroundSyncContext();
+  if (!background_sync_context)
+    return;
+
+  background_sync_context->RevivePeriodicBackgroundSyncRegistrations(
+      std::move(origin));
+}
 
 void BackgroundSyncControllerImpl::GetParameterOverrides(
     content::BackgroundSyncParameters* parameters) {
@@ -191,10 +226,13 @@ void BackgroundSyncControllerImpl::ScheduleBrowserWakeUp(
 #endif
 }
 
-int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(
-    const GURL& url) const {
+int BackgroundSyncControllerImpl::GetSiteEngagementPenalty(const GURL& url) {
   blink::mojom::EngagementLevel engagement_level =
       site_engagement_service_->GetEngagementLevel(url);
+  if (engagement_level == blink::mojom::EngagementLevel::NONE) {
+    suspended_periodic_sync_origins_.insert(
+        url::Origin::Create(url.GetOrigin()));
+  }
 
   switch (engagement_level) {
     case blink::mojom::EngagementLevel::NONE:
@@ -283,3 +321,11 @@ BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
 BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
     ~BackgroundSyncEventKeepAliveImpl() = default;
 #endif
+
+void BackgroundSyncControllerImpl::NoteSuspendedPeriodicSyncOrigins(
+    std::set<url::Origin> suspended_origins) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (auto& origin : suspended_origins)
+    suspended_periodic_sync_origins_.insert(std::move(origin));
+}

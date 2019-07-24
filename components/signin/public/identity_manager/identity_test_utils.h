@@ -24,7 +24,7 @@ class GoogleServiceAuthError;
 // to use IdentityTestEnvironment. Any such usage should only be temporary,
 // i.e., should be followed as quickly as possible by conversion of the test
 // code to use IdentityTestEnvironment.
-namespace identity {
+namespace signin {
 
 // Controls whether to keep or remove accounts when clearing the primary
 // account.
@@ -37,7 +37,7 @@ enum class ClearPrimaryAccountPolicy {
   REMOVE_ALL_ACCOUNTS
 };
 
-struct CookieParams {
+struct CookieParamsForTest {
   std::string email;
   std::string gaia_id;
 };
@@ -139,7 +139,7 @@ void RemoveRefreshTokenForAccount(IdentityManager* identity_manager,
 // NOTE: See disclaimer at top of file re: direct usage.
 void SetCookieAccounts(IdentityManager* identity_manager,
                        network::TestURLLoaderFactory* test_url_loader_factory,
-                       const std::vector<CookieParams>& cookie_accounts);
+                       const std::vector<CookieParamsForTest>& cookie_accounts);
 
 // Updates the info for |account_info.account_id|, which must be a known
 // account.
@@ -182,6 +182,6 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager* identity_manager,
                                           const std::string& given_name,
                                           const std::string& locale,
                                           const std::string& picture_url);
-}  // namespace identity
+}  // namespace signin
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_IDENTITY_MANAGER_IDENTITY_TEST_UTILS_H_

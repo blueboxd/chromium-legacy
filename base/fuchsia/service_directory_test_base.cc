@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/test/test_timeouts.h"
 
 namespace base {
@@ -17,48 +18,37 @@ ServiceDirectoryTestBase::ServiceDirectoryTestBase()
     : run_timeout_(TestTimeouts::action_timeout(), BindRepeating([]() {
                      ADD_FAILURE() << "Run() timed out.";
                    })) {
-  // TODO(https://crbug.com/920920): Remove the ServiceDirectory's implicit
-  // "public" sub-directory and update this setup logic.
-
   // Mount service dir and publish the service.
+  outgoing_directory_ = std::make_unique<sys::OutgoingDirectory>();
   fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
-  service_directory_ =
-      std::make_unique<ServiceDirectory>(directory.NewRequest());
+  zx_status_t status =
+      outgoing_directory_->Serve(directory.NewRequest().TakeChannel());
+  ZX_CHECK(status == ZX_OK, status);
   service_binding_ =
       std::make_unique<ScopedServiceBinding<testfidl::TestInterface>>(
-          service_directory_.get(), &test_service_);
+          outgoing_directory_.get(), &test_service_);
 
-  // Create the ServiceDirectoryClient, connected to the "svc" sub-directory.
+  // Create the sys::ServiceDirectory, connected to the "svc" sub-directory.
   fidl::InterfaceHandle<::fuchsia::io::Directory> svc_directory;
   CHECK_EQ(fdio_service_connect_at(
-               directory.channel().get(), "/svc/.",
+               directory.channel().get(), "svc",
                svc_directory.NewRequest().TakeChannel().release()),
            ZX_OK);
-  public_service_directory_client_ =
-      std::make_unique<ServiceDirectoryClient>(std::move(svc_directory));
+  public_service_directory_ =
+      std::make_unique<sys::ServiceDirectory>(std::move(svc_directory));
 
-  // Create the ServiceDirectoryClient, connected to the "debug" sub-directory.
+  // Create the sys::ServiceDirectory, connected to the "debug" sub-directory.
   fidl::InterfaceHandle<::fuchsia::io::Directory> debug_directory;
   CHECK_EQ(fdio_service_connect_at(
-               directory.channel().get(), "/debug/.",
+               directory.channel().get(), "debug",
                debug_directory.NewRequest().TakeChannel().release()),
            ZX_OK);
-  debug_service_directory_client_ =
-      std::make_unique<ServiceDirectoryClient>(std::move(debug_directory));
+  debug_service_directory_ =
+      std::make_unique<sys::ServiceDirectory>(std::move(debug_directory));
 
-  // Create the ServiceDirectoryClient, connected to the "public" sub-directory
-  // (same contents as "svc", provided for compatibility).
-  fidl::InterfaceHandle<::fuchsia::io::Directory> public_directory;
-  CHECK_EQ(fdio_service_connect_at(
-               directory.channel().get(), "/public/.",
-               public_directory.NewRequest().TakeChannel().release()),
-           ZX_OK);
-  legacy_public_service_directory_client_ =
-      std::make_unique<ServiceDirectoryClient>(std::move(public_directory));
-
-  // Create a ServiceDirectoryClient for the "private" part of the directory.
-  root_service_directory_client_ =
-      std::make_unique<ServiceDirectoryClient>(std::move(directory));
+  // Create a sys::ServiceDirectory for the "private" part of the directory.
+  root_service_directory_ =
+      std::make_unique<sys::ServiceDirectory>(std::move(directory));
 }
 
 ServiceDirectoryTestBase::~ServiceDirectoryTestBase() = default;

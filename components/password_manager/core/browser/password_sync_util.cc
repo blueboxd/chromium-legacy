@@ -33,7 +33,7 @@ namespace sync_util {
 
 std::string GetSyncUsernameIfSyncingPasswords(
     const syncer::SyncService* sync_service,
-    const identity::IdentityManager* identity_manager) {
+    const signin::IdentityManager* identity_manager) {
   if (!identity_manager)
     return std::string();
 
@@ -47,10 +47,9 @@ std::string GetSyncUsernameIfSyncingPasswords(
   return identity_manager->GetPrimaryAccountInfo().email;
 }
 
-bool IsSyncAccountCredential(
-    const autofill::PasswordForm& form,
-    const syncer::SyncService* sync_service,
-    const identity::IdentityManager* identity_manager) {
+bool IsSyncAccountCredential(const autofill::PasswordForm& form,
+                             const syncer::SyncService* sync_service,
+                             const signin::IdentityManager* identity_manager) {
   if (!IsGaiaCredentialPage(form.signon_realm))
     return false;
 
@@ -66,7 +65,7 @@ bool IsSyncAccountCredential(
 }
 
 bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
-                            const identity::IdentityManager* identity_manager,
+                            const signin::IdentityManager* identity_manager,
                             PrefService* prefs) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   bool is_protected_credential_url =
@@ -98,7 +97,7 @@ bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
 }
 
 bool IsSyncAccountEmail(const std::string& username,
-                        const identity::IdentityManager* identity_manager) {
+                        const signin::IdentityManager* identity_manager) {
   // |identity_manager| can be null if user is not signed in.
   if (!identity_manager)
     return false;

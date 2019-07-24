@@ -25,7 +25,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
  public:
   TestPaymentsClient(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
-      identity::IdentityManager* identity_manager,
+      signin::IdentityManager* identity_manager,
       PersonalDataManager* personal_data_manager);
 
   ~TestPaymentsClient() override;

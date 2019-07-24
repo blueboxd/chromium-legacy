@@ -17,7 +17,7 @@ JNI_IdentityServicesProvider_GetAccountTrackerService(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   return identity_manager->LegacyGetAccountTrackerServiceJavaObject();
 }
@@ -27,7 +27,7 @@ JNI_IdentityServicesProvider_GetOAuth2TokenService(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   return identity_manager->LegacyGetOAuth2TokenServiceJavaObject();
 }

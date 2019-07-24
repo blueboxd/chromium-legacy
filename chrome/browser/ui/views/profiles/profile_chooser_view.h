@@ -36,7 +36,7 @@ class HoverButton;
 // It displays a list of profiles and allows users to switch between profiles.
 class ProfileChooserView : public ProfileMenuViewBase,
                            public AvatarMenuObserver,
-                           public identity::IdentityManager::Observer {
+                           public signin::IdentityManager::Observer {
  public:
   ProfileChooserView(views::Button* anchor_button,
                      Browser* browser,
@@ -71,7 +71,7 @@ class ProfileChooserView : public ProfileMenuViewBase,
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override;
 
-  // identity::IdentityManager::Observer overrides.
+  // signin::IdentityManager::Observer overrides.
   void OnRefreshTokenUpdatedForAccount(
       const CoreAccountInfo& account_info) override;
 

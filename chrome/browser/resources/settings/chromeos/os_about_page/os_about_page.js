@@ -63,6 +63,18 @@ Polymer({
     },
 
     /** @private */
+    hasInternetConnection_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    hasReleaseNotes_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
     showCrostini: Boolean,
 
     /** @private */
@@ -177,6 +189,14 @@ Polymer({
       this.hasEndOfLife_ = result;
     });
 
+    this.aboutBrowserProxy_.getEnabledReleaseNotes().then(result => {
+      this.hasReleaseNotes_ = result;
+    });
+
+    this.aboutBrowserProxy_.checkInternetConnection().then(result => {
+      this.hasInternetConnection_ = result;
+    });
+
     if (settings.getQueryParameters().get('checkForUpdate') == 'true') {
       this.onCheckUpdatesClick_();
     }
@@ -229,6 +249,11 @@ Polymer({
     // Stop the propagation of events, so that clicking on links inside
     // actionable items won't trigger action.
     event.stopPropagation();
+  },
+
+  /** @private */
+  onReleaseNotesTap_: function() {
+    this.aboutBrowserProxy_.showReleaseNotes();
   },
 
   /** @private */

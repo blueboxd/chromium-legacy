@@ -992,7 +992,6 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     low_disk_notification_ = std::make_unique<LowDiskNotification>();
 
   gnubby_notification_ = std::make_unique<GnubbyNotification>();
-
   demo_mode_resources_remover_ = DemoModeResourcesRemover::CreateIfNeeded(
       g_browser_process->local_state());
   // Start measuring crosvm processes resource usage.

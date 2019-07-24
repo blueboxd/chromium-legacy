@@ -114,7 +114,8 @@ class Dependency:
       return self.html_path_normalized
 
     input_dir = os.path.relpath(os.path.dirname(self.html_file), _ROOT)
-    return os.path.normpath(os.path.join(input_dir, self.html_path))
+    return os.path.normpath(
+        os.path.join(input_dir, self.html_path)).replace("\\", "/")
 
   def _to_js_normalized(self):
     if re.match(POLYMER_V1_DIR, self.html_path_normalized):
@@ -145,7 +146,8 @@ class Dependency:
       return js_path
 
     input_dir = os.path.relpath(os.path.dirname(self.html_file), _ROOT)
-    relpath = os.path.relpath(self.js_path_normalized, input_dir)
+    relpath = os.path.relpath(
+        self.js_path_normalized, input_dir).replace("\\", "/")
     # Prepend "./" if |relpath| refers to a relative subpath, that is not "../".
     # This prefix is required for JS Modules paths.
     if not relpath.startswith('.'):

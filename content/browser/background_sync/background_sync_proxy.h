@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_PROXY_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -13,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -29,6 +31,8 @@ class CONTENT_EXPORT BackgroundSyncProxy {
   ~BackgroundSyncProxy();
 
   void ScheduleBrowserWakeUp(blink::mojom::BackgroundSyncType sync_type);
+  void SendSuspendedPeriodicSyncOrigins(
+      std::set<url::Origin> suspended_origins);
 
  private:
   // Constructed on the IO thread, lives and dies on the UI thread.

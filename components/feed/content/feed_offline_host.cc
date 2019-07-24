@@ -121,9 +121,8 @@ std::vector<PrefetchSuggestion> ConvertMetadataToSuggestions(
 
 void RunSuggestionCallbackWithConversion(
     SuggestionsProvider::SuggestionCallback suggestions_callback,
-    std::vector<ContentMetadata> metadataVector) {
-  std::move(suggestions_callback)
-      .Run(ConvertMetadataToSuggestions(std::move(metadataVector)));
+    std::vector<offline_pages::PrefetchSuggestion> metadataVector) {
+  std::move(suggestions_callback).Run(metadataVector);
 }
 
 }  //  namespace
@@ -136,6 +135,7 @@ FeedOfflineHost::FeedOfflineHost(OfflinePageModel* offline_page_model,
       prefetch_service_(prefetch_service),
       on_suggestion_consumed_(on_suggestion_consumed),
       on_suggestions_shown_(on_suggestions_shown) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(offline_page_model_);
   DCHECK(prefetch_service_);
   DCHECK(!on_suggestion_consumed_.is_null());
@@ -143,6 +143,7 @@ FeedOfflineHost::FeedOfflineHost(OfflinePageModel* offline_page_model,
 }
 
 FeedOfflineHost::~FeedOfflineHost() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Safe to call RemoveObserver() even if AddObserver() has not been called.
   offline_page_model_->RemoveObserver(this);
 }
@@ -150,6 +151,7 @@ FeedOfflineHost::~FeedOfflineHost() {
 void FeedOfflineHost::Initialize(
     const base::RepeatingClosure& trigger_get_known_content,
     const NotifyStatusChangeCallback& notify_status_change) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(trigger_get_known_content_.is_null());
   DCHECK(!trigger_get_known_content.is_null());
   DCHECK(notify_status_change_.is_null());
@@ -168,10 +170,12 @@ void FeedOfflineHost::Initialize(
 }
 
 void FeedOfflineHost::SetSuggestionProvider() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   prefetch_service_->SetSuggestionProvider(this);
 }
 
 base::Optional<int64_t> FeedOfflineHost::GetOfflineId(const std::string& url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto iter = url_hash_to_id_.find(base::Hash(url));
   return iter == url_hash_to_id_.end() ? base::Optional<int64_t>()
                                        : base::Optional<int64_t>(iter->second);
@@ -180,6 +184,7 @@ base::Optional<int64_t> FeedOfflineHost::GetOfflineId(const std::string& url) {
 void FeedOfflineHost::GetOfflineStatus(
     std::vector<std::string> urls,
     base::OnceCallback<void(std::vector<std::string>)> callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   UMA_HISTOGRAM_EXACT_LINEAR("ContentSuggestions.Feed.Offline.GetStatusCount",
                              urls.size(), 50);
 
@@ -200,38 +205,42 @@ void FeedOfflineHost::GetOfflineStatus(
 }
 
 void FeedOfflineHost::OnContentRemoved(std::vector<std::string> urls) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const std::string& url : urls) {
     prefetch_service_->RemoveSuggestion(GURL(url));
   }
 }
 
 void FeedOfflineHost::OnNewContentReceived() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   prefetch_service_->NewSuggestionsAvailable();
 }
 
 void FeedOfflineHost::OnNoListeners() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   url_hash_to_id_.clear();
 }
 
 void FeedOfflineHost::OnGetKnownContentDone(
     std::vector<ContentMetadata> suggestions) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // While |suggestions| are movable, there might be multiple callbacks in
-  // |pending_known_content_callbacks_|. All but one callback will need to
-  // receive a full copy of |suggestions|, and the last one will received a
-  // moved copy.
-  for (size_t i = 0; i < pending_known_content_callbacks_.size(); i++) {
-    bool can_move = (i + 1 == pending_known_content_callbacks_.size());
-    std::move(pending_known_content_callbacks_[i])
-        .Run(can_move ? std::move(suggestions) : suggestions);
+  // |pending_known_content_callbacks_|. To be safe, copy all the suggestions.
+  std::vector<offline_pages::PrefetchSuggestion> converted_suggestions =
+      ConvertMetadataToSuggestions(std::move(suggestions));
+  for (auto& callback : pending_known_content_callbacks_) {
+    RunSuggestionCallbackWithConversion(std::move(callback),
+                                        converted_suggestions);
   }
   pending_known_content_callbacks_.clear();
 }
 
 void FeedOfflineHost::GetCurrentArticleSuggestions(
     SuggestionsProvider::SuggestionCallback suggestions_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!trigger_get_known_content_.is_null());
-  pending_known_content_callbacks_.push_back(base::BindOnce(
-      &RunSuggestionCallbackWithConversion, std::move(suggestions_callback)));
+  pending_known_content_callbacks_.emplace_back(
+      std::move(suggestions_callback));
   // Trigger after push_back() in case triggering results in a synchronous
   // response via OnGetKnownContentDone().
   if (pending_known_content_callbacks_.size() <= 1) {
@@ -240,19 +249,23 @@ void FeedOfflineHost::GetCurrentArticleSuggestions(
 }
 
 void FeedOfflineHost::ReportArticleListViewed() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   on_suggestion_consumed_.Run();
 }
 
 void FeedOfflineHost::ReportArticleViewed(GURL article_url) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   on_suggestions_shown_.Run();
 }
 
 void FeedOfflineHost::OfflinePageModelLoaded(OfflinePageModel* model) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ignored.
 }
 
 void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
                                        const OfflinePageItem& added_page) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!notify_status_change_.is_null());
   const std::string& url = added_page.GetOriginalUrl().spec();
   CacheOfflinePageUrlAndId(url, added_page.offline_id);
@@ -260,6 +273,7 @@ void FeedOfflineHost::OfflinePageAdded(OfflinePageModel* model,
 }
 
 void FeedOfflineHost::OfflinePageDeleted(const OfflinePageItem& deleted_page) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!notify_status_change_.is_null());
   const std::string& url = deleted_page.url.spec();
   EvictOfflinePageUrl(url);

@@ -57,14 +57,45 @@ void DeleteOriginDidDeleteDir(storage::QuotaClient::DeletionCallback callback,
 
 // Calculate the sum of all cache sizes in this store, but only if all sizes are
 // known. If one or more sizes are not known then return kSizeUnknown.
-int64_t GetCacheStorageSize(const proto::CacheStorageIndex& index) {
+int64_t GetCacheStorageSize(const base::FilePath& base_path,
+                            const base::Time& base_path_time,
+                            const base::Time& index_time,
+                            const proto::CacheStorageIndex& index) {
+  // If the base path's modified time is newer than the index, then the
+  // contents of a cache must have changed.  The index is stale.
+  if (base_path_time > index_time)
+    return CacheStorage::kSizeUnknown;
+
+  // It should be impossible for the directory containing the index to
+  // have a modified time older than the index's modified time.  Modifying
+  // the index should update the directories time as well.  Therefore we
+  // should be guaranteed that the time is equal here.
+  DCHECK_EQ(base_path_time, index_time);
+
   int64_t storage_size = 0;
   for (int i = 0, max = index.cache_size(); i < max; ++i) {
     const proto::CacheStorageIndex::Cache& cache = index.cache(i);
-    if (!cache.has_size() || cache.size() == CacheStorage::kSizeUnknown)
+    if (!cache.has_cache_dir() || !cache.has_size() ||
+        cache.size() == CacheStorage::kSizeUnknown) {
       return CacheStorage::kSizeUnknown;
+    }
+
+    // Check the modified time on each cache directory.  If one of the
+    // directories has the same or newer modified time as the index file, then
+    // its size is most likely not accounted for in the index file.  The
+    // cache can have a newer time here in spite of our base path time check
+    // above since simple disk_cache writes to these directories from a
+    // different thread.
+    base::FilePath path = base_path.AppendASCII(cache.cache_dir());
+    base::File::Info file_info;
+    if (!base::GetFileInfo(path, &file_info) ||
+        file_info.last_modified >= index_time) {
+      return CacheStorage::kSizeUnknown;
+    }
+
     storage_size += cache.size();
   }
+
   return storage_size;
 }
 
@@ -145,9 +176,11 @@ void ListOriginsAndLastModifiedOnTaskRunner(
       continue;
     }
 
-    int64_t storage_size = CacheStorage::kSizeUnknown;
-    if (file_info.last_modified < index_last_modified)
-      storage_size = GetCacheStorageSize(index);
+    int64_t storage_size = GetCacheStorageSize(path, file_info.last_modified,
+                                               index_last_modified, index);
+    base::UmaHistogramBoolean("ServiceWorkerCache.UsedIndexFileSize",
+                              storage_size != CacheStorage::kSizeUnknown);
+
     usages->push_back(
         StorageUsageInfo(origin, storage_size, file_info.last_modified));
     RecordIndexValidationResult(IndexResult::kOk);

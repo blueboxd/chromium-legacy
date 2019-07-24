@@ -5,13 +5,17 @@
 #ifndef CONTENT_BROWSER_NOTIFICATIONS_BLINK_NOTIFICATION_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_NOTIFICATIONS_BLINK_NOTIFICATION_SERVICE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 #include "url/origin.h"
@@ -37,7 +41,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       BrowserContext* browser_context,
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
       const url::Origin& origin,
-      mojo::InterfaceRequest<blink::mojom::NotificationService> request);
+      mojo::PendingReceiver<blink::mojom::NotificationService> receiver);
   ~BlinkNotificationServiceImpl() override;
 
   // blink::mojom::NotificationService implementation.
@@ -46,7 +50,8 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       const std::string& token,
       const blink::PlatformNotificationData& platform_notification_data,
       const blink::NotificationResources& notification_resources,
-      blink::mojom::NonPersistentNotificationListenerPtr listener_ptr) override;
+      mojo::PendingRemote<blink::mojom::NonPersistentNotificationListener>
+          listener_remote) override;
   void CloseNonPersistentNotification(const std::string& token) override;
   void DisplayPersistentNotification(
       int64_t service_worker_registration_id,
@@ -101,7 +106,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
   // The origin that this notification service is communicating with.
   url::Origin origin_;
 
-  mojo::Binding<blink::mojom::NotificationService> binding_;
+  mojo::Receiver<blink::mojom::NotificationService> receiver_;
 
   base::WeakPtrFactory<BlinkNotificationServiceImpl> weak_factory_for_io_{this};
   base::WeakPtrFactory<BlinkNotificationServiceImpl> weak_factory_for_ui_{this};

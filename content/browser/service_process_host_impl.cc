@@ -173,6 +173,7 @@ void LaunchServiceProcessOnIOThread(mojo::GenericPendingReceiver receiver,
                     : base::UTF8ToUTF16(*receiver.interface_name()));
   host->SetMetricsName(*receiver.interface_name());
   host->SetSandboxType(options.sandbox_type);
+  host->SetExtraCommandLineSwitches(std::move(options.extra_switches));
   if (options.child_flags)
     host->set_child_flags(*options.child_flags);
   host->Start();

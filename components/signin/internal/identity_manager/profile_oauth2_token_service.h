@@ -22,7 +22,7 @@
 #include "google_apis/gaia/oauth2_token_service_observer.h"
 #include "net/base/backoff_entry.h"
 
-namespace identity {
+namespace signin {
 class IdentityManager;
 }
 
@@ -268,7 +268,7 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   OAuth2AccessTokenManager* GetAccessTokenManager();
 
  private:
-  friend class identity::IdentityManager;
+  friend class signin::IdentityManager;
 
   // OAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;

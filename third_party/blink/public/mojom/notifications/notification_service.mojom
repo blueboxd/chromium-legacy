@@ -47,7 +47,7 @@ interface NotificationService {
         string token,
         NotificationData notification_data,
         NotificationResources notification_resources,
-        NonPersistentNotificationListener event_listener);
+        pending_remote<NonPersistentNotificationListener> event_listener);
 
   // Closes a notification that is not associated with a service worker.
   // |token| identifies which notification should be closed (must be non-empty).

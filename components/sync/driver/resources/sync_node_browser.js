@@ -63,7 +63,7 @@
 
   /**
    * Updates the 'Last refresh time' display.
-   * @param {string} The text to display.
+   * @param {string} str The text to display.
    */
   function setLastRefreshTime(str) {
     $('node-browser-refresh-time').textContent = str;

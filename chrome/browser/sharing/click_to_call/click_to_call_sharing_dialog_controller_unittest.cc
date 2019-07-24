@@ -36,7 +36,8 @@ using namespace instance_id;
 
 namespace {
 
-const char kPhoneNumber[] = "987654321";
+const char kPhoneNumber[] = "073%2087%202525%2078";
+const char kExpectedPhoneNumber[] = "073 87 2525 78";
 const char kReceiverGuid[] = "test_receiver_guid";
 const char kReceiverName[] = "test_receiver_name";
 
@@ -112,7 +113,7 @@ TEST_F(ClickToCallSharingDialogControllerTest, OnDeviceChosen) {
       sync_pb::SyncEnums::TYPE_PHONE, base::Time::Now(), 1);
   chrome_browser_sharing::SharingMessage sharing_message;
   sharing_message.mutable_click_to_call_message()->set_phone_number(
-      kPhoneNumber);
+      kExpectedPhoneNumber);
   EXPECT_CALL(*service(), SendMessageToDevice(Eq(kReceiverGuid),
                                               Eq(kSharingClickToCallMessageTTL),
                                               ProtoEquals(sharing_message), _));

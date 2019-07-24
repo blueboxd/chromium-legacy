@@ -15,9 +15,7 @@
 
 namespace video_capture {
 
-TextureVirtualDeviceMojoAdapter::TextureVirtualDeviceMojoAdapter(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+TextureVirtualDeviceMojoAdapter::TextureVirtualDeviceMojoAdapter() = default;
 
 TextureVirtualDeviceMojoAdapter::~TextureVirtualDeviceMojoAdapter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -87,7 +87,7 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(bool success) {
 
 void ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete(
     GoogleServiceAuthError error,
-    identity::AccessTokenInfo token_info) {
+    signin::AccessTokenInfo token_info) {
   ResetFetchers();
 
   if (error.state() != GoogleServiceAuthError::NONE) {

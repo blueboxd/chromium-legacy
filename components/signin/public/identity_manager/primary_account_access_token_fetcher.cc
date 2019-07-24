@@ -11,7 +11,7 @@
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-namespace identity {
+namespace signin {
 
 PrimaryAccountAccessTokenFetcher::PrimaryAccountAccessTokenFetcher(
     const std::string& oauth_consumer_name,
@@ -122,4 +122,4 @@ void PrimaryAccountAccessTokenFetcher::OnAccessTokenFetchComplete(
   std::move(callback_).Run(std::move(error), std::move(access_token_info));
 }
 
-}  // namespace identity
+}  // namespace signin

@@ -102,7 +102,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& password_form_frame_url,
                     const std::string& username,
                     PasswordType password_type,
-                    bool is_account_syncing,
                     const std::vector<std::string>& matching_domains,
                     LoginReputationClientRequest::TriggerType trigger_type,
                     bool password_field_exists);
@@ -119,8 +118,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& main_frame_url,
       const std::string& username,
       PasswordType password_type,
-      std::string hosted_domain,
-      bool is_account_syncing,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists);
 
@@ -143,6 +140,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
       PasswordType password_type,
+      const std::string& username,
       LoginReputationClientResponse::VerdictType verdict_type);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
@@ -207,8 +205,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType
   // to LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   ReusedPasswordAccountType GetPasswordProtectionReusedPasswordAccountType(
-      PasswordType password_type,
-      std::string hosted_domain);
+      PasswordType password_type) const;
 
   // If we can send ping for this type of reused password.
   bool IsSupportedPasswordTypeForPinging(PasswordType password_type) const;
@@ -229,7 +226,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   bool CanSendPing(LoginReputationClientRequest::TriggerType trigger_type,
                    const GURL& main_frame_url,
                    PasswordType password_type,
-                   const std::string hosted_domain,
+                   const std::string& username,
                    RequestOutcome* reason);
 
   // Called by a PasswordProtectionRequest instance when it finishes to remove
@@ -281,11 +278,19 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsPingingEnabled(
       LoginReputationClientRequest::TriggerType trigger_type,
       PasswordType password_type,
+      const std::string& username,
       RequestOutcome* reason) = 0;
 
   virtual bool IsHistorySyncEnabled() = 0;
 
-  virtual bool IsAccountSyncing() = 0;
+  virtual bool IsPrimaryAccountSyncing() const = 0;
+
+  virtual bool IsPrimaryAccountSignedIn() const = 0;
+
+  virtual bool IsPrimaryAccountGmail() const = 0;
+
+  virtual bool IsOtherGaiaAccountSignedIn(
+      const std::string& username) const = 0;
 
   virtual bool IsUnderAdvancedProtection() = 0;
 

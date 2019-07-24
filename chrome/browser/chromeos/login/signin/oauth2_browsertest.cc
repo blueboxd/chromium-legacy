@@ -329,7 +329,7 @@ class OAuth2Test : public OobeBaseTest {
     WaitForMergeSessionCompletion(OAuth2LoginManager::SESSION_RESTORE_DONE);
 
     // Check for existence of refresh token.
-    identity::IdentityManager* identity_manager =
+    signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 
@@ -529,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, PRE_PRE_PRE_MergeSession) {
                       /*is_under_advanced_protection=*/false);
   // Check for existence of refresh token.
   std::string account_id = PickAccountId(GetProfile(), kTestGaiaId, kTestEmail);
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
   EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(account_id));
 
@@ -636,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, DISABLED_OverlappingContinueSessionRestore) {
             GetSessionRestoreStrategy());
 
   // Checks that refresh token is not yet loaded.
-  identity::IdentityManager* identity_manager =
+  signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(GetProfile());
   const std::string account_id =
       PickAccountId(GetProfile(), kTestGaiaId, kTestEmail);
@@ -760,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, SetInvalidTokenStatus) {
   ASSERT_NE(OAuth2LoginManager::SESSION_RESTORE_DONE, login_manager->state());
 
   // Generate an auth error.
-  identity::SetInvalidRefreshTokenForAccount(
+  signin::SetInvalidRefreshTokenForAccount(
       IdentityManagerFactory::GetInstance()->GetForProfile(GetProfile()),
       kTestEmail);
 

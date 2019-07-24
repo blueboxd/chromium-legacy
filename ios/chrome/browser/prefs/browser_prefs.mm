@@ -195,4 +195,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
 
   // Added 10/2018.
   prefs->ClearPref(kReverseAutologinEnabled);
+
+  // Added 07/2019.
+  syncer::MigrateSyncSuppressedPref(prefs);
 }

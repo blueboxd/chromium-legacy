@@ -109,16 +109,16 @@ class MockNetworkURLLoaderFactory final
     }
     client->OnReceiveResponse(response_head);
 
-    // Pass the response body to the client.
-    if (!response.body.empty()) {
-      uint32_t bytes_written = response.body.size();
-      mojo::DataPipe data_pipe;
-      MojoResult result = data_pipe.producer_handle->WriteData(
-          response.body.data(), &bytes_written,
-          MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-      ASSERT_EQ(MOJO_RESULT_OK, result);
-      client->OnStartLoadingResponseBody(std::move(data_pipe.consumer_handle));
-    }
+    uint32_t bytes_written = response.body.size();
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    mojo::ScopedDataPipeProducerHandle producer;
+    ASSERT_EQ(MOJO_RESULT_OK,
+              mojo::CreateDataPipe(nullptr, &producer, &consumer));
+    MojoResult result = producer->WriteData(
+        response.body.data(), &bytes_written, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
+    ASSERT_EQ(MOJO_RESULT_OK, result);
+    client->OnStartLoadingResponseBody(std::move(consumer));
+
     network::URLLoaderCompletionStatus status;
     status.error_code = net::OK;
     client->OnComplete(status);
@@ -303,10 +303,11 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
-  // The response should also be stored in the storage.
+  // WRITE_OK should be recorded once plus one as we record a single write
+  // success and the end of the body.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
   histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
-                                      ServiceWorkerMetrics::WRITE_OK, 1);
+                                      ServiceWorkerMetrics::WRITE_OK, 2);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
@@ -327,12 +328,13 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_EmptyBody) {
 
   // The client should have received the response.
   EXPECT_TRUE(client->has_received_response());
-  EXPECT_FALSE(client->response_body().is_valid());
+  EXPECT_TRUE(client->response_body().is_valid());
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
-  // We don't record write response result if body is empty.
-  histogram_tester.ExpectTotalCount(kHistogramWriteResponseResult, 0);
+  // WRITE_OK should be recorded once as we record the end of the body.
+  histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
+                                      ServiceWorkerMetrics::WRITE_OK, 1);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
@@ -368,9 +370,10 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_LargeBody) {
 
   // The response should also be stored in the storage.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
-  // WRITE_OK should be recorded twice as we record every single write success.
+  // WRITE_OK should be recorded twice plus one as we record every single write
+  // success and the end of the body.
   histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
-                                      ServiceWorkerMetrics::WRITE_OK, 2);
+                                      ServiceWorkerMetrics::WRITE_OK, 3);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_404) {
@@ -530,10 +533,11 @@ TEST_F(ServiceWorkerNewScriptLoaderTest, Success_PathRestriction) {
       mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(mock_server_->Get(kScriptURL).body, response);
 
-  // The response should also be stored in the storage.
+  // WRITE_OK should be recorded once plus one as we record a single write
+  // success and the end of the body.
   EXPECT_TRUE(VerifyStoredResponse(kScriptURL));
   histogram_tester.ExpectUniqueSample(kHistogramWriteResponseResult,
-                                      ServiceWorkerMetrics::WRITE_OK, 1);
+                                      ServiceWorkerMetrics::WRITE_OK, 2);
 }
 
 TEST_F(ServiceWorkerNewScriptLoaderTest, Error_PathRestriction) {

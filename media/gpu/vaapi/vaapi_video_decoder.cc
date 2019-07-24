@@ -23,6 +23,7 @@
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
 #include "media/gpu/vaapi/vaapi_vp9_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 
 namespace media {
@@ -415,7 +416,7 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
 
   // Create a native pixmap from the video frame.
   scoped_refptr<gfx::NativePixmap> native_pixmap =
-      CreateNativePixmap(frame.get());
+      CreateNativePixmapDmaBuf(frame.get());
   if (!native_pixmap) {
     VLOGF(1) << "Failed to create NativePixmap from VideoFrame";
     SetState(State::kError);

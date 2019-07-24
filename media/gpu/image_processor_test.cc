@@ -6,12 +6,10 @@
 #include <string>
 #include <tuple>
 
-#include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/hash/md5.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -156,12 +154,6 @@ INSTANTIATE_TEST_SUITE_P(
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   base::CommandLine::Init(argc, argv);
-
-  // Initialize test timeouts and set up an exit manager which is required to
-  // run callbacks on shutdown.
-  // TODO(dstaessens): Use base::TestSuite which performs initialization.
-  TestTimeouts::Initialize();
-  base::AtExitManager at_exit_manager;
 
   auto* const test_environment = new media::test::VideoTestEnvironment;
   testing::AddGlobalTestEnvironment(test_environment);

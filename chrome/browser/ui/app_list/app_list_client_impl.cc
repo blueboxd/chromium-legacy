@@ -111,15 +111,10 @@ void AppListClientImpl::OpenSearchResult(const std::string& result_id,
   app_launch_data.id = result_id;
   app_launch_data.ranking_item_type =
       app_list::RankingItemTypeFromSearchResult(*result);
+  app_launch_data.launch_type = launch_type;
+  app_launch_data.launched_from = launched_from;
   // Send training signal to search controller.
   search_controller_->Train(std::move(app_launch_data));
-
-  if (launch_type == ash::AppListLaunchType::kAppSearchResult) {
-    // Log the AppResult (either in the search result page, or in chip form in
-    // AppsGridView) to the UKM system.
-    app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
-        result_id, suggestion_index, static_cast<int>(launched_from));
-  }
 
   RecordSearchResultOpenTypeHistogram(
       launched_from, result->GetSearchResultType(), IsTabletMode());
@@ -198,10 +193,9 @@ void AppListClientImpl::ActivateItem(int profile_id,
     app_launch_data.id = id;
     app_launch_data.ranking_item_type =
         app_list::RankingItemTypeFromChromeAppListItem(*item);
+    app_launch_data.launched_from = ash::AppListLaunchedFrom::kLaunchedFromGrid;
     search_controller_->Train(std::move(app_launch_data));
   }
-
-  app_launch_event_logger_.OnGridClicked(id);
 
   requested_model_updater->ActivateChromeItem(id, event_flags);
 

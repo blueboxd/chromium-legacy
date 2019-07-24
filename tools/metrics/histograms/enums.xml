@@ -17501,6 +17501,7 @@ Called by update_net_error_codes.py.-->
   <int value="574" label="BrowserGuestModeEnforced"/>
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
   <int value="576" label="CrostiniRootAccessAllowed"/>
+  <int value="577" label="VmManagementCliAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -50055,13 +50056,28 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="RecurrenceRankerConfigurationError">
+  <obsolete>
+    Replaced by RecurrenceRankerInitializationStatus
+  </obsolete>
   <int value="0" label="HashMismatch"/>
   <int value="1" label="InvalidParameter"/>
   <int value="2" label="InvalidPredictor"/>
   <int value="3" label="FakePredictorUsed"/>
 </enum>
 
+<enum name="RecurrenceRankerInitializationStatus">
+  <int value="0" label="InitializationOk"/>
+  <int value="1" label="EphemeralUser"/>
+  <int value="2" label="HashMismatch"/>
+  <int value="3" label="InvalidConfigParameter"/>
+  <int value="4" label="InvalidConfigPredictor"/>
+  <int value="5" label="FakePredictorUsed"/>
+</enum>
+
 <enum name="RecurrenceRankerSerializationError">
+  <obsolete>
+    Replaced by RecurrenceRankerSerializationStatus
+  </obsolete>
   <int value="0" label="ModelReadError"/>
   <int value="1" label="ModelWriteError"/>
   <int value="2" label="FromProtoError"/>
@@ -50074,7 +50090,37 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="ZeroStateHourBinnedPredictorLoadingError"/>
 </enum>
 
+<enum name="RecurrenceRankerSerializationStatus">
+  <int value="0" label="SaveOk"/>
+  <int value="1" label="LoadOk"/>
+  <int value="2" label="ModelReadError"/>
+  <int value="3" label="ModelWriteError"/>
+  <int value="4" label="FromProtoError"/>
+  <int value="5" label="ToProtoError"/>
+  <int value="6" label="PredictorMissingError"/>
+  <int value="7" label="TargetsMissingError"/>
+  <int value="8" label="ConditionsMissingError"/>
+  <int value="9" label="FakePredictorLoadingError"/>
+  <int value="10" label="ConditionalFrequencyPredictorLoadingError"/>
+  <int value="11" label="FrecencyPredictorLoadingError"/>
+  <int value="12" label="HourBinPredictorLoadingError"/>
+  <int value="13" label="MarkovPredictorLoadingError"/>
+  <int value="14" label="ExponentialWeightsEnsembleLoadingError"/>
+</enum>
+
+<enum name="RecurrenceRankerUsage">
+  <int value="0" label="Record"/>
+  <int value="1" label="Rank"/>
+  <int value="2" label="RemoveCondition"/>
+  <int value="3" label="RenameCondition"/>
+  <int value="4" label="RemoveTarget"/>
+  <int value="5" label="RenameTarget"/>
+</enum>
+
 <enum name="RecurrenceRankerUsageError">
+  <obsolete>
+    Deprecated 07/2019.
+  </obsolete>
   <int value="0" label="InvalidTrainCall"/>
   <int value="1" label="InvalidRankCall"/>
 </enum>

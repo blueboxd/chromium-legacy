@@ -13,7 +13,7 @@
 cr.define('chrome.sync', function() {
   'use strict';
 
-  var eventsByCategory = {
+  const eventsByCategory = {
     notifier: [
       'onIncomingNotification',
       'onNotificationStateChange',
@@ -50,7 +50,7 @@ cr.define('chrome.sync', function() {
   class Log extends cr.EventTarget {
     constructor() {
       super();
-      var self = this;
+      const self = this;
 
       /**
        * The recorded log entries.
@@ -61,15 +61,15 @@ cr.define('chrome.sync', function() {
       /**
        * Creates a callback function to be invoked when an event arrives.
        */
-      var makeCallback = function(categoryName, eventName) {
+      const makeCallback = function(categoryName, eventName) {
         return function(e) {
           self.log_(categoryName, eventName, e.details);
         };
       };
 
-      for (var categoryName in eventsByCategory) {
-        for (var i = 0; i < eventsByCategory[categoryName].length; ++i) {
-          var eventName = eventsByCategory[categoryName][i];
+      for (const categoryName in eventsByCategory) {
+        for (let i = 0; i < eventsByCategory[categoryName].length; ++i) {
+          const eventName = eventsByCategory[categoryName][i];
           chrome.sync.events.addEventListener(
               eventName,
               makeCallback(categoryName, eventName));
@@ -86,7 +86,7 @@ cr.define('chrome.sync', function() {
      * @param {!Object} details A dictionary of event-specific details.
      */
     log_(submodule, event, details) {
-      var entry = {
+      const entry = {
         submodule: submodule,
         event: event,
         date: new Date(),
@@ -96,7 +96,7 @@ cr.define('chrome.sync', function() {
       entry.textDetails = JSON.stringify(entry.details, null, 2);
       this.entries.push(entry);
       // Fire append event.
-      var e = cr.doc.createEvent('CustomEvent');
+      const e = cr.doc.createEvent('CustomEvent');
       e.initCustomEvent('append', false, false, entry);
       this.dispatchEvent(e);
     }

@@ -30,7 +30,7 @@ cr.define('chrome.sync', function() {
   };
 
   /** @return {!Timer} An object which measures elapsed time. */
-  var makeTimer = function() {
+  const makeTimer = function() {
     return new Timer;
   };
 
@@ -38,8 +38,8 @@ cr.define('chrome.sync', function() {
    * @param {string} name The name of the event type.
    * @param {!Object} details A collection of event-specific details.
    */
-  var dispatchEvent = function(name, details) {
-    var e = new Event(name);
+  const dispatchEvent = function(name, details) {
+    const e = new Event(name);
     e.details = details;
     chrome.sync.events.dispatchEvent(e);
   };
@@ -48,7 +48,7 @@ cr.define('chrome.sync', function() {
    * Registers to receive a stream of events through
    * chrome.sync.dispatchEvent().
    */
-  var registerForEvents = function() {
+  const registerForEvents = function() {
     chrome.send('registerForEvents');
   };
 
@@ -56,15 +56,15 @@ cr.define('chrome.sync', function() {
    * Registers to receive a stream of status counter update events
    * chrome.sync.dispatchEvent().
    */
-  var registerForPerTypeCounters = function() {
+  const registerForPerTypeCounters = function() {
     chrome.send('registerForPerTypeCounters');
-  }
+  };
 
   /**
    * Asks the browser to refresh our snapshot of sync state. Should result
    * in an onAboutInfoUpdated event being emitted.
    */
-  var requestUpdatedAboutInfo = function() {
+  const requestUpdatedAboutInfo = function() {
     chrome.send('requestUpdatedAboutInfo');
   };
 
@@ -72,7 +72,7 @@ cr.define('chrome.sync', function() {
    * Asks the browser to send us the list of registered types. Should result
    * in an onReceivedListOfTypes event being emitted.
    */
-  var requestListOfTypes = function() {
+  const requestListOfTypes = function() {
     chrome.send('requestListOfTypes');
   };
 
@@ -81,14 +81,14 @@ cr.define('chrome.sync', function() {
    * flag. Should result in an onReceivedIncludeSpecificsInitialState event
    * being emitted.
    */
-  var requestIncludeSpecificsInitialState = function() {
+  const requestIncludeSpecificsInitialState = function() {
     chrome.send('requestIncludeSpecificsInitialState');
-  }
+  };
 
   /**
    * Asks the browser if we should show the User Events tab or not.
    */
-  var requestUserEventsVisibility = function() {
+  const requestUserEventsVisibility = function() {
     chrome.send('requestUserEventsVisibility');
   };
 
@@ -99,7 +99,7 @@ cr.define('chrome.sync', function() {
    * @param {boolean} includeSpecifics Whether protocol events include
    *     specifics.
    */
-  var setIncludeSpecifics = function(includeSpecifics) {
+  const setIncludeSpecifics = function(includeSpecifics) {
     chrome.send('setIncludeSpecifics', [includeSpecifics]);
   };
 
@@ -109,35 +109,35 @@ cr.define('chrome.sync', function() {
    * @param {string} eventTimeUsec Timestamp for the new event.
    * @param {string} navigationId Timestamp of linked sessions navigation.
    */
-  var writeUserEvent = function(eventTimeUsec, navigationId) {
+  const writeUserEvent = function(eventTimeUsec, navigationId) {
     chrome.send('writeUserEvent', [eventTimeUsec, navigationId]);
   };
 
   /**
    * Triggers a RequestStart call on the SyncService.
    */
-  var requestStart = function() {
+  const requestStart = function() {
     chrome.send('requestStart');
   };
 
   /**
    * Triggers a RequestStop(KEEP_DATA) call on the SyncService.
    */
-  var requestStopKeepData = function() {
+  const requestStopKeepData = function() {
     chrome.send('requestStopKeepData');
   };
 
   /**
    * Triggers a RequestStop(CLEAR_DATA) call on the SyncService.
    */
-  var requestStopClearData = function() {
+  const requestStopClearData = function() {
     chrome.send('requestStopClearData');
   };
 
   /**
    * Triggers a GetUpdates call for all enabled datatypes.
    */
-  var triggerRefresh = function() {
+  const triggerRefresh = function() {
     chrome.send('triggerRefresh');
   };
 
@@ -145,14 +145,14 @@ cr.define('chrome.sync', function() {
    * Counter to uniquely identify requests while they're in progress.
    * Used in the implementation of GetAllNodes.
    */
-  var requestId = 0;
+  let requestId = 0;
 
   /**
    * A map from counter values to asynchronous request callbacks.
    * Used in the implementation of GetAllNodes.
    * @type {!Object<!Function>}
    */
-  var requestCallbacks = {};
+  const requestCallbacks = {};
 
   /**
    * Asks the browser to send us a copy of all existing sync nodes.
@@ -160,7 +160,7 @@ cr.define('chrome.sync', function() {
    *
    * @param {function(!Object)} callback The function to call with the response.
    */
-  var getAllNodes = function(callback) {
+  const getAllNodes = function(callback) {
     requestId++;
     requestCallbacks[requestId] = callback;
     chrome.send('getAllNodes', [requestId]);
@@ -172,7 +172,7 @@ cr.define('chrome.sync', function() {
    * @param {number} id The requestId passed in with the request.
    * @param {Object} response The response to the request.
    */
-  var getAllNodesCallback = function(id, response) {
+  const getAllNodesCallback = function(id, response) {
     requestCallbacks[id](response);
     delete requestCallbacks[id];
   };

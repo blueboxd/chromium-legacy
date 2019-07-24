@@ -670,14 +670,9 @@ void ServiceWorkerNewScriptLoader::OnNetworkDataAvailable(MojoResult) {
       WriteData(std::move(pending_buffer), bytes_available);
       return;
     case MOJO_RESULT_FAILED_PRECONDITION:
-      // Closed by peer. This indicates all the data from the network service
-      // are read or there is an error. In the error case, the reason is
-      // notified via OnComplete().
-      body_writer_state_ = WriterState::kCompleted;
-      if (network_loader_state_ == NetworkLoaderState::kCompleted) {
-        CommitCompleted(network::URLLoaderCompletionStatus(net::OK),
-                        std::string() /* status_message */);
-      }
+      // Call WriteData() with null buffer to let the cache writer know that
+      // body from the network reaches to the end.
+      WriteData(/*pending_buffer=*/nullptr, /*bytes_available=*/0);
       return;
     case MOJO_RESULT_SHOULD_WAIT:
       network_watcher_.ArmOrNotify();
@@ -693,7 +688,8 @@ void ServiceWorkerNewScriptLoader::WriteData(
   // next time.
   uint32_t bytes_written = std::min<uint32_t>(kReadBufferSize, bytes_available);
 
-  auto buffer = base::MakeRefCounted<WrappedIOBuffer>(pending_buffer->buffer());
+  auto buffer = base::MakeRefCounted<WrappedIOBuffer>(
+      pending_buffer ? pending_buffer->buffer() : nullptr);
   MojoResult result = client_producer_->WriteData(
       buffer->data(), &bytes_written, MOJO_WRITE_DATA_FLAG_NONE);
   switch (result) {
@@ -719,6 +715,8 @@ void ServiceWorkerNewScriptLoader::WriteData(
 
   // Write the buffer in the service worker script storage up to the size we
   // successfully wrote to the data pipe (i.e., |bytes_written|).
+  // A null buffer and zero |bytes_written| are passed when this is the end of
+  // the body.
   net::Error error = cache_writer_->MaybeWriteData(
       buffer.get(), base::strict_cast<size_t>(bytes_written),
       base::BindOnce(&ServiceWorkerNewScriptLoader::OnWriteDataComplete,
@@ -745,9 +743,23 @@ void ServiceWorkerNewScriptLoader::OnWriteDataComplete(
                     ServiceWorkerConsts::kServiceWorkerFetchScriptError);
     return;
   }
-  DCHECK(pending_buffer);
   ServiceWorkerMetrics::CountWriteResponseResult(
       ServiceWorkerMetrics::WRITE_OK);
+
+  if (bytes_written == 0) {
+    // Zero |bytes_written| with net::OK means that all data has been read from
+    // the network and the Mojo data pipe has been closed. Thus we can complete
+    // the request if OnComplete() has already been received.
+    DCHECK(!pending_buffer);
+    body_writer_state_ = WriterState::kCompleted;
+    if (network_loader_state_ == NetworkLoaderState::kCompleted) {
+      CommitCompleted(network::URLLoaderCompletionStatus(net::OK),
+                      std::string() /* status_message */);
+    }
+    return;
+  }
+
+  DCHECK(pending_buffer);
   pending_buffer->CompleteRead(bytes_written);
   // Get the consumer handle from a previous read operation if we have one.
   network_consumer_ = pending_buffer->ReleaseHandle();

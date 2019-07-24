@@ -8,7 +8,6 @@ dictionary GPURenderPassColorAttachmentDescriptor {
     required GPUTextureView attachment;
     GPUTextureView? resolveTarget = null;
 
-    required GPULoadOp loadOp;
+    required (GPULoadOp or GPUColor) loadValue;
     required GPUStoreOp storeOp;
-    required GPUColor clearColor;
 };

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LAUNCH_EVENT_LOGGER_H_
-#define CHROME_BROWSER_UI_APP_LIST_APP_LAUNCH_EVENT_LOGGER_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_APP_LAUNCH_EVENT_LOGGER_H_
+#define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_APP_LAUNCH_EVENT_LOGGER_H_
 
 #include <memory>
 #include <string>
@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/ui/app_list/app_launch_event_logger.pb.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -150,4 +150,4 @@ class AppLaunchEventLogger {
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LAUNCH_EVENT_LOGGER_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_RESULT_RANKER_APP_LAUNCH_EVENT_LOGGER_H_

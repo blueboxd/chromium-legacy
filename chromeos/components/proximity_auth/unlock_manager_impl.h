@@ -34,8 +34,9 @@ class ProximityMonitor;
 class UnlockManagerImpl : public UnlockManager,
                           public MessengerObserver,
                           public ProximityMonitorObserver,
-                          chromeos::PowerManagerClient::Observer,
-                          public device::BluetoothAdapter::Observer {
+                          public chromeos::PowerManagerClient::Observer,
+                          public device::BluetoothAdapter::Observer,
+                          public RemoteDeviceLifeCycle::Observer {
  public:
   // The |proximity_auth_client| is not owned and should outlive the constructed
   // unlock manager.
@@ -46,7 +47,6 @@ class UnlockManagerImpl : public UnlockManager,
   // UnlockManager:
   bool IsUnlockAllowed() override;
   void SetRemoteDeviceLifeCycle(RemoteDeviceLifeCycle* life_cycle) override;
-  void OnLifeCycleStateChanged() override;
   void OnAuthAttempted(mojom::AuthType auth_type) override;
   void CancelConnectionAttempt() override;
 
@@ -91,6 +91,10 @@ class UnlockManagerImpl : public UnlockManager,
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
+  // RemoteDeviceLifeCycle::Observer:
+  void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
+                               RemoteDeviceLifeCycle::State new_state) override;
 
   // Returns true if the BluetoothAdapter is present and powered.
   bool IsBluetoothPresentAndPowered() const;

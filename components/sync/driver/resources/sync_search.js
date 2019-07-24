@@ -5,13 +5,13 @@
 // require: cr.js
 
 cr.define('chrome.sync', function() {
-  var currSearchId = 0;
+  let currSearchId = 0;
 
-  var setQueryString = function(queryControl, query) {
+  const setQueryString = function(queryControl, query) {
     queryControl.value = query;
   };
 
-  var createDoQueryFunction = function(queryControl, submitControl, query) {
+  const createDoQueryFunction = function(queryControl, submitControl, query) {
     return function() {
       setQueryString(queryControl, query);
       submitControl.click();
@@ -27,12 +27,12 @@ cr.define('chrome.sync', function() {
    * @param {!HTMLInputElement} queryControl The <input> object of
    *     type=search where user's query is typed.
    */
-  var decorateQuickQueryControls = function(quickLinkArray, submitControl,
-                                            queryControl) {
-    for (var index = 0; index < quickLinkArray.length; ++index) {
-      var quickQuery = quickLinkArray[index].getAttribute('data-query');
-      var quickQueryFunction = createDoQueryFunction(queryControl,
-          submitControl, quickQuery);
+  const decorateQuickQueryControls = function(
+      quickLinkArray, submitControl, queryControl) {
+    for (let index = 0; index < quickLinkArray.length; ++index) {
+      const quickQuery = quickLinkArray[index].getAttribute('data-query');
+      const quickQueryFunction =
+          createDoQueryFunction(queryControl, submitControl, quickQuery);
       quickLinkArray[index].addEventListener('click', quickQueryFunction);
     }
   };
@@ -44,15 +44,19 @@ cr.define('chrome.sync', function() {
    * @param {!Function} callback The callback called with the search results.
    *     not called if doSearch() is called again while the search is running.
    */
-  var doSearch = function(query, callback) {
-    var searchId = ++currSearchId;
+  const doSearch = function(query, callback) {
+    const searchId = ++currSearchId;
     try {
-      var regex = new RegExp(query);
+      const regex = new RegExp(query);
       chrome.sync.getAllNodes(function(node_map) {
         // Put all nodes into one big list that ignores the type.
-        var nodes = node_map.
-            map(function(x) { return x.nodes; }).
-            reduce(function(a, b) { return a.concat(b); });
+        const nodes = node_map
+                          .map(function(x) {
+                            return x.nodes;
+                          })
+                          .reduce(function(a, b) {
+                            return a.concat(b);
+                          });
 
         if (currSearchId != searchId) {
           return;
@@ -84,10 +88,10 @@ cr.define('chrome.sync', function() {
    */
   function decorateSearchControls(queryControl, submitControl, statusControl,
                                   resultsControl, detailsControl) {
-    var resultsDataModel = new cr.ui.ArrayDataModel([]);
+    const resultsDataModel = new cr.ui.ArrayDataModel([]);
 
-    var searchFunction = function() {
-      var query = queryControl.value;
+    const searchFunction = function() {
+      const query = queryControl.value;
       statusControl.textContent = '';
       resultsDataModel.splice(0, resultsDataModel.length);
       if (!query) {
@@ -95,7 +99,7 @@ cr.define('chrome.sync', function() {
       }
       statusControl.textContent = 'Searching for ' + query + '...';
       queryControl.removeAttribute('error');
-      var timer = chrome.sync.makeTimer();
+      const timer = chrome.sync.makeTimer();
       doSearch(query, function(nodes, error) {
         if (error) {
           statusControl.textContent = 'Error: ' + error;
@@ -107,7 +111,7 @@ cr.define('chrome.sync', function() {
           queryControl.removeAttribute('error');
 
           // TODO(akalin): Write a nicer list display.
-          for (var i = 0; i < nodes.length; ++i) {
+          for (let i = 0; i < nodes.length; ++i) {
             nodes[i].toString = function() {
               return this.NON_UNIQUE_NAME;
             };
@@ -129,7 +133,7 @@ cr.define('chrome.sync', function() {
     resultsControl.dataModel = resultsDataModel;
     resultsControl.selectionModel.addEventListener('change', function(event) {
       detailsControl.textContent = '';
-      var selected = resultsControl.selectedItem;
+      const selected = resultsControl.selectedItem;
       if (selected) {
         detailsControl.textContent = JSON.stringify(selected, null, 2);
       }

@@ -23,10 +23,9 @@
     }
     const error = new Error(message);
     const global = function() {
-      const thisOrSelf = this || self;
       /** @type {boolean} */
-      thisOrSelf.traceAssertionsForTesting;
-      return thisOrSelf;
+      this.traceAssertionsForTesting;
+      return this;
     }();
     if (global.traceAssertionsForTesting) {
       console.warn(error.stack);

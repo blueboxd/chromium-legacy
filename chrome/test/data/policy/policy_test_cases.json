@@ -3679,6 +3679,14 @@
     ]
   },
 
+  "VmManagementCliAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "VmManagementCliAllowed": false },
+    "pref_mappings": [
+      { "pref": "crostini.vm_management_cli_allowed_by_policy" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

@@ -35,7 +35,7 @@ class FrecencyPredictorTest : public testing::Test {
     Test::SetUp();
 
     config_.set_decay_coeff(0.5f);
-    predictor_ = std::make_unique<FrecencyPredictor>(config_);
+    predictor_ = std::make_unique<FrecencyPredictor>(config_, "model");
   }
 
   FrecencyPredictorConfig config_;
@@ -90,7 +90,7 @@ TEST_F(FrecencyPredictorTest, ToAndFromProto) {
   RecurrencePredictorProto proto;
   predictor_->ToProto(&proto);
 
-  FrecencyPredictor new_predictor(config_);
+  FrecencyPredictor new_predictor(config_, "model");
   new_predictor.FromProto(proto);
 
   EXPECT_TRUE(proto.has_frecency_predictor());
@@ -101,7 +101,7 @@ TEST_F(FrecencyPredictorTest, ToAndFromProto) {
 class ConditionalFrequencyPredictorTest : public testing::Test {};
 
 TEST_F(ConditionalFrequencyPredictorTest, TrainAndRank) {
-  ConditionalFrequencyPredictor cfp;
+  ConditionalFrequencyPredictor cfp("model");
 
   cfp.TrainWithDelta(0u, 1u, 5.0f);
   cfp.TrainWithDelta(1u, 1u, 1.0f);
@@ -120,7 +120,7 @@ TEST_F(ConditionalFrequencyPredictorTest, TrainAndRank) {
 }
 
 TEST_F(ConditionalFrequencyPredictorTest, Cleanup) {
-  ConditionalFrequencyPredictor cfp;
+  ConditionalFrequencyPredictor cfp("model");
 
   cfp.Train(0u, 0u);
   for (int i = 0; i < 6; ++i) {
@@ -141,7 +141,7 @@ TEST_F(ConditionalFrequencyPredictorTest, Cleanup) {
 }
 
 TEST_F(ConditionalFrequencyPredictorTest, ToFromProto) {
-  ConditionalFrequencyPredictor cfp1;
+  ConditionalFrequencyPredictor cfp1("model");
 
   cfp1.Train(1u, 1u);
   cfp1.Train(2u, 1u);
@@ -155,7 +155,7 @@ TEST_F(ConditionalFrequencyPredictorTest, ToFromProto) {
   RecurrencePredictorProto proto;
   cfp1.ToProto(&proto);
 
-  ConditionalFrequencyPredictor cfp2;
+  ConditionalFrequencyPredictor cfp2("model");
   cfp2.FromProto(proto);
 
   EXPECT_THAT(
@@ -182,7 +182,7 @@ class HourBinPredictorTest : public testing::Test {
       config_pair->set_weight(pair.second);
     }
 
-    predictor_ = std::make_unique<HourBinPredictor>(config_);
+    predictor_ = std::make_unique<HourBinPredictor>(config_, "model");
   }
 
   // Sets local time according to |day_of_week| and |hour_of_day|.
@@ -406,7 +406,7 @@ TEST_F(HourBinPredictorTest, ToProto) {
 class MarkovPredictorTest : public testing::Test {
  protected:
   void SetUp() override {
-    predictor_ = std::make_unique<MarkovPredictor>(config_);
+    predictor_ = std::make_unique<MarkovPredictor>(config_, "model");
   }
 
   MarkovPredictorConfig config_;
@@ -491,7 +491,7 @@ TEST_F(MarkovPredictorTest, ToAndFromProto) {
   RecurrencePredictorProto proto;
   predictor_->ToProto(&proto);
 
-  MarkovPredictor new_predictor(config_);
+  MarkovPredictor new_predictor(config_, "model");
   new_predictor.FromProto(proto);
 
   EXPECT_TRUE(proto.has_markov_predictor());
@@ -522,13 +522,15 @@ class ExponentialWeightsEnsembleTest : public testing::Test {
 
   std::unique_ptr<ExponentialWeightsEnsemble> MakeEnsemble(
       const ExponentialWeightsEnsembleConfig& config) {
-    return std::make_unique<ExponentialWeightsEnsemble>(config);
+    return std::make_unique<ExponentialWeightsEnsemble>(config, "model");
   }
 
   // A predictor that always returns the same prediction, whose weight is
   // expected to decay in an ensemble.
   class BadPredictor : public FakePredictor {
    public:
+    BadPredictor() : FakePredictor("model") {}
+
     // FakePredictor:
     std::map<unsigned int, float> Rank(unsigned int condition) override {
       return {{417u, 1.0f}};

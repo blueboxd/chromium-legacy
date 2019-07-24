@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HISTOGRAM_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HISTOGRAM_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_HISTOGRAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_HISTOGRAM_H_
 
 #include <stdint.h>
 #include "base/metrics/histogram_base.h"
@@ -143,4 +143,4 @@ class ScopedHighResUsHistogramTimer
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HISTOGRAM_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_HISTOGRAM_H_

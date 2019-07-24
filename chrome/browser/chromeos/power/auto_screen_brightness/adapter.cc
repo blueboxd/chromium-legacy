@@ -467,6 +467,11 @@ void Adapter::SetMetricsReporterDeviceClass() {
         metrics_reporter_->SetDeviceClass(MetricsReporter::DeviceClass::kAtlas);
         return;
       }
+      if (params_.metrics_key == "nocturne") {
+        metrics_reporter_->SetDeviceClass(
+            MetricsReporter::DeviceClass::kNocturne);
+        return;
+      }
       metrics_reporter_->SetDeviceClass(
           MetricsReporter::DeviceClass::kSupportedAls);
       return;

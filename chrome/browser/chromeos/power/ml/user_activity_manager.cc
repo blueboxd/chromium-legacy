@@ -88,9 +88,6 @@ void LogMetricsToUMA(const UserActivityEvent& event) {
 
 }  // namespace
 
-// TODO(alanlxl): Fix the variable names and comments related to screen dim
-// imminent signals, because after powerd refactor (https://crrev.com/c/1601992)
-// ScreenDimImminent signals are deprecated.
 struct UserActivityManager::PreviousIdleEventData {
   // Gap between two ScreenDimImminent signals.
   base::TimeDelta dim_imminent_signal_interval;
@@ -104,6 +101,7 @@ struct UserActivityManager::PreviousIdleEventData {
 
 UserActivityManager::UserActivityManager(
     UserActivityUkmLogger* ukm_logger,
+    IdleEventNotifier* idle_event_notifier,
     ui::UserActivityDetector* detector,
     chromeos::PowerManagerClient* power_manager_client,
     session_manager::SessionManager* session_manager,
@@ -113,6 +111,7 @@ UserActivityManager::UserActivityManager(
     : boot_clock_(std::make_unique<RealBootClock>()),
       ukm_logger_(ukm_logger),
       smart_dim_model_(smart_dim_model),
+      idle_event_observer_(this),
       user_activity_observer_(this),
       power_manager_client_observer_(this),
       session_manager_observer_(this),
@@ -122,6 +121,8 @@ UserActivityManager::UserActivityManager(
       power_manager_client_(power_manager_client),
       weak_ptr_factory_(this) {
   DCHECK(ukm_logger_);
+  DCHECK(idle_event_notifier);
+  idle_event_observer_.Add(idle_event_notifier);
 
   DCHECK(detector);
   user_activity_observer_.Add(detector);
@@ -236,17 +237,16 @@ void UserActivityManager::OnVideoActivityStarted() {
                 UserActivityEvent::Event::VIDEO_ACTIVITY);
 }
 
-void UserActivityManager::UpdateAndGetSmartDimDecision(
-    const IdleEventNotifier::ActivityData& activity_data,
-    base::OnceCallback<void(bool)> callback) {
+void UserActivityManager::OnIdleEventObserved(
+    const IdleEventNotifier::ActivityData& activity_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::TimeDelta now = boot_clock_->GetTimeSinceBoot();
   if (waiting_for_final_action_) {
     if (waiting_for_model_decision_) {
       CancelDimDecisionRequest();
     } else {
-      // Smart dim request comes again after an earlier request event without
-      // any user action/suspend in between.
+      // ScreenDimImminent is received again after an earlier ScreenDimImminent
+      // event without any user action/suspend in between.
       PopulatePreviousEventData(now);
     }
   }
@@ -273,15 +273,13 @@ void UserActivityManager::UpdateAndGetSmartDimDecision(
     waiting_for_model_decision_ = true;
     time_dim_decision_requested_ = base::TimeTicks::Now();
     smart_dim_model_->RequestDimDecision(
-        features_,
-        base::BindOnce(&UserActivityManager::HandleSmartDimDecision,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+        features_, base::Bind(&UserActivityManager::ApplyDimDecision,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
   waiting_for_final_action_ = true;
 }
 
-void UserActivityManager::HandleSmartDimDecision(
-    base::OnceCallback<void(bool)> callback,
+void UserActivityManager::ApplyDimDecision(
     UserActivityEvent::ModelPrediction prediction) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   waiting_for_model_decision_ = false;
@@ -293,6 +291,7 @@ void UserActivityManager::HandleSmartDimDecision(
   // previously deferred.
   if (prediction.response() == UserActivityEvent::ModelPrediction::NO_DIM &&
       !dim_deferred_) {
+    power_manager_client_->DeferScreenDim();
     dim_deferred_ = true;
     prediction.set_model_applied(true);
   } else {
@@ -302,8 +301,8 @@ void UserActivityManager::HandleSmartDimDecision(
                                      UserActivityEvent::ModelPrediction::DIM &&
                                  !dim_deferred_);
   }
+
   model_prediction_ = prediction;
-  std::move(callback).Run(dim_deferred_);
 }
 
 void UserActivityManager::OnSessionManagerDestroyed() {

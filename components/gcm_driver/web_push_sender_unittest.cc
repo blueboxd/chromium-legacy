@@ -121,6 +121,46 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
   ASSERT_EQ("message_id", message_id);
 }
 
+struct WebPushUrgencyTestData {
+  const WebPushMessage::Urgency urgency;
+  const std::string expected_header;
+} kWebPushUrgencyTestData[] = {
+    {WebPushMessage::Urgency::kVeryLow, "very-low"},
+    {WebPushMessage::Urgency::kLow, "low"},
+    {WebPushMessage::Urgency::kNormal, "normal"},
+    {WebPushMessage::Urgency::kHigh, "high"},
+};
+
+class WebPushUrgencyTest
+    : public WebPushSenderTest,
+      public testing::WithParamInterface<WebPushUrgencyTestData> {};
+
+TEST_P(WebPushUrgencyTest, SetUrgencyTest) {
+  std::string private_key_info;
+  ASSERT_TRUE(base::Base64Decode(kPrivateKey, &private_key_info));
+  std::unique_ptr<crypto::ECPrivateKey> private_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(std::vector<uint8_t>(
+          private_key_info.begin(), private_key_info.end()));
+  base::Optional<std::string> message_id;
+  std::string urgency;
+
+  WebPushMessage message = CreateMessage();
+  message.urgency = GetParam().urgency;
+
+  sender()->SendMessage("token", private_key.get(), message, base::DoNothing());
+  ASSERT_EQ(loader().NumPending(), 1);
+  net::HttpRequestHeaders headers =
+      loader().GetPendingRequest(0)->request.headers;
+
+  ASSERT_TRUE(headers.GetHeader("Urgency", &urgency));
+  ASSERT_EQ(GetParam().expected_header, urgency);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    WebPushUrgencyTest,
+    testing::ValuesIn(kWebPushUrgencyTestData));
+
 TEST_F(WebPushSenderTest, ServerErrorTest) {
   std::string private_key_info;
   ASSERT_TRUE(base::Base64Decode(kPrivateKey, &private_key_info));

@@ -24,19 +24,6 @@ namespace ml {
 
 namespace {
 
-base::TimeDelta GetTimeSinceMidnight(base::Time time) {
-  return time - time.LocalMidnight();
-}
-
-UserActivityEvent_Features_DayOfWeek GetDayOfWeek(base::Time time) {
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  return static_cast<UserActivityEvent_Features_DayOfWeek>(
-      exploded.day_of_week);
-}
-
-}  // namespace
-
 bool operator==(const IdleEventNotifier::ActivityData& x,
                 const IdleEventNotifier::ActivityData& y) {
   return x.last_activity_day == y.last_activity_day &&
@@ -52,6 +39,42 @@ bool operator==(const IdleEventNotifier::ActivityData& x,
          x.mouse_events_in_last_hour == y.mouse_events_in_last_hour &&
          x.touch_events_in_last_hour == y.touch_events_in_last_hour;
 }
+
+base::TimeDelta GetTimeSinceMidnight(base::Time time) {
+  return time - time.LocalMidnight();
+}
+
+UserActivityEvent_Features_DayOfWeek GetDayOfWeek(base::Time time) {
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
+  return static_cast<UserActivityEvent_Features_DayOfWeek>(
+      exploded.day_of_week);
+}
+
+class TestObserver : public IdleEventNotifier::Observer {
+ public:
+  TestObserver() : idle_event_count_(0) {}
+  ~TestObserver() override {}
+
+  int idle_event_count() const { return idle_event_count_; }
+  const IdleEventNotifier::ActivityData& activity_data() const {
+    return activity_data_;
+  }
+
+  // IdleEventNotifier::Observer overrides:
+  void OnIdleEventObserved(
+      const IdleEventNotifier::ActivityData& activity_data) override {
+    ++idle_event_count_;
+    activity_data_ = activity_data;
+  }
+
+ private:
+  int idle_event_count_;
+  IdleEventNotifier::ActivityData activity_data_;
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
+}  // namespace
 
 class IdleEventNotifierTest : public testing::Test {
  public:
@@ -74,6 +97,7 @@ class IdleEventNotifierTest : public testing::Test {
         const_cast<base::Clock*>(scoped_task_env_.GetMockClock()),
         std::make_unique<FakeBootClock>(&scoped_task_env_,
                                         base::TimeDelta::FromSeconds(10)));
+    idle_event_notifier_->AddObserver(&test_observer_);
     ac_power_.set_external_power(
         power_manager::PowerSupplyProperties_ExternalPower_AC);
     disconnected_power_.set_external_power(
@@ -86,8 +110,21 @@ class IdleEventNotifierTest : public testing::Test {
   }
 
  protected:
+  void ReportScreenDimImminent() {
+    FakePowerManagerClient::Get()->SendScreenDimImminent();
+  }
+
+  void ReportIdleEventAndCheckResults(
+      int expected_idle_count,
+      const IdleEventNotifier::ActivityData& expected_activity_data) {
+    ReportScreenDimImminent();
+    EXPECT_EQ(expected_idle_count, test_observer_.idle_event_count());
+    EXPECT_TRUE(expected_activity_data == test_observer_.activity_data());
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_env_;
 
+  TestObserver test_observer_;
   std::unique_ptr<IdleEventNotifier> idle_event_notifier_;
   power_manager::PowerSupplyProperties ac_power_;
   power_manager::PowerSupplyProperties disconnected_power_;
@@ -114,7 +151,7 @@ TEST_F(IdleEventNotifierTest, LidOpenEventReceived) {
   data.last_activity_time_of_day = time_of_day;
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = base::TimeDelta();
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 // PowerChanged signal is received but source isn't changed, so it won't change
@@ -128,11 +165,11 @@ TEST_F(IdleEventNotifierTest, PowerSourceNotChanged) {
   data.last_activity_time_of_day = time_of_day;
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = base::TimeDelta();
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   idle_event_notifier_->PowerChanged(ac_power_);
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(2, data);
 }
 
 // PowerChanged signal is received and source is changed, so a different
@@ -146,7 +183,7 @@ TEST_F(IdleEventNotifierTest, PowerSourceChanged) {
   data_1.last_activity_time_of_day = time_of_day_1;
   data_1.last_user_activity_time_of_day = time_of_day_1;
   data_1.recent_time_active = base::TimeDelta();
-  EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data_1);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(100));
   base::Time now_2 = scoped_task_env_.GetMockClock()->Now();
@@ -157,7 +194,7 @@ TEST_F(IdleEventNotifierTest, PowerSourceChanged) {
   data_2.last_activity_time_of_day = time_of_day_2;
   data_2.last_user_activity_time_of_day = time_of_day_2;
   data_2.recent_time_active = base::TimeDelta();
-  EXPECT_EQ(data_2, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(2, data_2);
 }
 
 // Short sleep duration does not break up recent time active.
@@ -178,7 +215,7 @@ TEST_F(IdleEventNotifierTest, ShortSuspendDone) {
   data.last_activity_time_of_day = time_of_day;
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = now_2 - now_1;
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 // Long sleep duration recalc recent time active.
@@ -201,7 +238,7 @@ TEST_F(IdleEventNotifierTest, LongSuspendDone) {
   data.last_activity_time_of_day = time_of_day;
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = now_2 - now_1;
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, UserActivityKey) {
@@ -217,7 +254,7 @@ TEST_F(IdleEventNotifierTest, UserActivityKey) {
   data.time_since_last_key = base::TimeDelta::FromSeconds(10);
   data.key_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, UserActivityMouse) {
@@ -235,7 +272,7 @@ TEST_F(IdleEventNotifierTest, UserActivityMouse) {
   data.time_since_last_mouse = base::TimeDelta::FromSeconds(10);
   data.mouse_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, UserActivityOther) {
@@ -251,7 +288,7 @@ TEST_F(IdleEventNotifierTest, UserActivityOther) {
   data.last_user_activity_time_of_day = time_of_day;
   data.recent_time_active = base::TimeDelta();
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 // Two consecutive activities separated by 2sec only. Only 1 idle event with
@@ -279,7 +316,7 @@ TEST_F(IdleEventNotifierTest, TwoQuickUserActivities) {
   data.key_events_in_last_hour = 1;
   data.mouse_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, ActivityAfterVideoStarts) {
@@ -306,7 +343,7 @@ TEST_F(IdleEventNotifierTest, ActivityAfterVideoStarts) {
   data.time_since_video_ended = base::TimeDelta::FromSeconds(10);
   data.mouse_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
@@ -331,7 +368,7 @@ TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
   data_1.key_events_in_last_hour = 1;
   data_1.mouse_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data_1);
 
   idle_event_notifier_->PowerChanged(ac_power_);
   base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
@@ -348,7 +385,7 @@ TEST_F(IdleEventNotifierTest, IdleEventFieldReset) {
   data_2.key_events_in_last_hour = 1;
   data_2.mouse_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(20));
-  EXPECT_EQ(data_2, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(2, data_2);
 }
 
 TEST_F(IdleEventNotifierTest, TwoConsecutiveVideoPlaying) {
@@ -384,7 +421,7 @@ TEST_F(IdleEventNotifierTest, TwoConsecutiveVideoPlaying) {
   data.time_since_video_ended =
       base::TimeDelta::FromSeconds(25) + now_3 - now_2;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(25));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartOneIdleEvent) {
@@ -419,7 +456,7 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartOneIdleEvent) {
   data.video_playing_time = now_3 - now_2;
   data.time_since_video_ended = base::TimeDelta::FromSeconds(25);
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(25));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartTwoIdleEvents) {
@@ -441,7 +478,7 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartTwoIdleEvents) {
       IdleEventNotifier::kIdleDelay + base::TimeDelta::FromSeconds(10);
   scoped_task_env_.FastForwardBy(IdleEventNotifier::kIdleDelay +
                                  base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data_1);
 
   base::Time now_3 = scoped_task_env_.GetMockClock()->Now();
   idle_event_notifier_->OnVideoActivityStarted();
@@ -455,7 +492,7 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingFarApartTwoIdleEvents) {
   data_2.recent_time_active = now_4 - now_3;
   data_2.video_playing_time = now_4 - now_3;
   data_2.time_since_video_ended = base::TimeDelta();
-  EXPECT_EQ(data_2, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(2, data_2);
 }
 
 TEST_F(IdleEventNotifierTest, TwoVideoPlayingSeparatedByAnIdleEvent) {
@@ -475,7 +512,7 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingSeparatedByAnIdleEvent) {
   data_1.video_playing_time = kNow2 - kNow1;
   data_1.time_since_video_ended = base::TimeDelta::FromSeconds(1);
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data_1);
 
   const base::Time kNow3 = scoped_task_env_.GetMockClock()->Now();
   idle_event_notifier_->OnVideoActivityStarted();
@@ -489,7 +526,7 @@ TEST_F(IdleEventNotifierTest, TwoVideoPlayingSeparatedByAnIdleEvent) {
   data_2.recent_time_active = kNow4 - kNow3;
   data_2.video_playing_time = kNow4 - kNow3;
   data_2.time_since_video_ended = base::TimeDelta();
-  EXPECT_EQ(data_2, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(2, data_2);
 }
 
 TEST_F(IdleEventNotifierTest, VideoPlayingPausedByShortSuspend) {
@@ -511,7 +548,7 @@ TEST_F(IdleEventNotifierTest, VideoPlayingPausedByShortSuspend) {
   data.recent_time_active = now_3 - now_1;
   data.video_playing_time = now_3 - now_1;
   data.time_since_video_ended = base::TimeDelta();
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, VideoPlayingPausedByLongSuspend) {
@@ -532,7 +569,7 @@ TEST_F(IdleEventNotifierTest, VideoPlayingPausedByLongSuspend) {
   data.recent_time_active = now_2 - now_1;
   data.video_playing_time = now_2 - now_1;
   data.time_since_video_ended = base::TimeDelta();
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, UserInputEventsOneIdleEvent) {
@@ -595,7 +632,7 @@ TEST_F(IdleEventNotifierTest, UserInputEventsOneIdleEvent) {
   data.touch_events_in_last_hour = 3;
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(30));
-  EXPECT_EQ(data, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data);
 }
 
 TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
@@ -617,7 +654,7 @@ TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
   data_1.time_since_last_key = base::TimeDelta::FromSeconds(30);
   data_1.key_events_in_last_hour = 1;
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromSeconds(30));
-  EXPECT_EQ(data_1, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(1, data_1);
 
   scoped_task_env_.FastForwardBy(base::TimeDelta::FromMinutes(11));
   base::Time last_key_time = scoped_task_env_.GetMockClock()->Now();
@@ -664,7 +701,7 @@ TEST_F(IdleEventNotifierTest, UserInputEventsTwoIdleEvents) {
   data_2.mouse_events_in_last_hour = 2;
   data_2.touch_events_in_last_hour = 3;
 
-  EXPECT_EQ(data_2, idle_event_notifier_->GetActivityDataAndReset());
+  ReportIdleEventAndCheckResults(2, data_2);
 }
 
 }  // namespace ml

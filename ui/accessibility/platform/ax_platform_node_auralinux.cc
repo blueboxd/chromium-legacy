@@ -3856,7 +3856,7 @@ gchar* AXPlatformNodeAuraLinux::GetSelectionWithText(int* start_offset,
       selection_start == selection_end)
     return nullptr;
 
-  return atk_text::GetText(ATK_TEXT(atk_object_), selection_start,
+  return atk_text::GetText(ATK_TEXT(GetOrCreateAtkObject()), selection_start,
                            selection_end);
 }
 

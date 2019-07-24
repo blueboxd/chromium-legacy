@@ -5,7 +5,7 @@
 #import "ios/web/service/web_browser_manifest.h"
 
 #include "base/no_destructor.h"
-#include "ios/web/public/service_names.mojom.h"
+#include "ios/web/public/service/service_names.mojom.h"
 #include "ios/web/public/web_client.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"

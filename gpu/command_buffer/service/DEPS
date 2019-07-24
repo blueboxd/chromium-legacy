@@ -1,6 +1,7 @@
 include_rules = [
   "+cc/paint",
   "+third_party/skia",
+  "+components/crash/core/common/crash_key.h",
   "+components/viz/common/gpu/metal_context_provider.h",
   "+components/viz/common/gpu/vulkan_context_provider.h",
   "+components/viz/common/resources/resource_format.h",

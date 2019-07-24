@@ -13,6 +13,7 @@
 #include "media/gpu/format_utils.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 
 #if defined(USE_OZONE)
@@ -139,7 +140,7 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   return handle;
 }
 
-scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
+scoped_refptr<gfx::NativePixmapDmaBuf> CreateNativePixmapDmaBuf(
     const VideoFrame* video_frame) {
   DCHECK(video_frame);
 
@@ -158,18 +159,9 @@ scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
     return nullptr;
   }
 
-  scoped_refptr<gfx::NativePixmap> native_pixmap;
-#if defined(USE_OZONE)
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  native_pixmap = factory->CreateNativePixmapFromHandle(
-      gfx::kNullAcceleratedWidget, video_frame->layout().coded_size(),
-      *buffer_format, std::move(gpu_memory_buffer_handle.native_pixmap_handle));
-#endif
-  if (!native_pixmap) {
-    VLOGF(1) << "Failed to create pixmap from native handle";
-    return nullptr;
-  }
+  auto native_pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
+      video_frame->coded_size(), *buffer_format,
+      std::move(gpu_memory_buffer_handle.native_pixmap_handle));
 
   DCHECK(native_pixmap->AreDmaBufFdsValid());
   return native_pixmap;

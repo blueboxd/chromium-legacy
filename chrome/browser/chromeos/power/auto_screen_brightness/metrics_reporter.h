@@ -33,7 +33,8 @@ class MetricsReporter : public PowerManagerClient::Observer {
     kUnsupportedAls = 2,
     kAtlas = 3,
     kEve = 4,
-    kMaxValue = kEve
+    kNocturne = 5,
+    kMaxValue = kNocturne
   };
 
   static constexpr int kNumberDeviceClasses =
@@ -55,6 +56,8 @@ class MetricsReporter : public PowerManagerClient::Observer {
       "AutoScreenBrightness.DailyUserAdjustment.Atlas";
   static constexpr char kEveUserAdjustmentName[] =
       "AutoScreenBrightness.DailyUserAdjustment.Eve";
+  static constexpr char kNocturneUserAdjustmentName[] =
+      "AutoScreenBrightness.DailyUserAdjustment.Nocturne";
 
   // Registers prefs used by MetricsReporter in |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);

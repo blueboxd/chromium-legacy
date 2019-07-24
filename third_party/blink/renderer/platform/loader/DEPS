@@ -20,8 +20,6 @@ include_rules = [
     "+third_party/blink/renderer/platform/crypto.h",
     "+third_party/blink/renderer/platform/exported",
     "+third_party/blink/renderer/platform/heap",
-    "+third_party/blink/renderer/platform/histogram.h",
-    "+third_party/blink/renderer/platform/instrumentation/instance_counters.h",
     "+third_party/blink/renderer/platform/instrumentation",
     "+third_party/blink/renderer/platform/language.h",
     "+third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h",

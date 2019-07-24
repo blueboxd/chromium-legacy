@@ -26,6 +26,7 @@ constexpr auto kSupportedAls = MetricsReporter::DeviceClass::kSupportedAls;
 constexpr auto kUnsupportedAls = MetricsReporter::DeviceClass::kUnsupportedAls;
 constexpr auto kAtlas = MetricsReporter::DeviceClass::kAtlas;
 constexpr auto kEve = MetricsReporter::DeviceClass::kEve;
+constexpr auto kNocturne = MetricsReporter::DeviceClass::kNocturne;
 
 }  // namespace
 
@@ -124,6 +125,15 @@ TEST_F(MetricsReporterTest, CountAndReportEvents) {
   SendOnUserBrightnessChangeRequested();
   TriggerDailyEventAndVerifyHistograms(MetricsReporter::kEveUserAdjustmentName,
                                        2);
+
+  // Four with Nocturne.
+  ResetReporter(kNocturne);
+  SendOnUserBrightnessChangeRequested();
+  SendOnUserBrightnessChangeRequested();
+  SendOnUserBrightnessChangeRequested();
+  SendOnUserBrightnessChangeRequested();
+  TriggerDailyEventAndVerifyHistograms(
+      MetricsReporter::kNocturneUserAdjustmentName, 4);
 }
 
 TEST_F(MetricsReporterTest, LoadInitialCountsFromPrefs) {
@@ -137,6 +147,8 @@ TEST_F(MetricsReporterTest, LoadInitialCountsFromPrefs) {
       prefs::kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount, 2);
   pref_service_.SetInteger(
       prefs::kAutoScreenBrightnessMetricsEveUserAdjustmentCount, 4);
+  pref_service_.SetInteger(
+      prefs::kAutoScreenBrightnessMetricsNocturneUserAdjustmentCount, 3);
   ResetReporter(kAtlas);
 
   TriggerDailyEventAndVerifyHistograms(
@@ -160,10 +172,11 @@ TEST_F(MetricsReporterTest, IgnoreDailyEventFirstRun) {
                           0);
   tester.ExpectTotalCount(MetricsReporter::kAtlasUserAdjustmentName, 0);
   tester.ExpectTotalCount(MetricsReporter::kEveUserAdjustmentName, 0);
+  tester.ExpectTotalCount(MetricsReporter::kNocturneUserAdjustmentName, 0);
 }
 
 TEST_F(MetricsReporterTest, IgnoreDailyEventClockChanged) {
-  ResetReporter(kAtlas);
+  ResetReporter(kNocturne);
   SendOnUserBrightnessChangeRequested();
 
   // metrics::DailyEvent notifies observers if it sees that the system clock has
@@ -176,11 +189,12 @@ TEST_F(MetricsReporterTest, IgnoreDailyEventClockChanged) {
                           0);
   tester.ExpectTotalCount(MetricsReporter::kAtlasUserAdjustmentName, 0);
   tester.ExpectTotalCount(MetricsReporter::kEveUserAdjustmentName, 0);
+  tester.ExpectTotalCount(MetricsReporter::kNocturneUserAdjustmentName, 0);
 
   // The existing stats should be cleared when the clock change notification is
   // received, so the next report should only contain zeros.
   TriggerDailyEventAndVerifyHistograms(
-      MetricsReporter::kAtlasUserAdjustmentName, 0);
+      MetricsReporter::kNocturneUserAdjustmentName, 0);
 }
 
 }  // namespace auto_screen_brightness

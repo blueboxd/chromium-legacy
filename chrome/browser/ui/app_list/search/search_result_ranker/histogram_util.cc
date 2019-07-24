@@ -4,20 +4,38 @@
 
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 
 namespace app_list {
 
-void LogConfigurationError(ConfigurationError error) {
-  UMA_HISTOGRAM_ENUMERATION("RecurrenceRanker.ConfigurationError", error);
+void LogInitializationStatus(const std::string& suffix,
+                             InitializationStatus status) {
+  if (suffix.empty())
+    return;
+  base::UmaHistogramEnumeration(
+      "RecurrenceRanker.InitializationStatus." + suffix, status);
 }
 
-void LogSerializationError(SerializationError error) {
-  UMA_HISTOGRAM_ENUMERATION("RecurrenceRanker.SerializationError", error);
+void LogSerializationStatus(const std::string& suffix,
+                            SerializationStatus status) {
+  if (suffix.empty())
+    return;
+  base::UmaHistogramEnumeration(
+      "RecurrenceRanker.SerializationStatus." + suffix, status);
 }
 
-void LogUsageError(UsageError error) {
-  UMA_HISTOGRAM_ENUMERATION("RecurrenceRanker.UsageError", error);
+void LogUsage(const std::string& suffix, Usage usage) {
+  if (suffix.empty())
+    return;
+  base::UmaHistogramEnumeration("RecurrenceRanker.Usage." + suffix, usage);
+}
+
+void LogJsonConfigConversionStatus(const std::string& suffix,
+                                   JsonConfigConversionStatus status) {
+  if (suffix.empty())
+    return;
+  base::UmaHistogramEnumeration(
+      "RecurrenceRanker.JsonConfigConversion." + suffix, status);
 }
 
 }  // namespace app_list

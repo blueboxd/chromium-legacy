@@ -523,6 +523,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
+        r"^ui[\\/]events[\\/]x[\\/].*\.cc$",
         r"^ui[\\/]gl[\\/].*\.cc$",
         r"^media[\\/]gpu[\\/].*\.cc$",
         r"^gpu[\\/].*\.cc$",

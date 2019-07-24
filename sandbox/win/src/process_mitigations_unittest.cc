@@ -80,7 +80,7 @@ void TestWin10NonSystemFont(bool is_success_test) {
 //
 // Trigger test child process (with or without mitigation enabled).
 //------------------------------------------------------------------------------
-void TestWin10MsSigned(bool expect_success,
+void TestWin10MsSigned(int expected,
                        bool enable_mitigation,
                        bool delayed,
                        bool use_ms_signed_binary,
@@ -135,11 +135,9 @@ void TestWin10MsSigned(bool expect_success,
   test += L"\"";
 
   // Note: ERROR_INVALID_IMAGE_HASH is being displayed in a system pop-up when
-  //       the DLL load is attempted, but the value returned from the test
-  //       process itself is SBOX_TEST_FAILED.
-  EXPECT_EQ((expect_success ? sandbox::SBOX_TEST_SUCCEEDED
-                            : sandbox::SBOX_TEST_FAILED),
-            runner.RunTest(test.c_str()));
+  //       the DLL load is attempted for delayed mitigations, but the value
+  //       returned from the test process itself is SBOX_TEST_FAILED.
+  EXPECT_EQ(expected, runner.RunTest(test.c_str()));
 }
 
 }  // namespace
@@ -803,7 +801,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Success) {
 
   ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  TestWin10MsSigned(true /* expect_success */,
+  TestWin10MsSigned(sandbox::SBOX_TEST_SUCCEEDED /* expected */,
                     false /* enable_mitigation */,
                     false /* delayed */,
                     false /* use_ms_signed_binary */,
@@ -819,7 +817,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_Failure) {
 
   ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  TestWin10MsSigned(false /* expect_success */,
+  TestWin10MsSigned(sandbox::SBOX_TEST_FAILED /* expected */,
                     true /* enable_mitigation */,
                     true /* delayed */,
                     false /* use_ms_signed_binary */,
@@ -838,20 +836,46 @@ TEST(ProcessMitigationsTest, CheckWin10MsSignedWithIntercept_Success) {
   // Expect success; Enable mitigation; Use non MS-signed binary.
 #if defined(COMPONENT_BUILD)
   // In a component build, add the directory to the allowed list.
-  TestWin10MsSigned(true /* expect_success */,
+  TestWin10MsSigned(sandbox::SBOX_TEST_SUCCEEDED /* expected */,
                     true /* enable_mitigation */,
                     false /* delayed */,
                     false /* use_ms_signed_binary */,
                     true /* add_dll_permission */,
                     true /* add_directory_permission */);
 #else
-  TestWin10MsSigned(true /* expect_success */,
+  TestWin10MsSigned(sandbox::SBOX_TEST_SUCCEEDED /* expected */,
                     true /* enable_mitigation */,
                     false /* delayed */,
                     false /* use_ms_signed_binary */,
                     true /* add_dll_permission */,
                     false /* add_directory_permission */);
 #endif  // defined(COMPONENT_BUILD)
+}
+
+// This test validates that setting the MITIGATION_FORCE_MS_SIGNED_BINS
+// mitigation pre-load prevents the loading of an unsigned DLL.
+TEST(ProcessMitigationsTest, CheckWin10MsSigned_FailurePreSpawn) {
+  if (base::win::GetVersion() < base::win::Version::WIN10_TH2)
+    return;
+
+  ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
+
+#if defined(COMPONENT_BUILD)
+  // In a component build, the executable will fail to start-up because
+  // imports e.g. base.dll cannot be resolved.
+  int expected = STATUS_INVALID_IMAGE_HASH;
+#else
+  // In a non-component build, the process will start, but the unsigned
+  // DLL will fail to load inside the test itself.
+  int expected = sandbox::SBOX_TEST_FAILED;
+#endif
+
+  TestWin10MsSigned(expected /* expected */,
+                    true /* enable_mitigation */,
+                    false /* delayed */,
+                    false /* use_ms_signed_binary */,
+                    false /* add_dll_permission */,
+                    false /* add_directory_permission */);
 }
 
 // This test validates that we can load a signed Microsoft DLL if the
@@ -863,7 +887,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsBaseline) {
 
   ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  TestWin10MsSigned(true /* expect_success */,
+  TestWin10MsSigned(sandbox::SBOX_TEST_SUCCEEDED /* expected */,
                     false /* enable_mitigation */,
                     false /* delayed */,
                     true /* use_ms_signed_binary */,
@@ -879,7 +903,7 @@ TEST(ProcessMitigationsTest, CheckWin10MsSigned_MsSuccess) {
 
   ScopedTestMutex mutex(hooking_dll::g_hooking_dll_mutex);
 
-  TestWin10MsSigned(true /* expect_success */,
+  TestWin10MsSigned(sandbox::SBOX_TEST_SUCCEEDED /* expected */,
                     true /* enable_mitigation */,
                     true /* delayed */,
                     true /* use_ms_signed_binary */,

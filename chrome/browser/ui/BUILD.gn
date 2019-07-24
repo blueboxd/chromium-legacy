@@ -3341,8 +3341,6 @@ jumbo_split_static_library("ui") {
       "app_list/app_context_menu.cc",
       "app_list/app_context_menu.h",
       "app_list/app_context_menu_delegate.h",
-      "app_list/app_launch_event_logger.cc",
-      "app_list/app_launch_event_logger.h",
       "app_list/app_list_client_impl.cc",
       "app_list/app_list_client_impl.h",
       "app_list/app_list_controller_delegate.cc",
@@ -3420,6 +3418,8 @@ jumbo_split_static_library("ui") {
       "app_list/search/search_resource_manager.h",
       "app_list/search/search_result_ranker/app_launch_data.cc",
       "app_list/search/search_result_ranker/app_launch_data.h",
+      "app_list/search/search_result_ranker/app_launch_event_logger.cc",
+      "app_list/search/search_result_ranker/app_launch_event_logger.h",
       "app_list/search/search_result_ranker/app_launch_predictor.cc",
       "app_list/search/search_result_ranker/app_launch_predictor.h",
       "app_list/search/search_result_ranker/app_list_launch_metrics_provider.cc",
@@ -3457,8 +3457,8 @@ jumbo_split_static_library("ui") {
       "//ash/app_list",
       "//ash/public/cpp/app_list/vector_icons",
       "//ash/resources/vector_icons",
-      "//chrome/browser/ui:app_launch_event_logger_proto",
       "//chrome/browser/ui/app_list/search/logging:search_ranking_event_proto",
+      "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_event_logger_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_launch_predictor_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:app_list_launch_recorder_proto",
       "//chrome/browser/ui/app_list/search/search_result_ranker:recurrence_ranker_proto",
@@ -4012,10 +4012,4 @@ if (is_android) {
       "android/tab_model/tab_model.h",
     ]
   }
-}
-
-proto_library("app_launch_event_logger_proto") {
-  sources = [
-    "app_list/app_launch_event_logger.proto",
-  ]
 }

@@ -4,9 +4,13 @@
 
 #include "gpu/command_buffer/service/service_font_manager.h"
 
+#include <inttypes.h>
+
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
+#include "components/crash/core/common/crash_key.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 
@@ -86,6 +90,8 @@ class ServiceFontManager::SkiaDiscardableManager
       : font_manager_(std::move(font_manager)) {}
   ~SkiaDiscardableManager() override = default;
 
+  static constexpr int kMaxDumps = 5;
+
   bool deleteHandle(SkDiscardableHandleId handle_id) override {
     if (!font_manager_)
       return true;
@@ -104,11 +110,27 @@ class ServiceFontManager::SkiaDiscardableManager
                               type == SkStrikeClient::kGlyphPath ||
                               type == SkStrikeClient::kGlyphImage);
 
-    constexpr int kMaxDumps = 5;
     if (no_fallback && dump_count_ < kMaxDumps && base::RandInt(1, 100) == 1) {
       ++dump_count_;
       base::debug::DumpWithoutCrashing();
     }
+  }
+
+  void notifyReadFailure(
+      const DiscardableHandleManager::ReadFailureData& data) override {
+    if (dump_count_ >= kMaxDumps)
+      return;
+
+    std::string str = base::StringPrintf(
+        "ms: %zd, br: %zd, ts: %" PRIu64 ", sc: %" PRIu64 ", gic: %" PRIu64
+        ", gpc: %" PRIu64,
+        data.memorySize, data.bytesRead, data.typefaceSize, data.strikeCount,
+        data.glyphImagesCount, data.glyphPathsCount);
+    static crash_reporter::CrashKeyString<128> crash_key("oop_read_failure");
+    crash_reporter::ScopedCrashKeyString auto_clear(&crash_key, str);
+
+    ++dump_count_;
+    base::debug::DumpWithoutCrashing();
   }
 
  private:

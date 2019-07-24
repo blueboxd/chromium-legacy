@@ -34,13 +34,14 @@ class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
     base::RunLoop run_loop;
     done_callback_ = run_loop.QuitClosure();
     converter_->Convert(
-        json, base::BindOnce(
-                  [](RecurrenceRankerJsonConfigConverterTest* fixture,
-                     base::Optional<RecurrenceRankerConfigProto> config) {
-                    fixture->config_ = config;
-                    fixture->done_callback_.Run();
-                  },
-                  base::Unretained(this)));
+        json, "",
+        base::BindOnce(
+            [](RecurrenceRankerJsonConfigConverterTest* fixture,
+               base::Optional<RecurrenceRankerConfigProto> config) {
+              fixture->config_ = config;
+              fixture->done_callback_.Run();
+            },
+            base::Unretained(this)));
     run_loop.Run();
     return config_;
   }

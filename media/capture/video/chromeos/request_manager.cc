@@ -816,7 +816,7 @@ void RequestManager::SubmitCapturedJpegBuffer(uint32_t frame_number,
   gfx::GpuMemoryBuffer* gmb = stream_buffer_manager_->GetGpuMemoryBufferById(
       StreamType::kJpegOutput, buffer_ipc_id);
   CHECK(gmb);
-  if (!gmb->Map()) {
+  if (video_capture_use_gmb_ && !gmb->Map()) {
     device_context_->SetErrorState(
         media::VideoCaptureError::
             kCrosHalV3BufferManagerFailedToCreateGpuMemoryBuffer,
@@ -830,7 +830,9 @@ void RequestManager::SubmitCapturedJpegBuffer(uint32_t frame_number,
     device_context_->SetErrorState(
         media::VideoCaptureError::kCrosHalV3BufferManagerInvalidJpegBlob,
         FROM_HERE, "Invalid JPEG blob");
-    gmb->Unmap();
+    if (video_capture_use_gmb_) {
+      gmb->Unmap();
+    }
     return;
   }
   // Still capture result from HALv3 already has orientation info in EXIF,
@@ -865,7 +867,9 @@ void RequestManager::SubmitCapturedJpegBuffer(uint32_t frame_number,
   }
   stream_buffer_manager_->ReleaseBufferFromCaptureResult(
       StreamType::kJpegOutput, buffer_ipc_id);
-  gmb->Unmap();
+  if (video_capture_use_gmb_) {
+    gmb->Unmap();
+  }
 }
 
 void RequestManager::UpdateCaptureSettings(

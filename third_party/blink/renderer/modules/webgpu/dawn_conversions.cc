@@ -289,9 +289,6 @@ DawnStoreOp AsDawnEnum<DawnStoreOp>(const WTF::String& webgpu_enum) {
 
 template <>
 DawnLoadOp AsDawnEnum<DawnLoadOp>(const WTF::String& webgpu_enum) {
-  if (webgpu_enum == "clear") {
-    return DAWN_LOAD_OP_CLEAR;
-  }
   if (webgpu_enum == "load") {
     return DAWN_LOAD_OP_LOAD;
   }

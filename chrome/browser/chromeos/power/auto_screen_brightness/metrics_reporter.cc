@@ -29,6 +29,7 @@ constexpr std::array<const char*, MetricsReporter::kNumberDeviceClasses>
         prefs::kAutoScreenBrightnessMetricsUnsupportedAlsUserAdjustmentCount,
         prefs::kAutoScreenBrightnessMetricsAtlasUserAdjustmentCount,
         prefs::kAutoScreenBrightnessMetricsEveUserAdjustmentCount,
+        prefs::kAutoScreenBrightnessMetricsNocturneUserAdjustmentCount,
 };
 
 // Histograms corresponding to UserAdjustment values.
@@ -39,6 +40,7 @@ constexpr std::array<const char*, MetricsReporter::kNumberDeviceClasses>
         MetricsReporter::kUnsupportedAlsUserAdjustmentName,
         MetricsReporter::kAtlasUserAdjustmentName,
         MetricsReporter::kEveUserAdjustmentName,
+        MetricsReporter::kNocturneUserAdjustmentName,
 };
 
 }  // namespace
@@ -49,6 +51,7 @@ constexpr char MetricsReporter::kSupportedAlsUserAdjustmentName[];
 constexpr char MetricsReporter::kUnsupportedAlsUserAdjustmentName[];
 constexpr char MetricsReporter::kAtlasUserAdjustmentName[];
 constexpr char MetricsReporter::kEveUserAdjustmentName[];
+constexpr char MetricsReporter::kNocturneUserAdjustmentName[];
 
 constexpr int MetricsReporter::kNumberDeviceClasses;
 

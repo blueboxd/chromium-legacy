@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 #include "third_party/blink/renderer/modules/geolocation/position_error.h"
 #include "third_party/blink/renderer/modules/geolocation/position_options.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {

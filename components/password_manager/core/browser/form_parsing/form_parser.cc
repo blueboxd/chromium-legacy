@@ -390,17 +390,18 @@ void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
       case AutocompleteFlag::kUsername:
         if (processed_field.is_password || result->username)
           continue;
-
         username_fields_found++;
         field_marked_as_username = processed_field.field;
         break;
       case AutocompleteFlag::kCurrentPassword:
-        if (!processed_field.is_password || result->password)
+        if (!processed_field.is_password || result->password ||
+            processed_field.server_hints_not_password)
           continue;
         result->password = processed_field.field;
         break;
       case AutocompleteFlag::kNewPassword:
-        if (!processed_field.is_password || new_password_found_by_server)
+        if (!processed_field.is_password || new_password_found_by_server ||
+            processed_field.server_hints_not_password)
           continue;
         // The first field with autocomplete=new-password is considered to be
         // new_password and the second is confirmation_password.

@@ -26,6 +26,7 @@ class PasswordChangeDialog : public SystemWebDialogDelegate {
 
   // ui::WebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
+  ui::ModalType GetDialogModalType() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordChangeDialog);
@@ -58,6 +59,8 @@ class ConfirmPasswordChangeDialog : public SystemWebDialogDelegate {
   // ui::WebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
   std::string GetDialogArgs() const override;
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
+  ui::ModalType GetDialogModalType() const override;
 
  private:
   std::string scraped_old_password_;
@@ -89,6 +92,8 @@ class UrgentPasswordExpiryNotificationDialog : public SystemWebDialogDelegate {
 
   // ui::WebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
+  ui::ModalType GetDialogModalType() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UrgentPasswordExpiryNotificationDialog);

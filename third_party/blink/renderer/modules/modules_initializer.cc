@@ -63,8 +63,6 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
-#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
-#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
@@ -188,9 +186,6 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
       frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
   ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
-  NavigatorContentUtils::ProvideTo(
-      *frame.DomWindow()->navigator(),
-      MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame));
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
   if (RuntimeEnabledFeatures::PresentationEnabled())

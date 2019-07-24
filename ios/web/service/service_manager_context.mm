@@ -18,7 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "ios/web/public/service/service_manager_connection.h"
-#include "ios/web/public/service_names.mojom.h"
+#include "ios/web/public/service/service_names.mojom.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web/public/web_client.h"

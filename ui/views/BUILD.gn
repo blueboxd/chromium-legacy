@@ -960,7 +960,10 @@ jumbo_source_set("test_support") {
     }
   }
   if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/x",
+      "//ui/gfx/x",
+    ]
   }
   if (ozone_platform_x11) {
     deps += [ "//ui/base/x" ]

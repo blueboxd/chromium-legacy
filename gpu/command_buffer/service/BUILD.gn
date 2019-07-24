@@ -299,6 +299,7 @@ target(link_target_type, "gles2_sources") {
     ":service",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//components/crash/core/common",
     "//components/viz/common:resource_format_utils",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common:gles2_utils",

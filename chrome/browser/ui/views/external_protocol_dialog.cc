@@ -42,7 +42,9 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   new ExternalProtocolDialog(std::move(delegate), web_contents);
 }
 
-ExternalProtocolDialog::~ExternalProtocolDialog() {}
+ExternalProtocolDialog::~ExternalProtocolDialog() {
+  delete remember_decision_checkbox_;
+}
 
 gfx::Size ExternalProtocolDialog::CalculatePreferredSize() const {
   constexpr int kDialogContentWidth = 400;
@@ -108,7 +110,11 @@ ExternalProtocolDialog::ExternalProtocolDialog(
   DCHECK(delegate_->GetMessageText().empty());
   remember_decision_checkbox_ =
       new views::Checkbox(delegate_->GetCheckboxText());
-  AddChildView(remember_decision_checkbox_);
+  remember_decision_checkbox_->SetChecked(false);
+
+  // TODO(982341): We intentionally don't add |remember_decision_checkbox_| to
+  // the dialog, as we're reevaluating whether we actually want persistence
+  // for this mechanism going forward.
 
   constrained_window::ShowWebModalDialogViews(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTERNAL_PROTOCOL);

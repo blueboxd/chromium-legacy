@@ -12,6 +12,7 @@ from .common import WithExtendedAttributes
 from .common import WithIdentifier
 from .reference import Proxy
 from .reference import RefById
+from .typedef import Typedef
 from .user_defined_type import UserDefinedType
 
 # The implementation class hierarchy of IdlType
@@ -562,6 +563,7 @@ class TypedefType(IdlType, WithIdentifier):
                  code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
+        assert isinstance(typedef, Typedef)
         IdlType.__init__(
             self,
             code_generator_info=code_generator_info,

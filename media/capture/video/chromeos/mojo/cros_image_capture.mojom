@@ -21,8 +21,9 @@ enum Effect {
 interface CrosImageCapture {
   // Gets camera information |camera_info| which includes camera facing,
   // characteristics, orientation, etc. The |source_id| might need translation
-  // to be actual video device id.
-  GetCameraInfo(string source_id) => (CameraInfo camera_info);
+  // to be actual video device id. For invalid |source_id|, the returned
+  // |camera_info| would be empty.
+  GetCameraInfo(string source_id) => (CameraInfo? camera_info);
 
   // Sets reprocess option to bind with the coming take photo request. When this
   // method is called, the reprocess option will be queued. All reprocess
@@ -30,8 +31,12 @@ interface CrosImageCapture {
   // Capture API is triggered and all the queued reprocess options will be bound
   // to that take photo request. The |source_id| might need translation to be
   // actual video device id.
+  // The result |status| would be set to 0 for success and the corresponding
+  // result will be put in |blob|. If it fails, the |status| indicates the error
+  // type and |blob| might be empty. For invalid |source_id|, it returns
+  // -EINVAL.
   SetReprocessOption(string source_id, Effect effect)
-      => (int32 status, media.mojom.Blob blob);
+      => (int32 status, media.mojom.Blob? blob);
 
   // Sets the fps range for upcoming configured camera stream.
   // The |source_id| might need translation to be actual video device id.
@@ -44,4 +49,16 @@ interface CrosImageCapture {
   SetFpsRange(string source_id, uint32 stream_width, uint32 stream_height,
               int32 min_fps, int32 max_fps)
       => (bool is_success);
+
+  // Invoked when the intent is fulfilled or is failed. For the intent which
+  // expects to have result, it is fulfilled when the captured is done and is
+  // failed if the session ends without finishing the capture. For the intent
+  // which don't expect any result, it is fulfilled when the camera app is
+  // successfully launched and is failed when the camera fails to launch.
+  // |intent_id| should be the same id that was specified in the query when
+  // launching the camera app. |is_success| indicates the result status of the
+  // intent. The |captured_data| will be delivered to the handler as a byte
+  // array.
+  OnIntentHandled(uint32 intent_id, bool is_success,
+                  array<uint8> captured_data);
 };

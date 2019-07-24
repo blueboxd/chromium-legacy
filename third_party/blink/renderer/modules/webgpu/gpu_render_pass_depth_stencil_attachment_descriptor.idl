@@ -7,11 +7,9 @@
 dictionary GPURenderPassDepthStencilAttachmentDescriptor {
     required GPUTextureView attachment;
 
-    required GPULoadOp depthLoadOp;
+    required (GPULoadOp or float) depthLoadValue;
     required GPUStoreOp depthStoreOp;
-    required float clearDepth;
 
-    required GPULoadOp stencilLoadOp;
+    required (GPULoadOp or long) stencilLoadValue;
     required GPUStoreOp stencilStoreOp;
-    unsigned long clearStencil = 0;
 };

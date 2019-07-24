@@ -23,7 +23,6 @@ jumbo_component("x11") {
   configs += [ "//build/config/linux:x11" ]
 
   public_deps = [
-    "//ui/base/x",
     "//ui/events",
     "//ui/events:events_base",
     "//ui/events/devices",

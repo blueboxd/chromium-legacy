@@ -4,6 +4,12 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
+proto_library("app_launch_event_logger_proto") {
+  sources = [
+    "app_launch_event_logger.proto",
+  ]
+}
+
 proto_library("app_launch_predictor_proto") {
   sources = [
     "app_launch_predictor.proto",

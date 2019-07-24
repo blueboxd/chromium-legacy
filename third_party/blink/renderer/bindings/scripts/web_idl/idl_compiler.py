@@ -8,6 +8,7 @@ from .dictionary import Dictionary
 from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
 from .reference import RefByIdFactory
+from .typedef import Typedef
 
 
 class IdlCompiler(object):
@@ -102,6 +103,11 @@ class IdlCompiler(object):
             IdentifierIRMap.IR.Kind.DICTIONARY)
         for ir in dictionary_irs.itervalues():
             self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))
+
+        typedef_irs = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.TYPEDEF)
+        for ir in typedef_irs.itervalues():
+            self._db.register(DatabaseBody.Kind.TYPEDEF, Typedef(ir))
 
     def _resolve_references_to_idl_type(self):
         def resolve(ref):

@@ -51,4 +51,11 @@ void CrosImageCaptureImpl::OnGotCameraInfo(
   std::move(callback).Run(std::move(camera_info));
 }
 
+void CrosImageCaptureImpl::OnIntentHandled(
+    uint32_t intent_id,
+    bool is_success,
+    const std::vector<uint8_t>& captured_data) {
+  NOTREACHED() << "Should be handled in RendererFacingCrosImageCapture";
+}
+
 }  // namespace media

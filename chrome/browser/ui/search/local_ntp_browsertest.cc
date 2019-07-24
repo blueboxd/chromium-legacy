@@ -995,11 +995,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   ASSERT_TRUE(GetIsLightChipsApplied(active_tab));
 
   // Enable dark mode and wait until the MV tiles have updated.
-  content::DOMMessageQueue msg_queue(active_tab);
   theme()->SetDarkMode(true);
   theme()->NotifyObservers();
-  local_ntp_test_utils::WaitUntilTilesLoaded(active_tab, &msg_queue,
-                                             /*delay=*/0);
 
   // Check that dark mode has been properly applied.
   EXPECT_TRUE(GetIsDarkModeApplied(active_tab));
@@ -1008,11 +1005,8 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeTest, ToggleDarkMode) {
   EXPECT_FALSE(GetIsLightChipsApplied(active_tab));
 
   // Disable dark mode and wait until the MV tiles have updated.
-  msg_queue.ClearQueue();
   theme()->SetDarkMode(false);
   theme()->NotifyObservers();
-  local_ntp_test_utils::WaitUntilTilesLoaded(active_tab, &msg_queue,
-                                             /*delay=*/0);
 
   // Check that dark mode has been removed.
   EXPECT_FALSE(GetIsDarkModeApplied(active_tab));

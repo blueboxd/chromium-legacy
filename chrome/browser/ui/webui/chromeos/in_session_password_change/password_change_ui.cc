@@ -79,7 +79,7 @@ constexpr int kMaxPasswordChangeDialogHeight = 640;
 // TODO(https://crbug.com/930109): Change these numbers depending on what is
 // shown in the dialog.
 constexpr int kMaxConfirmPasswordChangeDialogWidth = 520;
-constexpr int kMaxConfirmPasswordChangeDialogHeight = 390;
+constexpr int kMaxConfirmPasswordChangeDialogHeight = 380;
 
 constexpr int kMaxNotificationDialogWidth = 768;
 constexpr int kMaxNotificationDialogHeight = 640;
@@ -117,6 +117,10 @@ PasswordChangeDialog::~PasswordChangeDialog() {
 void PasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
   *size = FitSizeToDisplay(kMaxPasswordChangeDialogWidth,
                            kMaxPasswordChangeDialogHeight);
+}
+
+ui::ModalType PasswordChangeDialog::GetDialogModalType() const {
+  return ui::ModalType::MODAL_TYPE_SYSTEM;
 }
 
 // static
@@ -213,6 +217,15 @@ std::string ConfirmPasswordChangeDialog::GetDialogArgs() const {
   return data;
 }
 
+void ConfirmPasswordChangeDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+}
+
+ui::ModalType ConfirmPasswordChangeDialog::GetDialogModalType() const {
+  return ui::ModalType::MODAL_TYPE_SYSTEM;
+}
+
 ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
@@ -265,6 +278,16 @@ void UrgentPasswordExpiryNotificationDialog::GetDialogSize(
     gfx::Size* size) const {
   *size = FitSizeToDisplay(kMaxNotificationDialogWidth,
                            kMaxNotificationDialogHeight);
+}
+
+void UrgentPasswordExpiryNotificationDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+}
+
+ui::ModalType UrgentPasswordExpiryNotificationDialog::GetDialogModalType()
+    const {
+  return ui::ModalType::MODAL_TYPE_SYSTEM;
 }
 
 // static

@@ -252,21 +252,24 @@ TEST(BlinkEventUtilTest, WebMouseWheelEventCoalescing) {
   coalesced_event.phase = blink::WebMouseWheelEvent::kPhaseEnded;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 
+  // With timer based wheel scroll latching, we break the latching sequence on
+  // direction change when all prior GSU events in the current sequence are
+  // ignored. To do so we dispatch the pending wheel event with phaseEnded and
+  // the first wheel event in the opposite direction will have phaseBegan. The
+  // GSB generated from this wheel event will cause a new hittesting. To make
+  // sure that a GSB will actually get created we should not coalesce the wheel
+  // event with synthetic kPhaseBegan to one with synthetic kPhaseEnded.
   event_to_be_coalesced.has_synthetic_phase = true;
   coalesced_event.has_synthetic_phase = true;
-  EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
-  Coalesce(event_to_be_coalesced, &coalesced_event);
-  EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, coalesced_event.phase);
-  EXPECT_EQ(7, coalesced_event.delta_x);
-  EXPECT_EQ(9, coalesced_event.delta_y);
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 
   event_to_be_coalesced.phase = blink::WebMouseWheelEvent::kPhaseChanged;
   coalesced_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
   EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
   Coalesce(event_to_be_coalesced, &coalesced_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBegan, coalesced_event.phase);
-  EXPECT_EQ(10, coalesced_event.delta_x);
-  EXPECT_EQ(13, coalesced_event.delta_y);
+  EXPECT_EQ(7, coalesced_event.delta_x);
+  EXPECT_EQ(9, coalesced_event.delta_y);
 
   event_to_be_coalesced.resending_plugin_id = 3;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));

@@ -42,8 +42,13 @@
   native <methods>;
 }
 
-# Remove methods annotated with this if their return value is unused.
+# Remove methods with this annotation. Methods generally need to be void, or
+# have unused return values in order to be removed. Compiles will fail if any
+# such method was not able to be safely removed.
 -assumenosideeffects class ** {
+  @org.chromium.base.annotations.RemovableInRelease <methods>;
+}
+-checkdiscard class ** {
   @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 

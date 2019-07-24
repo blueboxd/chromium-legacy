@@ -23,6 +23,7 @@
 #include "chromeos/dbus/cicerone_client.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 
@@ -114,7 +115,8 @@ class VmShutdownObserver : public base::CheckedObserver {
 // only the Concierge name is exposed outside of here.
 class CrostiniManager : public KeyedService,
                         public chromeos::ConciergeClient::ContainerObserver,
-                        public chromeos::CiceroneClient::Observer {
+                        public chromeos::CiceroneClient::Observer,
+                        public chromeos::PowerManagerClient::Observer {
  public:
   using CrostiniResultCallback =
       base::OnceCallback<void(CrostiniResult result)>;
@@ -446,6 +448,10 @@ class CrostiniManager : public KeyedService,
   void OnPendingAppListUpdates(
       const vm_tools::cicerone::PendingAppListUpdatesSignal& signal) override;
 
+  // chromeos::PowerManagerClient::Observer overrides:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+
   void RemoveCrostini(std::string vm_name, RemoveCrostiniCallback callback);
 
   void UpdateVmState(std::string vm_name, VmState vm_state);
@@ -455,7 +461,8 @@ class CrostiniManager : public KeyedService,
   void AddRunningVmForTesting(std::string vm_name);
 
   void SetContainerSshfsMounted(std::string vm_name,
-                                std::string container_name);
+                                std::string container_name,
+                                bool is_mounted);
   // Returns null if VM or container is not running.
   base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
                                                  std::string container_name);

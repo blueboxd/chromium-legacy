@@ -25,7 +25,7 @@ struct AppLaunchData {
   ash::AppListLaunchedFrom launched_from =
       ash::AppListLaunchedFrom::kLaunchedFromShelf;
   // The type of app launched.
-  ash::AppListLaunchType launched_type = ash::AppListLaunchType::kSearchResult;
+  ash::AppListLaunchType launch_type = ash::AppListLaunchType::kSearchResult;
   // The index of the suggested app launched, if applicable.
   int suggestion_index = 0;
   // User's search query string, if relevant.

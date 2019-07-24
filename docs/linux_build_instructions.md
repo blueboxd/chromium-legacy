@@ -356,10 +356,10 @@ For the optional packages on Arch Linux:
 
 ### Crostini (Debian based)
 
-First install the `file` command for the script to run properly:
+First install the `file` and `lsb-release` commands for the script to run properly:
 
 ```shell
-$ sudo apt-get install file
+$ sudo apt-get install file lsb-release
 ```
 
 Then invoke install-build-deps.sh with the `--no-arm` argument,

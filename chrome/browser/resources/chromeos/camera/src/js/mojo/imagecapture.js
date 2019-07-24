@@ -145,6 +145,10 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
     this.capture_.getPhotoCapabilities(),
     cca.mojo.MojoInterface.getProxy().getCameraInfo(this.deviceId_),
   ]);
+
+  if (cameraInfo === null) {
+    throw new Error('No photo capabilities is found for given device id.');
+  }
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   let supportedEffects = [cros.mojom.Effect.NO_EFFECT];
   if (cca.mojo.getMetadataData_(staticMetadata, portraitModeTag).length > 0) {
@@ -199,6 +203,10 @@ cca.mojo.getPhotoResolutions = async function(deviceId) {
 
   let {cameraInfo} =
       await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+  if (cameraInfo === null) {
+    throw new Error('No photo resolutions is found for given device id.');
+  }
+
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   const streamConfigs = cca.mojo.getMetadataData_(
       staticMetadata,
@@ -237,6 +245,9 @@ cca.mojo.getVideoConfigs = async function(deviceId) {
 
   let {cameraInfo} =
       await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+  if (cameraInfo === null) {
+    throw new Error('No video configs is found for given device id.');
+  }
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   const minFrameDurationConfigs = cca.mojo.getMetadataData_(
       staticMetadata,
@@ -271,6 +282,9 @@ cca.mojo.getVideoConfigs = async function(deviceId) {
 cca.mojo.getCameraFacing = async function(deviceId) {
   let {cameraInfo} =
       await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+  if (cameraInfo === null) {
+    throw new Error('No camera facing is found for given device id.');
+  }
   return cameraInfo.facing;
 };
 
@@ -286,6 +300,10 @@ cca.mojo.getSupportedFpsRanges = async function(deviceId) {
 
   let {cameraInfo} =
       await cca.mojo.MojoInterface.getProxy().getCameraInfo(deviceId);
+  if (cameraInfo === null) {
+    throw new Error('No supported Fps Ranges is found for given device id.');
+  }
+
   const staticMetadata = cameraInfo.staticCameraCharacteristics;
   const availableFpsRanges = cca.mojo.getMetadataData_(
       staticMetadata,

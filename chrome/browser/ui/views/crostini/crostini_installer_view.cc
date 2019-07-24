@@ -268,13 +268,15 @@ bool CrostiniInstallerView::Accept() {
 
 bool CrostiniInstallerView::Cancel() {
   if (!has_logged_timing_result_ &&
-      restart_id_ == crostini::CrostiniManager::kUninitializedRestartId) {
+      (restart_id_ != crostini::CrostiniManager::kUninitializedRestartId ||
+       state_ == State::INSTALL_START)) {
     UMA_HISTOGRAM_LONG_TIMES(kCrostiniTimeToInstallCancel,
                              base::TimeTicks::Now() - install_start_time_);
     has_logged_timing_result_ = true;
   }
   if (!has_logged_free_disk_result_ &&
-      restart_id_ == crostini::CrostiniManager::kUninitializedRestartId &&
+      (restart_id_ != crostini::CrostiniManager::kUninitializedRestartId ||
+       state_ == State::INSTALL_START) &&
       free_disk_space_ != kUninitializedDiskSpace) {
     base::UmaHistogramCounts1M(kCrostiniAvailableDiskCancel,
                                free_disk_space_ >> 20);

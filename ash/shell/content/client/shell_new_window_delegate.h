@@ -32,6 +32,7 @@ class ShellNewWindowDelegate : public ash::NewWindowDelegate {
   void ShowKeyboardShortcutViewer() override;
   void ShowTaskManager() override;
   void OpenFeedbackPage(bool from_assistant) override;
+  void LaunchCameraApp(const std::string& queries) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellNewWindowDelegate);

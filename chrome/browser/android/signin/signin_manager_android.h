@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/android/signin/signin_manager_delegate.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -26,7 +27,8 @@ class SigninClient;
 //
 // This class implements parts of the sign-in flow, to make sure that policy
 // is available before sign-in completes.
-class SigninManagerAndroid : public signin::IdentityManager::Observer {
+class SigninManagerAndroid : public KeyedService,
+                             public signin::IdentityManager::Observer {
  public:
   SigninManagerAndroid(
       SigninClient* signin_client,
@@ -36,7 +38,7 @@ class SigninManagerAndroid : public signin::IdentityManager::Observer {
 
   ~SigninManagerAndroid() override;
 
-  void Shutdown();
+  void Shutdown() override;
 
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 

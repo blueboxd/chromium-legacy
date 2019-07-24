@@ -11,9 +11,10 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
-#include "chrome/browser/media/router/media_router_feature.h"  // nogncheck
+#include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
 #include "chrome/common/extensions/extension_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/video_capture_service.h"
@@ -24,9 +25,12 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/task/post_task.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/media_device_id.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -73,6 +77,15 @@ void TranslateVideoDeviceId(
                            std::move(callback_on_io_thread));
 }
 
+void TriggerCameraIntent(content::BrowserContext* context,
+                         uint32_t intent_id,
+                         bool is_success,
+                         const std::vector<uint8_t>& captured_data) {
+  auto* intent_helper =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(context);
+  intent_helper->OnCameraIntentHandled(intent_id, is_success, captured_data);
+}
+
 // Binds CrosImageCaptureRequest to a proxy which translates the source id into
 // video device id and then forward the request to video capture service.
 void BindRendererFacingCrosImageCapture(
@@ -91,10 +104,13 @@ void BindRendererFacingCrosImageCapture(
   auto mapping_callback =
       base::BindRepeating(&TranslateVideoDeviceId, media_device_id_salt,
                           std::move(security_origin));
+  auto intent_callback = base::BindRepeating(
+      &TriggerCameraIntent, source->GetProcess()->GetBrowserContext());
 
   // Bind origin request to proxy implementation.
   auto api_proxy = std::make_unique<media::RendererFacingCrosImageCapture>(
-      std::move(proxy_ptr), std::move(mapping_callback));
+      std::move(proxy_ptr), std::move(mapping_callback),
+      std::move(intent_callback));
   mojo::MakeStrongBinding(std::move(api_proxy), std::move(request));
 }
 #endif

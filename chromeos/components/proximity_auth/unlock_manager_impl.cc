@@ -125,14 +125,13 @@ UnlockManagerImpl::UnlockManagerImpl(
 }
 
 UnlockManagerImpl::~UnlockManagerImpl() {
+  if (life_cycle_)
+    life_cycle_->RemoveObserver(this);
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
-
   if (proximity_monitor_)
     proximity_monitor_->RemoveObserver(this);
-
   chromeos::PowerManagerClient::Get()->RemoveObserver(this);
-
   if (bluetooth_adapter_)
     bluetooth_adapter_->RemoveObserver(this);
 }
@@ -153,11 +152,15 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
   PA_LOG(VERBOSE) << "Request received to change scan state to: "
                   << (life_cycle == nullptr ? "inactive" : "active") << ".";
 
+  if (life_cycle_)
+    life_cycle_->RemoveObserver(this);
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
 
   life_cycle_ = life_cycle;
   if (life_cycle_) {
+    life_cycle_->AddObserver(this);
+
     attempt_secure_connection_start_time_ =
         base::DefaultClock::GetInstance()->Now();
 
@@ -174,11 +177,11 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
   UpdateLockScreen();
 }
 
-void UnlockManagerImpl::OnLifeCycleStateChanged() {
-  RemoteDeviceLifeCycle::State state = life_cycle_->GetState();
-
+void UnlockManagerImpl::OnLifeCycleStateChanged(
+    RemoteDeviceLifeCycle::State old_state,
+    RemoteDeviceLifeCycle::State new_state) {
   remote_screenlock_state_.reset();
-  if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
+  if (new_state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
     DCHECK(life_cycle_->GetChannel());
     DCHECK(GetMessenger());
     if (!proximity_monitor_) {
@@ -196,7 +199,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
     proximity_monitor_.reset();
   }
 
-  if (state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
+  if (new_state == RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED)
     SetIsPerformingInitialScan(false /* is_performing_initial_scan */);
 
   UpdateLockScreen();

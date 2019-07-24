@@ -5,13 +5,14 @@
 #ifndef MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_UTILS_H_
 #define MEDIA_GPU_LINUX_PLATFORM_VIDEO_FRAME_UTILS_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace gfx {
 struct GpuMemoryBufferHandle;
-class NativePixmap;
+class NativePixmapDmaBuf;
 }  // namespace gfx
 
 namespace media {
@@ -38,10 +39,11 @@ MEDIA_GPU_EXPORT base::Optional<VideoFrameLayout> GetPlatformVideoFrameLayout(
 MEDIA_GPU_EXPORT gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
     const VideoFrame* video_frame);
 
-// Create a native pixmap from the specified |video_frame|. The video frame's
-// data will not be copied, the pixmap will point to the same GPU memory buffer.
-scoped_refptr<gfx::NativePixmap> CreateNativePixmap(
-    const VideoFrame* video_frame);
+// Create a NativePixmap that references the DMA Bufs of |video_frame|. The
+// returned pixmap is only a DMA Buf container and should not be used for
+// compositing/scanout.
+MEDIA_GPU_EXPORT scoped_refptr<gfx::NativePixmapDmaBuf>
+CreateNativePixmapDmaBuf(const VideoFrame* video_frame);
 
 }  // namespace media
 

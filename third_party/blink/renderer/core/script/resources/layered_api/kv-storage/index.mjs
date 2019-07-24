@@ -152,7 +152,7 @@ Object.defineProperties(StorageArea.prototype, {
   [Symbol.toStringTag]: {writable: false, enumerable: false}
 });
 
-export const storage = new StorageArea(DEFAULT_STORAGE_AREA_NAME);
+export default new StorageArea(DEFAULT_STORAGE_AREA_NAME);
 
 async function performDatabaseOperation(
     promise, setPromise, name, mode, steps) {

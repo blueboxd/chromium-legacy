@@ -192,7 +192,6 @@
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/smart_clip.h"
-#include "third_party/blink/renderer/core/frame/surrounding_text_impl.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
@@ -1715,8 +1714,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(
       autofill_client_(nullptr),
       find_in_page_(
           MakeGarbageCollected<FindInPage>(*this, interface_registry)),
-      surrounding_text_impl_(
-          MakeGarbageCollected<SurroundingTextImpl>(*this, interface_registry)),
       interface_registry_(interface_registry),
       input_method_controller_(*this),
       spell_check_panel_host_client_(nullptr),
@@ -1735,7 +1732,6 @@ WebLocalFrameImpl::~WebLocalFrameImpl() {
 void WebLocalFrameImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_frame_client_);
   visitor->Trace(find_in_page_);
-  visitor->Trace(surrounding_text_impl_);
   visitor->Trace(frame_);
   visitor->Trace(dev_tools_agent_);
   visitor->Trace(frame_widget_);

@@ -3538,6 +3538,7 @@ const FeatureEntry kFeatureEntries[] = {
          chromeos::assistant::features::kEnableMediaSessionIntegration)},
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_CHROMEOS)
     {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
      flag_descriptions::kClickToCallReceiverDescription, kOsAll,
      FEATURE_VALUE_TYPE(kClickToCallReceiver)},
@@ -3545,6 +3546,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
+#endif  // !defined(OS_CHROMEOS)
 
     {"enable-ambient-authentication-in-incognito",
      flag_descriptions::kEnableAmbientAuthenticationInIncognitoName,

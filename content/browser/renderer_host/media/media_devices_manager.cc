@@ -1057,6 +1057,7 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
   DCHECK(type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT ||
          type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT);
 
+  std::vector<blink::WebMediaDeviceInfo> removed_audio_devices;
   for (const auto& old_device_info : current_snapshot_[type]) {
     auto it =
         std::find_if(new_snapshot.begin(), new_snapshot.end(),
@@ -1066,8 +1067,31 @@ void MediaDevicesManager::MaybeStopRemovedInputDevices(
 
     // If a device was removed, notify the MediaStreamManager to stop all
     // streams using that device.
-    if (it == new_snapshot.end())
+    if (it == new_snapshot.end()) {
       stop_removed_input_device_cb_.Run(type, old_device_info);
+
+      if (type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT)
+        removed_audio_devices.push_back(old_device_info);
+    }
+  }
+
+  // "default" and "communications" audio devices that have been removed,
+  // require an extra notification. In fact, such audio devices have associated
+  // virtual audio devices in the snapshot with the special "default" or
+  // "communications" IDs. The code below implements an heuristic, such that to
+  // identify if an audio device was default, it checks whether the old
+  // snapshot contained an audio device with the same group ID and device ID
+  // matching either "default" or "communications".
+  for (const auto& removed_audio_device : removed_audio_devices) {
+    for (const auto& old_device_info : current_snapshot_[type]) {
+      if (removed_audio_device.group_id == old_device_info.group_id &&
+          (old_device_info.device_id ==
+               media::AudioDeviceDescription::kDefaultDeviceId ||
+           old_device_info.device_id ==
+               media::AudioDeviceDescription::kCommunicationsDeviceId)) {
+        stop_removed_input_device_cb_.Run(type, old_device_info);
+      }
+    }
   }
 }
 

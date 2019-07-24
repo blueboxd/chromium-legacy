@@ -133,7 +133,8 @@ MATCHER(WebPushMessageMatcher, "") {
   SharingMessage sharing_message;
   sharing_message.ParseFromString(arg.payload);
   return sharing_message.sender_guid() == kSenderGuid &&
-         arg.time_to_live == kTtlSeconds;
+         arg.time_to_live == kTtlSeconds &&
+         arg.urgency == gcm::WebPushMessage::Urgency::kHigh;
 }
 
 TEST_F(SharingFCMSenderTest, SendMessageToDevice) {

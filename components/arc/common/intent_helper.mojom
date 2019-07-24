@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 28
+// Next MinVersion: 29
 
 module arc.mojom;
 
@@ -171,9 +171,14 @@ interface CustomTabSession {
   [MinVersion=26] OnOpenInChromeClicked@0();
 };
 
+enum CameraIntentMode {
+  PHOTO,
+  VIDEO,
+};
+
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 12
+// Next method ID: 13
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -224,6 +229,21 @@ interface IntentHelperHost {
   // Does a reset of ARC; this wipes /data, and then re-calls on OOBE for
   // account binding to happen again, as if the user just went through OOBE.
   [MinVersion=27] FactoryResetArc@11();
+
+  // Launches camera app from the camera intent.
+  // |mode| indicates which mode should camera app land on. If
+  // |should_handle_result| is true, the intent expects the captured result
+  // will be returned after capturing. If |should_down_scale| is true, the
+  // intent expects the captured image would be down-scaled to a small enough
+  // size. If |is_secure| is true, the intent is fired when the device is
+  // secured, which means the camera app should not show any user-sensitive
+  // data. |is_success| indicates that the capture is done successfully. If it
+  // succeed, the result should be filled in |captured_data| as a byte array.
+  [MinVersion=28] LaunchCameraApp@12(CameraIntentMode mode,
+                                     bool should_handle_result,
+                                     bool should_down_scale,
+                                     bool is_secure)
+      => (bool is_success, array<uint8> captured_data);
 };
 
 // Sends intents to ARC on behalf of Chrome.

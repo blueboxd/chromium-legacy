@@ -62,7 +62,7 @@ action("strip_app_shell_binary") {
 copy("common_packaging_files") {
   visibility = [ ":*" ]
   sources = [
-    "/usr/bin/eu-strip",
+    "//buildtools/third_party/eu-strip/bin/eu-strip",
     "common/installer.include",
     "common/wrapper",
   ]

@@ -361,6 +361,10 @@ void FakePowerManagerClient::DeleteArcTimers(const std::string& tag,
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakePowerManagerClient::DeferScreenDim() {
+  num_defer_screen_dim_calls_++;
+}
+
 bool FakePowerManagerClient::PopVideoActivityReport() {
   CHECK(!video_activity_reports_.empty());
   bool fullscreen = video_activity_reports_.front();
@@ -412,6 +416,11 @@ void FakePowerManagerClient::SendPowerButtonEvent(
     const base::TimeTicks& timestamp) {
   for (auto& observer : observers_)
     observer.PowerButtonEventReceived(down, timestamp);
+}
+
+void FakePowerManagerClient::SendScreenDimImminent() {
+  for (auto& observer : observers_)
+    observer.ScreenDimImminent();
 }
 
 void FakePowerManagerClient::SetLidState(LidState state,

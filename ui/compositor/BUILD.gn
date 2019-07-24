@@ -174,7 +174,10 @@ jumbo_static_library("test_support") {
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
-    deps += [ "//ui/gfx/x" ]
+    deps += [
+      "//ui/events/x",
+      "//ui/gfx/x",
+    ]
   }
 
   if (is_mac) {

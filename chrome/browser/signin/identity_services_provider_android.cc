@@ -6,7 +6,7 @@
 #include "chrome/android/chrome_jni_headers/IdentityServicesProvider_jni.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_manager_android_wrapper_factory.h"
+#include "chrome/browser/signin/signin_manager_android_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
 using base::android::JavaParamRef;
@@ -37,5 +37,5 @@ JNI_IdentityServicesProvider_GetSigninManager(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile_android) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile_android);
-  return SigninManagerAndroidWrapperFactory::GetJavaObjectForProfile(profile);
+  return SigninManagerAndroidFactory::GetJavaObjectForProfile(profile);
 }

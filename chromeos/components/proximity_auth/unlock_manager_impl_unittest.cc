@@ -195,7 +195,6 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
     life_cycle_.ChangeState(
         RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-    unlock_manager_->OnLifeCycleStateChanged();
     unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
   }
 
@@ -244,7 +243,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
 
   EXPECT_TRUE(unlock_manager_->IsUnlockAllowed());
@@ -256,7 +254,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_SignIn_AllGood) {
 
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
 
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
@@ -271,7 +268,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
 
   ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(false));
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
@@ -286,7 +282,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
 
   ON_CALL(*proximity_monitor(), IsUnlockAllowed()).WillByDefault(Return(false));
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
@@ -300,7 +295,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   life_cycle_.set_messenger(nullptr);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
 
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
@@ -323,7 +317,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenLocked);
 
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
@@ -335,7 +328,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest, IsUnlockAllowed_UserIsSecondary) {
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate({USER_PRESENCE_SECONDARY,
                                          SECURE_SCREEN_LOCK_ENABLED,
                                          TRUST_AGENT_UNSUPPORTED});
@@ -350,7 +342,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate({USER_PRESENCE_BACKGROUND,
                                          SECURE_SCREEN_LOCK_ENABLED,
                                          TRUST_AGENT_UNSUPPORTED});
@@ -365,7 +356,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenlockStateUnknown);
 
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
@@ -378,7 +368,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenlockDisabled);
 
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
@@ -391,7 +380,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
 
   EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
 }
@@ -471,9 +459,7 @@ TEST_F(
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
-  unlock_manager_->OnLifeCycleStateChanged();
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
-  unlock_manager_->OnLifeCycleStateChanged();
   EXPECT_TRUE(proximity_monitor_destroyed());
 }
 
@@ -483,10 +469,8 @@ TEST_F(
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 
-  unlock_manager_->OnLifeCycleStateChanged();
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   EXPECT_TRUE(proximity_monitor()->started());
 }
 
@@ -498,22 +482,18 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
-  unlock_manager_->OnLifeCycleStateChanged();
 
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   EXPECT_TRUE(proximity_monitor()->started());
 
   // Simulate the phone connection being lost. The ProximityMonitor is stale
   // and should have been destroyed.
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
-  unlock_manager_->OnLifeCycleStateChanged();
   EXPECT_TRUE(proximity_monitor_destroyed());
 
   life_cycle_.ChangeState(
       RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED);
-  unlock_manager_->OnLifeCycleStateChanged();
   EXPECT_FALSE(proximity_monitor_destroyed());
   EXPECT_TRUE(proximity_monitor()->started());
 }
@@ -548,76 +528,58 @@ TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterPowerChanges) {
   EXPECT_TRUE(life_cycle_.started());
 }
 
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnLifeCycleStateChanged_SecureChannelEstablished_RegistersAsObserver) {
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  SimulateUserPresentState();
-  EXPECT_CALL(messenger_, AddObserver(unlock_manager_.get()));
-  unlock_manager_->OnLifeCycleStateChanged();
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnLifeCycleStateChanged_StartsProximityMonitor) {
+TEST_F(ProximityAuthUnlockManagerImplTest, StartsProximityMonitor) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
   EXPECT_TRUE(proximity_monitor()->started());
-  unlock_manager_->OnLifeCycleStateChanged();
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnLifeCycleStateChanged_StopsProximityMonitor) {
+       OnAuthenticationFailed_StopsProximityMonitor) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
-  unlock_manager_->OnLifeCycleStateChanged();
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
-  unlock_manager_->OnLifeCycleStateChanged();
   EXPECT_TRUE(proximity_monitor_destroyed());
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnLifeCycleStateChanged_AuthenticationFailed_UpdatesScreenlockState) {
+       AuthenticationFailed_UpdatesScreenlockState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::PHONE_NOT_AUTHENTICATED));
   life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
-  unlock_manager_->OnLifeCycleStateChanged();
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnLifeCycleStateChanged_FindingConnection_UpdatesScreenlockState) {
+       FindingConnection_UpdatesScreenlockState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
+  // TODO(crbug.com/890047): Remove this once the bug is resolved.
   EXPECT_CALL(proximity_auth_client_,
-              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
-}
+              UpdateScreenlockState(ScreenlockState::NO_PHONE));
 
-TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnLifeCycleStateChanged_Authenticating_UpdatesScreenlockState) {
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
   EXPECT_TRUE(life_cycle_.started());
-
-  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
-  unlock_manager_->OnLifeCycleStateChanged();
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       OnDisconnected_UnregistersAsObserver) {
+       Authenticating_UpdatesScreenlockState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-  SimulateUserPresentState();
-  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATION_FAILED);
-  unlock_manager_->OnLifeCycleStateChanged();
 
-  EXPECT_CALL(messenger_, RemoveObserver(unlock_manager_.get()))
-      .Times(testing::AtLeast(1));
-  unlock_manager_.get()->OnDisconnected();
-  unlock_manager_->SetRemoteDeviceLifeCycle(nullptr);
+  // TODO(crbug.com/890047): Remove this once the bug is resolved.
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::NO_PHONE));
+
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  EXPECT_TRUE(life_cycle_.started());
+  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,

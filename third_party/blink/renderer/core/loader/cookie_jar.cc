@@ -6,7 +6,7 @@
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {

@@ -421,7 +421,8 @@ class CrostiniManager::CrostiniRestarter
                  << ", mount_type=" << mount_info.mount_type
                  << ", mount_condition=" << mount_info.mount_condition;
     } else {
-      crostini_manager_->SetContainerSshfsMounted(vm_name_, container_name_);
+      crostini_manager_->SetContainerSshfsMounted(vm_name_, container_name_,
+                                                  true);
 
       // Register filesystem and add volume to VolumeManager.
       base::FilePath mount_path = base::FilePath(mount_info.mount_path);
@@ -514,11 +515,12 @@ ContainerInfo::~ContainerInfo() = default;
 ContainerInfo::ContainerInfo(const ContainerInfo&) = default;
 
 void CrostiniManager::SetContainerSshfsMounted(std::string vm_name,
-                                               std::string container_name) {
+                                               std::string container_name,
+                                               bool is_mounted) {
   auto range = running_containers_.equal_range(std::move(vm_name));
   for (auto it = range.first; it != range.second; ++it) {
     if (it->second.name == container_name) {
-      it->second.sshfs_mounted = true;
+      it->second.sshfs_mounted = is_mounted;
     }
   }
 }
@@ -563,6 +565,9 @@ CrostiniManager::CrostiniManager(Profile* profile)
   DCHECK(!profile_->IsOffTheRecord());
   GetCiceroneClient()->AddObserver(this);
   GetConciergeClient()->AddContainerObserver(this);
+  if (chromeos::PowerManagerClient::Get()) {
+    chromeos::PowerManagerClient::Get()->AddObserver(this);
+  }
 }
 
 CrostiniManager::~CrostiniManager() {
@@ -576,6 +581,9 @@ void CrostiniManager::RemoveDBusObservers() {
   dbus_observers_removed_ = true;
   GetCiceroneClient()->RemoveObserver(this);
   GetConciergeClient()->RemoveContainerObserver(this);
+  if (chromeos::PowerManagerClient::Get()) {
+    chromeos::PowerManagerClient::Get()->RemoveObserver(this);
+  }
 }
 
 // static
@@ -2542,6 +2550,24 @@ void CrostiniManager::OnPendingAppListUpdates(
   for (auto& observer : pending_app_list_updates_observers_) {
     observer.OnPendingAppListUpdates(signal.vm_name(), signal.container_name(),
                                      signal.count());
+  }
+}
+
+void CrostiniManager::SuspendImminent(
+    power_manager::SuspendImminent::Reason reason) {
+  // https://crbug.com/968060.  Unmount sshfs before suspend.
+  file_manager::VolumeManager::Get(profile_)->RemoveSshfsCrostiniVolume(
+      file_manager::util::GetCrostiniMountDirectory(profile_));
+  SetContainerSshfsMounted(kCrostiniDefaultVmName,
+                           kCrostiniDefaultContainerName, false);
+}
+
+void CrostiniManager::SuspendDone(const base::TimeDelta& sleep_duration) {
+  // https://crbug.com/968060.  Sshfs is unmounted before suspend,
+  // call RestartCrostini to force remount if container is running.
+  if (GetContainerInfo(kCrostiniDefaultVmName, kCrostiniDefaultContainerName)) {
+    RestartCrostini(kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
+                    base::DoNothing());
   }
 }
 

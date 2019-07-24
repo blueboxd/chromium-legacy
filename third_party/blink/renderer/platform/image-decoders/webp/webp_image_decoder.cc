@@ -30,7 +30,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"

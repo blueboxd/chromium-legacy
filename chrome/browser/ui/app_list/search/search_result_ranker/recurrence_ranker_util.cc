@@ -205,25 +205,33 @@ bool ConvertRecurrencePredictor(const Value* value,
 }  // namespace
 
 std::unique_ptr<RecurrencePredictor> MakePredictor(
-    const RecurrencePredictorConfigProto& config) {
+    const RecurrencePredictorConfigProto& config,
+    const std::string& model_identifier) {
   if (config.has_fake_predictor())
-    return std::make_unique<FakePredictor>(config.fake_predictor());
+    return std::make_unique<FakePredictor>(config.fake_predictor(),
+                                           model_identifier);
   if (config.has_default_predictor())
-    return std::make_unique<DefaultPredictor>(config.default_predictor());
+    return std::make_unique<DefaultPredictor>(config.default_predictor(),
+                                              model_identifier);
   if (config.has_conditional_frequency_predictor())
     return std::make_unique<ConditionalFrequencyPredictor>(
-        config.conditional_frequency_predictor());
+
+        config.conditional_frequency_predictor(), model_identifier);
   if (config.has_frecency_predictor())
-    return std::make_unique<FrecencyPredictor>(config.frecency_predictor());
+    return std::make_unique<FrecencyPredictor>(config.frecency_predictor(),
+                                               model_identifier);
   if (config.has_hour_bin_predictor())
-    return std::make_unique<HourBinPredictor>(config.hour_bin_predictor());
+    return std::make_unique<HourBinPredictor>(config.hour_bin_predictor(),
+                                              model_identifier);
   if (config.has_markov_predictor())
-    return std::make_unique<MarkovPredictor>(config.markov_predictor());
+    return std::make_unique<MarkovPredictor>(config.markov_predictor(),
+                                             model_identifier);
   if (config.has_exponential_weights_ensemble())
     return std::make_unique<ExponentialWeightsEnsemble>(
-        config.exponential_weights_ensemble());
+        config.exponential_weights_ensemble(), model_identifier);
 
-  LogConfigurationError(ConfigurationError::kInvalidPredictor);
+  LogInitializationStatus(model_identifier,
+                          InitializationStatus::kInvalidConfigPredictor);
   NOTREACHED();
   return nullptr;
 }
@@ -235,20 +243,27 @@ JsonConfigConverter::JsonConfigConverter(service_manager::Connector* connector)
 JsonConfigConverter::~JsonConfigConverter() {}
 
 void JsonConfigConverter::Convert(const std::string& json_string,
+                                  const std::string& model_identifier,
                                   OnConfigLoadedCallback callback) {
   GetJsonParser().Parse(
-      json_string, base::BindOnce(&JsonConfigConverter::OnJsonParsed,
-                                  base::Unretained(this), std::move(callback)));
+      json_string,
+      base::BindOnce(&JsonConfigConverter::OnJsonParsed, base::Unretained(this),
+                     std::move(callback), model_identifier));
 }
 
 void JsonConfigConverter::OnJsonParsed(
     OnConfigLoadedCallback callback,
+    const std::string& model_identifier,
     const base::Optional<base::Value> json_data,
     const base::Optional<std::string>& error) {
   RecurrenceRankerConfigProto proto;
   if (json_data && ConvertRecurrenceRanker(&json_data.value(), &proto)) {
+    LogJsonConfigConversionStatus(model_identifier,
+                                  JsonConfigConversionStatus::kSuccess);
     std::move(callback).Run(std::move(proto));
   } else {
+    LogJsonConfigConversionStatus(model_identifier,
+                                  JsonConfigConversionStatus::kFailure);
     std::move(callback).Run(base::nullopt);
   }
 }

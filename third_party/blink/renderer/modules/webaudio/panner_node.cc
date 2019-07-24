@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {

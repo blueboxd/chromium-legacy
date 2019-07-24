@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_X_X11_WINDOW_EVENT_MANAGER_H_
-#define UI_BASE_X_X11_WINDOW_EVENT_MANAGER_H_
+#ifndef UI_EVENTS_X_X11_WINDOW_EVENT_MANAGER_H_
+#define UI_EVENTS_X_X11_WINDOW_EVENT_MANAGER_H_
 
 #include <map>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/events/x/events_x_export.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace base {
@@ -23,7 +24,7 @@ class XWindowEventManager;
 
 // Ensures events in |event_mask| are selected on |xid| for the duration of this
 // object's lifetime.
-class COMPONENT_EXPORT(UI_BASE_X) XScopedEventSelector {
+class EVENTS_X_EXPORT XScopedEventSelector {
  public:
   XScopedEventSelector(XID xid, uint32_t event_mask);
   ~XScopedEventSelector();
@@ -74,4 +75,4 @@ class XWindowEventManager {
 
 }  // namespace ui
 
-#endif  // UI_BASE_X_X11_WINDOW_EVENT_MANAGER_H_
+#endif  // UI_EVENTS_X_X11_WINDOW_EVENT_MANAGER_H_

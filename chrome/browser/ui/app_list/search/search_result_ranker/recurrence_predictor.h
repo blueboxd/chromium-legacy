@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -38,6 +39,7 @@ using ExponentialWeightsEnsembleConfig =
 // |recurrence_predictor.proto|.
 class RecurrencePredictor {
  public:
+  explicit RecurrencePredictor(const std::string& model_identifier);
   virtual ~RecurrencePredictor() = default;
 
   // Train the predictor on an occurrence of |target| coinciding with
@@ -59,6 +61,11 @@ class RecurrencePredictor {
   virtual void ToProto(RecurrencePredictorProto* proto) const = 0;
   virtual void FromProto(const RecurrencePredictorProto& proto) = 0;
   virtual const char* GetPredictorName() const = 0;
+
+ protected:
+  // The name of the model which this predictor belongs to. Used for metrics
+  // reporting.
+  std::string model_identifier_;
 };
 
 // FakePredictor is a simple 'predictor' used for testing. Rank() returns the
@@ -69,8 +76,9 @@ class RecurrencePredictor {
 // so should not be used for anything except testing.
 class FakePredictor : public RecurrencePredictor {
  public:
-  FakePredictor();
-  explicit FakePredictor(const FakePredictorConfig& config);
+  explicit FakePredictor(const std::string& model_identifier);
+  FakePredictor(const FakePredictorConfig& config,
+                const std::string& model_identifier);
   ~FakePredictor() override;
 
   // RecurrencePredictor:
@@ -94,7 +102,8 @@ class FakePredictor : public RecurrencePredictor {
 // predictor.
 class DefaultPredictor : public RecurrencePredictor {
  public:
-  explicit DefaultPredictor(const DefaultPredictorConfig& config);
+  DefaultPredictor(const DefaultPredictorConfig& config,
+                   const std::string& model_identifier);
   ~DefaultPredictor() override;
 
   // RecurrencePredictor:
@@ -119,9 +128,10 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
   // The predictor doesn't use any configuration values, so a zero-argument
   // constructor is also provided for convenience when this is used within other
   // predictors.
-  explicit ConditionalFrequencyPredictor(
-      const ConditionalFrequencyPredictorConfig& config);
-  ConditionalFrequencyPredictor();
+  ConditionalFrequencyPredictor(
+      const ConditionalFrequencyPredictorConfig& config,
+      const std::string& model_identifier);
+  explicit ConditionalFrequencyPredictor(const std::string& model_identifier);
   ~ConditionalFrequencyPredictor() override;
 
   // Stores a mapping from events to frequencies, along with the total frequency
@@ -171,7 +181,8 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
 // store are needed, the DefaultPredictor should be used instead.
 class FrecencyPredictor : public RecurrencePredictor {
  public:
-  explicit FrecencyPredictor(const FrecencyPredictorConfig& config);
+  FrecencyPredictor(const FrecencyPredictorConfig& config,
+                    const std::string& model_identifier);
   ~FrecencyPredictor() override;
 
   // Records all information about a target: its id and score, along with the
@@ -217,7 +228,8 @@ class FrecencyPredictor : public RecurrencePredictor {
 // predictions.
 class HourBinPredictor : public RecurrencePredictor {
  public:
-  explicit HourBinPredictor(const HourBinPredictorConfig& config);
+  HourBinPredictor(const HourBinPredictorConfig& config,
+                   const std::string& model_identifier);
   ~HourBinPredictor() override;
 
   // RecurrencePredictor:
@@ -265,7 +277,8 @@ class HourBinPredictor : public RecurrencePredictor {
 // It does not use the condition.
 class MarkovPredictor : public RecurrencePredictor {
  public:
-  explicit MarkovPredictor(const MarkovPredictorConfig& config);
+  MarkovPredictor(const MarkovPredictorConfig& config,
+                  const std::string& model_identifier);
   ~MarkovPredictor() override;
 
   // RecurrencePredictor:
@@ -283,7 +296,7 @@ class MarkovPredictor : public RecurrencePredictor {
   FRIEND_TEST_ALL_PREFIXES(MarkovPredictorTest, ToAndFromProto);
 
   // Stores transition probabilities: P(target | previous_target).
-  ConditionalFrequencyPredictor frequencies_;
+  std::unique_ptr<ConditionalFrequencyPredictor> frequencies_;
 
   // The most recently observed target.
   base::Optional<unsigned int> previous_target_;
@@ -305,8 +318,8 @@ class MarkovPredictor : public RecurrencePredictor {
 // predictor i. Weights are kept normalized to sum to 1.
 class ExponentialWeightsEnsemble : public RecurrencePredictor {
  public:
-  explicit ExponentialWeightsEnsemble(
-      const ExponentialWeightsEnsembleConfig& config);
+  ExponentialWeightsEnsemble(const ExponentialWeightsEnsembleConfig& config,
+                             const std::string& model_identifier);
   ~ExponentialWeightsEnsemble() override;
 
   // RecurrencePredictor:

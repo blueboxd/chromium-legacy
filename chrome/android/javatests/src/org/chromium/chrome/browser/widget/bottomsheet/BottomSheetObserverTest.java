@@ -257,7 +257,8 @@ public class BottomSheetObserverTest {
         assertEquals(BottomSheet.SheetState.FULL, bottomSheet.getSheetState());
 
         // Check the offset.
-        assertEquals(wrappedContentHeight + bottomSheet.getToolbarShadowHeight(),
+        assertEquals(wrappedContentHeight + bottomSheet.getToolbarShadowHeight()
+                        - bottomSheet.getRoundedCornerRadius(),
                 bottomSheet.getCurrentOffsetPx(), MathUtils.EPSILON);
     }
 }

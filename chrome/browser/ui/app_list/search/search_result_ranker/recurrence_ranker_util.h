@@ -26,7 +26,8 @@ namespace app_list {
 
 // Returns a new, configured instance of the predictor defined in |config|.
 std::unique_ptr<RecurrencePredictor> MakePredictor(
-    const RecurrencePredictorConfigProto& config);
+    const RecurrencePredictorConfigProto& config,
+    const std::string& model_identifier);
 
 // A utility class for converting a JSON configuration for a RecurrenceRanker
 // into a RecurrenceRankerConfigProto that can be used to construct the ranker.
@@ -47,8 +48,12 @@ class JsonConfigConverter {
 
   // Performs a conversion. The provided |callback| will be called with the
   // resulting proto if the conversion succeeded, or base::nullopt if the
-  // parsing or conversion failed.
-  void Convert(const std::string& json_string, OnConfigLoadedCallback callback);
+  // parsing or conversion failed. |model_identifier| is used for metrics
+  // reporting in the same way as the RecurrenceRanker's |model_identifier|
+  // parameter.
+  void Convert(const std::string& json_string,
+               const std::string& model_identifier,
+               OnConfigLoadedCallback callback);
 
  private:
   // Create or reuse a connection to the data decoder service for safe JSON
@@ -57,8 +62,11 @@ class JsonConfigConverter {
 
   // Callback for parser.
   void OnJsonParsed(OnConfigLoadedCallback callback,
+                    const std::string& model_identifier,
                     const base::Optional<base::Value> json_data,
                     const base::Optional<std::string>& error);
+
+  std::string model_identifier_;
 
   service_manager::Connector* connector_;
   data_decoder::mojom::JsonParserPtr json_parser_;

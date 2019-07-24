@@ -25,7 +25,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/geometry",
     "+third_party/blink/renderer/platform/graphics",
     "+third_party/blink/renderer/platform/heap",
-    "+third_party/blink/renderer/platform/histogram.h",
+    "+third_party/blink/renderer/platform/instrumentation/histogram.h",
     "+third_party/blink/renderer/platform/image-decoders/image_decoder.h",
     "+third_party/blink/renderer/platform/instrumentation",
     "+third_party/blink/renderer/platform/language.h",

@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.NoMatchingViewException;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 
 import org.chromium.base.Callback;
@@ -29,6 +34,8 @@ import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 
@@ -82,6 +89,28 @@ class AutofillAssistantUiTestUtil {
                 description.appendText("isTextMaxLines");
             }
         };
+    }
+
+    /**
+     * Waits until {@code matcher} matches {@code condition}. Will automatically fail after a
+     * default timeout.
+     */
+    public static void waitUntilViewMatchesCondition(
+            Matcher<View> matcher, Matcher<View> condition) {
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Timeout while waiting for " + matcher + " to satisfy " + condition) {
+                    @Override
+                    public boolean isSatisfied() {
+                        try {
+                            onView(matcher).check(matches(condition));
+                            return true;
+                        } catch (NoMatchingViewException e) {
+                            // Note: all other exceptions are let through, in particular
+                            // AmbiguousViewMatcherException.
+                            return false;
+                        }
+                    }
+                });
     }
 
     /**

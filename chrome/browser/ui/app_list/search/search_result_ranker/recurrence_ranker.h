@@ -29,7 +29,11 @@ class RecurrenceRankerProto;
 // |RecurrenceRanker| is the public interface of the ranking system.
 class RecurrenceRanker {
  public:
-  RecurrenceRanker(const base::FilePath& filepath,
+  // |model_identifier| is used for UMA metrics reporting. If it is empty,
+  // reporting is disabled. If it is non-empty, an entry should be added to the
+  // RecurrenceRankerModel histogram_suffixes entry in the UMA histograms.xml.
+  RecurrenceRanker(const std::string& model_identifier,
+                   const base::FilePath& filepath,
                    const RecurrenceRankerConfigProto& config,
                    bool is_ephemeral_user);
   ~RecurrenceRanker();
@@ -119,6 +123,9 @@ class RecurrenceRanker {
 
   // Storage for condition strings, which maps them to IDs.
   std::unique_ptr<FrecencyStore> conditions_;
+
+  // Name used for histogram suffixes.
+  const std::string model_identifier_;
 
   // Where to save the ranker.
   const base::FilePath proto_filepath_;

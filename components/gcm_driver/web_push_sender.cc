@@ -8,6 +8,7 @@
 
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/gcm_driver/common/gcm_message.h"
@@ -39,6 +40,7 @@ const char kFCMServerUrlFormat[] = "https://fcm.googleapis.com/fcm/send/%s";
 
 // HTTP header constants.
 const char kTTL[] = "TTL";
+const char kUrgency[] = "Urgency";
 
 const char kContentEncodingProperty[] = "content-encoding";
 const char kContentCodingAes128Gcm[] = "aes128gcm";
@@ -77,9 +79,23 @@ base::Optional<std::string> GetAuthHeader(crypto::ECPrivateKey* vapid_key,
                             base64_public_key.c_str());
 }
 
+std::string GetUrgencyHeader(WebPushMessage::Urgency urgency) {
+  switch (urgency) {
+    case WebPushMessage::Urgency::kVeryLow:
+      return "very-low";
+    case WebPushMessage::Urgency::kLow:
+      return "low";
+    case WebPushMessage::Urgency::kNormal:
+      return "normal";
+    case WebPushMessage::Urgency::kHigh:
+      return "high";
+  }
+}
+
 std::unique_ptr<network::SimpleURLLoader> BuildURLLoader(
     const std::string& fcm_token,
     int time_to_live,
+    const std::string& urgency_header,
     const std::string& auth_header,
     const std::string& message) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -94,6 +110,7 @@ std::unique_ptr<network::SimpleURLLoader> BuildURLLoader(
   resource_request->headers.SetHeader(kTTL, base::NumberToString(time_to_live));
   resource_request->headers.SetHeader(kContentEncodingProperty,
                                       kContentCodingAes128Gcm);
+  resource_request->headers.SetHeader(kUrgency, urgency_header);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("web_push_message", R"(
@@ -151,7 +168,8 @@ void WebPushSender::SendMessage(const std::string& fcm_token,
 
   LogSendWebPushMessagePayloadSize(message.payload.size());
   std::unique_ptr<network::SimpleURLLoader> url_loader = BuildURLLoader(
-      fcm_token, message.time_to_live, *auth_header, message.payload);
+      fcm_token, message.time_to_live, GetUrgencyHeader(message.urgency),
+      *auth_header, message.payload);
   url_loader->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&WebPushSender::OnMessageSent,

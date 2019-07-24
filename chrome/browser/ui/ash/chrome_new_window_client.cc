@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "apps/launcher.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/arc_custom_tab.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
@@ -38,6 +40,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/arc/arc_util.h"
@@ -55,6 +58,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
 #include "content/public/common/was_activated_option.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -478,6 +482,23 @@ void ChromeNewWindowClient::OpenFeedbackPage(bool from_assistant) {
   source = from_assistant ? chrome::kFeedbackSourceAssistant
                           : chrome::kFeedbackSourceAsh;
   chrome::OpenFeedbackDialog(chrome::FindBrowserWithActiveWindow(), source);
+}
+
+void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
+
+  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
+                      extension_misc::kChromeCameraAppId)
+                      .spec() +
+                  queries);
+
+  apps::LaunchPlatformAppWithUrl(profile, extension,
+                                 /*handler_id=*/std::string(), url,
+                                 /*referrer_url=*/GURL());
 }
 
 void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {

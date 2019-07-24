@@ -12,7 +12,7 @@
    *
    * @param {!Object} node The node to check.
    */
-  var isTypeRootNode = function(node) {
+  const isTypeRootNode = function(node) {
     return node.PARENT_ID == 'r' && node.UNIQUE_SERVER_TAG != '';
   };
 
@@ -22,11 +22,10 @@
    * @param {!Object} parent node.
    * @param {!Object} node The node to check.
    */
-  var isChildOf = function(parentNode, node) {
+  const isChildOf = function(parentNode, node) {
     if (node.PARENT_ID != '') {
       return node.PARENT_ID == parentNode.ID;
-    }
-    else {
+    } else {
       return node.modelType == parentNode.modelType;
     }
   };
@@ -40,7 +39,7 @@
    * If this proves to be slow and expensive, we should experiment with moving
    * this functionality to C++ instead.
    */
-  var nodeComparator = function(nodeA, nodeB) {
+  const nodeComparator = function(nodeA, nodeB) {
     if (nodeA.hasOwnProperty('positionIndex') &&
         nodeB.hasOwnProperty('positionIndex')) {
       return nodeA.positionIndex - nodeB.positionIndex;
@@ -56,7 +55,7 @@
    * @param {!Object} node The struct representing the node we want to display.
    */
   function updateNodeDetailView(node) {
-    var nodeDetailsView = $('node-details');
+    const nodeDetailsView = $('node-details');
     nodeDetailsView.hidden = false;
     jstProcess(new JsEvalContext(node.entry_), nodeDetailsView);
   }
@@ -77,8 +76,8 @@
    *     chrome.sync.getAllNodes().
    * @extends {cr.ui.TreeItem}
    */
-  var SyncNodeTreeItem = function(node) {
-    var treeItem = new cr.ui.TreeItem();
+  const SyncNodeTreeItem = function(node) {
+    const treeItem = new cr.ui.TreeItem();
     treeItem.__proto__ = SyncNodeTreeItem.prototype;
 
     treeItem.entry_ = node;
@@ -103,14 +102,14 @@
      * Finds the children of this node and appends them to the tree.
      */
     handleExpand_: function(event) {
-      var treeItem = this;
+      const treeItem = this;
 
       if (treeItem.expanded_) {
         return;
       }
       treeItem.expanded_ = true;
 
-      var children = treeItem.tree.allNodes.filter(
+      const children = treeItem.tree.allNodes.filter(
           isChildOf.bind(undefined, treeItem.entry_));
       children.sort(nodeComparator);
 
@@ -129,7 +128,7 @@
    * @constructor
    * @extends {cr.ui.Tree}
    */
-  var SyncNodeTree = cr.ui.define('tree');
+  const SyncNodeTree = cr.ui.define('tree');
 
   SyncNodeTree.prototype = {
     __proto__: cr.ui.Tree.prototype,
@@ -141,12 +140,12 @@
     },
 
     populate: function(nodes) {
-      var tree = this;
+      const tree = this;
 
       // We store the full set of nodes in the SyncNodeTree object.
       tree.allNodes = nodes;
 
-      var roots = tree.allNodes.filter(isTypeRootNode);
+      const roots = tree.allNodes.filter(isTypeRootNode);
       roots.sort(nodeComparator);
 
       roots.forEach(function(typeRoot) {
@@ -165,12 +164,12 @@
    * Clears any existing UI state.  Useful prior to a refresh.
    */
   function clear() {
-    var treeContainer = $('sync-node-tree-container');
+    const treeContainer = $('sync-node-tree-container');
     while (treeContainer.firstChild) {
       treeContainer.removeChild(treeContainer.firstChild);
     }
 
-    var nodeDetailsView = $('node-details');
+    const nodeDetailsView = $('node-details');
     nodeDetailsView.hidden = true;
   }
 
@@ -185,12 +184,16 @@
 
     chrome.sync.getAllNodes(function(nodeMap) {
       // Put all nodes into one big list that ignores the type.
-      var nodes = nodeMap.
-          map(function(x) { return x.nodes; }).
-          reduce(function(a, b) { return a.concat(b); });
+      const nodes = nodeMap
+                        .map(function(x) {
+                          return x.nodes;
+                        })
+                        .reduce(function(a, b) {
+                          return a.concat(b);
+                        });
 
-      var treeContainer = $('sync-node-tree-container');
-      var tree = document.createElement('tree');
+      const treeContainer = $('sync-node-tree-container');
+      const tree = document.createElement('tree');
       tree.setAttribute('id', 'sync-node-tree');
       tree.setAttribute('icon-visibility', 'parent');
       treeContainer.appendChild(tree);
@@ -205,16 +208,16 @@
 
   document.addEventListener('DOMContentLoaded', function(e) {
     $('node-browser-refresh-button').addEventListener('click', refresh);
-    var Splitter = cr.ui.Splitter;
-    var customSplitter = cr.ui.define('div');
+    const Splitter = cr.ui.Splitter;
+    const customSplitter = cr.ui.define('div');
 
     customSplitter.prototype = {
       __proto__: Splitter.prototype,
 
       handleSplitterDragEnd: function(e) {
         Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
-        var treeElement = $("sync-node-tree-container");
-        var newWidth = parseFloat(treeElement.style.width);
+        const treeElement = $('sync-node-tree-container');
+        const newWidth = parseFloat(treeElement.style.width);
         treeElement.style.minWidth = Math.max(newWidth, 50) + "px";
       }
     };

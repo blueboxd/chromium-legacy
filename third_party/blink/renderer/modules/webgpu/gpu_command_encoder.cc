@@ -32,9 +32,22 @@ DawnRenderPassColorAttachmentDescriptor AsDawnType(
   dawn_desc.resolveTarget = webgpu_desc->resolveTarget()
                                 ? webgpu_desc->resolveTarget()->GetHandle()
                                 : nullptr;
-  dawn_desc.loadOp = AsDawnEnum<DawnLoadOp>(webgpu_desc->loadOp());
+
+  if (webgpu_desc->loadValue().IsGPULoadOp()) {
+    const WTF::String& gpuLoadOp = webgpu_desc->loadValue().GetAsGPULoadOp();
+    dawn_desc.loadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
+    dawn_desc.clearColor = AsDawnType(GPUColor::Create());
+
+  } else if (webgpu_desc->loadValue().IsGPUColor()) {
+    GPUColor* gpuColor = webgpu_desc->loadValue().GetAsGPUColor();
+    dawn_desc.loadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.clearColor = AsDawnType(gpuColor);
+
+  } else {
+    NOTREACHED();
+  }
+
   dawn_desc.storeOp = AsDawnEnum<DawnStoreOp>(webgpu_desc->storeOp());
-  dawn_desc.clearColor = AsDawnType(webgpu_desc->clearColor());
 
   return dawn_desc;
 }
@@ -47,14 +60,39 @@ DawnRenderPassDepthStencilAttachmentDescriptor AsDawnType(
 
   DawnRenderPassDepthStencilAttachmentDescriptor dawn_desc = {};
   dawn_desc.attachment = webgpu_desc->attachment()->GetHandle();
-  dawn_desc.depthLoadOp = AsDawnEnum<DawnLoadOp>(webgpu_desc->depthLoadOp());
+
+  if (webgpu_desc->depthLoadValue().IsGPULoadOp()) {
+    const WTF::String& gpuLoadOp =
+        webgpu_desc->depthLoadValue().GetAsGPULoadOp();
+    dawn_desc.depthLoadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
+    dawn_desc.clearDepth = 1.0f;
+
+  } else if (webgpu_desc->depthLoadValue().IsFloat()) {
+    dawn_desc.depthLoadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.clearDepth = webgpu_desc->depthLoadValue().GetAsFloat();
+
+  } else {
+    NOTREACHED();
+  }
+
   dawn_desc.depthStoreOp = AsDawnEnum<DawnStoreOp>(webgpu_desc->depthStoreOp());
-  dawn_desc.clearDepth = webgpu_desc->clearDepth();
-  dawn_desc.stencilLoadOp =
-      AsDawnEnum<DawnLoadOp>(webgpu_desc->stencilLoadOp());
+
+  if (webgpu_desc->stencilLoadValue().IsGPULoadOp()) {
+    const WTF::String& gpuLoadOp =
+        webgpu_desc->stencilLoadValue().GetAsGPULoadOp();
+    dawn_desc.stencilLoadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
+    dawn_desc.clearStencil = 0;
+
+  } else if (webgpu_desc->stencilLoadValue().IsLong()) {
+    dawn_desc.stencilLoadOp = DAWN_LOAD_OP_CLEAR;
+    dawn_desc.clearStencil = webgpu_desc->stencilLoadValue().GetAsLong();
+
+  } else {
+    NOTREACHED();
+  }
+
   dawn_desc.stencilStoreOp =
       AsDawnEnum<DawnStoreOp>(webgpu_desc->stencilStoreOp());
-  dawn_desc.clearStencil = webgpu_desc->clearStencil();
 
   return dawn_desc;
 }

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
 
 namespace app_list {
@@ -107,6 +108,9 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver {
 
   // Testing-only closure to inform tests once a JSON config has been parsed.
   base::OnceClosure json_config_parsed_for_testing_;
+
+  // Logs launch events and stores feature data for aggregated model.
+  app_list::AppLaunchEventLogger app_launch_event_logger_;
 
   // TODO(931149): Move the AppSearchResultRanker instance and associated logic
   // to here.

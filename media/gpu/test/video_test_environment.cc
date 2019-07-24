@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "media/gpu/buildflags.h"
 #include "mojo/core/embedder/embedder.h"
@@ -44,6 +45,7 @@ void VideoTestEnvironment::SetUp() {
   // Setting up a task environment will create a task runner for the current
   // thread and allow posting tasks to other threads. This is required for video
   // tests to function correctly.
+  TestTimeouts::Initialize();
   task_environment_ = std::make_unique<base::test::ScopedTaskEnvironment>(
       base::test::ScopedTaskEnvironment::MainThreadType::UI);
 

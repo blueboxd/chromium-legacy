@@ -30,7 +30,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -54,6 +53,8 @@ import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -295,8 +296,12 @@ public class BookmarkTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "https://crbug.com/984582")
     public void testSearchBookmarks() throws Exception {
+        // The master sync should be on in order to show the Chrome sync promo in the bookmark
+        // manager.
+        MockSyncContentResolverDelegate syncDelegate = new MockSyncContentResolverDelegate();
+        syncDelegate.setMasterSyncAutomatically(true);
+        AndroidSyncSettings.overrideForTests(syncDelegate, null);
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_SYNC);
         addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
         addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);

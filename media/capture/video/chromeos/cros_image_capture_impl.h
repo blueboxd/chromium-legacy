@@ -17,6 +17,7 @@ namespace media {
 class CrosImageCaptureImpl : public cros::mojom::CrosImageCapture {
  public:
   explicit CrosImageCaptureImpl(ReprocessManager* reprocess_manager);
+
   ~CrosImageCaptureImpl() override;
 
   void BindRequest(cros::mojom::CrosImageCaptureRequest request);
@@ -25,15 +26,21 @@ class CrosImageCaptureImpl : public cros::mojom::CrosImageCapture {
 
   void GetCameraInfo(const std::string& device_id,
                      GetCameraInfoCallback callback) override;
+
   void SetReprocessOption(const std::string& device_id,
                           cros::mojom::Effect effect,
                           SetReprocessOptionCallback callback) override;
+
   void SetFpsRange(const std::string& device_id,
                    const uint32_t stream_width,
                    const uint32_t stream_height,
                    const int32_t min_fps,
                    const int32_t max_fps,
                    SetFpsRangeCallback callback) override;
+
+  void OnIntentHandled(uint32_t intent_id,
+                       bool is_success,
+                       const std::vector<uint8_t>& captured_data) override;
 
  private:
   void OnGotCameraInfo(GetCameraInfoCallback callback,

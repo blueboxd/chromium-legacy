@@ -249,13 +249,6 @@ let ntpApiHandle;
 let isDarkModeEnabled = false;
 
 /**
- * True if dark colored chips should be used instead of light mode chips when
- * dark mode is enabled.
- * @type {boolean}
- */
-let useDarkChips = false;
-
-/**
  * Returns a timeout that can be executed early. Calls back true if this was
  * an early execution, false otherwise.
  * @param {!Function} timeout The timeout function. Requires a boolean param.
@@ -353,8 +346,7 @@ function renderTheme() {
 
   // Update dark mode styling.
   isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  useDarkChips = getUseDarkChips(info);
-  document.body.classList.toggle('light-chip', !useDarkChips);
+  document.body.classList.toggle('light-chip', !getUseDarkChips(info));
 
   const background = [
     convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
@@ -493,18 +485,9 @@ function renderOneGoogleBarTheme() {
  * Callback for embeddedSearch.newTabPage.onthemechange.
  */
 function onThemeChange() {
-  // Save the current dark mode state to check if dark mode has changed.
-  const usingDarkChips = useDarkChips;
-
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
-
-  // If dark mode has been changed, refresh the MV tiles to render the
-  // appropriate icon.
-  if (usingDarkChips != useDarkChips) {
-    reloadTiles();
-  }
 }
 
 /**

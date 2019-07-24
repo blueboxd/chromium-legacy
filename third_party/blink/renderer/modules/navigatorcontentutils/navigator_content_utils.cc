@@ -29,6 +29,8 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -36,6 +38,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
+
+const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
 
 static const HashSet<String>& SupportedSchemes() {
   DEFINE_STATIC_LOCAL(
@@ -117,8 +121,18 @@ static bool VerifyCustomHandlerScheme(const String& scheme,
   return false;
 }
 
-NavigatorContentUtils* NavigatorContentUtils::From(Navigator& navigator) {
-  return Supplement<Navigator>::From<NavigatorContentUtils>(navigator);
+NavigatorContentUtils& NavigatorContentUtils::From(Navigator& navigator,
+                                                   LocalFrame& frame) {
+  NavigatorContentUtils* navigator_content_utils =
+      Supplement<Navigator>::From<NavigatorContentUtils>(navigator);
+  if (!navigator_content_utils) {
+    WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
+    navigator_content_utils = MakeGarbageCollected<NavigatorContentUtils>(
+        navigator,
+        MakeGarbageCollected<NavigatorContentUtilsClient>(web_frame));
+    ProvideTo(navigator, navigator_content_utils);
+  }
+  return *navigator_content_utils;
 }
 
 NavigatorContentUtils::~NavigatorContentUtils() = default;
@@ -129,10 +143,10 @@ void NavigatorContentUtils::registerProtocolHandler(
     const String& url,
     const String& title,
     ExceptionState& exception_state) {
-  if (!navigator.GetFrame())
+  LocalFrame* frame = navigator.GetFrame();
+  if (!frame)
     return;
-
-  Document* document = navigator.GetFrame()->GetDocument();
+  Document* document = frame->GetDocument();
   DCHECK(document);
 
   if (!VerifyCustomHandlerURL(*document, url, exception_state))
@@ -147,8 +161,9 @@ void NavigatorContentUtils::registerProtocolHandler(
                         ? WebFeature::kRegisterProtocolHandlerSecureOrigin
                         : WebFeature::kRegisterProtocolHandlerInsecureOrigin);
 
-  NavigatorContentUtils::From(navigator)->Client()->RegisterProtocolHandler(
-      scheme, document->CompleteURL(url), title);
+  NavigatorContentUtils::From(navigator, *frame)
+      .Client()
+      ->RegisterProtocolHandler(scheme, document->CompleteURL(url), title);
 }
 
 void NavigatorContentUtils::unregisterProtocolHandler(
@@ -156,10 +171,10 @@ void NavigatorContentUtils::unregisterProtocolHandler(
     const String& scheme,
     const String& url,
     ExceptionState& exception_state) {
-  if (!navigator.GetFrame())
+  LocalFrame* frame = navigator.GetFrame();
+  if (!frame)
     return;
-
-  Document* document = navigator.GetFrame()->GetDocument();
+  Document* document = frame->GetDocument();
   DCHECK(document);
 
   if (!VerifyCustomHandlerURL(*document, url, exception_state))
@@ -168,22 +183,14 @@ void NavigatorContentUtils::unregisterProtocolHandler(
   if (!VerifyCustomHandlerScheme(scheme, exception_state))
     return;
 
-  NavigatorContentUtils::From(navigator)->Client()->UnregisterProtocolHandler(
-      scheme, document->CompleteURL(url));
+  NavigatorContentUtils::From(navigator, *frame)
+      .Client()
+      ->UnregisterProtocolHandler(scheme, document->CompleteURL(url));
 }
 
 void NavigatorContentUtils::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   Supplement<Navigator>::Trace(visitor);
-}
-
-const char NavigatorContentUtils::kSupplementName[] = "NavigatorContentUtils";
-
-void NavigatorContentUtils::ProvideTo(Navigator& navigator,
-                                      NavigatorContentUtilsClient* client) {
-  Supplement<Navigator>::ProvideTo(
-      navigator,
-      MakeGarbageCollected<NavigatorContentUtils>(navigator, client));
 }
 
 }  // namespace blink

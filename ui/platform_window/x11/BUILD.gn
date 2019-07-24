@@ -15,6 +15,7 @@ jumbo_component("x11") {
     "//base",
     "//skia",
     "//ui/base",
+    "//ui/base/x",
     "//ui/events",
     "//ui/events/devices",
     "//ui/events/devices/x11",

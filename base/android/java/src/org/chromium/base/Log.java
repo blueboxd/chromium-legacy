@@ -87,6 +87,7 @@ public class Log {
      * Note: Has no effect on whether logs are sent or not. Use a method with
      * {@link RemovableInRelease} to log something in Debug builds only.
      */
+    @RemovableInRelease
     public static boolean isLoggable(String tag, int level) {
         return android.util.Log.isLoggable(tag, level);
     }
@@ -105,6 +106,7 @@ public class Log {
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
+    @RemovableInRelease
     private static void verbose(String tag, String messageTemplate, Object... args) {
         String message = formatLogWithStack(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
@@ -190,6 +192,7 @@ public class Log {
      * @param args Arguments referenced by the format specifiers in the format string. If the last
      *             one is a {@link Throwable}, its trace will be printed.
      */
+    @RemovableInRelease
     private static void debug(String tag, String messageTemplate, Object... args) {
         String message = formatLogWithStack(messageTemplate, args);
         Throwable tr = getThrowableToLog(args);
@@ -362,6 +365,7 @@ public class Log {
     }
 
     /** Returns a string form of the origin of the log call, to be used as secondary tag.*/
+    @RemovableInRelease
     private static String getCallOrigin() {
         StackTraceElement[] st = Thread.currentThread().getStackTrace();
 

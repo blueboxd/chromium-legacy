@@ -2395,13 +2395,6 @@ crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/service
 
 crbug.com/686118 http/tests/security/setDomainRelaxationForbiddenForURLScheme.html [ Crash Pass ]
 
-# Service worker updates need to succeed when the script shrinks.
-crbug.com/986688 external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/blink-cors/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/not-omt-sw-fetch/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-crbug.com/986688 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/update.https.html [ Skip ]
-
 # In external/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
@@ -3260,6 +3253,8 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
@@ -6326,9 +6321,6 @@ crbug.com/985869 [ Linux Win7 ] virtual/blink-cors/http/tests/security/contentSe
 # Sheriff 2019-07-20
 crbug.com/986018 fast/scroll-snap/snaps-after-keyboard-scrolling-rtl.html [ Pass Failure ]
 
-# Sheriff 2019-07-22
-crbug.com/986282 [ Linux Win ] external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
-
 # ecosystem-infra sheriff 2019-07-22
 crbug.com/986457 [ Linux ] http/tests/misc/object-image-error-with-onload.html [ Pass Failure ]
 crbug.com/986477 [ Win ] external/wpt/cookies/path/match.html [ Pass Timeout ]
@@ -6347,3 +6339,6 @@ crbug.com/986019 animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 virtual/threaded/animations/play-state.html [ Pass Timeout ]
 crbug.com/986019 virtual/disable-blink-gen-property-trees/animations/play-state.html [ Pass Timeout ]
 crbug.com/987108 [ Mac ] fast/forms/select/disabled-select-change-index.html [ Failure ]
+crbug.com/987132 [ Mac ] fast/forms/select/option-strip-whitespace.html [ Failure ]
+crbug.com/986282 external/wpt/client-hints/accept-ch-lifetime.tentative.https.html [ Pass Failure ]
+crbug.com/987138 [ Linux Win ] media/controls/doubletap-to-jump-forwards.html [ Pass Timeout ]

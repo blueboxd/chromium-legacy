@@ -58,12 +58,17 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "platform_video_frame_pool_unittest.cc",
+    "platform_video_frame_utils_unittest.cc",
   ]
   deps = [
     ":common",
     "//base",
     "//base/test:test_support",
+    "//media",
+    "//media/gpu:common",
     "//skia",
     "//testing/gtest",
+    "//ui/gfx:memory_buffer",
+    "//ui/gfx/geometry",
   ]
 }

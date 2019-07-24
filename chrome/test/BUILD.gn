@@ -4959,7 +4959,6 @@ test("unit_tests") {
   if (enable_app_list) {
     sources += [
       "../browser/ui/app_list/app_context_menu_unittest.cc",
-      "../browser/ui/app_list/app_launch_event_logger_unittest.cc",
       "../browser/ui/app_list/app_list_syncable_service_unittest.cc",
       "../browser/ui/app_list/app_list_test_util.cc",
       "../browser/ui/app_list/app_list_test_util.h",
@@ -4981,6 +4980,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
       "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
+      "../browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_launch_predictor_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_search_result_ranker_unittest.cc",

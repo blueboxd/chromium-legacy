@@ -148,6 +148,7 @@ void SearchResultRanker::InitializeRankers() {
             "use_category_model", false)) {
       // Group ranker model.
       results_list_group_ranker_ = std::make_unique<RecurrenceRanker>(
+          "QueryBasedMixedTypesGroup",
           profile_->GetPath().AppendASCII("results_list_group_ranker.pb"),
           config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
 
@@ -156,7 +157,7 @@ void SearchResultRanker::InitializeRankers() {
       const std::string config_json = GetFieldTrialParamValueByFeature(
           app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
       config_converter_.Convert(
-          config_json,
+          config_json, "QueryBasedMixedTypes",
           base::BindOnce(
               [](SearchResultRanker* ranker,
                  const RecurrenceRankerConfigProto& default_config,
@@ -165,6 +166,7 @@ void SearchResultRanker::InitializeRankers() {
                   std::move(ranker->json_config_parsed_for_testing_).Run();
                 ranker->query_based_mixed_types_ranker_ =
                     std::make_unique<RecurrenceRanker>(
+                        "QueryBasedMixedTypes",
                         ranker->profile_->GetPath().AppendASCII(
                             "query_based_mixed_types_ranker.pb"),
                         parsed_config ? parsed_config.value() : default_config,
@@ -193,6 +195,7 @@ void SearchResultRanker::InitializeRankers() {
     config.mutable_predictor()->mutable_default_predictor();
 
     zero_state_mixed_types_ranker_ = std::make_unique<RecurrenceRanker>(
+        "ZeroStateMixedTypes",
         profile_->GetPath().AppendASCII("zero_state_mixed_types_ranker.proto"),
         config, chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
   }
@@ -254,6 +257,19 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 }
 
 void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
+  if (app_launch_data.launched_from ==
+      ash::AppListLaunchedFrom::kLaunchedFromGrid) {
+    // Log the AppResult from the grid to the UKM system.
+    app_launch_event_logger_.OnGridClicked(app_launch_data.id);
+  } else if (app_launch_data.launch_type ==
+             ash::AppListLaunchType::kAppSearchResult) {
+    // Log the AppResult (either in the search result page, or in chip form in
+    // AppsGridView) to the UKM system.
+    app_launch_event_logger_.OnSuggestionChipOrSearchBoxClicked(
+        app_launch_data.id, app_launch_data.suggestion_index,
+        static_cast<int>(app_launch_data.launched_from));
+  }
+
   if (ModelForType(app_launch_data.ranking_item_type) == Model::MIXED_TYPES) {
     if (results_list_group_ranker_) {
       results_list_group_ranker_->Record(base::NumberToString(

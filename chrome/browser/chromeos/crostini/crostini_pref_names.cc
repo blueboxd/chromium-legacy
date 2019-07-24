@@ -33,6 +33,10 @@ const char kUserCrostiniAllowedByPolicy[] = "crostini.user_allowed_by_policy";
 // the crostini export / import UI.
 const char kUserCrostiniExportImportUIAllowedByPolicy[] =
     "crostini.user_export_import_ui_allowed_by_policy";
+// A boolean preference representing a user level enterprise policy to enable
+// VM management CLI.
+const char kVmManagementCliAllowedByPolicy[] =
+    "crostini.vm_management_cli_allowed_by_policy";
 // A boolean preference representing a user level enterprise policy to allow
 // Crostini root access.
 // TODO(https://crbug.com/983998): The features that have to be implemented.
@@ -86,6 +90,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kUserCrostiniAllowedByPolicy, true);
   registry->RegisterBooleanPref(kUserCrostiniExportImportUIAllowedByPolicy,
                                 true);
+  registry->RegisterBooleanPref(kVmManagementCliAllowedByPolicy, true);
   registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
 }
 

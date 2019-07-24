@@ -23,6 +23,8 @@ class CAPTURE_EXPORT RendererFacingCrosImageCapture
       base::OnceCallback<void(const base::Optional<std::string>&)>;
   using DeviceIdMappingCallback =
       base::RepeatingCallback<void(const std::string&, WithRealIdCallback)>;
+  using IntentCallback = base::RepeatingCallback<
+      void(uint32_t, bool, const std::vector<uint8_t>&)>;
 
   // Create an intermediate layer between renderer to the actual
   // CrosImageCapture implementation. This class should use |api_ptr| to
@@ -30,7 +32,8 @@ class CAPTURE_EXPORT RendererFacingCrosImageCapture
   // |mapping_callback| to map the device id for every calls that inputs device
   // id.
   RendererFacingCrosImageCapture(cros::mojom::CrosImageCapturePtr api_ptr,
-                                 DeviceIdMappingCallback mapping_callback);
+                                 DeviceIdMappingCallback mapping_callback,
+                                 IntentCallback intent_callback);
   ~RendererFacingCrosImageCapture() override;
 
   void GetCameraInfoWithRealId(GetCameraInfoCallback callback,
@@ -61,10 +64,16 @@ class CAPTURE_EXPORT RendererFacingCrosImageCapture
                    const int32_t max_frame_rate,
                    SetFpsRangeCallback callback) override;
 
+  void OnIntentHandled(uint32_t intent_id,
+                       bool is_success,
+                       const std::vector<uint8_t>& captured_data) override;
+
  private:
   cros::mojom::CrosImageCapturePtr cros_image_capture_;
 
   DeviceIdMappingCallback mapping_callback_;
+
+  IntentCallback intent_callback_;
 
   base::WeakPtrFactory<RendererFacingCrosImageCapture> weak_ptr_factory_;
 

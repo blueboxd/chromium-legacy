@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .typedef import Typedef
 from .user_defined_type import UserDefinedType
 
 
@@ -52,7 +53,7 @@ class DatabaseBody(object):
             self._defs[kind] = {}
 
     def register(self, kind, user_defined_type):
-        assert isinstance(user_defined_type, UserDefinedType)
+        assert isinstance(user_defined_type, (UserDefinedType, Typedef))
         assert kind in DatabaseBody.Kind.itervalues()
         try:
             self.find_by_identifier(user_defined_type.identifier)

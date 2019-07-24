@@ -122,12 +122,6 @@ ProximityAuthSystem::CreateRemoteDeviceLifeCycle(
       remote_device, local_device, secure_channel_client_);
 }
 
-void ProximityAuthSystem::OnLifeCycleStateChanged(
-    RemoteDeviceLifeCycle::State old_state,
-    RemoteDeviceLifeCycle::State new_state) {
-  unlock_manager_->OnLifeCycleStateChanged();
-}
-
 void ProximityAuthSystem::OnScreenDidLock(
     ScreenlockBridge::LockHandler::ScreenType screen_type) {
   const AccountId& focused_account_id =
@@ -182,7 +176,6 @@ void ProximityAuthSystem::OnFocusedUserChanged(const AccountId& account_id) {
                  << account_id.Serialize();
     remote_device_life_cycle_ =
         CreateRemoteDeviceLifeCycle(remote_device, local_device);
-    remote_device_life_cycle_->AddObserver(this);
 
     // UnlockManager listens for Bluetooth power change events, and is therefore
     // responsible for starting RemoteDeviceLifeCycle when Bluetooth becomes

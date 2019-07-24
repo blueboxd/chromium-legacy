@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,6 +44,9 @@ class VideoTestEnvironment : public ::testing::Environment {
  private:
   // Whether the test environment has been initialized.
   bool initialized_ = false;
+
+  // An exit manager is required to run callbacks on shutdown.
+  base::AtExitManager at_exit_manager;
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
 

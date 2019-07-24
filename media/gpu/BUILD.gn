@@ -605,7 +605,6 @@ test("video_decode_accelerator_tests") {
     "test:video_player",
     "test:video_player_test_environment",
     "test:video_player_thumbnail_renderer",
-    "//base/test:test_support",
     "//media:test_support",
     "//testing/gtest",
   ]
@@ -622,7 +621,6 @@ test("video_decode_accelerator_perf_tests") {
     ":buildflags",
     "test:video_player",
     "test:video_player_test_environment",
-    "//base/test:test_support",
     "//media:test_support",
     "//testing/gtest",
   ]

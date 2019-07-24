@@ -74,6 +74,7 @@ void SharingFCMSender::DoSendMessageToDevice(
 
   gcm::WebPushMessage web_push_message;
   web_push_message.time_to_live = time_to_live.InSeconds();
+  web_push_message.urgency = gcm::WebPushMessage::Urgency::kHigh;
   message.SerializeToString(&web_push_message.payload);
 
   gcm_driver_->SendWebPushMessage(

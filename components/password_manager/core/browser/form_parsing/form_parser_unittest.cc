@@ -1520,6 +1520,40 @@ TEST(FormParserTest, NotPasswordField) {
   });
 }
 
+// The parser should avoid identifying NOT_PASSWORD fields as passwords.
+TEST(FormParserTest, NotPasswordFieldDespiteAutocompleteAttribute) {
+  CheckTestData({
+      {
+          "Server hints: NOT_PASSWORD.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .autocomplete_attribute = "current-password"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .autocomplete_attribute = "new-password"},
+              {.form_control_type = "password",
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .autocomplete_attribute = "password"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+          .fallback_only = false,
+      },
+      {
+          "Server hints: NOT_PASSWORD on only password.",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::NOT_PASSWORD},
+               .form_control_type = "password"},
+          },
+          .fallback_only = true,
+      },
+  });
+}
+
 // Check that "readonly status" is reported accordingly.
 TEST(FormParserTest, ReadonlyStatus) {
   CheckTestData({

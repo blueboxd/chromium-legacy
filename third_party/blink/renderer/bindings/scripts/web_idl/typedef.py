@@ -31,10 +31,18 @@ class Typedef(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
 
             self.idl_type = idl_type
 
+    def __init__(self, ir):
+        assert isinstance(ir, Typedef.IR)
+
+        WithIdentifier.__init__(self, ir.identifier)
+        WithCodeGeneratorInfo.__init__(self,
+                                       ir.code_generator_info.make_copy())
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info.make_copy())
+
+        self._idl_type = ir.idl_type
+
     @property
     def idl_type(self):
-        """
-        Returns the type to have an alias.
-        @return IdlType
-        """
-        assert False, 'Not implemented yet'
+        """Returns the typedef'ed type."""
+        return self._idl_type

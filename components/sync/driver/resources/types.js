@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('chrome.sync.types', function() {
-  var typeCountersMap = {};
+  const typeCountersMap = {};
 
   /**
    * Redraws the counters table taking advantage of the most recent
@@ -11,8 +11,8 @@ cr.define('chrome.sync.types', function() {
    *
    * Makes use of typeCountersMap, which is defined in the containing scope.
    */
-  var refreshTypeCountersDisplay = function() {
-    var typeCountersArray = [];
+  const refreshTypeCountersDisplay = function() {
+    const typeCountersArray = [];
 
     // Transform our map into an array to make jstemplate happy.
     Object.keys(typeCountersMap).sort().forEach(function(t) {
@@ -34,8 +34,8 @@ cr.define('chrome.sync.types', function() {
    *
    * @param {!Object} e An event containing the list of known sync types.
    */
-  var onReceivedListOfTypes = function(e) {
-    var types = e.details.types;
+  const onReceivedListOfTypes = function(e) {
+    const types = e.details.types;
     types.map(function(type) {
       if (!typeCountersMap.hasOwnProperty(type)) {
         typeCountersMap[type] = {};
@@ -52,23 +52,24 @@ cr.define('chrome.sync.types', function() {
    *
    * @param {!Object} e An event containing an updated counter.
    */
-  var onCountersUpdated = function(e) {
-    var details = e.details;
+  const onCountersUpdated = function(e) {
+    const details = e.details;
 
-    var modelType = details.modelType;
-    var counters = details.counters;
+    const modelType = details.modelType;
+    const counters = details.counters;
 
-    if (typeCountersMap.hasOwnProperty(modelType))
-      for (var k in counters) {
+    if (typeCountersMap.hasOwnProperty(modelType)) {
+      for (const k in counters) {
         typeCountersMap[modelType][k] = counters[k];
       }
+    }
     refreshTypeCountersDisplay();
   };
 
   /**
    * Initializes state and callbacks for the per-type counters and status UI.
    */
-  var initTypeCounters = function() {
+  const initTypeCounters = function() {
     chrome.sync.events.addEventListener(
         'onCountersUpdated',
         onCountersUpdated);
@@ -80,7 +81,7 @@ cr.define('chrome.sync.types', function() {
     chrome.sync.registerForPerTypeCounters();
   };
 
-  var onLoad = function() {
+  const onLoad = function() {
     initTypeCounters();
   };
 

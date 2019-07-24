@@ -19,9 +19,10 @@
 namespace {
 
 // Constants used by the different tests.
-const char kUnknownAccountId[] = "{unknown account id}";
 const char kPrimaryAccountEmail[] = "primary.account@example.com";
+#if !defined(OS_CHROMEOS)
 const char kAnotherAccountEmail[] = "another.account@example.com";
+const char kUnknownAccountId[] = "{unknown account id}";
 
 // All account consistency methods that are tested by those unit tests when
 // testing ClearPrimaryAccount method.
@@ -206,6 +207,7 @@ void RunClearPrimaryAccountTest(
       break;
   }
 }
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -236,6 +238,12 @@ TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount) {
   EXPECT_EQ(identity_manager->GetPrimaryAccountId(), account_info.account_id);
 }
 
+// Tests that various preconditions of SetPrimaryAccount() not being satisfied
+// should cause the setting of the primary account to fail. Not run on
+// ChromeOS, where those preconditions do not exist.
+// TODO(https://crbug.com/983124): Run these tests on ChromeOS if/once we
+// enable those preconditions on that platform
+#if !defined(OS_CHROMEOS)
 // Checks that setting the primary account fails if the account is not known by
 // the identity service.
 TEST_F(PrimaryAccountMutatorTest, SetPrimaryAccount_NoAccount) {
@@ -337,7 +345,14 @@ TEST_F(PrimaryAccountMutatorTest,
   EXPECT_FALSE(primary_account_mutator->SetPrimaryAccount(
       primary_account_info.account_id));
 }
+#endif  // !defined(OS_CHROMEOS)
 
+// End of tests of preconditions not being satisfied causing the setting of
+// the primary account to fail.
+
+// Tests of clearing the primary account. Not run on ChromeOS, which does not
+// support clearing the primary account.
+#if !defined(OS_CHROMEOS)
 TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_NotSignedIn) {
   base::test::ScopedTaskEnvironment task_environment;
   signin::IdentityTestEnvironment environment;
@@ -481,3 +496,4 @@ TEST_F(PrimaryAccountMutatorTest,
       signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       RemoveAccountExpectation::kRemovePrimary, AuthExpectation::kAuthError);
 }
+#endif  // !defined(OS_CHROMEOS)

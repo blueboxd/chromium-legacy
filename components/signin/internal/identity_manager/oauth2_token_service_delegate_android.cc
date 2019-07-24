@@ -428,7 +428,7 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokensLoaded() {
             load_credentials_state());
   set_load_credentials_state(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
-  OAuth2TokenServiceDelegate::FireRefreshTokensLoaded();
+  ProfileOAuth2TokenServiceDelegate::FireRefreshTokensLoaded();
 }
 
 void OAuth2TokenServiceDelegateAndroid::RevokeAllCredentials() {

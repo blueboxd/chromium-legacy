@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/google/core/common/google_util.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -171,6 +173,11 @@ void AddSupervisionUI::SetupResources() {
   source->AddString("eventOriginFilter", kAddSupervisionEventOriginFilter);
   source->AddString("platformVersion", base::SysInfo::OperatingSystemVersion());
   source->AddString("flowType", kAddSupervisionFlowType);
+
+  // Forward the browser language code.
+  source->AddString(
+      "languageCode",
+      google_util::GetGoogleLocale(g_browser_process->GetApplicationLocale()));
 
   content::WebUIDataSource::Add(profile, source.release());
 }

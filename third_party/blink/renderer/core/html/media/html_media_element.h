@@ -160,6 +160,7 @@ class CORE_EXPORT HTMLMediaElement
   String EffectivePreload() const;
   WebMediaPlayer::Preload EffectivePreloadType() const;
 
+  WebTimeRanges BufferedInternal() const;
   TimeRanges* buffered() const;
   void load();
   String canPlayType(const String& mime_type) const;
@@ -186,6 +187,7 @@ class CORE_EXPORT HTMLMediaElement
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   void UpdatePlaybackRate();
   TimeRanges* played();
+  WebTimeRanges SeekableInternal() const;
   TimeRanges* seekable() const;
   bool ended() const;
   bool Autoplay() const;

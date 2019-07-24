@@ -51,7 +51,7 @@ bool DOMWindowCSS::supports(const ExecutionContext* execution_context,
         MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
     bool is_animation_tainted = false;
     return CSSParser::ParseValueForCustomProperty(
-               dummy_style, "--valid", nullptr, value, false,
+               dummy_style, "--valid", value, false,
                execution_context->GetSecureContextMode(), nullptr,
                is_animation_tainted)
         .did_parse;

@@ -135,6 +135,7 @@ class ProfileSyncService : public SyncService,
   void TriggerRefresh(const ModelTypeSet& types) override;
   void ReadyForStartChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  base::Optional<UserDemographics> GetUserDemographics(base::Time now) override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;

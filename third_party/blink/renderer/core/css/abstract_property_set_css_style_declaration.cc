@@ -195,11 +195,11 @@ void AbstractPropertySetCSSStyleDeclaration::SetPropertyInternal(
     AtomicString atomic_name(custom_property_name);
 
     bool is_animation_tainted = IsKeyframeStyle();
-    did_change = PropertySet()
-                     .SetProperty(atomic_name, GetPropertyRegistry(), value,
-                                  important, secure_context_mode,
-                                  ContextStyleSheet(), is_animation_tainted)
-                     .did_change;
+    did_change =
+        PropertySet()
+            .SetProperty(atomic_name, value, important, secure_context_mode,
+                         ContextStyleSheet(), is_animation_tainted)
+            .did_change;
   } else {
     did_change = PropertySet()
                      .SetProperty(unresolved_property, value, important,

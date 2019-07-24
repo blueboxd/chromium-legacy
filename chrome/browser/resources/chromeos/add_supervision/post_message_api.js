@@ -36,7 +36,7 @@ class PostMessageAPIServer {
 
     /**
      * Map that stores references to the methods implemented by the API.
-     * @private {!Map<string, Function>}
+     * @private {!Map<string, function(!Array): (Promise|undefined)>}
      */
     this.apiFns_ = new Map();
 
@@ -59,7 +59,8 @@ class PostMessageAPIServer {
    * function.
    *
    * @param {!string} methodName name of the method to register.
-   * @param {!Function} method The function to associate with the name.
+   * @param {!function(!Array): (Promise|undefined)} method The function to
+   *     associate with the name.
    */
   registerMethod(methodName, method) {
     this.apiFns_.set(methodName, method);
@@ -92,6 +93,7 @@ class PostMessageAPIServer {
           'Message received from unauthorized origin: ' + event.origin);
       return;
     }
+    const methodId = event.data.methodId;
     const fn = event.data.fn;
     const args = event.data.args || [];
 
@@ -100,14 +102,24 @@ class PostMessageAPIServer {
       return;
     }
 
-    this.apiFns_.get(fn)(args).then(result => {
+    const sendMessage = (methodId, result) => {
       this.clientElement_.contentWindow.postMessage(
           {
-            methodId: event.data.methodId,
+            methodId: methodId,
             result: result,
           },
           this.targetURL_.toString());
-    });
+    };
+
+    // Some methods return a promise and some don't. If we have a promise,
+    // we resolve it first, otherwise we send the result directly (e.g., for
+    // void functions we send 'undefined').
+    const result = this.apiFns_.get(fn)(args);
+    if (result instanceof Promise) {
+      result.then((result) => sendMessage(methodId, result));
+    } else {
+      sendMessage(methodId, result);
+    }
   }
 }
 

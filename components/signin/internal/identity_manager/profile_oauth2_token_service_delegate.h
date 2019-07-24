@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
-#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include <memory>
 #include <set>
@@ -31,10 +31,10 @@ class ProfileOAuth2TokenService;
 // Abstract base class to fetch and maintain refresh tokens from various
 // entities. Concrete subclasses should implement RefreshTokenIsAvailable and
 // CreateAccessTokenFetcher properly.
-class OAuth2TokenServiceDelegate {
+class ProfileOAuth2TokenServiceDelegate {
  public:
-  OAuth2TokenServiceDelegate();
-  virtual ~OAuth2TokenServiceDelegate();
+  ProfileOAuth2TokenServiceDelegate();
+  virtual ~ProfileOAuth2TokenServiceDelegate();
 
   virtual std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
@@ -158,11 +158,11 @@ class OAuth2TokenServiceDelegate {
   // Helper class to scope batch changes.
   class ScopedBatchChange {
    public:
-    explicit ScopedBatchChange(OAuth2TokenServiceDelegate* delegate);
+    explicit ScopedBatchChange(ProfileOAuth2TokenServiceDelegate* delegate);
     ~ScopedBatchChange();
 
    private:
-    OAuth2TokenServiceDelegate* delegate_;  // Weak.
+    ProfileOAuth2TokenServiceDelegate* delegate_;  // Weak.
     DISALLOW_COPY_AND_ASSIGN(ScopedBatchChange);
   };
 
@@ -182,7 +182,7 @@ class OAuth2TokenServiceDelegate {
   // The depth of batch changes.
   int batch_change_depth_;
 
-  DISALLOW_COPY_AND_ASSIGN(OAuth2TokenServiceDelegate);
+  DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceDelegate);
 };
 
-#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_

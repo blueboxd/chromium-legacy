@@ -337,7 +337,7 @@
                   '|third_party/blink/renderer/core/frame/device_single_window_event_controller'
     },
     'blink_devtools': {
-      'filepath': 'third_party/(WebKit|blink)/.*(inspector|DevTools|dev_tools|devtools)',
+      'filepath': 'third_party/blink/.*(inspector|DevTools|dev_tools|devtools)',
     },
     'blink_dom': {
       'filepath': 'third_party/blink/renderer/core/dom/'
@@ -2041,7 +2041,7 @@
                                  'timvolodine@chromium.org'],
     'blink_devtools': ['apavlov+blink@chromium.org',
                        'caseq+blink@chromium.org',
-                       'devtools-reviews@chromium.org',
+                       'devtools-reviews+blink@chromium.org',
                        'lushnikov+blink@chromium.org',
                        'pfeldman+blink@chromium.org'],
     'blink_dom': ['blink-reviews-dom@chromium.org',

@@ -413,78 +413,78 @@ double MediaSource::duration() const {
                     : web_media_source_->Duration();
 }
 
-TimeRanges* MediaSource::Buffered() const {
+WebTimeRanges MediaSource::BufferedInternal() const {
   // Implements MediaSource algorithm for HTMLMediaElement.buffered.
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
-  HeapVector<Member<TimeRanges>> ranges(active_source_buffers_->length());
+  Vector<WebTimeRanges> ranges(active_source_buffers_->length());
   for (unsigned i = 0; i < active_source_buffers_->length(); ++i)
-    ranges[i] = active_source_buffers_->item(i)->buffered(ASSERT_NO_EXCEPTION);
+    ranges[i] = active_source_buffers_->item(i)->buffered();
+
+  WebTimeRanges intersection_ranges;
 
   // 1. If activeSourceBuffers.length equals 0 then return an empty TimeRanges
   //    object and abort these steps.
   if (ranges.IsEmpty())
-    return MakeGarbageCollected<TimeRanges>();
+    return intersection_ranges;
 
   // 2. Let active ranges be the ranges returned by buffered for each
   //    SourceBuffer object in activeSourceBuffers.
   // 3. Let highest end time be the largest range end time in the active ranges.
   double highest_end_time = -1;
-  for (wtf_size_t i = 0; i < ranges.size(); ++i) {
-    unsigned length = ranges[i]->length();
-    if (length)
-      highest_end_time = std::max(
-          highest_end_time, ranges[i]->end(length - 1, ASSERT_NO_EXCEPTION));
+  for (const WebTimeRanges& source_ranges : ranges) {
+    if (!source_ranges.empty())
+      highest_end_time = std::max(highest_end_time, source_ranges.back().end);
   }
 
   // Return an empty range if all ranges are empty.
   if (highest_end_time < 0)
-    return MakeGarbageCollected<TimeRanges>();
+    return intersection_ranges;
 
   // 4. Let intersection ranges equal a TimeRange object containing a single
   //    range from 0 to highest end time.
-  auto* intersection_ranges =
-      MakeGarbageCollected<TimeRanges>(0, highest_end_time);
+  intersection_ranges.emplace_back(0, highest_end_time);
 
   // 5. For each SourceBuffer object in activeSourceBuffers run the following
   //    steps:
   bool ended = readyState() == EndedKeyword();
-  for (wtf_size_t i = 0; i < ranges.size(); ++i) {
-    // 5.1 Let source ranges equal the ranges returned by the buffered attribute
-    //     on the current SourceBuffer.
-    TimeRanges* source_ranges = ranges[i].Get();
-
+  // 5.1 Let source ranges equal the ranges returned by the buffered attribute
+  //     on the current SourceBuffer.
+  for (WebTimeRanges& source_ranges : ranges) {
     // 5.2 If readyState is "ended", then set the end time on the last range in
     //     source ranges to highest end time.
-    if (ended && source_ranges->length())
-      source_ranges->Add(source_ranges->start(source_ranges->length() - 1,
-                                              ASSERT_NO_EXCEPTION),
-                         highest_end_time);
+    if (ended && !source_ranges.empty())
+      source_ranges.Add(source_ranges.back().start, highest_end_time);
 
     // 5.3 Let new intersection ranges equal the the intersection between the
     //     intersection ranges and the source ranges.
     // 5.4 Replace the ranges in intersection ranges with the new intersection
     //     ranges.
-    intersection_ranges->IntersectWith(source_ranges);
+    intersection_ranges.IntersectWith(source_ranges);
   }
 
   return intersection_ranges;
 }
 
-TimeRanges* MediaSource::Seekable() const {
+TimeRanges* MediaSource::Buffered() const {
+  return MakeGarbageCollected<TimeRanges>(BufferedInternal());
+}
+
+WebTimeRanges MediaSource::SeekableInternal() const {
   DCHECK(attached_element_)
       << "Seekable should only be used when attached to HTMLMediaElement";
 
   // Implements MediaSource algorithm for HTMLMediaElement.seekable.
   // http://w3c.github.io/media-source/#htmlmediaelement-extensions
+  WebTimeRanges ranges;
 
   double source_duration = duration();
   // If duration equals NaN: Return an empty TimeRanges object.
   if (std::isnan(source_duration))
-    return MakeGarbageCollected<TimeRanges>();
+    return ranges;
 
   // If duration equals positive Infinity:
   if (source_duration == std::numeric_limits<double>::infinity()) {
-    TimeRanges* buffered = Buffered();
+    WebTimeRanges buffered = BufferedInternal();
 
     // 1. If live seekable range is not empty:
     if (live_seekable_range_->length() != 0) {
@@ -493,33 +493,39 @@ TimeRanges* MediaSource::Seekable() const {
       // 1.2. Return a single range with a start time equal to the
       //      earliest start time in union ranges and an end time equal to
       //      the highest end time in union ranges and abort these steps.
-      if (buffered->length() == 0) {
-        return MakeGarbageCollected<TimeRanges>(
-            live_seekable_range_->start(0, ASSERT_NO_EXCEPTION),
-            live_seekable_range_->end(0, ASSERT_NO_EXCEPTION));
+      if (buffered.empty()) {
+        ranges.emplace_back(live_seekable_range_->start(0, ASSERT_NO_EXCEPTION),
+                            live_seekable_range_->end(0, ASSERT_NO_EXCEPTION));
+        return ranges;
       }
 
-      return MakeGarbageCollected<TimeRanges>(
+      ranges.emplace_back(
           std::min(live_seekable_range_->start(0, ASSERT_NO_EXCEPTION),
-                   buffered->start(0, ASSERT_NO_EXCEPTION)),
+                   buffered.front().start),
           std::max(live_seekable_range_->end(0, ASSERT_NO_EXCEPTION),
-                   buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION)));
+                   buffered.back().end));
+      return ranges;
     }
     // 2. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges
     //    object, then return an empty TimeRanges object and abort these steps.
-    if (buffered->length() == 0)
-      return MakeGarbageCollected<TimeRanges>();
+    if (buffered.empty())
+      return ranges;
 
     // 3. Return a single range with a start time of 0 and an end time equal to
     //    the highest end time reported by the HTMLMediaElement.buffered
     //    attribute.
-    return MakeGarbageCollected<TimeRanges>(
-        0, buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION));
+    ranges.emplace_back(0, buffered.back().end);
+    return ranges;
   }
 
   // 3. Otherwise: Return a single range with a start time of 0 and an end time
   //    equal to duration.
-  return MakeGarbageCollected<TimeRanges>(0, source_duration);
+  ranges.emplace_back(0, source_duration);
+  return ranges;
+}
+
+TimeRanges* MediaSource::Seekable() const {
+  return MakeGarbageCollected<TimeRanges>(SeekableInternal());
 }
 
 void MediaSource::OnTrackChanged(TrackBase* track) {

@@ -45,7 +45,6 @@ SkRect AdjustSrcRectForScale(SkRect original, SkSize scale_adjustment) {
                           original.width() * x_scale,
                           original.height() * y_scale);
 }
-
 }  // namespace
 
 #define TYPES(M)      \
@@ -1199,8 +1198,9 @@ void DrawDRRectOp::RasterWithFlags(const DrawDRRectOp* op,
                                    const PaintFlags* flags,
                                    SkCanvas* canvas,
                                    const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawDRRect(op->outer, op->inner, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawDRRect(op->outer, op->inner, p);
+  });
 }
 
 void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
@@ -1316,8 +1316,9 @@ void DrawIRectOp::RasterWithFlags(const DrawIRectOp* op,
                                   const PaintFlags* flags,
                                   SkCanvas* canvas,
                                   const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawIRect(op->rect, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawIRect(op->rect, p);
+  });
 }
 
 void DrawLineOp::RasterWithFlags(const DrawLineOp* op,
@@ -1325,23 +1326,27 @@ void DrawLineOp::RasterWithFlags(const DrawLineOp* op,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
   SkPaint paint = flags->ToSkPaint();
-  canvas->drawLine(op->x0, op->y0, op->x1, op->y1, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawLine(op->x0, op->y0, op->x1, op->y1, p);
+  });
 }
 
 void DrawOvalOp::RasterWithFlags(const DrawOvalOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawOval(op->oval, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawOval(op->oval, p);
+  });
 }
 
 void DrawPathOp::RasterWithFlags(const DrawPathOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawPath(op->path, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawPath(op->path, p);
+  });
 }
 
 void DrawRecordOp::Raster(const DrawRecordOp* op,
@@ -1357,16 +1362,18 @@ void DrawRectOp::RasterWithFlags(const DrawRectOp* op,
                                  const PaintFlags* flags,
                                  SkCanvas* canvas,
                                  const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawRect(op->rect, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawRect(op->rect, p);
+  });
 }
 
 void DrawRRectOp::RasterWithFlags(const DrawRRectOp* op,
                                   const PaintFlags* flags,
                                   SkCanvas* canvas,
                                   const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawRRect(op->rrect, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawRRect(op->rrect, p);
+  });
 }
 
 void DrawSkottieOp::Raster(const DrawSkottieOp* op,
@@ -1379,8 +1386,9 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
                                      const PaintFlags* flags,
                                      SkCanvas* canvas,
                                      const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawTextBlob(op->blob.get(), op->x, op->y, paint);
+  flags->DrawToSk(canvas, [op](SkCanvas* c, const SkPaint& p) {
+    c->drawTextBlob(op->blob.get(), op->x, op->y, p);
+  });
 }
 
 void RestoreOp::Raster(const RestoreOp* op,

@@ -118,20 +118,17 @@ StringKeyframeVector KeyframesAtZeroAndOne(CSSPropertyID property,
 
 StringKeyframeVector KeyframesAtZeroAndOne(
     AtomicString property_name,
-    const PropertyRegistry* property_registry,
     const String& zero_value,
     const String& one_value) {
   StringKeyframeVector keyframes(2);
   keyframes[0] = MakeGarbageCollected<StringKeyframe>();
   keyframes[0]->SetOffset(0.0);
   keyframes[0]->SetCSSPropertyValue(
-      property_name, property_registry, zero_value,
-      SecureContextMode::kInsecureContext, nullptr);
+      property_name, zero_value, SecureContextMode::kInsecureContext, nullptr);
   keyframes[1] = MakeGarbageCollected<StringKeyframe>();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetCSSPropertyValue(property_name, property_registry, one_value,
-                                    SecureContextMode::kInsecureContext,
-                                    nullptr);
+  keyframes[1]->SetCSSPropertyValue(
+      property_name, one_value, SecureContextMode::kInsecureContext, nullptr);
   return keyframes;
 }
 
@@ -151,8 +148,8 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
   PropertyRegistration::registerProperty(document, property_descriptor,
                                          exception_state);
 
-  StringKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      property_name, document->GetPropertyRegistry(), zero_value, one_value);
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(property_name, zero_value, one_value);
 
   element->style()->setProperty(document, property_name, zero_value,
                                 g_empty_string, exception_state);

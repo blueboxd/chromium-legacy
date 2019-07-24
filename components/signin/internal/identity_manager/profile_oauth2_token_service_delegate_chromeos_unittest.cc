@@ -62,9 +62,10 @@ class AccessTokenConsumer : public OAuth2AccessTokenConsumer {
 
 class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
  public:
-  // |delegate| is a non-owning pointer to an |OAuth2TokenServiceDelegate| that
-  // MUST outlive |this| instance.
-  explicit TestOAuth2TokenServiceObserver(OAuth2TokenServiceDelegate* delegate)
+  // |delegate| is a non-owning pointer to an
+  // |ProfileOAuth2TokenServiceDelegate| that MUST outlive |this| instance.
+  explicit TestOAuth2TokenServiceObserver(
+      ProfileOAuth2TokenServiceDelegate* delegate)
       : delegate_(delegate) {
     delegate_->AddObserver(this);
   }
@@ -139,7 +140,7 @@ class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
   std::vector<std::vector<std::string>> batch_change_records_;
 
   // Non-owning pointer.
-  OAuth2TokenServiceDelegate* const delegate_;
+  ProfileOAuth2TokenServiceDelegate* const delegate_;
 };
 
 }  // namespace
@@ -388,9 +389,9 @@ TEST_F(CrOSOAuthDelegateTest,
   EXPECT_EQ(account_info_.account_id, observer.batch_change_records_[0][0]);
 }
 
-// If observers register themselves with |OAuth2TokenServiceDelegate| before
-// |chromeos::AccountManager| has been initialized, they should receive all the
-// accounts stored in |chromeos::AccountManager| in a single batch.
+// If observers register themselves with |ProfileOAuth2TokenServiceDelegate|
+// before |chromeos::AccountManager| has been initialized, they should receive
+// all the accounts stored in |chromeos::AccountManager| in a single batch.
 TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   // Setup
   AccountInfo account1 = CreateAccountInfoTestFixture(

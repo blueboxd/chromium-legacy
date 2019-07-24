@@ -2210,6 +2210,10 @@ crbug.com/552085 virtual/cascade/external/wpt/css/css-cascade/important-prop.htm
 # That seems wrong, as we should support 'revert' eventually.
 crbug.com/579788 virtual/cascade/external/wpt/css/css-cascade/revert-val-001.html [ Skip ]
 
+# Flaky tests:
+crbug.com/987224 virtual/cascade/external/wpt/css/css-typed-om/interfaces.html [ Pass Timeout ]
+crbug.com/987224 virtual/cascade/external/wpt/css/css-paint-api/idlharness.html [ Pass Timeout ]
+
 # ====== Cascade failures until here ======
 
 ### sheriff 2019-07-16
@@ -3014,6 +3018,7 @@ crbug.com/763830 virtual/blink-cors/http/tests/security/cors-rfc1918/ [ Skip ]
 
 crbug.com/831729 external/wpt/event-timing/crossiframe.html [ Timeout ]
 crbug.com/831729 external/wpt/event-timing/observer-manual.html [ Skip ]
+crbug.com/987236  [ Linux ] external/wpt/event-timing/bufferbeforeonload.html [ Timeout ]
 
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/connect-src/worker-from-guid.sub.html [ Skip ]
@@ -3253,6 +3258,8 @@ crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
+crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]

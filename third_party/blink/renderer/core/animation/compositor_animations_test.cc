@@ -228,8 +228,7 @@ class AnimationCompositorAnimationsTest : public PaintTestConfigurations,
                                           const String& value,
                                           double offset = 0) {
     auto* keyframe = MakeGarbageCollected<StringKeyframe>();
-    keyframe->SetCSSPropertyValue(AtomicString(property_name),
-                                  GetDocument().GetPropertyRegistry(), value,
+    keyframe->SetCSSPropertyValue(AtomicString(property_name), value,
                                   GetDocument().GetSecureContextMode(),
                                   GetDocument().ElementSheet().Contents());
     keyframe->SetComposite(EffectModel::kCompositeReplace);

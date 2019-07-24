@@ -37,7 +37,6 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
 
   MutableCSSPropertyValueSet::SetResult SetCSSPropertyValue(
       const AtomicString& property_name,
-      const PropertyRegistry*,
       const String& value,
       SecureContextMode,
       StyleSheetContents*);

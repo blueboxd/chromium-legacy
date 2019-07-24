@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -62,8 +62,8 @@ class FakeOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
 
 // This class fakes the behaviour of a MutableProfileOAuth2TokenServiceDelegate
 // used on Desktop.
-class FakeOAuth2TokenServiceDelegateDesktop
-    : public FakeOAuth2TokenServiceDelegate {
+class FakeProfileOAuth2TokenServiceDelegateDesktop
+    : public FakeProfileOAuth2TokenServiceDelegate {
   std::string GetTokenForMultilogin(
       const CoreAccountId& account_id) const override {
     if (GetAuthError(account_id) == GoogleServiceAuthError::AuthErrorNone())
@@ -79,7 +79,7 @@ class FakeOAuth2TokenServiceDelegateDesktop
       return std::make_unique<OAuth2AccessTokenFetcherImmediateError>(
           consumer, GetAuthError(account_id));
     }
-    return FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
+    return FakeProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
         account_id, url_loader_factory, consumer);
   }
   void InvalidateTokenForMultilogin(
@@ -93,7 +93,7 @@ class FakeOAuth2TokenServiceDelegateDesktop
 class ProfileOAuth2TokenServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegate>();
+    auto delegate = std::make_unique<FakeProfileOAuth2TokenServiceDelegate>();
     // Save raw delegate pointer for later.
     delegate_ptr_ = delegate.get();
 
@@ -117,7 +117,7 @@ class ProfileOAuth2TokenServiceTest : public testing::Test {
  protected:
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   network::TestURLLoaderFactory* test_url_loader_factory_ = nullptr;
-  FakeOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
+  FakeProfileOAuth2TokenServiceDelegate* delegate_ptr_ = nullptr;  // Not owned.
   std::unique_ptr<ProfileOAuth2TokenService> oauth2_service_;
   CoreAccountId account_id_;
   TestingOAuth2AccessTokenManagerConsumer consumer_;
@@ -449,7 +449,8 @@ TEST_F(ProfileOAuth2TokenServiceTest, StartRequestForMultiloginDesktop) {
     DISALLOW_COPY_AND_ASSIGN(MockOAuth2AccessTokenConsumer);
   };
   ProfileOAuth2TokenService token_service(
-      &prefs_, std::make_unique<FakeOAuth2TokenServiceDelegateDesktop>());
+      &prefs_,
+      std::make_unique<FakeProfileOAuth2TokenServiceDelegateDesktop>());
 
   token_service.GetDelegate()->UpdateCredentials(account_id_, "refreshToken");
   const CoreAccountId account_id_2("account_id_2");
@@ -538,7 +539,8 @@ TEST_F(ProfileOAuth2TokenServiceTest, RetryingConsumer) {
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, InvalidateTokensForMultiloginDesktop) {
-  auto delegate = std::make_unique<FakeOAuth2TokenServiceDelegateDesktop>();
+  auto delegate =
+      std::make_unique<FakeProfileOAuth2TokenServiceDelegateDesktop>();
   ProfileOAuth2TokenService token_service(&prefs_, std::move(delegate));
   FakeOAuth2TokenServiceObserver observer;
   token_service.GetDelegate()->AddObserver(&observer);

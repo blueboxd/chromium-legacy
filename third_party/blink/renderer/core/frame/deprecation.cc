@@ -513,11 +513,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "Creating a MediaStreamAudioSourceNode on an OfflineAudioContext",
               kM71, "5258622686724096")};
 
-    case WebFeature::kRTCDataChannelInitMaxRetransmitTime:
-      return {"RTCDataChannelInitMaxRetransmitTime", kM70,
-              ReplacedWillBeRemoved("maxRetransmitTime", "maxPacketLifeTime",
-                                    kM70, "5198350873788416")};
-
     case WebFeature::kGridRowTrackPercentIndefiniteHeight:
       return {"GridRowTrackPercentIndefiniteHeight", kM70,
               String::Format("Percentages row tracks and gutters for "

@@ -16,18 +16,19 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-// A specialization of OAuth2TokenServiceDelegate that will be returned by
-// OAuth2TokenServiceDelegateFactory for OS_ANDROID.  This instance uses
+// A specialization of ProfileOAuth2TokenServiceDelegate that will be returned
+// by OAuth2TokenServiceDelegateFactory for OS_ANDROID.  This instance uses
 // native Android features to lookup OAuth2 tokens.
 //
-// See |OAuth2TokenServiceDelegate| for usage details.
+// See |ProfileOAuth2TokenServiceDelegate| for usage details.
 //
 // Note: requests should be started from the UI thread.
-class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
+class OAuth2TokenServiceDelegateAndroid
+    : public ProfileOAuth2TokenServiceDelegate {
  public:
   OAuth2TokenServiceDelegateAndroid(
       AccountTrackerService* account_tracker_service);
@@ -46,7 +47,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
     disable_interaction_with_system_accounts_ = true;
   }
 
-  // OAuth2TokenServiceDelegate overrides:
+  // ProfileOAuth2TokenServiceDelegate overrides:
   bool RefreshTokenIsAvailable(const CoreAccountId& account_id) const override;
   GoogleServiceAuthError GetAuthError(
       const CoreAccountId& account_id) const override;
@@ -82,7 +83,7 @@ class OAuth2TokenServiceDelegateAndroid : public OAuth2TokenServiceDelegate {
       scoped_refptr<network::SharedURLLoaderFactory> url_factory,
       OAuth2AccessTokenConsumer* consumer) override;
 
-  // Overridden from OAuth2TokenServiceDelegate to intercept token fetch
+  // Overridden from ProfileOAuth2TokenServiceDelegate to intercept token fetch
   // requests and redirect them to the Account Manager.
   void OnAccessTokenInvalidated(
       const CoreAccountId& account_id,

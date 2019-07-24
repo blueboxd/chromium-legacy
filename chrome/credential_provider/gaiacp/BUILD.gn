@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//base/win/embedded_i18n/generate_embedded_i18n.gni")
-import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")

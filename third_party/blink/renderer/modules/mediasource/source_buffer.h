@@ -77,6 +77,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   void setMode(const AtomicString&, ExceptionState&);
   bool updating() const { return updating_; }
   TimeRanges* buffered(ExceptionState&) const;
+  WebTimeRanges buffered() const;
   double timestampOffset() const;
   void setTimestampOffset(double, ExceptionState&);
   void appendBuffer(DOMArrayBuffer* data, ExceptionState&);

@@ -1684,6 +1684,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kAccountConsistencyFeature,
                                     kAccountConsistencyFeatureVariations,
                                     "AccountConsistencyVariations")},
+    {"show-sync-paused-reason-cookies-cleared-on-exit",
+     flag_descriptions::kShowSyncPausedReasonCookiesClearedOnExitName,
+     flag_descriptions::kShowSyncPausedReasonCookiesClearedOnExitDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(features::kShowSyncPausedReasonCookiesClearedOnExit)},
 #endif
 #if defined(OS_ANDROID)
     {"enable-android-autofill-accessibility",

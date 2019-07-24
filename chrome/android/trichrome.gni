@@ -61,7 +61,11 @@ template("trichrome_library_apk_tmpl") {
     no_build_hooks = true
 
     alternative_android_sdk_dep = webview_framework_dep
-    if (!trichrome_synchronized_proguard) {
+    if (trichrome_synchronized_proguard) {
+      # TODO(crbug.com/956839): Remove this once R8 fixes the class merging
+      # and/or inlining bugs.
+      disable_r8_outlining = true
+    } else {
       # TODO(crbug.com/901465): Remove r_java_root_package_name once shared
       # Java code is moved to the shared library even in debug.
       r_java_root_package_name = "trichrome_lib"
@@ -81,10 +85,6 @@ template("trichrome_library_apk_tmpl") {
     } else {
       product_version_resources_dep =
           "//chrome/android:product_version_resources"
-
-      # TODO(crbug.com/956839): Remove this once R8 fixes the class merging
-      # and/or inlining bugs.
-      disable_r8_outlining = true
     }
 
     # TODO(torne): using system_webview_resources just to get a temporary icon
@@ -142,6 +142,9 @@ template("trichrome_library_apk_tmpl") {
         "//base/android/proguard/chromium_code.flags",
         "//chrome/android/java/trichrome.flags",
       ]
+      if (trichrome_synchronized_proguard) {
+        proguard_configs += [ "//chrome/android/java/static_library_dex_reference_workarounds.flags" ]
+      }
       if (enable_proguard_obfuscation) {
         proguard_configs +=
             [ "//base/android/proguard/enable_obfuscation.flags" ]

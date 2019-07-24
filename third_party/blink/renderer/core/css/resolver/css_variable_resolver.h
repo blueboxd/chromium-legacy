@@ -17,6 +17,7 @@ class CSSCustomPropertyDeclaration;
 class CSSParserTokenRange;
 class CSSVariableData;
 class CSSVariableReferenceValue;
+class CSSParserContext;
 class PropertyRegistration;
 class PropertyRegistry;
 class StyleInheritedVariables;
@@ -214,6 +215,10 @@ class CORE_EXPORT CSSVariableResolver {
                         const CSSValue*);
   void SetInvalidVariable(const AtomicString& name,
                           const PropertyRegistration*);
+
+  const CSSParserContext* GetParserContext(
+      const CSSVariableReferenceValue&) const;
+
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;
   StyleNonInheritedVariables* non_inherited_variables_;

@@ -1,5 +1,4 @@
 // Inspired by Layoutests/animations/animation-test-helpers.js
-
 function moveAnimationTimelineAndSample(index) {
     var animationId = expectedResults[index][0];
     var time = expectedResults[index][1];
@@ -8,7 +7,6 @@ function moveAnimationTimelineAndSample(index) {
 
     // If we want to sample the animation end, add a small delta, to reliable point past the end of the animation.
     newTime = time;
-    newTime += animation.getStartTime();
 
     // The sample time is relative to the start time of the animation, take that into account.
     rootSVGElement.setCurrentTime(newTime);

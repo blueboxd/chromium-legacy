@@ -255,7 +255,10 @@ jumbo_static_library("browser") {
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
     ]
-    deps += [ "//components/safe_browsing/common:safe_browsing_prefs" ]
+    deps += [
+      "//components/password_manager/core/browser/leak_detection:leak_detection",
+      "//components/safe_browsing/common:safe_browsing_prefs",
+    ]
   }
 
   if (is_posix && !is_mac && !is_ios) {

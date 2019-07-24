@@ -64,22 +64,24 @@ class ClickToCallUtilsTest : public testing::Test {
 
   void SetUp() override {
     SharingServiceFactory::GetInstance()->SetTestingFactory(
-        &profile_, base::BindRepeating([](content::BrowserContext* context)
-                                           -> std::unique_ptr<KeyedService> {
-          return std::make_unique<NiceMock<MockSharingService>>(
-              std::make_unique<SharingFCMHandler>(nullptr, nullptr));
-        }));
+        &profile_, base::BindRepeating(&ClickToCallUtilsTest::CreateService,
+                                       base::Unretained(this)));
   }
 
  protected:
-  NiceMock<MockSharingService>* service() {
-    return static_cast<NiceMock<MockSharingService>*>(
-        SharingServiceFactory::GetForBrowserContext(&profile_));
+  std::unique_ptr<KeyedService> CreateService(
+      content::BrowserContext* context) {
+    if (!create_service_)
+      return nullptr;
+
+    return std::make_unique<NiceMock<MockSharingService>>(
+        std::make_unique<SharingFCMHandler>(nullptr, nullptr));
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  bool create_service_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(ClickToCallUtilsTest);
 };
@@ -88,40 +90,32 @@ class ClickToCallUtilsTest : public testing::Test {
 
 TEST_F(ClickToCallUtilsTest, NonTelProtocol_DoNotShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
-  EXPECT_CALL(*service(), GetState())
-      .WillOnce(Return(SharingService::State::ACTIVE));
-
   EXPECT_FALSE(ShouldOfferClickToCall(&profile_, GURL(kNonTelUrl)));
 }
 
 TEST_F(ClickToCallUtilsTest, UIFlagDisabled_DoNotShowMenu) {
   scoped_feature_list_.InitAndDisableFeature(kClickToCallUI);
-  EXPECT_CALL(*service(), GetState())
-      .WillOnce(Return(SharingService::State::ACTIVE));
-
   EXPECT_FALSE(ShouldOfferClickToCall(&profile_, GURL(kTelUrl)));
 }
 
 TEST_F(ClickToCallUtilsTest, IncognitoProfile_DoNotShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
-  EXPECT_CALL(*service(), GetState()).Times(0);
-
   EXPECT_FALSE(
       ShouldOfferClickToCall(profile_.GetOffTheRecordProfile(), GURL(kTelUrl)));
 }
 
 TEST_F(ClickToCallUtilsTest, EmptyTelProtocol_DoNotShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
-  EXPECT_CALL(*service(), GetState())
-      .WillOnce(Return(SharingService::State::ACTIVE));
-
   EXPECT_FALSE(ShouldOfferClickToCall(&profile_, GURL(kEmptyTelUrl)));
 }
 
 TEST_F(ClickToCallUtilsTest, TelProtocol_ShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
-  EXPECT_CALL(*service(), GetState())
-      .WillOnce(Return(SharingService::State::ACTIVE));
-
   EXPECT_TRUE(ShouldOfferClickToCall(&profile_, GURL(kTelUrl)));
+}
+
+TEST_F(ClickToCallUtilsTest, NoSharingService_DoNotShowMenu) {
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
+  create_service_ = false;
+  EXPECT_FALSE(ShouldOfferClickToCall(&profile_, GURL(kTelUrl)));
 }

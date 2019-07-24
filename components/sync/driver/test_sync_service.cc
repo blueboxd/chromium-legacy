@@ -87,6 +87,11 @@ void TestSyncService::SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot) {
   last_cycle_snapshot_ = snapshot;
 }
 
+void TestSyncService::SetUserDemographics(
+    const base::Optional<UserDemographics>& demographics) {
+  user_demographics_ = demographics;
+}
+
 void TestSyncService::SetEmptyLastCycleSnapshot() {
   SetLastCycleSnapshot(SyncCycleSnapshot());
 }
@@ -267,6 +272,11 @@ void TestSyncService::GetAllNodesForDebugging(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
+base::Optional<UserDemographics> TestSyncService::GetUserDemographics(
+    base::Time now) {
+  return user_demographics_;
+}
 
 void TestSyncService::Shutdown() {}
 

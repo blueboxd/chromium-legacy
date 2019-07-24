@@ -94,9 +94,9 @@ void SetKeyframeValue(Element* element,
   if (css_property != CSSPropertyID::kInvalid) {
     MutableCSSPropertyValueSet::SetResult set_result =
         css_property == CSSPropertyID::kVariable
-            ? keyframe.SetCSSPropertyValue(
-                  AtomicString(property), document.GetPropertyRegistry(), value,
-                  document.GetSecureContextMode(), style_sheet_contents)
+            ? keyframe.SetCSSPropertyValue(AtomicString(property), value,
+                                           document.GetSecureContextMode(),
+                                           style_sheet_contents)
             : keyframe.SetCSSPropertyValue(css_property, value,
                                            document.GetSecureContextMode(),
                                            style_sheet_contents);

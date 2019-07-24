@@ -6,17 +6,17 @@
 
 #include <memory>
 
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     PrefService* user_prefs)
     : FakeProfileOAuth2TokenService(
           user_prefs,
-          std::make_unique<FakeOAuth2TokenServiceDelegate>()) {}
+          std::make_unique<FakeProfileOAuth2TokenServiceDelegate>()) {}
 
 FakeProfileOAuth2TokenService::FakeProfileOAuth2TokenService(
     PrefService* user_prefs,
-    std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
+    std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate)
     : ProfileOAuth2TokenService(user_prefs, std::move(delegate)) {
   OverrideAccessTokenManagerForTesting(
       std::make_unique<FakeOAuth2AccessTokenManager>(

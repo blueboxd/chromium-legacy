@@ -88,7 +88,6 @@ class CSSParserImpl {
   static MutableCSSPropertyValueSet::SetResult ParseVariableValue(
       MutableCSSPropertyValueSet*,
       const AtomicString& property_name,
-      const PropertyRegistry*,
       const String&,
       bool important,
       const CSSParserContext*,

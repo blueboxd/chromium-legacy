@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service_observer.h"
@@ -17,17 +17,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The default implementation of
-// OAuth2TokenServiceDelegate::InvalidateTokensForMultilogin is used on mobile
-// where refresh tokens are not accessible. This test checks that refresh tokens
-// are not affected on INVALID_TOKENS Multilogin error.
-TEST(OAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
+// ProfileOAuth2TokenServiceDelegate::InvalidateTokensForMultilogin is used on
+// mobile where refresh tokens are not accessible. This test checks that refresh
+// tokens are not affected on INVALID_TOKENS Multilogin error.
+TEST(ProfileOAuth2TokenServiceDelegateTest, InvalidateTokensForMultilogin) {
   class TestOAuth2TokenServiceObserver : public OAuth2TokenServiceObserver {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
                  void(const CoreAccountId&, const GoogleServiceAuthError&));
   };
 
-  FakeOAuth2TokenServiceDelegate delegate;
+  FakeProfileOAuth2TokenServiceDelegate delegate;
 
   TestOAuth2TokenServiceObserver observer;
   delegate.AddObserver(&observer);

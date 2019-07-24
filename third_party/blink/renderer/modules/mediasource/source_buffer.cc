@@ -232,6 +232,10 @@ TimeRanges* SourceBuffer::buffered(ExceptionState& exception_state) const {
   return MakeGarbageCollected<TimeRanges>(web_source_buffer_->Buffered());
 }
 
+WebTimeRanges SourceBuffer::buffered() const {
+  return web_source_buffer_->Buffered();
+}
+
 double SourceBuffer::timestampOffset() const {
   return timestamp_offset_;
 }

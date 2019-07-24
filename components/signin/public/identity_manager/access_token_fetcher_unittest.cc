@@ -13,7 +13,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -594,7 +594,8 @@ TEST_F(AccessTokenFetcherTest, FetcherWithCustomURLLoaderFactory) {
 
   // The URLLoaderFactory present in the pending request should match
   // the one created by default for the token service's delegate.
-  OAuth2TokenServiceDelegate* service_delegate = token_service()->GetDelegate();
+  ProfileOAuth2TokenServiceDelegate* service_delegate =
+      token_service()->GetDelegate();
   EXPECT_EQ(pending_requests2[0].url_loader_factory,
             service_delegate->GetURLLoaderFactory());
 

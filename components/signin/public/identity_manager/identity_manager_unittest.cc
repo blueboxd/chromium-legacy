@@ -23,9 +23,9 @@
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/list_accounts_test_utils.h"
 #include "components/signin/public/base/signin_switches.h"
@@ -1188,7 +1188,8 @@ TEST_F(IdentityManagerTest,
 
   // The URLLoaderFactory present in the pending request should match
   // the one created by default for the token service's delegate.
-  OAuth2TokenServiceDelegate* service_delegate = token_service()->GetDelegate();
+  ProfileOAuth2TokenServiceDelegate* service_delegate =
+      token_service()->GetDelegate();
   EXPECT_EQ(pending_requests2[0].url_loader_factory,
             service_delegate->GetURLLoaderFactory());
 

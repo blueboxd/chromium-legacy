@@ -95,7 +95,6 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
 MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
     MutableCSSPropertyValueSet* declaration,
     const AtomicString& property_name,
-    const PropertyRegistry* registry,
     const String& value,
     bool important,
     const CSSParserContext* context,
@@ -110,18 +109,6 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
   bool did_parse = false;
   bool did_change = false;
   if (!parser.parsed_properties_.IsEmpty()) {
-    const auto* parsed_declaration =
-        To<CSSCustomPropertyDeclaration>(parser.parsed_properties_[0].Value());
-    if (parsed_declaration->Value() && registry) {
-      const PropertyRegistration* registration =
-          registry->Registration(property_name);
-      // TODO(timloh): This is a bit wasteful, we parse the registered property
-      // to validate but throw away the result.
-      if (registration &&
-          !registration->Syntax().Parse(range, context, is_animation_tainted)) {
-        return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
-      }
-    }
     did_parse = true;
     did_change = declaration->AddParsedProperties(parser.parsed_properties_);
   }

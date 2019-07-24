@@ -856,7 +856,7 @@ void ThreadState::AtomicPauseMarkPrologue(BlinkGC::StackState stack_state,
   ThreadHeapStatsCollector::EnabledScope mark_prologue_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkPrologue, "epoch", gc_age_,
-      "forced", reason == BlinkGC::GCReason::kForcedGCForTesting);
+      "forced", IsForcedGC(reason));
   EnterAtomicPause();
   EnterGCForbiddenScope();
   // Compaction needs to be canceled when incremental marking ends with a
@@ -919,8 +919,7 @@ void ThreadState::CompleteSweep() {
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kCompleteSweep,
-        "forced",
-        current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
+        "forced", IsForcedGC(current_gc_data_.reason));
     Heap().CompleteSweep();
     SynchronizeAndFinishConcurrentSweeping();
 
@@ -1444,8 +1443,7 @@ void ThreadState::AtomicPauseMarkRoots(BlinkGC::StackState stack_state,
                                        BlinkGC::GCReason reason) {
   ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kAtomicPauseMarkRoots,
-      "epoch", gc_age_, "forced",
-      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
+      "epoch", gc_age_, "forced", IsForcedGC(current_gc_data_.reason));
   MarkPhaseVisitRoots();
   MarkPhaseVisitNotFullyConstructedObjects();
 }
@@ -1454,8 +1452,7 @@ void ThreadState::AtomicPauseMarkTransitiveClosure() {
   ThreadHeapStatsCollector::EnabledScope advance_tracing_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure, "epoch",
-      gc_age_, "forced",
-      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
+      gc_age_, "forced", IsForcedGC(current_gc_data_.reason));
   CHECK(MarkPhaseAdvanceMarking(base::TimeTicks::Max()));
 }
 
@@ -1463,8 +1460,7 @@ void ThreadState::AtomicPauseMarkEpilogue(BlinkGC::MarkingType marking_type) {
   ThreadHeapStatsCollector::EnabledScope stats_scope(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseMarkEpilogue, "epoch", gc_age_,
-      "forced",
-      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
+      "forced", IsForcedGC(current_gc_data_.reason));
   MarkPhaseEpilogue(marking_type);
   LeaveAtomicPause();
   LeaveGCForbiddenScope();
@@ -1476,8 +1472,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
   ThreadHeapStatsCollector::EnabledScope stats(
       Heap().stats_collector(),
       ThreadHeapStatsCollector::kAtomicPauseSweepAndCompact, "epoch", gc_age_,
-      "forced",
-      current_gc_data_.reason == BlinkGC::GCReason::kForcedGCForTesting);
+      "forced", IsForcedGC(current_gc_data_.reason));
   AtomicPauseScope atomic_pause_scope(this);
 
   DCHECK(InAtomicMarkingPause());
@@ -1556,7 +1551,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
   // Legacy scope that is used to add stand-alone Oilpan GCs to DevTools
   // timeline.
   TRACE_EVENT1("blink_gc,devtools.timeline", "BlinkGC.AtomicPhase", "forced",
-               reason == BlinkGC::GCReason::kForcedGCForTesting);
+               IsForcedGC(reason));
 
   AtomicPauseMarkPrologue(stack_state, marking_type, reason);
   AtomicPauseMarkRoots(stack_state, marking_type, reason);

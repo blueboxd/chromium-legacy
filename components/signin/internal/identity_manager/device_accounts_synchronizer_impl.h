@@ -7,7 +7,7 @@
 
 #include "components/signin/public/identity_manager/device_accounts_synchronizer.h"
 
-class OAuth2TokenServiceDelegate;
+class ProfileOAuth2TokenServiceDelegate;
 
 namespace signin {
 
@@ -15,7 +15,7 @@ namespace signin {
 class DeviceAccountsSynchronizerImpl : public DeviceAccountsSynchronizer {
  public:
   explicit DeviceAccountsSynchronizerImpl(
-      OAuth2TokenServiceDelegate* token_service_delegate);
+      ProfileOAuth2TokenServiceDelegate* token_service_delegate);
   ~DeviceAccountsSynchronizerImpl() override;
 
   // DeviceAccountsSynchronizer implementation.
@@ -23,7 +23,7 @@ class DeviceAccountsSynchronizerImpl : public DeviceAccountsSynchronizer {
   void ReloadAccountFromSystem(const CoreAccountId& account_id) override;
 
  private:
-  OAuth2TokenServiceDelegate* token_service_delegate_ = nullptr;
+  ProfileOAuth2TokenServiceDelegate* token_service_delegate_ = nullptr;
 };
 
 }  // namespace signin

@@ -5,8 +5,8 @@
 #include "components/signin/internal/identity_manager/diagnostics_provider_impl.h"
 
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 
 namespace signin {
 

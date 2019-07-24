@@ -591,3 +591,20 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   GetSharingService();
 }
+
+TEST_F(SharingServiceTest, NoDevicesWhenSyncDisabled) {
+  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::DISABLED);
+
+  std::string id = base::GenerateGUID();
+  std::unique_ptr<syncer::DeviceInfo> device_info =
+      CreateFakeDeviceInfo(id, kDeviceName);
+  device_info_tracker_.Add(device_info.get());
+  sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+
+  std::vector<SharingDeviceInfo> candidates =
+      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+
+  ASSERT_EQ(0u, candidates.size());
+}

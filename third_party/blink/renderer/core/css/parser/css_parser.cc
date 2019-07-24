@@ -135,7 +135,6 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValue(
 MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
     MutableCSSPropertyValueSet* declaration,
     const AtomicString& property_name,
-    const PropertyRegistry* registry,
     const String& value,
     bool important,
     SecureContextMode secure_context_mode,
@@ -157,8 +156,8 @@ MutableCSSPropertyValueSet::SetResult CSSParser::ParseValueForCustomProperty(
     context = MakeGarbageCollected<CSSParserContext>(parser_mode,
                                                      secure_context_mode);
   }
-  return CSSParserImpl::ParseVariableValue(declaration, property_name, registry,
-                                           value, important, context,
+  return CSSParserImpl::ParseVariableValue(declaration, property_name, value,
+                                           important, context,
                                            is_animation_tainted);
 }
 

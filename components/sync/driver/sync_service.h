@@ -12,9 +12,11 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/user_demographics.h"
 #include "components/sync/driver/sync_service_observer.h"
 
 struct CoreAccountInfo;
@@ -344,6 +346,16 @@ class SyncService : public KeyedService {
   // only when user is interested in session sync data, e.g. the history sync
   // page is opened.
   virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
+
+  //////////////////////////////////////////////////////////////////////////////
+  // USER DEMOGRAPHICS
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Gets user synced demographics. See documentation of function
+  // SyncPrefs::GetUserDemographicss for more details. You need to provide an
+  // accurate |now| time that represents the user's current time.
+  virtual base::Optional<UserDemographics> GetUserDemographics(
+      base::Time now) = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS

@@ -178,10 +178,11 @@ BOOL IsKeyboardDockedForLayout(UIView* layout) {
 
 // Undocks and split the keyboard by swiping it up. Does nothing if already
 // undocked.  Only works on iOS 12; it is an error to call this method on
-// iOS 13.
-void UndockAndSplitKeyboard() {
+// iOS 13.  Some devices, like iPhone or iPad Pro, do not allow undocking or
+// splitting, this returns NO if it is the case.
+BOOL UndockAndSplitKeyboard() {
   if (![ChromeEarlGrey isIPadIdiom]) {
-    return;
+    return NO;
   }
 
   // TODO(crbug.com/985977): Remove this DCHECK once this method is updated to
@@ -200,7 +201,7 @@ void UndockAndSplitKeyboard() {
   if (!IsKeyboardDockedForLayout(layout)) {
     // If we created a dummy textfield for this, remove it.
     [textField removeFromSuperview];
-    return;
+    return YES;
   }
 
   // Swipe it up.
@@ -225,8 +226,7 @@ void UndockAndSplitKeyboard() {
       kGREYDirectionUp, startPoint.x, startPoint.y);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:action];
 
-  GREYAssertTrue(!IsKeyboardDockedForLayout(layout),
-                 @"Keyboard should be undocked");
+  return !IsKeyboardDockedForLayout(layout);
 }
 
 // Docks the keyboard by swiping it down. Does nothing if already docked.  Only
@@ -539,7 +539,10 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
-  UndockAndSplitKeyboard();
+  if (!UndockAndSplitKeyboard()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Undocking the keyboard does not work on iPhone or iPad Pro");
+  }
 
   // When keyboard is split, icons are not visible, so we rely on timeout before
   // docking again, because EarlGrey synchronization isn't working properly with
@@ -607,7 +610,10 @@ void DockKeyboard() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElement(kFormElementCity)];
 
-  UndockAndSplitKeyboard();
+  if (!UndockAndSplitKeyboard()) {
+    EARL_GREY_TEST_DISABLED(
+        @"Undocking the keyboard does not work on iPhone or iPad Pro");
+  }
 
   // When keyboard is split, icons are not visible, so we rely on timeout before
   // docking again, because EarlGrey synchronization isn't working properly with

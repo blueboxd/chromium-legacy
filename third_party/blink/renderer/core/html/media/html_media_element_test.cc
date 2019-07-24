@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 
+#include "base/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom-blink.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_error.h"
+#include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -21,6 +23,7 @@
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using ::testing::AnyNumber;
 using ::testing::Return;
@@ -486,6 +489,35 @@ TEST_P(HTMLMediaElementTest, ContextPaused) {
   GetExecutionContext()->SetLifecycleState(
       mojom::FrameLifecycleState::kRunning);
   EXPECT_TRUE(Media()->paused());
+}
+
+TEST_P(HTMLMediaElementTest, GcMarkingNoAllocWebTimeRanges) {
+  auto* thread_state = ThreadState::Current();
+  ThreadState::NoAllocationScope no_allocation_scope(thread_state);
+  EXPECT_FALSE(thread_state->IsAllocationAllowed());
+  // Use of TimeRanges is not allowed during GC marking (crbug.com/970150)
+  EXPECT_DCHECK_DEATH(MakeGarbageCollected<TimeRanges>(0, 0));
+  // Instead of using TimeRanges, WebTimeRanges can be used without GC
+  Vector<WebTimeRanges> ranges;
+  ranges.emplace_back();
+  ranges[0].emplace_back(0, 0);
+}
+
+// Reproduce crbug.com/970150
+TEST_P(HTMLMediaElementTest, GcMarkingNoAllocHasActivity) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+
+  test::RunPendingTasks();
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+  SetError(MakeGarbageCollected<MediaError>(MediaError::kMediaErrDecode, ""));
+
+  EXPECT_FALSE(Media()->paused());
+
+  auto* thread_state = ThreadState::Current();
+  ThreadState::NoAllocationScope no_allocation_scope(thread_state);
+  EXPECT_FALSE(thread_state->IsAllocationAllowed());
+  Media()->HasPendingActivity();
 }
 
 }  // namespace blink

@@ -73,7 +73,8 @@ public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements 
     protected abstract void doWhenConnected(T client);
 
     /**
-     * Returns a name of a task (for debug logging).
+     * Returns a name of a task. Implementations should not have side effects
+     * as we want to have the logging related calls removed.
      */
     @RemovableInRelease
     protected abstract String getName();
@@ -92,10 +93,6 @@ public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements 
      */
     protected void connectionFailed() {}
 
-    private void debugLog(String message) {
-        Log.d(TAG, "%s:%s %s", mLogPrefix, getName(), message);
-    }
-
     @Override
     @VisibleForTesting
     // We always only pass in a string literal here.
@@ -103,30 +100,34 @@ public abstract class ConnectedTask<T extends ChromeGoogleApiClient> implements 
     public final void run() {
         TraceEvent.begin("GCore:" + mLogPrefix + ":run");
         try {
-            debugLog("started");
+            Log.d(TAG, "%s:%s started", mLogPrefix, getName());
             if (mClient.connectWithTimeout(CONNECTION_TIMEOUT_MS)) {
                 try {
-                    debugLog("connected");
+                    Log.d(TAG, "%s:%s connected", mLogPrefix, getName());
                     doWhenConnected(mClient);
-                    debugLog("finished");
+                    Log.d(TAG, "%s:%s finished", mLogPrefix, getName());
                 } finally {
                     mClient.disconnect();
-                    debugLog("disconnected");
+                    Log.d(TAG, "%s:%s disconnected", mLogPrefix, getName());
                     cleanUp();
-                    debugLog("cleaned up");
+                    Log.d(TAG, "%s:%s cleaned up", mLogPrefix, getName());
                 }
             } else {
                 mRetryNumber++;
                 if (mRetryNumber < RETRY_NUMBER_LIMIT && mClient.isGooglePlayServicesAvailable()) {
-                    debugLog("calling retry");
+                    Log.d(TAG, "%s:%s calling retry", mLogPrefix, getName());
                     retry(this, CONNECTION_RETRY_TIME_MS);
                 } else {
                     connectionFailed();
-                    debugLog("number of retries exceeded");
+                    Log.d(TAG, "%s:%s number of retries exceeded", mLogPrefix, getName());
                     cleanUp();
-                    debugLog("cleaned up");
+                    Log.d(TAG, "%s:%s cleaned up", mLogPrefix, getName());
                 }
             }
+        } catch (RuntimeException e) {
+            Log.e(TAG, "%s:%s runtime exception %s: %s", mLogPrefix, getName(),
+                    e.getClass().getName(), e.getMessage());
+            throw e;
         } finally {
             TraceEvent.end("GCore:" + mLogPrefix + ":run");
         }

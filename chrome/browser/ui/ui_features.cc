@@ -28,6 +28,12 @@ const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
 const base::Feature kScrollableTabStrip{"ScrollableTabStrip",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables showing the user a message, if sync is paused because of his cookie
+// settings set to clear cookies on exit.
+const base::Feature kShowSyncPausedReasonCookiesClearedOnExit{
+    "ShowSyncPausedReasonCookiesClearedOnExit",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables grouping tabs together in the tab strip. https://crbug.com/905491
 const base::Feature kTabGroups{"TabGroups", base::FEATURE_DISABLED_BY_DEFAULT};
 

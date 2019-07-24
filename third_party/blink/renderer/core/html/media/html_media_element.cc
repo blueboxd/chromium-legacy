@@ -2054,13 +2054,13 @@ void HTMLMediaElement::Seek(double time) {
   // the new playback position. ... If there are no ranges given in the seekable
   // attribute then set the seeking IDL attribute to false and abort these
   // steps.
-  TimeRanges* seekable_ranges = seekable();
+  WebTimeRanges seekable_ranges = SeekableInternal();
 
-  if (!seekable_ranges->length()) {
+  if (seekable_ranges.empty()) {
     seeking_ = false;
     return;
   }
-  time = seekable_ranges->Nearest(time, now);
+  time = seekable_ranges.Nearest(time, now);
 
   if (playing_ && last_seek_time_ < now)
     AddPlayedRange(last_seek_time_, now);
@@ -2117,9 +2117,9 @@ bool HTMLMediaElement::seeking() const {
 // corresponds to the start time of the first range in the seekable attribute’s
 // TimeRanges object, if any, or the current playback position otherwise.
 double HTMLMediaElement::EarliestPossiblePosition() const {
-  TimeRanges* seekable_ranges = seekable();
-  if (seekable_ranges && seekable_ranges->length() > 0)
-    return seekable_ranges->start(0, ASSERT_NO_EXCEPTION);
+  WebTimeRanges seekable_ranges = SeekableInternal();
+  if (!seekable_ranges.empty())
+    return seekable_ranges.front().start;
 
   return CurrentPlaybackPosition();
 }
@@ -3350,14 +3350,18 @@ void HTMLMediaElement::SizeChanged() {
     GetLayoutObject()->UpdateFromElement();
 }
 
-TimeRanges* HTMLMediaElement::buffered() const {
+WebTimeRanges HTMLMediaElement::BufferedInternal() const {
   if (media_source_)
-    return media_source_->Buffered();
+    return media_source_->BufferedInternal();
 
   if (!GetWebMediaPlayer())
-    return MakeGarbageCollected<TimeRanges>();
+    return {};
 
-  return MakeGarbageCollected<TimeRanges>(GetWebMediaPlayer()->Buffered());
+  return GetWebMediaPlayer()->Buffered();
+}
+
+TimeRanges* HTMLMediaElement::buffered() const {
+  return MakeGarbageCollected<TimeRanges>(BufferedInternal());
 }
 
 TimeRanges* HTMLMediaElement::played() {
@@ -3373,14 +3377,18 @@ TimeRanges* HTMLMediaElement::played() {
   return played_time_ranges_->Copy();
 }
 
-TimeRanges* HTMLMediaElement::seekable() const {
+WebTimeRanges HTMLMediaElement::SeekableInternal() const {
   if (!GetWebMediaPlayer())
-    return MakeGarbageCollected<TimeRanges>();
+    return {};
 
   if (media_source_)
-    return media_source_->Seekable();
+    return media_source_->SeekableInternal();
 
-  return MakeGarbageCollected<TimeRanges>(GetWebMediaPlayer()->Seekable());
+  return GetWebMediaPlayer()->Seekable();
+}
+
+TimeRanges* HTMLMediaElement::seekable() const {
+  return MakeGarbageCollected<TimeRanges>(SeekableInternal());
 }
 
 bool HTMLMediaElement::PotentiallyPlaying() const {
@@ -3425,8 +3433,8 @@ bool HTMLMediaElement::EndedPlayback(LoopCondition loop_condition) const {
 
 bool HTMLMediaElement::StoppedDueToErrors() const {
   if (ready_state_ >= kHaveMetadata && error_) {
-    TimeRanges* seekable_ranges = seekable();
-    if (!seekable_ranges->Contain(currentTime()))
+    WebTimeRanges seekable_ranges = SeekableInternal();
+    if (!seekable_ranges.Contain(currentTime()))
       return true;
   }
 

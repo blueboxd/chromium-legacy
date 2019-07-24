@@ -84,12 +84,8 @@ class MockDataChannel : public webrtc::DataChannelInterface {
   std::string label() const override { return std::string(); }
   bool reliable() const override { return false; }
   bool ordered() const override { return false; }
-  absl::optional<int> maxPacketLifeTime() const override {
-    return absl::nullopt;
-  }
-  absl::optional<int> maxRetransmitsOpt() const override {
-    return absl::nullopt;
-  }
+  uint16_t maxRetransmitTime() const override { return 0; }
+  uint16_t maxRetransmits() const override { return 0; }
   std::string protocol() const override { return std::string(); }
   bool negotiated() const override { return false; }
   int id() const override { return 0; }

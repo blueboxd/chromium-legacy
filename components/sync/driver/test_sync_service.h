@@ -38,6 +38,9 @@ class TestSyncService : public SyncService {
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
+  void SetUserDemographics(
+      const base::Optional<UserDemographics>& demographics);
+
   // Convenience versions of the above, for when the caller doesn't care about
   // the particular values in the snapshot, just whether there is one.
   void SetEmptyLastCycleSnapshot();
@@ -97,6 +100,7 @@ class TestSyncService : public SyncService {
       const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
       override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
+  base::Optional<UserDemographics> GetUserDemographics(base::Time now) override;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -123,6 +127,8 @@ class TestSyncService : public SyncService {
   base::ObserverList<syncer::SyncServiceObserver>::Unchecked observers_;
 
   GURL sync_service_url_;
+
+  base::Optional<UserDemographics> user_demographics_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncService);
 };

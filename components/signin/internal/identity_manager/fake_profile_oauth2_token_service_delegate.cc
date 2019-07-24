@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -27,20 +27,21 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 };
 }  // namespace
 
-FakeOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
+FakeProfileOAuth2TokenServiceDelegate::AccountInfo::AccountInfo(
     const std::string& refresh_token)
     : refresh_token(refresh_token), error(GoogleServiceAuthError::NONE) {}
 
-FakeOAuth2TokenServiceDelegate::FakeOAuth2TokenServiceDelegate()
+FakeProfileOAuth2TokenServiceDelegate::FakeProfileOAuth2TokenServiceDelegate()
     : shared_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)),
       backoff_entry_(&kBackoffPolicy) {}
 
-FakeOAuth2TokenServiceDelegate::~FakeOAuth2TokenServiceDelegate() = default;
+FakeProfileOAuth2TokenServiceDelegate::
+    ~FakeProfileOAuth2TokenServiceDelegate() = default;
 
 std::unique_ptr<OAuth2AccessTokenFetcher>
-FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
+FakeProfileOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
     const CoreAccountId& account_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     OAuth2AccessTokenConsumer* consumer) {
@@ -50,19 +51,19 @@ FakeOAuth2TokenServiceDelegate::CreateAccessTokenFetcher(
       consumer, url_loader_factory, it->second->refresh_token);
 }
 
-bool FakeOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
+bool FakeProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
     const CoreAccountId& account_id) const {
   return !GetRefreshToken(account_id).empty();
 }
 
-GoogleServiceAuthError FakeOAuth2TokenServiceDelegate::GetAuthError(
+GoogleServiceAuthError FakeProfileOAuth2TokenServiceDelegate::GetAuthError(
     const CoreAccountId& account_id) const {
   auto it = refresh_tokens_.find(account_id);
   return (it == refresh_tokens_.end()) ? GoogleServiceAuthError::AuthErrorNone()
                                        : it->second->error;
 }
 
-std::string FakeOAuth2TokenServiceDelegate::GetRefreshToken(
+std::string FakeProfileOAuth2TokenServiceDelegate::GetRefreshToken(
     const CoreAccountId& account_id) const {
   auto it = refresh_tokens_.find(account_id);
   if (it != refresh_tokens_.end())
@@ -70,37 +71,39 @@ std::string FakeOAuth2TokenServiceDelegate::GetRefreshToken(
   return std::string();
 }
 
-const net::BackoffEntry* FakeOAuth2TokenServiceDelegate::BackoffEntry() const {
+const net::BackoffEntry* FakeProfileOAuth2TokenServiceDelegate::BackoffEntry()
+    const {
   return &backoff_entry_;
 }
 
-std::vector<CoreAccountId> FakeOAuth2TokenServiceDelegate::GetAccounts() const {
+std::vector<CoreAccountId> FakeProfileOAuth2TokenServiceDelegate::GetAccounts()
+    const {
   std::vector<CoreAccountId> account_ids;
   for (const auto& token : refresh_tokens_)
     account_ids.push_back(token.first);
   return account_ids;
 }
 
-void FakeOAuth2TokenServiceDelegate::RevokeAllCredentials() {
+void FakeProfileOAuth2TokenServiceDelegate::RevokeAllCredentials() {
   std::vector<CoreAccountId> account_ids = GetAccounts();
   for (const auto& account : account_ids)
     RevokeCredentials(account);
 }
 
-void FakeOAuth2TokenServiceDelegate::LoadCredentials(
+void FakeProfileOAuth2TokenServiceDelegate::LoadCredentials(
     const CoreAccountId& primary_account_id) {
   set_load_credentials_state(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS);
   FireRefreshTokensLoaded();
 }
 
-void FakeOAuth2TokenServiceDelegate::UpdateCredentials(
+void FakeProfileOAuth2TokenServiceDelegate::UpdateCredentials(
     const CoreAccountId& account_id,
     const std::string& refresh_token) {
   IssueRefreshTokenForUser(account_id, refresh_token);
 }
 
-void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
+void FakeProfileOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
     const CoreAccountId& account_id,
     const std::string& token) {
   ScopedBatchChange batch(this);
@@ -123,12 +126,12 @@ void FakeOAuth2TokenServiceDelegate::IssueRefreshTokenForUser(
   }
 }
 
-void FakeOAuth2TokenServiceDelegate::RevokeCredentials(
+void FakeProfileOAuth2TokenServiceDelegate::RevokeCredentials(
     const CoreAccountId& account_id) {
   IssueRefreshTokenForUser(account_id, std::string());
 }
 
-void FakeOAuth2TokenServiceDelegate::ExtractCredentials(
+void FakeProfileOAuth2TokenServiceDelegate::ExtractCredentials(
     ProfileOAuth2TokenService* to_service,
     const CoreAccountId& account_id) {
   auto it = refresh_tokens_.find(account_id);
@@ -139,15 +142,15 @@ void FakeOAuth2TokenServiceDelegate::ExtractCredentials(
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
-FakeOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
+FakeProfileOAuth2TokenServiceDelegate::GetURLLoaderFactory() const {
   return shared_factory_;
 }
 
-bool FakeOAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
+bool FakeProfileOAuth2TokenServiceDelegate::FixRequestErrorIfPossible() {
   return fix_request_if_possible_;
 }
 
-void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
+void FakeProfileOAuth2TokenServiceDelegate::UpdateAuthError(
     const CoreAccountId& account_id,
     const GoogleServiceAuthError& error) {
   backoff_entry_.InformOfRequest(!error.IsTransientError());

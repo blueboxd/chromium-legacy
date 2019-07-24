@@ -185,10 +185,8 @@ class SyncPrefs : public CryptoSyncPrefs,
   bool IsLocalSyncEnabled() const;
 
   // Gets user demographics. Returns an empty optional if not all demographics
-  // are available. Birth year and gender are mutually inclusive to avoid being
-  // able to infer demographic information that has low entropy (e.g., custom
-  // gender).
-  base::Optional<UserDemographics> GetUserDemographics();
+  // are available.
+  base::Optional<UserDemographics> GetUserDemographics(base::Time now);
 
  private:
   static void RegisterTypeSelectedPref(user_prefs::PrefRegistrySyncable* prefs,

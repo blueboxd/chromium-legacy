@@ -747,6 +747,12 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
           Chromium OS could not sync your data due to an error signing in.
         </message>
       </if>
+      <message name="IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT" desc="Info text displayed in the user menu when sync is paused due to cookies cleared on exit.">
+        You clear cookies when you quit Chromium. To keep syncing, change this <ph name="COOKIE_SETTINGS_LINK">$1<ex>settings</ex></ph>.
+      </message>
+      <message name="IDS_SYNC_PAUSED_REASON_CLEAR_COOKIES_ON_EXIT_LINK_TEXT" desc="Link text part of the sync paused info text when sync is paused due to cookies cleared on exit.">
+        settings
+      </message>
 
       <if expr="is_android">
         <message name="IDS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that described a Wallet credit card which has been copied to the local Chrome instance.">

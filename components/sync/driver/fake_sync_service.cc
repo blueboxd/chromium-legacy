@@ -156,6 +156,11 @@ void FakeSyncService::GetAllNodesForDebugging(
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
+base::Optional<UserDemographics> FakeSyncService::GetUserDemographics(
+    base::Time now) {
+  return base::nullopt;
+}
+
 void FakeSyncService::Shutdown() {}
 
 }  // namespace syncer

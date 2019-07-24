@@ -268,6 +268,15 @@ void CSSVariableResolver::SetInvalidVariable(
     SetVariableValue(name, *registration, nullptr);
 }
 
+const CSSParserContext* CSSVariableResolver::GetParserContext(
+    const CSSVariableReferenceValue& value) const {
+  // TODO(crbug.com/985028): CSSVariableReferenceValue should always have
+  // a CSSParserContext.
+  if (value.ParserContext())
+    return value.ParserContext();
+  return StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
+}
+
 bool CSSVariableResolver::ResolveVariableReference(CSSParserTokenRange range,
                                                    const Options& options,
                                                    bool is_env_variable,
@@ -403,7 +412,7 @@ const CSSValue* CSSVariableResolver::ResolveVariableReferences(
     return cssvalue::CSSUnsetValue::Create();
   }
   const CSSValue* resolved_value = CSSPropertyParser::ParseSingleValue(
-      id, result.tokens, value.ParserContext());
+      id, result.tokens, GetParserContext(value));
   if (!resolved_value)
     return cssvalue::CSSUnsetValue::Create();
   return resolved_value;

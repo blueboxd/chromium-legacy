@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
-#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#define COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -18,10 +18,11 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
+class FakeProfileOAuth2TokenServiceDelegate
+    : public ProfileOAuth2TokenServiceDelegate {
  public:
-  FakeOAuth2TokenServiceDelegate();
-  ~FakeOAuth2TokenServiceDelegate() override;
+  FakeProfileOAuth2TokenServiceDelegate();
+  ~FakeProfileOAuth2TokenServiceDelegate() override;
 
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
@@ -81,6 +82,6 @@ class FakeOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate {
 
   net::BackoffEntry backoff_entry_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeOAuth2TokenServiceDelegate);
+  DISALLOW_COPY_AND_ASSIGN(FakeProfileOAuth2TokenServiceDelegate);
 };
-#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SIGNIN_INTERNAL_IDENTITY_MANAGER_FAKE_PROFILE_OAUTH2_TOKEN_SERVICE_DELEGATE_H_

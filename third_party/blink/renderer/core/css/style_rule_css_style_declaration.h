@@ -49,7 +49,6 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
 
   void WillMutate() override;
   void DidMutate(MutationType) override;
-  PropertyRegistry* GetPropertyRegistry() const final;
 
   Member<CSSRule> parent_rule_;
 };

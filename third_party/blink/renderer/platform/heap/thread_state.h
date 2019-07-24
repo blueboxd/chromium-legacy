@@ -563,6 +563,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // The argument must be registered before calling this.
   void RemoveObserver(BlinkGCObserver*);
 
+  bool IsForcedGC(BlinkGC::GCReason reason) {
+    return reason == BlinkGC::GCReason::kThreadTerminationGC ||
+           reason == BlinkGC::GCReason::kForcedGCForTesting;
+  }
+
   std::unique_ptr<ThreadHeap> heap_;
   base::PlatformThreadId thread_;
   std::unique_ptr<PersistentRegion> persistent_region_;

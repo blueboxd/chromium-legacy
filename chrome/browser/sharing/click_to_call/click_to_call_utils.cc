@@ -15,7 +15,6 @@ bool ShouldOfferClickToCall(content::BrowserContext* browser_context,
   SharingService* sharing_service =
       SharingServiceFactory::GetForBrowserContext(browser_context);
   return sharing_service &&
-         (sharing_service->GetState() == SharingService::State::ACTIVE) &&
          base::FeatureList::IsEnabled(kClickToCallUI) &&
          url.SchemeIs(url::kTelScheme) && !url.GetContent().empty();
 }

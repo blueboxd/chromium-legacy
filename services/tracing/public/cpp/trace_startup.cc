@@ -63,6 +63,11 @@ void EnableStartupTracingIfNeeded() {
 
 void InitTracingPostThreadPoolStart() {
   TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
+  if (base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing)) {
+    // To ensure System tracing connects we have to initialize the process wide
+    // state. This Get() call ensures that the constructor has run.
+    PerfettoTracedProcess::Get();
+  }
 }
 
 }  // namespace tracing

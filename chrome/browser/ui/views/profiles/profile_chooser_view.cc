@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -515,6 +516,8 @@ void ProfileChooserView::AddDiceSyncErrorView(
   AddMenuGroup();
 
   if (show_sync_paused_ui &&
+      base::FeatureList::IsEnabled(
+          features::kShowSyncPausedReasonCookiesClearedOnExit) &&
       AreSigninCookiesClearedOnExit(browser()->profile())) {
     AddSyncPausedReasonCookiesClearedOnExit();
   }

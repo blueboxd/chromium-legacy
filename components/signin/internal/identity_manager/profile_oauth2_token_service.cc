@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -68,7 +68,7 @@ std::string SourceToString(SourceForRefreshTokenOperation source) {
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService(
     PrefService* user_prefs,
-    std::unique_ptr<OAuth2TokenServiceDelegate> delegate)
+    std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate)
     : user_prefs_(user_prefs),
       delegate_(std::move(delegate)),
       all_credentials_loaded_(false) {
@@ -135,12 +135,12 @@ void ProfileOAuth2TokenService::RegisterProfilePrefs(
                                std::string());
 }
 
-OAuth2TokenServiceDelegate* ProfileOAuth2TokenService::GetDelegate() {
+ProfileOAuth2TokenServiceDelegate* ProfileOAuth2TokenService::GetDelegate() {
   return delegate_.get();
 }
 
-const OAuth2TokenServiceDelegate* ProfileOAuth2TokenService::GetDelegate()
-    const {
+const ProfileOAuth2TokenServiceDelegate*
+ProfileOAuth2TokenService::GetDelegate() const {
   return delegate_.get();
 }
 

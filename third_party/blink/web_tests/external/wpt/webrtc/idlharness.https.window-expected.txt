@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 508 tests; 470 PASS, 38 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 508 tests; 468 PASS, 40 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 PASS Test driver for asyncInitTransports
@@ -398,7 +398,7 @@ PASS RTCDataChannel interface: existence and properties of interface prototype o
 PASS RTCDataChannel interface: existence and properties of interface prototype object's @@unscopables property
 PASS RTCDataChannel interface: attribute label
 PASS RTCDataChannel interface: attribute ordered
-PASS RTCDataChannel interface: attribute maxPacketLifeTime
+FAIL RTCDataChannel interface: attribute maxPacketLifeTime assert_true: The prototype object must have a property "maxPacketLifeTime" expected true got false
 PASS RTCDataChannel interface: attribute maxRetransmits
 PASS RTCDataChannel interface: attribute protocol
 PASS RTCDataChannel interface: attribute negotiated
@@ -423,7 +423,7 @@ PASS RTCDataChannel must be primary interface of new RTCPeerConnection().createD
 PASS Stringification of new RTCPeerConnection().createDataChannel('')
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "label" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "ordered" with the proper type
-PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "maxPacketLifeTime" with the proper type
+FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "maxPacketLifeTime" with the proper type assert_inherits: property "maxPacketLifeTime" not found in prototype chain
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "maxRetransmits" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "protocol" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "negotiated" with the proper type

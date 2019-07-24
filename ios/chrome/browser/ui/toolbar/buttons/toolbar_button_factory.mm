@@ -194,8 +194,6 @@
         l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
   }
 
-  searchButton.accessibilityLabel =
-      l10n_util::GetNSString(IDS_IOS_TOOLBAR_SEARCH);
   searchButton.accessibilityIdentifier = kToolbarSearchButtonIdentifier;
 
   searchButton.visibilityMask =

@@ -901,7 +901,7 @@ void MutableProfileOAuth2TokenServiceDelegate::Shutdown() {
   server_revokes_.clear();
   CancelWebTokenFetch();
   refresh_tokens_.clear();
-  OAuth2TokenServiceDelegate::Shutdown();
+  ProfileOAuth2TokenServiceDelegate::Shutdown();
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::OnConnectionChanged(

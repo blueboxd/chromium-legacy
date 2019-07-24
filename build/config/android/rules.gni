@@ -2941,6 +2941,22 @@ if (enable_java_templates) {
       # files for each APK/Bundle. In the Bundle case, another dexsplitter step
       # is later performed to split the dex further for each feature module.
       if (_is_static_library_provider && _proguard_enabled) {
+        _static_library_modules = []
+        foreach(_target, invoker.static_library_dependent_targets) {
+          _apk_as_module = _target.name
+          _module_config_target = "${_apk_as_module}$build_config_target_suffix"
+          _module_gen_dir = get_label_info(_apk_as_module, "target_gen_dir")
+          _module_name = get_label_info(_apk_as_module, "name")
+          _module_config = "$_module_gen_dir/$_module_name.build_config"
+          _static_library_modules += [
+            {
+              name = _module_name
+              build_config = _module_config
+              build_config_target = _module_config_target
+            },
+          ]
+        }
+
         _static_library_dexsplitter_target = "${_template_name}__dexsplitter"
         dexsplitter(_static_library_dexsplitter_target) {
           input_dex_zip = _static_library_sync_dex_path
@@ -2950,33 +2966,21 @@ if (enable_java_templates) {
             "$_final_dex_target_dep",
           ]
           all_modules = [
-            {
-              name = "base"
-              build_config = _build_config
-              build_config_target = ":$_build_config_target"
-            },
-          ]
+                          {
+                            name = "base"
+                            build_config = _build_config
+                            build_config_target = ":$_build_config_target"
+                          },
+                        ] + _static_library_modules
           feature_jars_args = [
             "--feature-jars",
             "@FileArg($_rebased_build_config:deps_info:" +
                 "static_library_dependent_classpath_configs:" +
                 "$_rebased_build_config)",
           ]
-          foreach(_target, invoker.static_library_dependent_targets) {
-            _apk_as_module = _target.name
-            _module_config_target =
-                "${_apk_as_module}$build_config_target_suffix"
-            _module_gen_dir = get_label_info(_apk_as_module, "target_gen_dir")
-            _module_name = get_label_info(_apk_as_module, "name")
-            _module_config = "$_module_gen_dir/$_module_name.build_config"
-            _rebased_module_config = rebase_path(_module_config, root_build_dir)
-            all_modules += [
-              {
-                name = _module_name
-                build_config = _module_config
-                build_config_target = _module_config_target
-              },
-            ]
+          foreach(_module, _static_library_modules) {
+            _rebased_module_config =
+                rebase_path(_module.build_config, root_build_dir)
             feature_jars_args += [
               "--feature-jars",
               "@FileArg($_rebased_build_config:deps_info:" +
@@ -2986,6 +2990,41 @@ if (enable_java_templates) {
           }
         }
         _deps += [ ":$_static_library_dexsplitter_target" ]
+        _validate_dex_target = "${_template_name}__validate_dex"
+        action_with_pydeps(_validate_dex_target) {
+          depfile = "$target_gen_dir/$target_name.d"
+          script =
+              "//build/android/gyp/validate_static_library_dex_references.py"
+          inputs = [
+            _build_config,
+          ]
+          _stamp = "$target_gen_dir/$target_name.stamp"
+          outputs = [
+            _stamp,
+          ]
+          deps = [
+            ":$_build_config_target",
+            ":$_static_library_dexsplitter_target",
+          ]
+          args = [
+            "--depfile",
+            rebase_path(depfile, root_build_dir),
+            "--stamp",
+            rebase_path(_stamp, root_build_dir),
+            "--static-library-dex",
+            "@FileArg($_rebased_build_config:final_dex:path)",
+          ]
+          foreach(_module, _static_library_modules) {
+            inputs += [ _module.build_config ]
+            _rebased_config = rebase_path(_module.build_config, root_build_dir)
+            deps += [ _module.build_config_target ]
+            args += [
+              "--static-library-dependent-dex",
+              "@FileArg($_rebased_config:final_dex:path)",
+            ]
+          }
+        }
+        _deps += [ ":$_validate_dex_target" ]
       }
     } else {
       # A small sanity check to help developers with a subtle point!

@@ -1167,7 +1167,7 @@ void ThreadGroupImpl::IncrementTasksRunningLockRequired(TaskPriority priority) {
 }
 
 void ThreadGroupImpl::DecrementMaxTasksLockRequired(TaskPriority priority) {
-  DCHECK_GE(num_running_tasks_, 0U);
+  DCHECK_GT(num_running_tasks_, 0U);
   DCHECK_GT(max_tasks_, 0U);
   --max_tasks_;
   if (priority == TaskPriority::BEST_EFFORT)
@@ -1176,7 +1176,7 @@ void ThreadGroupImpl::DecrementMaxTasksLockRequired(TaskPriority priority) {
 }
 
 void ThreadGroupImpl::IncrementMaxTasksLockRequired(TaskPriority priority) {
-  DCHECK_GE(num_running_tasks_, 0U);
+  DCHECK_GT(num_running_tasks_, 0U);
   ++max_tasks_;
   if (priority == TaskPriority::BEST_EFFORT)
     ++max_best_effort_tasks_;

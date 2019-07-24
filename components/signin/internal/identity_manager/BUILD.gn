@@ -24,8 +24,6 @@ source_set("identity_manager") {
     "gaia_cookie_manager_service.h",
     "mutable_profile_oauth2_token_service_delegate.cc",
     "mutable_profile_oauth2_token_service_delegate.h",
-    "oauth2_token_service_delegate.cc",
-    "oauth2_token_service_delegate.h",
     "oauth2_token_service_delegate_android.cc",
     "oauth2_token_service_delegate_android.h",
     "oauth_multilogin_helper.cc",
@@ -41,6 +39,8 @@ source_set("identity_manager") {
     "profile_oauth2_token_service.h",
     "profile_oauth2_token_service_builder.cc",
     "profile_oauth2_token_service_builder.h",
+    "profile_oauth2_token_service_delegate.cc",
+    "profile_oauth2_token_service_delegate.h",
     "profile_oauth2_token_service_delegate_chromeos.cc",
     "profile_oauth2_token_service_delegate_chromeos.h",
     "profile_oauth2_token_service_delegate_ios.h",
@@ -118,13 +118,13 @@ source_set("unit_tests") {
     "gaia_cookie_manager_service_unittest.cc",
     "mutable_profile_oauth2_token_service_delegate_unittest.cc",
     "oauth2_token_service_delegate_android_unittest.cc",
-    "oauth2_token_service_delegate_unittest.cc",
     "oauth_multilogin_helper_unittest.cc",
     "oauth_multilogin_token_fetcher_unittest.cc",
     "primary_account_manager_unittest.cc",
     "primary_account_policy_manager_impl_unittest.cc",
     "profile_oauth2_token_service_delegate_chromeos_unittest.cc",
     "profile_oauth2_token_service_delegate_ios_unittest.mm",
+    "profile_oauth2_token_service_delegate_unittest.cc",
     "profile_oauth2_token_service_unittest.cc",
     "ubertoken_fetcher_impl_unittest.cc",
   ]
@@ -174,10 +174,10 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "fake_oauth2_token_service_delegate.cc",
-    "fake_oauth2_token_service_delegate.h",
     "fake_profile_oauth2_token_service.cc",
     "fake_profile_oauth2_token_service.h",
+    "fake_profile_oauth2_token_service_delegate.cc",
+    "fake_profile_oauth2_token_service_delegate.h",
   ]
 
   public_deps = [

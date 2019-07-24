@@ -57,14 +57,13 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copy_from)
 
 MutableCSSPropertyValueSet::SetResult StringKeyframe::SetCSSPropertyValue(
     const AtomicString& property_name,
-    const PropertyRegistry* registry,
     const String& value,
     SecureContextMode secure_context_mode,
     StyleSheetContents* style_sheet_contents) {
   bool is_animation_tainted = true;
   MutableCSSPropertyValueSet::SetResult result = css_property_map_->SetProperty(
-      property_name, registry, value, false, secure_context_mode,
-      style_sheet_contents, is_animation_tainted);
+      property_name, value, false, secure_context_mode, style_sheet_contents,
+      is_animation_tainted);
 
   const CSSValue* parsed_value =
       css_property_map_->GetPropertyCSSValue(property_name);

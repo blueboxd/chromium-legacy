@@ -94,6 +94,13 @@ bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   if (!IsBackForwardCacheEnabled())
     return false;
 
+  // Note that we check is_loading on the rfh directly, rather than calling
+  // FrameTreeNode::IsLoading. This is because FrameTreeNode is already
+  // loading the new page being navigated to.
+  // TODO(lowell): Consider also checking whether any subframes are loading.
+  if (rfh->is_loading())
+    return false;
+
   // Don't enable BackForwardCache if the page has any disallowed features.
   // TODO(lowell): Handle races involving scheduler_tracked_features.
   // One solution could be to listen for changes to scheduler_tracked_features

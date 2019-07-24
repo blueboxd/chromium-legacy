@@ -447,9 +447,9 @@ class IdentityManager : public KeyedService,
 
 #if defined(OS_ANDROID)
   // Reloads the accounts in the token service from the system accounts. This
-  // API calls OAuth2TokenServiceDelegate::ReloadAccountsFromSystem and it
-  // triggers platform specific implementation for Android.
-  // NOTE: In normal usage, this method SHOULD NOT be called.
+  // API calls ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem and
+  // it triggers platform specific implementation for Android. NOTE: In normal
+  // usage, this method SHOULD NOT be called.
   // TODO(https://crbug.com/930094): Eliminate the need to expose this.
   void LegacyReloadAccountsFromSystem();
 

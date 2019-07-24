@@ -39,7 +39,6 @@ namespace blink {
 class CSSStyleDeclaration;
 class ImmutableCSSPropertyValueSet;
 class MutableCSSPropertyValueSet;
-class PropertyRegistry;
 class StyleSheetContents;
 enum class SecureContextMode;
 
@@ -252,7 +251,6 @@ class CORE_EXPORT MutableCSSPropertyValueSet : public CSSPropertyValueSet {
                         SecureContextMode,
                         StyleSheetContents* context_style_sheet = nullptr);
   SetResult SetProperty(const AtomicString& custom_property_name,
-                        const PropertyRegistry*,
                         const String& value,
                         bool important,
                         SecureContextMode,

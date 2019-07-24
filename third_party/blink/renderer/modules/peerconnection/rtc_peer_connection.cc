@@ -2298,20 +2298,11 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   WebRTCDataChannelInit init;
   init.ordered = data_channel_dict->ordered();
   ExecutionContext* context = ExecutionContext::From(script_state);
-  // maxPacketLifeTime and maxRetransmitTime are two names for the same thing,
-  // but maxPacketLifeTime is the standardized name so it takes precedence.
   if (data_channel_dict->hasMaxPacketLifeTime()) {
     UseCounter::Count(
         context,
         WebFeature::kRTCPeerConnectionCreateDataChannelMaxPacketLifeTime);
     init.max_retransmit_time = data_channel_dict->maxPacketLifeTime();
-  } else if (data_channel_dict->hasMaxRetransmitTime()) {
-    Deprecation::CountDeprecation(
-        context, WebFeature::kRTCDataChannelInitMaxRetransmitTime);
-    UseCounter::Count(
-        context,
-        WebFeature::kRTCPeerConnectionCreateDataChannelMaxRetransmitTime);
-    init.max_retransmit_time = data_channel_dict->maxRetransmitTime();
   }
   if (data_channel_dict->hasMaxRetransmits()) {
     UseCounter::Count(

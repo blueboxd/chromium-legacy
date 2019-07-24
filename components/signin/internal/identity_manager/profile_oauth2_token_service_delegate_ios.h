@@ -12,13 +12,14 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 
 class AccountTrackerService;
 class DeviceAccountsProvider;
 class SigninClient;
 
-class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
+class ProfileOAuth2TokenServiceIOSDelegate
+    : public ProfileOAuth2TokenServiceDelegate {
  public:
   ProfileOAuth2TokenServiceIOSDelegate(
       SigninClient* client,

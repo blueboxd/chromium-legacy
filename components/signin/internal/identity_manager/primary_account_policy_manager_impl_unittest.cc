@@ -10,7 +10,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
@@ -24,8 +24,9 @@ class PrimaryAccountPolicyManagerImplTest : public testing::Test {
  public:
   PrimaryAccountPolicyManagerImplTest()
       : test_signin_client_(&user_prefs_),
-        token_service_(&user_prefs_,
-                       std::make_unique<FakeOAuth2TokenServiceDelegate>()),
+        token_service_(
+            &user_prefs_,
+            std::make_unique<FakeProfileOAuth2TokenServiceDelegate>()),
         primary_account_manager_(&test_signin_client_,
                                  &token_service_,
                                  &account_tracker_,

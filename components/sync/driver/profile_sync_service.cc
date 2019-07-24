@@ -1679,6 +1679,16 @@ void ProfileSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {
   }
 }
 
+base::Optional<UserDemographics> ProfileSyncService::GetUserDemographics(
+    base::Time now) {
+  // Do not provide demographics when sync is disabled because user demographics
+  // should only be provided when the other sync data is also provided.
+  if (!IsSyncFeatureEnabled())
+    return base::nullopt;
+
+  return sync_prefs_.GetUserDemographics(now);
+}
+
 base::WeakPtr<JsController> ProfileSyncService::GetJsController() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_js_controller_.AsWeakPtr();

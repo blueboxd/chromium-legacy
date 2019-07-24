@@ -4980,7 +4980,7 @@ interface RTCDataChannel : EventTarget
     getter bufferedAmountLowThreshold
     getter id
     getter label
-    getter maxPacketLifeTime
+    getter maxRetransmitTime
     getter maxRetransmits
     getter negotiated
     getter onbufferedamountlow

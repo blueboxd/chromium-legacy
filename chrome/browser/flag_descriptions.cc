@@ -2646,6 +2646,13 @@ const char kAccountConsistencyDescription[] =
 const char kAccountConsistencyChoiceMirror[] = "Mirror";
 const char kAccountConsistencyChoiceDice[] = "Dice";
 
+const char kShowSyncPausedReasonCookiesClearedOnExitName[] =
+    "Show sync paused reason is the setup of cookie settings.";
+const char kShowSyncPausedReasonCookiesClearedOnExitDescription[] =
+    "If enabled and the user is in sync paused state because of cookie settings"
+    " set to clear cookies on exit, we show the user a message with the reason"
+    " in the user menu.";
+
 const char kAppManagementName[] = "Enable App Management page";
 const char kAppManagementDescription[] =
     "Shows the new app management page at chrome://apps.";

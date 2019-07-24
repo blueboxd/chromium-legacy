@@ -79,11 +79,13 @@ Polymer({
       const accessToken = result.oauthToken;
       const flowType = loadTimeData.getString('flowType');
       const platformVersion = loadTimeData.getString('platformVersion');
+      const languageCode = loadTimeData.getString('languageCode');
 
       const url = new URL(webviewUrl);
       url.searchParams.set('flow_type', flowType);
       url.searchParams.set('platform_version', platformVersion);
       url.searchParams.set('access_token', accessToken);
+      url.searchParams.set('hl', languageCode);
 
       // Allow guest webview content to open links in new windows.
       webview.addEventListener('newwindow', function(e) {

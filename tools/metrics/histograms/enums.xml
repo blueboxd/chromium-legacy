@@ -33839,6 +33839,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1971086581" label="print-scaling"/>
   <int value="-1965587041" label="omnibox-tab-switch-suggestions"/>
   <int value="-1964261747" label="WebVrVsyncAlign:disabled"/>
+  <int value="-1963838301"
+      label="ShowSyncPausedReasonCookiesClearedOnExit:enabled"/>
   <int value="-1963427770" label="EmojiHandwritingVoiceInput:disabled"/>
   <int value="-1963402827" label="enable-topchrome-md"/>
   <int value="-1962749353" label="SimplifiedNTP:enabled"/>
@@ -36191,6 +36193,8 @@ from previous Chrome versions.
   <int value="1346994602" label="SyncPseudoUSSDictionary:enabled"/>
   <int value="1351830811" label="do-not-ignore-autocomplete-off"/>
   <int value="1352447982" label="enable-lcd-text"/>
+  <int value="1352717172"
+      label="ShowSyncPausedReasonCookiesClearedOnExit:disabled"/>
   <int value="1353066950"
       label="AutofillDoNotUploadSaveUnsupportedCards:enabled"/>
   <int value="1353113954" label="EnableMDRoundedCornersOnDialogs:enabled"/>

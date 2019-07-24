@@ -26,6 +26,8 @@ extern const base::Feature kExtensionsToolbarMenu;
 
 extern const base::Feature kScrollableTabStrip;
 
+extern const base::Feature kShowSyncPausedReasonCookiesClearedOnExit;
+
 extern const base::Feature kTabGroups;
 
 extern const base::Feature kTabHoverCards;

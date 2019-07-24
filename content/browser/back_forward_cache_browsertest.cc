@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/back_forward_cache.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -16,6 +17,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -644,4 +646,95 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfMainFrameStillLoading) {
+  net::test_server::ControllableHttpResponse response(embedded_test_server(),
+                                                      "/main_document");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page that doesn't finish loading.
+  GURL url(embedded_test_server()->GetURL("a.com", "/main_document"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // The navigation starts.
+  EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+  navigation_manager.ResumeNavigation();
+
+  // The server sends the first part of the response and waits.
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html><body> ... ");
+
+  // The navigation finishes while the body is still loading.
+  navigation_manager.WaitForNavigationFinished();
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page was still loading when we navigated away, so it shouldn't have
+  // been cached.
+  delete_rfh_a.WaitUntilDeleted();
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfImageStillLoading) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with an image that loads forever.
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/infinitely_loading_image.html"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // The navigation finishes while the image is still loading.
+  navigation_manager.WaitForNavigationFinished();
+  RenderFrameDeletedObserver delete_rfh_a(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page was still loading when we navigated away, so it shouldn't have
+  // been cached.
+  delete_rfh_a.WaitUntilDeleted();
+}
+
+// Test is flaky on Android (https://crbug.com/986742).
+#if defined(OS_ANDROID)
+#define MAYBE_LoadingSubframeDoesNotPreventCaching \
+  DISABLED_LoadingSubframeDoesNotPreventCaching
+#else
+#define MAYBE_LoadingSubframeDoesNotPreventCaching \
+  LoadingSubframeDoesNotPreventCaching
+#endif
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MAYBE_LoadingSubframeDoesNotPreventCaching) {
+  // Note: This test is only documenting current behavior. Not trying to say it
+  // should work this way...
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page with an iframe that loads forever.
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/infinitely_loading_iframe.html"));
+  TestNavigationManager navigation_manager(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // The navigation finishes while the iframe is still loading.
+  navigation_manager.WaitForNavigationFinished();
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_rfh_a(rfh_a);
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // The page with the infinitely loading iframe was cached.
+  EXPECT_FALSE(delete_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+}
 }  // namespace content

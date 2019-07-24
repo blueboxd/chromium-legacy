@@ -18,7 +18,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/primary_account_policy_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -35,8 +35,9 @@ class PrimaryAccountManagerTest : public testing::Test {
  public:
   PrimaryAccountManagerTest()
       : test_signin_client_(&user_prefs_),
-        token_service_(&user_prefs_,
-                       std::make_unique<FakeOAuth2TokenServiceDelegate>()),
+        token_service_(
+            &user_prefs_,
+            std::make_unique<FakeProfileOAuth2TokenServiceDelegate>()),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled),
         num_successful_signins_(0),
         num_signouts_(0) {

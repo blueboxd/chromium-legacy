@@ -32,7 +32,6 @@
 namespace blink {
 
 class MutableCSSPropertyValueSet;
-class PropertyRegistry;
 
 class PropertySetCSSStyleDeclaration
     : public AbstractPropertySetCSSStyleDeclaration {
@@ -47,8 +46,6 @@ class PropertySetCSSStyleDeclaration
     DCHECK(property_set_);
     return *property_set_;
   }
-
-  PropertyRegistry* GetPropertyRegistry() const override { return nullptr; }
 
   Member<MutableCSSPropertyValueSet> property_set_;  // Cannot be null
 };

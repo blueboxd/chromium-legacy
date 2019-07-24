@@ -21,7 +21,7 @@
 #include "build/buildflag.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/internal/identity_manager/fake_oauth2_token_service_delegate.h"
+#include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -1598,9 +1598,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ExtractCredentials) {
   // Create another token service
   sync_preferences::TestingPrefServiceSyncable prefs;
   ProfileOAuth2TokenService::RegisterProfilePrefs(prefs.registry());
-  std::unique_ptr<FakeOAuth2TokenServiceDelegate> delegate =
-      std::make_unique<FakeOAuth2TokenServiceDelegate>();
-  FakeOAuth2TokenServiceDelegate* other_delegate = delegate.get();
+  std::unique_ptr<FakeProfileOAuth2TokenServiceDelegate> delegate =
+      std::make_unique<FakeProfileOAuth2TokenServiceDelegate>();
+  FakeProfileOAuth2TokenServiceDelegate* other_delegate = delegate.get();
   ProfileOAuth2TokenService other_token_service(&prefs, std::move(delegate));
   other_token_service.LoadCredentials(std::string());
 

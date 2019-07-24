@@ -112,7 +112,8 @@ CreateMutableProfileOAuthDelegate(
 }
 #endif  // defined(OS_ANDROID)
 
-std::unique_ptr<OAuth2TokenServiceDelegate> CreateOAuth2TokenServiceDelegate(
+std::unique_ptr<ProfileOAuth2TokenServiceDelegate>
+CreateOAuth2TokenServiceDelegate(
     AccountTrackerService* account_tracker_service,
     signin::AccountConsistencyMethod account_consistency,
     SigninClient* signin_client,

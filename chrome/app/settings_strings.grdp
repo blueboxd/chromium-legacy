@@ -3179,8 +3179,8 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLIPBOARD_BLOCK" desc="The block label for clipboard access in site settings.">
     Do not allow sites to see text and images copied to the clipboard
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies site settings.">
-    Cookies
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies and site data site settings.">
+    Cookies and site data
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS" desc="Label for the protocol handlers (e.g. mailto) in site settings.">
     Handlers
@@ -3568,9 +3568,6 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox.">
     Prevent third-party websites from saving and reading cookie data
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE_DATA_POST_SESSION" desc="Label for the checkbox that allows the user to automatically delete their data at the end of the browser session.">
-    Keep local data only until you quit your browser
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ADOBE_FLASH_SETTINGS" desc="The text for the link that points the user to the Adobe Flash Player Storage settings on the web">
     Adobe Flash Player Storage settings

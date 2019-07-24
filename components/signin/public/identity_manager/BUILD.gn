@@ -79,6 +79,7 @@ source_set("unit_tests") {
     "identity_test_environment_unittest.cc",
     "identity_utils_unittest.cc",
     "primary_account_access_token_fetcher_unittest.cc",
+    "primary_account_mutator_unittest.cc",
   ]
 
   deps = [
@@ -100,10 +101,6 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (!is_chromeos) {
-    sources += [ "primary_account_mutator_unittest.cc" ]
-  }
 }
 
 source_set("test_support") {

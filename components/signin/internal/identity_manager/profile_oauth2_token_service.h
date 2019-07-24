@@ -29,7 +29,7 @@ class IdentityManager;
 class PrefService;
 class PrefRegistrySimple;
 class OAuth2AccessTokenConsumer;
-class OAuth2TokenServiceDelegate;
+class ProfileOAuth2TokenServiceDelegate;
 
 // ProfileOAuth2TokenService is a KeyedService that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
@@ -72,7 +72,7 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   ProfileOAuth2TokenService(
       PrefService* user_prefs,
-      std::unique_ptr<OAuth2TokenServiceDelegate> delegate);
+      std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate);
   ~ProfileOAuth2TokenService() override;
 
   // Overridden from OAuth2AccessTokenManager::Delegate.
@@ -94,8 +94,8 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  OAuth2TokenServiceDelegate* GetDelegate();
-  const OAuth2TokenServiceDelegate* GetDelegate() const;
+  ProfileOAuth2TokenServiceDelegate* GetDelegate();
+  const ProfileOAuth2TokenServiceDelegate* GetDelegate() const;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenServiceObserver* observer);
@@ -295,7 +295,7 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   PrefService* user_prefs_;
 
-  std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;
+  std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate_;
 
   // Whether all credentials have been loaded.
   bool all_credentials_loaded_;

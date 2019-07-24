@@ -380,7 +380,6 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
 
 MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     const AtomicString& custom_property_name,
-    const PropertyRegistry* registry,
     const String& value,
     bool important,
     SecureContextMode secure_context_mode,
@@ -392,8 +391,8 @@ MutableCSSPropertyValueSet::SetResult MutableCSSPropertyValueSet::SetProperty(
     return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
   }
   return CSSParser::ParseValueForCustomProperty(
-      this, custom_property_name, registry, value, important,
-      secure_context_mode, context_style_sheet, is_animation_tainted);
+      this, custom_property_name, value, important, secure_context_mode,
+      context_style_sheet, is_animation_tainted);
 }
 
 void MutableCSSPropertyValueSet::SetProperty(CSSPropertyID property_id,

@@ -771,6 +771,36 @@ public class SiteSettingsPreferencesTest {
         doTestAutomaticDownloadsPermission(false);
     }
 
+    /**
+     * Helper function to test allowing and blocking the Bluetooth scanning.
+     * @param enabled true to test enabling the Bluetooth scanning, false to test disabling the
+     *         feature.
+     */
+    private void doTestBluetoothScanningPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.BLUETOOTH_SCANNING, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
+                    PrefServiceBridge.getInstance().isCategoryEnabled(
+                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING),
+                    enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowBluetoothScanning() {
+        doTestBluetoothScanningPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockBluetoothScanning() {
+        doTestBluetoothScanningPermission(false);
+    }
+
     private int getTabCount() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());

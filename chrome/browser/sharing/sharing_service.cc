@@ -93,6 +93,9 @@ SharingService::~SharingService() {
 
 std::vector<SharingDeviceInfo> SharingService::GetDeviceCandidates(
     int required_capabilities) const {
+  if (!IsSyncEnabled())
+    return std::vector<SharingDeviceInfo>();
+
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
   std::map<std::string, SharingSyncPreference::Device> synced_devices =

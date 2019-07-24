@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_service.h"
@@ -42,6 +43,16 @@ class SyncPrefsTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
 };
+
+// Gets the now time used for testing demographics.
+base::Time GetNowTime() {
+  constexpr char kNowTimeInStringFormat[] = "22 Jul 2019 00:00:00 UDT";
+
+  base::Time now;
+  bool result = base::Time::FromString(kNowTimeInStringFormat, &now);
+  DCHECK(result);
+  return now;
+}
 
 // Verify that invalidation versions are persisted and loaded correctly.
 TEST_F(SyncPrefsTest, InvalidationVersions) {
@@ -134,33 +145,71 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
 }
 
-TEST_F(SyncPrefsTest, ReadAndClearDemographicPreferences) {
-  // Verify demographic prefs are not available when there is nothing set.
-  ASSERT_FALSE(sync_prefs_->GetUserDemographics().has_value());
+TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
+  int user_demographics_birth_year = 1983;
+  metrics::UserDemographicsProto_Gender user_demographics_gender =
+      metrics::UserDemographicsProto::GENDER_MALE;
 
-  int expected_birth_year = 1983;
-  metrics::UserDemographicsProto_Gender expected_gender =
-      metrics::UserDemographicsProto::GENDER_FEMALE;
+  // Set user demographic prefs.
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear,
+                           user_demographics_birth_year);
+  pref_service_.SetInteger(prefs::kSyncDemographicsGender,
+                           static_cast<int>(user_demographics_gender));
+
+  int provided_birth_year;
+  {
+    base::Optional<UserDemographics> demographics =
+        sync_prefs_->GetUserDemographics(GetNowTime());
+    ASSERT_TRUE(demographics.has_value());
+    EXPECT_EQ(user_demographics_gender, demographics->gender);
+    // Verify that the provided birth year is within the range.
+    provided_birth_year = demographics->birth_year;
+    int delta = provided_birth_year - user_demographics_birth_year;
+    EXPECT_LE(delta, kUserDemographicsBirthYearNoiseOffsetRange);
+    EXPECT_GE(delta, -kUserDemographicsBirthYearNoiseOffsetRange);
+  }
+
+  // Verify that the offset is cached and that the randomized birth year is the
+  // same when doing more that one read of the birth year.
+  {
+    ASSERT_TRUE(pref_service_.HasPrefPath(
+        prefs::kSyncDemographicsBirthYearNoiseOffset));
+    base::Optional<UserDemographics> demographics =
+        sync_prefs_->GetUserDemographics(GetNowTime());
+    ASSERT_TRUE(demographics.has_value());
+    EXPECT_EQ(provided_birth_year, demographics->birth_year);
+  }
+}
+
+TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
+  // Verify demographic prefs are not available when there is nothing set.
+  ASSERT_FALSE(sync_prefs_->GetUserDemographics(GetNowTime()).has_value());
 
   // Set demographic prefs directly from the pref service interface because
   // demographic prefs will only be set on the server-side. The SyncPrefs
   // interface cannot set demographic prefs.
-  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear,
-                           expected_birth_year);
-  pref_service_.SetInteger(prefs::kSyncDemographicsGender,
-                           static_cast<int>(expected_gender));
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear, 1983);
+  pref_service_.SetInteger(
+      prefs::kSyncDemographicsGender,
+      static_cast<int>(metrics::UserDemographicsProto::GENDER_FEMALE));
+  // Set birth year noise offset to not have it randomized.
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYearNoiseOffset, 2);
 
-  // Verify that demographic prefs can be read.
-  base::Optional<UserDemographics> demographics =
-      sync_prefs_->GetUserDemographics();
-  ASSERT_TRUE(demographics.has_value());
-  EXPECT_EQ(expected_birth_year, demographics->birth_year);
-  EXPECT_EQ(expected_gender, demographics->gender);
+  // Verify that demographics are provided.
+  {
+    base::Optional<UserDemographics> demographics =
+        sync_prefs_->GetUserDemographics(GetNowTime());
+    ASSERT_TRUE(demographics.has_value());
+  }
 
   sync_prefs_->ClearPreferences();
 
-  // Verify that demographic prefs are cleared.
-  EXPECT_FALSE(sync_prefs_->GetUserDemographics().has_value());
+  // Verify that demographics are not provided and all their prefs are cleared.
+  EXPECT_FALSE(sync_prefs_->GetUserDemographics(GetNowTime()).has_value());
+  EXPECT_FALSE(pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYear));
+  EXPECT_FALSE(
+      pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYearNoiseOffset));
+  EXPECT_FALSE(pref_service_.HasPrefPath(prefs::kSyncDemographicsGender));
 }
 
 TEST_F(SyncPrefsTest, Basic) {
@@ -419,6 +468,133 @@ INSTANTIATE_TEST_SUITE_P(
     testing::Combine(::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),
                      ::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET),
                      ::testing::Values(PREF_FALSE, PREF_TRUE, PREF_UNSET)));
+
+struct DemographicsTestParam {
+  // Birth year of the user.
+  int birth_year = kUserDemographicsBirthYearDefaultValue;
+
+  // Non-random offset to apply to |birth_year| as noise.
+  int birth_year_offset = kUserDemographicsBirthYearNoiseOffsetDefaultValue;
+
+  // Gender of the user.
+  metrics::UserDemographicsProto_Gender gender =
+      kUserDemographicGenderDefaultEnumValue;
+
+  // Whether SyncPrefs::GetUserDemographics should return non-empty
+  // UserDemographics.
+  bool should_return_demographics = false;
+};
+
+// Test fixture for parameterized tests on demographics.
+class SyncPrefsDemographicsTest
+    : public testing::TestWithParam<DemographicsTestParam> {
+ protected:
+  SyncPrefsDemographicsTest() {
+    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
+  }
+
+  base::test::ScopedTaskEnvironment task_environment_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  std::unique_ptr<SyncPrefs> sync_prefs_;
+};
+
+TEST_P(SyncPrefsDemographicsTest, ReadDemographics_OffsetIsNotRandom) {
+  DemographicsTestParam param = GetParam();
+
+  // Set user demographic prefs.
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear, param.birth_year);
+  pref_service_.SetInteger(prefs::kSyncDemographicsGender,
+                           static_cast<int>(param.gender));
+  // Set birth year noise offset to not have it randomized.
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYearNoiseOffset,
+                           param.birth_year_offset);
+
+  // Verify provided demographics for the different parameterized test cases.
+  base::Optional<UserDemographics> demographics =
+      sync_prefs_->GetUserDemographics(GetNowTime());
+  if (param.should_return_demographics) {
+    ASSERT_TRUE(demographics.has_value());
+    EXPECT_EQ(param.birth_year + param.birth_year_offset,
+              demographics->birth_year);
+    EXPECT_EQ(param.gender, demographics->gender);
+  } else {
+    EXPECT_FALSE(demographics.has_value());
+  }
+}
+
+// Test suite composed of different test cases of getting user demographics.
+// The now time in each test case is "22 Jul 2019 00:00:00 UDT" which falls into
+// the year bucket of 2018. Users need at most a |birth_year| +
+// |birth_year_offset| of 1998 to be able to provide demographics.
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SyncPrefsDemographicsTest,
+    ::testing::Values(
+        // Test where birth year should not be provided because |birth_year| + 2
+        // > 1998.
+        DemographicsTestParam{
+            /*birth_year=*/1997,
+            /*birth_year_offset=*/2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/false},
+        // Test where birth year should not be provided because |birth_year| - 2
+        // > 1998.
+        DemographicsTestParam{
+            /*birth_year=*/2001,
+            /*birth_year_offset=*/-2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/false},
+        // Test where gender should not be provided because it has a low
+        // population that can have their privacy compromised because of high
+        // entropy.
+        DemographicsTestParam{
+            /*birth_year=*/1986,
+            /*birth_year_offset=*/0,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_UNKNOWN_OR_OTHER,
+            /*should_return_demographics=*/false},
+        // Test where birth year can be provided because |birth_year| + 2 ==
+        // 1998.
+        DemographicsTestParam{
+            /*birth_year=*/1996,
+            /*birth_year_offset=*/2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/true},
+        // Test where birth year can be provided because |birth_year| - 2 ==
+        // 1998.
+        DemographicsTestParam{
+            /*birth_year=*/2000,
+            /*birth_year_offset=*/-2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_MALE,
+            /*should_return_demographics=*/true},
+        // Test where birth year can be provided because |birth_year| + 2 <
+        // 1998.
+        DemographicsTestParam{
+            /*birth_year=*/1995,
+            /*birth_year_offset=*/2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/true},
+        // Test where birth year can be provided because |birth_year| - 2 <
+        // 1998.
+        DemographicsTestParam{
+            /*birth_year=*/1999,
+            /*birth_year_offset=*/-2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_MALE,
+            /*should_return_demographics=*/true},
+        // Test where gender can be provided because it is part of a large
+        // population with a low entropy.
+        DemographicsTestParam{
+            /*birth_year=*/1986,
+            /*birth_year_offset=*/0,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/true},
+        // Test where gender can be provided because it is part of a large
+        // population with a low entropy.
+        DemographicsTestParam{
+            /*birth_year=*/1986,
+            /*birth_year_offset=*/0,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_MALE,
+            /*should_return_demographics=*/true}));
 
 }  // namespace
 

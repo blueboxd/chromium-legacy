@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -26,7 +26,7 @@ class SigninClient;
 class TokenWebData;
 
 class MutableProfileOAuth2TokenServiceDelegate
-    : public OAuth2TokenServiceDelegate,
+    : public ProfileOAuth2TokenServiceDelegate,
       public WebDataServiceConsumer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
@@ -45,7 +45,7 @@ class MutableProfileOAuth2TokenServiceDelegate
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Overridden from OAuth2TokenServiceDelegate.
+  // Overridden from ProfileOAuth2TokenServiceDelegate.
   std::unique_ptr<OAuth2AccessTokenFetcher> CreateAccessTokenFetcher(
       const CoreAccountId& account_id,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -76,7 +76,7 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Overridden from NetworkConnectionTracker::NetworkConnectionObserver.
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
-  // Overridden from OAuth2TokenServiceDelegate.
+  // Overridden from ProfileOAuth2TokenServiceDelegate.
   const net::BackoffEntry* BackoffEntry() const override;
 
   bool FixRequestErrorIfPossible() override;

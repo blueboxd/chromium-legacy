@@ -14,4 +14,5 @@ var CrPolicyStrings = CrPolicyStrings || {
   controlledSettingExtension: 'extension: $1',
   controlledSettingExtensionWithoutName: 'extension',
   controlledSettingParent: 'parent',
+  controlledSettingChildRestriction: 'Restricted for child',
 };

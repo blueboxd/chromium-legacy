@@ -189,7 +189,7 @@ WebArchiveInfo WebDocumentLoaderImpl::GetArchiveInfo() const {
 }
 
 bool WebDocumentLoaderImpl::HadUserGesture() const {
-  return DocumentLoader::had_transient_activation();
+  return DocumentLoader::HadTransientActivation();
 }
 
 bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {

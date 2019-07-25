@@ -127,19 +127,6 @@ const CSSValue* ConsumeSyntaxComponent(const CSSSyntaxComponent& syntax,
 
 }  // namespace
 
-const CSSSyntaxComponent* CSSSyntaxDescriptor::Match(
-    const CSSStyleValue& value) const {
-  for (const CSSSyntaxComponent& component : syntax_components_) {
-    if (component.CanTake(value))
-      return &component;
-  }
-  return nullptr;
-}
-
-bool CSSSyntaxDescriptor::CanTake(const CSSStyleValue& value) const {
-  return Match(value);
-}
-
 const CSSValue* CSSSyntaxDescriptor::Parse(CSSParserTokenRange range,
                                            const CSSParserContext* context,
                                            bool is_animation_tainted) const {

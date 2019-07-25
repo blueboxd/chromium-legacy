@@ -203,11 +203,6 @@ class FlagsState {
       std::set<std::string>* enabled_entries,
       std::map<std::string, SwitchEntry>* name_to_switch_map) const;
 
-  // Called when the value of an entry with ORIGIN_LIST_VALUE is modified.
-  // Modifies the corresponding command line by adding or removing the switch
-  // based on the value of |enabled|.
-  void DidModifyOriginListFlag(const FeatureEntry& entry, bool enabled);
-
   // Returns the FeatureEntry named |internal_name|. Returns null if no entry is
   // matched.
   const FeatureEntry* FindFeatureEntryByName(
@@ -222,10 +217,6 @@ class FlagsState {
   // Map from switch name to a set of string, that keeps track which strings
   // were appended to existing (list value) switches.
   std::map<std::string, std::set<std::string>> appended_switches_;
-
-  // Map from switch name to switch value. Only filled for features with
-  // ORIGIN_LIST_VALUE type.
-  std::map<std::string, std::string> switch_values_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsState);
 };

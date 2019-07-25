@@ -164,8 +164,8 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
     attempt_secure_connection_start_time_ =
         base::DefaultClock::GetInstance()->Now();
 
-    AttemptToStartRemoteDeviceLifecycle();
     SetIsPerformingInitialScan(true /* is_performing_initial_scan */);
+    AttemptToStartRemoteDeviceLifecycle();
   } else {
     ResetPerformanceMetricsTimestamps();
 

@@ -25,7 +25,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.MenuSourceType;
@@ -142,46 +141,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             }
             // TODO(sinansahin): This could be pushed in to the header mediator.
             if (mCurrentContextMenuParams.isImage()) {
-                getThumbnail(
-                        menuCoordinator, menuCoordinator.getOnImageThumbnailRetrievedReference());
-            }
-            return;
-        }
-
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
-                && params.getSourceType() != MenuSourceType.MENU_SOURCE_MOUSE) {
-            List<Pair<Integer, List<ContextMenuItem>>> items =
-                    mPopulator.buildContextMenu(null, mActivity, mCurrentContextMenuParams);
-            if (items.isEmpty()) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> mOnMenuClosed.onResult(false));
-                return;
-            }
-
-            final TabularContextMenuUi menuUi = new TabularContextMenuUi(new Callback<Boolean>() {
-                @Override
-                public void onResult(Boolean isShareLink) {
-                    if (isShareLink) {
-                        ShareParams shareParams =
-                                new ShareParams.Builder(mActivity, params.getUrl(), params.getUrl())
-                                        .setShareDirectly(true)
-                                        .setSaveLastUsed(false)
-                                        .build();
-                        ShareHelper.share(shareParams);
-                    } else {
-                        shareImageDirectly(ShareHelper.getLastShareComponentName(null));
-                    }
-                }
-            });
-            menuUi.setTopContentOffsetY(topContentOffsetPx);
-            menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
-                    mOnMenuClosed);
-            if (mCurrentContextMenuParams.isImage()) {
-                getThumbnail(menuUi, new Callback<Bitmap>() {
-                    @Override
-                    public void onResult(Bitmap result) {
-                        menuUi.onImageThumbnailRetrieved(result);
-                    }
-                });
+                getThumbnail(menuCoordinator.getOnImageThumbnailRetrievedReference());
             }
             return;
         }
@@ -268,33 +228,17 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * Gets the thumbnail of the current image that triggered the context menu.
      * @param callback Called once the the thumbnail is received.
      */
-    private void getThumbnail(ContextMenuUi menuUi, final Callback<Bitmap> callback) {
+    private void getThumbnail(final Callback<Bitmap> callback) {
         if (mNativeContextMenuHelper == 0) return;
 
-        Resources res = mActivity.getResources();
+        final Resources res = mActivity.getResources();
+        final int maxHeightPx =
+                res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
+        final int maxWidthPx =
+                res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
 
-        int maxWidthPx;
-        int maxHeightPx;
-
-        if (menuUi instanceof TabularContextMenuUi) {
-            maxWidthPx = ((TabularContextMenuUi) menuUi).getMaxThumbnailWidthPx(res);
-            maxHeightPx = ((TabularContextMenuUi) menuUi).getMaxThumbnailHeightPx(res);
-        } else {
-            maxHeightPx =
-                    res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
-            maxWidthPx =
-                    res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
-        }
-
-        Callback<Bitmap> bitmapCallback = new Callback<Bitmap>() {
-            @Override
-            public void onResult(Bitmap result) {
-                callback.onResult(result);
-            }
-
-        };
         nativeRetrieveImageForContextMenu(
-                mNativeContextMenuHelper, bitmapCallback, maxWidthPx, maxHeightPx);
+                mNativeContextMenuHelper, callback, maxWidthPx, maxHeightPx);
     }
 
     @Override

@@ -40,8 +40,7 @@ CSSPrimitiveValue::UnitType ToCanonicalUnitIfPossible(
 
 bool IsValueOutOfRangeForProperty(CSSPropertyID property_id,
                                   double value,
-                                  CSSPrimitiveValue::UnitType unit,
-                                  const CSSSyntaxComponent* match) {
+                                  CSSPrimitiveValue::UnitType unit) {
   // FIXME: Avoid this CSSProperty::Get call as it can be costly.
   // The caller often has a CSSProperty already, so we can just pass it here.
   if (LengthPropertyFunctions::GetValueRange(CSSProperty::Get(property_id)) ==
@@ -51,10 +50,6 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id,
 
   // For non-length properties and special cases.
   switch (property_id) {
-    case CSSPropertyID::kVariable:
-      if (match && match->IsInteger())
-        return round(value) != value;
-      return false;
     case CSSPropertyID::kOrder:
     case CSSPropertyID::kZIndex:
       return round(value) != value;
@@ -175,9 +170,8 @@ const CSSNumericLiteralValue* CSSUnitValue::ToCSSValue() const {
 }
 
 const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
-    CSSPropertyID property_id,
-    const CSSSyntaxComponent* match) const {
-  if (IsValueOutOfRangeForProperty(property_id, value_, unit_, match)) {
+    CSSPropertyID property_id) const {
+  if (IsValueOutOfRangeForProperty(property_id, value_, unit_)) {
     // Wrap out of range values with a calc.
     CSSMathExpressionNode* node = ToCalcExpressionNode();
     node->SetIsNestedCalc();

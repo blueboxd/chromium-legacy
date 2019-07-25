@@ -187,6 +187,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ResetURLLoaderFactories() override;
   void GetCookieManager(mojom::CookieManagerRequest request) override;
   void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
+                                  mojom::RestrictedCookieManagerRole role,
                                   const url::Origin& origin,
                                   bool is_service_worker,
                                   int32_t process_id,

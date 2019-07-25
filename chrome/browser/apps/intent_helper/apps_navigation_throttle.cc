@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "build/build_config.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -161,7 +160,6 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kCrostini:
     case apps::mojom::AppType::kExtension:
-    case apps::mojom::AppType::kMacNative:
       NOTREACHED();
   }
   RecordUma(launch_name, app_type, close_reason, Source::kHttpOrHttps,
@@ -295,8 +293,6 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
       return Platform::ARC;
     case PickerAction::PWA_APP_PRESSED:
       return Platform::PWA;
-    case PickerAction::MAC_NATIVE_APP_PRESSED:
-      return Platform::MAC_NATIVE;
     case PickerAction::ERROR_BEFORE_PICKER:
     case PickerAction::ERROR_AFTER_PICKER:
     case PickerAction::DIALOG_DEACTIVATED:
@@ -348,12 +344,11 @@ void AppsNavigationThrottle::CloseOrGoBack(content::WebContents* web_contents) {
 }
 
 // static
-bool AppsNavigationThrottle::ContainsOnlyPwasAndMacApps(
+bool AppsNavigationThrottle::ContainsOnlyPwas(
     const std::vector<apps::IntentPickerAppInfo>& apps) {
   return std::all_of(apps.begin(), apps.end(),
                      [](const apps::IntentPickerAppInfo& app_info) {
-                       return app_info.type == apps::mojom::AppType::kWeb ||
-                              app_info.type == apps::mojom::AppType::kMacNative;
+                       return app_info.type == apps::mojom::AppType::kWeb;
                      });
 }
 
@@ -364,19 +359,12 @@ bool AppsNavigationThrottle::ShouldShowPersistenceOptions(
   // if only PWAs are present.
   // TODO(crbug.com/826982): Provide the "Remember my choice" option when the
   // app registry can support persistence for PWAs.
-  // TODO(avi): When Chrome gains a UI for managing the persistence of PWAs,
-  // reuse that UI for managing the persistent behavior of Universal Links.
-  return !ContainsOnlyPwasAndMacApps(apps);
+  return !ContainsOnlyPwas(apps);
 }
 
 bool AppsNavigationThrottle::ShouldDeferNavigationForArc(
     content::NavigationHandle* handle) {
   return false;
-}
-
-std::vector<IntentPickerAppInfo> AppsNavigationThrottle::AppInfoForUrl(
-    const GURL& url) {
-  return std::vector<IntentPickerAppInfo>{};
 }
 
 void AppsNavigationThrottle::ShowIntentPickerForApps(
@@ -458,8 +446,6 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
                                 : PickerAction::ARC_APP_PRESSED;
         case apps::mojom::AppType::kWeb:
           return PickerAction::PWA_APP_PRESSED;
-        case apps::mojom::AppType::kMacNative:
-          return PickerAction::MAC_NATIVE_APP_PRESSED;
         case apps::mojom::AppType::kBuiltIn:
         case apps::mojom::AppType::kCrostini:
         case apps::mojom::AppType::kExtension:
@@ -520,11 +506,8 @@ AppsNavigationThrottle::HandleRequest() {
   }
 
   // We didn't query ARC, so proceed with the navigation and query if we have an
-  // installed desktop app to handle the URL.
-  std::vector<IntentPickerAppInfo> apps = AppInfoForUrl(url);
-
-  // Perhaps an installed desktop PWA?
-  apps = FindPwaForUrl(web_contents, url, std::move(apps));
+  // installed desktop PWA to handle the URL.
+  std::vector<IntentPickerAppInfo> apps = FindPwaForUrl(web_contents, url, {});
 
   if (!apps.empty())
     ui_displayed_ = true;

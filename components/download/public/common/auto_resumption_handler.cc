@@ -268,7 +268,7 @@ bool AutoResumptionHandler::SatisfiesNetworkRequirements(
 
 bool AutoResumptionHandler::IsAutoResumableDownload(
     download::DownloadItem* item) {
-  if (item->IsDangerous())
+  if (!item || item->IsDangerous())
     return false;
 
   switch (item->GetState()) {

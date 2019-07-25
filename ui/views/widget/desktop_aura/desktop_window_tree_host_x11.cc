@@ -1231,10 +1231,6 @@ void DesktopWindowTreeHostX11::OnXWindowIsActiveChanged(bool active) {
   native_widget_delegate_->AsWidget()->GetRootView()->SchedulePaint();
 }
 
-::Time DesktopWindowTreeHostX11::GetTimestampForXWindow() {
-  return ui::X11EventSource::GetInstance()->GetTimestamp();
-}
-
 gfx::Size DesktopWindowTreeHostX11::GetMinimumSizeForXWindow() {
   return ToPixelRect(gfx::Rect(native_widget_delegate_->GetMinimumSize()))
       .size();

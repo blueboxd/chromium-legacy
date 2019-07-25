@@ -11,11 +11,10 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/win/win_util.h"
-#include "chrome/services/util_win/public/mojom/constants.mojom.h"
+#include "chrome/browser/win/util_win_service.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
-#include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/shell_dialogs/execute_select_file_win.h"
 #include "ui/shell_dialogs/select_file_dialog_win.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -58,7 +57,7 @@ class UtilWinHelper {
 
   // The pointer to the UtilWin interface. This must be kept alive while waiting
   // for the response.
-  chrome::mojom::UtilWinPtr util_win_ptr_;
+  mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;
 
   // The callback that is invoked when the file operation is finished.
   ui::OnSelectFileExecutedCallback on_select_file_executed_callback_;
@@ -95,15 +94,14 @@ UtilWinHelper::UtilWinHelper(
     ui::OnSelectFileExecutedCallback on_select_file_executed_callback)
     : on_select_file_executed_callback_(
           std::move(on_select_file_executed_callback)) {
-  content::GetSystemConnector()->BindInterface(
-      chrome::mojom::kUtilWinServiceName, &util_win_ptr_);
+  remote_util_win_ = LaunchUtilWinServiceInstance();
 
-  // |util_win_ptr_| owns the callbacks and is guaranteed to be destroyed before
-  // |this|, therefore making base::Unretained() safe to use.
-  util_win_ptr_.set_connection_error_handler(base::BindOnce(
+  // |remote_util_win_| owns the callbacks and is guaranteed to be destroyed
+  // before |this|, therefore making base::Unretained() safe to use.
+  remote_util_win_.set_disconnect_handler(base::BindOnce(
       &UtilWinHelper::OnConnectionError, base::Unretained(this)));
 
-  util_win_ptr_->CallExecuteSelectFile(
+  remote_util_win_->CallExecuteSelectFile(
       type, base::win::HandleToUint32(owner), title, default_path, filter,
       file_type_index, default_extension,
       base::BindOnce(&UtilWinHelper::OnSelectFileExecuted,

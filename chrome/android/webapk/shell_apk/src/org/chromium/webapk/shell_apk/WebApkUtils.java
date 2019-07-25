@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -331,6 +332,26 @@ public class WebApkUtils {
             }
         } else {
             return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        }
+    }
+
+    /** Grants the host browser permission to the shared files if any. */
+    public static void grantUriPermissionToHostBrowserIfShare(
+            Context context, HostBrowserLauncherParams params) {
+        if (params.getSelectedShareTargetActivityClassName() == null) return;
+
+        Intent originalIntent = params.getOriginalIntent();
+        ArrayList<Uri> uris = originalIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+        if (uris == null) {
+            uris = new ArrayList<>();
+            Uri uri = originalIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+            if (uri != null) {
+                uris.add(uri);
+            }
+        }
+        for (Uri uri : uris) {
+            context.grantUriPermission(
+                    params.getHostBrowserPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
     }
 }

@@ -197,7 +197,7 @@ Refer to README.md for content description and update process.
  <item id="ppapi_download_request" hash_code="135967426" type="0" content_hash_code="110461402" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/ppapi_download_request.cc"/>
  <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="21424542" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
  <item id="prefetch_visuals" hash_code="91068704" type="0" content_hash_code="90439946" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/visuals_fetch_by_url.cc"/>
- <item id="previews_prober" hash_code="41010697" type="0" content_hash_code="51581107" os_list="linux,windows" file_path="chrome/browser/previews/previews_prober.cc"/>
+ <item id="previews_prober" hash_code="41010697" type="0" deprecated="2019-07-24" content_hash_code="51581107" file_path=""/>
  <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>
  <item id="profile_avatar" hash_code="51164680" type="0" content_hash_code="113550845" os_list="linux,windows" file_path="chrome/browser/profiles/profile_avatar_downloader.cc"/>

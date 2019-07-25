@@ -3773,6 +3773,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/hello.html"));
 
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "b.com" so we are guaranteed to get a different process
+    // for navigations to this origin. Doing this ensures that a
+    // speculative RenderFrameHost is used.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"b.com"});
+  }
+
   WebContents* attached_web_contents = shell()->web_contents();
 
   WebContents::CreateParams create_params(

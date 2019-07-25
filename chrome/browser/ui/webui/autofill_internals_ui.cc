@@ -10,16 +10,16 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "components/autofill/content/browser/autofill_internals_service_factory.h"
-#include "components/autofill/core/browser/autofill_internals_service.h"
+#include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-using autofill::AutofillInternalsService;
-using autofill::AutofillInternalsServiceFactory;
+using autofill::AutofillLogRouterFactory;
+using autofill::LogRouter;
 
 namespace {
 
@@ -59,9 +59,8 @@ class AutofillInternalsUIHandler : public content::WebUIMessageHandler,
   // JavaScript call handler.
   void OnLoaded(const base::ListValue* args);
 
-  // Whether |this| is registered as a log receiver with the
-  // PasswordManagerInternalsService.
-  bool registered_with_logging_service_ = false;
+  // Whether |this| is registered as a log receiver with the LogRouter.
+  bool registered_with_log_router_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillInternalsUIHandler);
 };
@@ -93,35 +92,33 @@ void AutofillInternalsUIHandler::OnLoaded(const base::ListValue* args) {
 }
 
 void AutofillInternalsUIHandler::LogEntry(const base::Value& entry) {
-  if (!registered_with_logging_service_ || entry.is_none())
+  if (!registered_with_log_router_ || entry.is_none())
     return;
   CallJavascriptFunction("addRawLog", entry);
 }
 
 void AutofillInternalsUIHandler::StartSubscription() {
-  AutofillInternalsService* service =
-      AutofillInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
+  LogRouter* log_router = AutofillLogRouterFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()));
 
-  if (!service)
+  if (!log_router)
     return;
 
-  registered_with_logging_service_ = true;
+  registered_with_log_router_ = true;
 
-  const auto& past_logs = service->RegisterReceiver(this);
+  const auto& past_logs = log_router->RegisterReceiver(this);
   for (const auto& entry : past_logs)
     LogEntry(entry);
 }
 
 void AutofillInternalsUIHandler::EndSubscription() {
-  if (!registered_with_logging_service_)
+  if (!registered_with_log_router_)
     return;
-  registered_with_logging_service_ = false;
-  AutofillInternalsService* service =
-      AutofillInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  if (service)
-    service->UnregisterReceiver(this);
+  registered_with_log_router_ = false;
+  LogRouter* log_router = AutofillLogRouterFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()));
+  if (log_router)
+    log_router->UnregisterReceiver(this);
 }
 
 }  // namespace

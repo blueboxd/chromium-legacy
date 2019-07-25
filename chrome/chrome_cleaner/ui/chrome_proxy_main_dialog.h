@@ -14,7 +14,7 @@
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/ui/main_dialog_api.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"
-#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 namespace chrome_cleaner {
 

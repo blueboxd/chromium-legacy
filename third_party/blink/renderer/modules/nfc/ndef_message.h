@@ -23,7 +23,7 @@ class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
   static NDEFMessage* Create(const NDEFMessageInit*);
 
   NDEFMessage(const NDEFMessageInit*);
-  NDEFMessage(const device::mojom::blink::NDEFMessagePtr&);
+  NDEFMessage(const device::mojom::blink::NDEFMessage&);
 
   const String& url() const;
   const HeapVector<Member<NDEFRecord>>& records() const;

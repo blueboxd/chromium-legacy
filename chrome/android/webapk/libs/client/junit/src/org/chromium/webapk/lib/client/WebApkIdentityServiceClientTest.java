@@ -46,7 +46,7 @@ public class WebApkIdentityServiceClientTest {
         private boolean mIsCalled;
 
         @Override
-        public void onChecked(boolean doesBrowserBackWebApk) {
+        public void onChecked(boolean doesBrowserBackWebApk, String browserPackageName) {
             mResult = doesBrowserBackWebApk;
             mIsCalled = true;
         }

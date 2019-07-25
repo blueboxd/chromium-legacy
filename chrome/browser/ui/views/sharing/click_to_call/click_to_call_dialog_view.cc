@@ -8,15 +8,19 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
@@ -27,6 +31,8 @@ namespace {
 // Icon sizes in DIP.
 constexpr int kPrimaryIconSize = 20;
 constexpr int kPrimaryIconBorderWidth = 8;
+constexpr int kEmptyImageHeight = 88;
+constexpr int kEmptyImageTopPadding = 16;
 
 SkColor GetColorfromTheme() {
   const ui::NativeTheme* native_theme =
@@ -201,6 +207,21 @@ void ClickToCallDialogView::InitEmptyView() {
   link->set_listener(this);
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(link));
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  auto image_view = std::make_unique<NonAccessibleImageView>();
+  const gfx::ImageSkia* image =
+      rb.GetNativeImageNamed(IDR_SHARING_EMPTY_LIST).ToImageSkia();
+
+  gfx::Size image_size(image->width(), image->height());
+  const int image_width = image->width() * kEmptyImageHeight / image->height();
+  image_size.SetToMin(gfx::Size(image_width, kEmptyImageHeight));
+  image_view->SetImageSize(image_size);
+  image_view->SetImage(*image);
+  image_view->SetBorder(
+      views::CreateEmptyBorder(kEmptyImageTopPadding, 0, 0, 0));
+
+  AddChildView(std::move(image_view));
 }
 
 void ClickToCallDialogView::InitErrorView() {

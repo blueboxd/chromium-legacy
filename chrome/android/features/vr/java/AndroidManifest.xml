@@ -8,17 +8,9 @@
     featureSplit="vr">
 
     <dist:module
-      dist:instant="false"
-      dist:title="@string/vr_module_title">
-      <dist:fusing dist:include="false" />
-      <dist:delivery>
-        <dist:install-time>
-          <dist:conditions>
-            <dist:device-feature dist:name="android.hardware.vr.high_performance" />
-          </dist:conditions>
-        </dist:install-time>
-        <dist:on-demand />
-      </dist:delivery>
+        dist:onDemand="true"
+        dist:title="@string/vr_module_title">
+        <dist:fusing dist:include="false" />
     </dist:module>
 
     <application>

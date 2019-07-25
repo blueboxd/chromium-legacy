@@ -38,7 +38,7 @@
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
 #include "ios/web_view/internal/language/web_view_language_model_manager_factory.h"
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
-#import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -192,7 +192,7 @@ void WebViewBrowserState::RegisterPrefs(
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();
-  WebViewPasswordManagerInternalsServiceFactory::GetInstance();
+  WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 

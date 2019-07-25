@@ -75,8 +75,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
 
-  // Schedule overlay planes to be displayed
-  virtual void ScheduleOverlays(OverlayCandidateList overlays) = 0;
+  // TODO(weiliangc): This API should move to OverlayProcessor.
+  // Schedule output surface as an overlay plane to be displayed.
+  virtual void ScheduleOutputSurfaceAsOverlay(
+      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane) = 0;
 
   // Begin painting a render pass. This method will create a
   // SkDeferredDisplayListRecorder and return a SkCanvas of it. The SkiaRenderer
@@ -127,6 +129,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
 
   // Remove context lost observer.
   virtual void RemoveContextLostObserver(ContextLostObserver* observer) = 0;
+
+  // Only used for SkiaOutputSurfaceImpl unit tests.
+  virtual void ScheduleGpuTaskForTesting(
+      base::OnceClosure callback,
+      std::vector<gpu::SyncToken> sync_tokens) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);

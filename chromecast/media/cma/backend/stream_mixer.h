@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -20,6 +21,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
+#include "chromecast/media/cma/backend/loopback_handler.h"
 #include "chromecast/media/cma/backend/mixer_input.h"
 #include "chromecast/media/cma/backend/mixer_pipeline.h"
 #include "chromecast/public/cast_media_shlib.h"
@@ -124,7 +126,6 @@ class StreamMixer {
   int num_output_channels() const { return num_output_channels_; }
 
  private:
-  class ExternalLoopbackAudioObserver;
   class BaseExternalMediaVolumeChangeRequestObserver
       : public ExternalAudioPipelineShlib::
             ExternalMediaVolumeChangeRequestObserver {
@@ -160,30 +161,15 @@ class StreamMixer {
   void RemoveInputOnThread(MixerInput::Source* input_source);
   void SetCloseTimeout();
   void UpdatePlayoutChannel();
+  void UpdateLoopbackChannelCount();
 
   void PlaybackLoop();
   void WriteOneBuffer();
   void WriteMixedPcm(int frames, int64_t expected_playback_time);
   void MixToMono(float* data, int frames, int channels);
 
-  void RemoveLoopbackAudioObserverOnThread(
-      CastMediaShlib::LoopbackAudioObserver* observer);
   void RemoveAudioOutputRedirectorOnThread(AudioOutputRedirector* redirector);
 
-  void PostLoopbackData(int64_t expected_playback_time,
-                        SampleFormat sample_format,
-                        int sample_rate,
-                        int channels,
-                        std::unique_ptr<uint8_t[]> data,
-                        int length);
-  void PostLoopbackInterrupted();
-
-  void SendLoopbackData(int64_t expected_playback_time,
-                        SampleFormat sample_format,
-                        int sample_rate,
-                        int channels,
-                        std::unique_ptr<uint8_t[]> data,
-                        int length);
   int GetSampleRateForDeviceId(const std::string& device);
 
   MediaPipelineBackend::AudioDecoder::RenderingDelay GetTotalRenderingDelay(
@@ -195,8 +181,7 @@ class StreamMixer {
   std::unique_ptr<MixerPipeline> mixer_pipeline_;
   std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
-  std::unique_ptr<base::Thread> loopback_thread_;
-  scoped_refptr<base::SingleThreadTaskRunner> loopback_task_runner_;
+  std::unique_ptr<LoopbackHandler, LoopbackHandler::Deleter> loopback_handler_;
   std::unique_ptr<ThreadHealthChecker> health_checker_;
 
   void OnHealthCheckFailed();
@@ -216,15 +201,15 @@ class StreamMixer {
   int frames_per_write_ = 0;
   int redirector_samples_per_second_ = 0;
   int redirector_frames_per_write_ = 0;
+  int loopback_channel_count_ = 0;
 
   State state_;
   base::TimeTicks close_timestamp_;
 
+  base::RepeatingClosure playback_loop_task_;
   base::flat_map<MixerInput::Source*, std::unique_ptr<MixerInput>> inputs_;
   base::flat_map<MixerInput::Source*, std::unique_ptr<MixerInput>>
       ignored_inputs_;
-
-  base::flat_set<CastMediaShlib::LoopbackAudioObserver*> loopback_observers_;
 
   base::flat_map<AudioContentType, VolumeInfo> volume_info_;
 
@@ -234,8 +219,6 @@ class StreamMixer {
   const bool external_audio_pipeline_supported_;
   std::unique_ptr<BaseExternalMediaVolumeChangeRequestObserver>
       external_volume_observer_;
-  std::unique_ptr<ExternalLoopbackAudioObserver>
-      external_loopback_audio_observer_;
 
   base::WeakPtrFactory<StreamMixer> weak_factory_;
 

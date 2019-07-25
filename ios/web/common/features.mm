@@ -35,5 +35,8 @@ const base::Feature kBlockUniversalLinksInOffTheRecordMode{
 const base::Feature kKeepsRenderProcessAlive{"KeepsRenderProcessAlive",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kSSLCommittedInterstitials{
+    "SSLCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace web

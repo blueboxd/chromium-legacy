@@ -133,7 +133,45 @@ enum NTPLoggingEventType {
   // The visibility of shortcuts was changed.
   NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY = 63,
 
-  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY
+  // The richer picker was opened.
+  NTP_CUSTOMIZATION_MENU_OPENED = 64,
+  // 'Cancel' was clicked in the richer picker.
+  NTP_CUSTOMIZATION_MENU_CANCEL = 65,
+  // 'Done' was clicked in the richer picker.
+  NTP_CUSTOMIZATION_MENU_DONE = 66,
+
+  // 'Upload from device' was selected in the richer picker.
+  NTP_BACKGROUND_UPLOAD_FROM_DEVICE = 67,
+  // A collection tile was selected in the richer picker.
+  NTP_BACKGROUND_OPEN_COLLECTION = 68,
+  // A image tile was selected in the richer picker.
+  NTP_BACKGROUND_SELECT_IMAGE = 69,
+  // A image tile was deselected in the richer picker.
+  NTP_BACKGROUND_DESELECT_IMAGE = 70,
+  // An image was set as the NTP background.
+  NTP_BACKGROUND_IMAGE_SET = 71,
+  // The back arrow was clicked in the richer picker.
+  NTP_BACKGROUND_BACK_CLICK = 72,
+  // The 'No background' tile was selected in the richer picker.
+  NTP_BACKGROUND_DEFAULT_SELECTED = 73,
+  // The 'No background' tile was deselected in the richer picker.
+  NTP_BACKGROUND_DEFAULT_DESELECTED = 74,
+  // 'Cancel' was clicked in the image selection dialog.
+  NTP_BACKGROUND_UPLOAD_CANCEL = 75,
+  // 'Done' was clicked in the image selection dialog.
+  NTP_BACKGROUND_UPLOAD_DONE = 76,
+  // The NTP background image was reset in the richer picker.
+  NTP_BACKGROUND_IMAGE_RESET = 77,
+
+  // The 'My shortcuts' (i.e. custom links) option was clicked in the richer
+  // picker.
+  NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED = 78,
+  // The 'Most visited sites' option was clicked in the richer picker.
+  NTP_CUSTOMIZE_SHORTCUT_MOST_VISITED_CLICKED = 79,
+  // The 'Hide shortcuts' toggle was clicked in the richer picker.
+  NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED = 80,
+
+  NTP_EVENT_TYPE_LAST = NTP_CUSTOMIZE_SHORTCUT_VISIBILITY_TOGGLE_CLICKED
 };
 
 // The different types of events that are logged for NTP search suggestions,

@@ -396,7 +396,6 @@ AsyncMatch V4LocalDatabaseManager::CheckUrlForHighConfidenceAllowlist(
     const GURL& url,
     Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(RealTimePolicyEngine::CanPerformFullURLLookup());
 
   StoresToCheck stores_to_check({GetUrlHighConfidenceAllowlistId()});
   if (!enabled_ || !CanCheckUrl(url) ||

@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/content_settings/core/common/pref_names.h"
@@ -253,6 +254,9 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
+  ASSERT_TRUE(LoginDisplayHost::default_host());
+  EXPECT_TRUE(LoginDisplayHost::default_host()->GetWebUILoginView());
+
   content::WindowedNotificationObserver session_start_waiter(
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
@@ -261,7 +265,16 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   SigninFrameJS().TypeIntoPath(FakeGaiaMixin::kFakeUserPassword, {"password"});
   SigninFrameJS().TapOn("nextButton");
 
+  // The login view should be destroyed after the browser window opens.
+  ui_test_utils::WaitForBrowserToOpen();
+  EXPECT_FALSE(LoginDisplayHost::default_host()->GetWebUILoginView());
+
   session_start_waiter.Wait();
+
+  // Wait for the LoginDisplayHost to delete itself, which is a posted task.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(LoginDisplayHost::default_host());
 }
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, BackButton) {

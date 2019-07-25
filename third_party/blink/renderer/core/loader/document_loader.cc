@@ -133,6 +133,7 @@ DocumentLoader::DocumentLoader(
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(params_->devtools_navigation_token),
       had_sticky_activation_(params_->is_user_activated),
+      is_browser_initiated_(params_->is_browser_initiated),
       was_discarded_(params_->was_discarded),
       use_counter_(),
       clock_(params_->tick_clock ? params_->tick_clock
@@ -1452,7 +1453,19 @@ void DocumentLoader::DidCommitNavigation(
     GetLocalFrameClient().ReportLegacyTLSVersion(response_.CurrentRequestUrl());
     if (!frame_->Tree().Parent()) {
       ukm::builders::Net_LegacyTLSVersion(document->UkmSourceID())
+          .SetIsMainFrame(true)
+          .SetIsSubresource(false)
+          .SetIsAdResource(frame_->IsAdSubframe() || frame_->IsAdRoot())
           .Record(document->UkmRecorder());
+    } else {
+      // For non-main-frame loads, we have to use the main frame's document for
+      // the UKM recorder and source ID.
+      auto& root = frame_->LocalFrameRoot();
+      ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
+          .SetIsMainFrame(false)
+          .SetIsSubresource(false)
+          .SetIsAdResource(frame_->IsAdSubframe())
+          .Record(root.GetDocument()->UkmRecorder());
     }
   }
 }

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.preferences.sync;
 
 import android.accounts.Account;
 import android.content.Context;
-import android.preference.ListPreference;
+import android.support.v7.preference.ListPreference;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 
@@ -70,10 +70,5 @@ public class SyncedAccountPreference extends ListPreference {
         setEntryValues(accountValues);
         setValue(signedInSettingsKey);
         setSummary(signedInAccountName);
-    }
-
-    @Override
-    protected void onDialogClosed(boolean positiveResult) {
-        super.onDialogClosed(positiveResult);
     }
 }

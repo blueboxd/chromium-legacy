@@ -54,7 +54,7 @@ grit("extensions_renderer_resources") {
   source_is_generated = true
 
   deps = [
-    "//extensions/common:mojo_js",
+    "//extensions/common:mojom_js",
     "//extensions/common/api:mojom_js",
     "//services/device/public/mojom:mojom_js",
   ]

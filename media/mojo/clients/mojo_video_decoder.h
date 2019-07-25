@@ -74,7 +74,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   void OnInitializeDone(bool status,
                         bool needs_bitstream_conversion,
                         int32_t max_decode_requests);
-  void OnDecodeDone(uint64_t decode_id, DecodeStatus status);
+  void OnDecodeDone(uint64_t decode_id, int64_t timestamp, DecodeStatus status);
   void OnResetDone();
 
   void BindRemoteDecoder();

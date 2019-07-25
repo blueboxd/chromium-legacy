@@ -70,6 +70,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   void SetAbsMtSlot(unsigned int code, unsigned int slot, uint32_t value);
   void SetDeviceType(InputDeviceType type);
   void SetId(input_id id);
+  void SetName(const std::string& name);
 
   // Check events this device can generate.
   bool HasEventType(unsigned int type) const;

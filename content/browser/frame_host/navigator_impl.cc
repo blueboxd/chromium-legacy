@@ -264,7 +264,7 @@ void NavigatorImpl::DidNavigate(
   SiteInstanceImpl* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance->HasSite() &&
       SiteInstanceImpl::ShouldAssignSiteForURL(params.url)) {
-    site_instance->SetSite(params.url);
+    site_instance->ConvertToDefaultOrSetSite(params.url);
   }
 
   // Need to update MIME type here because it's referred to in

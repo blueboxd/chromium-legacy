@@ -161,6 +161,12 @@ class FakeWebMediaPlayerDelegate
 
   int delegate_id() { return delegate_id_; }
 
+  void DidPlayerMediaPositionStateChange(
+      int delegate_id,
+      const media_session::MediaPosition& position) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
  private:
   int delegate_id_ = 1234;
   Observer* observer_ = nullptr;

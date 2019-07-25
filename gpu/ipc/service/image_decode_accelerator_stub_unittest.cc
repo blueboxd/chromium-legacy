@@ -53,8 +53,10 @@
 #include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "ipc/ipc_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSize.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -114,7 +116,8 @@ class TestImageFactory : public ImageFactory {
 // decode by using the FinishOneDecode() method.
 class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
  public:
-  MockImageDecodeAcceleratorWorker() {}
+  MockImageDecodeAcceleratorWorker(gfx::BufferFormat format_for_decodes)
+      : format_for_decodes_(format_for_decodes) {}
 
   void Decode(std::vector<uint8_t> encoded_data,
               const gfx::Size& output_size,
@@ -131,15 +134,18 @@ class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
     if (success) {
       // We give out a dummy GpuMemoryBufferHandle as the result: since we mock
       // the ImageFactory and the gl::GLImage in these tests, the only
-      // requirement is that the NativePixmapHandle has 3 planes.
+      // requirement is that the NativePixmapHandle has the right number of
+      // planes.
       auto decode_result = std::make_unique<DecodeResult>();
       decode_result->handle.type = gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
-      for (size_t plane = 0; plane < 3u; plane++) {
+      for (size_t plane = 0; plane < gfx::NumberOfPlanesForLinearBufferFormat(
+                                         format_for_decodes_);
+           plane++) {
         decode_result->handle.native_pixmap_handle.planes.emplace_back(
             0 /* stride */, 0 /* offset */, 0 /* size */, base::ScopedFD());
       }
       decode_result->visible_size = next_decode.output_size;
-      decode_result->buffer_format = gfx::BufferFormat::YVU_420;
+      decode_result->buffer_format = format_for_decodes_;
       decode_result->buffer_byte_size = 0u;
       std::move(next_decode.decode_cb).Run(std::move(decode_result));
     } else {
@@ -157,6 +163,7 @@ class MockImageDecodeAcceleratorWorker : public ImageDecodeAcceleratorWorker {
     CompletedDecodeCB decode_cb;
   };
 
+  const gfx::BufferFormat format_for_decodes_;
   base::queue<PendingDecode> pending_decodes_;
 
   DISALLOW_COPY_AND_ASSIGN(MockImageDecodeAcceleratorWorker);
@@ -172,10 +179,13 @@ const int32_t kCommandBufferRouteId =
 // decode requests, and expect sync token releases, invocations to the
 // ImageDecodeAcceleratorWorker functionality, and transfer cache entry
 // creation.
-class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
+class ImageDecodeAcceleratorStubTest
+    : public GpuChannelTestCommon,
+      public ::testing::WithParamInterface<gfx::BufferFormat> {
  public:
   ImageDecodeAcceleratorStubTest()
       : GpuChannelTestCommon(false /* use_stub_bindings */),
+        image_decode_accelerator_worker_(GetParam()),
         weak_ptr_factory_(this) {}
   ~ImageDecodeAcceleratorStubTest() override = default;
 
@@ -395,8 +405,10 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
           transfer_cache->GetEntry(ServiceTransferCache::EntryKey(
               raster_decoder_id, cc::TransferCacheEntryType::kImage, i + 1)));
       ASSERT_TRUE(decode_entry);
-      ASSERT_EQ(3u, decode_entry->plane_images().size());
-      for (size_t plane = 0; plane < 3u; plane++) {
+      ASSERT_EQ(gfx::NumberOfPlanesForLinearBufferFormat(GetParam()),
+                decode_entry->plane_images().size());
+      for (size_t plane = 0; plane < decode_entry->plane_images().size();
+           plane++) {
         ASSERT_TRUE(decode_entry->plane_images()[plane]);
         EXPECT_TRUE(decode_entry->plane_images()[plane]->isTextureBacked());
       }
@@ -423,7 +435,7 @@ class ImageDecodeAcceleratorStubTest : public GpuChannelTestCommon {
 // completed. This should cause one sync token to be released and the scheduler
 // sequence to be disabled. Then, the second decode is completed. This should
 // cause the other sync token to be released.
-TEST_F(ImageDecodeAcceleratorStubTest,
+TEST_P(ImageDecodeAcceleratorStubTest,
        MultipleDecodesCompletedAfterSequenceIsDisabled) {
   {
     InSequence call_sequence;
@@ -471,7 +483,7 @@ TEST_F(ImageDecodeAcceleratorStubTest,
 // completes which should cause the scheduler sequence to be enabled. Right
 // after that (while the sequence is still enabled), the other two decodes
 // complete. At the end, all the sync tokens should be released.
-TEST_F(ImageDecodeAcceleratorStubTest,
+TEST_P(ImageDecodeAcceleratorStubTest,
        MultipleDecodesCompletedWhileSequenceIsEnabled) {
   {
     InSequence call_sequence;
@@ -522,7 +534,7 @@ TEST_F(ImageDecodeAcceleratorStubTest,
 // fails which should trigger the destruction of the channel. The second
 // succeeds and the third one fails. Regardless, the channel should still be
 // destroyed and all sync tokens should be released.
-TEST_F(ImageDecodeAcceleratorStubTest, FailedDecodes) {
+TEST_P(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   {
     InSequence call_sequence;
     EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
@@ -566,7 +578,7 @@ TEST_F(ImageDecodeAcceleratorStubTest, FailedDecodes) {
   CheckTransferCacheEntries({});
 }
 
-TEST_F(ImageDecodeAcceleratorStubTest, OutOfOrderDecodeSyncTokens) {
+TEST_P(ImageDecodeAcceleratorStubTest, OutOfOrderDecodeSyncTokens) {
   EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
       .Times(1);
   const SyncToken decode1_sync_token = SendDecodeRequest(
@@ -590,7 +602,7 @@ TEST_F(ImageDecodeAcceleratorStubTest, OutOfOrderDecodeSyncTokens) {
   CheckTransferCacheEntries({});
 }
 
-TEST_F(ImageDecodeAcceleratorStubTest, ZeroReleaseCountDecodeSyncToken) {
+TEST_P(ImageDecodeAcceleratorStubTest, ZeroReleaseCountDecodeSyncToken) {
   const SyncToken decode_sync_token = SendDecodeRequest(
       gfx::Size(100, 100) /* output_size */, 0u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
@@ -606,7 +618,7 @@ TEST_F(ImageDecodeAcceleratorStubTest, ZeroReleaseCountDecodeSyncToken) {
   CheckTransferCacheEntries({});
 }
 
-TEST_F(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
+TEST_P(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
   const SyncToken decode_sync_token = SendDecodeRequest(
       gfx::Size(0, 100) /* output_size */, 1u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
@@ -622,7 +634,7 @@ TEST_F(ImageDecodeAcceleratorStubTest, ZeroWidthOutputSize) {
   CheckTransferCacheEntries({});
 }
 
-TEST_F(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
+TEST_P(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
   const SyncToken decode_sync_token = SendDecodeRequest(
       gfx::Size(100, 0) /* output_size */, 1u /* decode_release_count */,
       1u /* transfer_cache_entry_id */, 1u /* handle_release_count */);
@@ -640,7 +652,7 @@ TEST_F(ImageDecodeAcceleratorStubTest, ZeroHeightOutputSize) {
 
 // Tests that we wait for a discardable handle's buffer to be registered before
 // we attempt to process the corresponding completed decode.
-TEST_F(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
+TEST_P(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
   EXPECT_CALL(image_decode_accelerator_worker_, DoDecode(gfx::Size(100, 100)))
       .Times(1);
 
@@ -695,5 +707,11 @@ TEST_F(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
 }
 
 // TODO(andrescj): test the deletion of transfer cache entries.
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ImageDecodeAcceleratorStubTest,
+    ::testing::Values(gfx::BufferFormat::YVU_420,
+                      gfx::BufferFormat::YUV_420_BIPLANAR));
 
 }  // namespace gpu

@@ -66,6 +66,14 @@ const char* const kScrollIntoViewWithPaddingScript =
     window.scrollBy({top: rect.top - topPadding});
   })";
 
+// Scroll the window or any scrollable container as needed for the element to
+// appear centered. This is in preparation of a click, to improve the chances
+// for the element to click to be visible.
+const char* const kScrollIntoViewCenterScript =
+    R"(function(node) {
+    node.scrollIntoView({block: "center", inline: "center"});
+  })";
+
 const char* const kScrollIntoViewIfNeededScript =
     R"(function(node) {
     node.scrollIntoViewIfNeeded();
@@ -985,7 +993,7 @@ void WebController::ClickOrTapElement(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_object_id)
           .SetArguments(std::move(argument))
-          .SetFunctionDeclaration(std::string(kScrollIntoViewIfNeededScript))
+          .SetFunctionDeclaration(std::string(kScrollIntoViewCenterScript))
           .SetReturnByValue(true)
           .Build(),
       base::BindOnce(&WebController::OnScrollIntoView,

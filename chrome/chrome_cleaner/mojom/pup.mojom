@@ -5,7 +5,7 @@
 module chrome_cleaner.mojom;
 
 // chrome_prompt included for the FilePath struct.
-import "components/chrome_cleaner/public/mojom/chrome_prompt.mojom";
+import "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom";
 
 // Typemapped to chrome_cleaner::UwS::TraceLocation enumeration from
 // chrome_cleaner/logging/proto/shared_data.proto.

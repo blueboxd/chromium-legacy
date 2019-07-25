@@ -5,22 +5,29 @@
 #ifndef COMPONENTS_SAFE_BROWSING_REALTIME_POLICY_ENGINE_H_
 #define COMPONENTS_SAFE_BROWSING_REALTIME_POLICY_ENGINE_H_
 
+class PrefService;
+
 namespace safe_browsing {
 
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.
 class RealTimePolicyEngine {
- private:
-  RealTimePolicyEngine() = delete;
-  ~RealTimePolicyEngine() = delete;
-
  public:
+  explicit RealTimePolicyEngine(PrefService* pref_service);
+  ~RealTimePolicyEngine();
+
   // Can the high confidence allowlist be sync'd?
   static bool CanFetchAllowlist();
 
   // Return true if the feature to enable full URL lookups is enabled and the
   // allowlist fetch is enabled.
-  static bool CanPerformFullURLLookup();
+  bool CanPerformFullURLLookup();
+
+ private:
+  // Does not indicate ownership of |pref_service_|. The owner of the
+  // RealTimePolicyEngine is responsible for ensuring |pref_service_| outlasts
+  // this.
+  PrefService* pref_service_;
 };  // class RealTimePolicyEngine
 
 }  // namespace safe_browsing

@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/web-nfc/#the-nfcreader-and-nfcwriter-objects
+// https://w3c.github.io/web-nfc/#dom-ndefmessagesource
+
+typedef (DOMString or ArrayBuffer or NDEFMessageInit) NDEFMessageSource;
+
+// https://w3c.github.io/web-nfc/#dom-nfcwriter
 
 [
     RuntimeEnabled=WebNFC,

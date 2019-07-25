@@ -81,21 +81,6 @@ def newobj_handler(event):
   load_gdb_chrome(src_dir)
 
 
-lsb_release = subprocess.Popen(['lsb_release', '-sc'],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-codename = lsb_release.communicate()[0]
-if codename.rstrip() == b'rodete' and 'gg' not in gdb.VERSION:
-  sys.stderr.write(
-      '\033[93mDetected gLinux without using google-gdb.  google-gdb is '
-      'recommended because it is more up-to-date than the system gdb, which '
-      'has known issues (https://crbug.com/957374).  To switch to google-gdb, '
-      'run "sudo apt install google-gdb" which will *uninstall* gdb and '
-      '*install* google-gdb.  This is a drop-in replacement with the same '
-      'command line usage, so you can still run eg. '
-      '"gdb out/Debug/chrome".\033[0m\n'
-  )
-
 # Event hook for newly loaded objfiles.
 # https://sourceware.org/gdb/onlinedocs/gdb/Events-In-Python.html
 gdb.events.new_objfile.connect(newobj_handler)

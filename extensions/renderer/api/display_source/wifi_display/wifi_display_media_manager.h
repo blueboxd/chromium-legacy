@@ -12,7 +12,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/common/mojo/wifi_display_session_service.mojom.h"
+#include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"

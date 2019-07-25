@@ -25,6 +25,8 @@ source_set("web") {
     "sad_tab_tab_helper.mm",
     "web_navigation_util.h",
     "web_navigation_util.mm",
+    "web_state_delegate_tab_helper.h",
+    "web_state_delegate_tab_helper.mm",
   ]
   deps = [
     ":feature_flags",

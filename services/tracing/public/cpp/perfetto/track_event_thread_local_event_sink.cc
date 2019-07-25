@@ -19,6 +19,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/source_location.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/task_execution.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"

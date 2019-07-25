@@ -91,6 +91,14 @@ target(_libcxx_target_type, "libc++") {
     ]
     configs -= [ "//build/config/win:winver" ]
     configs += [ ":winver" ]
+    if (libcxx_natvis_include) {
+      inputs = [
+        # libc++.natvis listed as an input here instead of in
+        # //build/config/c++:runtime_library to prevent unnecessary size
+        # increase in generated build files.
+        "//build/config/c++/libc++.natvis",
+      ]
+    }
   }
   configs -= [
     "//build/config/compiler:chromium_code",

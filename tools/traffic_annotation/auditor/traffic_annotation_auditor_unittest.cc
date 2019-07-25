@@ -334,6 +334,7 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
     EXPECT_EQ(annotation.proto.source().file(),
               "chrome/browser/supervised_user/legacy/"
               "supervised_user_refresh_token_fetcher.cc");
+    EXPECT_EQ(annotation.proto.source().function(), "OnGetTokenSuccess");
     EXPECT_EQ(annotation.proto.source().line(), 166);
     EXPECT_EQ(annotation.proto.semantics().sender(), "Supervised Users");
     EXPECT_EQ(annotation.proto.policy().cookies_allowed(), 1);
@@ -364,6 +365,8 @@ TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
 
     EXPECT_EQ(call.file_path, "headless/public/util/http_url_fetcher.cc");
     EXPECT_EQ(call.line_number, 100u);
+    EXPECT_EQ(call.function_context,
+              "headless::HttpURLFetcher::Delegate::Delegate");
     EXPECT_EQ(call.function_name, "net::URLRequestContext::CreateRequest");
     EXPECT_EQ(call.is_annotated, true);
   }
@@ -378,7 +381,8 @@ TEST_F(TrafficAnnotationAuditorTest, AssignmentDeserialization) {
 
   Assignmentample test_cases[] = {
       {"good_assignment.txt", AuditorResult::Type::RESULT_OK},
-      {"bad_assignment.txt", AuditorResult::Type::ERROR_FATAL},
+      {"bad_assignment1.txt", AuditorResult::Type::ERROR_FATAL},
+      {"bad_assignment2.txt", AuditorResult::Type::ERROR_FATAL},
   };
 
   for (const auto& test_case : test_cases) {

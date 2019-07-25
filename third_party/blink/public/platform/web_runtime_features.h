@@ -124,10 +124,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableNavigatorContentUtils(bool);
   BLINK_PLATFORM_EXPORT static void EnableNetInfoDownlinkMax(bool);
   BLINK_PLATFORM_EXPORT static void EnableNetworkService(bool);
-  BLINK_PLATFORM_EXPORT static void
-  EnableUpdateHoverFromLayoutChangeAtBeginFrame(bool);
-  BLINK_PLATFORM_EXPORT static void EnableUpdateHoverFromScrollAtBeginFrame(
-      bool);
+  BLINK_PLATFORM_EXPORT static void EnableUpdateHoverAtBeginFrame(bool);
   BLINK_PLATFORM_EXPORT static void EnableNotificationConstructor(bool);
   BLINK_PLATFORM_EXPORT static void EnableNotificationContentImage(bool);
   BLINK_PLATFORM_EXPORT static void EnableNotifications(bool);

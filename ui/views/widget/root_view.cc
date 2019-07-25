@@ -608,7 +608,7 @@ void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void RootView::UpdateParentLayer() {
   if (layer())
-    ReparentLayer(gfx::Vector2d(GetMirroredX(), y()), widget_->GetLayer());
+    ReparentLayer(widget_->GetLayer());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

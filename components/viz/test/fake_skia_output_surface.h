@@ -49,7 +49,9 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
                bool has_alpha,
                bool use_stencil) override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
-  void ScheduleOverlays(OverlayCandidateList overlays) override;
+  void ScheduleOutputSurfaceAsOverlay(
+      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane)
+      override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
@@ -100,6 +102,10 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   // If set true, callbacks triggering will be in a reverse order as SignalQuery
   // calls.
   void SetOutOfOrderCallbacks(bool out_of_order_callbacks);
+
+  void ScheduleGpuTaskForTesting(
+      base::OnceClosure callback,
+      std::vector<gpu::SyncToken> sync_tokesn) override;
 
  private:
   explicit FakeSkiaOutputSurface(

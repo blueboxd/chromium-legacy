@@ -511,12 +511,12 @@ class TestSocketFactory : public net::ClientSocketFactory {
                                                         success_);
   }
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      net::SSLClientContext*,
       std::unique_ptr<net::StreamSocket>,
       const net::HostPortPair&,
-      const net::SSLConfig&,
-      const net::SSLClientSocketContext&) override {
+      const net::SSLConfig&) override {
     NOTIMPLEMENTED();
-    return std::unique_ptr<net::SSLClientSocket>();
+    return nullptr;
   }
   std::unique_ptr<net::ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<net::StreamSocket> stream_socket,

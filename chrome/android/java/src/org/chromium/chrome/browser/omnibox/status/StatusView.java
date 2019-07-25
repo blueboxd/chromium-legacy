@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.omnibox.status;
 import static org.chromium.chrome.browser.toolbar.top.ToolbarPhone.URL_FOCUS_CHANGE_ANIMATION_DURATION_MS;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.support.annotation.ColorRes;
@@ -48,6 +50,8 @@ public class StatusView extends LinearLayout {
     private @ColorRes int mIconTintRes;
     private @StringRes int mAccessibilityToast;
 
+    private Bitmap mIconBitmap;
+
     public StatusView(Context context, AttributeSet attributes) {
         super(context, attributes);
     }
@@ -75,6 +79,8 @@ public class StatusView extends LinearLayout {
             targetIcon = UiUtils.getTintedDrawable(getContext(), mIconRes, mIconTintRes);
         } else if (mIconRes != 0) {
             targetIcon = AppCompatResources.getDrawable(getContext(), mIconRes);
+        } else if (mIconBitmap != null) {
+            targetIcon = new BitmapDrawable(getResources(), mIconBitmap);
         } else {
             // Do not specify any icon here and do not replace existing icon, either.
             // TransitionDrawable uses different timing mechanism than Animations, and that may,
@@ -202,6 +208,9 @@ public class StatusView extends LinearLayout {
      */
     void setStatusIcon(@DrawableRes int imageRes) {
         mIconRes = imageRes;
+        // mIconRes and mIconBitmap are mutually exclusive and therefore when one is set, the other
+        // should be unset.
+        mIconBitmap = null;
         animateStatusIcon();
     }
 
@@ -215,6 +224,17 @@ public class StatusView extends LinearLayout {
         // UI thread (including status icon configuration) are complete, but can be avoided
         // entirely, making the code also more intuitive.
         mIconTintRes = colorRes;
+        animateStatusIcon();
+    }
+
+    /**
+     * Specify the icon drawable.
+     */
+    void setStatusIcon(Bitmap icon) {
+        mIconBitmap = icon;
+        // mIconRes and mIconBitmap are mutually exclusive and therefore when one is set, the other
+        // should be unset.
+        mIconRes = 0;
         animateStatusIcon();
     }
 

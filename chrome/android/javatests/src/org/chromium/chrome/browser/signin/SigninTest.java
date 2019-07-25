@@ -5,15 +5,15 @@
 package org.chromium.chrome.browser.signin;
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.preference.Preference;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.Preference;
 import android.widget.Button;
 
 import org.junit.After;
@@ -379,7 +379,7 @@ public class SigninTest {
     }
 
     private static MainPreferences getMainPreferences(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getMainFragment();
+        Fragment fragment = prefActivity.getMainFragmentCompat();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof MainPreferences);
         return (MainPreferences) fragment;
@@ -395,7 +395,7 @@ public class SigninTest {
     }
 
     private static void clickSignOut(Preferences prefActivity) {
-        Fragment fragment = prefActivity.getMainFragment();
+        Fragment fragment = prefActivity.getMainFragmentCompat();
         Assert.assertNotNull(fragment);
         Assert.assertTrue(fragment instanceof AccountManagementFragment);
         AccountManagementFragment managementFragment = (AccountManagementFragment) fragment;

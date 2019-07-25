@@ -18,7 +18,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
@@ -38,45 +37,11 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "net/base/network_change_notifier.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
-using base::trace_event::TraceConfig;
-
 namespace content {
-
-namespace {
-
-// All the upload limits below are set for uncompressed trace log. On
-// compression the data size usually reduces by 3x for size < 10MB, and the
-// compression ratio grows up to 8x if the buffer size is around 100MB.
-// TODO(ssid): Consider making these limits configurable by experiments.
-#if defined(OS_ANDROID)
-// TODO(ssid): If we see too many failures while uploading then consider
-// lowering this limit.
-constexpr size_t kUploadLimitNoWifiKb = 300;       // ~100KB compressed size.
-constexpr size_t kUploadLimitOnWifiKb = 5 * 1024;  // ~1MB compressed size.
-#else
-constexpr size_t kUploadLimitKb = 30 * 1024;  // Less than 10MB compressed size.
-#endif
-
-size_t TraceLogUploadLimitKb() {
-#if defined(OS_ANDROID)
-  auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
-  if (connection_type != net::NetworkChangeNotifier::CONNECTION_WIFI &&
-      connection_type != net::NetworkChangeNotifier::CONNECTION_ETHERNET &&
-      connection_type != net::NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
-    return kUploadLimitNoWifiKb;
-  }
-  return kUploadLimitOnWifiKb;
-#else
-  return kUploadLimitKb;
-#endif
-}
-
-}  // namespace
 
 // static
 void BackgroundTracingManagerImpl::RecordMetric(Metrics metric) {
@@ -180,6 +145,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   }
 
   bool requires_anonymized_data = (data_filtering == ANONYMIZE_DATA);
+  config_impl->set_requires_anonymized_data(requires_anonymized_data);
 
   // If the profile hasn't loaded or been created yet, this is a startup
   // scenario and we have to wait until initialization is finished to validate
@@ -204,8 +170,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   }
 
   active_scenario_ = std::make_unique<BackgroundTracingActiveScenario>(
-      std::move(config_impl), requires_anonymized_data,
-      std::move(receive_callback),
+      std::move(config_impl), std::move(receive_callback),
       base::BindOnce(&BackgroundTracingManagerImpl::OnScenarioAborted,
                      base::Unretained(this)));
 
@@ -235,11 +200,13 @@ bool BackgroundTracingManagerImpl::HasTraceToUpload() {
   if (trace_to_upload_.empty()) {
     return false;
   }
-  if (trace_to_upload_.size() > TraceLogUploadLimitKb() * 1024) {
-    RecordMetric(Metrics::LARGE_UPLOAD_WAITING_TO_RETRY);
-    return false;
+  if (active_scenario_ &&
+      trace_to_upload_.size() <=
+          active_scenario_->GetTraceUploadLimitKb() * 1024) {
+    return true;
   }
-  return true;
+  RecordMetric(Metrics::LARGE_UPLOAD_WAITING_TO_RETRY);
+  return false;
 }
 
 std::string BackgroundTracingManagerImpl::GetLatestTraceToUpload() {
@@ -340,7 +307,7 @@ void BackgroundTracingManagerImpl::ValidateStartupScenario() {
 
   if (!delegate_->IsAllowedToBeginBackgroundScenario(
           *active_scenario_->GetConfig(),
-          active_scenario_->requires_anonymized_data())) {
+          active_scenario_->GetConfig()->requires_anonymized_data())) {
     AbortScenario();
   }
 }
@@ -431,10 +398,11 @@ void BackgroundTracingManagerImpl::WhenIdle(
 }
 
 bool BackgroundTracingManagerImpl::IsAllowedFinalization() const {
-  return !delegate_ || (active_scenario_ &&
-                        delegate_->IsAllowedToEndBackgroundScenario(
-                            *active_scenario_->GetConfig(),
-                            active_scenario_->requires_anonymized_data()));
+  return !delegate_ ||
+         (active_scenario_ &&
+          delegate_->IsAllowedToEndBackgroundScenario(
+              *active_scenario_->GetConfig(),
+              active_scenario_->GetConfig()->requires_anonymized_data()));
 }
 
 std::unique_ptr<base::DictionaryValue>

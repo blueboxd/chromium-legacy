@@ -2620,6 +2620,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
     "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
     "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenManager.java",
+    "java/src/org/chromium/chrome/browser/webapps/WebApkHandlerDelegate.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkPostShareTargetNavigator.java",

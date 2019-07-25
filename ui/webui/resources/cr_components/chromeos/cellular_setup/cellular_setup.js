@@ -7,7 +7,7 @@ cr.define('cellular_setup', function() {
   const PageName = {
     SIM_DETECT: 'sim-detect-page',
     PROVISIONING: 'provisioning-page',
-    SUCCESS: 'success-page',
+    FINAL: 'final-page',
   };
 
   return {PageName: PageName};
@@ -37,7 +37,7 @@ Polymer({
     /**
      * DOM Element for the current selected sub-page.
      * @private {!SimDetectPageElement|!ProvisioningPageElement|
-     *           !SuccessPageElement}
+     *           !FinalPageElement}
      */
     selectedPage_: Object,
 

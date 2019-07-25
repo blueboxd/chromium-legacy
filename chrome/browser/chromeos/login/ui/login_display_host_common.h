@@ -11,11 +11,12 @@
 
 #include "chrome/browser/chromeos/login/ui/kiosk_app_menu_controller.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ui/browser_list_observer.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 class AccountId;
-class ScopedKeepAlive;
 
 namespace chromeos {
 
@@ -26,6 +27,7 @@ class DemoAppLauncher;
 // implementation - the goal is to reduce code duplication between
 // LoginDisplayHostMojo and LoginDisplayHostWebUI.
 class LoginDisplayHostCommon : public LoginDisplayHost,
+                               public BrowserListObserver,
                                public content::NotificationObserver {
  public:
   LoginDisplayHostCommon();
@@ -54,6 +56,9 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void CancelPasswordChangedFlow() final;
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -108,14 +113,14 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   bool is_finalizing_ = false;
 
   // Make sure chrome won't exit while we are at login/oobe screen.
-  std::unique_ptr<ScopedKeepAlive> keep_alive_;
+  ScopedKeepAlive keep_alive_;
 
   // Called after host deletion.
   std::vector<base::OnceClosure> completion_callbacks_;
 
   KioskAppMenuController kiosk_app_menu_controller_;
 
-  base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_;
+  base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostCommon);
 };

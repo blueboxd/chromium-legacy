@@ -23,7 +23,11 @@ enum class SMSReceiverOutcome {
 
 void RecordSMSOutcome(SMSReceiverOutcome outcome);
 
-void RecordSMSSuccessTime(const base::TimeDelta duration);
+void RecordSMSSuccessTime(base::TimeDelta duration);
+
+void RecordSMSTimeoutExceededTime(base::TimeDelta duration);
+
+void RecordSMSCancelTime(base::TimeDelta duration);
 
 }  // namespace blink
 

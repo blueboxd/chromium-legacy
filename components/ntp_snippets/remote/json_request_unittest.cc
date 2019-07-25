@@ -105,6 +105,17 @@ class JsonRequestTest : public testing::Test {
     return builder;
   }
 
+  std::unique_ptr<base::test::ScopedFeatureList> ForceOptionalImagesSupport(
+      bool supported) {
+    auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
+    if (supported) {
+      feature_list->InitWithFeatures({kOptionalImagesEnabledFeature}, {});
+    } else {
+      feature_list->InitWithFeatures({}, {kOptionalImagesEnabledFeature});
+    }
+    return feature_list;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -158,6 +169,58 @@ TEST_F(JsonRequestTest, BuildRequestUnauthenticated) {
                          "  \"excludedSuggestionIds\": [],"
                          "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
                          "}"));
+}
+
+TEST_F(JsonRequestTest, BuildRequestDisplayCapabilityDisabledByFeature) {
+  auto optional_images_feature_list = ForceOptionalImagesSupport(false);
+
+  JsonRequest::Builder builder;
+  builder.SetOptionalImagesCapability(true);
+
+  EXPECT_THAT(builder.PreviewRequestHeadersForTesting(),
+              StrEq("Content-Type: application/json; charset=UTF-8\r\n"
+                    "\r\n"));
+
+  // The JSON should not contain any mention of displayCapability.
+  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
+              EqualsJSON("{"
+                         "  \"excludedSuggestionIds\": [],"
+                         "  \"priority\": \"BACKGROUND_PREFETCH\""
+                         "}"));
+}
+
+TEST_F(JsonRequestTest, BuildRequestDisplayCapabilityUnspecified) {
+  auto optional_images_feature_list = ForceOptionalImagesSupport(true);
+
+  JsonRequest::Builder builder;
+  builder.SetOptionalImagesCapability(false);
+
+  EXPECT_THAT(builder.PreviewRequestHeadersForTesting(),
+              StrEq("Content-Type: application/json; charset=UTF-8\r\n"
+                    "\r\n"));
+  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
+              EqualsJSON("{"
+                         "  \"excludedSuggestionIds\": [],"
+                         "  \"priority\": \"BACKGROUND_PREFETCH\""
+                         "}"));
+}
+
+TEST_F(JsonRequestTest, BuildRequestOptionalImages) {
+  auto optional_images_feature_list = ForceOptionalImagesSupport(true);
+
+  JsonRequest::Builder builder;
+  builder.SetOptionalImagesCapability(true);
+
+  EXPECT_THAT(builder.PreviewRequestHeadersForTesting(),
+              StrEq("Content-Type: application/json; charset=UTF-8\r\n"
+                    "\r\n"));
+  EXPECT_THAT(
+      builder.PreviewRequestBodyForTesting(),
+      EqualsJSON("{"
+                 "  \"displayCapability\": \"CAPABILITY_OPTIONAL_IMAGES\","
+                 "  \"excludedSuggestionIds\": [],"
+                 "  \"priority\": \"BACKGROUND_PREFETCH\""
+                 "}"));
 }
 
 TEST_F(JsonRequestTest, ShouldNotTruncateExcludedIdsList) {

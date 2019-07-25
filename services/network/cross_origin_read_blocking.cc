@@ -601,6 +601,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
       seems_sensitive_from_cache_heuristic_(
           SeemsSensitiveFromCacheHeuristic(response)),
       supports_range_requests_(SupportsRangeRequests(response)),
+      has_nosniff_header_(HasNoSniff(response)),
       content_length_(response.content_length),
       http_response_code_(response.headers ? response.headers->response_code()
                                            : 0) {
@@ -747,18 +748,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     }
   }
 
-  // We intend to block the response at this point.  However, we will usually
-  // sniff the contents to confirm the MIME type, to avoid blocking incorrectly
-  // labeled JavaScript, JSONP, etc files.
-  //
-  // Note: if there is a nosniff header, it means we should honor the response
-  // mime type without trying to confirm it.
-  std::string nosniff_header;
-  response.headers->GetNormalizedHeader("x-content-type-options",
-                                        &nosniff_header);
-  bool has_nosniff_header =
-      base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
-
   // Some types (e.g. ZIP) are protected without any confirmation sniffing.
   if (canonical_mime_type == MimeType::kNeverSniffed)
     return kBlock;
@@ -820,13 +809,20 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     }
   }
 
+  // We intend to block the response at this point.  However, we will usually
+  // sniff the contents to confirm the MIME type, to avoid blocking incorrectly
+  // labeled JavaScript, JSONP, etc files.
+  //
+  // Note: if there is a nosniff header, it means we should honor the response
+  // mime type without trying to confirm it.
+  //
   // Decide whether to block based on the MIME type.
   switch (canonical_mime_type) {
     case MimeType::kHtml:
     case MimeType::kXml:
     case MimeType::kJson:
     case MimeType::kPlain:
-      if (has_nosniff_header)
+      if (HasNoSniff(response))
         return kBlock;
       else
         return kNeedToSniffMore;
@@ -848,6 +844,17 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   }
   NOTREACHED();
   return kBlock;
+}
+
+// static
+bool CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
+    const ResourceResponseInfo& response) {
+  if (!response.headers)
+    return false;
+  std::string nosniff_header;
+  response.headers->GetNormalizedHeader("x-content-type-options",
+                                        &nosniff_header);
+  return base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
 }
 
 // static
@@ -1165,6 +1172,10 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
               "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType."
               "BlockedWithRangeSupport",
               supports_range_requests_);
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CORSHeuristic.ProtectedMimeType."
+              "BlockedWithoutSniffing.HasNoSniff",
+              has_nosniff_header_);
         } else if (protection_decision ==
                    CrossOriginProtectionDecision::kBlockedAfterSniffing) {
           UMA_HISTOGRAM_BOOLEAN(
@@ -1195,6 +1206,10 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogSensitiveResponseProtection(
               "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType."
               "BlockedWithRangeSupport",
               supports_range_requests_);
+          UMA_HISTOGRAM_BOOLEAN(
+              "SiteIsolation.CORBProtection.CacheHeuristic.ProtectedMimeType."
+              "BlockedWithoutSniffing.HasNoSniff",
+              has_nosniff_header_);
         } else if (protection_decision ==
                    CrossOriginProtectionDecision::kBlockedAfterSniffing) {
           UMA_HISTOGRAM_BOOLEAN(

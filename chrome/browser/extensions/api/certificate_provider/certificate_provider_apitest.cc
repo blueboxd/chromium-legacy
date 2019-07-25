@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/chromeos/ui/request_pin_view.h"
 #include "chrome/browser/extensions/api/certificate_provider/certificate_provider_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -107,42 +108,6 @@ std::string JsUint8Array(const std::vector<uint8_t>& bytes) {
   return res;
 }
 
-// Enters the code in the ShowPinDialog window and pushes the OK event.
-void EnterCode(chromeos::CertificateProviderService* service,
-               const base::string16& code) {
-  chromeos::RequestPinView* view =
-      service->pin_dialog_manager()->active_view_for_testing();
-  view->textfield_for_testing()->SetText(code);
-  view->Accept();
-  base::RunLoop().RunUntilIdle();
-}
-
-// Enters the valid code for extensions from local example folders, in the
-// ShowPinDialog window and waits for the window to close. The extension code
-// is expected to send "Success" message after the validation and request to
-// stopPinRequest is done.
-void EnterCorrectPin(chromeos::CertificateProviderService* service) {
-  ExtensionTestMessageListener listener("Success", false);
-  EnterCode(service, base::ASCIIToUTF16("1234"));
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-}
-
-// Enters an invalid code for extensions from local example folders, in the
-// ShowPinDialog window and waits for the window to update with the error. The
-// extension code is expected to send "Invalid PIN" message after the validation
-// and the new requestPin (with the error) is done.
-void EnterWrongPin(chromeos::CertificateProviderService* service) {
-  ExtensionTestMessageListener listener("Invalid PIN", false);
-  EnterCode(service, base::ASCIIToUTF16("567"));
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-
-  // Check that we have an error message displayed.
-  chromeos::RequestPinView* view =
-      service->pin_dialog_manager()->active_view_for_testing();
-  EXPECT_EQ(gfx::kGoogleRed600,
-            view->error_label_for_testing()->GetEnabledColor());
-}
-
 class CertificateProviderApiTest : public extensions::ExtensionApiTest {
  public:
   CertificateProviderApiTest() {}
@@ -180,24 +145,82 @@ class CertificateProviderApiTest : public extensions::ExtensionApiTest {
 };
 
 class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
- public:
-  // Loads certificate_provider extension from |folder| and |file_name|.
-  // Returns the CertificateProviderService object from browser context.
-  chromeos::CertificateProviderService* LoadRequestPinExtension(
-      const std::string& folder,
-      const std::string& file_name) {
-    const base::FilePath extension_path =
-        test_data_dir_.AppendASCII("certificate_provider/" + folder);
-    const extensions::Extension* const extension =
-        LoadExtension(extension_path);
-    chromeos::CertificateProviderService* service =
+ protected:
+  static constexpr int kFakeSignRequestId = 123;
+  static constexpr int kWrongPinAttemptsLimit = 3;
+  static constexpr const char* kCorrectPin = "1234";
+  static constexpr const char* kWrongPin = "567";
+
+  void SetUpOnMainThread() override {
+    CertificateProviderApiTest::SetUpOnMainThread();
+    cert_provider_service_ =
         chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
             profile());
-    service->pin_dialog_manager()->AddSignRequestId(extension->id(), 123);
-    ui_test_utils::NavigateToURL(browser(),
-                                 extension->GetResourceURL(file_name));
-    return service;
+    LoadRequestPinExtension();
   }
+
+  void AddFakeSignRequest() {
+    cert_provider_service_->pin_dialog_manager()->AddSignRequestId(
+        extension_->id(), kFakeSignRequestId);
+  }
+
+  void NavigateTo(const std::string& test_page_file_name) {
+    ui_test_utils::NavigateToURL(
+        browser(), extension_->GetResourceURL(test_page_file_name));
+  }
+
+  chromeos::RequestPinView* GetActivePinDialogView() {
+    return cert_provider_service_->pin_dialog_manager()
+        ->active_view_for_testing();
+  }
+
+  views::Widget* GetActivePinDialogWindow() {
+    return cert_provider_service_->pin_dialog_manager()
+        ->active_window_for_testing();
+  }
+
+  // Enters the code in the ShowPinDialog window and pushes the OK event.
+  void EnterCode(const std::string& code) {
+    GetActivePinDialogView()->textfield_for_testing()->SetText(
+        base::ASCIIToUTF16(code));
+    GetActivePinDialogView()->Accept();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Enters the valid code for extensions from local example folders, in the
+  // ShowPinDialog window and waits for the window to close. The extension code
+  // is expected to send "Success" message after the validation and request to
+  // stopPinRequest is done.
+  void EnterCorrectPinAndWaitForMessage() {
+    ExtensionTestMessageListener listener("Success", false);
+    EnterCode(kCorrectPin);
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+  }
+
+  // Enters an invalid code for extensions from local example folders, in the
+  // ShowPinDialog window and waits for the window to update with the error. The
+  // extension code is expected to send "Invalid PIN" message after the
+  // validation and the new requestPin (with the error) is done.
+  void EnterWrongPinAndWaitForMessage() {
+    ExtensionTestMessageListener listener("Invalid PIN", false);
+    EnterCode(kWrongPin);
+    ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+    // Check that we have an error message displayed.
+    EXPECT_EQ(
+        gfx::kGoogleRed600,
+        GetActivePinDialogView()->error_label_for_testing()->GetEnabledColor());
+  }
+
+ private:
+  void LoadRequestPinExtension() {
+    const base::FilePath extension_path =
+        test_data_dir_.AppendASCII("certificate_provider/request_pin");
+    extension_ = LoadExtension(extension_path);
+  }
+
+  chromeos::CertificateProviderService* cert_provider_service_ = nullptr;
+  const extensions::Extension* extension_ = nullptr;
 };
 
 }  // namespace
@@ -317,96 +340,87 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderApiTest, Basic) {
 
 // User enters the correct PIN.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogAccept) {
-  chromeos::CertificateProviderService* service =
-      LoadRequestPinExtension("request_pin", "basic.html");
+  AddFakeSignRequest();
+  NavigateTo("basic.html");
 
   // Enter the valid PIN.
-  EnterCorrectPin(service);
+  EnterCorrectPinAndWaitForMessage();
 
   // The view should be set to nullptr when the window is closed.
-  EXPECT_EQ(service->pin_dialog_manager()->active_view_for_testing(), nullptr);
+  EXPECT_FALSE(GetActivePinDialogView());
 }
 
 // User closes the dialog kMaxClosedDialogsPer10Mins times, and the extension
 // should be blocked from showing it again.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ShowPinDialogClose) {
-  chromeos::CertificateProviderService* service =
-      LoadRequestPinExtension("request_pin", "basic.html");
+  AddFakeSignRequest();
+  NavigateTo("basic.html");
 
-  views::Widget* window =
-      service->pin_dialog_manager()->active_window_for_testing();
   for (int i = 0;
        i < extensions::api::certificate_provider::kMaxClosedDialogsPer10Mins;
        i++) {
     ExtensionTestMessageListener listener("User closed the dialog", false);
-    window->Close();
+    GetActivePinDialogWindow()->Close();
     ASSERT_TRUE(listener.WaitUntilSatisfied());
-    window = service->pin_dialog_manager()->active_window_for_testing();
   }
 
   ExtensionTestMessageListener close_listener("User closed the dialog", true);
-  window->Close();
+  GetActivePinDialogWindow()->Close();
   ASSERT_TRUE(close_listener.WaitUntilSatisfied());
   close_listener.Reply("GetLastError");
   ExtensionTestMessageListener last_error_listener(
       "This request exceeds the MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES quota.",
       false);
   ASSERT_TRUE(last_error_listener.WaitUntilSatisfied());
-  EXPECT_EQ(service->pin_dialog_manager()->active_view_for_testing(), nullptr);
+  EXPECT_FALSE(GetActivePinDialogView());
 }
 
 // User enters a wrong PIN first and a correct PIN on the second try.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        ShowPinDialogWrongPin) {
-  chromeos::CertificateProviderService* service =
-      LoadRequestPinExtension("request_pin", "basic.html");
-  EnterWrongPin(service);
+  AddFakeSignRequest();
+  NavigateTo("basic.html");
+  EnterWrongPinAndWaitForMessage();
 
   // The window should be active.
-  EXPECT_EQ(
-      service->pin_dialog_manager()->active_window_for_testing()->IsVisible(),
-      true);
-  EXPECT_NE(service->pin_dialog_manager()->active_view_for_testing(), nullptr);
+  EXPECT_TRUE(GetActivePinDialogWindow()->IsVisible());
+  EXPECT_TRUE(GetActivePinDialogView());
 
   // Enter the valid PIN.
-  EnterCorrectPin(service);
+  EnterCorrectPinAndWaitForMessage();
 
   // The view should be set to nullptr when the window is closed.
-  EXPECT_EQ(service->pin_dialog_manager()->active_view_for_testing(), nullptr);
+  EXPECT_FALSE(GetActivePinDialogView());
 }
 
 // User enters wrong PIN three times.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        ShowPinDialogWrongPinThreeTimes) {
-  chromeos::CertificateProviderService* service =
-      LoadRequestPinExtension("request_pin", "basic.html");
-  for (int i = 0; i < 3; i++) {
-    EnterWrongPin(service);
-  }
-
-  chromeos::RequestPinView* view =
-      service->pin_dialog_manager()->active_view_for_testing();
+  AddFakeSignRequest();
+  NavigateTo("basic.html");
+  for (int i = 0; i < kWrongPinAttemptsLimit; i++)
+    EnterWrongPinAndWaitForMessage();
 
   // The textfield has to be disabled, as extension does not allow input now.
-  EXPECT_EQ(view->textfield_for_testing()->GetEnabled(), false);
+  EXPECT_FALSE(GetActivePinDialogView()->textfield_for_testing()->GetEnabled());
 
   // Close the dialog.
   ExtensionTestMessageListener listener("No attempt left", false);
-  service->pin_dialog_manager()->active_window_for_testing()->Close();
+  GetActivePinDialogWindow()->Close();
   ASSERT_TRUE(listener.WaitUntilSatisfied());
-  EXPECT_EQ(service->pin_dialog_manager()->active_view_for_testing(), nullptr);
+  EXPECT_FALSE(GetActivePinDialogView());
 }
 
 // User closes the dialog while the extension is processing the request.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest,
                        ShowPinDialogCloseWhileProcessing) {
-  chromeos::CertificateProviderService* service =
-      LoadRequestPinExtension("request_pin", "basic_lock.html");
+  AddFakeSignRequest();
+  NavigateTo("basic_lock.html");
 
-  EnterCode(service, base::ASCIIToUTF16("123"));
-  service->pin_dialog_manager()->active_window_for_testing()->Close();
+  EnterCode(kWrongPin);
+  GetActivePinDialogWindow()->Close();
   base::RunLoop().RunUntilIdle();
 
   // The view should be set to nullptr when the window is closed.
-  EXPECT_EQ(service->pin_dialog_manager()->active_view_for_testing(), nullptr);
+  EXPECT_FALSE(GetActivePinDialogView());
 }

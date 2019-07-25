@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -58,6 +59,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -98,6 +100,18 @@ const char* const kCustodianInfoPrefs[] = {
     prefs::kSupervisedUserSecondCustodianProfileImageURL,
     prefs::kSupervisedUserSecondCustodianProfileURL,
 };
+
+void SetupRestrictedCrosSettingForChildUser(
+    std::map<std::string, base::Value>* restricted_prefs) {
+#if defined(OS_CHROMEOS)
+  (*restricted_prefs)[std::string(chromeos::kAccountsPrefAllowGuest)] =
+      base::Value(false);
+  (*restricted_prefs)[std::string(
+      chromeos::kAccountsPrefShowUserNamesOnSignIn)] = base::Value(false);
+  (*restricted_prefs)[std::string(chromeos::kAccountsPrefAllowNewUser)] =
+      base::Value(false);
+#endif  // OS_CHROMEOS
+}
 
 void CreateURLAccessRequest(const GURL& url,
                             PermissionRequestCreator* creator,
@@ -172,6 +186,25 @@ void SupervisedUserService::Init() {
                  weak_ptr_factory_.GetWeakPtr()));
 
   SetActive(ProfileIsSupervised());
+  SetupRestrictedCrosSettingForChildUser(&child_user_restricted_cros_settings_);
+}
+
+// TODO(crbug/945934) Move the following 2 methods to
+// SupervisedUserCrosSettingProvider.
+bool SupervisedUserService::IsRestrictedCrosSettingForChildUser(
+    const std::string& pref_name) const {
+  if (!profile_->IsChild())
+    return false;
+  return base::Contains(child_user_restricted_cros_settings_, pref_name);
+}
+
+const base::Value*
+SupervisedUserService::GetRestrictedCrosSettingValueForChildUser(
+    const std::string& pref_name) const {
+  auto value = child_user_restricted_cros_settings_.find(pref_name);
+  if (value == child_user_restricted_cros_settings_.end())
+    return nullptr;
+  return &(value->second);
 }
 
 void SupervisedUserService::SetDelegate(Delegate* delegate) {

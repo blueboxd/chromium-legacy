@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//components/account_id/interfaces/account_id.typemap",
+  "//components/account_id/mojom/account_id.typemap",
   "//components/autofill/core/common/mojom/autofill_types.typemap",
   "//components/chrome_cleaner/public/typemaps/chrome_prompt.typemap",
   "//components/content_capture/common/content_capture.typemap",

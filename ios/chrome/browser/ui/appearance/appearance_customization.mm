@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 
+#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 
@@ -13,7 +14,12 @@
 
 void CustomizeUIAppearance() {
   Class containerClass = [TableViewNavigationController class];
-  UIBarButtonItem* barbuttonItemAppearance = [UIBarButtonItem
+  UIBarButtonItem* barButtonItemAppearance = [UIBarButtonItem
       appearanceWhenContainedInInstancesOfClasses:@[ containerClass ]];
-  barbuttonItemAppearance.tintColor = [UIColor colorNamed:kTintColor];
+  barButtonItemAppearance.tintColor = [UIColor colorNamed:kTintColor];
+
+  Class navigationBarClass = [SettingsNavigationController class];
+  UINavigationBar* navigationBarAppearance = [UINavigationBar
+      appearanceWhenContainedInInstancesOfClasses:@[ navigationBarClass ]];
+  navigationBarAppearance.tintColor = [UIColor colorNamed:kTintColor];
 }

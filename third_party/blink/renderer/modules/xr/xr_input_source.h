@@ -20,6 +20,7 @@ class Gamepad;
 namespace blink {
 
 class XRGripSpace;
+class XRInputSourceEvent;
 class XRSession;
 class XRSpace;
 class XRTargetRaySpace;
@@ -29,6 +30,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   USING_GARBAGE_COLLECTED_MIXIN(XRInputSource);
 
  public:
+  enum class UserActivation { kEnabled, kDisabled };
+
   static XRInputSource* CreateOrUpdateFrom(
       XRInputSource* other /* may be null, input */,
       XRSession* session,
@@ -43,12 +46,6 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   int16_t activeFrameId() const { return state_.active_frame_id; }
   void setActiveFrameId(int16_t id) { state_.active_frame_id = id; }
-
-  bool primaryInputPressed() const { return state_.primary_input_pressed; }
-  void setPrimaryInputPressed(bool val) { state_.primary_input_pressed = val; }
-
-  bool selectionCancelled() const { return state_.selection_cancelled; }
-  void setSelectionCancelled(bool val) { state_.selection_cancelled = val; }
 
   XRSession* session() const { return session_; }
 
@@ -83,6 +80,13 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     return pointer_transform_matrix_.get();
   }
 
+  void OnSelectStart();
+  void OnSelectEnd(UserActivation user_activation);
+  void OnSelect();
+  void UpdateSelectState(
+      const device::mojom::blink::XRInputSourceStatePtr& state);
+  void OnRemoved();
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -114,6 +118,8 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   // Note that UpdateGamepad should only be called after a check/recreation
   // from InvalidatesSameObject
   void UpdateGamepad(const base::Optional<device::Gamepad>& gamepad);
+
+  XRInputSourceEvent* CreateInputSourceEvent(const AtomicString& type);
 
   // These member variables all require special behavior when being copied or
   // are Member<T> type variables.  When adding another one, be sure to keep the

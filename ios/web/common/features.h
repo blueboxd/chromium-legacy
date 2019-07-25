@@ -38,6 +38,9 @@ extern const base::Feature kBlockUniversalLinksInOffTheRecordMode;
 // Used to ensure that the render is not suspended.
 extern const base::Feature kKeepsRenderProcessAlive;
 
+// Used to enable committed interstitials for SSL errors.
+extern const base::Feature kSSLCommittedInterstitials;
+
 }  // namespace features
 }  // namespace web
 

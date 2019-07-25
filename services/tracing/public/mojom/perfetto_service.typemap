@@ -29,6 +29,7 @@ public_deps = [
   "//third_party/perfetto:libperfetto",
 ]
 type_mappings = [
+  "tracing.mojom.BufferFillPolicy=perfetto::TraceConfig::BufferConfig::FillPolicy",
   "tracing.mojom.CommitDataRequest=perfetto::CommitDataRequest",
   "tracing.mojom.ChunksToMove=perfetto::CommitDataRequest::ChunksToMove",
   "tracing.mojom.ChunkPatch=perfetto::CommitDataRequest::ChunkToPatch::Patch",

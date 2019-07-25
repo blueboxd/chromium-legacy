@@ -315,15 +315,15 @@ class TestSocketFactory : public net::ClientSocketFactory {
     }
   }
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      net::SSLClientContext* context,
       std::unique_ptr<net::StreamSocket> nested_socket,
       const net::HostPortPair& host_and_port,
-      const net::SSLConfig& ssl_config,
-      const net::SSLClientSocketContext& context) override {
+      const net::SSLConfig& ssl_config) override {
     if (!ssl_connect_data_) {
       // Test isn't overriding SSL socket creation.
       return net::ClientSocketFactory::GetDefaultFactory()
-          ->CreateSSLClientSocket(std::move(nested_socket), host_and_port,
-                                  ssl_config, context);
+          ->CreateSSLClientSocket(context, std::move(nested_socket),
+                                  host_and_port, ssl_config);
     }
     ssl_socket_data_provider_ = std::make_unique<net::SSLSocketDataProvider>(
         ssl_connect_data_->mode, ssl_connect_data_->result);

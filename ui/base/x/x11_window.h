@@ -357,11 +357,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow::Delegate {
   virtual void OnXWindowCloseRequested() = 0;
   virtual void OnXWindowIsActiveChanged(bool active) = 0;
 
-  // TODO(crbug.com/981606): Cannot depend directly on X11EventSource due to
-  // circular dependency between ui/base/x and ui/events/platform/x11. Remove
-  // this function once it is solved.
-  virtual ::Time GetTimestampForXWindow() = 0;
-
   // Optional Hooks
   virtual void OnXWindowMapped();
   virtual void OnXWindowUnmapped();

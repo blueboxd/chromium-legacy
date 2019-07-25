@@ -16,7 +16,6 @@ import android.webkit.URLUtil;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -285,8 +284,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             if (!MailTo.isMailTo(params.getLinkUrl())
                     && !UrlUtilities.isTelScheme(params.getLinkUrl())) {
                 linkTab.add(new ChromeContextMenuItem(Item.COPY_LINK_ADDRESS));
-                if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CUSTOM_CONTEXT_MENU)
-                        && !params.getLinkText().trim().isEmpty() && !params.isImage()) {
+                if (!params.getLinkText().trim().isEmpty() && !params.isImage()) {
                     linkTab.add(new ChromeContextMenuItem(Item.COPY_LINK_TEXT));
                 }
             }

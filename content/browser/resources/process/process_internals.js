@@ -192,8 +192,8 @@ function loadIsolatedOriginInfo() {
     $('user-triggered-isolated-origins').textContent =
         'The following origins are isolated because you previously typed a ' +
         'password into these sites (' + originCount + ' total). ' +
-        'Clear cache or history to wipe this list; this takes effect after ' +
-        'a restart.';
+        'Clear cookies or history to wipe this list; this takes effect ' +
+        'after a restart.';
 
     const list = document.createElement('ul');
     for (const origin of response.isolatedOrigins) {

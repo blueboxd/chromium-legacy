@@ -125,7 +125,7 @@ cr.define('extension_manager_tests', function() {
       // The detail view is not present until navigation.
       expectFalse(!!manager.$$('extensions-detail-view'));
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: extension.id});
+          {page: extensions.Page.DETAILS, extensionId: extension.id});
       const detailsView = manager.$$('extensions-detail-view');
       expectTrue(!!detailsView);  // View should now be present.
       expectEquals(extension.id, detailsView.data.id);
@@ -149,7 +149,7 @@ cr.define('extension_manager_tests', function() {
       simulateExtensionInstall(secondExtension);
 
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: extension.id});
+          {page: extensions.Page.DETAILS, extensionId: extension.id});
       const detailsView = manager.$$('extensions-detail-view');
 
       let extensionCopy = Object.assign({}, extension);
@@ -185,7 +185,7 @@ cr.define('extension_manager_tests', function() {
 
       expectTrue(manager.showActivityLog);
       extensions.navigation.navigateTo({
-        page: Page.ACTIVITY_LOG,
+        page: extensions.Page.ACTIVITY_LOG,
         extensionId: extension.id,
       });
 
@@ -251,7 +251,7 @@ cr.define('extension_manager_tests', function() {
       simulateExtensionInstall(extension);
 
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: extension.id});
+          {page: extensions.Page.DETAILS, extensionId: extension.id});
       Polymer.dom.flush();
       assertViewActive('extensions-detail-view');
 

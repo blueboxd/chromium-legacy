@@ -1,0 +1,20 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://w3c.github.io/web-nfc/#dom-nfcreader
+
+[
+    RuntimeEnabled=WebNFC,
+    ActiveScriptWrappable,
+    SecureContext,
+    Constructor(optional NFCReaderOptions options),
+    ConstructorCallWith=ExecutionContext,
+    Exposed=Window
+] interface NFCReader : EventTarget {
+    attribute EventHandler onreading;
+    attribute EventHandler onerror;
+
+    void start();
+    void stop();
+};

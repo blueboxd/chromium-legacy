@@ -35,8 +35,8 @@ class GetPaymentInformationAction
 
   void OnGetPaymentInformation(
       const GetPaymentInformationProto& get_payment_information,
-      ProcessActionCallback callback,
       std::unique_ptr<PaymentInformation> payment_information);
+  void OnAdditionalActionTriggered(int index);
 
   // Creates a new instance of |PaymentRequestOptions| from |proto_|.
   std::unique_ptr<PaymentRequestOptions> CreateOptionsFromProto() const;
@@ -56,6 +56,7 @@ class GetPaymentInformationAction
   bool initially_prefilled = false;
   bool personal_data_changed_ = false;
   bool action_successful_ = false;
+  ProcessActionCallback callback_;
   base::WeakPtrFactory<GetPaymentInformationAction> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GetPaymentInformationAction);

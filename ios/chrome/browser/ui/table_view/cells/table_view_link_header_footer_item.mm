@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/string_util.h"
 #import "net/base/mac/url_conversions.h"
 
@@ -70,6 +71,8 @@ const CGFloat kVerticalPadding = 8;
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _textView.adjustsFontForContentSizeCategory = YES;
     _textView.translatesAutoresizingMaskIntoConstraints = NO;
+    _textView.linkTextAttributes =
+        @{NSForegroundColorAttributeName : [UIColor colorNamed:kTintColor]};
 
     [self.contentView addSubview:_textView];
 

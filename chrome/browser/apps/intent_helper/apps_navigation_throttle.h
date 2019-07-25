@@ -129,19 +129,17 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     // Picker errors occurring before the picker is shown.
     ERROR_BEFORE_PICKER = 10,
     INVALID = 11,
-    MAC_NATIVE_APP_PRESSED = 12,
-    kMaxValue = MAC_NATIVE_APP_PRESSED,
+    kMaxValue = INVALID,
   };
 
   // As for PickerAction, these define the buckets for an UMA histogram, so this
-  // must be treated in an append-only fashion. This helps specify where a
+  // must be treated in an append-only fashion. This helps especify where a
   // navigation will continue.
   enum class Platform : int {
     ARC = 0,
     CHROME = 1,
     PWA = 2,
-    MAC_NATIVE = 3,
-    kMaxValue = MAC_NATIVE,
+    kMaxValue = PWA,
   };
 
   // These enums are used to define the intent picker show state, whether the
@@ -172,21 +170,18 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   static void CloseOrGoBack(content::WebContents* web_contents);
 
-  static bool ContainsOnlyPwasAndMacApps(
+  static bool ContainsOnlyPwas(
       const std::vector<apps::IntentPickerAppInfo>& apps);
 
   static bool ShouldShowPersistenceOptions(
       std::vector<apps::IntentPickerAppInfo>& apps);
 
-  // Overrides for Chrome OS to allow ARC handling.
+  // Overridden for Chrome OS to allow arc handling.
   virtual void MaybeRemoveComingFromArcFlag(content::WebContents* web_contents,
                                             const GURL& previous_url,
                                             const GURL& current_url) {}
 
   virtual bool ShouldDeferNavigationForArc(content::NavigationHandle* handle);
-
-  // Allows a subclass to synchronously provide app info.
-  virtual std::vector<IntentPickerAppInfo> AppInfoForUrl(const GURL& url);
 
   void ShowIntentPickerForApps(
       content::WebContents* web_contents,

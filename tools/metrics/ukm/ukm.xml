@@ -294,7 +294,18 @@ be describing additional metrics about the same event.
       https://goo.gl/tr1oTZ for a detailed explanation. In milliseconds.
     </summary>
   </metric>
+  <metric name="SubFrame.LayoutInstability.CumulativeShiftScore">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred during the session, in the AMP subframe. This metric's integral
+      value is 100x the fractional jank score described in the explainer.
+    </summary>
+  </metric>
   <metric name="SubFrame.LayoutStability.JankScore">
+    <obsolete>
+      Removed July 2019 in favor of
+      SubFrame.LayoutInstability.CumulativeShiftScore.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred during the session, in the AMP subframe. This metric's integral
@@ -318,7 +329,18 @@ be describing additional metrics about the same event.
       A contentful paint includes a paint of text, image, SVG, or canvas.
     </summary>
   </metric>
+  <metric name="SubFrame.PaintTiming.NavigationToLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the AMP subframe. See
+      http://bit.ly/largest_contentful_paint_explainer for more details.
+    </summary>
+  </metric>
   <metric name="SubFrame.PaintTiming.NavigationToLargestContentPaint">
+    <obsolete>
+      Deprecated 7/2019
+    </obsolete>
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
       start to the time when the page first paints the largest content (text or
@@ -4533,9 +4555,26 @@ be describing additional metrics about the same event.
 <event name="Net.LegacyTLSVersion">
   <owner>davidben@chromium.org</owner>
   <summary>
-    Recorded when a page is loaded whose main frame load used TLS 1.0 or TLS
-    1.1.
+    Recorded when a resource is loaded using TLS 1.0 or TLS 1.1.
   </summary>
+  <metric name="IsAdResource">
+    <summary>
+      Boolean value representing whether the request is for an ad resource. Only
+      set if IsSubresource is true.
+    </summary>
+  </metric>
+  <metric name="IsMainFrame">
+    <summary>
+      Boolean value representing whether the request is in the main frame or not
+      (if false, the request is from a subframe).
+    </summary>
+  </metric>
+  <metric name="IsSubresource">
+    <summary>
+      Boolean value representing whether the request is for a subresource. If
+      false, then the request was a main frame page load.
+    </summary>
+  </metric>
 </event>
 
 <event name="NoStatePrefetch" singular="True">
@@ -5105,7 +5144,34 @@ be describing additional metrics about the same event.
       Set to 1 if the main resource is an inner response of a signed exchange.
     </summary>
   </metric>
+  <metric name="LayoutInstability.CumulativeShiftScore">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred on the page (including all subframes) during the session. This
+      metric's integral value is 100x the fractional jank score described in the
+      explainer.
+    </summary>
+  </metric>
+  <metric name="LayoutInstability.CumulativeShiftScore.MainFrame">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session. This metric's integral
+      value is 100x the fractional jank score described in the explainer.
+    </summary>
+  </metric>
+  <metric
+      name="LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll">
+    <summary>
+      Measures the amount of layout jank (bit.ly/lsm-explainer) that has
+      occurred in the main frame during the session, before any user input or
+      document scroll. This metric's integral value is 100x the fractional jank
+      score described in the explainer.
+    </summary>
+  </metric>
   <metric name="LayoutStability.JankScore">
+    <obsolete>
+      Removed July 2019 in favor of LayoutInstability.CumulativeShiftScore.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred on the page (including all subframes) during the session. This
@@ -5114,6 +5180,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore.MainFrame">
+    <obsolete>
+      Removed July 2019 in favor of
+      LayoutInstability.CumulativeShiftScore.MainFrame.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session. This metric's integral
@@ -5121,6 +5191,10 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="LayoutStability.JankScore.MainFrame.BeforeInputOrScroll">
+    <obsolete>
+      Removed July 2019 in favor of
+      LayoutInstability.CumulativeShiftScore.MainFrame.BeforeInputOrScroll.
+    </obsolete>
     <summary>
       Measures the amount of layout jank (bit.ly/lsm-explainer) that has
       occurred in the main frame during the session, before any user input or
@@ -6143,6 +6217,28 @@ be describing additional metrics about the same event.
     </obsolete>
     <summary>
       Set to 1 when a user is shown a server lo-fi image in a page load.
+    </summary>
+  </metric>
+</event>
+
+<event name="PreviewsDeferAllScript" singular="True">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Metrics associated with the intervention of deferring the execution of
+    synchronous script (typically due to a DeferAllScript Preview). This is
+    recorded when the HTML parsing of a mainframe has completed.
+  </summary>
+  <metric name="force_deferred_scripts_mainframe">
+    <summary>
+      The total number of mainframe scripts (inline and external) whose
+      execution was force deferred (i.e., that otherwise would have been render
+      blocking).
+    </summary>
+  </metric>
+  <metric name="force_deferred_scripts_mainframe_external">
+    <summary>
+      The total number of mainframe external scripts whose execution was force
+      deferred (i.e., that otherwise would have been render blocking).
     </summary>
   </metric>
 </event>

@@ -87,7 +87,6 @@ OverlayCandidate::OverlayCandidate()
       uv_rect(0.f, 0.f, 1.f, 1.f),
       is_clipped(false),
       is_opaque(false),
-      use_output_surface_for_resource(false),
       no_occluding_damage(false),
       resource_id(0),
 #if defined(OS_ANDROID)

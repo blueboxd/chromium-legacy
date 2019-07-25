@@ -75,14 +75,12 @@ class ReportingCacheTest : public ReportingTestBase,
 
   ~ReportingCacheTest() override { context()->RemoveCacheObserver(&observer_); }
 
-  void SetUp() override {
+  void LoadReportingClients() {
     // All ReportingCache methods assume that the store has been initialized.
     if (store()) {
       store()->LoadReportingClients(
-          base::BindOnce([](std::vector<ReportingEndpoint>,
-                            std::vector<CachedReportingEndpointGroup>) {
-            // TODO(crbug.com/895821): Insert into the cache.
-          }));
+          base::BindOnce(&ReportingCache::AddClientsLoadedFromStore,
+                         base::Unretained(cache())));
       store()->FinishLoading(true);
     }
   }
@@ -148,6 +146,8 @@ class ReportingCacheTest : public ReportingTestBase,
   const url::Origin kOrigin2_ = url::Origin::Create(GURL("https://origin2/"));
   const GURL kEndpoint1_ = GURL("https://endpoint1/");
   const GURL kEndpoint2_ = GURL("https://endpoint2/");
+  const GURL kEndpoint3_ = GURL("https://endpoint3/");
+  const GURL kEndpoint4_ = GURL("https://endpoint4/");
   const std::string kUserAgent_ = "Mozilla/1.0";
   const std::string kGroup1_ = "group1";
   const std::string kGroup2_ = "group2";
@@ -168,6 +168,8 @@ class ReportingCacheTest : public ReportingTestBase,
 // header parser.
 
 TEST_P(ReportingCacheTest, Reports) {
+  LoadReportingClients();
+
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
@@ -208,6 +210,8 @@ TEST_P(ReportingCacheTest, Reports) {
 }
 
 TEST_P(ReportingCacheTest, RemoveAllReports) {
+  LoadReportingClients();
+
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNowTicks_,
                      0);
@@ -228,6 +232,8 @@ TEST_P(ReportingCacheTest, RemoveAllReports) {
 }
 
 TEST_P(ReportingCacheTest, RemovePendingReports) {
+  LoadReportingClients();
+
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNowTicks_,
                      0);
@@ -260,6 +266,8 @@ TEST_P(ReportingCacheTest, RemovePendingReports) {
 }
 
 TEST_P(ReportingCacheTest, RemoveAllPendingReports) {
+  LoadReportingClients();
+
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNowTicks_,
                      0);
@@ -292,6 +300,8 @@ TEST_P(ReportingCacheTest, RemoveAllPendingReports) {
 }
 
 TEST_P(ReportingCacheTest, GetReportsAsValue) {
+  LoadReportingClients();
+
   // We need a reproducible expiry timestamp for this test case.
   const base::TimeTicks now = base::TimeTicks();
   const ReportingReport* report1 =
@@ -362,6 +372,8 @@ TEST_P(ReportingCacheTest, GetReportsAsValue) {
 }
 
 TEST_P(ReportingCacheTest, Endpoints) {
+  LoadReportingClients();
+
   EXPECT_EQ(0u, cache()->GetEndpointCount());
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   EXPECT_EQ(1u, cache()->GetEndpointCount());
@@ -418,6 +430,8 @@ TEST_P(ReportingCacheTest, Endpoints) {
 }
 
 TEST_P(ReportingCacheTest, RemoveClient) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
@@ -464,6 +478,8 @@ TEST_P(ReportingCacheTest, RemoveClient) {
 }
 
 TEST_P(ReportingCacheTest, RemoveAllClients) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
@@ -528,6 +544,8 @@ TEST_P(ReportingCacheTest, RemoveAllClients) {
 }
 
 TEST_P(ReportingCacheTest, RemoveEndpointGroup) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
@@ -597,6 +615,8 @@ TEST_P(ReportingCacheTest, RemoveEndpointGroup) {
 }
 
 TEST_P(ReportingCacheTest, RemoveEndpointsForUrl) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
@@ -659,6 +679,8 @@ TEST_P(ReportingCacheTest, RemoveEndpointsForUrl) {
 }
 
 TEST_P(ReportingCacheTest, GetClientsAsValue) {
+  LoadReportingClients();
+
   // These times are bogus but we need a reproducible expiry timestamp for this
   // test case.
   const base::TimeTicks expires_ticks =
@@ -721,6 +743,8 @@ TEST_P(ReportingCacheTest, GetClientsAsValue) {
 }
 
 TEST_P(ReportingCacheTest, GetCandidateEndpointsForDelivery) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
@@ -741,6 +765,8 @@ TEST_P(ReportingCacheTest, GetCandidateEndpointsForDelivery) {
 }
 
 TEST_P(ReportingCacheTest, GetCandidateEndpointsExcludesExpired) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint1_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, kEndpoint2_, kExpires1_));
   ASSERT_TRUE(SetEndpointInCache(kOrigin2_, kGroup1_, kEndpoint1_, kExpires1_));
@@ -765,6 +791,8 @@ TEST_P(ReportingCacheTest, GetCandidateEndpointsExcludesExpired) {
 }
 
 TEST_P(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
+  LoadReportingClients();
+
   const url::Origin kOrigin = url::Origin::Create(GURL("https://example/"));
   const url::Origin kDifferentPortOrigin =
       url::Origin::Create(GURL("https://example:444/"));
@@ -778,6 +806,8 @@ TEST_P(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
 }
 
 TEST_P(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
+  LoadReportingClients();
+
   const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
   const url::Origin kSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
@@ -791,6 +821,8 @@ TEST_P(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
 }
 
 TEST_P(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
+  LoadReportingClients();
+
   const url::Origin kOrigin = url::Origin::Create(GURL("https://example/"));
   const url::Origin kDifferentPortOrigin =
       url::Origin::Create(GURL("https://example:444/"));
@@ -805,6 +837,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
 }
 
 TEST_P(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
+  LoadReportingClients();
+
   const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
   const url::Origin kSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
@@ -819,6 +853,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
 }
 
 TEST_P(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
+  LoadReportingClients();
+
   const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
   const url::Origin kDifferentPortOrigin =
       url::Origin::Create(GURL("https://example:444/"));
@@ -835,6 +871,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
 }
 
 TEST_P(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
+  LoadReportingClients();
+
   const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
   const url::Origin kSuperOrigin =
       url::Origin::Create(GURL("https://example/"));
@@ -851,6 +889,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
 }
 
 TEST_P(ReportingCacheTest, IncludeSubdomainsPreferMoreSpecificSuperdomain) {
+  LoadReportingClients();
+
   const url::Origin kOrigin =
       url::Origin::Create(GURL("https://foo.bar.example/"));
   const url::Origin kSuperOrigin =
@@ -870,6 +910,8 @@ TEST_P(ReportingCacheTest, IncludeSubdomainsPreferMoreSpecificSuperdomain) {
 }
 
 TEST_P(ReportingCacheTest, EvictOldestReport) {
+  LoadReportingClients();
+
   size_t max_report_count = policy().max_report_count;
 
   ASSERT_LT(0u, max_report_count);
@@ -901,6 +943,8 @@ TEST_P(ReportingCacheTest, EvictOldestReport) {
 }
 
 TEST_P(ReportingCacheTest, DontEvictPendingReports) {
+  LoadReportingClients();
+
   size_t max_report_count = policy().max_report_count;
 
   ASSERT_LT(0u, max_report_count);
@@ -936,6 +980,8 @@ TEST_P(ReportingCacheTest, DontEvictPendingReports) {
 }
 
 TEST_P(ReportingCacheTest, EvictEndpointsOverPerOriginLimit) {
+  LoadReportingClients();
+
   for (size_t i = 0; i < policy().max_endpoints_per_origin; ++i) {
     ASSERT_TRUE(
         SetEndpointInCache(kOrigin1_, kGroup1_, MakeURL(i), kExpires1_));
@@ -948,6 +994,8 @@ TEST_P(ReportingCacheTest, EvictEndpointsOverPerOriginLimit) {
 }
 
 TEST_P(ReportingCacheTest, EvictExpiredGroups) {
+  LoadReportingClients();
+
   for (size_t i = 0; i < policy().max_endpoints_per_origin; ++i) {
     ASSERT_TRUE(
         SetEndpointInCache(kOrigin1_, kGroup1_, MakeURL(i), kExpires1_));
@@ -972,6 +1020,8 @@ TEST_P(ReportingCacheTest, EvictExpiredGroups) {
 }
 
 TEST_P(ReportingCacheTest, EvictStaleGroups) {
+  LoadReportingClients();
+
   for (size_t i = 0; i < policy().max_endpoints_per_origin; ++i) {
     ASSERT_TRUE(
         SetEndpointInCache(kOrigin1_, kGroup1_, MakeURL(i), kExpires1_));
@@ -995,6 +1045,8 @@ TEST_P(ReportingCacheTest, EvictStaleGroups) {
 }
 
 TEST_P(ReportingCacheTest, EvictFromStalestGroup) {
+  LoadReportingClients();
+
   for (size_t i = 0; i < policy().max_endpoints_per_origin; ++i) {
     ASSERT_TRUE(SetEndpointInCache(kOrigin1_, base::NumberToString(i),
                                    MakeURL(i), kExpires1_));
@@ -1025,6 +1077,8 @@ TEST_P(ReportingCacheTest, EvictFromStalestGroup) {
 }
 
 TEST_P(ReportingCacheTest, EvictFromLargestGroup) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, MakeURL(0), kExpires1_));
   // This group should be evicted from because it has 2 endpoints.
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup2_, MakeURL(1), kExpires1_));
@@ -1049,6 +1103,8 @@ TEST_P(ReportingCacheTest, EvictFromLargestGroup) {
 }
 
 TEST_P(ReportingCacheTest, EvictLeastImportantEndpoint) {
+  LoadReportingClients();
+
   ASSERT_TRUE(SetEndpointInCache(kOrigin1_, kGroup1_, MakeURL(0), kExpires1_,
                                  OriginSubdomains::DEFAULT, 1 /* priority*/,
                                  1 /* weight */));
@@ -1076,6 +1132,8 @@ TEST_P(ReportingCacheTest, EvictLeastImportantEndpoint) {
 }
 
 TEST_P(ReportingCacheTest, EvictEndpointsOverGlobalLimitFromStalestClient) {
+  LoadReportingClients();
+
   // Set enough endpoints to reach the global endpoint limit.
   for (size_t i = 0; i < policy().max_endpoint_count; ++i) {
     ASSERT_TRUE(SetEndpointInCache(url::Origin::Create(MakeURL(i)), kGroup1_,
@@ -1095,6 +1153,180 @@ TEST_P(ReportingCacheTest, EvictEndpointsOverGlobalLimitFromStalestClient) {
     EXPECT_TRUE(OriginClientExistsInCache(url::Origin::Create(MakeURL(i))));
   }
   EXPECT_TRUE(OriginClientExistsInCache(kOrigin1_));
+}
+
+TEST_P(ReportingCacheTest, AddClientsLoadedFromStore) {
+  if (!store())
+    return;
+
+  base::Time now = clock()->Now();
+
+  std::vector<ReportingEndpoint> endpoints;
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin2_, kGroup2_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint2_});
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint2_});
+  endpoints.emplace_back(kOrigin2_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  std::vector<CachedReportingEndpointGroup> groups;
+  groups.emplace_back(kOrigin2_, kGroup1_, OriginSubdomains::DEFAULT,
+                      now + base::TimeDelta::FromMinutes(2) /* expires */,
+                      now /* last_used */);
+  groups.emplace_back(kOrigin1_, kGroup1_, OriginSubdomains::DEFAULT,
+                      now + base::TimeDelta::FromMinutes(1) /* expires */,
+                      now /* last_used */);
+  groups.emplace_back(kOrigin2_, kGroup2_, OriginSubdomains::DEFAULT,
+                      now + base::TimeDelta::FromMinutes(3) /* expires */,
+                      now /* last_used */);
+  store()->SetPrestoredClients(endpoints, groups);
+
+  LoadReportingClients();
+
+  EXPECT_EQ(4u, cache()->GetEndpointCount());
+  EXPECT_EQ(3u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin1_, kGroup1_, kEndpoint1_));
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin1_, kGroup1_, kEndpoint2_));
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin2_, kGroup1_, kEndpoint1_));
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin2_, kGroup2_, kEndpoint2_));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOrigin1_, kGroup1_, OriginSubdomains::DEFAULT,
+                                 now + base::TimeDelta::FromMinutes(1)));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOrigin2_, kGroup1_, OriginSubdomains::DEFAULT,
+                                 now + base::TimeDelta::FromMinutes(2)));
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kOrigin2_, kGroup2_, OriginSubdomains::DEFAULT,
+                                 now + base::TimeDelta::FromMinutes(3)));
+  EXPECT_TRUE(OriginClientExistsInCache(kOrigin1_));
+  EXPECT_TRUE(OriginClientExistsInCache(kOrigin2_));
+}
+
+TEST_P(ReportingCacheTest, DoNotStoreMoreThanLimits) {
+  if (!store())
+    return;
+
+  base::Time now = clock()->Now();
+
+  // We hardcode the number of endpoints in this test, so we need to manually
+  // update the test when |max_endpoint_count| changes. You'll need to
+  // add/remove elements to |endpoints| when that happens.
+  EXPECT_EQ(5u, policy().max_endpoint_count) << "You need to update this test "
+                                             << "to reflect a change in "
+                                             << "max_endpoint_count";
+
+  std::vector<ReportingEndpoint> endpoints;
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint2_});
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint3_});
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint4_});
+  endpoints.emplace_back(kOrigin2_, kGroup2_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin2_, kGroup2_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint2_});
+  endpoints.emplace_back(kOrigin2_, kGroup2_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint3_});
+  endpoints.emplace_back(kOrigin2_, kGroup2_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint4_});
+  std::vector<CachedReportingEndpointGroup> groups;
+  groups.emplace_back(kOrigin1_, kGroup1_, OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  groups.emplace_back(kOrigin2_, kGroup2_, OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  store()->SetPrestoredClients(endpoints, groups);
+
+  LoadReportingClients();
+
+  EXPECT_GE(5u, cache()->GetEndpointCount());
+  EXPECT_GE(2u, cache()->GetEndpointGroupCountForTesting());
+}
+
+TEST_P(ReportingCacheTest, DoNotLoadMismatchedGroupsAndEndpoints) {
+  if (!store())
+    return;
+
+  base::Time now = clock()->Now();
+
+  std::vector<ReportingEndpoint> endpoints;
+  // This endpoint has no corresponding endpoint group
+  endpoints.emplace_back(kOrigin1_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin2_, kGroup1_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  // This endpoint has no corresponding endpoint group
+  endpoints.emplace_back(kOrigin2_, kGroup2_,
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  std::vector<CachedReportingEndpointGroup> groups;
+  // This endpoint group has no corresponding endpoint
+  groups.emplace_back(kOrigin1_, kGroup2_, OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  groups.emplace_back(kOrigin2_, kGroup1_, OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  // This endpoint group has no corresponding endpoint
+  groups.emplace_back(kOrigin2_, "last_group", OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  store()->SetPrestoredClients(endpoints, groups);
+
+  LoadReportingClients();
+
+  EXPECT_GE(1u, cache()->GetEndpointCount());
+  EXPECT_GE(1u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin2_, kGroup1_, kEndpoint1_));
+}
+
+// This test verifies that we preserve the last_used field when storing clients
+// loaded from disk. We don't have direct access into individual cache elements,
+// so we test this indirectly by triggering a cache eviction and verifying that
+// a stale element (i.e., one older than a week, by default) is selected for
+// eviction. If last_used weren't populated then presumably that element
+// wouldn't be evicted. (Or rather, it would only have a 25% chance of being
+// evicted and this test would then be flaky.)
+TEST_P(ReportingCacheTest, StoreLastUsedProperly) {
+  if (!store())
+    return;
+
+  base::Time now = clock()->Now();
+
+  // We hardcode the number of endpoints in this test, so we need to manually
+  // update the test when |max_endpoints_per_origin| changes. You'll need to
+  // add/remove elements to |endpoints| and |grups| when that happens.
+  EXPECT_EQ(3u, policy().max_endpoints_per_origin)
+      << "You need to update this test to reflect a change in "
+         "max_endpoints_per_origin";
+
+  // We need more than three endpoints to trigger eviction.
+  std::vector<ReportingEndpoint> endpoints;
+  endpoints.emplace_back(kOrigin1_, "1",
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin1_, "2",
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin1_, "3",
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  endpoints.emplace_back(kOrigin1_, "4",
+                         ReportingEndpoint::EndpointInfo{kEndpoint1_});
+  std::vector<CachedReportingEndpointGroup> groups;
+  groups.emplace_back(kOrigin1_, "1", OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  groups.emplace_back(kOrigin1_, "2", OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  // Stale last_used on group "3" should cause us to select it for eviction
+  groups.emplace_back(kOrigin1_, "3", OriginSubdomains::DEFAULT,
+                      now /* expires */, base::Time() /* last_used */);
+  groups.emplace_back(kOrigin1_, "4", OriginSubdomains::DEFAULT,
+                      now /* expires */, now /* last_used */);
+  store()->SetPrestoredClients(endpoints, groups);
+
+  LoadReportingClients();
+
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin1_, "1", kEndpoint1_));
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin1_, "2", kEndpoint1_));
+  EXPECT_FALSE(EndpointExistsInCache(kOrigin1_, "3", kEndpoint1_));
+  EXPECT_TRUE(EndpointExistsInCache(kOrigin1_, "4", kEndpoint1_));
 }
 
 INSTANTIATE_TEST_SUITE_P(ReportingCacheStoreTest,

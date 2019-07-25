@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @implements {settings.SecurityKeysBrowserProxy} */
-class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
+/** @implements {settings.SecurityKeysPINBrowserProxy} */
+class TestSecurityKeysPINBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'startSetPIN',
       'setPIN',
-      'reset',
-      'completeReset',
-      'startCredentialManagement',
-      'credentialManagementProvidePIN',
-      'credentialManagementEnumerate',
-      'credentialManagementDeleteCredentials',
       'close',
     ]);
 
@@ -63,6 +57,56 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  close() {
+    this.methodCalled('close');
+  }
+}
+
+/** @implements {settings.SecurityKeysResetBrowserProxy} */
+class TestSecurityKeysResetBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'reset',
+      'completeReset',
+      'close',
+    ]);
+
+    /**
+     * A map from method names to a promise to return when that method is
+     * called. (If no promise is installed, a never-resolved promise is
+     * returned.)
+     * @private {!Map<string, !Promise>}
+     */
+    this.promiseMap_ = new Map();
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {!Promise} promise
+   */
+  setResponseFor(methodName, promise) {
+    this.promiseMap_.set(methodName, promise);
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {*} opt_arg
+   * @return {!Promise}
+   * @private
+   */
+  handleMethod_(methodName, opt_arg) {
+    this.methodCalled(methodName, opt_arg);
+    const promise = this.promiseMap_.get(methodName);
+    if (promise != undefined) {
+      this.promiseMap_.delete(methodName);
+      return promise;
+    }
+
+    // Return a Promise that never resolves.
+    return new Promise(() => {});
+  }
+
+  /** @override */
   reset() {
     return this.handleMethod_('reset');
   }
@@ -73,23 +117,75 @@ class TestSecurityKeysBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  close() {
+    this.methodCalled('close');
+  }
+}
+
+/** @implements {settings.SecurityKeysCredentialBrowserProxy} */
+class TestSecurityKeysCredentialBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'startCredentialManagement',
+      'providePIN',
+      'enumerateCredentials',
+      'deleteCredentials',
+      'close',
+    ]);
+
+    /**
+     * A map from method names to a promise to return when that method is
+     * called. (If no promise is installed, a never-resolved promise is
+     * returned.)
+     * @private {!Map<string, !Promise>}
+     */
+    this.promiseMap_ = new Map();
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {!Promise} promise
+   */
+  setResponseFor(methodName, promise) {
+    this.promiseMap_.set(methodName, promise);
+  }
+
+  /**
+   * @param {string} methodName
+   * @param {*} opt_arg
+   * @return {!Promise}
+   * @private
+   */
+  handleMethod_(methodName, opt_arg) {
+    this.methodCalled(methodName, opt_arg);
+    const promise = this.promiseMap_.get(methodName);
+    if (promise != undefined) {
+      this.promiseMap_.delete(methodName);
+      return promise;
+    }
+
+    // Return a Promise that never resolves.
+    return new Promise(() => {});
+  }
+
+  /** @override */
   startCredentialManagement() {
     return this.handleMethod_('startCredentialManagement');
   }
 
   /** @override */
-  credentialManagementProvidePIN(pin) {
-    return this.handleMethod_('credentialManagementProvidePIN', pin);
+  providePIN(pin) {
+    return this.handleMethod_('providePIN', pin);
   }
 
   /** @override */
-  credentialManagementEnumerate() {
-    return this.handleMethod_('credentialManagementEnumerate');
+  enumerateCredentials() {
+    return this.handleMethod_('enumerateCredentials');
   }
 
   /** @override */
-  credentialManagementDeleteCredentials(ids) {
-    return this.handleMethod_('credentialManagementDeleteCredentials', ids);
+  deleteCredentials(ids) {
+    return this.handleMethod_('deleteCredentials', ids);
   }
 
   /** @override */
@@ -102,8 +198,8 @@ suite('SecurityKeysResetDialog', function() {
   let dialog = null;
 
   setup(function() {
-    browserProxy = new TestSecurityKeysBrowserProxy();
-    settings.SecurityKeysBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy = new TestSecurityKeysResetBrowserProxy();
+    settings.SecurityKeysResetBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-reset-dialog');
   });
@@ -221,8 +317,8 @@ suite('SecurityKeysSetPINDialog', function() {
   let dialog = null;
 
   setup(function() {
-    browserProxy = new TestSecurityKeysBrowserProxy();
-    settings.SecurityKeysBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy = new TestSecurityKeysPINBrowserProxy();
+    settings.SecurityKeysPINBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-set-pin-dialog');
   });
@@ -476,8 +572,8 @@ suite('SecurityKeysCredentialManagement', function() {
   let dialog = null;
 
   setup(function() {
-    browserProxy = new TestSecurityKeysBrowserProxy();
-    settings.SecurityKeysBrowserProxyImpl.instance_ = browserProxy;
+    browserProxy = new TestSecurityKeysCredentialBrowserProxy();
+    settings.SecurityKeysCredentialBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement(
         'settings-security-keys-credential-management-dialog');
@@ -530,14 +626,12 @@ suite('SecurityKeysCredentialManagement', function() {
     browserProxy.setResponseFor(
         'startCredentialManagement', startCredentialManagementResolver.promise);
     const pinResolver = new PromiseResolver();
-    browserProxy.setResponseFor(
-        'credentialManagementProvidePIN', pinResolver.promise);
+    browserProxy.setResponseFor('providePIN', pinResolver.promise);
     const enumerateResolver = new PromiseResolver();
     browserProxy.setResponseFor(
-        'credentialManagementEnumerate', enumerateResolver.promise);
+        'enumerateCredentials', enumerateResolver.promise);
     const deleteResolver = new PromiseResolver();
-    browserProxy.setResponseFor(
-        'credentialManagementDeleteCredentials', deleteResolver.promise);
+    browserProxy.setResponseFor('deleteCredentials', deleteResolver.promise);
 
     document.body.appendChild(dialog);
     await browserProxy.whenCalled('startCredentialManagement');
@@ -551,12 +645,12 @@ suite('SecurityKeysCredentialManagement', function() {
     assertShown('pinPrompt');
     dialog.$.pin.value = '0000';
     dialog.$.confirmButton.click();
-    const pin = await browserProxy.whenCalled('credentialManagementProvidePIN');
+    const pin = await browserProxy.whenCalled('providePIN');
     assertEquals(pin, '0000');
 
     // Show a list of three credentials.
     pinResolver.resolve();
-    await browserProxy.whenCalled('credentialManagementEnumerate');
+    await browserProxy.whenCalled('enumerateCredentials');
     uiReady = test_util.eventToPromise(
         'credential-management-dialog-ready-for-testing', dialog);
     const credentials = [
@@ -596,8 +690,7 @@ suite('SecurityKeysCredentialManagement', function() {
     assertFalse(dialog.$.confirmButton.disabled);
 
     dialog.$.confirmButton.click();
-    const credentialIds =
-        await browserProxy.whenCalled('credentialManagementDeleteCredentials');
+    const credentialIds = await browserProxy.whenCalled('deleteCredentials');
     assertDeepEquals(credentialIds, ['bbbbbb', 'cccccc']);
     uiReady = test_util.eventToPromise(
         'credential-management-dialog-ready-for-testing', dialog);

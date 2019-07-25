@@ -280,6 +280,9 @@ void EventDeviceInfo::SetDeviceType(InputDeviceType type) {
 void EventDeviceInfo::SetId(input_id id) {
   input_id_ = id;
 }
+void EventDeviceInfo::SetName(const std::string& name) {
+  name_ = name;
+}
 
 bool EventDeviceInfo::HasEventType(unsigned int type) const {
   if (type > EV_MAX)

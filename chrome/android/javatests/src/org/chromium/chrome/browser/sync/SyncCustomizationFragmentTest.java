@@ -6,15 +6,15 @@ package org.chromium.chrome.browser.sync;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.app.FragmentTransaction;
 import android.os.Build;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.SwitchPreference;
-import android.preference.TwoStatePreference;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.SwitchPreferenceCompat;
+import android.support.v7.preference.TwoStatePreference;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -22,6 +22,7 @@ import android.widget.TextView;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,6 +66,7 @@ import java.util.Set;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @SuppressLint("UseSparseArrays")
+@Ignore("TODO(crbug.com/890847): Adapt these tests for SyncAndServicesPreferences.")
 public class SyncCustomizationFragmentTest {
     @Rule
     public SyncTestRule mSyncTestRule = new SyncTestRule();
@@ -151,7 +153,7 @@ public class SyncCustomizationFragmentTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        final SwitchPreference syncSwitch = getSyncSwitch(fragment);
+        final SwitchPreferenceCompat syncSwitch = getSyncSwitch(fragment);
 
         Assert.assertTrue(syncSwitch.isChecked());
         Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
@@ -227,7 +229,7 @@ public class SyncCustomizationFragmentTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         Collection<CheckBoxPreference> dataTypes = getDataTypes(fragment).values();
 
         assertDefaultSyncOnState(fragment);
@@ -253,7 +255,7 @@ public class SyncCustomizationFragmentTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         Map<Integer, CheckBoxPreference> dataTypes = getDataTypes(fragment);
 
         assertDefaultSyncOnState(fragment);
@@ -306,7 +308,7 @@ public class SyncCustomizationFragmentTest {
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         togglePreference(syncEverything);
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -326,7 +328,7 @@ public class SyncCustomizationFragmentTest {
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         togglePreference(syncEverything);
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -348,7 +350,7 @@ public class SyncCustomizationFragmentTest {
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         togglePreference(syncEverything);
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -374,7 +376,7 @@ public class SyncCustomizationFragmentTest {
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         togglePreference(syncEverything);
 
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -404,7 +406,7 @@ public class SyncCustomizationFragmentTest {
         Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncSwitch = getSyncSwitch(fragment);
+        SwitchPreferenceCompat syncSwitch = getSyncSwitch(fragment);
         Assert.assertTrue(syncSwitch.isChecked());
         Assert.assertTrue(AndroidSyncSettings.get().isChromeSyncEnabled());
         togglePreference(syncSwitch);
@@ -427,7 +429,7 @@ public class SyncCustomizationFragmentTest {
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         togglePreference(syncEverything);
 
         CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
@@ -453,7 +455,7 @@ public class SyncCustomizationFragmentTest {
 
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         togglePreference(syncEverything);
 
         CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
@@ -480,7 +482,7 @@ public class SyncCustomizationFragmentTest {
 
         // Get the UI elements.
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         CheckBoxPreference syncAutofill = (CheckBoxPreference) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_SYNC_AUTOFILL);
         CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
@@ -657,23 +659,24 @@ public class SyncCustomizationFragmentTest {
     private SyncCustomizationFragment startSyncCustomizationFragment() {
         mPreferences = mSyncTestRule.startPreferences(SyncCustomizationFragment.class.getName());
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        return (SyncCustomizationFragment) mPreferences.getMainFragment();
+        return (SyncCustomizationFragment) mPreferences.getMainFragmentCompat();
     }
 
     private void closeFragment(SyncCustomizationFragment fragment) {
-        FragmentTransaction transaction = mPreferences.getFragmentManager().beginTransaction();
+        FragmentTransaction transaction =
+                mPreferences.getSupportFragmentManager().beginTransaction();
         transaction.remove(fragment);
         transaction.commit();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    private SwitchPreference getSyncSwitch(SyncCustomizationFragment fragment) {
-        return (SwitchPreference) fragment.findPreference(
+    private SwitchPreferenceCompat getSyncSwitch(SyncCustomizationFragment fragment) {
+        return (SwitchPreferenceCompat) fragment.findPreference(
                 SyncCustomizationFragment.PREF_SYNC_SWITCH);
     }
 
-    private SwitchPreference getSyncEverything(SyncCustomizationFragment fragment) {
-        return (SwitchPreference) fragment.findPreference(
+    private SwitchPreferenceCompat getSyncEverything(SyncCustomizationFragment fragment) {
+        return (SwitchPreferenceCompat) fragment.findPreference(
                 SyncCustomizationFragment.PREFERENCE_SYNC_EVERYTHING);
     }
 
@@ -696,17 +699,17 @@ public class SyncCustomizationFragmentTest {
     }
 
     private PassphraseDialogFragment getPassphraseDialogFragment() {
-        return ActivityUtils.waitForFragment(
+        return ActivityUtils.waitForFragmentCompat(
                 mPreferences, SyncCustomizationFragment.FRAGMENT_ENTER_PASSPHRASE);
     }
 
     private PassphraseTypeDialogFragment getPassphraseTypeDialogFragment() {
-        return ActivityUtils.waitForFragment(
+        return ActivityUtils.waitForFragmentCompat(
                 mPreferences, SyncCustomizationFragment.FRAGMENT_PASSPHRASE_TYPE);
     }
 
     private PassphraseCreationDialogFragment getPassphraseCreationDialogFragment() {
-        return ActivityUtils.waitForFragment(
+        return ActivityUtils.waitForFragmentCompat(
                 mPreferences, SyncCustomizationFragment.FRAGMENT_CUSTOM_PASSPHRASE);
     }
 
@@ -714,7 +717,7 @@ public class SyncCustomizationFragmentTest {
         Assert.assertTrue("The sync switch should be on.", getSyncSwitch(fragment).isChecked());
         Assert.assertTrue(
                 "The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         Assert.assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
         Assert.assertTrue(
                 "The sync everything switch should be enabled.", syncEverything.isEnabled());
@@ -733,7 +736,7 @@ public class SyncCustomizationFragmentTest {
         Assert.assertFalse("The sync switch should be off.", getSyncSwitch(fragment).isChecked());
         Assert.assertTrue(
                 "The sync switch should be enabled.", getSyncSwitch(fragment).isEnabled());
-        SwitchPreference syncEverything = getSyncEverything(fragment);
+        SwitchPreferenceCompat syncEverything = getSyncEverything(fragment);
         Assert.assertTrue("The sync everything switch should be on.", syncEverything.isChecked());
         Assert.assertFalse(
                 "The sync everything switch should be disabled.", syncEverything.isEnabled());

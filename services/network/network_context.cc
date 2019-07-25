@@ -699,6 +699,7 @@ void NetworkContext::GetCookieManager(mojom::CookieManagerRequest request) {
 
 void NetworkContext::GetRestrictedCookieManager(
     mojom::RestrictedCookieManagerRequest request,
+    mojom::RestrictedCookieManagerRole role,
     const url::Origin& origin,
     bool is_service_worker,
     int32_t process_id,
@@ -709,7 +710,7 @@ void NetworkContext::GetRestrictedCookieManager(
 
   restricted_cookie_manager_bindings_.AddBinding(
       std::make_unique<RestrictedCookieManager>(
-          url_request_context_->cookie_store(),
+          role, url_request_context_->cookie_store(),
           &cookie_manager_->cookie_settings(), origin, client(),
           is_service_worker, process_id, routing_id),
       std::move(request));

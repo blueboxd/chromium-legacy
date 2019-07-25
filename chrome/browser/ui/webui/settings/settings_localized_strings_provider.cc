@@ -81,7 +81,6 @@
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -2484,7 +2483,9 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
     {"searchEnginesManage", IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES},
 #if defined(OS_CHROMEOS)
-    {"osAssistantPageTitle", IDS_OS_SETTINGS_ASSISTANT},
+    {"osSearchPageTitle", is_assistant_allowed
+                              ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                              : IDS_SETTINGS_SEARCH},
     {"searchGoogleAssistant", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT},
     {"searchGoogleAssistantEnabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},

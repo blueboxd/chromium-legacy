@@ -2667,15 +2667,22 @@ public class AwContents implements SmartClipProvider {
         mWebContents.evaluateJavaScriptForTests(script, jsCallback);
     }
 
-    public void postMessageToFrame(
-            String frameName, String message, String targetOrigin, MessagePort[] sentPorts) {
+    /**
+     * Send a MessageEvent to main frame.
+     *
+     * @param message      The String message for the JavaScript MessageEvent.
+     * @param targetOrigin The expected target frame's origin.
+     * @param sentPorts    ports for the JavaScript MessageEvent.
+     */
+    public void postMessageToMainFrame(
+            String message, String targetOrigin, MessagePort[] sentPorts) {
         if (isDestroyed(WARN)) return;
 
         RenderFrameHost mainFrame = mWebContents.getMainFrame();
         // If the RenderFrameHost or the RenderFrame doesn't exist we couldn't post the message.
         if (mainFrame == null || !mainFrame.isRenderFrameCreated()) return;
 
-        mWebContents.postMessageToFrame(frameName, message, null, targetOrigin, sentPorts);
+        mWebContents.postMessageToMainFrame(message, null, targetOrigin, sentPorts);
     }
 
     /**

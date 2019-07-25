@@ -52,7 +52,6 @@ void ProcessMetricsHistory::SampleMetrics() {
 #endif
 #if defined(OS_MACOSX)
   package_idle_wakeups_ = process_metrics_->GetPackageIdleWakeupsPerSecond();
-  energy_impact_ = process_metrics_->GetEnergyImpact();
 #endif
 }
 
@@ -96,9 +95,6 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
       UMA_HISTOGRAM_COUNTS_1000(
           "PerformanceMonitor.PackageExitIdleWakeups.BrowserProcess",
           package_idle_wakeups_);
-      UMA_HISTOGRAM_COUNTS_100000(
-          "PerformanceMonitor.EnergyImpact.BrowserProcess", energy_impact_);
-
 #endif
       break;
     case content::PROCESS_TYPE_RENDERER:
@@ -117,9 +113,6 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
       UMA_HISTOGRAM_COUNTS_1000(
           "PerformanceMonitor.PackageExitIdleWakeups.RendererProcess",
           package_idle_wakeups_);
-      UMA_HISTOGRAM_COUNTS_100000(
-          "PerformanceMonitor.EnergyImpact.RendererProcess", energy_impact_);
-
 #endif
 
       break;
@@ -137,9 +130,6 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
       UMA_HISTOGRAM_COUNTS_1000(
           "PerformanceMonitor.PackageExitIdleWakeups.GPUProcess",
           package_idle_wakeups_);
-      UMA_HISTOGRAM_COUNTS_100000("PerformanceMonitor.EnergyImpact.GPUProcess",
-                                  energy_impact_);
-
 #endif
 
       break;

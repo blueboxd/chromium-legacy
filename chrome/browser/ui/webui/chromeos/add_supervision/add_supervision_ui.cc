@@ -53,10 +53,26 @@ bool MaybeShowConfirmSignoutDialog() {
   return false;
 }
 
-const char kAddSupervisionURL[] =
+const char kAddSupervisionDefaultURL[] =
     "https://families.google.com/supervision/setup";
-const char kAddSupervisionEventOriginFilter[] = "https://families.google.com";
 const char kAddSupervisionFlowType[] = "1";
+const char kAddSupervisionSwitch[] = "add-supervision-url";
+
+// Returns the URL of the Add Supervision flow from the command-line switch,
+// or the default value if it's not defined.
+GURL GetAddSupervisionURL() {
+  std::string url;
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kAddSupervisionSwitch)) {
+    url = command_line->GetSwitchValueASCII(kAddSupervisionSwitch);
+  } else {
+    url = kAddSupervisionDefaultURL;
+  }
+  const GURL result(url);
+  DCHECK(result.is_valid()) << "Invalid URL \"" << url << "\" for switch \""
+                            << kAddSupervisionSwitch << "\"";
+  return result;
+}
 
 }  // namespace
 
@@ -145,6 +161,11 @@ void AddSupervisionUI::SetupResources() {
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIAddSupervisionHost));
 
+  // Initialize supervision URL from the command-line arguments (if provided).
+  supervision_url_ = GetAddSupervisionURL();
+  DCHECK(supervision_url_.DomainIs("google.com"));
+
+  // Forward data to the WebUI.
   source->AddResourcePath("post_message_api.js",
                           IDR_ADD_SUPERVISION_POST_MESSAGE_API_JS);
   source->AddResourcePath("add_supervision_api_server.js",
@@ -169,8 +190,8 @@ void AddSupervisionUI::SetupResources() {
 
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_ADD_SUPERVISION_HTML);
-  source->AddString("webviewUrl", kAddSupervisionURL);
-  source->AddString("eventOriginFilter", kAddSupervisionEventOriginFilter);
+  source->AddString("webviewUrl", supervision_url_.spec());
+  source->AddString("eventOriginFilter", supervision_url_.GetOrigin().spec());
   source->AddString("platformVersion", base::SysInfo::OperatingSystemVersion());
   source->AddString("flowType", kAddSupervisionFlowType);
 

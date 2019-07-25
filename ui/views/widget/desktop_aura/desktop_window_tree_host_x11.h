@@ -214,7 +214,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void OnXWindowLostPointerGrab() override;
   void OnXWindowLostCapture() override;
   void OnXWindowIsActiveChanged(bool active) override;
-  ::Time GetTimestampForXWindow() override;
   gfx::Size GetMinimumSizeForXWindow() override;
   gfx::Size GetMaximumSizeForXWindow() override;
 

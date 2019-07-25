@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -536,6 +537,32 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
                    ->GetController()
                    .GetLastCommittedEntry()
                    ->IsViewSourceMode());
+}
+
+// Ensure that content initiated navigations to googlechrome: URLs are blocked.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
+                       GoogleChromeNavigation_RendererInitiated) {
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL kUrl(embedded_test_server()->GetURL("/simple_links.html"));
+  NavigateToURL(shell(), kUrl);
+  EXPECT_EQ(kUrl, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Not allowed to load local resource: googlechrome://"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(clickGoogleChromeLink());",
+      &success));
+  EXPECT_TRUE(success);
+  console_delegate->Wait();
+  // Original page shouldn't navigate away.
+  EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
 }
 
 // Ensure that closing a page by running its beforeunload handler doesn't hang
@@ -2148,5 +2175,161 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, AboutSrcDocUsesBeginNavigation) {
   observer.Wait();      // BeginNavigation is called.
   interceptor.Wait(1);  // DidCommitNavigation is called.
 }
+
+class TextFragmentAnchorBrowserTest : public NavigationBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    NavigationBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "TextFragmentIdentifiers");
+  }
+
+  // Simulates a click on the middle of the DOM element with the given |id|.
+  void ClickElementWithId(WebContents* web_contents, const std::string& id) {
+    // Get the center coordinates of the DOM element.
+    const int x = EvalJs(web_contents,
+                         JsReplace("const bounds = "
+                                   "document.getElementById($1)."
+                                   "getBoundingClientRect();"
+                                   "Math.floor(bounds.left + bounds.width / 2)",
+                                   id))
+                      .ExtractInt();
+    const int y = EvalJs(web_contents,
+                         JsReplace("const bounds = "
+                                   "document.getElementById($1)."
+                                   "getBoundingClientRect();"
+                                   "Math.floor(bounds.top + bounds.height / 2)",
+                                   id))
+                      .ExtractInt();
+
+    SimulateMouseClickAt(web_contents, 0, blink::WebMouseEvent::Button::kLeft,
+                         gfx::Point(x, y));
+  }
+
+  void WaitForPageLoad(WebContents* contents) {
+    EXPECT_TRUE(WaitForLoadStop(contents));
+    EXPECT_TRUE(WaitForRenderFrameReady(contents->GetMainFrame()));
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest, EnabledOnUserNavigation) {
+  GURL url(embedded_test_server()->GetURL("/target_text_link.html"));
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#targetText=text"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContents* main_contents = shell()->web_contents();
+  TestNavigationObserver observer(main_contents);
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  ClickElementWithId(main_contents, "link");
+  observer.Wait();
+  EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
+                       EnabledOnBrowserNavigation) {
+  GURL url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#targetText=text"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
+                       EnabledOnUserGestureScriptNavigation) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#targetText=text"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContents* main_contents = shell()->web_contents();
+  TestNavigationObserver observer(main_contents);
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  // ExecuteScript executes with a user gesture
+  EXPECT_TRUE(ExecuteScript(main_contents,
+                            "location = '" + target_text_url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
+                       DisabledOnScriptNavigation) {
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#targetText=text"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContents* main_contents = shell()->web_contents();
+  TestNavigationObserver observer(main_contents);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      main_contents, "location = '" + target_text_url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+
+  WaitForPageLoad(main_contents);
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_P(TextFragmentAnchorBrowserTest,
+                       DisabledOnScriptHistoryNavigation) {
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#targetText=text"));
+  GURL url(embedded_test_server()->GetURL("/empty.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), target_text_url));
+
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(false);
+
+  // Scroll the page back to top so scroll restoration does not scroll the
+  // target back into view.
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
+  frame_observer.WaitForScrollOffsetAtTop(true);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  TestNavigationObserver observer(main_contents);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(main_contents, "history.back()"));
+  observer.Wait();
+  EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+
+  WaitForPageLoad(main_contents);
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         TextFragmentAnchorBrowserTest,
+                         ::testing::Bool());
 
 }  // namespace content

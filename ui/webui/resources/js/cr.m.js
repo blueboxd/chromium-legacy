@@ -11,6 +11,9 @@
  */
 import {PromiseResolver} from './promise_resolver.m.js';
 
+/** @typedef {{eventName: string, uid: number}} */
+let WebUIListener;
+
 /**
  * Counter for use with createUid
  * @type {number}

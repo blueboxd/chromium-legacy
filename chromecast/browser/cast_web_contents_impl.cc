@@ -21,6 +21,7 @@
 #include "chromecast/common/mojom/on_load_script_injector.mojom.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "chromecast/common/queryable_data.h"
+#include "chromecast/net/connectivity_checker.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -671,9 +672,14 @@ void CastWebContentsImpl::ResourceLoadComplete(
   int net_error = resource_load_info.net_error;
   if (net_error == net::OK)
     return;
+  metrics::CastMetricsHelper* metrics_helper =
+      metrics::CastMetricsHelper::GetInstance();
+  metrics_helper->RecordApplicationEventWithValue(
+      "Cast.Platform.ResourceRequestError", net_error);
   LOG(ERROR) << "Resource \"" << resource_load_info.url << "\" failed to load "
              << " with net_error=" << net_error
              << ", description=" << net::ErrorToShortString(net_error);
+  shell::CastBrowserProcess::GetInstance()->connectivity_checker()->Check();
   for (auto& observer : observer_list_) {
     observer.ResourceLoadFailed(this);
   }

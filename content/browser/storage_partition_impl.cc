@@ -1061,6 +1061,22 @@ StoragePartitionImpl::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_.get();
 }
 
+void StoragePartitionImpl::CreateRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRole role,
+    const url::Origin& origin,
+    bool is_service_worker,
+    int process_id,
+    int routing_id,
+    network::mojom::RestrictedCookieManagerRequest request) {
+  if (!GetContentClient()->browser()->WillCreateRestrictedCookieManager(
+          role, browser_context_, origin, is_service_worker, process_id,
+          routing_id, &request)) {
+    GetNetworkContext()->GetRestrictedCookieManager(std::move(request), role,
+                                                    origin, is_service_worker,
+                                                    process_id, routing_id);
+  }
+}
+
 storage::QuotaManager* StoragePartitionImpl::GetQuotaManager() {
   return quota_manager_.get();
 }

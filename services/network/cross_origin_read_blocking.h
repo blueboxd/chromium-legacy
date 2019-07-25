@@ -163,6 +163,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
                              SupportsRangeRequests);
     FRIEND_TEST_ALL_PREFIXES(content::CrossSiteDocumentResourceHandlerTest,
                              CORBProtectionLogging);
+    FRIEND_TEST_ALL_PREFIXES(ResponseAnalyzerTest, CORBProtectionLogging);
 
     // Three conclusions are possible from looking at the headers:
     //   - Allow: response doesn't need to be blocked (e.g. if it is same-origin
@@ -183,6 +184,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
         const ResourceResponseInfo& response,
         const base::Optional<url::Origin>& request_initiator_site_lock,
         MimeType canonical_mime_type);
+
+    // Returns true if the response has a nosniff header.
+    static bool HasNoSniff(const ResourceResponseInfo& response);
 
     // Checks if the response seems sensitive for CORB protection logging.
     // Returns true if the Access-Control-Allow-Origin header has a value other
@@ -238,6 +242,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CrossOriginReadBlocking {
     const bool seems_sensitive_from_cors_heuristic_;
     const bool seems_sensitive_from_cache_heuristic_;
     const bool supports_range_requests_;
+    const bool has_nosniff_header_;
     // |hypothetical_sniffing_mode_| is true if we need to sniff only because of
     // the CORB protection logging (and otherwise, CORB would not sniff).
     bool hypothetical_sniffing_mode_ = false;

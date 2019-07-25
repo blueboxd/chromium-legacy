@@ -101,6 +101,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   GetURLLoaderFactoryForBrowserProcessIOThread() override;
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
+  void CreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest request) override;
   storage::QuotaManager* GetQuotaManager() override;
   ChromeAppCacheService* GetAppCacheService() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;

@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_prompt_actions_win.h"
-#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"

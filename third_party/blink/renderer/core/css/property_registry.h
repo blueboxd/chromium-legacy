@@ -25,15 +25,6 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(registrations_); }
 
-  // Parse the incoming value and return the parsed result, if:
-  //  1. A registration with the specified name exists, and
-  //  2. The incoming value is a CSSCustomPropertyDeclaration, has no
-  //     unresolved var-references and matches the registered syntax.
-  // Otherwise the incoming value is returned.
-  static const CSSValue* ParseIfRegistered(const Document& document,
-                                           const AtomicString& property_name,
-                                           const CSSValue*);
-
   void MarkReferenced(const AtomicString&) const;
   bool WasReferenced(const AtomicString&) const;
 

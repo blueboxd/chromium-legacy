@@ -62,6 +62,7 @@ void FilterGroup::Initialize(const AudioPostProcessor2::Config& output_config) {
   ResizeBuffers();
 
   // Run a buffer of 0's to initialize rendering delay.
+  std::fill_n(interleaved_.data(), interleaved_.size(), 0.0f);
   delay_seconds_ = post_processing_pipeline_->ProcessFrames(
       interleaved_.data(), input_frames_per_write_, last_volume_,
       true /* is_silence */);
@@ -203,6 +204,7 @@ int FilterGroup::GetOutputChannelCount() const {
 
 void FilterGroup::ResizeBuffers() {
   mixed_ = ::media::AudioBus::Create(num_channels_, input_frames_per_write_);
+  mixed_->Zero();
   temp_buffers_.clear();
   for (MixerInput* input : active_inputs_) {
     AddTempBuffer(input->num_channels(), input_frames_per_write_);
@@ -217,6 +219,7 @@ void FilterGroup::AddTempBuffer(int num_channels, int num_frames) {
   if (!temp_buffers_[num_channels]) {
     temp_buffers_[num_channels] =
         ::media::AudioBus::Create(num_channels, num_frames);
+    temp_buffers_[num_channels]->Zero();
   }
 }
 

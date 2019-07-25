@@ -34,14 +34,14 @@ source_set("common_constants") {
 }
 
 if (enable_extensions) {
-  mojom("mojo") {
+  mojom("mojom") {
     # We don't want Blink variants of bindings to be generated.
     disable_variants = true
 
     sources = [
-      "mojo/app_window.mojom",
-      "mojo/guest_view.mojom",
-      "mojo/keep_alive.mojom",
+      "mojom/app_window.mojom",
+      "mojom/guest_view.mojom",
+      "mojom/keep_alive.mojom",
     ]
 
     if (proprietary_codecs && enable_wifi_display) {
@@ -310,7 +310,7 @@ if (enable_extensions) {
 
     public_deps = [
       ":common_constants",
-      ":mojo",
+      ":mojom",
       "//content/public/common",
       "//ipc",
       "//skia",

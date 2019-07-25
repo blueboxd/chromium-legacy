@@ -11,6 +11,8 @@
 
 namespace views {
 
+struct InstallableInkDropConfig;
+
 // Holds the current visual state of the installable ink drop and handles
 // painting it. The |Painter::Paint()| implementation draws a rectangular ink
 // drop of the given size; the user should set a clip path via
@@ -26,8 +28,10 @@ class VIEWS_EXPORT InstallableInkDropPainter : public Painter {
     float highlighted_ratio = 0.0f;
   };
 
-  // |state| must outlive |this|.
-  explicit InstallableInkDropPainter(const State* state) : state_(state) {}
+  // Pointer arguments must outlive |this|.
+  InstallableInkDropPainter(const InstallableInkDropConfig* config,
+                            const State* state)
+      : config_(config), state_(state) {}
   ~InstallableInkDropPainter() override = default;
 
   // Painter:
@@ -35,6 +39,10 @@ class VIEWS_EXPORT InstallableInkDropPainter : public Painter {
   void Paint(gfx::Canvas* canvas, const gfx::Size& size) override;
 
  private:
+  // Contains the colors and opacities we use to paint, given the current state.
+  // This isn't modified inside this class, but it can be modified by our user.
+  const InstallableInkDropConfig* const config_;
+
   // The current visual state. This isn't modified inside this class, but it can
   // be modified by our user.
   const State* const state_;

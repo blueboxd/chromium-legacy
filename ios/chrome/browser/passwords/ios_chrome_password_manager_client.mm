@@ -10,13 +10,13 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/store_metrics_reporter.h"
@@ -28,7 +28,7 @@
 #include "ios/chrome/browser/passwords/credential_manager_util.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/passwords/ios_password_requirements_service_factory.h"
-#include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
+#include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -74,7 +74,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
       *saving_passwords_enabled_, this, GetSyncService(delegate_.browserState),
       GetIdentityManager(delegate_.browserState), GetPrefs());
   log_manager_ = autofill::LogManager::Create(
-      ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
+      ios::PasswordManagerLogRouterFactory::GetForBrowserState(
           delegate_.browserState),
       base::Closure());
 }

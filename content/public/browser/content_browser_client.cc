@@ -341,24 +341,6 @@ void ContentBrowserClient::UpdateRendererPreferencesForWorker(
   // |browser_context| may be null (e.g. during shutdown of a service worker).
 }
 
-bool ContentBrowserClient::AllowGetCookie(const GURL& url,
-                                          const GURL& first_party,
-                                          const net::CookieList& cookie_list,
-                                          ResourceContext* context,
-                                          int render_process_id,
-                                          int render_frame_id) {
-  return true;
-}
-
-bool ContentBrowserClient::AllowSetCookie(const GURL& url,
-                                          const GURL& first_party,
-                                          const net::CanonicalCookie& cookie,
-                                          ResourceContext* context,
-                                          int render_process_id,
-                                          int render_frame_id) {
-  return true;
-}
-
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     ResourceContext* context,
@@ -782,6 +764,7 @@ void ContentBrowserClient::CreateWebSocket(
 }
 
 bool ContentBrowserClient::WillCreateRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRole role,
     BrowserContext* browser_context,
     const url::Origin& origin,
     bool is_service_worker,

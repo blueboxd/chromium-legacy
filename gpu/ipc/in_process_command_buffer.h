@@ -376,7 +376,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   // Accessed on both threads:
   base::WaitableEvent flush_event_;
   CommandBufferTaskExecutor* const task_executor_;
-  std::unique_ptr<CommandBufferTaskExecutor::Sequence> task_sequence_;
+  std::unique_ptr<gpu::SingleTaskSequence> task_sequence_;
   std::unique_ptr<SharedImageInterface> shared_image_interface_;
 
   // The group of contexts that share namespaces with this context.

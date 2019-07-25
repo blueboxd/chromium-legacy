@@ -36,6 +36,13 @@ const char kTrialGroupAboutFlags[] = "AboutFlags";
 
 namespace {
 
+// Separator used for origin list values. The list of origins provided from
+// the command line or from the text input in chrome://flags are concatenated
+// using this separator. The value is then appended as a command line switch
+// and saved in the dictionary pref (kAboutFlagsOriginLists).
+// E.g. --isolate_origins=http://example1.net,http://example2.net
+const char kOriginListValueSeparator[] = ",";
+
 // Convert switch constants to proper CommandLine::StringType strings.
 base::CommandLine::StringType GetSwitchString(const std::string& flag) {
   base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
@@ -237,15 +244,16 @@ bool IsSafeValue(const std::string& value) {
 }
 
 // Sanitizes |value| which contains a list of origins separated by whitespace
-// and/or comma. The sanitized value is added as a command line argument, so
-// this is a security critical operation: The sanitized value must have no
-// whitespaces, each individual origin must be separated by a comma, and each
-// origin must represent a url::Origin().
-std::string SanitizeOriginListFlag(const std::string& value) {
+// and/or comma. The sanitized set of origins is intended to be added to the
+// command line, so this is a security critical operation: The sanitized value
+// must have no whitespaces, each individual origin must be separated by a
+// comma, and each origin must represent a url::Origin().
+std::set<std::string> TokenizeOriginList(const std::string& value) {
   const std::string input = base::CollapseWhitespaceASCII(value, false);
+  // Allow both space and comma as separators.
   const std::string delimiters = " ,";
   base::StringTokenizer tokenizer(input, delimiters);
-  std::vector<std::string> origin_strings;
+  std::set<std::string> origin_strings;
   while (tokenizer.GetNext()) {
     const std::string token = tokenizer.token();
     if (token.empty()) {
@@ -260,12 +268,70 @@ std::string SanitizeOriginListFlag(const std::string& value) {
     if (!IsSafeValue(origin)) {
       continue;
     }
-    origin_strings.push_back(origin);
+    origin_strings.insert(origin);
   }
-  const std::string result = base::JoinString(origin_strings, ",");
+  return origin_strings;
+}
+
+// Combines the origin lists contained in |value1| and |value2| separated by
+// commas. Invalid or duplicate origins are dropped.
+std::string CombineAndSanitizeOriginLists(const std::string& value1,
+                                          const std::string& value2) {
+  const std::set<std::string> origins =
+      base::STLSetUnion<std::set<std::string>>(TokenizeOriginList(value1),
+                                               TokenizeOriginList(value2));
+  const std::vector<std::string> origin_vector(origins.begin(), origins.end());
+  const std::string result =
+      base::JoinString(origin_vector, kOriginListValueSeparator);
   CHECK(IsSafeValue(result));
   return result;
 }
+
+// Returns the sanitized combined origin list by concatenating the command line
+// and the pref values. Invalid or duplicate origins are dropped.
+std::string GetCombinedOriginListValue(const FlagsStorage& flags_storage,
+                                       const std::string& internal_entry_name,
+                                       const std::string& command_line_switch) {
+  const std::string existing_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          command_line_switch);
+  const std::string new_value =
+      flags_storage.GetOriginListFlag(internal_entry_name);
+  return CombineAndSanitizeOriginLists(existing_value, new_value);
+}
+
+#if defined(OS_CHROMEOS)
+// ChromeOS does not call ConvertFlagsToSwitches on startup (see
+// ChromeFeatureListCreator::ConvertFlagsToSwitches() for details) so the
+// command line cannot be updated using pref values. Instead, this method
+// modifies it on the fly when the user makes a change.
+void DidModifyOriginListFlag(const FlagsStorage& flags_storage,
+                             const FeatureEntry& entry) {
+  const std::string new_value = GetCombinedOriginListValue(
+      flags_storage, entry.internal_name, entry.command_line_switch);
+
+  // Remove the switch if it exists.
+  base::CommandLine* current_cl = base::CommandLine::ForCurrentProcess();
+  base::CommandLine new_cl(current_cl->GetProgram());
+  const base::CommandLine::SwitchMap switches = current_cl->GetSwitches();
+  for (const auto& it : switches) {
+    const auto& switch_name = it.first;
+    const auto& switch_value = it.second;
+    if (switch_name != entry.command_line_switch) {
+      if (switch_value.empty()) {
+        new_cl.AppendSwitch(switch_name);
+      } else {
+        new_cl.AppendSwitchNative(switch_name, switch_value);
+      }
+    }
+  }
+  *current_cl = new_cl;
+
+  const std::string sanitized =
+      CombineAndSanitizeOriginLists(std::string(), new_value);
+  current_cl->AppendSwitchASCII(entry.command_line_switch, sanitized);
+}
+#endif
 
 }  // namespace
 
@@ -373,9 +439,11 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
     else
       needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
 
+#if defined(OS_CHROMEOS)
     // If an origin list was enabled or disabled, update the command line flag.
-    if (e->type == FeatureEntry::ORIGIN_LIST_VALUE)
-      DidModifyOriginListFlag(*e, enable);
+    if (e->type == FeatureEntry::ORIGIN_LIST_VALUE && enable)
+      DidModifyOriginListFlag(*flags_storage, *e);
+#endif
 
   } else if (e->type == FeatureEntry::SINGLE_DISABLE_VALUE) {
     if (!enable)
@@ -406,14 +474,20 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
 void FlagsState::SetOriginListFlag(const std::string& internal_name,
                                    const std::string& value,
                                    FlagsStorage* flags_storage) {
+  const std::string new_value =
+      CombineAndSanitizeOriginLists(std::string(), value);
+  flags_storage->SetOriginListFlag(internal_name, new_value);
+
+#if defined(OS_CHROMEOS)
   const FeatureEntry* entry = FindFeatureEntryByName(internal_name);
   DCHECK(entry);
 
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlags(flags_storage, &enabled_entries);
   const bool enabled = base::Contains(enabled_entries, entry->internal_name);
-  switch_values_[entry->command_line_switch] = value;
-  DidModifyOriginListFlag(*entry, enabled);
+  if (enabled)
+    DidModifyOriginListFlag(*flags_storage, *entry);
+#endif
 }
 
 void FlagsState::RemoveFlagsSwitches(
@@ -578,11 +652,10 @@ void FlagsState::GetFlagFeatureEntries(
         break;
       case FeatureEntry::ORIGIN_LIST_VALUE:
         data->SetBoolean("enabled", !is_default_value);
-        switch_values_[entry.internal_name] =
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                entry.command_line_switch);
-        data->SetString("origin_list_value",
-                        switch_values_[entry.internal_name]);
+        data->SetString(
+            "origin_list_value",
+            GetCombinedOriginListValue(*flags_storage, entry.internal_name,
+                                       entry.command_line_switch));
         break;
       case FeatureEntry::MULTI_VALUE:
       case FeatureEntry::ENABLE_DISABLE_VALUE:
@@ -699,14 +772,6 @@ void FlagsState::AddSwitchesToCommandLine(
     const auto& entry_it = name_to_switch_map.find(entry_name);
     if (entry_it == name_to_switch_map.end()) {
       NOTREACHED();
-      continue;
-    }
-
-    const FeatureEntry* feature_entry = FindFeatureEntryByName(entry_name);
-    if (feature_entry &&
-        feature_entry->type == FeatureEntry::ORIGIN_LIST_VALUE) {
-      // This is not a feature value that can be enabled/disabled, it's a
-      // command line argument that takes a list of origins. Skip it.
       continue;
     }
 
@@ -827,11 +892,14 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         break;
 
       case FeatureEntry::ORIGIN_LIST_VALUE: {
-        const std::string value =
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                e.command_line_switch);
-        AddSwitchMapping(e.internal_name, e.command_line_switch, value,
-                         name_to_switch_map);
+        // Combine the existing command line value with the user provided list.
+        // This is done to retain the existing list from the command line when
+        // the browser is restarted. Otherwise, the user provided list would
+        // overwrite the list provided from the command line.
+        const std::string origin_list_value = GetCombinedOriginListValue(
+            *flags_storage, e.internal_name, e.command_line_switch);
+        AddSwitchMapping(e.internal_name, e.command_line_switch,
+                         origin_list_value, name_to_switch_map);
         break;
       }
 
@@ -867,32 +935,6 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         }
         break;
     }
-  }
-}
-
-void FlagsState::DidModifyOriginListFlag(const FeatureEntry& entry,
-                                         bool enabled) {
-  // Remove the switch if it exists.
-  base::CommandLine* current_cl = base::CommandLine::ForCurrentProcess();
-  base::CommandLine new_cl(current_cl->GetProgram());
-  const base::CommandLine::SwitchMap switches = current_cl->GetSwitches();
-  for (const auto& it : switches) {
-    const auto& switch_name = it.first;
-    const auto& switch_value = it.second;
-    if (switch_name != entry.command_line_switch) {
-      if (switch_value.empty()) {
-        new_cl.AppendSwitch(switch_name);
-      } else {
-        new_cl.AppendSwitchNative(switch_name, switch_value);
-      }
-    }
-  }
-  *current_cl = new_cl;
-
-  if (enabled) {
-    current_cl->AppendSwitchASCII(
-        entry.command_line_switch,
-        SanitizeOriginListFlag(switch_values_[entry.command_line_switch]));
   }
 }
 

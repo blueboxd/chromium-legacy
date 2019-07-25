@@ -69,6 +69,12 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         if (icon == null) {
             final RoundedIconGenerator iconGenerator = createRoundedIconGenerator(fallbackColor);
             icon = iconGenerator.generateIconForUrl(mPlainUrl);
+            // generateIconForUrl might return null if the URL is empty or the domain cannot be
+            // resolved. See https://crbug.com/987101
+            // TODO(sinansahin): Handle the case where generating an icon fails.
+            if (icon == null) {
+                return;
+            }
         }
 
         final int size = mContext.getResources().getDimensionPixelSize(

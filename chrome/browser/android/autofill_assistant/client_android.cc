@@ -52,6 +52,10 @@ namespace {
 const char* const kDefaultAutofillAssistantServerUrl =
     "https://automate-pa.googleapis.com";
 
+// A direct action that corresponds to pressing the close or cancel button on
+// the UI.
+const char* const kCancelActionName = "cancel";
+
 // Fills a map from two Java arrays of strings of the same length.
 void FillStringMapFromJava(JNIEnv* env,
                            const JavaRef<jobjectArray>& names,
@@ -105,7 +109,7 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
 }
 
 ClientAndroid::~ClientAndroid() {
-  if (controller_ != nullptr) {
+  if (controller_ != nullptr && started_) {
     // In the case of an unexpected closing of the activity or tab, controller_
     // will not yet have been cleaned up (since that happens when a web
     // contents object gets destroyed).
@@ -127,6 +131,11 @@ bool ClientAndroid::Start(JNIEnv* env,
                           const JavaParamRef<jobjectArray>& parameter_values,
                           const JavaParamRef<jobject>& joverlay_coordinator,
                           jlong jservice) {
+  // When Start() is called, AA_START should have been measured. From now on,
+  // the client is responsible for keeping track of dropouts, so that for each
+  // AA_START there's a corresponding dropout.
+  started_ = true;
+
   std::unique_ptr<Service> service = nullptr;
   if (jservice) {
     service.reset(static_cast<Service*>(reinterpret_cast<void*>(jservice)));
@@ -228,6 +237,10 @@ void ClientAndroid::OnListDirectActions(
     }
   }
 
+  // Cancel is always available when the UI is up.
+  if (ui_controller_android_)
+    names.insert(kCancelActionName);
+
   JNIEnv* env = AttachCurrentThread();
   Java_AutofillAssistantClient_sendDirectActionList(
       env, java_object_, jcallback,
@@ -243,13 +256,36 @@ bool ClientAndroid::PerformDirectAction(
     const base::android::JavaParamRef<jobjectArray>& jargument_names,
     const base::android::JavaParamRef<jobjectArray>& jargument_values,
     const base::android::JavaParamRef<jobject>& joverlay_coordinator) {
+  std::string action_name =
+      base::android::ConvertJavaStringToUTF8(env, jaction_name);
+
+  int action_index = FindDirectAction(action_name);
+
+  // Cancel through the UI if it is up. This allows the user to undo. This is
+  // always available, even if no action was found and action_index == -1.
+  if (action_name == kCancelActionName && ui_controller_android_) {
+    ui_controller_android_->CloseOrCancel(action_index);
+    return true;
+  }
+
+  if (action_index == -1)
+    return false;
+
+  // If an overlay is already shown, then show the rest of the UI immediately.
+  if (joverlay_coordinator) {
+    AttachUI(joverlay_coordinator);
+  }
+
+  return controller_->PerformUserActionWithContext(
+      action_index, CreateTriggerContext(env, jexperiment_ids, jargument_names,
+                                         jargument_values));
+}
+
+int ClientAndroid::FindDirectAction(const std::string& action_name) {
   // It's too late to create a controller. This should have been done in
   // ListDirectActions.
   if (!controller_)
-    return false;
-
-  std::string action_name =
-      base::android::ConvertJavaStringToUTF8(env, jaction_name);
+    return -1;
 
   const std::vector<UserAction>& user_actions = controller_->GetUserActions();
   int user_action_count = user_actions.size();
@@ -260,19 +296,11 @@ bool ClientAndroid::PerformDirectAction(
 
     const std::set<std::string>& action_names =
         user_action.direct_action().names;
-    if (action_names.count(action_name) != 0) {
-      // If an overlay is already shown, then show the rest of the UI
-      // immediately.
-      if (joverlay_coordinator) {
-        AttachUI(joverlay_coordinator);
-      }
-
-      return controller_->PerformUserActionWithContext(
-          i, CreateTriggerContext(env, jexperiment_ids, jargument_names,
-                                  jargument_values));
-    }
+    if (action_names.count(action_name) != 0)
+      return i;
   }
-  return false;
+
+  return -1;
 }
 
 void ClientAndroid::AttachUI() {
@@ -354,7 +382,8 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (ui_controller_android_ && ui_controller_android_->IsAttached())
     DestroyUI();
 
-  Metrics::RecordDropOut(reason);
+  if (started_)
+    Metrics::RecordDropOut(reason);
 
   // Delete the controller in a separate task. This avoids tricky ordering
   // issues when Shutdown is called from the controller.
@@ -390,6 +419,7 @@ void ClientAndroid::CreateController(std::unique_ptr<Service> service) {
 
 void ClientAndroid::DestroyController() {
   controller_.reset();
+  started_ = false;
 }
 
 bool ClientAndroid::NeedsUI() {

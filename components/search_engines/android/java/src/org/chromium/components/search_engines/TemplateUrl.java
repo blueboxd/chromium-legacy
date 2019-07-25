@@ -61,6 +61,14 @@ public class TemplateUrl {
         return nativeGetLastVisitedTime(mTemplateUrlPtr);
     }
 
+    /**
+     * @return The template URL of the search engine. The format can be looked up in
+     *         prepopulated_engines.json.
+     */
+    public String getURL() {
+        return nativeGetURL(mTemplateUrlPtr);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof TemplateUrl)) return false;
@@ -81,4 +89,5 @@ public class TemplateUrl {
     private static native boolean nativeIsPrepopulatedOrCreatedByPolicy(long templateUrlPtr);
     private static native long nativeGetLastVisitedTime(long templateUrlPtr);
     private static native int nativeGetPrepopulatedId(long templateUrlPtr);
+    private static native String nativeGetURL(long templateUrlPtr);
 }

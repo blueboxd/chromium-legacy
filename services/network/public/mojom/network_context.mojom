@@ -591,15 +591,17 @@ interface NetworkContext {
   // possible, a RestrictedCookieManager should be handed out instead.
   GetCookieManager(CookieManager& cookie_manager);
 
-  // Gets a RestrictedCookieManager scoped to a given origin.
+  // Gets a RestrictedCookieManager scoped to a given origin, and applying
+  // settings configured on the CookieManager associated with this domain.
   //
-  // This interface can be safely handed out to a process that is known to
-  // represent the given origin, such as a renderer process.
+  // If role == SCRIPT, this interface can be safely handed out to a process
+  // that is known to represent the given origin, such as a renderer process.
   //
   // |is_service_worker|, |process_id| and |routing_id| will be passed to
   // NetworkContextClient::OnCookieChange and OnCookiesRead.
   GetRestrictedCookieManager(
       RestrictedCookieManager& restricted_cookie_manager,
+      RestrictedCookieManagerRole role,
       url.mojom.Origin origin,
       bool is_service_worker,
       int32 process_id, int32 routing_id);

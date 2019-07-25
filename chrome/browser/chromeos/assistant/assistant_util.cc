@@ -105,6 +105,8 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
       const std::string email = identity_manager->GetPrimaryAccountInfo().email;
       if (base::EndsWith(email, "@gmail.com",
                          base::CompareCase::INSENSITIVE_ASCII) ||
+          base::EndsWith(email, "@googlemail.com",
+                         base::CompareCase::INSENSITIVE_ASCII) ||
           base::EndsWith(email, "@google.com",
                          base::CompareCase::INSENSITIVE_ASCII)) {
         account_supported = true;

@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.preferences.sync;
 
 import android.accounts.Account;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.res.Resources;
@@ -20,19 +18,18 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.content.res.AppCompatResources;
-import android.widget.ListView;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceCategory;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.ChromeBasePreference;
+import org.chromium.chrome.browser.preferences.ChromeBasePreferenceCompat;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -63,7 +60,7 @@ import java.util.List;
  *
  * Note: This can be triggered from a web page, e.g. a GAIA sign-in page.
  */
-public class AccountManagementFragment extends PreferenceFragment
+public class AccountManagementFragment extends PreferenceFragmentCompat
         implements SignOutDialogListener, SignInStateObserver,
                    ConfirmManagedSyncDataDialog.Listener, ProfileDataCache.Observer {
     private static final String TAG = "AcctManagementPref";
@@ -101,9 +98,7 @@ public class AccountManagementFragment extends PreferenceFragment
     private @Nullable ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @Override
-    public void onCreate(Bundle savedState) {
-        super.onCreate(savedState);
-
+    public void onCreatePreferences(Bundle savedState, String rootKey) {
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             // Prevent sync settings changes from taking effect until the user leaves this screen.
@@ -137,8 +132,7 @@ public class AccountManagementFragment extends PreferenceFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ListView list = getView().findViewById(android.R.id.list);
-        list.setDivider(null);
+        setDivider(null);
     }
 
     @Override
@@ -220,13 +214,9 @@ public class AccountManagementFragment extends PreferenceFragment
                     if (managementDomain != null) {
                         // Show the 'You are signing out of a managed account' dialog.
 
-                        // TODO(https://crbug.com/710657): Migrate to AccountManagementFragment to
-                        // extend android.support.v7.preference.Preference and remove this cast.
-                        FragmentActivity fragmentActivity = (FragmentActivity) getActivity();
                         ConfirmManagedSyncDataDialog.showSignOutFromManagedAccountDialog(
-                                AccountManagementFragment.this,
-                                fragmentActivity.getSupportFragmentManager(), getResources(),
-                                managementDomain);
+                                AccountManagementFragment.this, getFragmentManager(),
+                                getResources(), managementDomain);
                     } else {
                         // Show the 'You are signing out' dialog.
                         SignOutDialogFragment signOutFragment = new SignOutDialogFragment();
@@ -304,7 +294,7 @@ public class AccountManagementFragment extends PreferenceFragment
         List<Account> accounts = AccountManagerFacade.get().tryGetGoogleAccounts();
         for (int i = 0; i < accounts.size(); i++) {
             Account account = accounts.get(i);
-            Preference pref = new Preference(getActivity());
+            Preference pref = new Preference(getStyledContext());
             pref.setLayoutResource(R.layout.account_management_account_row);
             pref.setTitle(account.name);
             pref.setIcon(mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
@@ -320,8 +310,9 @@ public class AccountManagementFragment extends PreferenceFragment
         }
     }
 
-    private ChromeBasePreference createAddAccountPreference() {
-        ChromeBasePreference addAccountPreference = new ChromeBasePreference(getActivity());
+    private ChromeBasePreferenceCompat createAddAccountPreference() {
+        ChromeBasePreferenceCompat addAccountPreference =
+                new ChromeBasePreferenceCompat(getStyledContext());
         addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
         addAccountPreference.setIcon(
                 AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_circle_40dp));
@@ -342,6 +333,10 @@ public class AccountManagementFragment extends PreferenceFragment
         });
         addAccountPreference.setManagedPreferenceDelegate(preference -> !canAddAccounts());
         return addAccountPreference;
+    }
+
+    private Context getStyledContext() {
+        return getPreferenceManager().getContext();
     }
 
     // ProfileDataCache.Observer implementation:
@@ -382,7 +377,6 @@ public class AccountManagementFragment extends PreferenceFragment
         // we do not hit a native crash.
         if (!ChromeSigninController.get().isSignedIn()) return;
 
-        final Activity activity = getActivity();
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
         IdentityServicesProvider.getSigninManager().signOut(
                 SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
@@ -390,7 +384,7 @@ public class AccountManagementFragment extends PreferenceFragment
                     @Override
                     public void preWipeData() {
                         clearDataProgressDialog.show(
-                                activity.getFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
+                                getFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
                     }
                     @Override
                     public void postWipeData() {
@@ -439,7 +433,7 @@ public class AccountManagementFragment extends PreferenceFragment
     public static void openAccountManagementScreen(@GAIAServiceType int serviceType) {
         Bundle arguments = new Bundle();
         arguments.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, serviceType);
-        PreferencesLauncher.launchSettingsPage(
+        PreferencesLauncher.launchSettingsPageCompat(
                 ContextUtils.getApplicationContext(), AccountManagementFragment.class, arguments);
     }
 

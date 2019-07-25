@@ -2453,6 +2453,31 @@ void Document::PropagateStyleToViewport() {
     PROPAGATE_FROM(overflow_style, ScrollPaddingBottom, SetScrollPaddingBottom);
     PROPAGATE_FROM(overflow_style, ScrollPaddingLeft, SetScrollPaddingLeft);
 
+    // Counts any time scroll snapping and scroll padding break if we change its
+    // viewport propagation logic. Scroll snapping only breaks if body has
+    // non-none snap type that is different from the document one.
+    // TODO(952711): Remove once propagation logic change is complete.
+    bool snap_type_is_different =
+        !overflow_style->GetScrollSnapType().is_none &&
+        (overflow_style->GetScrollSnapType() !=
+         document_style->GetScrollSnapType());
+    bool scroll_padding_is_different =
+        overflow_style->ScrollPaddingTop() !=
+            document_style->ScrollPaddingTop() ||
+        overflow_style->ScrollPaddingBottom() !=
+            document_style->ScrollPaddingBottom() ||
+        overflow_style->ScrollPaddingLeft() !=
+            document_style->ScrollPaddingLeft() ||
+        overflow_style->ScrollPaddingRight() !=
+            document_style->ScrollPaddingRight();
+
+    if (snap_type_is_different) {
+      UseCounter::Count(*this, WebFeature::kScrollSnapOnViewportBreaks);
+    }
+    if (scroll_padding_is_different) {
+      UseCounter::Count(*this, WebFeature::kScrollPaddingOnViewportBreaks);
+    }
+
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX);
     PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY);
 

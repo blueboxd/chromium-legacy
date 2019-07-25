@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/ui/request_pin_view.h"
 #include "ui/views/widget/widget.h"
@@ -22,18 +21,28 @@ namespace chromeos {
 // Manages the state of the dialog that requests the PIN from user. Used by the
 // extensions that need to request the PIN. Implemented as requirement for
 // crbug.com/612886
-class PinDialogManager : RequestPinView::Delegate {
+class PinDialogManager final : RequestPinView::Delegate {
  public:
-  enum RequestPinResponse {
-    SUCCESS,
-    INVALID_ID,
-    OTHER_FLOW_IN_PROGRESS,
-    DIALOG_DISPLAYED_ALREADY
+  enum class RequestPinResult {
+    kSuccess,
+    kInvalidId,
+    kOtherFlowInProgress,
+    kDialogDisplayedAlready,
   };
 
-  enum StopPinRequestResponse { STOPPED, NO_ACTIVE_DIALOG, NO_USER_INPUT };
+  enum class StopPinRequestResult {
+    kSuccess,
+    kNoActiveDialog,
+    kNoUserInput,
+  };
+
+  using RequestPinCallback =
+      base::OnceCallback<void(const std::string& user_input)>;
+  using StopPinRequestCallback = base::OnceClosure;
 
   PinDialogManager();
+  PinDialogManager(const PinDialogManager&) = delete;
+  PinDialogManager& operator=(const PinDialogManager&) = delete;
   ~PinDialogManager();
 
   // Stores internally the |signRequestId| along with current timestamp.
@@ -56,33 +65,31 @@ class PinDialogManager : RequestPinView::Delegate {
   //     but no information about the attepts left is not given to the user.
   // |callback| - used to notify about the user input in the text_field from the
   //     dialog.
-  // Returns SUCCESS if the dialog is displayed and extension owns it. Otherwise
-  // the specific error is returned.
-  RequestPinResponse ShowPinDialog(
-      const std::string& extension_id,
-      const std::string& extension_name,
-      int sign_request_id,
-      RequestPinView::RequestPinCodeType code_type,
-      RequestPinView::RequestPinErrorType error_type,
-      int attempts_left,
-      const RequestPinView::RequestPinCallback& callback);
+  // Returns |kSuccess| if the dialog is displayed and extension owns it.
+  // Otherwise the specific error is returned.
+  RequestPinResult RequestPin(const std::string& extension_id,
+                              const std::string& extension_name,
+                              int sign_request_id,
+                              RequestPinView::RequestPinCodeType code_type,
+                              RequestPinView::RequestPinErrorType error_type,
+                              int attempts_left,
+                              RequestPinCallback callback);
 
   // chromeos::RequestPinView::Delegate overrides.
   void OnPinDialogInput() override;
   void OnPinDialogClosed() override;
 
-  // Updates the existing dialog with new error message. Uses |callback| with
-  // empty string when user closes the dialog. Returns whether the provided
-  // |extension_id| matches the extension owning the active dialog.
-  PinDialogManager::StopPinRequestResponse UpdatePinDialog(
+  // Updates the existing dialog with new error message. Runs |callback| when
+  // user closes the dialog. Returns whether the provided |extension_id| matches
+  // the extension owning the active dialog.
+  StopPinRequestResult StopPinRequestWithError(
       const std::string& extension_id,
       RequestPinView::RequestPinErrorType error_type,
-      bool accept_input,
-      const RequestPinView::RequestPinCallback& callback);
+      StopPinRequestCallback callback);
 
   // Returns whether the last PIN dialog from this extension was closed by the
   // user.
-  bool LastPinDialogClosed(const std::string& extension_id);
+  bool LastPinDialogClosed(const std::string& extension_id) const;
 
   // Called when extension calls the stopPinRequest method. The active dialog is
   // closed if the |extension_id| matches the |active_dialog_extension_id_|.
@@ -114,7 +121,7 @@ class PinDialogManager : RequestPinView::Delegate {
   std::string active_dialog_extension_id_;
   views::Widget* active_window_ = nullptr;
 
-  base::WeakPtrFactory<PinDialogManager> weak_factory_;
+  base::WeakPtrFactory<PinDialogManager> weak_factory_{this};
 };
 
 }  // namespace chromeos

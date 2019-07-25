@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/ntp_features.h"
@@ -1032,4 +1033,62 @@ TEST_F(NTPUserDataLoggerTest, ShouldNotRecordCustomizationActionFromNTPOther) {
 
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.CustomizeAction"),
               IsEmpty());
+}
+
+TEST_F(NTPUserDataLoggerTest, ShouldRecordRicherPickerActionsFromNTPGoogle) {
+  base::UserActionTester user_action_tester;
+  base::HistogramTester histogram_tester;
+
+  GURL local_ntp(chrome::kChromeSearchLocalNtpUrl);
+  TestNTPUserDataLogger logger(local_ntp);
+  logger.is_google_ = true;
+
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  // Attempt to log user actions that are only supported when the default search
+  // provider is Google.
+  logger.LogEvent(NTPLoggingEventType::NTP_CUSTOMIZATION_MENU_OPENED,
+                  delta_tiles_loaded);
+  EXPECT_THAT(1, user_action_tester.GetActionCount("NTPRicherPicker.Opened"));
+  logger.LogEvent(NTPLoggingEventType::NTP_BACKGROUND_OPEN_COLLECTION,
+                  delta_tiles_loaded);
+  EXPECT_THAT(1, user_action_tester.GetActionCount(
+                     "NTPRicherPicker.Backgrounds.CollectionClicked"));
+  logger.LogEvent(
+      NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED,
+      delta_tiles_loaded);
+  EXPECT_THAT(1, user_action_tester.GetActionCount(
+                     "NTPRicherPicker.Shortcuts.CustomLinksClicked"));
+}
+
+TEST_F(NTPUserDataLoggerTest, ShouldNotRecordRicherPickerActionsFromNTPOther) {
+  base::UserActionTester user_action_tester;
+  base::HistogramTester histogram_tester;
+
+  GURL local_ntp(chrome::kChromeSearchLocalNtpUrl);
+  TestNTPUserDataLogger logger(local_ntp);
+  logger.is_google_ = false;
+
+  base::TimeDelta delta_tiles_loaded = base::TimeDelta::FromMilliseconds(100);
+
+  // Send the ALL_TILES_LOADED event, this should trigger emitting histograms.
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta_tiles_loaded);
+
+  // Attempt to log user actions that are only supported when the default search
+  // provider is Google.
+  logger.LogEvent(NTPLoggingEventType::NTP_CUSTOMIZATION_MENU_OPENED,
+                  delta_tiles_loaded);
+  EXPECT_THAT(0, user_action_tester.GetActionCount("NTPRicherPicker.Opened"));
+  logger.LogEvent(NTPLoggingEventType::NTP_BACKGROUND_OPEN_COLLECTION,
+                  delta_tiles_loaded);
+  EXPECT_THAT(0, user_action_tester.GetActionCount(
+                     "NTPRicherPicker.Backgrounds.CollectionClicked"));
+  logger.LogEvent(
+      NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_CUSTOM_LINKS_CLICKED,
+      delta_tiles_loaded);
+  EXPECT_THAT(0, user_action_tester.GetActionCount(
+                     "NTPRicherPicker.Shortcuts.CustomLinksClicked"));
 }

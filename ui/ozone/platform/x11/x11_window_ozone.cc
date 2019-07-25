@@ -372,8 +372,4 @@ void X11WindowOzone::OnXWindowIsActiveChanged(bool active) {
   delegate_->OnActivationChanged(active);
 }
 
-::Time X11WindowOzone::GetTimestampForXWindow() {
-  return ui::X11EventSource::GetInstance()->GetTimestamp();
-}
-
 }  // namespace ui

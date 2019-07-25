@@ -231,6 +231,7 @@ void BrowserAppMenuButton::ShowMenu(int run_types) {
 }
 
 void BrowserAppMenuButton::OnThemeChanged() {
+  AppMenuButton::OnThemeChanged();
   UpdateIcon();
 }
 

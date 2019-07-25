@@ -161,9 +161,9 @@ public class FirstRunTest {
 
         // Close the settings fragment.
         AccountManagementFragment fragment =
-                (AccountManagementFragment) prefActivity.getMainFragment();
+                (AccountManagementFragment) prefActivity.getMainFragmentCompat();
         Assert.assertNotNull(fragment);
-        prefActivity.getFragmentManager().beginTransaction().remove(fragment).commit();
+        prefActivity.getSupportFragmentManager().beginTransaction().remove(fragment).commit();
 
         // Sync should immediately become active.
         Assert.assertTrue(SyncTestUtil.isSyncActive());

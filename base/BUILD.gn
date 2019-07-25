@@ -1790,6 +1790,12 @@ jumbo_component("base") {
       ":base_win_linker_flags",
       "//tools/win/DebugVisualizers:chrome",
     ]
+    inputs = [
+      # chrome.natvis listed as an input here instead of in
+      # //tools/win/DebugVisualizers:chrome to prevent unnecessary size increase
+      # in generated build files.
+      "//tools/win/DebugVisualizers/chrome.natvis",
+    ]
   }
 
   # Desktop Mac.
@@ -1823,8 +1829,6 @@ jumbo_component("base") {
       "CoreFoundation.framework",
       "IOKit.framework",
       "OpenDirectory.framework",
-      "pmenergy",
-      "pmsample",
       "Security.framework",
     ]
   }

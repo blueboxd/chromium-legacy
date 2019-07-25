@@ -324,7 +324,7 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
       if (width_[i].IsAuto()) {
         unsigned span = table_->SpanOfEffectiveColumn(i);
         int w = remaining_width * span / auto_span;
-        calc_width[i] = w + hspacing * (span - 1);
+        calc_width[i] = std::max<int>((w + hspacing * (span - 1)), 0);
         remaining_width -= w;
         if (!remaining_width)
           break;
@@ -334,8 +334,10 @@ void TableLayoutAlgorithmFixed::UpdateLayout() {
       }
     }
     // Last one gets the remainder.
-    if (remaining_width)
-      calc_width[last_auto] += remaining_width;
+    if (remaining_width) {
+      calc_width[last_auto] =
+          std::max(calc_width[last_auto] + remaining_width, 0);
+    }
     total_width = table_logical_width;
   }
 

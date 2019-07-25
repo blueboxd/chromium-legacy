@@ -75,6 +75,10 @@ class ReportingCacheImpl : public ReportingCache {
   void RemoveEndpointGroup(const url::Origin& origin,
                            const std::string& name) override;
   void RemoveEndpointsForUrl(const GURL& url) override;
+  void AddClientsLoadedFromStore(
+      std::vector<ReportingEndpoint> loaded_endpoints,
+      std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups)
+      override;
   std::vector<ReportingEndpoint> GetCandidateEndpointsForDelivery(
       const url::Origin& origin,
       const std::string& group_name) override;

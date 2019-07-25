@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/ipc/scheduler_sequence.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -22,12 +23,10 @@ SkiaOutputSurfaceDependencyImpl::SkiaOutputSurfaceDependencyImpl(
 
 SkiaOutputSurfaceDependencyImpl::~SkiaOutputSurfaceDependencyImpl() = default;
 
-void SkiaOutputSurfaceDependencyImpl::ScheduleGpuTask(
-    base::OnceClosure task,
-    std::vector<gpu::SyncToken> sync_tokens) {
-  gpu_service_impl_->scheduler()->ScheduleTask(
-      gpu::Scheduler::Task(gpu_service_impl_->skia_output_surface_sequence_id(),
-                           std::move(task), std::move(sync_tokens)));
+std::unique_ptr<gpu::SingleTaskSequence>
+SkiaOutputSurfaceDependencyImpl::CreateSequence() {
+  return std::make_unique<gpu::SchedulerSequence>(
+      gpu_service_impl_->scheduler());
 }
 
 bool SkiaOutputSurfaceDependencyImpl::IsUsingVulkan() {
@@ -66,10 +65,6 @@ SkiaOutputSurfaceDependencyImpl::GetVulkanContextProvider() {
 const gpu::GpuPreferences&
 SkiaOutputSurfaceDependencyImpl::GetGpuPreferences() {
   return gpu_service_impl_->gpu_preferences();
-}
-
-gpu::SequenceId SkiaOutputSurfaceDependencyImpl::GetSequenceId() {
-  return gpu_service_impl_->skia_output_surface_sequence_id();
 }
 
 const gpu::GpuFeatureInfo&

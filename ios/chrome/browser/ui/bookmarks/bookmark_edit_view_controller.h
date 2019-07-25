@@ -10,6 +10,7 @@
 
 @class BookmarkEditViewController;
 @class BookmarkFolderViewController;
+@protocol BrowserCommands;
 
 namespace bookmarks {
 class BookmarkNode;
@@ -54,6 +55,7 @@ class ChromeBrowserState;
 //             folder.
 - (instancetype)initWithBookmark:(const bookmarks::BookmarkNode*)bookmark
                     browserState:(ios::ChromeBrowserState*)browserState
+                      dispatcher:(id<BrowserCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:(ChromeTableViewControllerStyle)style

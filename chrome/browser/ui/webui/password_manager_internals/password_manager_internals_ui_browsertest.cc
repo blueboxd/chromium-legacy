@@ -9,8 +9,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browser_test.h"
-#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
+#include "components/autofill/core/browser/logging/log_router.h"
+#include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "content/public/browser/web_contents.h"
 
 class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
@@ -73,32 +73,32 @@ void PasswordManagerInternalsWebUIBrowserTest::OpenInternalsPageWithBrowser(
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest, LogEntry) {
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
-  service->ProcessLog("<script> text for testing");
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
+  log_router->ProcessLog("<script> text for testing");
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }
 
 // Test that a single internals page is empty on load.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogEntry_EmptyOnLoad) {
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
   ASSERT_TRUE(RunJavascriptTest("testLogEmpty"));
 }
 
 // Test that a single internals page is flushed on reload.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogEntry_FlushedOnReload) {
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
-  service->ProcessLog("<script> text for testing");
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
+  log_router->ProcessLog("<script> text for testing");
   OpenInternalsPage(WindowOpenDisposition::CURRENT_TAB);  // Reload.
   ASSERT_TRUE(RunJavascriptTest("testLogEmpty"));
 }
@@ -111,11 +111,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogEntry_MultipleTabsIdentical) {
   // First, open one tab with the internals page, and log something.
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
-  service->ProcessLog("<script> text for testing");
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
+  log_router->ProcessLog("<script> text for testing");
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
   // Now open a second tab with the internals page, but do not log anything.
   OpenInternalsPage(WindowOpenDisposition::NEW_FOREGROUND_TAB);
@@ -130,11 +130,11 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
   // Open one more tab with the internals page.
   OpenInternalsPage(WindowOpenDisposition::NEW_FOREGROUND_TAB);
   // Now log something.
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
-  service->ProcessLog("<script> text for testing");
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
+  log_router->ProcessLog("<script> text for testing");
   // Reload.
   OpenInternalsPage(WindowOpenDisposition::CURRENT_TAB);
   // The text should still be there.
@@ -144,21 +144,21 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 // Test that navigation away from the internals page works OK.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogEntry_NavigateAway) {
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
-  service->ProcessLog("<script> text for testing");
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
+  log_router->ProcessLog("<script> text for testing");
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
 }
 
 // Test that the description is correct in a non-Incognito tab.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        NonIncognitoMessage) {
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(browser()->profile());
-  ASSERT_TRUE(service);
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          browser()->profile());
+  ASSERT_TRUE(log_router);
   ASSERT_TRUE(RunJavascriptTest("testNonIncognitoDescription"));
 }
 
@@ -166,10 +166,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        IncognitoMessage) {
   Browser* incognito = CreateIncognitoBrowser();
-  password_manager::PasswordManagerInternalsService* service =
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(incognito->profile()->GetOffTheRecordProfile());
-  EXPECT_FALSE(service);  // There should be no service for Incognito.
+  autofill::LogRouter* log_router =
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          incognito->profile()->GetOffTheRecordProfile());
+  EXPECT_FALSE(log_router);  // There should be no log_router for Incognito.
   OpenInternalsPageWithBrowser(incognito, WindowOpenDisposition::CURRENT_TAB);
   SetWebUIInstance(
       incognito->tab_strip_model()->GetActiveWebContents()->GetWebUI());

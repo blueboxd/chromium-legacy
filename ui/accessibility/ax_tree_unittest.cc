@@ -592,6 +592,74 @@ TEST(AXTreeTest, ReparentRootIfRootChanged) {
   EXPECT_FALSE(test_observer.tree_data_changed());
 }
 
+TEST(AXTreeTest, ImplicitChildrenDelete) {
+  // This test covers the case where an AXTreeUpdate includes a node without
+  // mentioning that node's children, this should cause a delete of those child
+  // nodes.
+
+  // Setup initial tree state
+  // Tree:
+  //      1
+  //    2   3
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.resize(2);
+  initial_state.nodes[0].child_ids[0] = 2;
+  initial_state.nodes[0].child_ids[1] = 3;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+  AXTree tree(initial_state);
+
+  EXPECT_NE(tree.GetFromId(1), nullptr);
+  EXPECT_NE(tree.GetFromId(2), nullptr);
+  EXPECT_NE(tree.GetFromId(3), nullptr);
+
+  // Perform a no-op update of node 1 but omit any mention of its children. This
+  // should delete all of the node's children.
+  AXTreeUpdate update;
+  update.nodes.resize(1);
+  update.nodes[0].id = 1;
+
+  ASSERT_TRUE(tree.Unserialize(update));
+
+  // Check that nodes 2 and 3 have been deleted.
+  EXPECT_NE(tree.GetFromId(1), nullptr);
+  EXPECT_EQ(tree.GetFromId(2), nullptr);
+  EXPECT_EQ(tree.GetFromId(3), nullptr);
+}
+
+TEST(AXTreeTest, ImplicitAttributeDelete) {
+  // This test covers the case where an AXTreeUpdate includes a node without
+  // mentioning one of that node's attributes, this should cause a delete of any
+  // unmentioned attribute that was previously set on the node.
+
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(1);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].SetName("Node 1 name");
+  AXTree tree(initial_state);
+
+  EXPECT_NE(tree.GetFromId(1), nullptr);
+  EXPECT_EQ(
+      tree.GetFromId(1)->GetStringAttribute(ax::mojom::StringAttribute::kName),
+      "Node 1 name");
+
+  // Perform a no-op update of node 1 but omit any mention of the name
+  // attribute. This should delete the name attribute.
+  AXTreeUpdate update;
+  update.nodes.resize(1);
+  update.nodes[0].id = 1;
+  ASSERT_TRUE(tree.Unserialize(update));
+
+  // Check that the name attribute is no longer present.
+  EXPECT_NE(tree.GetFromId(1), nullptr);
+  EXPECT_FALSE(
+      tree.GetFromId(1)->HasStringAttribute(ax::mojom::StringAttribute::kName));
+}
+
 TEST(AXTreeTest, TreeObserverIsCalled) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;

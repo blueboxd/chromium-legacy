@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 
 class GURL;
+@class MDCSnackbarMessage;
 
 namespace bookmarks {
 class BookmarkModel;
@@ -54,8 +55,9 @@ UIView* dropShadowWithWidth(CGFloat width);
 
 // Creates the bookmark if |node| is NULL. Otherwise updates |node|.
 // |folder| is the intended parent of |node|.
-// A snackbar is presented, that let the user undo the changes.
-void CreateOrUpdateBookmarkWithUndoToast(
+// Returns a snackbar with an undo action, returns nil if operation wasn't
+// successful or there's nothing to undo.
+MDCSnackbarMessage* CreateOrUpdateBookmarkWithUndoToast(
     const bookmarks::BookmarkNode* node,
     NSString* title,
     const GURL& url,
@@ -63,17 +65,19 @@ void CreateOrUpdateBookmarkWithUndoToast(
     bookmarks::BookmarkModel* bookmark_model,
     ios::ChromeBrowserState* browser_state);
 
-// Updates a bookmark node position, with undo toast.
-void UpdateBookmarkPositionWithUndoToast(
+// Updates a bookmark node position, and returns a snackbar with an undo action.
+// Returns nil if the operation wasn't successful or there's nothing to undo.
+MDCSnackbarMessage* UpdateBookmarkPositionWithUndoToast(
     const bookmarks::BookmarkNode* node,
     const bookmarks::BookmarkNode* folder,
     int position,
     bookmarks::BookmarkModel* bookmark_model,
     ios::ChromeBrowserState* browser_state);
 
-// Deletes all bookmarks in |model| that are in |bookmarks|, and presents a
-// snackbar with an undo action.
-void DeleteBookmarksWithUndoToast(
+// Deletes all bookmarks in |model| that are in |bookmarks|, and returns a
+// snackbar with an undo action. Returns nil if the operation wasn't successful
+// or there's nothing to undo.
+MDCSnackbarMessage* DeleteBookmarksWithUndoToast(
     const std::set<const bookmarks::BookmarkNode*>& bookmarks,
     bookmarks::BookmarkModel* model,
     ios::ChromeBrowserState* browser_state);
@@ -82,9 +86,10 @@ void DeleteBookmarksWithUndoToast(
 void DeleteBookmarks(const std::set<const bookmarks::BookmarkNode*>& bookmarks,
                      bookmarks::BookmarkModel* model);
 
-// Move all |bookmarks| to the given |folder|, and presents a snackbar with an
-// undo action.
-void MoveBookmarksWithUndoToast(
+// Move all |bookmarks| to the given |folder|, and returns a snackbar with an
+// undo action. Returns nil if the operation wasn't successful or there's
+// nothing to undo.
+MDCSnackbarMessage* MoveBookmarksWithUndoToast(
     const std::set<const bookmarks::BookmarkNode*>& bookmarks,
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* folder,

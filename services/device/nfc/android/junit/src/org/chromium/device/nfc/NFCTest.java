@@ -12,6 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -402,7 +403,8 @@ public class NFCTest {
 
         // Check that client was notified and watch with correct id was triggered.
         verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
         assertEquals(mWatchCaptor.getValue().intValue(), mOnWatchCallbackCaptor.getValue()[0]);
     }
 
@@ -545,7 +547,8 @@ public class NFCTest {
 
         // Check that client was notified and correct watch ids were provided.
         verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
         assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
         assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[1]);
     }
@@ -606,7 +609,8 @@ public class NFCTest {
 
         // Check that client was notified and watch with correct id was triggered.
         verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
         assertEquals(3, mOnWatchCallbackCaptor.getValue().length);
         assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
         assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[1]);
@@ -636,7 +640,8 @@ public class NFCTest {
 
         // Check that watch is not triggered when NFC tag is in proximity.
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verify(mNfcClient, times(0)).onWatch(any(int[].class), any(NdefMessage.class));
+        verify(mNfcClient, times(0))
+                .onWatch(any(int[].class), nullable(String.class), any(NdefMessage.class));
     }
 
     /**
@@ -722,7 +727,8 @@ public class NFCTest {
 
         // Check that client was not notified.
         verify(mNfcClient, times(0))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
     }
 
     /**
@@ -1032,7 +1038,8 @@ public class NFCTest {
         // Check that client was notified and watch with 'nfc-forum' or 'any' compatibility was
         // triggered.
         verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
         assertEquals(2, mOnWatchCallbackCaptor.getValue().length);
         assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
         assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[1]);
@@ -1091,7 +1098,8 @@ public class NFCTest {
         // Check that client was notified and watch with 'vendor' or 'any' compatibility was
         // triggered.
         verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
         assertEquals(2, mOnWatchCallbackCaptor.getValue().length);
         assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[0]);
         assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[1]);
@@ -1199,7 +1207,8 @@ public class NFCTest {
 
         // Check that client was notified and watch with correct id was triggered.
         verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
         assertEquals(4, mOnWatchCallbackCaptor.getValue().length);
         assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
         assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[1]);
@@ -1240,7 +1249,8 @@ public class NFCTest {
         nfc.processPendingOperationsForTesting(mNfcTagHandler);
 
         verify(mNfcClient, times(0))
-                .onWatch(mOnWatchCallbackCaptor.capture(), any(NdefMessage.class));
+                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
+                        any(NdefMessage.class));
     }
 
     /**

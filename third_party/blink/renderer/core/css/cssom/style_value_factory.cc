@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 
@@ -244,7 +243,6 @@ CSSStyleValueVector UnsupportedCSSValue(const CSSPropertyName& name,
 CSSStyleValueVector StyleValueFactory::FromString(
     CSSPropertyID property_id,
     const AtomicString& custom_property_name,
-    const PropertyRegistration* registration,
     const String& css_text,
     const CSSParserContext* parser_context) {
   DCHECK_NE(property_id, CSSPropertyID::kInvalid);
@@ -277,17 +275,6 @@ CSSStyleValueVector StyleValueFactory::FromString(
     return result;
   }
 
-  if (property_id == CSSPropertyID::kVariable && registration) {
-    const bool is_animation_tainted = false;
-    const CSSValue* value = registration->Syntax().Parse(tokens, parser_context,
-                                                         is_animation_tainted);
-    if (!value)
-      return CSSStyleValueVector();
-
-    return StyleValueFactory::CssValueToStyleValueVector(
-        CSSPropertyName(custom_property_name), *value);
-  }
-
   if ((property_id == CSSPropertyID::kVariable && !tokens.IsEmpty()) ||
       CSSVariableParser::ContainsValidVariableReferences(range)) {
     const auto variable_data = CSSVariableData::Create(
@@ -316,7 +303,6 @@ CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
 CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
     const CSSProperty& property,
     const AtomicString& custom_property_name,
-    const PropertyRegistration* registration,
     const HeapVector<CSSStyleValueOrString>& values,
     const ExecutionContext& execution_context) {
   const CSSParserContext* parser_context = nullptr;
@@ -335,8 +321,8 @@ CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
       }
 
       const auto subvalues = StyleValueFactory::FromString(
-          property.PropertyID(), custom_property_name, registration,
-          value.GetAsString(), parser_context);
+          property.PropertyID(), custom_property_name, value.GetAsString(),
+          parser_context);
       if (subvalues.IsEmpty())
         return CSSStyleValueVector();
 

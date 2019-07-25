@@ -44,7 +44,7 @@
 
     promise_test(async () => {
       if (window.internals) {
-        internals.runtimeFlags.updateHoverFromScrollAtBeginFrameEnabled = true;
+        internals.runtimeFlags.updateHoverAtBeginFrameEnabled = true;
       }
 
       await waitForCompositorCommit();

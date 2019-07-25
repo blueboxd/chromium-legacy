@@ -118,6 +118,7 @@ void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
     params->url = url;
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
+    params->is_browser_initiated = true;
     FillNavigationParamsResponse(params.get());
     impl->CommitNavigation(std::move(params), nullptr /* extra_data */);
   }

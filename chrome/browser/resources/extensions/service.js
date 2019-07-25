@@ -274,8 +274,8 @@ cr.define('extensions', function() {
         chrome.developerPrivate.showOptions(extension.id);
       } else {
         extensions.navigation.navigateTo({
-          page: Page.DETAILS,
-          subpage: Dialog.OPTIONS,
+          page: extensions.Page.DETAILS,
+          subpage: extensions.Dialog.OPTIONS,
           extensionId: extension.id,
         });
       }

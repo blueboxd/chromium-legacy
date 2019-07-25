@@ -36,15 +36,9 @@ SmsService::SmsService(SmsProvider* provider,
                  std::move(request)) {}
 
 SmsService::~SmsService() {
-  while (!requests_.empty()) {
-    Pop(SmsStatus::kTimeout, base::nullopt);
-  }
+  if (callback_)
+    Process(SmsStatus::kTimeout, base::nullopt);
 }
-
-SmsService::Request::Request(ReceiveCallback callback)
-    : callback(std::move(callback)) {}
-
-SmsService::Request::~Request() = default;
 
 // static
 void SmsService::Create(SmsProvider* provider,
@@ -60,21 +54,21 @@ void SmsService::Create(SmsProvider* provider,
 
 void SmsService::Receive(base::TimeDelta timeout, ReceiveCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (prompt_) {
+  if (callback_) {
     std::move(callback).Run(blink::mojom::SmsStatus::kCancelled, base::nullopt);
     return;
   }
 
-  if (requests_.empty())
-    sms_provider_->AddObserver(this);
+  DCHECK(!prompt_);
+  DCHECK(!sms_);
 
-  auto request = std::make_unique<Request>(std::move(callback));
-  // The |timer| is owned by |request|, and |request| is owned by |this|, so it
-  // is safe to hold raw pointers to |this| and |request| here in the callback.
-  request->timer.Start(FROM_HERE, timeout,
-                       base::BindOnce(&SmsService::OnTimeout,
-                                      base::Unretained(this), request.get()));
-  requests_.push_back(std::move(request));
+  sms_provider_->AddObserver(this);
+
+  callback_ = std::move(callback);
+  // The |timer_| is owned by |this|, so it is safe to hold raw pointers to
+  // |this| here in the callback.
+  timer_.Start(FROM_HERE, timeout,
+               base::BindOnce(&SmsService::OnTimeout, base::Unretained(this)));
 
   Prompt();
 
@@ -86,51 +80,52 @@ bool SmsService::OnReceive(const url::Origin& origin, const std::string& sms) {
   if (origin_ != origin)
     return false;
 
-  return Pop(SmsStatus::kSuccess, sms);
-}
+  DCHECK(prompt_);
+  DCHECK(!sms_);
+  DCHECK(timer_.IsRunning());
 
-bool SmsService::Pop(blink::mojom::SmsStatus status,
-                     base::Optional<std::string> sms) {
-  DCHECK(!requests_.empty());
+  timer_.Stop();
+  sms_provider_->RemoveObserver(this);
 
-  Dismiss();
-
-  DCHECK(requests_.front()->timer.IsRunning());
-
-  requests_.front()->timer.Stop();
-  std::move(requests_.front()->callback).Run(status, sms);
-  requests_.pop_front();
-
-  if (requests_.empty())
-    sms_provider_->RemoveObserver(this);
-
+  sms_ = sms;
+  prompt_->EnableContinueButton();
   return true;
 }
 
-void SmsService::OnTimeout(Request* request) {
+void SmsService::Process(blink::mojom::SmsStatus status,
+                         base::Optional<std::string> sms) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK(!request->timer.IsRunning());
+  DCHECK(callback_);
 
-  std::move(request->callback)
-      .Run(blink::mojom::SmsStatus::kTimeout, base::nullopt);
+  std::move(callback_).Run(status, sms);
 
-  // Remove the request from the list.
-  for (auto iter = requests_.begin(); iter != requests_.end(); ++iter) {
-    if ((*iter).get() == request) {
-      requests_.erase(iter);
-      Dismiss();
-      if (requests_.empty())
-        sms_provider_->RemoveObserver(this);
-      return;
-    }
-  }
+  Dismiss();
+}
+
+void SmsService::OnTimeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(callback_);
+  DCHECK(!timer_.IsRunning());
+
+  std::move(callback_).Run(blink::mojom::SmsStatus::kTimeout, base::nullopt);
+
+  Dismiss();
+}
+
+void SmsService::OnContinue() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  DCHECK(sms_);
+
+  Process(SmsStatus::kSuccess, sms_);
 }
 
 void SmsService::OnCancel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  Pop(SmsStatus::kCancelled, base::nullopt);
+  Process(SmsStatus::kCancelled, base::nullopt);
 }
 
 void SmsService::Prompt() {
@@ -138,8 +133,10 @@ void SmsService::Prompt() {
       content::WebContents::FromRenderFrameHost(render_frame_host());
   prompt_ = web_contents->GetDelegate()->CreateSmsDialog();
   if (prompt_) {
-    prompt_->Open(render_frame_host(), base::BindOnce(&SmsService::OnCancel,
-                                                      base::Unretained(this)));
+    prompt_->Open(
+        render_frame_host(),
+        base::BindOnce(&SmsService::OnContinue, base::Unretained(this)),
+        base::BindOnce(&SmsService::OnCancel, base::Unretained(this)));
   }
 }
 
@@ -148,6 +145,11 @@ void SmsService::Dismiss() {
     prompt_->Close();
     prompt_.reset();
   }
+
+  timer_.Stop();
+  callback_.Reset();
+  sms_.reset();
+  sms_provider_->RemoveObserver(this);
 }
 
 }  // namespace content

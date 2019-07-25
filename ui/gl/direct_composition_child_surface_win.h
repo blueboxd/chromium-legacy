@@ -12,17 +12,11 @@
 
 #include "ui/gl/gl_surface_egl.h"
 
-namespace gfx {
-class VSyncProvider;
-}  // namespace gfx
-
 namespace gl {
 
 class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
  public:
-  explicit DirectCompositionChildSurfaceWin(gfx::VSyncProvider* vsync_provider);
-
-  static bool UseSwapChainFrameStatistics();
+  DirectCompositionChildSurfaceWin();
 
   // GLSurfaceEGL implementation.
   bool Initialize(GLSurfaceFormat format) override;
@@ -58,30 +52,6 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   ~DirectCompositionChildSurfaceWin() override;
 
  private:
-  struct PendingFrame {
-    PendingFrame(uint32_t present_count,
-                 uint32_t target_refresh_count,
-                 PresentationCallback callback);
-    PendingFrame(PendingFrame&& other);
-    ~PendingFrame();
-    PendingFrame& operator=(PendingFrame&& other);
-
-    // Identifies a particular Present() call.
-    uint32_t present_count;
-
-    // Identifies the target vblank for a Present() call.
-    uint32_t target_refresh_count;
-
-    // Presentation callback enqueued in SwapBuffers().
-    PresentationCallback callback;
-  };
-  void CheckPendingFrames();
-  void EnqueuePendingFrame(PresentationCallback callback);
-  void ClearPendingFrames();
-
-  // Queue of pending presentation callbacks.
-  base::circular_deque<PendingFrame> pending_frames_;
-
   // Release the texture that's currently being drawn to. If will_discard is
   // true then the surface should be discarded without swapping any contents
   // to it. Returns false if this fails.
@@ -108,10 +78,6 @@ class DirectCompositionChildSurfaceWin : public GLSurfaceEGL {
   // is used to determine when the contents have changed so Commit() needs to
   // be called on the device.
   uint64_t dcomp_surface_serial_ = 0;
-
-  gfx::VSyncProvider* const vsync_provider_;
-  base::TimeTicks last_vsync_time_;
-  base::TimeDelta last_vsync_interval_ = base::TimeDelta::FromSecondsD(1. / 60);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;

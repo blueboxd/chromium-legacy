@@ -31,9 +31,9 @@
     Change account image
   </message>
 
-  <!-- Assistant section. -->
-  <message name="IDS_OS_SETTINGS_ASSISTANT" desc="Name of the settings section for the Google Assistant.">
-    Assistant
+  <!-- Search and Assistant section. -->
+  <message name="IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL" desc="Label in OS settings describing search engine behavior.">
+    Searches from the app launcher use your browser <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>search engine setting<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
 
   <!-- Files Page (OS settings) -->

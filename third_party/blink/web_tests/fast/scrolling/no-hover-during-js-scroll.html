@@ -42,7 +42,7 @@
 
   window.onload = async () => {
     if (window.internals) {
-      internals.runtimeFlags.updateHoverFromScrollAtBeginFrameEnabled = true;
+      internals.runtimeFlags.updateHoverAtBeginFrameEnabled = true;
     }
 
     await waitForCompositorCommit();

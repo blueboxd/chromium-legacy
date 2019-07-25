@@ -2498,9 +2498,13 @@ jumbo_source_set("browser") {
     ]
     libs += [ "jnigraphics" ]
 
-    # TODO(crbug.com/986346): this define should not be required once debug URL
-    # triggering has been generalized.
-    if (!notouch_build) {
+    if (notouch_build) {
+      # Similar to the bug below, there should be an API to let the embedder
+      # control this.
+      defines += [ "DISABLE_OVERSCROLL" ]
+    } else {
+      # TODO(crbug.com/986346): this define should not be required once debug URL
+      # triggering has been generalized.
       defines += [ "ENABLE_ADDRESS_BAR" ]
     }
   } else {

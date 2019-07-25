@@ -90,18 +90,18 @@ ScrollableArea::ScrollableArea()
       scrollbars_hidden_if_overlay_(true),
       scrollbar_captured_(false),
       mouse_over_scrollbar_(false),
+      has_been_disposed_(false),
       needs_show_scrollbar_layers_(false),
       uses_composited_scrolling_(false) {}
 
 ScrollableArea::~ScrollableArea() = default;
 
 void ScrollableArea::Dispose() {
+  if (HasBeenDisposed())
+    return;
   DisposeImpl();
-}
-
-void ScrollableArea::DisposeImpl() {
-  RunScrollCompleteCallbacks();
   fade_overlay_scrollbars_timer_.reset();
+  has_been_disposed_ = true;
 }
 
 void ScrollableArea::ClearScrollableArea() {
@@ -300,7 +300,7 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
   CancelScrollAnimation();
 
   ScrollCallback callback = std::move(on_finish);
-  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     callback = ScrollCallback(WTF::Bind(
         [](ScrollCallback original_callback,
            WeakPersistent<ScrollableArea> area) {
@@ -431,6 +431,7 @@ void ScrollableArea::UpdateScrollOffsetFromInternals(const IntSize& offset) {
 }
 
 void ScrollableArea::RegisterScrollCompleteCallback(ScrollCallback callback) {
+  DCHECK(!HasBeenDisposed());
   pending_scroll_complete_callbacks_.push_back(std::move(callback));
 }
 

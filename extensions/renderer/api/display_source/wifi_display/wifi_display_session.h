@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "extensions/common/mojo/wifi_display_session_service.mojom.h"
+#include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/display_source_session.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/wds/src/libwds/public/source.h"

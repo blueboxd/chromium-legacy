@@ -538,32 +538,43 @@ void UiControllerAndroid::OnCancelButtonClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     jint index) {
-  OnCancelButtonWithActionIndexClicked(index);
-}
-
-void UiControllerAndroid::OnCancelButtonClicked() {
-  OnCancelButtonWithActionIndexClicked(-1);
-}
-
-void UiControllerAndroid::OnCancelButtonWithActionIndexClicked(
-    int action_index) {
-  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
-               base::BindOnce(&UiControllerAndroid::OnCancel,
-                              weak_ptr_factory_.GetWeakPtr(), action_index));
-}
-
-void UiControllerAndroid::OnCancel(int action_index) {
-  if (action_index == -1 || !ui_delegate_) {
-    Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
-    return;
-  }
-  ui_delegate_->PerformUserAction(action_index);
+  CloseOrCancel(index);
 }
 
 void UiControllerAndroid::OnCloseButtonClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   DestroySelf();
+}
+
+void UiControllerAndroid::CloseOrCancel(int action_index) {
+  // Close immediately.
+  if (!ui_delegate_ ||
+      ui_delegate_->GetState() == AutofillAssistantState::STOPPED) {
+    DestroySelf();
+    return;
+  }
+
+  // Close, with an action.
+  const std::vector<UserAction>& user_actions = ui_delegate_->GetUserActions();
+  if (action_index >= 0 &&
+      static_cast<size_t>(action_index) < user_actions.size() &&
+      user_actions[action_index].chip().type == CLOSE_ACTION &&
+      ui_delegate_->PerformUserAction(action_index)) {
+    return;
+  }
+
+  // Cancel, with a snackbar to allow UNDO.
+  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
+               base::BindOnce(&UiControllerAndroid::OnCancel,
+                              weak_ptr_factory_.GetWeakPtr(), action_index));
+}
+
+void UiControllerAndroid::OnCancel(int action_index) {
+  if (action_index == -1 || !ui_delegate_ ||
+      !ui_delegate_->PerformUserAction(action_index)) {
+    Shutdown(Metrics::DropOutReason::SHEET_CLOSED);
+  }
 }
 
 // Overlay related methods.

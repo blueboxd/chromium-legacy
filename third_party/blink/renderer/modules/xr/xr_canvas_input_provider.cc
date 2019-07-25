@@ -76,12 +76,12 @@ bool XRCanvasInputProvider::ShouldProcessEvents() {
 
 void XRCanvasInputProvider::OnPointerDown(PointerEvent* event) {
   UpdateInputSource(event);
-  session_->OnSelectStart(input_source_);
+  input_source_->OnSelectStart();
 }
 
 void XRCanvasInputProvider::OnPointerUp(PointerEvent* event) {
   UpdateInputSource(event);
-  session_->OnSelect(input_source_);
+  input_source_->OnSelect();
   ClearInputSource();
 }
 

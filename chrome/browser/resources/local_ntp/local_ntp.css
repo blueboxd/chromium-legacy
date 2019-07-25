@@ -833,15 +833,15 @@ html[dir=rtl] .menu-option {
 }
 
 #menu-header {
+  display: flex;
   height: 80px;
 }
 
 #menu-title-wrapper {
-  display: inline-block;
+  display: block;
   height: 80px;
   line-height: 80px;
-  position: absolute;
-  vertical-align: center;
+  margin-inline-start: -12px;
 }
 
 #menu-title {
@@ -888,7 +888,7 @@ html[dir=rtl] .menu-option {
 #menu-contents {
   display: inline-block;
   height: 384px;
-  margin-inline-start: 20px;
+  margin-inline-start: 37px;
   position: relative;
   width: 584px;
 }
@@ -1006,8 +1006,9 @@ html[dir=rtl] .menu-option {
 }
 
 #menu-back-wrapper {
-  display: inline-block;
+  display: block;
   height: 80px;
+  vertical-align: top;
 }
 
 #menu-back {
@@ -1033,7 +1034,7 @@ html[dir=rtl] .menu-option {
   border-radius: 50%;
   display: inline-block;
   height: 36px;
-  margin-inline-start: 192px;
+  margin-inline-start: 209px;
   margin-top: 22px;
   outline: none;
   visibility: hidden;
@@ -1048,7 +1049,7 @@ html[dir=rtl] .menu-option {
 }
 
 .on-img-menu #menu-back-circle {
-  margin-inline-start: 212px;
+  margin-inline-start: 229px;
   visibility: visible;
 }
 
@@ -1715,4 +1716,35 @@ html[dir=rtl] #colors-menu .bg-sel-tile .selected-check {
 #colors-theme-uninstall {
   height: fit-content;
   margin-inline-end: 16px;
+}
+
+#refresh-daily-wrapper {
+  height: 80px;
+  line-height: 80px;
+  margin-inline-end: 24px;
+  margin-inline-start: auto;
+  position: relative;
+  vertical-align: top;
+}
+
+#refresh-toggle-wrapper {
+  display: inline-block;
+  height: 16px;
+  margin-inline-end: 12px;
+  margin-top: 31px;
+  position: relative;
+  width: 34px;
+}
+
+#refresh-text-wrapper {
+  display: inline-block;
+  height: 80px;
+  line-height: 80px;
+  vertical-align: top;
+}
+
+#refresh-text {
+  font-size: 16px;
+  user-select: none;
+  width: fit-content;
 }

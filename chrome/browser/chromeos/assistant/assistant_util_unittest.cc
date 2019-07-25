@@ -11,6 +11,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -18,6 +20,9 @@
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -64,9 +69,13 @@ class ScopedLogIn {
  public:
   ScopedLogIn(
       FakeUserManagerWithLocalState* fake_user_manager,
+      signin::IdentityTestEnvironment* identity_test_env,
       const AccountId& account_id,
       user_manager::UserType user_type = user_manager::USER_TYPE_REGULAR)
-      : fake_user_manager_(fake_user_manager), account_id_(account_id) {
+      : fake_user_manager_(fake_user_manager),
+        identity_test_env_(identity_test_env),
+
+        account_id_(account_id) {
     // Prevent access to DBus. This switch is reset in case set from test SetUp
     // due massive usage of InitFromArgv.
     base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
@@ -102,6 +111,10 @@ class ScopedLogIn {
   void LogIn() {
     fake_user_manager_->AddUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
+    if (!identity_test_env_->identity_manager()->HasPrimaryAccount()) {
+      identity_test_env_->MakePrimaryAccountAvailable(
+          account_id_.GetUserEmail());
+    }
   }
 
   void LogInAsPublicAccount() {
@@ -122,6 +135,7 @@ class ScopedLogIn {
   void LogOut() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
   FakeUserManagerWithLocalState* fake_user_manager_;
+  signin::IdentityTestEnvironment* identity_test_env_;
   const AccountId account_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedLogIn);
@@ -143,36 +157,35 @@ class ChromeAssistantUtilTest : public testing::Test {
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
+    profile_ = profile_manager_->CreateTestingProfile(kTestProfileName);
+    identity_test_env_adaptor_ =
+        std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeUserManagerWithLocalState>(
             profile_manager_.get()));
 
     ui::DeviceDataManager::CreateInstance();
-
-    profile_ = profile_manager_->CreateTestingProfile(kTestProfileName);
   }
 
   void TearDown() override {
     ui::DeviceDataManager::DeleteInstance();
+    identity_test_env_adaptor_.reset();
+    user_manager_enabler_.reset();
     profile_manager_->DeleteTestingProfile(kTestProfileName);
     profile_ = nullptr;
-    user_manager_enabler_.reset();
     profile_manager_.reset();
     command_line_.reset();
   }
 
   TestingProfile* profile() { return profile_; }
 
+  signin::IdentityTestEnvironment* identity_test_env() {
+    return identity_test_env_adaptor_->identity_test_env();
+  }
+
   FakeUserManagerWithLocalState* GetFakeUserManager() const {
     return static_cast<FakeUserManagerWithLocalState*>(
         user_manager::UserManager::Get());
-  }
-
-  void LogIn() {
-    const auto account_id = AccountId::FromUserEmailGaiaId(
-        profile()->GetProfileUserName(), kTestGaiaId);
-    GetFakeUserManager()->AddUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
   }
 
  private:
@@ -180,6 +193,8 @@ class ChromeAssistantUtilTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   content::TestBrowserThreadBundle thread_bundle_;
   base::ScopedTempDir data_dir_;
+  std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
+      identity_test_env_adaptor_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   // Owned by |profile_manager_|
@@ -190,9 +205,9 @@ class ChromeAssistantUtilTest : public testing::Test {
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
   ScopedLogIn login2(
-      GetFakeUserManager(),
+      GetFakeUserManager(), identity_test_env(),
       AccountId::FromUserEmailGaiaId("user2@gmail.com", "0123456789"));
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
 
@@ -201,7 +216,7 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SecondaryUser) {
 }
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_SupervisedUser) {
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
   profile()->SetSupervisedUserId("foo");
@@ -215,7 +230,7 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_Locale) {
   UErrorCode error_code = U_ZERO_ERROR;
   const icu::Locale& old_locale = icu::Locale::getDefault();
   icu::Locale::setDefault(icu::Locale("he"), error_code);
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmailGaiaId(
                         profile()->GetProfileUserName(), kTestGaiaId));
 
@@ -227,7 +242,7 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_Locale) {
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_DemoMode) {
   chromeos::DemoSession::SetDemoConfigForTesting(
       chromeos::DemoSession::DemoModeConfig::kOnline);
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE,
@@ -238,7 +253,7 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_DemoMode) {
 }
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_PublicSession) {
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_PUBLIC_ACCOUNT);
   EXPECT_EQ(ash::mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION,
@@ -246,7 +261,7 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_PublicSession) {
 }
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_NonGmail) {
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmailGaiaId("user2@someotherdomain.com",
                                                    "0123456789"));
 
@@ -254,8 +269,17 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_NonGmail) {
             IsAssistantAllowedForProfile(profile()));
 }
 
+TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForProfile_GoogleMail) {
+  ScopedLogIn login(
+      GetFakeUserManager(), identity_test_env(),
+      AccountId::FromUserEmailGaiaId("user2@googlemail.com", "0123456789"));
+
+  EXPECT_EQ(ash::mojom::AssistantAllowedState::ALLOWED,
+            IsAssistantAllowedForProfile(profile()));
+}
+
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_KioskApp) {
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_KIOSK_APP);
 
@@ -264,7 +288,7 @@ TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_KioskApp) {
 }
 
 TEST_F(ChromeAssistantUtilTest, IsAssistantAllowedForKiosk_ArcKioskApp) {
-  ScopedLogIn login(GetFakeUserManager(),
+  ScopedLogIn login(GetFakeUserManager(), identity_test_env(),
                     AccountId::FromUserEmail(profile()->GetProfileUserName()),
                     user_manager::USER_TYPE_ARC_KIOSK_APP);
 

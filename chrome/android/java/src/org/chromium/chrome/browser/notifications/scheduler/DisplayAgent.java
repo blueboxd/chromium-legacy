@@ -81,11 +81,12 @@ public class DisplayAgent {
             this.message = message;
             this.icon = icon;
         }
+    }
 
-        @CalledByNative
-        private void addButton(String text, @ActionButtonType int type, String id) {
-            buttons.add(new Button(text, type, id));
-        }
+    @CalledByNative
+    private static void addButton(
+            NotificationData notificationData, String text, @ActionButtonType int type, String id) {
+        notificationData.buttons.add(new Button(text, type, id));
     }
 
     @CalledByNative

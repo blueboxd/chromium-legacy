@@ -39,10 +39,15 @@ class CC_EXPORT ScrollbarController {
   void WillBeginImplFrame();
 
  private:
-  // Returns a gfx::ScrollOffset object which contains scroll deltas for the
-  // synthetic Gesture events.
-  gfx::ScrollOffset GetScrollDeltaFromPointerDown(
+  // Returns the hit tested ScrollbarPart based on the position_in_widget.
+  ScrollbarPart GetScrollbarPartFromPointerDown(
       const gfx::PointF position_in_widget);
+
+  // Returns scroll offsets based on which ScrollbarPart was hit tested.
+  gfx::ScrollOffset GetScrollOffsetForScrollbarPart(
+      const ScrollbarPart scrollbar_part,
+      const ScrollbarOrientation orientation);
+
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget);
   int GetScrollDeltaForScrollbarPart(ScrollbarPart scrollbar_part);
 

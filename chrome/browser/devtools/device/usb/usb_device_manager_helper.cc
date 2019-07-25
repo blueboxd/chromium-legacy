@@ -64,7 +64,7 @@ void GetAndroidDeviceInfoList(
     std::vector<device::mojom::UsbDeviceInfoPtr> usb_devices) {
   std::vector<AndroidDeviceInfo> result;
   for (auto& device_info : usb_devices) {
-    if (device_info->serial_number->empty())
+    if (!device_info->serial_number || device_info->serial_number->empty())
       continue;
 
     auto interface_info = FindAndroidInterface(*device_info);

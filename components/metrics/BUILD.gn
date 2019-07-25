@@ -5,6 +5,24 @@
 import("//build/config/jumbo.gni")
 import("//testing/test.gni")
 
+static_library("demographic_metrics_provider") {
+  sources = [
+    "demographic_metrics_provider.cc",
+    "demographic_metrics_provider.h",
+  ]
+
+  public_deps = [
+    "//third_party/metrics_proto",
+  ]
+
+  deps = [
+    ":metrics",
+    "//base",
+    "//components/sync/base",
+    "//components/sync/driver",
+  ]
+}
+
 jumbo_static_library("metrics") {
   sources = [
     "call_stack_profile_metrics_provider.cc",
@@ -23,8 +41,6 @@ jumbo_static_library("metrics") {
     "data_use_tracker.h",
     "delegating_provider.cc",
     "delegating_provider.h",
-    "demographic_metrics_provider.cc",
-    "demographic_metrics_provider.h",
     "drive_metrics_provider.cc",
     "drive_metrics_provider.h",
     "drive_metrics_provider_android.cc",
@@ -397,6 +413,7 @@ source_set("unit_tests") {
   deps = [
     ":call_stack_profile_builder",
     ":component_metrics",
+    ":demographic_metrics_provider",
     ":metrics",
     ":net",
     ":single_sample_metrics",
@@ -406,6 +423,8 @@ source_set("unit_tests") {
     "//components/component_updater:test_support",
     "//components/encrypted_messages:encrypted_message_proto",
     "//components/prefs:test_support",
+    "//components/sync/base",
+    "//components/sync/driver:test_support",
     "//components/variations",
     "//extensions/buildflags",
     "//mojo/public/cpp/bindings",

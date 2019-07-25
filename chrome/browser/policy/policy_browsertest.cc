@@ -149,6 +149,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -7033,6 +7034,23 @@ IN_PROC_BROWSER_TEST_F(SignedExchangePolicyTest, SignedExchangeEnabled) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 
   ASSERT_TRUE(HadSignedExchangeInAcceptHeader(url));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, CheckURLsInRealTime) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      safe_browsing::kRealTimeUrlLookupFetchAllowlist);
+
+  safe_browsing::RealTimePolicyEngine rt_policy_engine(
+      browser()->profile()->GetPrefs());
+  EXPECT_FALSE(rt_policy_engine.CanPerformFullURLLookup());
+
+  PolicyMap policies;
+  SetPolicy(&policies, key::kSafeBrowsingRealTimeLookupEnabled,
+            std::make_unique<base::Value>(true));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_TRUE(rt_policy_engine.CanPerformFullURLLookup());
 }
 
 }  // namespace policy

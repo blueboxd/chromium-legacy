@@ -10,6 +10,7 @@ import android.content.Context;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
+import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Entry point for the Android cast shell application.  Handles initialization of information that
@@ -26,6 +27,8 @@ public class CastApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
+        ResourceBundle.setAvailablePakLocales(
+                LocaleConfig.COMPRESSED_LOCALES, LocaleConfig.UNCOMPRESSED_LOCALES);
     }
 
     @Override

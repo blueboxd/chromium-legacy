@@ -285,7 +285,8 @@
 
   /* RepostFormCoordinator is created and started by a delegate method */
 
-  self.snackbarCoordinator = [[SnackbarCoordinator alloc] init];
+  self.snackbarCoordinator = [[SnackbarCoordinator alloc]
+      initWithBaseViewController:self.viewController];
   self.snackbarCoordinator.dispatcher = self.dispatcher;
   [self.snackbarCoordinator start];
 

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@ const char kConfigModePreemptive[] = "PREEMPTIVE_TRACING_MODE";
 const char kConfigModeReactive[] = "REACTIVE_TRACING_MODE";
 
 const char kConfigScenarioName[] = "scenario_name";
+const char kConfigTraceBrowserProcessOnly[] = "trace_browser_process_only";
 
 const char kConfigCategoryKey[] = "category";
 const char kConfigCustomCategoriesKey[] = "custom_categories";
@@ -48,42 +50,13 @@ const char kConfigCategoryBenchmarkPower[] = "BENCHMARK_POWER";
 const char kConfigCategoryBlinkStyle[] = "BLINK_STYLE";
 const char kConfigCategoryCustom[] = "CUSTOM";
 
-// The memory overhead of running background tracing.
-// TODO(ssid): Consider making these limits configurable by experiments.
-constexpr size_t kLowRamBufferSizeKb = 200;
-constexpr size_t kMediumRamBufferSizeKb = 2 * 1024;
-#if defined(OS_ANDROID)
-// Connectivity is also relevant for setting the buffer size because the
-// uploader will fail if we sent large trace and device runs on mobile
-// network.
-constexpr size_t kMobileNetworkBufferSizeKb = 300;
-constexpr size_t kMaxBufferSizeKb = 4 * 1024;
-#else
-constexpr size_t kMaxBufferSizeKb = 25 * 1024;
-#endif
-
-// This function gives the trace buffer size based on device RAM and
-// connectivity.
-size_t GetMaximumTraceBufferSizeKb() {
-  int64_t ram_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
-  if (ram_mb > 0 && ram_mb <= 1024) {
-    return kLowRamBufferSizeKb;
-  }
-#if defined(OS_ANDROID)
-  auto connection_type = net::NetworkChangeNotifier::GetConnectionType();
-  if (connection_type != net::NetworkChangeNotifier::CONNECTION_WIFI &&
-      connection_type != net::NetworkChangeNotifier::CONNECTION_ETHERNET &&
-      connection_type != net::NetworkChangeNotifier::CONNECTION_BLUETOOTH) {
-    return kMobileNetworkBufferSizeKb;
-  }
-#endif
-
-  if (ram_mb > 0 && ram_mb <= 2 * 1024) {
-    return kMediumRamBufferSizeKb;
-  }
-
-  return kMaxBufferSizeKb;
-}
+const char kConfigLowRamBufferSizeKb[] = "low_ram_buffer_size_kb";
+const char kConfigMediumRamBufferSizeKb[] = "medium_ram_buffer_size_kb";
+const char kConfigMobileNetworkBuferSizeKb[] = "mobile_network_buffer_size_kb";
+const char kConfigMaxBufferSizeKb[] = "max_buffer_size_kb";
+const char kConfigUploadLimitKb[] = "upload_limit_kb";
+const char kConfigUploadLimitNetworkKb[] = "upload_limit_network_kb";
+const char kConfigInterningResetIntervalMs[] = "interning_reset_interval_ms";
 
 }  // namespace
 
@@ -262,19 +235,23 @@ void BackgroundTracingConfigImpl::AddReactiveRule(
   }
 }
 
-base::trace_event::TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
-    bool requires_anonymized_data) {
+TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
   base::trace_event::TraceRecordMode record_mode =
       (tracing_mode() == BackgroundTracingConfigImpl::REACTIVE)
           ? base::trace_event::RECORD_UNTIL_FULL
           : base::trace_event::RECORD_CONTINUOUSLY;
 
-  base::trace_event::TraceConfig chrome_config =
+  TraceConfig chrome_config =
       (category_preset() == CUSTOM_CATEGORY_PRESET
-           ? base::trace_event::TraceConfig(custom_categories_, record_mode)
+           ? TraceConfig(custom_categories_, record_mode)
            : GetConfigForCategoryPreset(category_preset(), record_mode));
 
-  if (requires_anonymized_data) {
+  if (trace_browser_process_only_) {
+    TraceConfig::ProcessFilterConfig process_config({base::GetCurrentProcId()});
+    chrome_config.SetProcessFilterConfig(process_config);
+  }
+
+  if (requires_anonymized_data_) {
     chrome_config.EnableArgumentFilter();
   }
 
@@ -289,6 +266,16 @@ base::trace_event::TraceConfig BackgroundTracingConfigImpl::GetTraceConfig(
 #endif
 
   return chrome_config;
+}
+
+size_t BackgroundTracingConfigImpl::GetTraceUploadLimitKb() const {
+#if defined(OS_ANDROID)
+  if (net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType())) {
+    return upload_limit_network_kb_;
+  }
+#endif
+  return upload_limit_kb_;
 }
 
 // static
@@ -312,6 +299,11 @@ BackgroundTracingConfigImpl::FromDict(const base::DictionaryValue* dict) {
 
   if (config) {
     dict->GetString(kConfigScenarioName, &config->scenario_name_);
+    config->SetBufferSizeLimits(dict);
+    bool value = false;
+    if (dict->GetBoolean(kConfigTraceBrowserProcessOnly, &value)) {
+      config->trace_browser_process_only_ = value;
+    }
   }
 
   return config;
@@ -495,6 +487,51 @@ TraceConfig BackgroundTracingConfigImpl::GetConfigForCategoryPreset(
   }
   NOTREACHED();
   return TraceConfig();
+}
+
+void BackgroundTracingConfigImpl::SetBufferSizeLimits(
+    const base::DictionaryValue* dict) {
+  int value = 0;
+  if (dict->GetInteger(kConfigLowRamBufferSizeKb, &value)) {
+    low_ram_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigMediumRamBufferSizeKb, &value)) {
+    medium_ram_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigMobileNetworkBuferSizeKb, &value)) {
+    mobile_network_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigMaxBufferSizeKb, &value)) {
+    max_buffer_size_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigUploadLimitKb, &value)) {
+    upload_limit_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigUploadLimitNetworkKb, &value)) {
+    upload_limit_network_kb_ = value;
+  }
+  if (dict->GetInteger(kConfigInterningResetIntervalMs, &value)) {
+    interning_reset_interval_ms_ = value;
+  }
+}
+
+int BackgroundTracingConfigImpl::GetMaximumTraceBufferSizeKb() const {
+  int64_t ram_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  if (ram_mb > 0 && ram_mb <= 1024) {
+    return low_ram_buffer_size_kb_;
+  }
+#if defined(OS_ANDROID)
+  if (net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType())) {
+    return mobile_network_buffer_size_kb_;
+  }
+#endif
+
+  if (ram_mb > 0 && ram_mb <= 2 * 1024) {
+    return medium_ram_buffer_size_kb_;
+  }
+
+  return max_buffer_size_kb_;
 }
 
 }  // namespace content

@@ -5,6 +5,7 @@ per-file flag_descriptions.*=*
 per-file flag-metadata.json=*
 
 per-file about_flags_unittest.cc=file://components/flags_ui/OWNERS
+per-file about_flags_browsertest.cc=file://components/flags_ui/OWNERS
 
 # This is for the common case of adding or renaming files. If you're doing
 # structural changes, use usual OWNERS rules.

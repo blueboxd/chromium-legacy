@@ -129,10 +129,22 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
       static_cast<WebContentsImpl*>(shell2->web_contents());
   WebContentsImpl* web_contents_http =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  EXPECT_EQ("http://127.0.0.1/",
-            web_contents_http->GetSiteInstance()->GetSiteURL().spec());
-  EXPECT_EQ("https://127.0.0.1/",
-            web_contents_https->GetSiteInstance()->GetSiteURL().spec());
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Note: Both use the default SiteInstance because the URLs don't require
+    // a dedicated process, but these default SiteInstances are not the same
+    // object because they come from different BrowsingInstances.
+    EXPECT_TRUE(web_contents_http->GetSiteInstance()->IsDefaultSiteInstance());
+    EXPECT_TRUE(web_contents_https->GetSiteInstance()->IsDefaultSiteInstance());
+    EXPECT_NE(web_contents_http->GetSiteInstance(),
+              web_contents_https->GetSiteInstance());
+    EXPECT_FALSE(web_contents_http->GetSiteInstance()->IsRelatedSiteInstance(
+        web_contents_https->GetSiteInstance()));
+  } else {
+    EXPECT_EQ("http://127.0.0.1/",
+              web_contents_http->GetSiteInstance()->GetSiteURL().spec());
+    EXPECT_EQ("https://127.0.0.1/",
+              web_contents_https->GetSiteInstance()->GetSiteURL().spec());
+  }
 
   EXPECT_NE(web_contents_http->GetSiteInstance()->GetProcess(),
             web_contents_https->GetSiteInstance()->GetProcess());
@@ -284,6 +296,7 @@ class CookieStoreContentBrowserClient : public ContentBrowserClient {
   ~CookieStoreContentBrowserClient() override {}
 
   bool WillCreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,

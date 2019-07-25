@@ -126,12 +126,6 @@ using web::test::HttpServer;
   [ChromeEarlGreyUI tapClearBrowsingDataMenuButton:ClearBrowsingDataButton()];
   [[EarlGrey selectElementWithMatcher:ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
-
-  // Before returning, make sure that the top of the Clear Browsing Data
-  // settings screen is visible to match the state at the start of the method.
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
-
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 

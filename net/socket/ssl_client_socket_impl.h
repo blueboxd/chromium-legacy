@@ -41,8 +41,6 @@ class OpenSSLErrStackTracer;
 
 namespace net {
 
-class CertVerifier;
-class CTVerifier;
 class SSLCertRequestInfo;
 class SSLInfo;
 class SSLKeyLogger;
@@ -53,11 +51,11 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // Takes ownership of |stream_socket|, which may already be connected.
   // The given hostname will be compared with the name(s) in the server's
   // certificate during the SSL handshake.  |ssl_config| specifies the SSL
-  // settings.
-  SSLClientSocketImpl(std::unique_ptr<StreamSocket> stream_socket,
+  // settings. The resulting socket may not outlive |context|.
+  SSLClientSocketImpl(SSLClientContext* context,
+                      std::unique_ptr<StreamSocket> stream_socket,
                       const HostPortPair& host_and_port,
-                      const SSLConfig& ssl_config,
-                      const SSLClientSocketContext& context);
+                      const SSLConfig& ssl_config);
   ~SSLClientSocketImpl() override;
 
   const HostPortPair& host_and_port() const { return host_and_port_; }
@@ -244,7 +242,8 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // network.
   bool was_ever_used_;
 
-  CertVerifier* const cert_verifier_;
+  SSLClientContext* const context_;
+
   std::unique_ptr<CertVerifier::Request> cert_verifier_request_;
   base::TimeTicks start_cert_verification_time_;
 
@@ -253,7 +252,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   // Certificate Transparency: Verifier and result holder.
   ct::CTVerifyResult ct_verify_result_;
-  CTVerifier* cert_transparency_verifier_;
 
   // OpenSSL stuff
   bssl::UniquePtr<SSL> ssl_;
@@ -262,8 +260,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   std::unique_ptr<SocketBIOAdapter> transport_adapter_;
   const HostPortPair host_and_port_;
   SSLConfig ssl_config_;
-  // ssl_client_session_cache_ is a non-owning pointer to session cache
-  SSLClientSessionCache* ssl_client_session_cache_;
 
   enum State {
     STATE_NONE,
@@ -284,10 +280,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
 
   int signature_result_;
   std::vector<uint8_t> signature_;
-
-  TransportSecurityState* transport_security_state_;
-
-  CTPolicyEnforcer* const policy_enforcer_;
 
   // pinning_failure_log contains a message produced by
   // TransportSecurityState::CheckPublicKeyPins in the event of a

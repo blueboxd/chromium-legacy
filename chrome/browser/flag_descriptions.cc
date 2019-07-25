@@ -2321,11 +2321,6 @@ const char kEnableCommandLineOnNonRootedName[] =
 const char kEnableCommandLineOnNoRootedDescription[] =
     "Enable reading command line file on non-rooted devices (DANGEROUS).";
 
-const char kEnableCustomContextMenuName[] = "Enable custom context menu";
-const char kEnableCustomContextMenuDescription[] =
-    "Enables a new context menu when a link, image, or video is pressed within "
-    "Chrome.";
-
 const char kEnableRevampedContextMenuName[] =
     "Enable the revamped context menu";
 const char kEnableRevampedContextMenuDescription[] =

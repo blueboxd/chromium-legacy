@@ -306,18 +306,16 @@ public interface WebContents extends Parcelable {
     void addMessageToDevToolsConsole(int level, String message);
 
     /**
-     * Post a message to a frame.
+     * Post a message to main frame.
      *
-     * @param frameName The name of the frame. If the name is null the message is posted
-     *                  to the main frame.
      * @param message   The message
      * @param targetOrigin  The target origin. If the target origin is a "*" or a
      *                  empty string, it indicates a wildcard target origin.
      * @param ports The sent message ports, if any. Pass null if there is no
      *                  message ports to pass.
      */
-    void postMessageToFrame(@Nullable String frameName, String message, String sourceOrigin,
-            String targetOrigin, @Nullable MessagePort[] ports);
+    void postMessageToMainFrame(String message, String sourceOrigin, String targetOrigin,
+            @Nullable MessagePort[] ports);
 
     /**
      * Creates a message channel for sending postMessage requests and returns the ports for

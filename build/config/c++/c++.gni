@@ -23,6 +23,11 @@ declare_args() {
   # expected usage is to set use_custom_libcxx=false and
   # use_custom_libcxx_for_host=true in the passed in buildargs.
   use_custom_libcxx_for_host = false
+
+  # Builds libcxx Natvis into the symbols for type visualization.
+  # Set to false to workaround http://crbug.com/966676 and
+  # http://crbug.com/966687.
+  libcxx_natvis_include = true
 }
 
 use_custom_libcxx =

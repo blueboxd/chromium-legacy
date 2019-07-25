@@ -11,7 +11,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/binding.h"

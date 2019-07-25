@@ -44,7 +44,6 @@ void ShelfFocusCycler::FocusOut(bool reverse, SourceView source_view) {
 
       if (should_focus_shelf) {
         shelf_widget->set_default_last_focusable_child(reverse);
-        shelf_widget->set_activated_from_other_widget(true);
         Shell::Get()->focus_cycler()->FocusWidget(shelf_widget);
         shelf_widget->FocusFirstOrLastFocusableChild(reverse);
       } else {

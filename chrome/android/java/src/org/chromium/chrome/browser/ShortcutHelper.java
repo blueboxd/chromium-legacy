@@ -9,7 +9,6 @@ import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
@@ -30,7 +29,6 @@ import android.text.TextUtils;
 import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
@@ -43,7 +41,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.webapps.WebApkInfo;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -56,7 +53,6 @@ import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -763,94 +759,6 @@ public class ShortcutHelper {
         return null;
     }
 
-    /**
-     * Calls the native |callbackPointer| with lists of information on all installed WebAPKs.
-     *
-     * @param callbackPointer Callback to call with the information on the WebAPKs found.
-     */
-    @CalledByNative
-    public static void retrieveWebApks(long callbackPointer) {
-        List<String> names = new ArrayList<>();
-        List<String> shortNames = new ArrayList<>();
-        List<String> packageNames = new ArrayList<>();
-        List<String> ids = new ArrayList<>();
-        List<Integer> shellApkVersions = new ArrayList<>();
-        List<Integer> versionCodes = new ArrayList<>();
-        List<String> uris = new ArrayList<>();
-        List<String> scopes = new ArrayList<>();
-        List<String> manifestUrls = new ArrayList<>();
-        List<String> manifestStartUrls = new ArrayList<>();
-        List<Integer> displayModes = new ArrayList<>();
-        List<Integer> orientations = new ArrayList<>();
-        List<Long> themeColors = new ArrayList<>();
-        List<Long> backgroundColors = new ArrayList<>();
-        List<Long> lastUpdateCheckTimesMs = new ArrayList<>();
-        List<Long> lastUpdateCompletionTimeMs = new ArrayList<>();
-        List<Boolean> relaxUpdates = new ArrayList<>();
-        List<String> updateStatuses = new ArrayList<>();
-
-        Context context = ContextUtils.getApplicationContext();
-        PackageManager packageManager = context.getPackageManager();
-        for (PackageInfo packageInfo : packageManager.getInstalledPackages(0)) {
-            if (WebApkValidator.isValidWebApk(context, packageInfo.packageName)) {
-                // Pass non-null URL parameter so that {@link WebApkInfo#create()}
-                // return value is non-null
-                WebApkInfo webApkInfo = WebApkInfo.create(packageInfo.packageName, "",
-                        ShortcutSource.UNKNOWN, false /* forceNavigation */,
-                        false /* isSplashProvidedByWebApk */, null /* shareData */);
-                if (webApkInfo != null) {
-                    names.add(webApkInfo.name());
-                    shortNames.add(webApkInfo.shortName());
-                    packageNames.add(webApkInfo.webApkPackageName());
-                    ids.add(webApkInfo.id());
-                    shellApkVersions.add(webApkInfo.shellApkVersion());
-                    versionCodes.add(packageInfo.versionCode);
-                    uris.add(webApkInfo.uri().toString());
-                    scopes.add(webApkInfo.scopeUri().toString());
-                    manifestUrls.add(webApkInfo.manifestUrl());
-                    manifestStartUrls.add(webApkInfo.manifestStartUrl());
-                    displayModes.add(webApkInfo.displayMode());
-                    orientations.add(webApkInfo.orientation());
-                    themeColors.add(webApkInfo.themeColor());
-                    backgroundColors.add(webApkInfo.backgroundColor());
-
-                    WebappDataStorage storage =
-                            WebappRegistry.getInstance().getWebappDataStorage(webApkInfo.id());
-                    long lastUpdateCheckTimeMsForStorage = 0;
-                    long lastUpdateCompletionTimeMsInStorage = 0;
-                    boolean relaxUpdatesForStorage = false;
-                    String updateStatus = WebappDataStorage.NOT_UPDATABLE;
-                    if (storage != null) {
-                        lastUpdateCheckTimeMsForStorage =
-                                storage.getLastCheckForWebManifestUpdateTimeMs();
-                        lastUpdateCompletionTimeMsInStorage =
-                                storage.getLastWebApkUpdateRequestCompletionTimeMs();
-                        relaxUpdatesForStorage = storage.shouldRelaxUpdates();
-                        updateStatus = storage.getUpdateStatus();
-                    }
-                    lastUpdateCheckTimesMs.add(lastUpdateCheckTimeMsForStorage);
-                    lastUpdateCompletionTimeMs.add(lastUpdateCompletionTimeMsInStorage);
-                    relaxUpdates.add(relaxUpdatesForStorage);
-                    updateStatuses.add(updateStatus);
-                }
-            }
-        }
-        nativeOnWebApksRetrieved(callbackPointer, names.toArray(new String[0]),
-                shortNames.toArray(new String[0]), packageNames.toArray(new String[0]),
-                ids.toArray(new String[0]), CollectionUtil.integerListToIntArray(shellApkVersions),
-                CollectionUtil.integerListToIntArray(versionCodes), uris.toArray(new String[0]),
-                scopes.toArray(new String[0]), manifestUrls.toArray(new String[0]),
-                manifestStartUrls.toArray(new String[0]),
-                CollectionUtil.integerListToIntArray(displayModes),
-                CollectionUtil.integerListToIntArray(orientations),
-                CollectionUtil.longListToLongArray(themeColors),
-                CollectionUtil.longListToLongArray(backgroundColors),
-                CollectionUtil.longListToLongArray(lastUpdateCheckTimesMs),
-                CollectionUtil.longListToLongArray(lastUpdateCompletionTimeMs),
-                CollectionUtil.booleanListToBooleanArray(relaxUpdates),
-                updateStatuses.toArray(new String[0]));
-    }
-
     @CalledByNative
     public static void setForceWebApkUpdate(String id) {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
@@ -860,10 +768,4 @@ public class ShortcutHelper {
     }
 
     private static native void nativeOnWebappDataStored(long callbackPointer);
-    private static native void nativeOnWebApksRetrieved(long callbackPointer, String[] names,
-            String[] shortNames, String[] packageNames, String[] ids, int[] shellApkVersions,
-            int[] versionCodes, String[] uris, String[] scopes, String[] manifestUrls,
-            String[] manifestStartUrls, int[] displayModes, int[] orientations, long[] themeColors,
-            long[] backgroundColors, long[] lastUpdateCheckTimesMs,
-            long[] lastUpdateCompletionTimeMs, boolean[] relaxUpdates, String[] updateStatuses);
 }

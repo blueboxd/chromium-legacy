@@ -211,10 +211,9 @@ void AppListMainView::SearchBoxFocusChanged(
 
   SearchResultBaseView* first_result_view =
       contents_view_->search_results_page_view()->first_result_view();
-  if (!first_result_view || !first_result_view->background_highlighted())
+  if (!first_result_view || !first_result_view->selected())
     return;
-
-  first_result_view->SetBackgroundHighlighted(false);
+  first_result_view->SetSelected(false, base::nullopt);
 }
 
 void AppListMainView::AssistantButtonPressed() {

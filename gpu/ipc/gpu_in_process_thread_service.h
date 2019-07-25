@@ -13,10 +13,12 @@
 #include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/in_process_command_buffer.h"
+#include "gpu/ipc/single_task_sequence.h"
 #include "ui/gl/gl_share_group.h"
 
 namespace gpu {
 class Scheduler;
+class SingleTaskSequence;
 
 namespace gles2 {
 class ProgramCache;
@@ -44,8 +46,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GpuInProcessThreadService
   // CommandBufferTaskExecutor implementation.
   bool ForceVirtualizedGLContexts() const override;
   bool ShouldCreateMemoryTracker() const override;
-  std::unique_ptr<CommandBufferTaskExecutor::Sequence> CreateSequence()
-      override;
+  std::unique_ptr<SingleTaskSequence> CreateSequence() override;
   void ScheduleOutOfOrderTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
   void PostNonNestableToClient(base::OnceClosure callback) override;

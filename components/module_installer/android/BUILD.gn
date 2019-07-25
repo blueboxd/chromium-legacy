@@ -50,6 +50,22 @@ android_library("module_installer_impl_java") {
   ]
 }
 
+generate_jni("module_installer_jni_headers") {
+  sources = [
+    "java/src-impl/org/chromium/components/module_installer/ModuleInstallerBackend.java",
+  ]
+}
+
+static_library("module_installer") {
+  sources = [
+    "module_installer_backend.cc",
+  ]
+  deps = [
+    ":module_installer_jni_headers",
+    "//base",
+  ]
+}
+
 android_library("module_installer_test_java") {
   testonly = true
   java_files = [ "javatests/src/org/chromium/components/module_installer/ModuleInstallerRule.java" ]

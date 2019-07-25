@@ -12,8 +12,8 @@ jumbo_static_library("url_formatter") {
   sources = [
     "elide_url.cc",
     "elide_url.h",
-    "idn_spoof_checker.cc",
-    "idn_spoof_checker.h",
+    "spoof_checks/idn_spoof_checker.cc",
+    "spoof_checks/idn_spoof_checker.h",
     "url_fixer.cc",
     "url_fixer.h",
     "url_formatter.cc",
@@ -49,6 +49,7 @@ jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "elide_url_unittest.cc",
+    "spoof_checks/idn_spoof_checker_unittest.cc",
     "url_fixer_unittest.cc",
     "url_formatter_unittest.cc",
   ]

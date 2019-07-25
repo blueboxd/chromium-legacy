@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -37,7 +38,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -165,6 +166,18 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         when(mRecyclerView.getChildAt(POSITION2)).thenReturn(mItemView2);
         when(mRecyclerView.getChildAt(POSITION3)).thenReturn(mItemView3);
         when(mRecyclerView.getChildAt(POSITION4)).thenReturn(mItemView4);
+        doReturn(mRecyclerView).when(mItemView1).getParent();
+        doReturn(mRecyclerView).when(mItemView2).getParent();
+        doReturn(mRecyclerView).when(mItemView3).getParent();
+        doReturn(mRecyclerView).when(mItemView4).getParent();
+        when(mRecyclerView.findViewHolderForAdapterPosition(POSITION1))
+                .thenReturn(mDummyViewHolder1);
+        when(mRecyclerView.findViewHolderForAdapterPosition(POSITION2))
+                .thenReturn(mDummyViewHolder2);
+        when(mRecyclerView.findViewHolderForAdapterPosition(POSITION3))
+                .thenReturn(mDummyViewHolder3);
+        when(mRecyclerView.findViewHolderForAdapterPosition(POSITION4))
+                .thenReturn(mDummyViewHolder4);
     }
 
     private void setupItemTouchHelperCallback(boolean isDialog) {
@@ -248,6 +261,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
                 mMockViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB1_ID, TAB2_ID);
+        verify(mRecyclerView).removeView(mItemView1);
         assertThat(mModel.get(0).get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridViewHolder.AnimationStatus.HOVERED_CARD_ZOOM_OUT));
         assertThat(mModel.get(0).get(TabProperties.ALPHA), equalTo(1f));
@@ -269,6 +283,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.onSelectedChanged(
                 mMockViewHolder2, ItemTouchHelper.ACTION_STATE_IDLE);
 
+        verify(mRecyclerView).removeView(mItemView2);
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB2_ID, TAB1_ID);
         assertThat(mModel.get(1).get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridViewHolder.AnimationStatus.SELECTED_CARD_ZOOM_OUT));
@@ -299,6 +314,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertThat(mModel.get(0).get(TabProperties.ALPHA), equalTo(1f));
         // Merge signal should never be sent.
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
+        verify(mRecyclerView, never()).removeView(any(View.class));
     }
 
     @Test
@@ -325,6 +341,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         assertThat(mModel.get(1).get(TabProperties.ALPHA), equalTo(1f));
         // Merge signal should never be sent.
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
+        verify(mRecyclerView, never()).removeView(any(View.class));
     }
 
     @Test
@@ -352,6 +369,7 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mTabGroupModelFilter).moveTabOutOfGroup(TAB1_ID);
         verify(mTabGridDialogHandler)
                 .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HIDE);
+        verify(mRecyclerView).removeView(mItemView1);
     }
 
     @Test

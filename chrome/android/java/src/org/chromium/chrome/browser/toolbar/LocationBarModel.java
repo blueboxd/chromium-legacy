@@ -52,7 +52,8 @@ public class LocationBarModel implements ToolbarDataProvider {
     private boolean mIsIncognito;
     private boolean mIsUsingBrandColor;
     private boolean mShouldShowOmniboxInOverviewMode;
-    private boolean mShouldShowGoogleLogo;
+    private boolean mShouldShowSearchEngineLogo;
+    private boolean mIsSearchEngineGoogle;
 
     private long mNativeLocationBarModelAndroid;
 
@@ -361,15 +362,17 @@ public class LocationBarModel implements ToolbarDataProvider {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
         if (getDisplaySearchTerms() != null) {
-            if (mShouldShowGoogleLogo) {
-                // TODO(crbug.com/973150): Fetch the favicon when the DSE isn't Google.
+            if (mShouldShowSearchEngineLogo && mIsSearchEngineGoogle) {
                 return R.drawable.ic_logo_googleg_24dp;
             } else {
                 return R.drawable.omnibox_search;
             }
-        } else if (getNewTabPageForCurrentTab() != null && mShouldShowGoogleLogo) {
-            // TODO(crbug.com/973150): Fetch the favicon when the DSE isn't Google.
-            return R.drawable.ic_logo_googleg_24dp;
+        } else if (getNewTabPageForCurrentTab() != null && mShouldShowSearchEngineLogo) {
+            if (mIsSearchEngineGoogle) {
+                return R.drawable.ic_logo_googleg_24dp;
+            } else {
+                return R.drawable.omnibox_search;
+            }
         }
 
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
@@ -425,7 +428,7 @@ public class LocationBarModel implements ToolbarDataProvider {
     public @ColorRes int getSecurityIconColorStateList() {
         // Don't apply tint to the search logo, which is shown on the NTP and the SRP pages.
         if ((getNewTabPageForCurrentTab() != null || getDisplaySearchTerms() != null)
-                && mShouldShowGoogleLogo) {
+                && mShouldShowSearchEngineLogo) {
             return 0;
         }
 
@@ -479,6 +482,13 @@ public class LocationBarModel implements ToolbarDataProvider {
         return nativeGetDisplaySearchTerms(mNativeLocationBarModelAndroid);
     }
 
+    @Override
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
+        mIsSearchEngineGoogle = isSearchEngineGoogle;
+    }
+
     /** @return The formatted URL suitable for editing. */
     public String getFormattedFullUrl() {
         if (mNativeLocationBarModelAndroid == 0) return "";
@@ -489,11 +499,6 @@ public class LocationBarModel implements ToolbarDataProvider {
     public String getUrlForDisplay() {
         if (mNativeLocationBarModelAndroid == 0) return "";
         return nativeGetURLForDisplay(mNativeLocationBarModelAndroid);
-    }
-
-    @Override
-    public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {
-        mShouldShowGoogleLogo = shouldShowGoogleLogo;
     }
 
     private native long nativeInit();

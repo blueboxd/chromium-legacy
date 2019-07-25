@@ -5,10 +5,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 
 #include "base/files/file_path.h"
-#include "base/run_loop.h"
+#include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
@@ -70,9 +71,7 @@ class CrostiniExportImportTest : public testing::Test {
     fake_cicerone_client_->NotifyImportLxdContainerProgress(signal);
   }
 
-  CrostiniExportImportTest()
-      : test_browser_thread_bundle_(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+  CrostiniExportImportTest() {
     chromeos::DBusThreadManager::Initialize();
     fake_seneschal_client_ = static_cast<chromeos::FakeSeneschalClient*>(
         chromeos::DBusThreadManager::Get()->GetSeneschalClient());
@@ -85,7 +84,6 @@ class CrostiniExportImportTest : public testing::Test {
   }
 
   void SetUp() override {
-    run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_export_import_ = std::make_unique<CrostiniExportImport>(profile());
     CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
@@ -104,39 +102,41 @@ class CrostiniExportImportTest : public testing::Test {
   }
 
   void TearDown() override {
-    run_loop_.reset();
+    crostini_export_import_.reset();
+    // If the file has been created (by an export), then delete it, but first
+    // shutdown GuestOsSharePath to ensure watchers are destroyed, otherwise
+    // they can trigger and execute against a destroyed service.
+    guest_os::GuestOsSharePath::GetForProfile(profile())->Shutdown();
+    thread_bundle_.RunUntilIdle();
+    base::DeleteFile(tarball_, false);
     profile_.reset();
   }
 
  protected:
-  base::RunLoop* run_loop() { return run_loop_.get(); }
   Profile* profile() { return profile_.get(); }
-  CrostiniExportImport* crostini_export_import() {
-    return crostini_export_import_.get();
-  }
 
   // Owned by chromeos::DBusThreadManager
   chromeos::FakeCiceroneClient* fake_cicerone_client_;
   chromeos::FakeSeneschalClient* fake_seneschal_client_;
 
-  std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniExportImport> crostini_export_import_;
   ContainerId container_id_;
   base::FilePath tarball_;
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportTest);
 };
 
 // TODO(juwa): remove this once tremplin has been shipped.
 TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::RUNNING);
@@ -177,11 +177,11 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
 }
 
 TEST_F(CrostiniExportImportTest, TestExportSuccess) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::RUNNING);
@@ -232,11 +232,11 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
 }
 
 TEST_F(CrostiniExportImportTest, TestExportFail) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::EXPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
 
   // Failed.
   SendExportProgress(
@@ -246,11 +246,11 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
 }
 
 TEST_F(CrostiniExportImportTest, TestImportSuccess) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
   ASSERT_NE(notification, nullptr);
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::RUNNING);
@@ -292,11 +292,11 @@ TEST_F(CrostiniExportImportTest, TestImportSuccess) {
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFail) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
 
   // Failed.
   SendImportProgress(
@@ -309,11 +309,11 @@ TEST_F(CrostiniExportImportTest, TestImportFail) {
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
 
   // Failed Architecture.
   SendImportProgress(
@@ -331,11 +331,11 @@ TEST_F(CrostiniExportImportTest, TestImportFailArchitecture) {
 }
 
 TEST_F(CrostiniExportImportTest, TestImportFailSpace) {
-  crostini_export_import()->FileSelected(
+  crostini_export_import_->FileSelected(
       tarball_, 0, reinterpret_cast<void*>(ExportImportType::IMPORT));
-  run_loop_->RunUntilIdle();
+  thread_bundle_.RunUntilIdle();
   CrostiniExportImportNotification* notification =
-      crostini_export_import()->GetNotificationForTesting(container_id_);
+      crostini_export_import_->GetNotificationForTesting(container_id_);
 
   // Failed Space.
   SendImportProgress(

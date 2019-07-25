@@ -26,10 +26,10 @@ class ImageTransportSurfaceDelegate;
 class MailboxManager;
 class SharedContextState;
 class SharedImageManager;
+class SingleTaskSequence;
 class SyncPointManager;
 struct GpuFeatureInfo;
 struct GpuPreferences;
-struct SyncToken;
 
 namespace raster {
 class GrShaderCache;
@@ -53,9 +53,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
 
   // These are client thread methods. All other methods should be called on
   // the GPU thread only.
-  virtual void ScheduleGpuTask(base::OnceClosure task,
-                               std::vector<gpu::SyncToken> sync_tokens) = 0;
   virtual bool IsUsingVulkan() = 0;
+  // Returns a new task execution sequence. Sequences should not outlive the
+  // task executor.
+  virtual std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() = 0;
 
   virtual gpu::SharedImageManager* GetSharedImageManager() = 0;
   virtual gpu::SyncPointManager* GetSyncPointManager() = 0;
@@ -66,7 +67,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependency {
   // May return null.
   virtual VulkanContextProvider* GetVulkanContextProvider() = 0;
   virtual const gpu::GpuPreferences& GetGpuPreferences() = 0;
-  virtual gpu::SequenceId GetSequenceId() = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() = 0;
   virtual gpu::MailboxManager* GetMailboxManager() = 0;
   // Note it is possible for IsOffscreen to be false and GetSurfaceHandle to

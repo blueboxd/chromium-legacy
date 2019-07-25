@@ -10,6 +10,9 @@
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/layout_shift.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
@@ -416,11 +419,15 @@ TEST_F(LayoutShiftTrackerTest, LocalShiftWithoutViewportShift) {
   EXPECT_FLOAT_EQ(0.0, GetLayoutShiftTracker().Score());
 }
 
-class LayoutShiftTrackerSimTest : public SimTest {};
+class LayoutShiftTrackerSimTest : public SimTest {
+ protected:
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  }
+};
 
 TEST_F(LayoutShiftTrackerSimTest, SubframeWeighting) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-
   // TODO(crbug.com/943668): Test OOPIF path.
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest child_resource("https://example.com/sub.html", "text/html");
@@ -473,8 +480,6 @@ TEST_F(LayoutShiftTrackerSimTest, SubframeWeighting) {
 }
 
 TEST_F(LayoutShiftTrackerSimTest, ViewportSizeChange) {
-  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
-
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -506,6 +511,88 @@ TEST_F(LayoutShiftTrackerSimTest, ViewportSizeChange) {
   LayoutShiftTracker& layout_shift_tracker =
       MainFrame().GetFrameView()->GetLayoutShiftTracker();
   EXPECT_FLOAT_EQ(0.0, layout_shift_tracker.Score());
+}
+
+class LayoutShiftTrackerPointerdownTest : public LayoutShiftTrackerSimTest {
+ protected:
+  void RunTest(WebInputEvent::Type completion_type, bool expect_exclusion);
+};
+
+void LayoutShiftTrackerPointerdownTest::RunTest(
+    WebInputEvent::Type completion_type,
+    bool expect_exclusion) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <style>
+      body { margin: 0; height: 1500px; }
+      #box {
+        left: 0px;
+        top: 0px;
+        width: 400px;
+        height: 600px;
+        background: yellow;
+        position: relative;
+      }
+    </style>
+    <div id="box"></div>
+    <script>
+      box.addEventListener("pointerdown", (e) => {
+        box.style.top = "100px";
+        e.preventDefault();
+      });
+    </script>
+  )HTML");
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  WebPointerProperties pointer_properties = WebPointerProperties(
+      1 /* PointerId */, WebPointerProperties::PointerType::kTouch,
+      WebPointerProperties::Button::kLeft);
+
+  WebPointerEvent event1(WebInputEvent::kPointerDown, pointer_properties, 5, 5);
+  WebPointerEvent event2(completion_type, pointer_properties, 5, 5);
+
+  // Coordinates inside #box.
+  event1.SetPositionInWidget(50, 150);
+  event2.SetPositionInWidget(50, 160);
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event1));
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  WindowPerformance& perf = *DOMWindowPerformance::performance(Window());
+  auto& tracker = MainFrame().GetFrameView()->GetLayoutShiftTracker();
+
+  EXPECT_EQ(0u, perf.getBufferedEntriesByType("layout-shift").size());
+  EXPECT_FLOAT_EQ(0.0, tracker.Score());
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event2));
+
+  // region fraction 50%, distance fraction 1/8
+  const double expected_shift = 0.5 * 0.125;
+
+  auto entries = perf.getBufferedEntriesByType("layout-shift");
+  EXPECT_EQ(1u, entries.size());
+  LayoutShift* shift = static_cast<LayoutShift*>(entries.front().Get());
+
+  EXPECT_EQ(expect_exclusion, shift->hadRecentInput());
+  EXPECT_FLOAT_EQ(expected_shift, shift->value());
+  EXPECT_FLOAT_EQ(expect_exclusion ? 0.0 : expected_shift, tracker.Score());
+}
+
+TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownBecomesTap) {
+  RunTest(WebInputEvent::kPointerUp, true /* expect_exclusion */);
+}
+
+TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownCancelled) {
+  RunTest(WebInputEvent::kPointerCancel, false /* expect_exclusion */);
+}
+
+TEST_F(LayoutShiftTrackerPointerdownTest, PointerdownBecomesScroll) {
+  RunTest(WebInputEvent::kPointerCausedUaAction, false /* expect_exclusion */);
 }
 
 TEST_F(LayoutShiftTrackerTest, StableCompositingChanges) {

@@ -238,18 +238,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool AllowSignedExchangeOnIO(
       content::ResourceContext* resource_context) override;
   bool AllowSignedExchange(content::BrowserContext* browser_context) override;
-  bool AllowGetCookie(const GURL& url,
-                      const GURL& first_party,
-                      const net::CookieList& cookie_list,
-                      content::ResourceContext* context,
-                      int render_process_id,
-                      int render_frame_id) override;
-  bool AllowSetCookie(const GURL& url,
-                      const GURL& first_party,
-                      const net::CanonicalCookie& cookie,
-                      content::ResourceContext* context,
-                      int render_process_id,
-                      int render_frame_id) override;
   void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
@@ -500,6 +488,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const base::Optional<std::string>& user_agent,
       network::mojom::WebSocketHandshakeClientPtr handshake_client) override;
   bool WillCreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,
@@ -666,19 +655,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::vector<content::GlobalFrameRoutingId>& render_frames,
       base::Callback<void(bool)> callback,
       bool allow);
-
-  void OnCookiesRead(int process_id,
-                     int routing_id,
-                     const GURL& url,
-                     const GURL& first_party_url,
-                     const net::CookieList& cookie_list,
-                     bool blocked_by_policy);
-  void OnCookieChange(int process_id,
-                      int routing_id,
-                      const GURL& url,
-                      const GURL& first_party_url,
-                      const net::CanonicalCookie& cookie,
-                      bool blocked_by_policy);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void GuestPermissionRequestHelper(

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_CERTIFICATE_PROVIDER_CERTIFICATE_PROVIDER_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_CERTIFICATE_PROVIDER_CERTIFICATE_PROVIDER_API_H_
 
+#include <string>
+
 #include "extensions/browser/extension_function.h"
 
 namespace chromeos {
@@ -28,6 +30,7 @@ struct CertificateInfo;
 class CertificateProviderInternalReportCertificatesFunction
     : public UIThreadExtensionFunction {
  private:
+  // UIThreadExtensionFunction:
   ~CertificateProviderInternalReportCertificatesFunction() override;
   ResponseAction Run() override;
 
@@ -42,6 +45,7 @@ class CertificateProviderInternalReportCertificatesFunction
 class CertificateProviderInternalReportSignatureFunction
     : public UIThreadExtensionFunction {
  private:
+  // UIThreadExtensionFunction:
   ~CertificateProviderInternalReportSignatureFunction() override;
   ResponseAction Run() override;
 
@@ -51,12 +55,14 @@ class CertificateProviderInternalReportSignatureFunction
 
 class CertificateProviderRequestPinFunction : public UIThreadExtensionFunction {
  private:
+  // UIThreadExtensionFunction:
   ~CertificateProviderRequestPinFunction() override;
   ResponseAction Run() override;
   bool ShouldSkipQuotaLimiting() const override;
   void GetQuotaLimitHeuristics(
       extensions::QuotaLimitHeuristics* heuristics) const override;
-  void OnInputReceived(const base::string16& value);
+
+  void OnInputReceived(const std::string& value);
 
   DECLARE_EXTENSION_FUNCTION("certificateProvider.requestPin",
                              CERTIFICATEPROVIDER_REQUESTPIN)
@@ -65,9 +71,11 @@ class CertificateProviderRequestPinFunction : public UIThreadExtensionFunction {
 class CertificateProviderStopPinRequestFunction
     : public UIThreadExtensionFunction {
  private:
+  // UIThreadExtensionFunction:
   ~CertificateProviderStopPinRequestFunction() override;
   ResponseAction Run() override;
-  void DialogClosed(const base::string16& value);
+
+  void OnPinRequestStopped();
 
   DECLARE_EXTENSION_FUNCTION("certificateProvider.stopPinRequest",
                              CERTIFICATEPROVIDER_STOPPINREQUEST)

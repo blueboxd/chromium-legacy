@@ -226,7 +226,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       new_index = 0;
 
     if (new_index >= overflow_cutoff)
-      shelf_view_->shelf_widget()->set_activated_from_other_widget(true);
+      shelf_view_->shelf_widget()->set_activated_from_overflow_bubble(true);
     return focusable_views[new_index];
   }
 

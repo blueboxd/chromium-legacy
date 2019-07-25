@@ -747,7 +747,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Send Tab To Self
 // ----------------
 // Sends the current tab to the target device.
-- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID;
+- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID
+                   targetDeviceName:(NSString*)targetDeviceName;
 
 @end
 
@@ -2896,14 +2897,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - Private Methods: Send Tab To Self
 
-- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID {
+- (void)sendTabToSelfTargetDeviceID:(NSString*)targetDeviceID
+                   targetDeviceName:(NSString*)targetDeviceName {
   send_tab_to_self::CreateNewEntry(_browserState, targetDeviceID);
 
   [self.dispatcher triggerToolsMenuButtonAnimation];
 
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  [self showSnackbar:l10n_util::GetNSString(
-                         IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE)];
+  [self showSnackbar:l10n_util::GetNSStringF(
+                         IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE,
+                         base::SysNSStringToUTF16(targetDeviceName))];
 }
 
 #pragma mark - ** Protocol Implementations and Helpers **
@@ -4388,7 +4391,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 - (void)sendTabToSelf:(SendTabToSelfCommand*)command {
-  [self sendTabToSelfTargetDeviceID:[command targetDeviceID]];
+  [self sendTabToSelfTargetDeviceID:[command targetDeviceID]
+                   targetDeviceName:[command targetDeviceName]];
 }
 
 #pragma mark - FindInPageResponseDelegate

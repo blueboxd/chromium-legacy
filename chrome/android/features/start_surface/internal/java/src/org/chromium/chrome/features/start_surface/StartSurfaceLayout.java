@@ -388,8 +388,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
                 "fps = %.2f (%d / %dms), maxFrameInterval = %d, dirtySpan = %d", fps, frameRendered,
                 elapsedMs, mMaxFrameInterval, dirtySpan);
 
-        // TODO(crbug.com/964406): stop reporting on Canary before enabling in Finch.
-        if (ChromeVersionInfo.isLocalBuild() || ChromeVersionInfo.isCanaryBuild()) {
+        if (ChromeVersionInfo.isLocalBuild()) {
             Toast.makeText(ContextUtils.getApplicationContext(), message, Toast.LENGTH_SHORT)
                     .show();
         }

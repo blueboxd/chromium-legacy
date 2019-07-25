@@ -32,7 +32,7 @@ const base::Feature kProactiveTabFreezeAndDiscard{
 // background (email, chat, calendar, etc) during session restore.
 const base::Feature kSessionRestorePrioritizesBackgroundUseCases{
     "SessionRestorePrioritizesBackgroundUseCases",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the site characteristics database.
 const base::Feature kSiteCharacteristicsDatabase{

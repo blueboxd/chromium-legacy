@@ -14,6 +14,7 @@
 #include <ntsecapi.h>  // For POLICY_ALL_ACCESS types
 
 #include "base/base64.h"
+#include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
@@ -27,6 +28,14 @@
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/gaiacp/scoped_lsa_policy.h"
 #include "chrome/credential_provider/gaiacp/win_http_url_fetcher.h"
+#include "crypto/aead.h"
+#include "third_party/boringssl/src/include/openssl/aead.h"
+#include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/err.h"
+#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/rand.h"
+#include "third_party/boringssl/src/include/openssl/rsa.h"
+#include "third_party/boringssl/src/include/openssl/x509.h"
 
 namespace credential_provider {
 
@@ -59,6 +68,20 @@ constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
 #else
     L"Chromium-GCPW-";
 #endif
+
+// Constants used during padding and unpadding given secret.
+constexpr char kPaddedPassword[] = "password";
+
+constexpr char kPasswordLength[] = "password_length";
+
+constexpr char kPaddingChar = '-';
+
+constexpr size_t kMinPaddedPasswordLength = 64;
+
+// Constants used during encrypting and decrypting given secret.
+constexpr size_t kNonceLength = 12;
+
+constexpr size_t kSessionKeyLength = 32;
 
 // Self deleting escrow service requester. This class will try to make a query
 // using the given url fetcher. It will delete itself when the request is
@@ -289,6 +312,176 @@ std::pair<std::string, std::string> MakeAuthorizationHeader(
   return {"Authorization", "Bearer " + access_token};
 }
 
+bool Base64DecodeCryptographicKey(const std::string& cryptographic_key,
+                                  std::string* out) {
+  std::string cryptographic_key_copy;
+  base::RemoveChars(cryptographic_key, "\n", &cryptographic_key_copy);
+  if (!base::Base64Decode(cryptographic_key_copy, out)) {
+    LOGFN(ERROR) << "Base64Decode failed";
+    return false;
+  }
+  return true;
+}
+
+// Callback to log password encryption/decryption errors.
+static int LogBoringSSLError(const char* str, size_t len, void* ctx) {
+  LOGFN(ERROR) << base::StringPiece(str, len);
+  return 1;
+}
+
+// PadSecret pads the given |secret| with kPaddingChar and serializes the padded
+// secret into JSON along with original secret length.
+bool PadSecret(const std::string& secret, std::string* out) {
+  size_t padded_length = (secret.size() + kMinPaddedPasswordLength - 1) &
+                         ~(kMinPaddedPasswordLength - 1);
+  std::string padded_secret(padded_length, kPaddingChar);
+  std::memcpy(&padded_secret[padded_length - secret.size()], secret.data(),
+              secret.size());
+
+  base::Value pwd_padding_dict(base::Value::Type::DICTIONARY);
+  pwd_padding_dict.SetStringKey(kPaddedPassword, padded_secret);
+  pwd_padding_dict.SetIntKey(kPasswordLength, secret.size());
+  SecurelyClearString(padded_secret);
+
+  auto result = base::JSONWriter::Write(pwd_padding_dict, out);
+  const std::string* password_value =
+      pwd_padding_dict.FindStringKey(kPaddedPassword);
+  if (password_value)
+    SecurelyClearString(*const_cast<std::string*>(password_value));
+
+  return result;
+}
+
+// UnpadSecret deserializes given |padded_secret| into json object and tries to
+// find padded secret. It then removes the padding and returns original secret.
+bool UnpadSecret(const std::string& serialized_padded_secret,
+                 std::string* out) {
+  base::Optional<base::Value> pwd_padding_dict = base::JSONReader::Read(
+      serialized_padded_secret, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!pwd_padding_dict.has_value() || !pwd_padding_dict->is_dict()) {
+    LOGFN(ERROR) << "Failed to deserialize given secret from json.";
+    return false;
+  }
+
+  auto* padded_secret = pwd_padding_dict->FindStringKey(kPaddedPassword);
+  auto pwd_length = pwd_padding_dict->FindIntKey(kPasswordLength);
+
+  auto result = true;
+  if (!padded_secret || !pwd_length.has_value()) {
+    result = false;
+  } else {
+    out->assign(&(*padded_secret)[padded_secret->size() - *pwd_length],
+                *pwd_length);
+  }
+  SecurelyClearDictionaryValueWithKey(&pwd_padding_dict, kPaddedPassword);
+
+  return result;
+}
+
+// Encrypts the given |secret| with the provided |public_key|. Returns a vector
+// of uint8_t as the encrypted secret.
+base::Optional<std::vector<uint8_t>> PublicKeyEncrypt(
+    const std::string& public_key,
+    const std::string& secret) {
+  CBS pub_key_cbs;
+  CBS_init(&pub_key_cbs, reinterpret_cast<const uint8_t*>(&public_key[0]),
+           public_key.size());
+  bssl::UniquePtr<EVP_PKEY> pub_key(EVP_parse_public_key(&pub_key_cbs));
+  if (!pub_key || CBS_len(&pub_key_cbs)) {
+    ERR_print_errors_cb(&LogBoringSSLError, /*unused*/ nullptr);
+    return base::nullopt;
+  }
+
+  RSA* rsa = EVP_PKEY_get0_RSA(pub_key.get());
+  if (!rsa) {
+    ERR_print_errors_cb(&LogBoringSSLError, /*unused*/ nullptr);
+    return base::nullopt;
+  }
+
+  // Generate a random session key and random nonce.
+  uint8_t session_key_with_nonce[kSessionKeyLength + kNonceLength];
+  RAND_bytes(session_key_with_nonce, sizeof(session_key_with_nonce));
+
+  // Encrypt the session key with the RSA public key.
+  size_t rsa_len;
+  std::vector<uint8_t> ciphertext(RSA_size(rsa));
+  if (!RSA_encrypt(rsa, &rsa_len, ciphertext.data(), ciphertext.size(),
+                   session_key_with_nonce, sizeof(session_key_with_nonce),
+                   RSA_PKCS1_OAEP_PADDING)) {
+    ERR_print_errors_cb(&LogBoringSSLError, /*unused*/ nullptr);
+    return base::nullopt;
+  }
+
+  std::string session_key(session_key_with_nonce,
+                          session_key_with_nonce + kSessionKeyLength);
+
+  std::string sealed_secret;
+  crypto::Aead aead(crypto::Aead::AES_256_GCM);
+  aead.Init(&session_key);
+  aead.Seal(secret,
+            base::StringPiece(reinterpret_cast<const char*>(
+                                  &session_key_with_nonce[kSessionKeyLength]),
+                              kNonceLength),
+            /*ad=*/nullptr, &sealed_secret);
+
+  ciphertext.insert(ciphertext.end(), sealed_secret.data(),
+                    sealed_secret.data() + sealed_secret.size());
+  return ciphertext;
+}
+
+// Decrypts the provided |ciphertext| with the given |private_key|. Returns
+// an base::Optional<std::string> as the decrypted secret.
+base::Optional<std::string> PrivateKeyDecrypt(
+    const std::string& private_key,
+    base::span<const uint8_t> ciphertext) {
+  CBS priv_key_cbs;
+  CBS_init(&priv_key_cbs, reinterpret_cast<const uint8_t*>(&private_key[0]),
+           private_key.size());
+  bssl::UniquePtr<EVP_PKEY> priv_key(EVP_parse_private_key(&priv_key_cbs));
+  if (!priv_key || CBS_len(&priv_key_cbs)) {
+    ERR_print_errors_cb(&LogBoringSSLError, /*unused*/ nullptr);
+    return base::nullopt;
+  }
+
+  RSA* rsa = EVP_PKEY_get0_RSA(priv_key.get());
+  if (!rsa) {
+    LOGFN(ERROR) << "No RSA is found in EVP_PKEY_get0_RSA";
+    return base::nullopt;
+  }
+  const size_t rsa_size = RSA_size(rsa);
+  if (ciphertext.size() < rsa_size) {
+    LOGFN(ERROR) << "Incorrect RSA size for given cipher text";
+    return base::nullopt;
+  }
+
+  // Decrypt the encrypted session key using given provided key.
+  std::vector<uint8_t> session_key_with_nonce(rsa_size);
+  size_t session_key_with_nonce_len;
+  if (!RSA_decrypt(rsa, &session_key_with_nonce_len,
+                   session_key_with_nonce.data(), session_key_with_nonce.size(),
+                   ciphertext.data(), rsa_size, RSA_PKCS1_OAEP_PADDING)) {
+    ERR_print_errors_cb(&LogBoringSSLError, /*unused*/ nullptr);
+    return base::nullopt;
+  }
+  session_key_with_nonce.resize(session_key_with_nonce_len);
+
+  std::string session_key(session_key_with_nonce.data(),
+                          session_key_with_nonce.data() + kSessionKeyLength);
+
+  std::string plaintext;
+  crypto::Aead aead(crypto::Aead::AES_256_GCM);
+  aead.Init(&session_key);
+  aead.Open(
+      base::StringPiece(reinterpret_cast<const char*>(&ciphertext[rsa_size]),
+                        ciphertext.size() - rsa_size),
+      base::StringPiece(reinterpret_cast<const char*>(
+                            &session_key_with_nonce[kSessionKeyLength]),
+                        kNonceLength),
+      /*ad=*/nullptr, &plaintext);
+
+  return plaintext;
+}
+
 // Request a new public key and corresponding resource id from the escrow
 // service in order to encrypt |password|. |access_token| is used to authorize
 // the request on the escrow service. |device_id| is used to identify the device
@@ -324,12 +517,36 @@ HRESULT EncryptUserPasswordUsingEscrowService(
     return E_FAIL;
   }
 
+  std::string decoded_public_key;
+  if (!Base64DecodeCryptographicKey(public_key, &decoded_public_key)) {
+    LOGFN(ERROR) << "Failed to base64 decode public key";
+    return E_FAIL;
+  }
+
+  std::string password_utf8 = base::UTF16ToUTF8(password);
+  std::string padded_password;
+  auto result = PadSecret(password_utf8, &padded_password);
+  SecurelyClearString(password_utf8);
+  if (!result) {
+    LOGFN(ERROR) << "Failed while padding password";
+    return E_FAIL;
+  }
+
+  auto opt = PublicKeyEncrypt(decoded_public_key, padded_password);
+  SecurelyClearString(padded_password);
+  if (opt == base::nullopt)
+    return E_FAIL;
+
   encrypted_data->emplace(base::Value(base::Value::Type::DICTIONARY));
   (*encrypted_data)->SetStringKey(kUserPasswordLsaStoreIdKey, resource_id);
 
+  std::string cipher_text;
+  base::Base64Encode(
+      base::StringPiece(reinterpret_cast<const char*>(opt->data()),
+                        opt->size()),
+      &cipher_text);
   (*encrypted_data)
-      ->SetStringKey(kUserPasswordLsaStoreEncryptedPasswordKey,
-                     base::UTF16ToUTF8(password));
+      ->SetStringKey(kUserPasswordLsaStoreEncryptedPasswordKey, cipher_text);
 
   return hr;
 }
@@ -350,7 +567,7 @@ HRESULT DecryptUserPasswordUsingEscrowService(
   DCHECK(encrypted_data && encrypted_data->is_dict());
   const std::string* resource_id =
       encrypted_data->FindStringKey(kUserPasswordLsaStoreIdKey);
-  const std::string* encrypted_password =
+  const std::string* encoded_cipher_text =
       encrypted_data->FindStringKey(kUserPasswordLsaStoreEncryptedPasswordKey);
 
   if (!resource_id) {
@@ -358,7 +575,7 @@ HRESULT DecryptUserPasswordUsingEscrowService(
     return E_FAIL;
   }
 
-  if (!encrypted_password) {
+  if (!encoded_cipher_text) {
     LOGFN(ERROR) << "No encrypted password found to restore";
     return E_FAIL;
   }
@@ -380,9 +597,32 @@ HRESULT DecryptUserPasswordUsingEscrowService(
                  << putHR(hr);
     return E_FAIL;
   }
-  // Move semantics should ensure the temporary password is directly moved
-  // into |decrypted_password| and thus does not need to be securely zeroed.
-  *decrypted_password = base::UTF8ToUTF16(*encrypted_password);
+
+  std::string decoded_cipher_text;
+  if (!base::Base64Decode(*encoded_cipher_text, &decoded_cipher_text)) {
+    LOGFN(ERROR) << "Failed to base64 decode ciphertext";
+    return E_FAIL;
+  }
+
+  std::string decoded_private_key;
+  if (!Base64DecodeCryptographicKey(private_key, &decoded_private_key)) {
+    LOGFN(ERROR) << "Failed to base64 decode private key";
+    return E_FAIL;
+  }
+
+  auto decrypted_secret =
+      PrivateKeyDecrypt(decoded_private_key,
+                        base::as_bytes(base::make_span(decoded_cipher_text)));
+
+  if (decrypted_secret == base::nullopt)
+    return E_FAIL;
+
+  std::string unpadded;
+  UnpadSecret(*decrypted_secret, &unpadded);
+  *decrypted_password = base::UTF8ToUTF16(unpadded);
+
+  SecurelyClearString(*decrypted_secret);
+  SecurelyClearString(unpadded);
 
   return S_OK;
 }

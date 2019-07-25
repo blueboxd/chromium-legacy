@@ -34,6 +34,9 @@ class VIEWS_EXPORT ViewObserver {
   // Called when the bounds of |observed_view| change.
   virtual void OnViewBoundsChanged(View* observed_view) {}
 
+  // Called when the bounds of |observed_view|'s layer change.
+  virtual void OnLayerTargetBoundsChanged(View* observed_view) {}
+
   // Called when View::ViewHierarchyChanged() is called.
   virtual void OnViewHierarchyChanged(
       View* observed_view,

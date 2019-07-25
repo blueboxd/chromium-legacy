@@ -56,11 +56,14 @@ InputHandlerPointerResult ScrollbarController::HandleMouseDown(
   currently_captured_scrollbar_ = layer_impl->ToScrollbarLayer();
   scroll_result.type = PointerResultType::kScrollbarScroll;
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
-  scroll_result.scroll_offset =
-      GetScrollDeltaFromPointerDown(position_in_widget);
+  ScrollbarPart scrollbar_part =
+      GetScrollbarPartFromPointerDown(position_in_widget);
+  scroll_result.scroll_offset = GetScrollOffsetForScrollbarPart(
+      scrollbar_part, currently_captured_scrollbar_->orientation());
   previous_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
-  if (thumb_drag_in_progress_) {
+  if (scrollbar_part == ScrollbarPart::THUMB) {
+    thumb_drag_in_progress_ = true;
     scroll_result.scroll_units =
         ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
   } else {
@@ -345,27 +348,28 @@ gfx::PointF ScrollbarController::GetScrollbarRelativePosition(
                                             position_in_widget, clipped));
 }
 
-// Determines the scroll offsets based on hit test results.
-gfx::ScrollOffset ScrollbarController::GetScrollDeltaFromPointerDown(
+// Determines the ScrollbarPart based on the position_in_widget.
+ScrollbarPart ScrollbarController::GetScrollbarPartFromPointerDown(
     const gfx::PointF position_in_widget) {
-  const ScrollbarOrientation orientation =
-      currently_captured_scrollbar_->orientation();
-
   // position_in_widget needs to be transformed and made relative to the
   // scrollbar layer because hit testing assumes layer relative coordinates.
-  ScrollbarPart scrollbar_part = ScrollbarPart::NO_PART;
-
   bool clipped = false;
 
-  gfx::PointF scroller_relative_position(
+  const gfx::PointF scroller_relative_position(
       GetScrollbarRelativePosition(position_in_widget, &clipped));
 
   if (clipped)
-    return gfx::ScrollOffset(0, 0);
+    return ScrollbarPart::NO_PART;
 
-  scrollbar_part = currently_captured_scrollbar_->IdentifyScrollbarPart(
+  return currently_captured_scrollbar_->IdentifyScrollbarPart(
       scroller_relative_position);
+}
 
+// Determines the scroll offsets based on the ScrollbarPart and the scrollbar
+// orientation.
+gfx::ScrollOffset ScrollbarController::GetScrollOffsetForScrollbarPart(
+    const ScrollbarPart scrollbar_part,
+    const ScrollbarOrientation orientation) {
   float scroll_delta = GetScrollDeltaForScrollbarPart(scrollbar_part);
 
   // See CreateScrollStateForGesture for more information on how these values
@@ -378,9 +382,6 @@ gfx::ScrollOffset ScrollbarController::GetScrollDeltaFromPointerDown(
     return orientation == ScrollbarOrientation::VERTICAL
                ? gfx::ScrollOffset(0, scroll_delta)   // Down arrow
                : gfx::ScrollOffset(scroll_delta, 0);  // Right arrow
-  } else if (scrollbar_part == ScrollbarPart::THUMB) {
-    // Offsets are calculated in HandleMouseMove.
-    thumb_drag_in_progress_ = true;
   } else if (scrollbar_part == ScrollbarPart::BACK_TRACK) {
     return orientation == ScrollbarOrientation::VERTICAL
                ? gfx::ScrollOffset(0, -scroll_delta)   // Track click up

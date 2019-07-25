@@ -15,6 +15,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
+namespace ash {
+class ViewShadow;
+}
+
 namespace app_list {
 
 class AppListViewDelegate;
@@ -70,10 +74,6 @@ class APP_LIST_EXPORT SearchResultPageView
     return result_selection_controller_.get();
   }
 
-  // Offset/add the size of the shadow border to the bounds
-  // for proper sizing/placement with shadow included.
-  gfx::Rect AddShadowBorderToBounds(const gfx::Rect& bounds) const;
-
  private:
   // Separator between SearchResultContainerView.
   class HorizontalSeparator;
@@ -100,6 +100,8 @@ class APP_LIST_EXPORT SearchResultPageView
   SearchResultBaseView* first_result_view_ = nullptr;
 
   views::View* assistant_privacy_info_view_ = nullptr;
+
+  std::unique_ptr<ash::ViewShadow> view_shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };

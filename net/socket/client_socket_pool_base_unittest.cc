@@ -231,7 +231,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override {
     NOTREACHED();
-    return std::unique_ptr<DatagramClientSocket>();
+    return nullptr;
   }
 
   std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
@@ -245,12 +245,12 @@ class MockClientSocketFactory : public ClientSocketFactory {
   }
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      SSLClientContext* context,
       std::unique_ptr<StreamSocket> stream_socket,
       const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override {
+      const SSLConfig& ssl_config) override {
     NOTIMPLEMENTED();
-    return std::unique_ptr<SSLClientSocket>();
+    return nullptr;
   }
 
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
@@ -542,7 +542,7 @@ class TestConnectJobFactory
             nullptr /* quic_stream_factory */,
             nullptr /* proxy_delegate */,
             nullptr /* http_user_agent_settings */,
-            SSLClientSocketContext(),
+            nullptr /* ssl_client_context */,
             nullptr /* socket_performance_watcher_factory */,
             nullptr /* network_quality_estimator */,
             net_log,

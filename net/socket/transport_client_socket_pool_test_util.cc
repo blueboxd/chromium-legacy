@@ -443,12 +443,12 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
 
 std::unique_ptr<SSLClientSocket>
 MockTransportClientSocketFactory::CreateSSLClientSocket(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
+    const SSLConfig& ssl_config) {
   NOTIMPLEMENTED();
-  return std::unique_ptr<SSLClientSocket>();
+  return nullptr;
 }
 
 std::unique_ptr<ProxyClientSocket>

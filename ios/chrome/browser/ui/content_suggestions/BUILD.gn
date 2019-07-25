@@ -50,6 +50,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:feature_flags",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands",

@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_text_field_item.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
@@ -107,6 +108,9 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 
+// Dispatcher for sending commands.
+@property(nonatomic, readonly, weak) id<BrowserCommands> dispatcher;
+
 // Cancel button item in navigation bar.
 @property(nonatomic, strong) UIBarButtonItem* cancelItem;
 
@@ -173,7 +177,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 #pragma mark - Lifecycle
 
 - (instancetype)initWithBookmark:(const BookmarkNode*)bookmark
-                    browserState:(ios::ChromeBrowserState*)browserState {
+                    browserState:(ios::ChromeBrowserState*)browserState
+                      dispatcher:(id<BrowserCommands>)dispatcher {
   DCHECK(bookmark);
   DCHECK(browserState);
   self = [super initWithTableViewStyle:UITableViewStylePlain
@@ -192,6 +197,7 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
         new bookmarks::BookmarkModelBridge(self, _bookmarkModel));
 
     _browserState = browserState;
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -318,9 +324,10 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
     [self.delegate bookmarkEditorWillCommitTitleOrUrlChange:self];
   }
 
-  bookmark_utils_ios::CreateOrUpdateBookmarkWithUndoToast(
-      self.bookmark, [self inputBookmarkName], url, self.folder,
-      self.bookmarkModel, self.browserState);
+  [self.dispatcher showSnackbarMessage:
+                       bookmark_utils_ios::CreateOrUpdateBookmarkWithUndoToast(
+                           self.bookmark, [self inputBookmarkName], url,
+                           self.folder, self.bookmarkModel, self.browserState)];
 }
 
 - (void)changeFolder:(const BookmarkNode*)folder {
@@ -420,8 +427,9 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
       // removes the current node.
       nodes.insert(self.bookmark);
     }
-    bookmark_utils_ios::DeleteBookmarksWithUndoToast(nodes, self.bookmarkModel,
-                                                     self.browserState);
+    [self.dispatcher
+        showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
+                                nodes, self.bookmarkModel, self.browserState)];
     self.bookmark = nil;
   }
   [self.delegate bookmarkEditorWantsDismissal:self];
@@ -439,7 +447,8 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
                allowsNewFolders:YES
                     editedNodes:editedNodes
                    allowsCancel:NO
-                 selectedFolder:self.folder];
+                 selectedFolder:self.folder
+                     dispatcher:self.dispatcher];
   folderViewController.delegate = self;
   self.folderViewController = folderViewController;
   self.folderViewController.navigationItem.largeTitleDisplayMode =

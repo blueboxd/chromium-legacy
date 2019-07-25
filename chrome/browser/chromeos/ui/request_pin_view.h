@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/ui_base_types.h"
@@ -51,7 +50,8 @@ class RequestPinView : public views::DialogDelegateView,
 
   // Used to send the PIN/PUK entered by the user in the textfield to the
   // extension that asked for the code.
-  using RequestPinCallback = base::Callback<void(const base::string16&)>;
+  using RequestPinCallback =
+      base::OnceCallback<void(const std::string& user_input)>;
 
   // Creates the view to be embeded in the dialog that requests the PIN/PUK.
   // |extension_name| - the name of the extension making the request. Displayed
@@ -67,8 +67,10 @@ class RequestPinView : public views::DialogDelegateView,
   RequestPinView(const std::string& extension_name,
                  RequestPinCodeType code_type,
                  int attempts_left,
-                 const RequestPinCallback& callback,
+                 RequestPinCallback callback,
                  Delegate* delegate);
+  RequestPinView(const RequestPinView&) = delete;
+  RequestPinView& operator=(const RequestPinView&) = delete;
   ~RequestPinView() override;
 
   // views::TextfieldController
@@ -88,11 +90,11 @@ class RequestPinView : public views::DialogDelegateView,
 
   // Returns whether the view is locked while waiting the extension to process
   // the user input data.
-  bool IsLocked();
+  bool IsLocked() const;
 
   // Set the new callback to be used when user will provide the input. The old
   // callback must be used and reset to null at this point.
-  void SetCallback(const RequestPinCallback& callback);
+  void SetCallback(RequestPinCallback callback);
 
   // |code_type| - specifies whether the user is asked to enter PIN or PUK. If
   //     UNCHANGED value is provided, the dialog displays the same value that
@@ -139,9 +141,7 @@ class RequestPinView : public views::DialogDelegateView,
   views::Textfield* textfield_ = nullptr;
   views::Label* error_label_ = nullptr;
 
-  base::WeakPtrFactory<RequestPinView> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestPinView);
+  base::WeakPtrFactory<RequestPinView> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

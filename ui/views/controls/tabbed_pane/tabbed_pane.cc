@@ -750,6 +750,7 @@ void TabbedPane::AddTabInternal(size_t index,
                                 std::unique_ptr<View> contents) {
   DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);
+  contents->GetViewAccessibility().OverrideName(title);
 
   tab_strip_->AddChildViewAt(
       std::make_unique<MdTab>(this, title, contents.get()),
@@ -864,6 +865,9 @@ bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 void TabbedPane::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
+  const Tab* const selected_tab = GetSelectedTab();
+  if (selected_tab)
+    node_data->SetName(selected_tab->GetTitleText());
 }
 
 BEGIN_METADATA(TabbedPane)

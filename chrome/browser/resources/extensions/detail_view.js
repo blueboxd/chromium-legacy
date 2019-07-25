@@ -81,7 +81,7 @@ cr.define('extensions', function() {
     /** @private */
     onActivityLogTap_: function() {
       extensions.navigation.navigateTo(
-          {page: Page.ACTIVITY_LOG, extensionId: this.data.id});
+          {page: extensions.Page.ACTIVITY_LOG, extensionId: this.data.id});
     },
 
     /**
@@ -96,7 +96,7 @@ cr.define('extensions', function() {
 
     /** @private */
     onCloseButtonTap_: function() {
-      extensions.navigation.navigateTo({page: Page.LIST});
+      extensions.navigation.navigateTo({page: extensions.Page.LIST});
     },
 
     /**

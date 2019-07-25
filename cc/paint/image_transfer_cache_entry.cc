@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -25,30 +26,33 @@
 namespace cc {
 namespace {
 
-// Creates a SkImage backed by the YUV textures corresponding to |plane_images|
-// (in YUV order). The backend textures are first extracted out of the
-// |plane_images| (and work is flushed on each one). Note that we assume that
-// the image is opaque (no alpha plane). Then, a SkImage is created out of those
-// textures using the SkImage::MakeFromYUVATextures() API. Finally,
-// |image_color_space| is the color space of the resulting image after applying
-// |yuv_color_space| (converting from YUV to RGB). This is assumed to be sRGB if
-// nullptr.
+// Creates a SkImage backed by the YUV textures corresponding to |plane_images|.
+// The layout is specified by |plane_images_format|). The backend textures are
+// first extracted out of the |plane_images| (and work is flushed on each one).
+// Note that we assume that the image is opaque (no alpha plane). Then, a
+// SkImage is created out of those textures using the
+// SkImage::MakeFromYUVATextures() API. Finally, |image_color_space| is the
+// color space of the resulting image after applying |yuv_color_space|
+// (converting from YUV to RGB). This is assumed to be sRGB if nullptr.
 //
 // On success, the resulting SkImage is
 // returned. On failure, nullptr is returned (e.g., if one of the backend
 // textures is invalid or a Skia error occurs).
-//
-// TODO(crbug.com/910276): support non-opaque images by allowing 3 or 4 planes.
 sk_sp<SkImage> MakeYUVImageFromUploadedPlanes(
     GrContext* context,
     const std::vector<sk_sp<SkImage>>& plane_images,
+    YUVDecodeFormat plane_images_format,
     SkYUVColorSpace yuv_color_space,
     sk_sp<SkColorSpace> image_color_space) {
   // 1) Extract the textures.
-  // TODO(crbug.com/910276): After alpha support, size will be 3 or 4 planes.
-  DCHECK_EQ(3u, plane_images.size());
-  std::array<GrBackendTexture, 3u> plane_backend_textures;
-  for (size_t plane = 0; plane < 3u; plane++) {
+  DCHECK_NE(YUVDecodeFormat::kUnknown, plane_images_format);
+  DCHECK_EQ(NumberOfPlanesForYUVDecodeFormat(plane_images_format),
+            plane_images.size());
+  DCHECK_LE(plane_images.size(),
+            base::checked_cast<size_t>(SkYUVASizeInfo::kMaxCount));
+  std::array<GrBackendTexture, SkYUVASizeInfo::kMaxCount>
+      plane_backend_textures;
+  for (size_t plane = 0u; plane < plane_images.size(); plane++) {
     plane_backend_textures[plane] = plane_images[plane]->getBackendTexture(
         true /* flushPendingGrContextIO */);
     if (!plane_backend_textures[plane].isValid()) {
@@ -57,12 +61,26 @@ sk_sp<SkImage> MakeYUVImageFromUploadedPlanes(
     }
   }
 
-  // 2) Create the YUV image. Note that the planes in |plane_backend_textures|
-  // are in YUV order.
+  // 2) Create the YUV image.
   SkYUVAIndex plane_indices[SkYUVAIndex::kIndexCount];
-  plane_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
-  plane_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
-  plane_indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+  if (plane_images_format == YUVDecodeFormat::kYUV3) {
+    plane_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+    plane_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+    plane_indices[SkYUVAIndex::kV_Index] = {2, SkColorChannel::kR};
+  } else if (plane_images_format == YUVDecodeFormat::kYVU3) {
+    plane_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+    plane_indices[SkYUVAIndex::kU_Index] = {2, SkColorChannel::kR};
+    plane_indices[SkYUVAIndex::kV_Index] = {1, SkColorChannel::kR};
+  } else if (plane_images_format == YUVDecodeFormat::kYUV2) {
+    plane_indices[SkYUVAIndex::kY_Index] = {0, SkColorChannel::kR};
+    plane_indices[SkYUVAIndex::kU_Index] = {1, SkColorChannel::kR};
+    plane_indices[SkYUVAIndex::kV_Index] = {1, SkColorChannel::kG};
+  } else {
+    // TODO(crbug.com/910276): handle and test non-opaque images.
+    NOTREACHED();
+    DLOG(ERROR) << "Unsupported planar format";
+    return nullptr;
+  }
   plane_indices[SkYUVAIndex::kA_Index] = {-1, SkColorChannel::kR};
   sk_sp<SkImage> image = SkImage::MakeFromYUVATextures(
       context, yuv_color_space, plane_backend_textures.data(), plane_indices,
@@ -115,6 +133,20 @@ sk_sp<SkImage> MakeTextureImage(GrContext* context,
 }
 
 }  // namespace
+
+size_t NumberOfPlanesForYUVDecodeFormat(YUVDecodeFormat format) {
+  switch (format) {
+    case YUVDecodeFormat::kYUVA4:
+      return 4u;
+    case YUVDecodeFormat::kYUV3:
+    case YUVDecodeFormat::kYVU3:
+      return 3u;
+    case YUVDecodeFormat::kYUV2:
+      return 2u;
+    case YUVDecodeFormat::kUnknown:
+      return 0u;
+  }
+}
 
 ClientImageTransferCacheEntry::ClientImageTransferCacheEntry(
     const SkPixmap* pixmap,
@@ -293,9 +325,9 @@ ServiceImageTransferCacheEntry& ServiceImageTransferCacheEntry::operator=(
 bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     GrContext* context,
     std::vector<sk_sp<SkImage>> plane_images,
+    YUVDecodeFormat plane_images_format,
     size_t buffer_byte_size,
-    bool needs_mips,
-    sk_sp<SkColorSpace> image_color_space) {
+    bool needs_mips) {
   context_ = context;
   yuv_color_space_ = SkYUVColorSpace::kJPEG_SkYUVColorSpace;
 
@@ -311,12 +343,14 @@ bool ServiceImageTransferCacheEntry::BuildFromHardwareDecodedImage(
     }
   }
   plane_images_ = std::move(plane_images);
+  plane_images_format_ = plane_images_format;
 
   // 2) Create a SkImage backed by |plane_images|.
   // TODO(andrescj): support embedded color profiles for hardware decodes and
   // pass the color space to MakeYUVImageFromUploadedPlanes.
   image_ = MakeYUVImageFromUploadedPlanes(
-      context_, plane_images_, yuv_color_space_, SkColorSpace::MakeSRGB());
+      context_, plane_images_, plane_images_format_, yuv_color_space_,
+      SkColorSpace::MakeSRGB());
   if (!image_)
     return false;
 
@@ -348,8 +382,11 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     uint32_t num_planes;
     reader.Read(&num_planes);
     // YUV or YUVA
+    // TODO(crbug.com/986575): consider serializing a YUVDecodeFormat.
     if (num_planes != 3u && num_planes != 4u)
       return false;
+    plane_images_format_ =
+        num_planes == 3u ? YUVDecodeFormat::kYUV3 : YUVDecodeFormat::kYUVA4;
     uint32_t needs_mips;
     reader.Read(&needs_mips);
     has_mips_ = needs_mips;
@@ -419,7 +456,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     }
 
     image_ = MakeYUVImageFromUploadedPlanes(
-        context_, plane_images_, yuv_color_space_, decoded_color_space);
+        context_, plane_images_, plane_images_format_, yuv_color_space_,
+        decoded_color_space);
     return !!image_;
   }
 
@@ -533,8 +571,9 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
   if (is_yuv()) {
     DCHECK(image_);
     DCHECK_LE(yuv_color_space_, SkYUVColorSpace::kLastEnum_SkYUVColorSpace);
-    // TODO(crbug.com/910276): After alpha support, size will be 3 or 4 planes.
-    DCHECK_EQ(3u, plane_images_.size());
+    DCHECK_NE(YUVDecodeFormat::kUnknown, plane_images_format_);
+    DCHECK_EQ(NumberOfPlanesForYUVDecodeFormat(plane_images_format_),
+              plane_images_.size());
     std::vector<sk_sp<SkImage>> mipped_planes;
     for (size_t plane = 0; plane < plane_images_.size(); plane++) {
       DCHECK(plane_images_.at(plane));
@@ -551,7 +590,7 @@ void ServiceImageTransferCacheEntry::EnsureMips() {
     }
     mipped_planes.clear();
     image_ = MakeYUVImageFromUploadedPlanes(
-        context_, plane_images_, yuv_color_space_,
+        context_, plane_images_, plane_images_format_, yuv_color_space_,
         image_->refColorSpace() /* image_color_space */);
     has_mips_ = true;
     return;

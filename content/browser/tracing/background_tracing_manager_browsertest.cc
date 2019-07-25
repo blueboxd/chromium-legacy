@@ -1407,6 +1407,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest, RunStartupTracing) {
 
   EXPECT_TRUE(BackgroundTracingManagerImpl::GetInstance()
                   ->GetActiveScenarioForTesting()
+                  ->GetConfig()
                   ->requires_anonymized_data());
   EXPECT_TRUE(base::trace_event::TraceLog::GetInstance()
                   ->GetCurrentTraceConfig()

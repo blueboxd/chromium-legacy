@@ -10,7 +10,9 @@ static_library("policy_engine") {
 
   deps = [
     "//base:base",
+    "//components/prefs",
     "//components/safe_browsing:features",
     "//components/safe_browsing:realtimeapi_proto",
+    "//components/safe_browsing/common:safe_browsing_prefs",
   ]
 }

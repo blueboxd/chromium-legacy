@@ -561,21 +561,21 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
 void UkmPageLoadMetricsObserver::ReportLayoutStability(
     const page_load_metrics::PageLoadExtraInfo& info) {
   ukm::builders::PageLoad(info.source_id)
-      .SetLayoutStability_JankScore(
+      .SetLayoutInstability_CumulativeShiftScore(
           LayoutShiftUkmValue(info.page_render_data.layout_shift_score))
-      .SetLayoutStability_JankScore_MainFrame(
+      .SetLayoutInstability_CumulativeShiftScore_MainFrame(
           LayoutShiftUkmValue(info.main_frame_render_data.layout_shift_score))
-      .SetLayoutStability_JankScore_MainFrame_BeforeInputOrScroll(
+      .SetLayoutInstability_CumulativeShiftScore_MainFrame_BeforeInputOrScroll(
           LayoutShiftUkmValue(info.main_frame_render_data
                                   .layout_shift_score_before_input_or_scroll))
       .Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_COUNTS_100(
-      "PageLoad.Experimental.LayoutStability.JankScore",
+      "PageLoad.LayoutInstability.CumulativeShiftScore",
       LayoutShiftUmaValue(info.page_render_data.layout_shift_score));
 
   UMA_HISTOGRAM_COUNTS_100(
-      "PageLoad.Experimental.LayoutStability.JankScore.MainFrame",
+      "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
       LayoutShiftUmaValue(info.main_frame_render_data.layout_shift_score));
 }
 

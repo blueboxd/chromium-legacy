@@ -13,6 +13,9 @@ namespace blink {
 class DOMException;
 class ScriptPromiseResolver;
 
+// TODO(leonhsl): Remove this class and create a util function
+// NFCErrorTypeToDOMException() to do what Take() does now, because we do not
+// use CallbackPromiseAdapter across nfc code.
 class NFCError {
   STATIC_ONLY(NFCError);
 

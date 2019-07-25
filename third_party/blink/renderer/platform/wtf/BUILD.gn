@@ -252,6 +252,12 @@ jumbo_component("wtf") {
     # Inject Visual Studio debug visualizers for our types into all targets
     # that reference this.
     all_dependent_configs = [ "//tools/win/DebugVisualizers:webkit" ]
+    inputs = [
+      # webkit.natvis listed as an input here instead of in
+      # //tools/win/DebugVisualizers:webkit to prevent unnecessary size increase
+      # in generated build files.
+      "//tools/win/DebugVisualizers/webkit.natvis",
+    ]
   }
 
   if (is_android) {

@@ -8,7 +8,7 @@
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
-#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 namespace mojo {
 

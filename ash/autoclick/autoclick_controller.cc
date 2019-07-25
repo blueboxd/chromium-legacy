@@ -261,6 +261,9 @@ void AutoclickController::OnEnteredScrollButton() {
 
 void AutoclickController::OnExitedScrollButton() {
   over_scroll_button_ = false;
+  // Reset the anchor_location_ so that gestures could begin immediately.
+  anchor_location_ = gfx::Point(-kDefaultAutoclickMovementThreshold,
+                                -kDefaultAutoclickMovementThreshold);
 }
 
 void AutoclickController::OnAutoclickScrollableBoundsFound(

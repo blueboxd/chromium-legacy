@@ -48,12 +48,15 @@ GetPaymentInformationAction::~GetPaymentInformationAction() {
 
 void GetPaymentInformationAction::InternalProcessAction(
     ProcessActionCallback callback) {
+  callback_ = std::move(callback);
   auto payment_options = CreateOptionsFromProto();
   auto get_payment_information = proto_.get_payment_information();
-  payment_options->callback =
-      base::BindOnce(&GetPaymentInformationAction::OnGetPaymentInformation,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(get_payment_information), std::move(callback));
+  payment_options->confirm_callback = base::BindOnce(
+      &GetPaymentInformationAction::OnGetPaymentInformation,
+      weak_ptr_factory_.GetWeakPtr(), std::move(get_payment_information));
+  payment_options->additional_actions_callback =
+      base::BindOnce(&GetPaymentInformationAction::OnAdditionalActionTriggered,
+                     weak_ptr_factory_.GetWeakPtr());
 
   // Gather info for UMA histograms.
   if (!presented_to_user_) {
@@ -71,8 +74,10 @@ void GetPaymentInformationAction::InternalProcessAction(
 
 void GetPaymentInformationAction::OnGetPaymentInformation(
     const GetPaymentInformationProto& get_payment_information,
-    ProcessActionCallback callback,
     std::unique_ptr<PaymentInformation> payment_information) {
+  if (!callback_)
+    return;
+
   bool succeed = payment_information->succeed;
   if (succeed) {
     if (get_payment_information.ask_for_payment()) {
@@ -137,7 +142,18 @@ void GetPaymentInformationAction::OnGetPaymentInformation(
 
   UpdateProcessedAction(succeed ? ACTION_APPLIED : PAYMENT_REQUEST_ERROR);
   action_successful_ = succeed;
-  std::move(callback).Run(std::move(processed_action_proto_));
+  std::move(callback_).Run(std::move(processed_action_proto_));
+}
+
+void GetPaymentInformationAction::OnAdditionalActionTriggered(int index) {
+  if (!callback_)
+    return;
+
+  UpdateProcessedAction(ACTION_APPLIED);
+  processed_action_proto_->mutable_payment_details()
+      ->set_additional_action_index(index);
+  action_successful_ = true;
+  std::move(callback_).Run(std::move(processed_action_proto_));
 }
 
 std::unique_ptr<PaymentRequestOptions>
@@ -165,15 +181,21 @@ GetPaymentInformationAction::CreateOptionsFromProto() const {
   payment_options->request_payment_method =
       get_payment_information.ask_for_payment();
 
+  // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
+  // chip and direct_action part of the additional_actions.
   std::string confirm_text = get_payment_information.confirm_button_text();
   if (confirm_text.empty()) {
     confirm_text =
         l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
   }
-  payment_options->confirm_chip.set_text(confirm_text);
-  payment_options->confirm_chip.set_type(HIGHLIGHTED_ACTION);
-  payment_options->confirm_direct_action =
+  payment_options->confirm_action.mutable_chip()->set_text(confirm_text);
+  payment_options->confirm_action.mutable_chip()->set_type(HIGHLIGHTED_ACTION);
+  *payment_options->confirm_action.mutable_direct_action() =
       get_payment_information.confirm_direct_action();
+
+  for (auto action : get_payment_information.additional_actions()) {
+    payment_options->additional_actions.push_back(action);
+  }
 
   switch (get_payment_information.terms_and_conditions_state()) {
     case GetPaymentInformationProto::NOT_SELECTED:

@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class CSSStyleValue;
-
 enum class CSSSyntaxType {
   kTokenStream,
   kIdent,
@@ -57,8 +55,6 @@ class CSSSyntaxComponent {
     DCHECK(IsRepeatable());
     return repeat_ == CSSSyntaxRepeat::kSpaceSeparated ? ' ' : ',';
   }
-
-  bool CanTake(const CSSStyleValue&) const;
 
  private:
   CSSSyntaxType type_;

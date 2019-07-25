@@ -11,7 +11,7 @@ namespace {
 
 #define RESOURCE_BYTES_HISTOGRAM(suffix, was_cached, value)                \
   if (was_cached) {                                                        \
-    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Cache." suffix, value);   \
+    PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Cache2." suffix, value);  \
   } else {                                                                 \
     PAGE_BYTES_HISTOGRAM("Ads.ResourceUsage.Size.Network." suffix, value); \
   }
@@ -78,10 +78,6 @@ void ResourceMetricsObserver::RecordResourceMimeHistograms(
 
 void ResourceMetricsObserver::RecordResourceHistograms(
     const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) {
-  // TODO(968141): Update these metrics to include resources loaded by the
-  // memory cache.
-  if (resource->cache_type == page_load_metrics::mojom::CacheType::kMemory)
-    return;
   bool was_cached =
       resource->cache_type != page_load_metrics::mojom::CacheType::kNotCached;
   int64_t data_length = was_cached ? resource->encoded_body_length

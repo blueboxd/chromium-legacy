@@ -128,7 +128,7 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragmentCompat();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(nullValue()));
         });
@@ -149,7 +149,7 @@ public class AutofillAssistantPreferencesTest {
         final Preferences preferences = PreferencesTest.startPreferences(
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragmentCompat();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(not(nullValue())));
         });
@@ -167,7 +167,7 @@ public class AutofillAssistantPreferencesTest {
                 InstrumentationRegistry.getInstrumentation(), MainPreferences.class.getName());
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragment();
+            MainPreferences mainPrefs = (MainPreferences) preferences.getMainFragmentCompat();
             Assert.assertThat(mainPrefs.findPreference(MainPreferences.PREF_AUTOFILL_ASSISTANT),
                     is(nullValue()));
         });

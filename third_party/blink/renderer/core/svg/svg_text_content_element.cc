@@ -60,8 +60,7 @@ class SVGAnimatedTextLength final : public SVGAnimatedLength {
                           SVGLength::Initial::kUnitlessZero) {}
 
   SVGLengthTearOff* baseVal() override {
-    SVGTextContentElement* text_content_element =
-        ToSVGTextContentElement(ContextElement());
+    auto* text_content_element = To<SVGTextContentElement>(ContextElement());
     if (!text_content_element->TextLengthIsSpecifiedByUser())
       BaseValue()->NewValueSpecifiedUnits(
           CSSPrimitiveValue::UnitType::kNumber,
@@ -280,10 +279,8 @@ SVGTextContentElement* SVGTextContentElement::ElementFromLineLayoutItem(
       (!line_layout_item.IsSVGText() && !line_layout_item.IsSVGInline()))
     return nullptr;
 
-  auto* element = To<SVGElement>(line_layout_item.GetNode());
-  DCHECK(element);
-  return IsSVGTextContentElement(*element) ? ToSVGTextContentElement(element)
-                                           : nullptr;
+  DCHECK(line_layout_item.GetNode());
+  return DynamicTo<SVGTextContentElement>(line_layout_item.GetNode());
 }
 
 }  // namespace blink

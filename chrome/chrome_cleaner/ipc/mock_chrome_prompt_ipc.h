@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/chrome_cleaner/ipc/chrome_prompt_ipc.h"
-#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chrome_cleaner {

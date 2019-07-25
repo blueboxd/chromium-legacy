@@ -40,6 +40,7 @@ jumbo_component("x") {
     "//ui/events",
     "//ui/events/devices/x11",
     "//ui/events/keycodes:x11",
+    "//ui/events/platform/x11",
     "//ui/events/x:x",
     "//ui/gfx",
     "//ui/gfx/x",

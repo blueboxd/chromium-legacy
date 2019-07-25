@@ -34,18 +34,18 @@ const char kHistogramAMPSubframeFirstContentfulPaint[] =
     "PaintTiming.InputToFirstContentfulPaint.Subframe";
 const char kHistogramAMPSubframeFirstContentfulPaintFullNavigation[] =
     "PaintTiming.InputToFirstContentfulPaint.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLargestContentPaint[] =
-    "PaintTiming.InputToLargestContentPaint.Subframe";
-const char kHistogramAMPSubframeLargestContentPaintFullNavigation[] =
-    "PaintTiming.InputToLargestContentPaint.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLargestContentfulPaint[] =
+    "PaintTiming.InputToLargestContentfulPaint.Subframe";
+const char kHistogramAMPSubframeLargestContentfulPaintFullNavigation[] =
+    "PaintTiming.InputToLargestContentfulPaint.Subframe.FullNavigation";
 const char kHistogramAMPSubframeFirstInputDelay[] =
     "InteractiveTiming.FirstInputDelay4.Subframe";
 const char kHistogramAMPSubframeFirstInputDelayFullNavigation[] =
     "InteractiveTiming.FirstInputDelay4.Subframe.FullNavigation";
-const char kHistogramAMPSubframeLayoutStabilityShiftScore[] =
-    "Experimental.LayoutStability.JankScore.Subframe";
-const char kHistogramAMPSubframeLayoutStabilityShiftScoreFullNavigation[] =
-    "Experimental.LayoutStability.JankScore.Subframe.FullNavigation";
+const char kHistogramAMPSubframeLayoutInstabilityShiftScore[] =
+    "LayoutInstability.CumulativeShiftScore.Subframe";
+const char kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation[] =
+    "LayoutInstability.CumulativeShiftScore.Subframe.FullNavigation";
 
 GURL GetCanonicalizedSameDocumentUrl(const GURL& url) {
   if (!url.has_ref())
@@ -372,7 +372,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
     if (AssignTimeAndSizeForLargestContentfulPaint(
             subframe_info.timing->paint_timing, &largest_content_paint_time,
             &largest_content_paint_size, &largest_content_type)) {
-      builder.SetSubFrame_PaintTiming_NavigationToLargestContentPaint(
+      builder.SetSubFrame_PaintTiming_NavigationToLargestContentfulPaint(
           largest_content_paint_time.value().InMilliseconds());
 
       // Adjust by the navigation_input_delta.
@@ -381,12 +381,13 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       if (current_main_frame_nav_info_->is_same_document_navigation) {
         PAGE_LOAD_HISTOGRAM(
             std::string(kHistogramPrefix)
-                .append(kHistogramAMPSubframeLargestContentPaint),
+                .append(kHistogramAMPSubframeLargestContentfulPaint),
             largest_content_paint_time.value());
       } else {
         PAGE_LOAD_HISTOGRAM(
             std::string(kHistogramPrefix)
-                .append(kHistogramAMPSubframeLargestContentPaintFullNavigation),
+                .append(
+                    kHistogramAMPSubframeLargestContentfulPaintFullNavigation),
             largest_content_paint_time.value());
       }
     }
@@ -421,7 +422,7 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
       std::min(subframe_info.render_data.layout_shift_score, 10.0f);
 
   // For UKM, report (shift_score * 100) as an int in the range [0, 1000].
-  builder.SetSubFrame_LayoutStability_JankScore(
+  builder.SetSubFrame_LayoutInstability_CumulativeShiftScore(
       static_cast<int>(roundf(clamped_shift_score * 100.0f)));
 
   // For UMA, report (shift_score * 10) an an int in the range [0,100].
@@ -429,13 +430,13 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   if (current_main_frame_nav_info_->is_same_document_navigation) {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
-            .append(kHistogramAMPSubframeLayoutStabilityShiftScore),
+            .append(kHistogramAMPSubframeLayoutInstabilityShiftScore),
         uma_value);
   } else {
     UMA_HISTOGRAM_COUNTS_100(
         std::string(kHistogramPrefix)
             .append(
-                kHistogramAMPSubframeLayoutStabilityShiftScoreFullNavigation),
+                kHistogramAMPSubframeLayoutInstabilityShiftScoreFullNavigation),
         uma_value);
   }
 

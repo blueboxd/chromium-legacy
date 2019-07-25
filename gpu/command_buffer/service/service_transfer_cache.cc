@@ -266,9 +266,9 @@ bool ServiceTransferCache::CreateLockedHardwareDecodedImageEntry(
     ServiceDiscardableHandle handle,
     GrContext* context,
     std::vector<sk_sp<SkImage>> plane_images,
+    cc::YUVDecodeFormat plane_images_format,
     size_t buffer_byte_size,
-    bool needs_mips,
-    sk_sp<SkColorSpace> image_color_space) {
+    bool needs_mips) {
   EntryKey key(decoder_id, cc::TransferCacheEntryType::kImage, entry_id);
   auto found = entries_.Peek(key);
   if (found != entries_.end())
@@ -277,8 +277,8 @@ bool ServiceTransferCache::CreateLockedHardwareDecodedImageEntry(
   // Create the service-side image transfer cache entry.
   auto entry = std::make_unique<cc::ServiceImageTransferCacheEntry>();
   if (!entry->BuildFromHardwareDecodedImage(context, std::move(plane_images),
-                                            buffer_byte_size, needs_mips,
-                                            std::move(image_color_space))) {
+                                            plane_images_format,
+                                            buffer_byte_size, needs_mips)) {
     return false;
   }
 

@@ -229,6 +229,7 @@ modules_idl_files =
           "nfc/ndef_record.idl",
           "nfc/nfc_error_event.idl",
           "nfc/nfc.idl",
+          "nfc/nfc_reader.idl",
           "nfc/nfc_reading_event.idl",
           "nfc/nfc_writer.idl",
           "notifications/notification.idl",

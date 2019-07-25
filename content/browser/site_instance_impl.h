@@ -186,8 +186,17 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
   // URL does not have a valid registered domain, then the full hostname is
-  // stored.
+  // stored. This method does not convert this instance into a default
+  // SiteInstance, but the BrowsingInstance will call this method with |url|
+  // set to GetDefaultSiteURL(), when it is creating its default SiteInstance.
   void SetSite(const GURL& url);
+
+  // Similar to SetSite(), but first attempts to convert this object to a
+  // default SiteInstance if |url| can be placed inside a default SiteInstance.
+  // If conversion is not possible, then the normal SetSite() logic is run.
+  void ConvertToDefaultOrSetSite(const GURL& url);
+
+  // Returns whether SetSite() has been called.
   bool HasSite() const;
 
   // Returns whether there is currently a related SiteInstance (registered with

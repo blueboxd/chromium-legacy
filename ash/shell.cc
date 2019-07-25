@@ -66,6 +66,7 @@
 #include "ash/media/media_notification_controller_impl.h"
 #include "ash/multi_device_setup/multi_device_notification_presenter.h"
 #include "ash/policy/policy_recommendation_restorer.h"
+#include "ash/power/peripheral_battery_tracker.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_prefs.h"
@@ -1123,6 +1124,10 @@ void Shell::Init(
   cursor_manager_->SetCursor(ui::CursorType::kPointer);
 
   peripheral_battery_notifier_ = std::make_unique<PeripheralBatteryNotifier>();
+  if (base::FeatureList::IsEnabled(
+          chromeos::features::kShowBluetoothDeviceBattery)) {
+    peripheral_battery_tracker_ = std::make_unique<PeripheralBatteryTracker>();
+  }
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_ =
       std::make_unique<ui::UserActivityPowerManagerNotifier>(

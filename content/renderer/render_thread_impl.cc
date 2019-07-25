@@ -1219,6 +1219,10 @@ void RenderThreadImpl::RegisterSchemes() {
   WebString error_scheme(WebString::FromASCII(kChromeErrorScheme));
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(error_scheme);
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(error_scheme);
+
+  // googlechrome:
+  WebString google_chrome_scheme(WebString::FromASCII(kGoogleChromeScheme));
+  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(google_chrome_scheme);
 }
 
 void RenderThreadImpl::RecordAction(const base::UserMetricsAction& action) {

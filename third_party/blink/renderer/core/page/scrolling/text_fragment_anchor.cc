@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -65,6 +66,13 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreate(
   if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
       same_document_navigation)
     return nullptr;
+
+  // For security reasons, we only allow text fragment anchors for user or
+  // browser initiated navigations, i.e. no script navigations.
+  if (!(frame.Loader().GetDocumentLoader()->HadTransientActivation() ||
+        frame.Loader().GetDocumentLoader()->IsBrowserInitiated())) {
+    return nullptr;
+  }
 
   Vector<TextFragmentSelector> selectors;
 

@@ -344,6 +344,17 @@ void SiteInstanceImpl::SetSite(const GURL& url) {
   }
 }
 
+void SiteInstanceImpl::ConvertToDefaultOrSetSite(const GURL& url) {
+  DCHECK(!has_site_);
+
+  if (ShouldAllowDefaultSiteInstance() &&
+      browsing_instance_->TrySettingDefaultSiteInstance(this, url)) {
+    return;
+  }
+
+  SetSite(url);
+}
+
 const GURL& SiteInstanceImpl::GetSiteURL() {
   return site_;
 }
@@ -494,6 +505,11 @@ bool SiteInstance::ShouldAssignSiteForURL(const GURL& url) {
 
 bool SiteInstanceImpl::IsSameSiteWithURL(const GURL& url) {
   if (IsDefaultSiteInstance()) {
+    // about:blank URLs should always be considered same site just like they are
+    // in IsSameWebSite().
+    if (url.IsAboutBlank())
+      return true;
+
     // Consider |url| the same site if it could be handled by the
     // default SiteInstance and we don't already have a SiteInstance for
     // this URL.

@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
@@ -159,7 +160,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 @property(nonatomic, assign) BOOL isReconstructingFromCache;
 
 // Dispatcher for sending commands.
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcher;
 
 // The current search term.  Set to the empty string when no search is active.
 @property(nonatomic, copy) NSString* searchTerm;
@@ -202,9 +204,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 #pragma mark - Initializer
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher
-                        webStateList:(WebStateList*)webStateList {
+- (instancetype)
+    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+              dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
+            webStateList:(WebStateList*)webStateList {
   DCHECK(browserState);
   self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
@@ -616,7 +619,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
            allowsNewFolders:YES
                 editedNodes:nodes
                allowsCancel:YES
-             selectedFolder:selectedFolder];
+             selectedFolder:selectedFolder
+                 dispatcher:self.dispatcher];
   self.folderSelector.delegate = self;
   UINavigationController* navController = [[BookmarkNavigationController alloc]
       initWithRootViewController:self.folderSelector];
@@ -627,8 +631,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // Deletes the current node.
 - (void)deleteNodes:(const std::set<const BookmarkNode*>&)nodes {
   DCHECK_GE(nodes.size(), 1u);
-  bookmark_utils_ios::DeleteBookmarksWithUndoToast(nodes, self.bookmarks,
-                                                   self.browserState);
+  [self.dispatcher
+      showSnackbarMessage:bookmark_utils_ios::DeleteBookmarksWithUndoToast(
+                              nodes, self.bookmarks, self.browserState)];
   [self setTableViewEditing:NO];
 }
 
@@ -807,8 +812,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)handleMoveNode:(const bookmarks::BookmarkNode*)node
             toPosition:(int)position {
-  bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
-      node, _rootNode, position, self.bookmarks, self.browserState);
+  [self.dispatcher
+      showSnackbarMessage:
+          bookmark_utils_ios::UpdateBookmarkPositionWithUndoToast(
+              node, _rootNode, position, self.bookmarks, self.browserState)];
 }
 
 - (void)handleRefreshContextBar {
@@ -845,8 +852,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   DCHECK(!folder->is_url());
   DCHECK_GE(folderPicker.editedNodes.size(), 1u);
 
-  bookmark_utils_ios::MoveBookmarksWithUndoToast(
-      folderPicker.editedNodes, self.bookmarks, folder, self.browserState);
+  [self.dispatcher
+      showSnackbarMessage:bookmark_utils_ios::MoveBookmarksWithUndoToast(
+                              folderPicker.editedNodes, self.bookmarks, folder,
+                              self.browserState)];
 
   [self setTableViewEditing:NO];
   [self.navigationController dismissViewControllerAnimated:YES completion:NULL];

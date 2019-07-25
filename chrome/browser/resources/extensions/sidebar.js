@@ -16,8 +16,10 @@ cr.define('extensions', function() {
     /** @override */
     attached: function() {
       this.$.sectionMenu.select(
-          extensions.navigation.getCurrentPage().page == Page.SHORTCUTS ? 1 :
-                                                                          0);
+          extensions.navigation.getCurrentPage().page ==
+                  extensions.Page.SHORTCUTS ?
+              1 :
+              0);
     },
 
     /**

@@ -6,14 +6,6 @@
 #define CHROME_BROWSER_METRICS_INCOGNITO_OBSERVER_H_
 
 #include "base/callback.h"
-#include "build/build_config.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-
-#if defined(OS_ANDROID)
-#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
-#endif
 
 // Encapsulates platform-specific functionality for observing events that may
 // cause "is incognito active?" state to change. The class takes a closure that
@@ -21,29 +13,15 @@
 // The incognito state should then be checked by the callback.
 // TODO(asvitkine): Considering moving the check for incognito to this class
 // too; see ChromeMetricsServicesManagerClient::IsIncognitoSessionActive().
-class IncognitoObserver :
-#if defined(OS_ANDROID)
-    public TabModelListObserver,
-#endif
-    content::NotificationObserver {
+class IncognitoObserver {
  public:
-  explicit IncognitoObserver(const base::RepeatingClosure& update_closure);
-  ~IncognitoObserver() override;
+  static std::unique_ptr<IncognitoObserver> Create(
+      const base::RepeatingClosure& update_closure);
 
- private:
-#if defined(OS_ANDROID)
-  // TabModelListObserver:
-  void OnTabModelAdded() override;
-  void OnTabModelRemoved() override;
-#endif
+  virtual ~IncognitoObserver();
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  const base::RepeatingClosure update_closure_;
-  content::NotificationRegistrar registrar_;
+ protected:
+  IncognitoObserver();
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoObserver);
 };

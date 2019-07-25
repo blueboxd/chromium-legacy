@@ -15,6 +15,7 @@ namespace views {
 class InkDropHighlight;
 class InkDropHostView;
 class View;
+struct InstallableInkDropConfig;
 }  // namespace views
 
 constexpr float kToolbarInkDropVisibleOpacity = 0.06f;
@@ -35,5 +36,8 @@ std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
 
 // Returns the ink drop base color that should be used by all toolbar buttons.
 SkColor GetToolbarInkDropBaseColor(const views::View* host_view);
+
+views::InstallableInkDropConfig GetToolbarInstallableInkDropConfig(
+    const views::View* host_view);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_INK_DROP_UTIL_H_

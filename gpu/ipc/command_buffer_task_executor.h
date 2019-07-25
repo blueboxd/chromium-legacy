@@ -32,6 +32,7 @@ class GLShareGroup;
 namespace gpu {
 class MailboxManager;
 class SyncPointManager;
+class SingleTaskSequence;
 
 namespace gles2 {
 class Outputter;
@@ -42,31 +43,6 @@ class ProgramCache;
 // the GPU thread used by InProcessCommandBuffer.
 class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
  public:
-  // Represents a single task execution sequence. Tasks posted to a sequence are
-  // run in order. Tasks across sequences should be synchronized using sync
-  // tokens. Destroying the sequence will drop tasks which haven't been executed
-  // yet.
-  class GL_IN_PROCESS_CONTEXT_EXPORT Sequence {
-   public:
-    virtual ~Sequence() {}
-
-    // Returns identifier used for identifying sync tokens with this sequence,
-    // and for scheduling.
-    virtual SequenceId GetSequenceId() = 0;
-
-    // Returns true if sequence should yield while running its current task.
-    virtual bool ShouldYield() = 0;
-
-    // Schedule a task with provided sync token dependencies. The dependencies
-    // are hints for sync token waits within the task, and can be ignored by the
-    // implementation.
-    virtual void ScheduleTask(base::OnceClosure task,
-                              std::vector<SyncToken> sync_token_fences) = 0;
-
-    // Continue running the current task after yielding execution.
-    virtual void ContinueTask(base::OnceClosure task) = 0;
-  };
-
   CommandBufferTaskExecutor(
       const GpuPreferences& gpu_preferences,
       const GpuFeatureInfo& gpu_feature_info,
@@ -93,7 +69,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT CommandBufferTaskExecutor {
 
   // Returns a new task execution sequence. Sequences should not outlive the
   // task executor.
-  virtual std::unique_ptr<Sequence> CreateSequence() = 0;
+  virtual std::unique_ptr<SingleTaskSequence> CreateSequence() = 0;
 
   // Called if InProcessCommandBuffer is not passed a client TaskRunner.
   virtual void PostNonNestableToClient(base::OnceClosure callback) = 0;

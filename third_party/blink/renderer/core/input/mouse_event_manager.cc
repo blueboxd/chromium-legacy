@@ -435,17 +435,13 @@ void MouseEventManager::CancelFakeMouseMoveEvent() {
 }
 
 void MouseEventManager::MarkHoverStateDirty() {
-  DCHECK(
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::UpdateHoverFromLayoutChangeAtBeginFrameEnabled());
+  DCHECK(RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled());
   DCHECK(frame_->IsLocalRoot());
   hover_state_dirty_ = true;
 }
 
 bool MouseEventManager::HoverStateDirty() {
-  DCHECK(
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::UpdateHoverFromLayoutChangeAtBeginFrameEnabled());
+  DCHECK(RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled());
   DCHECK(frame_->IsLocalRoot());
   return hover_state_dirty_;
 }
@@ -668,8 +664,7 @@ void MouseEventManager::SetLastMousePositionAsUnknown() {
 
 void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
     MouseEventManager::UpdateHoverReason update_hover_reason) {
-  if (RuntimeEnabledFeatures::
-          UpdateHoverFromLayoutChangeAtBeginFrameEnabled() &&
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() &&
       update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged) {
     return;
@@ -677,7 +672,7 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
 
   if (update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
+      (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() ||
        mouse_pressed_)) {
     return;
   }

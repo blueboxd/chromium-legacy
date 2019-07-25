@@ -10,6 +10,10 @@
 
 class Profile;
 
+namespace signin {
+class IdentityManager;
+}  // namespace signin
+
 namespace syncer {
 class SyncService;
 }  // namespace syncer
@@ -46,7 +50,20 @@ enum AvatarSyncErrorType {
 };
 
 // Returns the high-level sync status, and populates status and link label
-// strings for the current sync status by querying |profile|.
+// strings for the current sync status by querying |sync_service| and
+// |identity_manager|. Any of |status_label|, |link_label|, and |action_type|
+// may be null if the caller isn't interested in it.
+MessageType GetStatusLabels(syncer::SyncService* sync_service,
+                            signin::IdentityManager* identity_manager,
+                            bool is_user_signout_allowed,
+                            base::string16* status_label,
+                            base::string16* link_label,
+                            ActionType* action_type);
+
+// Returns the high-level sync status, and populates status and link label
+// strings for the current sync status by querying |profile|. This is a
+// convenience version of GetStatusLabels that use the |sync_service| and
+// |identity_manager| associated to |profile| via their respective factories.
 // Any of |status_label|, |link_label|, and |action_type| may be null if the
 // caller isn't interested in it.
 MessageType GetStatusLabels(Profile* profile,

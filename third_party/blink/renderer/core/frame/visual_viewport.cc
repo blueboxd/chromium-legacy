@@ -1226,7 +1226,6 @@ void VisualViewport::DisposeImpl() {
   scroll_node_.reset();
   horizontal_scrollbar_effect_node_.reset();
   vertical_scrollbar_effect_node_.reset();
-  ScrollableArea::DisposeImpl();
 }
 
 }  // namespace blink

@@ -106,12 +106,19 @@ class ClientAndroid : public Client,
   bool NeedsUI();
   void OnListDirectActions(const base::android::JavaRef<jobject>& jcallback);
 
+  // Returns the index of a direct action with that name, to pass to
+  // UiDelegate::PerformUserAction() or -1 if not found.
+  int FindDirectAction(const std::string& action_name);
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
   content::WebContents* web_contents_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
   std::unique_ptr<Controller> controller_;
+
+  // True if Start() was called. This turns on the tracking of dropouts.
+  bool started_ = false;
 
   std::unique_ptr<UiControllerAndroid> ui_controller_android_;
 

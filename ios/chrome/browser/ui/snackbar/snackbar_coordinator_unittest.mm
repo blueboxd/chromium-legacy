@@ -20,7 +20,9 @@ using SnackbarCoordinatorTest = PlatformTest;
 // Tests that the coordinator handles snackbar commands.
 TEST_F(SnackbarCoordinatorTest, RegistersDispatching) {
   id dispatcher = OCMClassMock([CommandDispatcher class]);
-  SnackbarCoordinator* coordinator = [[SnackbarCoordinator alloc] init];
+  UIViewController* baseViewController = [[UIViewController alloc] init];
+  SnackbarCoordinator* coordinator = [[SnackbarCoordinator alloc]
+      initWithBaseViewController:baseViewController];
   coordinator.dispatcher = dispatcher;
   [[dispatcher expect] startDispatchingToTarget:coordinator
                                     forProtocol:@protocol(SnackbarCommands)];

@@ -185,6 +185,7 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
 }
 
 void AvatarToolbarButton::OnThemeChanged() {
+  ToolbarButton::OnThemeChanged();
   UpdateIcon();
   UpdateText();
 }

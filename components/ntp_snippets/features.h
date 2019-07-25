@@ -79,6 +79,9 @@ constexpr int kNotificationsIgnoredDefaultLimit = 3;
 // have been fetched.
 extern const base::Feature kKeepPrefetchedContentSuggestions;
 
+// Whether this version of the client supports responses without an image.
+extern const base::Feature kOptionalImagesEnabledFeature;
+
 // Return all the features as a vector.
 std::vector<const base::Feature*> GetAllFeatures();
 

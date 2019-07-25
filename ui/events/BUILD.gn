@@ -618,6 +618,8 @@ if (!is_ios) {
         "ozone/evdev/testing/fake_cursor_delegate_evdev.h",
         "ozone/evdev/touch_event_converter_evdev_unittest.cc",
         "ozone/evdev/touch_filter/false_touch_finder_unittest.cc",
+        "ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter_unittest.cc",
+        "ozone/evdev/touch_filter/open_palm_detection_filter_unittest.cc",
         "ozone/gamepad/generic_gamepad_mapping_unittest.cc",
       ]
 

@@ -106,7 +106,7 @@ class ChromeCleanerRunner
   // extensions that the Cleaner process wants to disable.
   //
   // The details of the Mojo interface are documented in
-  // "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h".
+  // "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h".
   //
   // TODO(crbug.com/969139): Add a reference to the protobuf interface. Once
   // the experiment is over, update this comment to only reference the

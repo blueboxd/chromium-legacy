@@ -1643,7 +1643,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
 // Test that the hover is updated at the next begin frame after the compositor
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
-  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  ScopedUpdateHoverAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1711,7 +1711,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
 // Test that the hover is updated at the next begin frame after the main thread
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
-  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  ScopedUpdateHoverAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1780,7 +1780,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
 // scroll ends in an iframe.
 TEST_F(EventHandlerSimTest,
        TestUpdateHoverAfterMainThreadScrollInIFrameAtBeginFrame) {
-  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  ScopedUpdateHoverAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -1852,7 +1852,7 @@ TEST_F(EventHandlerSimTest,
 // Test that the hover is updated at the next begin frame after the smooth JS
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
-  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  ScopedUpdateHoverAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 500));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1915,7 +1915,7 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
 // thread scroll snap animation finishes.
 TEST_F(EventHandlerSimTest,
        TestUpdateHoverAfterMainThreadScrollSnapAtBeginFrame) {
-  ScopedUpdateHoverFromScrollAtBeginFrameForTest scoped_feature(true);
+  ScopedUpdateHoverAtBeginFrameForTest scoped_feature(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1954,6 +1954,7 @@ TEST_F(EventHandlerSimTest,
 
   // Set mouse position and active web view.
   InitializeMousePositionAndActivateView(150, 150);
+  Compositor().BeginFrame();
 
   Element* const scroller = GetDocument().getElementById("scroller");
   Element* target1 = GetDocument().getElementById("target1");
@@ -1977,6 +1978,7 @@ TEST_F(EventHandlerSimTest,
   // not finished.
   Compositor().BeginFrame();
   Compositor().BeginFrame();
+  ASSERT_EQ(300, scrollable_area->GetScrollOffset().Height());
   EXPECT_TRUE(target1->IsHovered());
   EXPECT_FALSE(target2->IsHovered());
 

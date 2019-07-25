@@ -200,8 +200,6 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_RESTORE_DEFAULT);
     AddString(translated_strings.get(), "selectChromeWallpaper",
               IDS_NTP_CUSTOM_BG_SELECT_A_COLLECTION);
-    AddString(translated_strings.get(), "dailyRefresh",
-              IDS_NTP_CUSTOM_BG_DAILY_REFRESH);
     AddString(translated_strings.get(), "selectionDone",
               IDS_NTP_CUSTOM_LINKS_DONE);
     AddString(translated_strings.get(), "selectionCancel",
@@ -1010,6 +1008,8 @@ void LocalNtpSource::StartDataRequest(
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL);
     replacements["backLabel"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_BACK_LABEL);
+    replacements["refreshDaily"] =
+        l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_DAILY_REFRESH);
 
     replacements["bgPreloader"] = "";
     GURL custom_background_url = GetCustomBackgroundURL(profile_->GetPrefs());

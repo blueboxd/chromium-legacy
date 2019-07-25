@@ -39,9 +39,6 @@ class BlockPainter {
   static void PaintInlineBox(const InlineBox&, const PaintInfo&);
 
  private:
-  // Paint scroll hit test placeholders in the correct paint order (see:
-  // ScrollHitTestDisplayItem.h).
-  void PaintScrollHitTestDisplayItem(const PaintInfo&);
   void PaintBlockFlowContents(const PaintInfo&, const PhysicalOffset&);
   void PaintCarets(const PaintInfo&, const PhysicalOffset& paint_offset);
 

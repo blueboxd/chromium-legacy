@@ -467,6 +467,17 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     return CookieOptions::SameSiteCookieContext::CROSS_SITE;
 }
 
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForSubresource(const GURL& url,
+                                     const GURL& site_for_cookies) {
+  // If the URL is same-site as site_for_cookies it's same-site as all frames
+  // in the tree from the initiator frame up --- including the initiator frame.
+  if (MatchesSiteForCookies(url, site_for_cookies))
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+  else
+    return CookieOptions::SameSiteCookieContext::CROSS_SITE;
+}
+
 CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
     const CanonicalCookie& cookie,
     const CookieOptions& options) {

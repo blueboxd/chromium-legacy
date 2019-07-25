@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//components/chrome_cleaner/public/mojom/chrome_prompt.mojom"
+mojom = "//components/chrome_cleaner/public/interfaces/chrome_prompt.mojom"
 public_headers = [
   "//base/files/file_path.h",
   "//base/strings/string16.h",

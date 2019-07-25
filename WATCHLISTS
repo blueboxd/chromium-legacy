@@ -2582,7 +2582,7 @@
                      'avi@chromium.org',
                      'creis+watch@chromium.org'],
     'tab_ui': ['meiliang@chromium.org',
-               'yuezhanggg@google.com',
+               'yuezhanggg@chromium.org',
                'wychen@chromium.org',
                'yusufo@chromium.org'],
     'tbmv2_metrics': ['speed-metrics-reviews@chromium.org'],

@@ -169,6 +169,8 @@ jumbo_static_library("browser") {
     "on_device_head_provider.h",
     "on_device_head_serving.cc",
     "on_device_head_serving.h",
+    "on_device_model_update_listener.cc",
+    "on_device_model_update_listener.h",
     "remote_suggestions_service.cc",
     "remote_suggestions_service.h",
     "scored_history_match.cc",

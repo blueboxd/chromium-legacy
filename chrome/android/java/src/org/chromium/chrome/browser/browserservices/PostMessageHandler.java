@@ -96,8 +96,8 @@ public class PostMessageHandler implements OriginVerificationListener {
         mChannel = webContents.createMessageChannel();
         mChannel[0].setMessageCallback(mMessageCallback, null);
 
-        webContents.postMessageToFrame(
-                null, "", mPostMessageUri.toString(), "", new MessagePort[] {mChannel[1]});
+        webContents.postMessageToMainFrame(
+                "", mPostMessageUri.toString(), "", new MessagePort[] {mChannel[1]});
 
         mPostMessageBackend.onNotifyMessageChannelReady(null);
     }

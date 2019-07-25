@@ -838,5 +838,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         @Override
         public void setUnfocusedWidth(int unfocusedWidth) {}
+
+        @Override
+        public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+                boolean isSearchEngineGoogle, String searchEngineUrl) {}
     }
 }

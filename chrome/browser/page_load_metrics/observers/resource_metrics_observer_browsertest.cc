@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(ResourceMetricsObserverBrowserTest,
   // Resource should be recorded as loaded from the cache. Favicon not
   // fetched this time.
   histogram_tester.ExpectTotalCount(
-      "Ads.ResourceUsage.Size.Cache.Mainframe.VanillaResource", 1);
+      "Ads.ResourceUsage.Size.Cache2.Mainframe.VanillaResource", 1);
 }
 
 // Verify that Mime type metrics are recorded correctly.

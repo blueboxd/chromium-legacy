@@ -365,7 +365,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public void onBackPressed() {
-        Fragment activeFragment = getMainFragment();
+        android.support.v4.app.Fragment activeFragment = getMainFragmentCompat();
         if (!(activeFragment instanceof OnBackPressedListener)) {
             super.onBackPressed();
             return;

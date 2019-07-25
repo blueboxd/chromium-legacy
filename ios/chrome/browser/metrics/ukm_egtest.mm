@@ -119,11 +119,6 @@ void ClearBrowsingData() {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           ConfirmClearBrowsingDataButton()]
       performAction:grey_tap()];
-
-  // Before returning, make sure that the top of the Clear Browsing Data
-  // settings screen is visible to match the state at the start of the method.
-  [[EarlGrey selectElementWithMatcher:ClearBrowsingDataView()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }

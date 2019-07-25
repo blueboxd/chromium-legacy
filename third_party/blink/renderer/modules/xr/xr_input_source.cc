@@ -5,8 +5,11 @@
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 
 #include "base/time/time.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_grip_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_target_ray_space.h"
@@ -193,6 +196,126 @@ void XRInputSource::UpdateGamepad(
   } else {
     gamepad_ = nullptr;
   }
+}
+
+void XRInputSource::OnSelectStart() {
+  // Discard duplicate events and ones after the session has ended.
+  if (state_.primary_input_pressed || session_->ended())
+    return;
+
+  state_.primary_input_pressed = true;
+  state_.selection_cancelled = false;
+
+  XRInputSourceEvent* event =
+      CreateInputSourceEvent(event_type_names::kSelectstart);
+  session_->DispatchEvent(*event);
+
+  if (event->defaultPrevented())
+    state_.selection_cancelled = true;
+
+  // Ensure the frame cannot be used outside of the event handler.
+  event->frame()->Deactivate();
+}
+
+void XRInputSource::OnSelectEnd(UserActivation user_activation) {
+  // Discard duplicate events and ones after the session has ended.
+  if (!state_.primary_input_pressed || session_->ended())
+    return;
+
+  state_.primary_input_pressed = false;
+
+  LocalFrame* frame = session_->xr()->GetFrame();
+  if (!frame)
+    return;
+
+  std::unique_ptr<UserGestureIndicator> gesture_indicator =
+      user_activation == UserActivation::kEnabled
+          ? LocalFrame::NotifyUserActivation(frame)
+          : nullptr;
+
+  XRInputSourceEvent* event =
+      CreateInputSourceEvent(event_type_names::kSelectend);
+  session_->DispatchEvent(*event);
+
+  if (event->defaultPrevented())
+    state_.selection_cancelled = true;
+
+  // Ensure the frame cannot be used outside of the event handler.
+  event->frame()->Deactivate();
+}
+
+void XRInputSource::OnSelect() {
+  // If a select was fired but we had not previously started the selection it
+  // indicates a sub-frame or instantaneous select event, and we should fire a
+  // selectstart prior to the selectend.
+  if (!state_.primary_input_pressed) {
+    OnSelectStart();
+  }
+
+  // If SelectStart caused the session to end, we shouldn't try to fire the
+  // select event.
+  if (!state_.selection_cancelled && !session_->ended()) {
+    LocalFrame* frame = session_->xr()->GetFrame();
+    if (!frame)
+      return;
+
+    std::unique_ptr<UserGestureIndicator> gesture_indicator =
+        LocalFrame::NotifyUserActivation(frame);
+
+    XRInputSourceEvent* event =
+        CreateInputSourceEvent(event_type_names::kSelect);
+    session_->DispatchEvent(*event);
+
+    // Ensure the frame cannot be used outside of the event handler.
+    event->frame()->Deactivate();
+  }
+
+  OnSelectEnd(UserActivation::kEnabled);
+}
+
+void XRInputSource::UpdateSelectState(
+    const device::mojom::blink::XRInputSourceStatePtr& state) {
+  if (!state)
+    return;
+
+  // Handle state change of the primary input, which may fire events
+  if (state->primary_input_clicked)
+    OnSelect();
+
+  if (state->primary_input_pressed) {
+    OnSelectStart();
+  } else if (state_.primary_input_pressed) {
+    // May get here if the input source was previously pressed but now isn't,
+    // but the input source did not set primary_input_clicked to true. We will
+    // treat this as a cancelled selection, firing the selectend event so the
+    // page stays in sync with the controller state but won't fire the
+    // usual select event.
+    OnSelectEnd(UserActivation::kDisabled);
+  }
+}
+
+void XRInputSource::OnRemoved() {
+  if (state_.primary_input_pressed) {
+    state_.primary_input_pressed = false;
+
+    XRInputSourceEvent* event =
+        CreateInputSourceEvent(event_type_names::kSelectend);
+    session_->DispatchEvent(*event);
+
+    if (event->defaultPrevented())
+      state_.selection_cancelled = true;
+
+    // Ensure the frame cannot be used outside of the event handler.
+    event->frame()->Deactivate();
+  }
+
+  SetGamepadConnected(false);
+}
+
+XRInputSourceEvent* XRInputSource::CreateInputSourceEvent(
+    const AtomicString& type) {
+  XRFrame* presentation_frame = session_->CreatePresentationFrame();
+  return XRInputSourceEvent::Create(type, presentation_frame, this);
 }
 
 void XRInputSource::Trace(blink::Visitor* visitor) {

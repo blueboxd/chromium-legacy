@@ -24,18 +24,18 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:paddingStart="@dimen/notouch_key_functions_tooltip_item_padding"
-                android:text="1"
+                android:text="0"
                 android:textAppearance="@style/TextAppearance.NoTouchKeyFunctionsIPH"/>
 
             <ImageView
+                android:id="@+id/navigation_mode_image"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:paddingBottom="@dimen/notouch_key_functions_tooltip_item_image_vertical_padding"
                 android:paddingEnd="@dimen/notouch_key_functions_tooltip_item_padding"
                 android:paddingTop="@dimen/notouch_key_functions_tooltip_item_image_vertical_padding"
-                android:scaleType="centerInside"
-                app:srcCompat="@drawable/ic_zoom_out"/>
+                android:scaleType="centerInside"/>
 
         </LinearLayout>
 
@@ -52,19 +52,19 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:paddingStart="4dp"
-                android:text="2"
+                android:paddingStart="@dimen/notouch_key_functions_tooltip_item_padding"
+                android:text="1"
                 android:textAppearance="@style/TextAppearance.NoTouchKeyFunctionsIPH"/>
 
             <ImageView
-                android:id="@+id/navigation_mode_image"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:paddingBottom="@dimen/notouch_key_functions_tooltip_item_image_vertical_padding"
-                android:paddingEnd="4dp"
+                android:paddingEnd="@dimen/notouch_key_functions_tooltip_item_padding"
                 android:paddingTop="@dimen/notouch_key_functions_tooltip_item_image_vertical_padding"
-                android:scaleType="centerInside"/>
+                android:scaleType="centerInside"
+                app:srcCompat="@drawable/ic_zoom_out"/>
 
         </LinearLayout>
 

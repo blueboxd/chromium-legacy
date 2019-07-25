@@ -2,22 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('extensions');
-
-/**
- * The different states the activity log page can be in. Initial state is
- * LOADING because we call the activity log API whenever a user navigates to the
- * page. LOADED is the state where the API call has returned a successful
- * result.
- * @enum {string}
- */
-const ActivityLogPageState = {
-  LOADING: 'loading',
-  LOADED: 'loaded'
-};
-
 cr.define('extensions', function() {
   'use strict';
+
+  /**
+   * The different states the activity log page can be in. Initial state is
+   * LOADING because we call the activity log API whenever a user navigates to
+   * the page. LOADED is the state where the API call has returned a successful
+   * result.
+   * @enum {string}
+   */
+  const ActivityLogPageState = {LOADING: 'loading', LOADED: 'loaded'};
 
   /** @interface */
   class ActivityLogDelegate {
@@ -206,7 +201,7 @@ cr.define('extensions', function() {
         value: () => [],
       },
 
-      /** @private {ActivityLogPageState} */
+      /** @private {extensions.ActivityLogPageState} */
       pageState_: {
         type: String,
         value: ActivityLogPageState.LOADING,
@@ -414,7 +409,8 @@ cr.define('extensions', function() {
   });
 
   return {
-    ActivityLogHistory: ActivityLogHistory,
     ActivityLogDelegate: ActivityLogDelegate,
+    ActivityLogHistory: ActivityLogHistory,
+    ActivityLogPageState: ActivityLogPageState,
   };
 });

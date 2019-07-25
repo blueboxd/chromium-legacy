@@ -240,10 +240,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
     return gpu_preferences_;
   }
 
-  gpu::SequenceId skia_output_surface_sequence_id() const {
-    return skia_output_surface_sequence_id_;
-  }
-
 #if BUILDFLAG(ENABLE_VULKAN)
   bool is_using_vulkan() const { return !!vulkan_context_provider_; }
   VulkanContextProvider* vulkan_context_provider() {
@@ -315,9 +311,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<gpu::SharedImageManager> owned_shared_image_manager_;
 
   std::unique_ptr<gpu::Scheduler> scheduler_;
-
-  // sequence id for running tasks from SkiaOutputSurface;
-  gpu::SequenceId skia_output_surface_sequence_id_;
 
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanImplementation* vulkan_implementation_;

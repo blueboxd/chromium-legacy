@@ -27,6 +27,49 @@
 
 namespace network {
 
+namespace {
+
+net::CookieOptions MakeOptionsForSet(mojom::RestrictedCookieManagerRole role,
+                                     const GURL& url,
+                                     const GURL& site_for_cookies) {
+  net::CookieOptions options;
+  if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
+    options.set_exclude_httponly();  // Default, but make it explicit here.
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForScriptSet(url,
+                                                             site_for_cookies));
+  } else {
+    // mojom::RestrictedCookieManagerRole::NETWORK
+    options.set_include_httponly();
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForSubresource(
+            url, site_for_cookies));
+  }
+  return options;
+}
+
+net::CookieOptions MakeOptionsForGet(mojom::RestrictedCookieManagerRole role,
+                                     const GURL& url,
+                                     const GURL& site_for_cookies) {
+  // TODO(https://crbug.com/925311): Wire initiator here.
+  net::CookieOptions options;
+  if (role == mojom::RestrictedCookieManagerRole::SCRIPT) {
+    options.set_exclude_httponly();  // Default, but make it explicit here.
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForScriptGet(
+            url, site_for_cookies, base::nullopt /*initiator*/));
+  } else {
+    // mojom::RestrictedCookieManagerRole::NETWORK
+    options.set_include_httponly();
+    options.set_same_site_cookie_context(
+        net::cookie_util::ComputeSameSiteContextForSubresource(
+            url, site_for_cookies));
+  }
+  return options;
+}
+
+}  // namespace
+
 using CookieInclusionStatus = net::CanonicalCookie::CookieInclusionStatus;
 
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
@@ -106,6 +149,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 };
 
 RestrictedCookieManager::RestrictedCookieManager(
+    const mojom::RestrictedCookieManagerRole role,
     net::CookieStore* cookie_store,
     const CookieSettings* cookie_settings,
     const url::Origin& origin,
@@ -113,7 +157,8 @@ RestrictedCookieManager::RestrictedCookieManager(
     bool is_service_worker,
     int32_t process_id,
     int32_t frame_id)
-    : cookie_store_(cookie_store),
+    : role_(role),
+      cookie_store_(cookie_store),
       cookie_settings_(cookie_settings),
       origin_(origin),
       network_context_client_(network_context_client),
@@ -149,16 +194,11 @@ void RestrictedCookieManager::GetAllForUrl(
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
 
-
-  // TODO(https://crbug.com/925311): Wire initiator here.
-  net::CookieOptions net_options;
-
+  net::CookieOptions net_options =
+      MakeOptionsForGet(role_, url, site_for_cookies);
   // TODO(https://crbug.com/977040): remove set_return_excluded_cookies() once
   //                                 removing deprecation warnings.
   net_options.set_return_excluded_cookies();
-  net_options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContextForScriptGet(
-          url, site_for_cookies, base::nullopt /*initiator*/));
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
@@ -287,12 +327,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
       cookie.SameSite(), cookie.Priority());
   net::CanonicalCookie cookie_copy = *sanitized_cookie;
 
-  // TODO(pwnall): source_scheme might depend on the renderer.
-  net::CookieOptions options;
-  options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContextForScriptSet(url,
-                                                           site_for_cookies));
-  options.set_exclude_httponly();  // Default, but make it explicit here.
+  net::CookieOptions options = MakeOptionsForSet(role_, url, site_for_cookies);
   cookie_store_->SetCanonicalCookieAsync(
       std::move(sanitized_cookie), origin_.scheme(), options,
       base::BindOnce(&RestrictedCookieManager::SetCanonicalCookieResult,
@@ -349,12 +384,8 @@ void RestrictedCookieManager::AddChangeListener(
     return;
   }
 
-  // TODO(https://crbug.com/925311): Wire initiator here.
-  net::CookieOptions net_options;
-  net_options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContextForScriptGet(
-          url, site_for_cookies, base::nullopt /*initiator*/));
-
+  net::CookieOptions net_options =
+      MakeOptionsForGet(role_, url, site_for_cookies);
   auto listener =
       std::make_unique<Listener>(cookie_store_, this, url, site_for_cookies,
                                  net_options, std::move(mojo_listener));
@@ -379,11 +410,7 @@ void RestrictedCookieManager::SetCookieFromString(
     SetCookieFromStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  net::CookieOptions options;
-  options.set_same_site_cookie_context(
-      net::cookie_util::ComputeSameSiteContextForScriptSet(url,
-                                                           site_for_cookies));
-  options.set_exclude_httponly();  // Default, but make it explicit here.
+  net::CookieOptions options = MakeOptionsForSet(role_, url, site_for_cookies);
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
       net::CanonicalCookie::Create(url, cookie, base::Time::Now(), options);
   if (!parsed_cookie) {

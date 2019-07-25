@@ -19,8 +19,6 @@ class CORE_EXPORT CSSSyntaxDescriptor {
   const CSSValue* Parse(CSSParserTokenRange,
                         const CSSParserContext*,
                         bool is_animation_tainted) const;
-  const CSSSyntaxComponent* Match(const CSSStyleValue&) const;
-  bool CanTake(const CSSStyleValue&) const;
   bool IsTokenStream() const {
     return syntax_components_.size() == 1 &&
            syntax_components_[0].GetType() == CSSSyntaxType::kTokenStream;

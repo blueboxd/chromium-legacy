@@ -142,5 +142,10 @@ interface NFC {
 };
 
 interface NFCClient {
-  OnWatch(array<uint32> watch_ids, NDEFMessage message);
+  // Sends |message| to those readers that have registered |watch_ids| via
+  // NFC.Watch(), i.e. |message| matches their filtering criteria.
+  // |serial_number| is the serial number of the nfc device used for
+  // anti-collision and identification, or empty string in case none is
+  // available.
+  OnWatch(array<uint32> watch_ids, string? serial_number, NDEFMessage message);
 };

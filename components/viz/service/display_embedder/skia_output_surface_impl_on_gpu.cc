@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -239,12 +240,13 @@ scoped_refptr<gpu::gles2::FeatureInfo> CreateFeatureInfo(
 }
 
 scoped_refptr<gpu::SyncPointClientState> CreateSyncPointClientState(
-    SkiaOutputSurfaceDependency* deps) {
+    SkiaOutputSurfaceDependency* deps,
+    gpu::SequenceId sequence_id) {
   auto command_buffer_id = gpu::CommandBufferId::FromUnsafeValue(
       g_next_command_buffer_id.GetNext() + 1);
   return deps->GetSyncPointManager()->CreateSyncPointClientState(
       gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE, command_buffer_id,
-      deps->GetSequenceId());
+      sequence_id);
 }
 
 std::unique_ptr<gpu::SharedImageRepresentationFactory>
@@ -552,12 +554,14 @@ void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
 std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
+    const gpu::SequenceId sequence_id,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Create");
   auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps, renderer_settings,
-      did_swap_buffer_complete_callback, buffer_presented_callback,
+      sequence_id, did_swap_buffer_complete_callback, buffer_presented_callback,
       context_lost_callback);
   if (!impl_on_gpu->Initialize())
     impl_on_gpu = nullptr;
@@ -568,16 +572,19 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     util::PassKey<SkiaOutputSurfaceImplOnGpu> /* pass_key */,
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
+    const gpu::SequenceId sequence_id,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
     const BufferPresentedCallback& buffer_presented_callback,
     const ContextLostCallback& context_lost_callback)
     : dependency_(std::move(deps)),
       feature_info_(CreateFeatureInfo(dependency_)),
-      sync_point_client_state_(CreateSyncPointClientState(dependency_)),
+      sync_point_client_state_(
+          CreateSyncPointClientState(dependency_, sequence_id)),
       shared_image_representation_factory_(
           CreateSharedImageRepresentationFactory(dependency_)),
       vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
       renderer_settings_(renderer_settings),
+      sequence_id_(sequence_id),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
       buffer_presented_callback_(buffer_presented_callback),
       context_lost_callback_(context_lost_callback),
@@ -614,6 +621,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
     gfx::OverlayTransform transform,
     SkSurfaceCharacterization* characterization,
     base::WaitableEvent* event) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Reshape");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(gr_context());
 
@@ -647,6 +655,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release,
     base::OnceClosure on_finished) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
   DCHECK(!scoped_output_device_paint_);
@@ -733,37 +742,32 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
 
-void SkiaOutputSurfaceImplOnGpu::ScheduleOverlays(
-    const OverlayCandidateList& overlays) {
-  if (overlays.empty())
-    return;
-
+void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
+    const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane) {
   DCHECK(!is_using_vulkan());
 
   if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
     return;
 
-  for (const auto& overlay_candidate : overlays) {
-    gl::GLImage* image = nullptr;
-    std::unique_ptr<gfx::GpuFence> gpu_fence;
-    if (overlay_candidate.use_output_surface_for_resource) {
-      image = output_device_->GetOverlayImage();
-      gpu_fence = output_device_->SubmitOverlayGpuFence();
-    } else {
-      NOTIMPLEMENTED_LOG_ONCE();
-    }
+  gl::GLImage* image = output_device_->GetOverlayImage();
+  std::unique_ptr<gfx::GpuFence> gpu_fence =
+      output_device_->SubmitOverlayGpuFence();
 
-    if (image) {
-      gl_surface_->ScheduleOverlayPlane(
-          overlay_candidate.plane_z_order, overlay_candidate.transform, image,
-          ToNearestRect(overlay_candidate.display_rect),
-          overlay_candidate.uv_rect, !overlay_candidate.is_opaque,
-          std::move(gpu_fence));
-    }
+  if (image) {
+    // Output surface is also z-order 0.
+    int plane_z_order = 0;
+    // Output surface always uses the full texture.
+    gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
+
+    gl_surface_->ScheduleOverlayPlane(
+        plane_z_order, output_surface_plane.transform, image,
+        ToNearestRect(output_surface_plane.display_rect), uv_rect,
+        output_surface_plane.enable_blending, std::move(gpu_fence));
   }
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(scoped_output_device_paint_);
   DCHECK(output_device_);
@@ -796,6 +800,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     std::vector<ImageContext*> image_contexts,
     std::vector<gpu::SyncToken> sync_tokens,
     uint64_t sync_fence_release) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
@@ -855,6 +860,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
 void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
     std::vector<std::unique_ptr<ImageContext>> image_contexts) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!image_contexts.empty());
   for (auto& image_context : image_contexts) {
@@ -869,6 +875,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::CopyOutput");
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   bool from_fbo0 = !id;
@@ -907,7 +914,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
           dependency_->GetGpuFeatureInfo(), context_state_.get(),
           dependency_->GetMailboxManager(),
           dependency_->GetSharedImageManager(),
-          CreateSyncPointClientState(dependency_));
+          CreateSyncPointClientState(dependency_, sequence_id_));
       context_provider_ = base::MakeRefCounted<DirectContextProvider>(
           context_state_->context(), gl_surface_, supports_alpha_,
           gpu_preferences_, feature_info_.get(), std::move(client));
@@ -1102,6 +1109,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
     const std::vector<ImageContext*>& image_contexts,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::BeginAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts) {
     // Skip the context if it has been processed.
@@ -1228,6 +1236,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
 
 void SkiaOutputSurfaceImplOnGpu::EndAccessImages(
     const std::vector<ImageContext*>& image_contexts) {
+  TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::EndAccessImages");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts) {
     if (!context->representation_is_being_accessed)
@@ -1276,6 +1285,8 @@ void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
 }
 
 bool SkiaOutputSurfaceImplOnGpu::Initialize() {
+  TRACE_EVENT1("viz", "SkiaOutputSurfaceImplOnGpu::Initialize",
+               "is_using_vulkan", is_using_vulkan());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 #if defined(USE_OZONE)

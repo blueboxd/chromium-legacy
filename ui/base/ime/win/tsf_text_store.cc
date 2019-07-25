@@ -869,47 +869,46 @@ STDMETHODIMP TSFTextStore::OnEndEdit(ITfContext* context,
   // composition range and set the new composition start as the current
   // selection start.
   DCHECK(context);
+  HRESULT hr = S_OK;
   Microsoft::WRL::ComPtr<ITfContextComposition> context_composition;
-  if (SUCCEEDED(context->QueryInterface(IID_PPV_ARGS(&context_composition)))) {
-    Microsoft::WRL::ComPtr<IEnumITfCompositionView> enum_composition_view;
-    if (SUCCEEDED(
-            context_composition->EnumCompositions(&enum_composition_view))) {
-      Microsoft::WRL::ComPtr<ITfCompositionView> composition_view;
-      bool has_composition = false;
-      if (enum_composition_view->Next(1, &composition_view, nullptr) == S_OK) {
-        Microsoft::WRL::ComPtr<ITfRange> range;
-        if (SUCCEEDED(composition_view->GetRange(&range))) {
-          Microsoft::WRL::ComPtr<ITfRangeACP> range_acp;
-          if (SUCCEEDED(range->QueryInterface(IID_PPV_ARGS(&range_acp)))) {
-            LONG start = 0;
-            LONG length = 0;
-            if (SUCCEEDED(range_acp->GetExtent(&start, &length))) {
-              // We should only consider it as a valid composition if the
-              // composition range is not collapsed (length > 0).
-              if (length > 0) {
-                has_composition = true;
-                composition_start_ = start;
-                has_composition_range_ = true;
-                composition_range_.set_start(start);
-                composition_range_.set_end(start + length);
-              }
-            }
-          }
-        }
-      }
+  hr = context->QueryInterface(IID_PPV_ARGS(&context_composition));
+  if (FAILED(hr)) {
+    return hr;
+  }
 
-      if (!has_composition) {
-        composition_start_ = selection_.start();
-        if (has_composition_range_) {
-          has_composition_range_ = false;
-          composition_range_.set_start(0);
-          composition_range_.set_end(0);
-          previous_composition_string_.clear();
-          previous_composition_start_ = 0;
-          previous_composition_selection_range_ = gfx::Range::InvalidRange();
-        }
-      }
+  Microsoft::WRL::ComPtr<IEnumITfCompositionView> enum_composition_view;
+  hr = context_composition->EnumCompositions(&enum_composition_view);
+  if (FAILED(hr)) {
+    return hr;
+  }
+
+  Microsoft::WRL::ComPtr<ITfCompositionView> composition_view;
+  Microsoft::WRL::ComPtr<ITfRange> range;
+  Microsoft::WRL::ComPtr<ITfRangeACP> range_acp;
+  if (enum_composition_view->Next(1, &composition_view, nullptr) == S_OK
+      && SUCCEEDED(composition_view->GetRange(&range))
+      && SUCCEEDED(range->QueryInterface(IID_PPV_ARGS(&range_acp)))) {
+    LONG start = 0;
+    LONG length = 0;
+    // We should only consider it as a valid composition if the
+    // composition range is not collapsed (|length| > 0).
+    if (SUCCEEDED(range_acp->GetExtent(&start, &length)) && length > 0) {
+      composition_start_ = start;
+      has_composition_range_ = true;
+      composition_range_.set_start(start);
+      composition_range_.set_end(start + length);
+      return S_OK;
     }
+  }
+
+  composition_start_ = selection_.start();
+  if (has_composition_range_) {
+    has_composition_range_ = false;
+    composition_range_.set_start(0);
+    composition_range_.set_end(0);
+    previous_composition_string_.clear();
+    previous_composition_start_ = 0;
+    previous_composition_selection_range_ = gfx::Range::InvalidRange();
   }
 
   return S_OK;

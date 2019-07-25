@@ -37,7 +37,12 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     return;
 
   bool has_touch_action_rect = layout_view_.HasEffectiveAllowedTouchAction();
-  if (!layout_view_.HasBoxDecorationBackground() && !has_touch_action_rect)
+  bool paints_scroll_hit_test =
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      (layout_view_.GetScrollableArea() &&
+       layout_view_.GetScrollableArea()->ScrollsOverflow());
+  if (!layout_view_.HasBoxDecorationBackground() && !has_touch_action_rect &&
+      !paints_scroll_hit_test)
     return;
 
   // The background rect always includes at least the visible content size.
@@ -50,8 +55,10 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   const DisplayItemClient* background_client = &layout_view_;
 
   base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
-  if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
-                                                       layout_view_)) {
+  bool painting_scrolling_background =
+      BoxDecorationData::IsPaintingScrollingBackground(paint_info,
+                                                       layout_view_);
+  if (painting_scrolling_background) {
     // Layout overflow, combined with the visible content size.
     auto document_rect = layout_view_.DocumentRect();
     // DocumentRect is relative to ScrollOrigin. Add ScrollOrigin to let it be
@@ -75,6 +82,16 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     BoxPainter(layout_view_)
         .RecordHitTestData(paint_info, PhysicalRect(background_rect),
                            *background_client);
+  }
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // Record the scroll hit test after the non-scrolling background so
+    // background squashing is not affected. Hit test order would be equivalent
+    // if this were immediately before the non-scrolling background.
+    if (paints_scroll_hit_test && !painting_scrolling_background) {
+      BoxPainter(layout_view_)
+          .RecordScrollHitTestData(paint_info, *background_client);
+    }
   }
 }
 

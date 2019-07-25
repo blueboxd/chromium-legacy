@@ -136,11 +136,6 @@ div.splitter {
   padding: 0 3px;
 }
 
-#directory-tree .tree-row > .button {
-  display: flex;
-  min-width: 0;
-}
-
 #directory-tree .tree-row > .expand-icon {
   flex: none;
   height: 36px;

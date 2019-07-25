@@ -8,6 +8,7 @@ var test_url_data = 'https://w3c.github.io/web-nfc/';
 var test_message_origin = 'https://127.0.0.1:8443';
 var test_buffer_data = new ArrayBuffer(test_text_byte_array.length);
 var test_buffer_view = new Uint8Array(test_buffer_data).set(test_text_byte_array);
+var fake_tag_serial_number = 'c0:45:00:02';
 
 var NFCHWStatus = {};
 // OS-level NFC setting is ON
@@ -433,7 +434,7 @@ class MockNFC {
   triggerWatchCallback(id, message) {
     assert_true(this.client_ !== null);
     if (this.watchers_.length > 0) {
-      this.client_.onWatch([id], toMojoNDEFMessage(message));
+      this.client_.onWatch([id], fake_tag_serial_number, toMojoNDEFMessage(message));
     }
   }
 }

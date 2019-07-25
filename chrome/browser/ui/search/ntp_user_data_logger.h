@@ -108,6 +108,9 @@ class NTPUserDataLogger
                               bool is_cta,
                               bool from_cache);
 
+  // Logs the user |action| via base::RecordAction.
+  void RecordAction(const char* action);
+
   // Records whether we have yet logged an impression for the tile at a given
   // index and if so the corresponding details. A typical NTP will log 9
   // impressions, but could record fewer for new users that haven't built up a

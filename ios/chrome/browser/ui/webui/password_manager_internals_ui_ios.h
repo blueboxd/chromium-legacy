@@ -29,7 +29,7 @@ class PasswordManagerInternalsUIIOS : public web::WebUIIOSController,
   void WebStateDestroyed(web::WebState* web_state) override;
 
  private:
-  bool registered_with_logging_service_ = false;
+  bool registered_with_log_router_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsUIIOS);
 };

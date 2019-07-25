@@ -23,8 +23,6 @@ constexpr int kLabelPreviewSpacing = 8;
 
 constexpr int kCloseButtonMargin = 4;
 
-constexpr gfx::Size kCloseButtonSize{24, 24};
-
 constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
 
 constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
@@ -115,16 +113,16 @@ void DeskMiniView::OnHoverStateMayHaveChanged() {
       (IsMouseHovered() || force_show_close_button_));
 }
 
-void DeskMiniView::OnWidgetGestureTap(const gfx::Point& screen_location,
+void DeskMiniView::OnWidgetGestureTap(const gfx::Rect& screen_rect,
                                       bool is_long_gesture) {
   const bool old_force_show_close_button = force_show_close_button_;
   // Note that we don't want to hide the close button if it's a single tap
   // within the bounds of an already visible button, which will later be handled
   // as a press event on that close button that will result in closing the desk.
   force_show_close_button_ =
-      (is_long_gesture && IsPointOnMiniView(screen_location)) ||
+      (is_long_gesture && IsPointOnMiniView(screen_rect.CenterPoint())) ||
       (!is_long_gesture && close_desk_button_->GetVisible() &&
-       close_desk_button_->IsPointOnButton(screen_location));
+       close_desk_button_->DoesIntersectScreenRect(screen_rect));
   if (old_force_show_close_button != force_show_close_button_)
     OnHoverStateMayHaveChanged();
 }
@@ -159,8 +157,10 @@ void DeskMiniView::Layout() {
   label_->SetBoundsRect(label_bounds);
 
   close_desk_button_->SetBounds(
-      preview_bounds.right() - kCloseButtonSize.width() - kCloseButtonMargin,
-      kCloseButtonMargin, kCloseButtonSize.width(), kCloseButtonSize.height());
+      preview_bounds.right() - CloseDeskButton::kCloseButtonSize -
+          kCloseButtonMargin,
+      kCloseButtonMargin, CloseDeskButton::kCloseButtonSize,
+      CloseDeskButton::kCloseButtonSize);
 
   Button::Layout();
 }

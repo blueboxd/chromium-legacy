@@ -121,6 +121,7 @@ cast_source_set("audio_helpers") {
 
   deps = [
     "//base",
+    "//chromecast/public/media",
     "//media",
   ]
 }
@@ -240,6 +241,8 @@ cast_source_set("for_mixer_audio") {
     "cast_media_shlib_mixer_audio.cc",
     "direct_mixer_source.cc",
     "direct_mixer_source.h",
+    "loopback_handler.cc",
+    "loopback_handler.h",
     "media_pipeline_backend_for_mixer.cc",
     "media_pipeline_backend_for_mixer.h",
     "stream_mixer.cc",

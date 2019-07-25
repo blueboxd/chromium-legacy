@@ -125,6 +125,11 @@ TestGpuServiceHolder::~TestGpuServiceHolder() {
   io_thread_.Stop();
 }
 
+void TestGpuServiceHolder::ScheduleGpuTask(base::OnceClosure callback) {
+  DCHECK(gpu_task_sequence_);
+  gpu_task_sequence_->ScheduleTask(std::move(callback), {});
+}
+
 void TestGpuServiceHolder::InitializeOnGpuThread(
     const gpu::GpuPreferences& gpu_preferences,
     base::WaitableEvent* completion) {
@@ -205,11 +210,19 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       gpu_service_->gpu_channel_manager()->program_cache(),
       gpu_service_->GetContextState());
 
+  // TODO(weiliangc): Since SkiaOutputSurface should not depend on command
+  // buffer, the |gpu_task_sequence_| should be coming from
+  // SkiaOutputSurfaceDependency. SkiaOutputSurfaceDependency cannot be
+  // initialized here because the it will not have correct client thread set up
+  // when unit tests are running in parallel.
+  gpu_task_sequence_ = task_executor_->CreateSequence();
+
   completion->Signal();
 }
 
 void TestGpuServiceHolder::DeleteOnGpuThread() {
   task_executor_.reset();
+  gpu_task_sequence_.reset();
   gpu_service_.reset();
 }
 

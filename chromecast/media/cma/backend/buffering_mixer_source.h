@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -147,8 +148,13 @@ class BufferingMixerSource : public MixerInput::Source,
       bool mixer_error_ = false;
       scoped_refptr<DecoderBufferBase> pending_data_;
       base::circular_deque<scoped_refptr<DecoderBufferBase>> queue_;
+      // We let the caller thread free audio buffers since freeing memory can
+      // be expensive sometimes; we want to avoid potentially long-running
+      // operations on the mixer thread.
+      std::vector<scoped_refptr<DecoderBufferBase>> buffers_to_be_freed_;
       int queued_frames_ = 0;
       RenderingDelay mixer_rendering_delay_;
+      RenderingDelay last_buffer_delay_;
       int extra_delay_frames_ = 0;
       int current_buffer_offset_ = 0;
       AudioFader fader_;
@@ -229,13 +235,13 @@ class BufferingMixerSource : public MixerInput::Source,
   void FinalizeAudioPlayback() override;
 
   // AudioFader::Source implementation:
-  int FillFaderFrames(::media::AudioBus* dest,
-                      int frame_offset,
-                      int num_frames) override;
+  int FillFaderFrames(int num_frames,
+                      RenderingDelay rendering_delay,
+                      float* const* channels) override;
 
   RenderingDelay QueueData(scoped_refptr<DecoderBufferBase> data);
 
-  void PostPcmCompletion(RenderingDelay delay);
+  void PostPcmCompletion();
   void PostEos();
   void PostError(MixerError error);
   void PostAudioReadyForPlayback();
@@ -257,9 +263,16 @@ class BufferingMixerSource : public MixerInput::Source,
   const int start_threshold_frames_;
   bool audio_ready_for_playback_fired_ = false;
 
+  // Only used on the caller thread.
+  std::vector<scoped_refptr<DecoderBufferBase>> old_buffers_to_be_freed_;
+
   LockedMembers locked_members_;
 
   int remaining_silence_frames_ = 0;
+
+  base::RepeatingClosure pcm_completion_task_;
+  base::RepeatingClosure eos_task_;
+  base::RepeatingClosure ready_for_playback_task_;
 
   base::WeakPtr<BufferingMixerSource> weak_this_;
   base::WeakPtrFactory<BufferingMixerSource> weak_factory_;

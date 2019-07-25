@@ -21,6 +21,7 @@
  *   controlledSettingWithOwner: string,
  *   controlledSettingNoOwner: string,
  *   controlledSettingParent: string,
+ *   controlledSettingChildRestriction: string,
  * }}
  */
 // eslint-disable-next-line no-var
@@ -36,6 +37,7 @@ const CrPolicyIndicatorType = {
   RECOMMENDED: 'recommended',
   USER_POLICY: 'userPolicy',
   PARENT: 'parent',
+  CHILD_RESTRICTION: 'childRestriction',
 };
 
 /** @polymerBehavior */
@@ -103,6 +105,7 @@ const CrPolicyIndicatorBehavior = {
       case CrPolicyIndicatorType.RECOMMENDED:
         return 'cr20:domain';
       case CrPolicyIndicatorType.PARENT:
+      case CrPolicyIndicatorType.CHILD_RESTRICTION:
         return 'cr20:kite';
       default:
         assertNotReached();
@@ -141,6 +144,8 @@ const CrPolicyIndicatorBehavior = {
             CrPolicyStrings.controlledSettingRecommendedDiffers;
       case CrPolicyIndicatorType.PARENT:
         return CrPolicyStrings.controlledSettingParent;
+      case CrPolicyIndicatorType.CHILD_RESTRICTION:
+        return CrPolicyStrings.controlledSettingChildRestriction;
     }
     return '';
   },

@@ -139,13 +139,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // Navigate to the first URL chrome://version.
   LoadWebUIUrl(kChromeUIVersionHost);
 
-  // Navigate to the second URL chrome://flags.
-  LoadWebUIUrl(kChromeUIFlagsHost);
-
-  // Navigating to chrome://flags should trigger the keyboard, but pre-iOS13
-  // this is broken.
-  if ([GREYKeyboard isKeyboardShown])
-    [EarlGrey dismissKeyboardWithError:nil];
+  // Navigate to the second URL chrome://chrome-urls.
+  LoadWebUIUrl(kChromeUIChromeURLsHost);
 
   // Tap the back button in the toolbar and verify that the resulting page's URL
   // corresponds to the first URL chrome://version that was loaded.
@@ -154,10 +149,11 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the toolbar and verify that the resulting page's
-  // URL corresponds the second URL chrome://flags that was loaded.
+  // URL corresponds the second URL chrome://chrome-urls that was loaded.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
+  [[EarlGrey
+      selectElementWithMatcher:WaitForOmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_notNil()];
 
   // Tap the back button in the toolbar then reload, and verify that the
@@ -171,7 +167,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // Make sure forward navigation is still possible.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://flags")]
+  [[EarlGrey
+      selectElementWithMatcher:WaitForOmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_notNil()];
 }
 

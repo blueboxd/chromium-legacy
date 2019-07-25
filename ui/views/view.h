@@ -1749,9 +1749,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   bool UpdateParentLayers();
 
   // Parents this view's layer to |parent_layer|, and sets its bounds and other
-  // properties in accordance to |offset|, the view's offset from the
-  // |parent_layer|.
-  void ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer);
+  // properties in accordance to the layer hierarchy.
+  void ReparentLayer(ui::Layer* parent_layer);
 
   // Called to update the layer visibility. The layer will be visible if the
   // View itself, and all its parent Views are visible. This also updates

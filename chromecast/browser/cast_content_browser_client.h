@@ -65,7 +65,6 @@ class VideoResolutionPolicy;
 namespace shell {
 class CastBrowserMainParts;
 class CastNetworkContexts;
-class CastResourceDispatcherHostDelegate;
 class URLRequestContextFactory;
 
 class CastContentBrowserClient
@@ -142,7 +141,6 @@ class CastContentBrowserClient
   network::mojom::NetworkContext* GetSystemNetworkContext() override;
   void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
                            content::WebPreferences* prefs) override;
-  void ResourceDispatcherHostCreated() override;
   std::string GetApplicationLocale() override;
   scoped_refptr<content::QuotaPermissionContext> CreateQuotaPermissionContext()
       override;
@@ -300,8 +298,6 @@ class CastContentBrowserClient
   CastBrowserMainParts* cast_browser_main_parts_;
   std::unique_ptr<CastNetworkContexts> cast_network_contexts_;
   std::unique_ptr<URLRequestContextFactory> url_request_context_factory_;
-  std::unique_ptr<CastResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
   std::unique_ptr<media::CmaBackendFactory> cma_backend_factory_;
   std::unique_ptr<GeneralAudienceBrowsingService>
       general_audience_browsing_service_;

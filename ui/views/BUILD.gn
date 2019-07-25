@@ -85,6 +85,7 @@ jumbo_component("views") {
     "animation/ink_drop_util.h",
     "animation/installable_ink_drop.h",
     "animation/installable_ink_drop_animator.h",
+    "animation/installable_ink_drop_config.h",
     "animation/installable_ink_drop_painter.h",
     "animation/scroll_animator.h",
     "animation/square_ink_drop_ripple.h",

@@ -17,12 +17,12 @@
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_web_view.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/views/background.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -67,20 +67,11 @@ AssistantPageView::~AssistantPageView() {
 void AssistantPageView::InitLayout() {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-
-  // Create and set a shadow to be displayed as a border for this view.
-  auto shadow_border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-      SK_ColorWHITE);
-  shadow_border->SetCornerRadius(
+  view_shadow_ = std::make_unique<ash::ViewShadow>(this, kShadowElevation);
+  view_shadow_->SetRoundedCornerRadius(
       search_box::kSearchBoxBorderCornerRadiusSearchResult);
-  shadow_border->set_md_shadow_elevation(kShadowElevation);
-  SetBorder(std::move(shadow_border));
 
-  SetBackground(views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(
-          SK_ColorWHITE, search_box::kSearchBoxBorderCornerRadiusSearchResult,
-          border()->GetInsets())));
+  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -197,7 +188,7 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
   gfx::Rect bounds = AppListPage::GetSearchBoxBounds();
   bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2, 0);
   bounds.set_size(GetPreferredSize());
-  return AddShadowBorderToBounds(bounds);
+  return bounds;
 }
 
 views::View* AssistantPageView::GetFirstFocusableView() {
@@ -291,13 +282,6 @@ void AssistantPageView::MaybeUpdateAppListState(int child_height) {
 
   if (child_height > GetPreferredHeightForAppListState(app_list_view))
     app_list_view->SetState(ash::AppListViewState::kHalf);
-}
-
-gfx::Rect AssistantPageView::AddShadowBorderToBounds(
-    const gfx::Rect& bounds) const {
-  gfx::Rect new_bounds(bounds);
-  new_bounds.Inset(-border()->GetInsets());
-  return new_bounds;
 }
 
 }  // namespace app_list

@@ -374,14 +374,8 @@ bool WebRuntimeFeatures::IsCompositeAfterPaintEnabled() {
   return RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
 }
 
-void WebRuntimeFeatures::EnableUpdateHoverFromLayoutChangeAtBeginFrame(
-    bool enable) {
-  RuntimeEnabledFeatures::SetUpdateHoverFromLayoutChangeAtBeginFrameEnabled(
-      enable);
-}
-
-void WebRuntimeFeatures::EnableUpdateHoverFromScrollAtBeginFrame(bool enable) {
-  RuntimeEnabledFeatures::SetUpdateHoverFromScrollAtBeginFrameEnabled(enable);
+void WebRuntimeFeatures::EnableUpdateHoverAtBeginFrame(bool enable) {
+  RuntimeEnabledFeatures::SetUpdateHoverAtBeginFrameEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableUserActivationPostMessageTransfer(bool enable) {

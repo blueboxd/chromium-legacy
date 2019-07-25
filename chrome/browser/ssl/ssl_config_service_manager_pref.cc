@@ -192,7 +192,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 
 // static
 void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
-  net::SSLConfig default_config;
   net::CertVerifier::Config default_verifier_config;
   registry->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
                                 default_verifier_config.enable_rev_checking);

@@ -27,7 +27,7 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      /* Override CSS from cr_elements/shared_style_css.html. */
+      /* Override --cr-selectable-focus mixin. */
       [selectable]:focus,
       [selectable] > :focus {
         background-color: transparent;
@@ -170,11 +170,10 @@
           $i18n{devicePageTitle}
         </div>
       </a>
-      <!-- TODO(jamescook): Rename path to "/assistant". -->
-      <a href="/search" hidden="[[!showAssistant]]">
+      <a href="/search">
         <div class="item">
-          <iron-icon icon="settings:assistant"></iron-icon>
-          $i18n{osAssistantPageTitle}
+          <iron-icon icon="cr:search"></iron-icon>
+          $i18n{osSearchPageTitle}
         </div>
       </a>
       <a href="/apps" hidden="[[!showApps]]">

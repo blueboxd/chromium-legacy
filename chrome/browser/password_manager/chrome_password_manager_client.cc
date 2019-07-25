@@ -41,7 +41,7 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/content/browser/bad_message.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
-#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/content/browser/password_requirements_service_factory.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/hsts_query.h"
@@ -49,7 +49,6 @@
 #include "components/password_manager/core/browser/http_auth_manager_impl.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
@@ -125,7 +124,6 @@ using autofill::mojom::FocusedFieldType;
 using password_manager::BadMessageReason;
 using password_manager::ContentPasswordManagerDriverFactory;
 using password_manager::PasswordManagerClientHelper;
-using password_manager::PasswordManagerInternalsService;
 using password_manager::PasswordManagerMetricsRecorder;
 using password_manager::metrics_util::PasswordType;
 using sessions::SerializedNavigationEntry;
@@ -199,8 +197,8 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
   driver_factory_ =
       ContentPasswordManagerDriverFactory::FromWebContents(web_contents);
   log_manager_ = autofill::LogManager::Create(
-      password_manager::PasswordManagerInternalsServiceFactory::
-          GetForBrowserContext(profile_),
+      password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
+          profile_),
       base::Bind(
           &ContentPasswordManagerDriverFactory::RequestSendLoggingAvailability,
           base::Unretained(driver_factory_)));

@@ -317,7 +317,9 @@ public abstract class ToolbarLayout
             }
 
             @Override
-            public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {}
+            public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+                    boolean isSearchEngineGoogle, String searchEngineUrl) {}
+
         };
 
         // Set menu button background in case it was previously called before inflation

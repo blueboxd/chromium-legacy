@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/common/mojo/keep_alive.mojom.h"
+#include "extensions/common/mojom/keep_alive.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {

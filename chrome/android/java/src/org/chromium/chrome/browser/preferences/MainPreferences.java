@@ -8,9 +8,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.provider.Settings;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.view.View;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -40,7 +41,7 @@ import java.util.Map;
 /**
  * The main settings screen, shown when the user first opens Settings.
  */
-public class MainPreferences extends PreferenceFragment
+public class MainPreferences extends PreferenceFragmentCompat
         implements TemplateUrlService.LoadListener, ProfileSyncService.SyncStateChangedListener,
                    SigninManager.SignInStateObserver {
     public static final String PREF_ACCOUNT_SECTION = "account_section";
@@ -62,7 +63,7 @@ public class MainPreferences extends PreferenceFragment
     // chrome/browser/ui/webui/options/autofill_options_handler.cc
     public static final String SETTINGS_ORIGIN = "Chrome settings";
 
-    private final ManagedPreferenceDelegate mManagedPreferenceDelegate;
+    private final ManagedPreferenceDelegateCompat mManagedPreferenceDelegate;
     private final Map<String, Preference> mAllPreferences = new HashMap<>();
     private SignInPreference mSignInPreference;
 
@@ -72,9 +73,16 @@ public class MainPreferences extends PreferenceFragment
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         createPreferences();
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Disable animations of preference changes.
+        getListView().setItemAnimator(null);
     }
 
     @Override
@@ -184,7 +192,8 @@ public class MainPreferences extends PreferenceFragment
     }
 
     private void setManagedPreferenceDelegateForPreference(String key) {
-        ChromeBasePreference chromeBasePreference = (ChromeBasePreference) mAllPreferences.get(key);
+        ChromeBasePreferenceCompat chromeBasePreference =
+                (ChromeBasePreferenceCompat) mAllPreferences.get(key);
         chromeBasePreference.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
     }
 
@@ -220,8 +229,8 @@ public class MainPreferences extends PreferenceFragment
             removePreferenceIfPresent(PREF_DEVELOPER);
         }
 
-        ChromeBasePreference dataReduction =
-                (ChromeBasePreference) findPreference(PREF_DATA_REDUCTION);
+        ChromeBasePreferenceCompat dataReduction =
+                (ChromeBasePreferenceCompat) findPreference(PREF_DATA_REDUCTION);
         dataReduction.setSummary(DataReductionPreferenceFragment.generateSummary(getResources()));
     }
 
@@ -237,16 +246,16 @@ public class MainPreferences extends PreferenceFragment
     }
 
     private void updateSyncAndServicesPreference() {
-        ChromeBasePreference syncAndServices =
-                (ChromeBasePreference) findPreference(PREF_SYNC_AND_SERVICES);
+        ChromeBasePreferenceCompat syncAndServices =
+                (ChromeBasePreferenceCompat) findPreference(PREF_SYNC_AND_SERVICES);
         syncAndServices.setIcon(SyncPreferenceUtils.getSyncStatusIcon(getActivity()));
         syncAndServices.setSummary(SyncPreferenceUtils.getSyncStatusSummary(getActivity()));
     }
 
     private void updateSearchEnginePreference() {
         if (!TemplateUrlServiceFactory.get().isLoaded()) {
-            ChromeBasePreference searchEnginePref =
-                    (ChromeBasePreference) findPreference(PREF_SEARCH_ENGINE);
+            ChromeBasePreferenceCompat searchEnginePref =
+                    (ChromeBasePreferenceCompat) findPreference(PREF_SEARCH_ENGINE);
             searchEnginePref.setEnabled(false);
             return;
         }
@@ -309,12 +318,12 @@ public class MainPreferences extends PreferenceFragment
     }
 
     @VisibleForTesting
-    ManagedPreferenceDelegate getManagedPreferenceDelegateForTest() {
+    ManagedPreferenceDelegateCompat getManagedPreferenceDelegateForTest() {
         return mManagedPreferenceDelegate;
     }
 
-    private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
-        return new ManagedPreferenceDelegate() {
+    private ManagedPreferenceDelegateCompat createManagedPreferenceDelegate() {
+        return new ManagedPreferenceDelegateCompat() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 if (PREF_DATA_REDUCTION.equals(preference.getKey())) {

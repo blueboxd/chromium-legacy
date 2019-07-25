@@ -39,6 +39,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/mojo/buildflags.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -74,6 +75,11 @@ class RenderProcessHostTest : public ContentBrowserTest,
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
+  }
+
+  void SetUpOnMainThread() override {
+    // Support multiple sites on the test server.
+    host_resolver()->AddRule("*", "127.0.0.1");
   }
 
  protected:
@@ -953,6 +959,13 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
       base::BindRepeating(HandleBeacon));
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed that navigations to this site
+    // will be in a different process.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
+
   NavigateToURL(shell(), embedded_test_server()->GetURL("/send-beacon.html"));
 
   RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
@@ -965,8 +978,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KeepAliveRendererProcess) {
   rph->AddObserver(this);
   rfh->SetKeepAliveTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
+  // Navigate to a site that will be in a different process.
   base::TimeTicks start = base::TimeTicks::Now();
-  NavigateToURL(shell(), GURL("data:text/html,<p>hello</p>"));
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("foo.com", "/title1.html"));
 
   WaitUntilProcessExits(1);
 

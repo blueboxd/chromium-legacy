@@ -169,6 +169,14 @@ class CONTENT_EXPORT BrowsingInstance final
   // returning the default SiteInstance.
   bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
 
+  // Attempts to convert |site_instance| into a default SiteInstance,
+  // if |url| can be placed inside a default SiteInstance, and the default
+  // SiteInstance has not already been set for this object.
+  // Returns true if |site_instance| was successfully converted to a default
+  // SiteInstance. Otherwise, returns false.
+  bool TrySettingDefaultSiteInstance(SiteInstanceImpl* site_instance,
+                                     const GURL& url);
+
   // Helper function used by other methods in this class to ensure consistent
   // mapping between |url| and site URL.
   // Note: This should not be used by code outside this class.

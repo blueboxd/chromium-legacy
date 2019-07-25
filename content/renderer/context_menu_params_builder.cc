@@ -30,6 +30,7 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   params.selection_text = data.selected_text.Utf16();
   params.selection_start_offset = data.selection_start_offset;
   params.title_text = data.title_text.Utf16();
+  params.alt_text = data.alt_text.Utf16();
   params.misspelled_word = data.misspelled_word.Utf16();
   params.spellcheck_enabled = data.is_spell_checking_enabled;
   params.is_editable = data.is_editable;

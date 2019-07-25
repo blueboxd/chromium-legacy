@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.tab.Tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.content_public.browser.WebContents;
@@ -426,6 +427,9 @@ class ManualFillingMediator extends EmptyTabObserver
      */
     private boolean canExtendKeyboard() {
         if (!mModel.get(SHOW_WHEN_VISIBLE)) return false;
+
+        // When in VR mode, don't extend the keyboard
+        if (VrModuleProvider.getDelegate().isInVr()) return false;
 
         // Don't open the accessory inside the contextual search panel.
         ContextualSearchManager contextualSearch = mActivity.getContextualSearchManager();

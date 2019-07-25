@@ -810,6 +810,9 @@ void WebMediaPlayerImpl::Pause() {
 
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PAUSE));
 
+  // Paused changed so we should update media position state.
+  UpdateMediaPositionState();
+
   UpdatePlayState();
 }
 
@@ -872,6 +875,9 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
   // This needs to be called after Seek() so that if a resume is triggered, it
   // is to the correct time.
   UpdatePlayState();
+
+  // The seek time has changed so we should update the media position state.
+  UpdateMediaPositionState();
 }
 
 void WebMediaPlayerImpl::SetRate(double rate) {
@@ -1564,6 +1570,9 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   }
 
   attempting_suspended_start_ = false;
+
+  // The current time has changed so we should update the media position state.
+  UpdateMediaPositionState();
 }
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
@@ -2107,6 +2116,9 @@ void WebMediaPlayerImpl::OnDurationChange() {
   client_->DurationChanged();
   if (watch_time_reporter_)
     watch_time_reporter_->OnDurationChanged(GetPipelineMediaDuration());
+
+  // The duration has changed so we should update the media position state.
+  UpdateMediaPositionState();
 }
 
 void WebMediaPlayerImpl::OnAddTextTrack(const TextTrackConfig& config,
@@ -2776,6 +2788,28 @@ void WebMediaPlayerImpl::UpdatePlayState() {
   SetDelegateState(state.delegate_state, state.is_idle);
   SetMemoryReportingState(state.is_memory_reporting_enabled);
   SetSuspendState(state.is_suspended || pending_suspend_resume_cycle_);
+}
+
+void WebMediaPlayerImpl::UpdateMediaPositionState() {
+  DCHECK(delegate_);
+
+  // When seeking the current time can go beyond the duration so we should
+  // cap the current time at the duration.
+  base::TimeDelta duration = GetPipelineMediaDuration();
+  base::TimeDelta current_time = GetCurrentTimeInternal();
+  if (current_time > duration)
+    current_time = duration;
+
+  media_session::MediaPosition new_position(paused_ ? 0.0 : playback_rate_,
+                                            duration, current_time);
+
+  if (media_position_state_ == new_position)
+    return;
+
+  DVLOG(2) << __func__ << "(" << new_position.ToString() << ")";
+  media_position_state_ = new_position;
+  delegate_->DidPlayerMediaPositionStateChange(delegate_id_,
+                                               media_position_state_);
 }
 
 void WebMediaPlayerImpl::SetDelegateState(DelegateState new_state,
@@ -3552,6 +3586,10 @@ void WebMediaPlayerImpl::MaybeUpdateBufferSizesForPlayback() {
   mb_data_source_->MediaPlaybackRateChanged(playback_rate_);
   if (!paused_)
     mb_data_source_->MediaIsPlaying();
+
+  // The playback rate has changed so we should rebuild the media position
+  // state.
+  UpdateMediaPositionState();
 }
 
 }  // namespace media

@@ -52,12 +52,17 @@ public class LocationBarPhone extends LocationBarLayout {
         setTouchDelegate(touchDelegate);
     }
 
+    /**
+     * Called when the DSE changes.
+     */
     @Override
-    public void onNativeLibraryReady() {
-        super.onNativeLibraryReady();
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        super.updateSearchEngineStatusIcon(
+                shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
 
         // The search logo will be the first visible view when the google logo is showing.
-        if (mShouldShowGoogleLogo) {
+        if (mShouldShowSearchEngineLogo) {
             mFirstVisibleFocusedView = findViewById(R.id.location_bar_status);
         }
     }

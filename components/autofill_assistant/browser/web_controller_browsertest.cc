@@ -378,28 +378,43 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
+  // Make sure scrolling is necessary for #scroll_container , no matter the
+  // screen height
+  void SetupScrollContainerHeights() {
+    EXPECT_TRUE(content::ExecJs(shell(),
+                                R"(
+           let before = document.querySelector("#before_scroll_container");
+           before.style.height = window.innerHeight + "px";
+           let after = document.querySelector("#after_scroll_container");
+           after.style.height = window.innerHeight + "px";)"));
+  }
+
+  // Scrolls #scroll_container to the given y position.
+  void ScrollContainerTo(int y) {
+    EXPECT_TRUE(content::ExecJs(shell(), base::StringPrintf(
+                                             R"(
+           let container = document.querySelector("#scroll_container");
+           container.scrollTo(0, %d);)",
+                                             y)));
+  }
+
+  // Scrolls the window to the given y position.
+  void ScrollWindowTo(int y) {
+    EXPECT_TRUE(content::ExecJs(
+        shell(), base::StringPrintf("window.scrollTo(0, %d);", y)));
+  }
+
   // Scroll an element into view that's within a container element. This
   // requires scrolling the container, then the window, to get the element to
   // the desired y position.
   void TestScrollIntoView(int initial_window_scroll_y,
                           int initial_container_scroll_y) {
-    EXPECT_TRUE(content::ExecJs(
-        shell(), base::StringPrintf(
-                     R"(
-           // Make sure scrolling is necessary, no matter the screen height
-           let before = document.querySelector("#before_scroll_container");
-           before.style.height = window.innerHeight + "px";
-           let after = document.querySelector("#after_scroll_container");
-           after.style.height = window.innerHeight + "px";
-
-           // Initial scrolling position
-           window.scrollTo(0, %d);
-           let container = document.querySelector("#scroll_container");
-           container.scrollTo(0, %d);)",
-                     initial_window_scroll_y, initial_container_scroll_y)));
-
     Selector selector;
     selector.selectors.emplace_back("#scroll_item_5");
+
+    SetupScrollContainerHeights();
+    ScrollWindowTo(initial_window_scroll_y);
+    ScrollContainerTo(initial_window_scroll_y);
 
     TopPadding top_padding{0.25, TopPadding::Unit::RATIO};
     FocusElement(selector, top_padding);
@@ -658,6 +673,32 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
   selector.selectors.emplace_back("#iframe");
   selector.selectors.emplace_back("#button");
   WaitForElementRemove(selector);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ClickElementInScrollContainer) {
+  // Make sure #scroll_item_3 is not visible, no matter the screen height. It
+  // also makes sure that there's enough room on the visual viewport to scroll
+  // everything to the center.
+  SetupScrollContainerHeights();
+  ScrollWindowTo(0);
+  ScrollContainerTo(0);
+
+  EXPECT_TRUE(content::ExecJs(shell(),
+                              R"(var scrollItem3WasClicked = false;
+           let item = document.querySelector("#scroll_item_3");
+           item.addEventListener("click", function() {
+             scrollItem3WasClicked = true;
+           });)"));
+
+  Selector selector;
+  selector.selectors.emplace_back("#scroll_item_3");
+  ClickOrTapElement(selector, ClickAction::CLICK);
+
+  EXPECT_TRUE(content::EvalJs(shell(), "scrollItem3WasClicked").ExtractBool());
+
+  // TODO(b/135909926): Find a reliable way of verifying that the button was
+  // mover roughly to the center.
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElement) {

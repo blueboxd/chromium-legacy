@@ -76,7 +76,7 @@ TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
 // 4. Is sid empty.
 class GcpReauthCredentialGetStringValueTest
     : public GcpReauthCredentialTest,
-      public ::testing::WithParamInterface<std::tuple<int, bool, bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
 };
 
 TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
@@ -151,7 +151,7 @@ TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          GcpReauthCredentialGetStringValueTest,
-                         ::testing::Combine(::testing::Values(0, 1),
+                         ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));

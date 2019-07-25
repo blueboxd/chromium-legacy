@@ -133,6 +133,8 @@ class ScopedTaskEnvironment {
     QUEUED,
     // Thread pool tasks run as they are posted. RunUntilIdle() can still be
     // used to block until done.
+    // Note that regardless of this trait, delayed tasks are always "queued"
+    // under TimeSource::MOCK_TIME mode.
     ASYNC,
     DEFAULT = ASYNC
   };

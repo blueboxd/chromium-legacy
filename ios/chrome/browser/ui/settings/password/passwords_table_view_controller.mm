@@ -48,6 +48,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -264,7 +265,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   searchController.obscuresBackgroundDuringPresentation = NO;
   searchController.delegate = self;
   searchController.searchBar.delegate = self;
-  searchController.searchBar.backgroundColor = [UIColor clearColor];
+  searchController.searchBar.backgroundColor = UIColor.clearColor;
   searchController.searchBar.accessibilityIdentifier = kPasswordsSearchBarId;
   // Center search bar and cancel button vertically so it looks centered
   // in the header when searching.
@@ -437,7 +438,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
   exportPasswordsItem.text = l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS);
-  exportPasswordsItem.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  exportPasswordsItem.textColor = [UIColor colorNamed:kTintColor];
   exportPasswordsItem.accessibilityIdentifier = @"exportPasswordsItem_button";
   exportPasswordsItem.accessibilityTraits = UIAccessibilityTraitButton;
   return exportPasswordsItem;
@@ -733,12 +734,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 - (void)setExportPasswordsButtonEnabled:(BOOL)enabled {
   if (enabled) {
     DCHECK(exportReady_ && !self.editing);
-    exportPasswordsItem_.textColor =
-        UIColorFromRGB(kTableViewTextLabelColorBlue);
+    exportPasswordsItem_.textColor = [UIColor colorNamed:kTintColor];
     exportPasswordsItem_.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
-    exportPasswordsItem_.textColor =
-        UIColorFromRGB(kTableViewTextLabelColorLightGrey);
+    exportPasswordsItem_.textColor = UIColor.cr_labelColor;
     exportPasswordsItem_.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
   [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];

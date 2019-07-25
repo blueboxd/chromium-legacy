@@ -15,7 +15,7 @@ include_rules = [
   "+chrome/services/printing/public/mojom",
   "+chrome/services/removable_storage_writer/removable_storage_writer_service.h",
   "+chrome/services/removable_storage_writer/public/mojom",
-  "+chrome/services/util_win/util_win_service.h",
+  "+chrome/services/util_win/util_win_impl.h",
   "+chrome/services/util_win/public/mojom",
   "+chrome/services/wifi_util_win/wifi_util_win_service.h",
   "+chrome/services/wifi_util_win/public/mojom",

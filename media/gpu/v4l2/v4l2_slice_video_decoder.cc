@@ -152,7 +152,6 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
       decoder_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE})),
       device_poll_thread_("V4L2SliceVideoDecoderDevicePollThread"),
-      state_(State::kUninitialized),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);

@@ -7,24 +7,38 @@
 #include <utility>
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/background.h"
+#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/style/platform_style.h"
 
 namespace ash {
 
 namespace {
 
-constexpr float kInkDropOpacity = 0.2f;
+// The inkdrop opacity for the ripple effect.
+// TODO(minch): Migrate to use kLightInkRippleOpacity in AshColorProvider.
+constexpr float kInkDropOpacity = 0.08f;
 
-constexpr float kInkDropHighlightOpacity = 0.1f;
+// The highlight opacity for the ripple effect.
+// TODO(minch): Migrate to use kLightInkRippleOpacity in AshColorProvider.
+constexpr float kInkDropHighlightOpacity = 0.08f;
 
-constexpr int kCornerRadius = 12;
+// The corner radius of the background of the close icon.
+constexpr int kCornerRadius = CloseDeskButton::kCloseButtonSize / 2;
 
-constexpr SkColor kBackgroundColor = SkColorSetARGB(181, 55, 71, 79);
+// The color of the close icon.
+constexpr SkColor kIconColor = gfx::kGoogleGrey200;
+
+// The background color for the close icon.
+// TODO(minch): Migrate to use BaseLayerType::kTransparentWithBlur in dark mode
+// in AshColorProvider.
+constexpr SkColor kBackgroundColor = SkColorSetA(gfx::kGoogleGrey900, 0xBC);
 
 }  // namespace
 
@@ -34,7 +48,7 @@ CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
   layer()->SetFillsBoundsOpaquely(false);
 
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kDesksCloseDeskButtonIcon, SK_ColorWHITE));
+           gfx::CreateVectorIcon(kDesksCloseDeskButtonIcon, kIconColor));
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   SetBackground(
@@ -45,6 +59,8 @@ CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_visible_opacity(kInkDropOpacity);
   SetFocusPainter(nullptr);
+
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 CloseDeskButton::~CloseDeskButton() = default;
@@ -75,7 +91,8 @@ CloseDeskButton::CreateInkDropHighlight() const {
 }
 
 SkColor CloseDeskButton::GetInkDropBaseColor() const {
-  return SK_ColorWHITE;
+  // TODO(minch): Migrate to use AshColorProvider::GetRippleAttributes().
+  return color_utils::GetColorWithMaxContrast(kBackgroundColor);
 }
 
 std::unique_ptr<views::InkDropMask> CloseDeskButton::CreateInkDropMask() const {
@@ -83,10 +100,24 @@ std::unique_ptr<views::InkDropMask> CloseDeskButton::CreateInkDropMask() const {
                                                        kCornerRadius);
 }
 
-bool CloseDeskButton::IsPointOnButton(const gfx::Point& screen_location) const {
-  gfx::Point point_in_view = screen_location;
-  ConvertPointFromScreen(this, &point_in_view);
-  return HitTestPoint(point_in_view);
+bool CloseDeskButton::DoesIntersectRect(const views::View* target,
+                                        const gfx::Rect& rect) const {
+  DCHECK_EQ(target, this);
+  gfx::Rect button_bounds = target->GetLocalBounds();
+  // Only increase the hittest area for touch events (which have a non-empty
+  // bounding box), not for mouse event.
+  if (!views::UsePointBasedTargeting(rect)) {
+    button_bounds.Inset(
+        gfx::Insets(-kCloseButtonSize / 2, -kCloseButtonSize / 2));
+  }
+  return button_bounds.Intersects(rect);
+}
+
+bool CloseDeskButton::DoesIntersectScreenRect(
+    const gfx::Rect& screen_rect) const {
+  gfx::Point origin = screen_rect.origin();
+  View::ConvertPointFromScreen(this, &origin);
+  return DoesIntersectRect(this, gfx::Rect(origin, screen_rect.size()));
 }
 
 }  // namespace ash

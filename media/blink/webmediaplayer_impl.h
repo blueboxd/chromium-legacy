@@ -40,6 +40,7 @@
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/pipeline_controller.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
+#include "services/media_session/public/cpp/media_position.h"
 #include "third_party/blink/public/platform/media/webmediaplayer_delegate.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
@@ -426,6 +427,21 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   //   - pending_suspend_resume_cycle_,
   //   - enter_pip_callback_,
   void UpdatePlayState();
+
+  // Calculates the current position state for the media element and notifies
+  // |delegate_| if it has changed.
+  //
+  // Spec: https://wicg.github.io/mediasession/#position-state
+  //
+  // This method should be called any time its dependent values change. These
+  // are:
+  //   - pipeline_controller_->GetMediaDuration()
+  //   - pipeline_media_duration_for_test_
+  //   - pipeline_controller_->GetMediaTime()
+  //   - playback_rate_
+  //   - Seeking() / seek_time_
+  //   - paused_, paused_time_
+  void UpdateMediaPositionState();
 
   // Methods internal to UpdatePlayState().
   PlayState UpdatePlayState_ComputePlayState(bool is_flinging,
@@ -825,6 +841,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // credentials or not for MediaPlayerRenderer.
   bool allow_media_player_renderer_credentials_ = false;
 #endif
+
+  // Stores the current position state of the media. See
+  // |UpdateMediaPositionState| for more details.
+  media_session::MediaPosition media_position_state_;
 
   // Set whenever the demuxer encounters an HLS file.
   // This flag is distinct from |using_media_player_renderer_|, because on older

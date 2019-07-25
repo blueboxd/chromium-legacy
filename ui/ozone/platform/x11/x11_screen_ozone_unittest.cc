@@ -7,8 +7,10 @@
 #include <memory>
 
 #include "base/test/scoped_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
@@ -34,6 +36,14 @@ int64_t NextDisplayId() {
   return next_id++;
 }
 
+struct MockDisplayObserver : public display::DisplayObserver {
+  MockDisplayObserver() = default;
+  ~MockDisplayObserver() override = default;
+
+  MOCK_METHOD1(OnDisplayAdded, void(const display::Display& new_display));
+  MOCK_METHOD1(OnDisplayRemoved, void(const display::Display& old_display));
+};
+
 }  // namespace
 
 class X11ScreenOzoneTest : public testing::Test {
@@ -49,8 +59,9 @@ class X11ScreenOzoneTest : public testing::Test {
     window_manager_ = std::make_unique<X11WindowManagerOzone>();
     primary_display_ = std::make_unique<display::Display>(
         NextDisplayId(), kPrimaryDisplayBounds);
-    screen_.reset(new X11ScreenOzone(window_manager_.get(), false));
-    screen_->AddDisplay(*primary_display_, true);
+    screen_.reset(new X11ScreenOzone(window_manager_.get()));
+    screen_->SetDisplayList({*primary_display_});
+    screen_->AddObserver(&display_observer_);
   }
 
  protected:
@@ -62,11 +73,23 @@ class X11ScreenOzoneTest : public testing::Test {
   }
 
   void AddDisplayForTest(const display::Display& display) {
-    screen_->AddDisplay(display, false);
+    std::vector<display::Display> new_displays(screen_->displays_);
+    new_displays.push_back(display);
+    UpdateDisplayListForTest(std::move(new_displays));
   }
 
-  void RemoveDisplayForTest(const display::Display& display) {
-    screen_->RemoveDisplay(display);
+  void RemoveDisplayForTest(const display::Display& display_to_remove) {
+    std::vector<display::Display> new_displays(screen_->displays_.size() - 1);
+    std::remove_copy(screen_->displays_.begin(), screen_->displays_.end(),
+                     new_displays.begin(), display_to_remove);
+    UpdateDisplayListForTest(std::move(new_displays));
+  }
+
+  void UpdateDisplayListForTest(std::vector<display::Display> displays) {
+    std::vector<display::Display> old_displays = std::move(screen_->displays_);
+    screen_->SetDisplayList(std::move(displays));
+    screen_->change_notifier_.NotifyDisplaysChanged(old_displays,
+                                                    screen_->displays_);
   }
 
   std::unique_ptr<X11WindowOzone> CreatePlatformWindow(
@@ -79,6 +102,8 @@ class X11ScreenOzoneTest : public testing::Test {
     return std::make_unique<X11WindowOzone>(delegate, init_params,
                                             window_manager_.get());
   }
+
+  MockDisplayObserver display_observer_;
 
  private:
   std::unique_ptr<X11WindowManagerOzone> window_manager_;
@@ -95,6 +120,8 @@ class X11ScreenOzoneTest : public testing::Test {
 TEST_F(X11ScreenOzoneTest, AddRemoveListDisplays) {
   // Initially only primary display is expected to be in place
   EXPECT_EQ(1u, screen()->GetAllDisplays().size());
+  EXPECT_CALL(display_observer_, OnDisplayAdded(_)).Times(2);
+  EXPECT_CALL(display_observer_, OnDisplayRemoved(_)).Times(3);
 
   auto display_2 = CreateDisplay(gfx::Rect(800, 0, 1280, 720));
   AddDisplayForTest(*display_2);

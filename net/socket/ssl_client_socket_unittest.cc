@@ -793,17 +793,18 @@ class SSLClientSocketTest : public PlatformTest,
  public:
   SSLClientSocketTest()
       : socket_factory_(ClientSocketFactory::GetDefaultFactory()),
-        cert_verifier_(new MockCertVerifier),
-        transport_security_state_(new TransportSecurityState),
-        ct_verifier_(new DoNothingCTVerifier),
-        ct_policy_enforcer_(new MockCTPolicyEnforcer),
-        ssl_client_session_cache_(
-            new SSLClientSessionCache(SSLClientSessionCache::Config())),
-        context_(cert_verifier_.get(),
-                 transport_security_state_.get(),
-                 ct_verifier_.get(),
-                 ct_policy_enforcer_.get(),
-                 ssl_client_session_cache_.get()) {
+        cert_verifier_(std::make_unique<MockCertVerifier>()),
+        transport_security_state_(std::make_unique<TransportSecurityState>()),
+        ct_verifier_(std::make_unique<DoNothingCTVerifier>()),
+        ct_policy_enforcer_(std::make_unique<MockCTPolicyEnforcer>()),
+        ssl_client_session_cache_(std::make_unique<SSLClientSessionCache>(
+            SSLClientSessionCache::Config())),
+        context_(std::make_unique<SSLClientContext>(
+            cert_verifier_.get(),
+            transport_security_state_.get(),
+            ct_verifier_.get(),
+            ct_policy_enforcer_.get(),
+            ssl_client_session_cache_.get())) {
     cert_verifier_->set_default_result(OK);
 
     EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
@@ -828,18 +829,6 @@ class SSLClientSocketTest : public PlatformTest,
   // The SpawnedTestServer object, after calling StartTestServer().
   const SpawnedTestServer* spawned_test_server() const {
     return spawned_test_server_.get();
-  }
-
-  void SetCertVerifier(CertVerifier* cert_verifier) {
-    context_.cert_verifier = cert_verifier;
-  }
-
-  void SetCTVerifier(CTVerifier* ct_verifier) {
-    context_.cert_transparency_verifier = ct_verifier;
-  }
-
-  void SetCTPolicyEnforcer(CTPolicyEnforcer* policy_enforcer) {
-    context_.ct_policy_enforcer = policy_enforcer;
   }
 
   // Starts the embedded test server with the specified parameters. Returns true
@@ -893,7 +882,7 @@ class SSLClientSocketTest : public PlatformTest,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config) {
     return socket_factory_->CreateSSLClientSocket(
-        std::move(transport_socket), host_and_port, ssl_config, context_);
+        context_.get(), std::move(transport_socket), host_and_port, ssl_config);
   }
 
   // Create an SSLClientSocket object and use it to connect to a test server,
@@ -956,7 +945,7 @@ class SSLClientSocketTest : public PlatformTest,
   std::unique_ptr<DoNothingCTVerifier> ct_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> ct_policy_enforcer_;
   std::unique_ptr<SSLClientSessionCache> ssl_client_session_cache_;
-  SSLClientSocketContext context_;
+  std::unique_ptr<SSLClientContext> context_;
   std::unique_ptr<SSLClientSocket> sock_;
 
  private:
@@ -1018,14 +1007,14 @@ class ClientSocketFactoryWithoutReadIfReady : public ClientSocketFactory {
   }
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      SSLClientContext* context,
       std::unique_ptr<StreamSocket> stream_socket,
       const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) override {
+      const SSLConfig& ssl_config) override {
     stream_socket = std::make_unique<StreamSocketWithoutReadIfReady>(
         std::move(stream_socket));
-    return factory_->CreateSSLClientSocket(std::move(stream_socket),
-                                           host_and_port, ssl_config, context);
+    return factory_->CreateSSLClientSocket(context, std::move(stream_socket),
+                                           host_and_port, ssl_config);
   }
 
   std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
@@ -1551,7 +1540,9 @@ TEST_F(SSLClientSocketTest, SocketDestroyedDuringVerify) {
   ASSERT_TRUE(StartTestServer(SpawnedTestServer::SSLOptions()));
 
   HangingCertVerifier verifier;
-  SetCertVerifier(&verifier);
+  context_ = std::make_unique<SSLClientContext>(
+      &verifier, transport_security_state_.get(), ct_verifier_.get(),
+      ct_policy_enforcer_.get(), ssl_client_session_cache_.get());
 
   TestCompletionCallback callback;
   auto transport =
@@ -1572,6 +1563,8 @@ TEST_F(SSLClientSocketTest, SocketDestroyedDuringVerify) {
   // Destroying the socket should cancel it.
   sock = nullptr;
   EXPECT_EQ(0, verifier.num_active_requests());
+
+  context_ = nullptr;
 }
 
 TEST_F(SSLClientSocketTest, ConnectMismatched) {
@@ -2505,8 +2498,8 @@ TEST_F(SSLClientSocketTest, ClientSocketHandleNotFromPool) {
   EXPECT_THAT(rv, IsOk());
 
   std::unique_ptr<SSLClientSocket> sock(socket_factory_->CreateSSLClientSocket(
-      std::move(transport), spawned_test_server()->host_port_pair(),
-      SSLConfig(), context_));
+      context_.get(), std::move(transport),
+      spawned_test_server()->host_port_pair(), SSLConfig()));
 
   EXPECT_FALSE(sock->IsConnected());
   rv = callback.GetResult(sock->Connect(callback.callback()));
@@ -2811,10 +2804,10 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
   ssl_options.signed_cert_timestamps_tls_ext = sct_ext.as_string();
   ASSERT_TRUE(StartTestServer(ssl_options));
 
-  SSLConfig ssl_config;
-
   MockCTVerifier ct_verifier;
-  SetCTVerifier(&ct_verifier);
+  context_ = std::make_unique<SSLClientContext>(
+      cert_verifier_.get(), transport_security_state_.get(), &ct_verifier,
+      ct_policy_enforcer_.get(), ssl_client_session_cache_.get());
 
   // Check that the SCT list is extracted from the TLS extension as expected,
   // while also simulating that it was an unparsable response.
@@ -2823,10 +2816,13 @@ TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
       .WillOnce(testing::SetArgPointee<4>(sct_list));
 
   int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   EXPECT_THAT(rv, IsOk());
 
   EXPECT_TRUE(sock_->signed_cert_timestamps_received_);
+
+  sock_ = nullptr;
+  context_ = nullptr;
 }
 
 // Test that when a CT verifier and a CTPolicyEnforcer are defined, and
@@ -2840,9 +2836,7 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
   AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
 
   // Emulate compliance of the certificate to the policy.
-  MockCTPolicyEnforcer policy_enforcer;
-  SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
       .WillRepeatedly(
           Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
@@ -2867,9 +2861,7 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
   AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
 
   // Emulate non-compliance of the certificate to the policy.
-  MockCTPolicyEnforcer policy_enforcer;
-  SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
       .WillRepeatedly(
           Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
@@ -2903,9 +2895,7 @@ TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Emulate non-compliance of the certificate to the policy.
-  MockCTPolicyEnforcer policy_enforcer;
-  SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
       .WillRepeatedly(
           Return(ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS));
 
@@ -2943,9 +2933,7 @@ TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
   // Emulate non-compliance of the certificate to the policy.
-  MockCTPolicyEnforcer policy_enforcer;
-  SetCTPolicyEnforcer(&policy_enforcer);
-  EXPECT_CALL(policy_enforcer, CheckCompliance(_, _, _))
+  EXPECT_CALL(*ct_policy_enforcer_, CheckCompliance(_, _, _))
       .WillRepeatedly(
           Return(ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
@@ -3045,7 +3033,7 @@ TEST_F(SSLClientSocketTest, IsFatalErrorSetOnFatalError) {
   int rv;
   const base::Time expiry =
       base::Time::Now() + base::TimeDelta::FromSeconds(1000);
-  context_.transport_security_state->AddHSTS(
+  transport_security_state_->AddHSTS(
       spawned_test_server()->host_port_pair().host(), expiry, true);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
   SSLInfo ssl_info;
@@ -3131,7 +3119,7 @@ TEST_F(SSLClientSocketTest, SessionResumption) {
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
   sock.reset();
 
-  context_.ssl_client_session_cache->Flush();
+  ssl_client_session_cache_->Flush();
 
   // After clearing the session cache, the next handshake doesn't resume.
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
@@ -3172,7 +3160,7 @@ TEST_F(SSLClientSocketTest, SessionResumption_RSA) {
                 : SpawnedTestServer::SSLOptions::KEY_EXCHANGE_ECDHE_RSA;
     ASSERT_TRUE(StartTestServer(ssl_options));
     SSLConfig ssl_config;
-    context_.ssl_client_session_cache->Flush();
+    ssl_client_session_cache_->Flush();
 
     for (int i = 0; i < 3; i++) {
       SCOPED_TRACE(i);
@@ -3736,7 +3724,7 @@ TEST_F(SSLClientSocketTest, PKPBypassedSet) {
       MakeHashValueVector(kBadHashValueVectorInput);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  context_.transport_security_state->EnableStaticPinsForTesting();
+  transport_security_state_->EnableStaticPinsForTesting();
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   SSLConfig ssl_config;
@@ -3770,7 +3758,7 @@ TEST_F(SSLClientSocketTest, PKPEnforced) {
       MakeHashValueVector(kBadHashValueVectorInput);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  context_.transport_security_state->EnableStaticPinsForTesting();
+  transport_security_state_->EnableStaticPinsForTesting();
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   SSLConfig ssl_config;
@@ -4378,7 +4366,7 @@ TEST_F(SSLClientSocketTest, PKPMoreImportantThanCT) {
       MakeHashValueVector(kBadHashValueVectorInput);
   cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
 
-  context_.transport_security_state->EnableStaticPinsForTesting();
+  transport_security_state_->EnableStaticPinsForTesting();
   ScopedTransportSecurityStateSource scoped_security_state_source;
 
   const char kCTHost[] = "pkp-expect-ct.preloaded.test";
@@ -5628,7 +5616,7 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 TEST_P(SSLHandshakeDetailsTest, Metrics) {
   // Enable all test features in the server.
   SSLServerConfig server_config;
-  server_config.version_max = SSL_PROTOCOL_VERSION_TLS1;
+  server_config.version_min = SSL_PROTOCOL_VERSION_TLS1;
   server_config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
   server_config.early_data_enabled = true;
   server_config.alpn_protos = {kProtoHTTP11};

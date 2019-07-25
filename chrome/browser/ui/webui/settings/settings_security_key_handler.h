@@ -28,59 +28,118 @@ class ResetRequestHandler;
 
 namespace settings {
 
-// SecurityKeysHandler processes messages from the "Security Keys" section of a
-// settings page. An instance of this class is created for each settings tab and
-// is destroyed when the tab is closed. See the comments in
-// security_keys_browser_proxy.js about the interface.
-class SecurityKeysHandler : public SettingsPageUIHandler {
- public:
-  SecurityKeysHandler();
-  ~SecurityKeysHandler() override;
+// Base class for message handlers on the "Security Keys" settings subpage.
+class SecurityKeysHandlerBase : public SettingsPageUIHandler {
+ protected:
+  SecurityKeysHandlerBase() = default;
 
-  void RegisterMessages() override;
+  // Subclasses must implement close to invalidate all pending callbacks.
+  virtual void Close() = 0;
+
+ private:
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
+
+  SecurityKeysHandlerBase(const SecurityKeysHandlerBase&) = delete;
+  SecurityKeysHandlerBase& operator=(const SecurityKeysHandlerBase&) = delete;
+};
+
+// SecurityKeysPINHandler processes messages from the "Create a PIN" dialog of
+// the "Security Keys" settings subpage. An instance of this class is created
+// for each settings tab and is destroyed when the tab is closed. See
+// SecurityKeysPINBrowserProxy about the interface.
+class SecurityKeysPINHandler : public SecurityKeysHandlerBase {
+ public:
+  SecurityKeysPINHandler();
+  ~SecurityKeysPINHandler() override;
 
  private:
   enum class State {
     kNone,
-
     kStartSetPIN,
     kGatherNewPIN,
     kGatherChangePIN,
     kSettingPIN,
-
-    kStartReset,
-    kWaitingForResetNoCallbackYet,
-    kWaitingForResetHaveCallback,
-    kWaitingForCompleteReset,
-
-    kCredentialManagementStart,
-    kCredentialManagementPIN,
-    kCredentialManagementReady,
-    kCredentialManagementGettingCredentials,
-    kCredentialManagementDeleting,
   };
 
-  void Close();
+  void RegisterMessages() override;
+  void Close() override;
 
-  // PIN
   void HandleStartSetPIN(const base::ListValue* args);
   void OnGatherPIN(base::Optional<int64_t> num_retries);
   void OnSetPINComplete(device::CtapDeviceResponseCode code);
   void HandleSetPIN(const base::ListValue* args);
 
-  // Reset
+  State state_ = State::kNone;
+
+  std::unique_ptr<device::SetPINRequestHandler> set_pin_;
+
+  std::string callback_id_;
+  base::WeakPtrFactory<SecurityKeysPINHandler> weak_factory_{this};
+};
+
+// SecurityKeysResetHandler processes messages from the "Reset your Security
+// Key" dialog of the "Security Keys" settings subpage. An instance of this
+// class is created for each settings tab and is destroyed when the tab is
+// closed. See SecurityKeysResetBrowserProxy about the interface.
+class SecurityKeysResetHandler : public SecurityKeysHandlerBase {
+ public:
+  SecurityKeysResetHandler();
+  ~SecurityKeysResetHandler() override;
+
+ private:
+  enum class State {
+    kNone,
+    kStartReset,
+    kWaitingForResetNoCallbackYet,
+    kWaitingForResetHaveCallback,
+    kWaitingForCompleteReset,
+  };
+
+  void RegisterMessages() override;
+  void Close() override;
+
   void HandleReset(const base::ListValue* args);
   void OnResetSent();
   void HandleCompleteReset(const base::ListValue* args);
   void OnResetFinished(device::CtapDeviceResponseCode result);
 
-  // Credential Management
-  void HandleCredentialManagement(const base::ListValue* args);
-  void HandleCredentialManagementPIN(const base::ListValue* args);
-  void HandleCredentialManagementEnumerate(const base::ListValue* args);
-  void HandleCredentialManagementDelete(const base::ListValue* args);
+  State state_ = State::kNone;
+
+  std::unique_ptr<device::ResetRequestHandler> reset_;
+  base::Optional<device::CtapDeviceResponseCode> reset_result_;
+
+  std::string callback_id_;
+  base::WeakPtrFactory<SecurityKeysResetHandler> weak_factory_{this};
+};
+
+// SecurityKeysCredentialHandler processes messages from the "Manage
+// sign-in data" dialog of the "Security Keys" settings subpage. An instance of
+// this class is created for each settings tab and is destroyed when the tab is
+// closed. See SecurityKeysCredentialBrowserProxy about the interface.
+class SecurityKeysCredentialHandler : public SecurityKeysHandlerBase {
+ public:
+  SecurityKeysCredentialHandler();
+  ~SecurityKeysCredentialHandler() override;
+
+ private:
+  enum class State {
+    kNone,
+    kStart,
+    kPIN,
+    kReady,
+    kGettingCredentials,
+    kDeletingCredentials,
+  };
+
+  void RegisterMessages() override;
+  void Close() override;
+
+  void HandleStart(const base::ListValue* args);
+  void HandlePIN(const base::ListValue* args);
+  void HandleEnumerate(const base::ListValue* args);
+  void HandleDelete(const base::ListValue* args);
+
   void OnCredentialManagementReady();
   void OnHaveCredentials(
       device::CtapDeviceResponseCode status,
@@ -88,24 +147,18 @@ class SecurityKeysHandler : public SettingsPageUIHandler {
           std::vector<device::AggregatedEnumerateCredentialsResponse>>
           responses,
       base::Optional<size_t> remaining_credentials);
-  void OnCredentialManagementGatherPIN(int64_t num_retries,
-                                       base::OnceCallback<void(std::string)>);
+  void OnGatherPIN(int64_t num_retries, base::OnceCallback<void(std::string)>);
   void OnCredentialsDeleted(device::CtapDeviceResponseCode status);
-  void OnCredentialManagementFinished(device::FidoReturnCode status);
+  void OnFinished(device::FidoReturnCode status);
 
-  void HandleClose(const base::ListValue* args);
-
-  State state_;
+  State state_ = State::kNone;
   base::OnceCallback<void(std::string)> credential_management_provide_pin_cb_;
-  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
-  std::unique_ptr<device::SetPINRequestHandler> set_pin_;
-  std::unique_ptr<device::CredentialManagementHandler> credential_management_;
-  std::unique_ptr<device::ResetRequestHandler> reset_;
-  base::Optional<device::CtapDeviceResponseCode> reset_result_;
-  std::string callback_id_;
-  std::unique_ptr<base::WeakPtrFactory<SecurityKeysHandler>> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SecurityKeysHandler);
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
+  std::unique_ptr<device::CredentialManagementHandler> credential_management_;
+
+  std::string callback_id_;
+  base::WeakPtrFactory<SecurityKeysCredentialHandler> weak_factory_{this};
 };
 
 }  // namespace settings

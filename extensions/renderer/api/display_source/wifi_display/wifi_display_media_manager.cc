@@ -12,7 +12,7 @@
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/video_encode_accelerator.h"
-#include "extensions/common/mojo/wifi_display_session_service.mojom.h"
+#include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_pipeline.h"
 #include "media/base/bind_to_current_loop.h"

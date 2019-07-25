@@ -8,9 +8,8 @@
 #include "base/time/time.h"
 
 // Time limit for click to call message expiration.
-// TODO(yasmo): Confirm this value with the team.
 constexpr base::TimeDelta kSharingClickToCallMessageTTL =
-    base::TimeDelta::FromMinutes(10);
+    base::TimeDelta::FromSeconds(10);
 
 // Maximum number of devices to be shown in dialog and context menu.
 constexpr int kMaxDevicesShown = 10;

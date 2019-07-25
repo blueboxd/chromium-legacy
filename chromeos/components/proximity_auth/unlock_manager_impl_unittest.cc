@@ -557,9 +557,12 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
        FindingConnection_UpdatesScreenlockState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
-  // TODO(crbug.com/890047): Remove this once the bug is resolved.
+  // Regression test for https://crbug.com/890047, ensuring that the NO_PHONE
+  // status doesn't incorrectly appear for a brief moment before the
+  // BLUETOOTH_CONNECTING spinner.
   EXPECT_CALL(proximity_auth_client_,
-              UpdateScreenlockState(ScreenlockState::NO_PHONE));
+              UpdateScreenlockState(ScreenlockState::NO_PHONE))
+      .Times(0);
 
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
@@ -571,9 +574,12 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
        Authenticating_UpdatesScreenlockState) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
-  // TODO(crbug.com/890047): Remove this once the bug is resolved.
+  // Regression test for https://crbug.com/890047, ensuring that the NO_PHONE
+  // status doesn't incorrectly appear for a brief moment before the
+  // BLUETOOTH_CONNECTING spinner.
   EXPECT_CALL(proximity_auth_client_,
-              UpdateScreenlockState(ScreenlockState::NO_PHONE));
+              UpdateScreenlockState(ScreenlockState::NO_PHONE))
+      .Times(0);
 
   EXPECT_CALL(proximity_auth_client_,
               UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));

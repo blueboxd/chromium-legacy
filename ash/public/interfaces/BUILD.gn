@@ -22,8 +22,8 @@ mojom("interfaces") {
   public_deps = [
     "//chromeos/components/proximity_auth/public/mojom",
     "//chromeos/services/assistant/public/mojom",
-    "//components/account_id/interfaces",
-    "//components/sync/mojo:interfaces",
+    "//components/account_id/mojom",
+    "//components/sync/mojom",
     "//mojo/public/mojom/base",
     "//services/content/public/mojom",
     "//services/preferences/public/mojom",
@@ -51,7 +51,7 @@ mojom("test_interfaces") {
   ]
   deps = [
     ":interfaces",
-    "//components/account_id/interfaces",
+    "//components/account_id/mojom",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojo",
   ]

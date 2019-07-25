@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -31,6 +32,8 @@ namespace policy {
 
 namespace {
 const char kValidRsuDeviceId[] = "123";
+const char kValidRsuDeviceIdEncoded[] =
+    "MTIz";  // base::Base64Encode(kValidRsuDeviceId, kValidRsuDeviceencoded)
 }
 class LookupKeyUploaderTest : public chromeos::DeviceSettingsTestBase {
  protected:
@@ -79,7 +82,7 @@ TEST_F(LookupKeyUploaderTest, Uploads) {
       }));
   SetCryptohomeReplyTo(kValidRsuDeviceId);
   Start();
-  ExpectSavedIdToBe(kValidRsuDeviceId);
+  ExpectSavedIdToBe(kValidRsuDeviceIdEncoded);
 }
 
 TEST_F(LookupKeyUploaderTest, ReuploadsOnFail) {
@@ -90,11 +93,12 @@ TEST_F(LookupKeyUploaderTest, ReuploadsOnFail) {
 }
 
 TEST_F(LookupKeyUploaderTest, DoesntUploadTwice) {
-  pref_service_.SetString(prefs::kLastRsuDeviceIdUploaded, kValidRsuDeviceId);
+  pref_service_.SetString(prefs::kLastRsuDeviceIdUploaded,
+                          kValidRsuDeviceIdEncoded);
   SetCryptohomeReplyTo(kValidRsuDeviceId);
   Start();
   EXPECT_CALL(certificate_uploader_, ObtainAndUploadCertificate(_)).Times(0);
-  ExpectSavedIdToBe(kValidRsuDeviceId);
+  ExpectSavedIdToBe(kValidRsuDeviceIdEncoded);
   EXPECT_FALSE(NeedsUpload());
 }
 
@@ -116,7 +120,7 @@ TEST_F(LookupKeyUploaderTest, DoesNotUploadVeryFrequently) {
         std::move(callback).Run(true);
       }));
   Start();
-  ExpectSavedIdToBe(kValidRsuDeviceId);
+  ExpectSavedIdToBe(kValidRsuDeviceIdEncoded);
   EXPECT_FALSE(NeedsUpload());
 }
 
@@ -129,7 +133,7 @@ TEST_F(LookupKeyUploaderTest, UploadsEvenWhenSubmittedBeforeIfForcedByPolicy) {
           }));
   SetCryptohomeReplyTo(kValidRsuDeviceId);
   Start();
-  ExpectSavedIdToBe(kValidRsuDeviceId);
+  ExpectSavedIdToBe(kValidRsuDeviceIdEncoded);
   EXPECT_FALSE(NeedsUpload());
 
   // We set the policy for obtaining RSU lookup key.

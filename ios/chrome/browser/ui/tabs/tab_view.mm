@@ -57,7 +57,7 @@ const CGFloat kFaviconSize = 16.0;
 
 // Returns a default favicon with |UIImageRenderingModeAlwaysTemplate|.
 UIImage* DefaultFaviconImage() {
-  return [[UIImage imageNamed:@"default_favicon"]
+  return [[UIImage imageNamed:@"default_world_favicon"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 }

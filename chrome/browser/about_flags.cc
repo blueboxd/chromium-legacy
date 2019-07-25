@@ -2666,13 +2666,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
-    {"enable-custom-context-menu",
-     flag_descriptions::kEnableCustomContextMenuName,
-     flag_descriptions::kEnableCustomContextMenuDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kCustomContextMenu)},
-#endif  // OS_ANDROID
-
-#if defined(OS_ANDROID)
     {"enable-revamped-context-menu",
      flag_descriptions::kEnableRevampedContextMenuName,
      flag_descriptions::kEnableRevampedContextMenuDescription, kOsAndroid,
@@ -4157,7 +4150,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-autofill-save-card-show-no-thanks",
      flag_descriptions::kEnableAutofillSaveCardShowNoThanksName,
-     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription, kOsAll,
+     flag_descriptions::kEnableAutofillSaveCardShowNoThanksDescription,
+     kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveCardShowNoThanks)},
 
 #if defined(OS_ANDROID)

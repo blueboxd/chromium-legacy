@@ -211,8 +211,6 @@ crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ 
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-frame.html [ Slow ]
 crbug.com/660468 [ Linux ] storage/indexeddb/observer-workers.html [ Slow ]
 
-crbug.com/660492 storage/indexeddb/structured-clone.html [ Slow ]
-
 # Foreign fetch tests make many requests, and create multiple browsing contexts,
 # which can be very slow.
 

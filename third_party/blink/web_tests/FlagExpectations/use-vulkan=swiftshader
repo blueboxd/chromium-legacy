@@ -205,6 +205,3 @@ crbug.com/977289 css3/filters/blur-filter-page-scroll-self.html [ Skip ]
 crbug.com/977289 css3/filters/effect-reference-add-hw.html [ Skip ]
 crbug.com/977289 css3/filters/effect-reference-source-alpha-hw.html [ Skip ]
 crbug.com/977289 css3/filters/effect-reference-subregion-hidpi-hw.html [ Skip ]
-
-# Color issue in Reflection test
-crbug.com/979652 compositing/reflections/reflection-on-composited.html [ Skip ]

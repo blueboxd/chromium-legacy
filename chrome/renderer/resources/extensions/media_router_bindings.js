@@ -16,7 +16,7 @@ loadScript('components/mirroring/mojom/cast_message_channel.mojom');
 loadScript('components/mirroring/mojom/mirroring_service_host.mojom');
 loadScript('components/mirroring/mojom/session_observer.mojom');
 loadScript('components/mirroring/mojom/session_parameters.mojom');
-loadScript('extensions/common/mojo/keep_alive.mojom');
+loadScript('extensions/common/mojom/keep_alive.mojom');
 loadScript('media/mojo/interfaces/mirror_service_remoting.mojom');
 loadScript('media/mojo/interfaces/remoting_common.mojom');
 loadScript('mojo/public/mojom/base/time.mojom');

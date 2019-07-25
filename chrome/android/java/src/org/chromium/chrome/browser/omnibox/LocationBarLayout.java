@@ -32,7 +32,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -90,14 +89,16 @@ public class LocationBarLayout extends FrameLayout
 
     protected StatusViewCoordinator mStatusViewCoordinator;
 
-    private String mOriginalUrl = "";
-
     private WindowAndroid mWindowAndroid;
     private WindowDelegate mWindowDelegate;
 
+    protected String mSearchEngineUrl = "";
+    private String mOriginalUrl = "";
+
     protected boolean mUrlFocusChangeInProgress;
     protected boolean mNativeInitialized;
-    protected boolean mShouldShowGoogleLogo;
+    protected boolean mShouldShowSearchEngineLogo;
+    protected boolean mIsSearchEngineGoogle;
     private boolean mUrlHasFocus;
     private boolean mUrlFocusedFromFakebox;
     private boolean mUrlFocusedWithoutAnimations;
@@ -290,16 +291,6 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
-     * Encapsulates complicated boolean check for reuse and readability.
-     */
-    public static boolean shouldShowGoogleLogo() {
-        return !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
-                && TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle()
-                && ChromeFeatureList.isInitialized()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO);
-    }
-
-    /**
      * Handles native dependent initialization for this class.
      */
     @Override
@@ -318,15 +309,6 @@ public class LocationBarLayout extends FrameLayout
             post(deferredRunnable);
         }
         mDeferredNativeRunnables.clear();
-
-        // Show the DSE logo when the url has focus.
-        // TODO(crbug.com/982430): Check for changes to the DSE and react accordingly.
-        mShouldShowGoogleLogo = LocationBarLayout.shouldShowGoogleLogo();
-        mStatusViewCoordinator.setShouldShowGoogleLogo(mShouldShowGoogleLogo);
-        mToolbarDataProvider.setShouldShowGoogleLogo(mShouldShowGoogleLogo);
-        if (mShouldShowGoogleLogo) {
-            mStatusViewCoordinator.setShowIconsWhenUrlFocused(true);
-        }
 
         updateVisualsForState();
 
@@ -1005,6 +987,21 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void setUnfocusedWidth(int unfocusedWidth) {
         mStatusViewCoordinator.setUnfocusedLocationBarWidth(unfocusedWidth);
+    }
+
+    @Override
+    public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+            boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mSearchEngineUrl = searchEngineUrl;
+        mIsSearchEngineGoogle = isSearchEngineGoogle;
+        mShouldShowSearchEngineLogo = shouldShowSearchEngineLogo;
+
+        mStatusViewCoordinator.updateSearchEngineStatusIcon(
+                mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
+        mToolbarDataProvider.updateSearchEngineStatusIcon(
+                mShouldShowSearchEngineLogo, mIsSearchEngineGoogle, mSearchEngineUrl);
+
+        mStatusViewCoordinator.setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
     }
 
     @Override

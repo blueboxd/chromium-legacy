@@ -116,6 +116,7 @@ void ChromeExtensionCookies::IOData::CreateRestrictedCookieManager(
 
   restricted_cookie_managers_.AddBinding(
       std::make_unique<network::RestrictedCookieManager>(
+          network::mojom::RestrictedCookieManagerRole::SCRIPT,
           GetOrCreateCookieStore(), &network_cookie_settings_, origin,
           /* null network_context_client disables logging, making later
              arguments irrelevant */

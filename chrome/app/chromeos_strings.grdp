@@ -219,11 +219,17 @@
   <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_TITLE" desc="Title for cellular setup step in which the user uses the embedded carrier provisioning portal to make payment and activate the device." translateable="false">
     Provisioning Page
   </message>
-  <message name="IDS_CELLULAR_SETUP_SUCCESS_PAGE_TITLE" desc="Title for the final success screen of cellular setup that tells the user that setup is completed but service is being activated" translateable="false">
-    Success Page
+  <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_TITLE" desc="Title for the final success screen of cellular setup that tells the user that setup is completed but service is being activated">
+    Mobile data being activated
   </message>
-  <message name="IDS_CELLULAR_SETUP_SUCCESS_PAGE_MESSAGE" desc="Message displayed under title in final success screen of cellular setup that tells user that service may take a while to activate." translateable="false">
-    Setup Completed.
+  <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_MESSAGE" desc="Message displayed under title in final success screen of cellular setup that tells user that service may take a while to activate.">
+    It might take up to 15 minutes to complete mobile data activation.
+  </message>
+  <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_TITLE" desc="Title for the final screen of cellular setup when ChromeOS encountered an error completing activation">
+    Could not activate cellular device
+  </message>
+  <message name="IDS_CELLULAR_SETUP_FINAL_PAGE_ERROR_MESSAGE" desc="Message displayed under title in final screen of cellular setup when ChromeOS encountered an error completing activation.">
+    An error occured during activation.
   </message>
 
   <!-- Upgrade notifications -->
@@ -1744,6 +1750,9 @@
   </message>
   <message name="IDS_CONTROLLED_SETTING_PARENT" desc="Text displayed in the controlled settings bubble when a setting's value is controlled by user's parent.">
     This setting is managed by a parent.
+  </message>
+  <message name="IDS_CONTROLLED_SETTING_CHILD_RESTRICTION" desc="Text displayed in the controlled settings bubble when a setting's value is pre-set because the user is a child.">
+    This setting can't be changed by a child user.
   </message>
   <message name="IDS_STATUSBAR_DISABLE_SPOKEN_FEEDBACK" desc="The menu option to disable spoken feedback accessibility feature.">
     Disable ChromeVox (spoken feedback)

@@ -223,12 +223,6 @@ GpuServiceImpl::~GpuServiceImpl() {
     wait.Wait();
   }
 
-  // The sequence id and scheduler_ could be null for unit tests.
-  if (!skia_output_surface_sequence_id_.is_null()) {
-    DCHECK(scheduler_);
-    scheduler_->DestroySequence(skia_output_surface_sequence_id_);
-  }
-
   media_gpu_channel_manager_.reset();
   gpu_channel_manager_.reset();
 
@@ -321,9 +315,6 @@ void GpuServiceImpl::InitializeWithHost(
 
   scheduler_ =
       std::make_unique<gpu::Scheduler>(main_runner_, sync_point_manager);
-
-  skia_output_surface_sequence_id_ =
-      scheduler_->CreateSequence(gpu::SchedulingPriority::kHigh);
 
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary

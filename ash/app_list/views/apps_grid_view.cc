@@ -1974,6 +1974,24 @@ void AppsGridView::UpdateOpacity() {
       (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   const int selected_page = pagination_model_.selected_page();
   auto current_page = view_structure_.pages()[selected_page];
+
+  // First it should prepare the layers for all of the app items in the current
+  // page when necessary, or destroy all of the layers when they become
+  // unnecessary. Do not dynamically ensure/destroy layers of individual items
+  // since the creation/destruction of the layer requires to repaint the parent
+  // view (i.e. this class).
+  if (should_restore_opacity) {
+    // Layers are not necessary. Destroy them, and return. No need to update
+    // opacity.
+    for (size_t i = 0; i < current_page.size(); ++i)
+      current_page[i]->DestroyLayer();
+    return;
+  }
+
+  // Ensure layers and update their opacity.
+  for (size_t i = 0; i < current_page.size(); ++i)
+    current_page[i]->EnsureLayer();
+
   float centerline_above_work_area = 0.f;
   float opacity = 0.f;
   for (size_t i = 0; i < current_page.size(); i += cols_) {
@@ -1984,31 +2002,18 @@ void AppsGridView::UpdateOpacity() {
         app_list_view->GetScreenBottom() - view_bounds.CenterPoint().y(), 0.f);
     const float start_px =
         AppListConfig::instance().all_apps_opacity_start_px();
-    opacity = std::min(
-        std::max((centerline_above_work_area - start_px) /
-                     (AppListConfig::instance().all_apps_opacity_end_px() -
-                      start_px),
-                 0.f),
-        1.0f);
+    opacity = base::ClampToRange(
+        (centerline_above_work_area - start_px) /
+            (AppListConfig::instance().all_apps_opacity_end_px() - start_px),
+        0.f, 1.0f);
 
-    opacity = should_restore_opacity ? 1.0f : opacity;
-
-    const bool has_change =
-        ((opacity == 1.0f || opacity == 0.f) && item_view->layer()) ||
-        (!item_view->layer() || opacity != item_view->layer()->opacity());
-    if (!has_change)
+    if (opacity == item_view->layer()->opacity())
       continue;
 
     const size_t end_index = std::min(current_page.size() - 1, i + cols_ - 1);
     for (size_t j = i; j <= end_index; ++j) {
-      if (current_page[j] != drag_view_) {
-        if (opacity == 1.0f) {
-          current_page[j]->DestroyLayer();
-        } else {
-          current_page[j]->EnsureLayer();
-          current_page[j]->layer()->SetOpacity(opacity);
-        }
-      }
+      if (current_page[j] != drag_view_)
+        current_page[j]->layer()->SetOpacity(opacity);
     }
   }
 }

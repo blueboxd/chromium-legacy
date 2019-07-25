@@ -37,7 +37,7 @@
       <include name="IDR_GUEST_VIEW_JS" file="guest_view/guest_view.js" type="BINDATA" />
       <include name="IDR_IMAGE_UTIL_JS" file="image_util.js" type="BINDATA" />
       <include name="IDR_KEEP_ALIVE_JS" file="keep_alive.js" type="BINDATA" />
-      <include name="IDR_KEEP_ALIVE_MOJOM_JS" file="${mojom_root}\extensions\common\mojo\keep_alive.mojom.js" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_KEEP_ALIVE_MOJOM_JS" file="${mojom_root}\extensions\common\mojom\keep_alive.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_MIME_HANDLER_PRIVATE_CUSTOM_BINDINGS_JS" file="mime_handler_private_custom_bindings.js" type="BINDATA" />
       <include name="IDR_MIME_HANDLER_MOJOM_JS" file="${mojom_root}\extensions\common\api\mime_handler.mojom.js" use_base_dir="false" type="BINDATA" />
       <include name="IDR_SAFE_METHODS_JS" file="guest_view/safe_methods.js" type="BINDATA" />

@@ -15,6 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/label.h"
 #include "ui/webui/mojo_web_ui_controller.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -64,6 +65,8 @@ class AddSupervisionUI : public ui::MojoWebUIController,
 
   std::unique_ptr<add_supervision::mojom::AddSupervisionHandler>
       mojo_api_handler_;
+
+  GURL supervision_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionUI);
 };

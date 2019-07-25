@@ -80,8 +80,7 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         private void setColor() {
-            if (getContext().getApplicationInfo().targetSdkVersion
-                    >= Build.VERSION_CODES.LOLLIPOP) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mEdgeEffectRight.setColor(android.R.color.black);
             }
         }

@@ -53,15 +53,17 @@ def _GetSystemInfo(
 
 def _GetTagsToTest(browser, test_class=None, args=None):
   test_class = test_class or gpu_integration_test.GpuIntegrationTest
+  tags = None
   with mock.patch.object(
       test_class, 'ExpectationsFiles', return_value=['exp.txt']):
     possible_browser = fakes.FakePossibleBrowser()
     possible_browser._returned_browser = browser
     args = args or gpu_helper.GetMockArgs()
-    return set(test_class.GenerateTags(args, possible_browser))
-
+    tags = set(test_class.GenerateTags(args, possible_browser))
+  return tags
 
 def _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
+  tags = None
   with mock.patch.object(
       test_class, 'ExpectationsFiles', return_value=['exp.txt']):
     _ = [_ for _ in test_class.GenerateGpuTests(args)]
@@ -69,8 +71,8 @@ def _GenerateNvidiaExampleTagsForTestClassAndArgs(test_class, args):
     browser = fakes.FakeBrowser(platform, 'release')
     browser._returned_system_info = _GetSystemInfo(
         gpu=VENDOR_NVIDIA, device=0x1cb3, gl_renderer='ANGLE Direct3D9')
-    return _GetTagsToTest(browser, test_class)
-
+    tags = _GetTagsToTest(browser, test_class)
+  return tags
 
 class GpuIntegrationTestUnittest(unittest.TestCase):
   def setUp(self):
@@ -81,21 +83,21 @@ class GpuIntegrationTestUnittest(unittest.TestCase):
     extra_args = extra_args or []
     temp_file = tempfile.NamedTemporaryFile(delete=False)
     temp_file.close()
-    try:
-      sys.argv = [
-          run_gpu_integration_test.__file__,
-          test_name,
-          '--write-full-results-to=%s' % temp_file.name,
-          ] + extra_args
-      gpu_project_config.CONFIG = chromium_config.ChromiumConfig(
-          top_level_dir=path_util.GetGpuTestDir(),
-          benchmark_dirs=[
-              os.path.join(path_util.GetGpuTestDir(), 'unittest_data')])
-      run_gpu_integration_test.main()
-      with open(temp_file.name) as f:
-        self._test_result = json.load(f)
-    finally:
-      temp_file.close()
+    test_argv = [
+        run_gpu_integration_test.__file__, test_name,
+        '--write-full-results-to=%s' % temp_file.name] + extra_args
+    unittest_config = chromium_config.ChromiumConfig(
+        top_level_dir=path_util.GetGpuTestDir(),
+        benchmark_dirs=[
+            os.path.join(path_util.GetGpuTestDir(), 'unittest_data')])
+    with mock.patch.object(sys, 'argv', test_argv):
+      with mock.patch.object(gpu_project_config, 'CONFIG', unittest_config):
+        try:
+          run_gpu_integration_test.main()
+          with open(temp_file.name) as f:
+            self._test_result = json.load(f)
+        finally:
+          temp_file.close()
 
   def testOverrideDefaultRetryArgumentsinRunGpuIntegrationTests(self):
     self._RunGpuIntegrationTests(

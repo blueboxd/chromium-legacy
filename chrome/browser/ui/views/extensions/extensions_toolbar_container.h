@@ -48,6 +48,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
 
+  ToolbarActionView* GetViewForId(const std::string& id);
+
  private:
   // Creates toolbar actions and icons corresponding to the model. This is only
   // called in the constructor or when the model initializes and should not be

@@ -1068,7 +1068,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, CpuTimeMetrics) {
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
+TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstability) {
   NavigateAndCommit(GURL(kTestUrl1));
 
   page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0);
@@ -1093,15 +1093,16 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStability) {
     const ukm::mojom::UkmEntry* ukm_entry = kv.second.get();
     ukm_recorder.ExpectEntrySourceHasUrl(ukm_entry, GURL(kTestUrl1));
     ukm_recorder.ExpectEntryMetric(
-        ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
+        ukm_entry, PageLoad::kLayoutInstability_CumulativeShiftScoreName, 250);
     ukm_recorder.ExpectEntryMetric(
         ukm_entry,
-        PageLoad::kLayoutStability_JankScore_MainFrame_BeforeInputOrScrollName,
+        PageLoad::
+            kLayoutInstability_CumulativeShiftScore_MainFrame_BeforeInputOrScrollName,
         100);
   }
 
   EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "PageLoad.Experimental.LayoutStability.JankScore"),
+                  "PageLoad.LayoutInstability.CumulativeShiftScore"),
               testing::ElementsAre(base::Bucket(25, 1)));
 }
 
@@ -1117,7 +1118,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, MHTMLNotTracked) {
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
+TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstabilitySubframeAggregation) {
   NavigateAndCommit(GURL(kTestUrl1));
 
   // Simulate layout instability in the main frame.
@@ -1139,12 +1140,12 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
 
   // CLS score should be the sum of LS scores from all frames.
   EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "PageLoad.Experimental.LayoutStability.JankScore"),
+                  "PageLoad.LayoutInstability.CumulativeShiftScore"),
               testing::ElementsAre(base::Bucket(25, 1)));
 
   // Main-frame (DCLS) score includes only the LS scores in the main frame.
   EXPECT_THAT(histogram_tester().GetAllSamples(
-                  "PageLoad.Experimental.LayoutStability.JankScore.MainFrame"),
+                  "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame"),
               testing::ElementsAre(base::Bucket(10, 1)));
 
   const auto& ukm_recorder = test_ukm_recorder();
@@ -1158,11 +1159,12 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutStabilitySubframeAggregation) {
 
     // Check CLS score in UKM.
     ukm_recorder.ExpectEntryMetric(
-        ukm_entry, PageLoad::kLayoutStability_JankScoreName, 250);
+        ukm_entry, PageLoad::kLayoutInstability_CumulativeShiftScoreName, 250);
 
     // Check DCLS score in UKM.
     ukm_recorder.ExpectEntryMetric(
-        ukm_entry, PageLoad::kLayoutStability_JankScore_MainFrameName, 100);
+        ukm_entry,
+        PageLoad::kLayoutInstability_CumulativeShiftScore_MainFrameName, 100);
   }
 }
 

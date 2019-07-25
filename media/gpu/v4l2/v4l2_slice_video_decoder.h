@@ -215,14 +215,14 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   base::Thread device_poll_thread_;
 
   // State of the instance.
-  State state_;
+  State state_ = State::kUninitialized;
   // Indicates why decoding is currently paused.
   PauseReason pause_reason_ = PauseReason::kNone;
 
   // Parameters for generating output VideoFrame.
   base::Optional<VideoFrameLayout> frame_layout_;
   // Ratio of natural_size to visible_rect of the output frame.
-  double pixel_aspect_ratio_;
+  double pixel_aspect_ratio_ = 0.0;
 
   // Callbacks passed from Initialize().
   OutputCB output_cb_;

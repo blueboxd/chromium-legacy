@@ -445,7 +445,7 @@ source_set("chrome_content_browser_overlay_manifest") {
 
   if (enable_extensions) {
     deps += [
-      "//extensions/common:mojo",
+      "//extensions/common:mojom",
       "//extensions/common/api:mojom",
     ]
   }
@@ -542,7 +542,7 @@ source_set("chrome_content_renderer_overlay_manifest") {
   }
 
   if (enable_extensions) {
-    deps += [ "//extensions/common:mojo" ]
+    deps += [ "//extensions/common:mojom" ]
   }
 }
 
@@ -609,10 +609,7 @@ source_set("builtin_service_manifests") {
   }
 
   if (is_win) {
-    deps += [
-      "//chrome/services/util_win/public/cpp:manifest",
-      "//chrome/services/wifi_util_win/public/cpp:manifest",
-    ]
+    deps += [ "//chrome/services/wifi_util_win/public/cpp:manifest" ]
   }
 
   if (is_chromeos) {

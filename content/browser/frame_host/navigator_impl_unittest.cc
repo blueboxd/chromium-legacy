@@ -104,8 +104,12 @@ TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
   // Commit the navigation.
   navigation->Commit();
   EXPECT_TRUE(main_test_rfh()->is_active());
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl),
-            main_test_rfh()->GetSiteInstance()->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(main_test_rfh()->GetSiteInstance()->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl),
+              main_test_rfh()->GetSiteInstance()->GetSiteURL());
+  }
   EXPECT_EQ(kUrl, contents()->GetLastCommittedURL());
 
   // The main RenderFrameHost should not have been changed, and the renderer
@@ -157,8 +161,12 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
   // Commit the navigation.
   navigation->Commit();
   EXPECT_TRUE(main_test_rfh()->is_active());
-  EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl2),
-            main_test_rfh()->GetSiteInstance()->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(main_test_rfh()->GetSiteInstance()->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(SiteInstance::GetSiteForURL(browser_context(), kUrl2),
+              main_test_rfh()->GetSiteInstance()->GetSiteURL());
+  }
   EXPECT_EQ(kUrl2, contents()->GetLastCommittedURL());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
@@ -960,9 +968,19 @@ TEST_F(NavigatorTest, DataUrls) {
   const GURL kUrl1("http://wikipedia.org/");
   const GURL kUrl2("data:text/html,test");
 
+  // Isolate kUrl1 so it can't be mapped into a default SiteInstance along with
+  // kUrl2. This ensures that the speculative RenderFrameHost will always be
+  // used because the URLs map to different SiteInstances.
+  ChildProcessSecurityPolicy::GetInstance()->AddIsolatedOrigins(
+      {url::Origin::Create(kUrl1)},
+      ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
+      browser_context());
+
   // Navigate to an initial site.
   contents()->NavigateAndCommit(kUrl1);
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  EXPECT_FALSE(main_test_rfh()->GetSiteInstance()->IsDefaultSiteInstance());
 
   // Navigate to a data url. The request should have been sent to the IO
   // thread and not committed immediately.

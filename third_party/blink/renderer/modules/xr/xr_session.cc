@@ -474,8 +474,7 @@ void XRSession::ForceEnd() {
 
   for (unsigned i = 0; i < input_sources_->length(); i++) {
     auto* input_source = (*input_sources_)[i];
-    UpdateSelectStateOnRemoval(input_source);
-    input_source->SetGamepadConnected(false);
+    input_source->OnRemoved();
   }
 
   input_sources_ = nullptr;
@@ -793,8 +792,7 @@ void XRSession::OnInputStateChangeInternal(
     auto* input_source = (*input_sources_)[i];
     if (input_source->activeFrameId() != frame_id) {
       inactive_sources.push_back(input_source->source_id());
-      UpdateSelectStateOnRemoval(input_source);
-      input_source->SetGamepadConnected(false);
+      input_source->OnRemoved();
       removed.push_back(input_source);
     }
   }
@@ -826,7 +824,7 @@ void XRSession::OnInputStateChangeInternal(
     XRInputSource* input_source =
         input_sources_->GetWithSourceId(input_state->source_id);
     DCHECK(input_source);
-    UpdateSelectState(input_source, input_state);
+    input_source->UpdateSelectState(input_state);
   }
 }
 
@@ -852,134 +850,10 @@ void XRSession::RemoveTransientInputSource(XRInputSource* input_source) {
       event_type_names::kInputsourceschange, this, {}, {input_source}));
 }
 
-void XRSession::OnSelectStart(XRInputSource* input_source) {
-  // Discard duplicate events, or events after the session has ended.
-  if (input_source->primaryInputPressed() || ended_)
-    return;
-
-  input_source->setPrimaryInputPressed(true);
-  input_source->setSelectionCancelled(false);
-
-  XRInputSourceEvent* event =
-      CreateInputSourceEvent(event_type_names::kSelectstart, input_source);
-  DispatchEvent(*event);
-
-  if (event->defaultPrevented())
-    input_source->setSelectionCancelled(true);
-
-  // Ensure the frame cannot be used outside of the event handler.
-  event->frame()->Deactivate();
-}
-
-void XRSession::OnSelectEnd(XRInputSource* input_source,
-                            UserActivation user_activation) {
-  // Discard duplicate events, or events after the session has ended.
-  if (!input_source->primaryInputPressed() || ended_)
-    return;
-
-  input_source->setPrimaryInputPressed(false);
-
-  LocalFrame* frame = xr_->GetFrame();
-  if (!frame)
-    return;
-
-  std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      user_activation == UserActivation::kEnabled
-          ? LocalFrame::NotifyUserActivation(frame)
-          : nullptr;
-
-  XRInputSourceEvent* event =
-      CreateInputSourceEvent(event_type_names::kSelectend, input_source);
-  DispatchEvent(*event);
-
-  if (event->defaultPrevented())
-    input_source->setSelectionCancelled(true);
-
-  // Ensure the frame cannot be used outside of the event handler.
-  event->frame()->Deactivate();
-}
-
-void XRSession::OnSelect(XRInputSource* input_source) {
-  // If a select was fired but we had not previously started the selection it
-  // indictes a sub-frame or instantanous select event, and we should fire a
-  // selectstart prior to the selectend.
-  if (!input_source->primaryInputPressed()) {
-    OnSelectStart(input_source);
-  }
-
-  // If SelectStart caused the session to end, we shouldn't try to fire the
-  // select event.
-  if (!input_source->selectionCancelled() && !ended_) {
-    LocalFrame* frame = xr_->GetFrame();
-    if (!frame)
-      return;
-
-    std::unique_ptr<UserGestureIndicator> gesture_indicator =
-        LocalFrame::NotifyUserActivation(frame);
-
-    XRInputSourceEvent* event =
-        CreateInputSourceEvent(event_type_names::kSelect, input_source);
-    DispatchEvent(*event);
-
-    // Ensure the frame cannot be used outside of the event handler.
-    event->frame()->Deactivate();
-  }
-
-  OnSelectEnd(input_source);
-}
-
 void XRSession::OnPoseReset() {
   for (const auto& reference_space : reference_spaces_) {
     reference_space->OnReset();
   }
-}
-
-void XRSession::UpdateSelectState(
-    XRInputSource* input_source,
-    const device::mojom::blink::XRInputSourceStatePtr& state) {
-  if (!input_source || !state)
-    return;
-
-  // Handle state change of the primary input, which may fire events
-  if (state->primary_input_clicked)
-    OnSelect(input_source);
-
-  if (state->primary_input_pressed) {
-    OnSelectStart(input_source);
-  } else if (input_source->primaryInputPressed()) {
-    // May get here if the input source was previously pressed but now isn't,
-    // but the input source did not set primary_input_clicked to true. We will
-    // treat this as a cancelled selection, firing the selectend event so the
-    // page stays in sync with the controller state but won't fire the
-    // usual select event.
-    OnSelectEnd(input_source, UserActivation::kDisabled);
-  }
-}
-
-void XRSession::UpdateSelectStateOnRemoval(XRInputSource* input_source) {
-  if (!input_source)
-    return;
-
-  if (input_source->primaryInputPressed()) {
-    input_source->setPrimaryInputPressed(false);
-
-    XRInputSourceEvent* event =
-        CreateInputSourceEvent(event_type_names::kSelectend, input_source);
-    DispatchEvent(*event);
-
-    if (event->defaultPrevented())
-      input_source->setSelectionCancelled(true);
-
-    // Ensure the frame cannot be used outside of the event handler.
-    event->frame()->Deactivate();
-  }
-}
-
-XRInputSourceEvent* XRSession::CreateInputSourceEvent(
-    const AtomicString& type,
-    XRInputSource* input_source) {
-  XRFrame* presentation_frame = CreatePresentationFrame();
-  return XRInputSourceEvent::Create(type, presentation_frame, input_source);
 }
 
 void XRSession::OnChanged(device::mojom::blink::VRDisplayInfoPtr display_info) {

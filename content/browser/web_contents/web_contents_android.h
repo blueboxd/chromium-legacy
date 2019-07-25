@@ -138,10 +138,9 @@ class CONTENT_EXPORT WebContentsAndroid {
       jint level,
       const base::android::JavaParamRef<jstring>& message);
 
-  void PostMessageToFrame(
+  void PostMessageToMainFrame(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& jframe_name,
       const base::android::JavaParamRef<jstring>& jmessage,
       const base::android::JavaParamRef<jstring>& jsource_origin,
       const base::android::JavaParamRef<jstring>& jtarget_origin,

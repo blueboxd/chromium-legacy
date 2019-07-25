@@ -30,7 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
-#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"

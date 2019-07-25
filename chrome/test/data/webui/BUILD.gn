@@ -82,6 +82,10 @@ js2gtest("browser_tests_js_webui") {
     "webui_resource_async_browsertest.js",
   ]
 
+  if (!optimize_webui) {
+    sources += [ "js/webui_resource_module_async_browsertest.js" ]
+  }
+
   extra_js_files = [
     "test_browser_proxy.js",
     "settings/test_password_manager_proxy.js",

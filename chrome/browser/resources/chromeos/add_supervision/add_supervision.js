@@ -7,12 +7,8 @@
  * @const {!Array<string>}
  */
 const ALLOWED_HOSTS = [
-  'families.google.com',
-  'play.google.com',
   'google.com',
-  'accounts.google.com',
   'gstatic.com',
-  'fonts.gstatic.com',
   // FIFE avatar images (lh3-lh6). See http://go/fife-domains
   'lh3.googleusercontent.com',
   'lh4.googleusercontent.com',
@@ -68,10 +64,6 @@ Polymer({
 
     proxy.getOAuthToken().then((result) => {
       const webviewUrl = loadTimeData.getString('webviewUrl');
-      if (!webviewUrl.startsWith('https://families.google.com')) {
-        console.error('webviewUrl is not from https://families.google.com');
-        return;
-      }
       const eventOriginFilter = loadTimeData.getString('eventOriginFilter');
       const webview =
           /** @type {!WebView} */ (this.$.webview);

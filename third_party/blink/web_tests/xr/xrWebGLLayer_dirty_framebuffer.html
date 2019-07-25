@@ -12,7 +12,8 @@
 <canvas />
 
 <script>
-
+// This test utilizes internal getSubmitFrameCount and getMissingFrameCount methods
+// that are not part of the external webxr-test-api, and thus is internal to chrome.
 let testName = "A frame should be submitted if the base layer was written to "
   + "during requestAnimationFrame";
 

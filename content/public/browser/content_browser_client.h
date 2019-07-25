@@ -44,7 +44,6 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/mime_util.h"
-#include "net/cookies/canonical_cookie.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
@@ -588,24 +587,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void UpdateRendererPreferencesForWorker(
       BrowserContext* browser_context,
       blink::mojom::RendererPreferences* out_prefs);
-
-  // Allow the embedder to control if the given cookie can be read.
-  // This is called on the IO thread.
-  virtual bool AllowGetCookie(const GURL& url,
-                              const GURL& first_party,
-                              const net::CookieList& cookie_list,
-                              ResourceContext* context,
-                              int render_process_id,
-                              int render_frame_id);
-
-  // Allow the embedder to control if the given cookie can be set.
-  // This is called on the IO thread.
-  virtual bool AllowSetCookie(const GURL& url,
-                              const GURL& first_party,
-                              const net::CanonicalCookie& cookie,
-                              ResourceContext* context,
-                              int render_process_id,
-                              int render_frame_id);
 
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
@@ -1298,10 +1279,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       const base::Optional<std::string>& user_agent,
       network::mojom::WebSocketHandshakeClientPtr handshake_client);
 
-  // Allows the embedder to intercept the mojo object vended to renderer
-  // processes for limited, origin-locked (to |origin|), access to
-  // script-accessible cookies from JavaScript. |*request| is always valid upon
-  // entry.
+  // Allows the embedder to intercept or replace the mojo objects used for
+  // preference-following access to cookies. This is primarily used for objects
+  // vended to renderer processes for limited, origin-locked (to |origin|),
+  // access to script-accessible cookies from JavaScript, so returned objects
+  // should treat their inputs as untrusted.
+  //
+  // |*request| is always valid upon entry.
   //
   // If this methods returns true, it should have created an object bound to
   // |*request|, and the value of |*request| afterwards is unusable.
@@ -1319,6 +1303,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // This is called on the UI thread.
   virtual bool WillCreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
       BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,

@@ -259,7 +259,8 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public void setShouldShowGoogleLogo(boolean shouldShowGoogleLogo) {}
+        public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
+                boolean isSearchEngineGoogle, String searchEngineUrl) {}
     }
 
     /**

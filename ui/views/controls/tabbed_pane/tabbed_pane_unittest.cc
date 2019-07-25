@@ -13,6 +13,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
@@ -27,6 +28,12 @@ base::string16 DefaultTabTitle() {
   return ASCIIToUTF16("tab");
 }
 
+base::string16 GetAccessibleName(View* view) {
+  ui::AXNodeData ax_node_data;
+  view->GetViewAccessibility().GetAccessibleNodeData(&ax_node_data);
+  return ax_node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
+}
+
 }  // namespace
 
 class TabbedPaneTest : public ViewsTestBase {
@@ -37,6 +44,21 @@ class TabbedPaneTest : public ViewsTestBase {
     ViewsTestBase::SetUp();
     tabbed_pane_ = std::make_unique<TabbedPane>();
     tabbed_pane_->set_owned_by_client();
+
+    // Create a widget so that accessibility data will be returned correctly.
+    widget_ = std::make_unique<Widget>();
+    Widget::InitParams params =
+        CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.bounds = gfx::Rect(0, 0, 650, 650);
+    widget_->Init(params);
+    widget_->SetContentsView(tabbed_pane_.get());
+  }
+
+  void TearDown() override {
+    tabbed_pane_.reset();
+    widget_.reset();
+    ViewsTestBase::TearDown();
   }
 
  protected:
@@ -60,6 +82,7 @@ class TabbedPaneTest : public ViewsTestBase {
                      ui::UsLayoutKeyboardCodeToDomCode(keyboard_code), 0));
   }
 
+  std::unique_ptr<Widget> widget_;
   std::unique_ptr<TabbedPane> tabbed_pane_;
 
  private:
@@ -248,6 +271,27 @@ TEST_F(TabbedPaneTest, SelectTabWithAccessibleAction) {
   EXPECT_EQ(1u, tabbed_pane_->GetSelectedTabIndex());
 
   widget->CloseNow();
+}
+
+TEST_F(TabbedPaneTest, AccessiblePaneTitleTracksActiveTabTitle) {
+  const base::string16 kFirstTitle = ASCIIToUTF16("Tab1");
+  const base::string16 kSecondTitle = ASCIIToUTF16("Tab2");
+  tabbed_pane_->AddTab(kFirstTitle, std::make_unique<View>());
+  tabbed_pane_->AddTab(kSecondTitle, std::make_unique<View>());
+  EXPECT_EQ(kFirstTitle, GetAccessibleName(tabbed_pane_.get()));
+  tabbed_pane_->SelectTabAt(1);
+  EXPECT_EQ(kSecondTitle, GetAccessibleName(tabbed_pane_.get()));
+}
+
+TEST_F(TabbedPaneTest, AccessiblePaneContentsTitleTracksTabTitle) {
+  const base::string16 kFirstTitle = ASCIIToUTF16("Tab1");
+  const base::string16 kSecondTitle = ASCIIToUTF16("Tab2");
+  View* const tab1_contents =
+      tabbed_pane_->AddTab(kFirstTitle, std::make_unique<View>());
+  View* const tab2_contents =
+      tabbed_pane_->AddTab(kSecondTitle, std::make_unique<View>());
+  EXPECT_EQ(kFirstTitle, GetAccessibleName(tab1_contents));
+  EXPECT_EQ(kSecondTitle, GetAccessibleName(tab2_contents));
 }
 
 }  // namespace test

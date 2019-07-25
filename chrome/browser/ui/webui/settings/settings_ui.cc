@@ -230,7 +230,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(std::make_unique<SearchEnginesHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<SiteSettingsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<StartupPagesHandler>(web_ui));
-  AddSettingsPageUIHandler(std::make_unique<SecurityKeysHandler>());
+  AddSettingsPageUIHandler(std::make_unique<SecurityKeysPINHandler>());
+  AddSettingsPageUIHandler(std::make_unique<SecurityKeysResetHandler>());
+  AddSettingsPageUIHandler(std::make_unique<SecurityKeysCredentialHandler>());
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   AddSettingsPageUIHandler(std::make_unique<CaptionsHandler>());

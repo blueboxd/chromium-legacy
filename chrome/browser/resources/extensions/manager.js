@@ -167,7 +167,7 @@ cr.define('extensions', function() {
     /**
      * The current page being shown. Default to null, and initPage_ will figure
      * out the initial page based on url.
-     * @private {?PageState}
+     * @private {?extensions.PageState}
      */
     currentPage_: null,
 
@@ -290,8 +290,8 @@ cr.define('extensions', function() {
      * @private
      */
     onFilterChanged_: function(event) {
-      if (this.currentPage_.page !== Page.LIST) {
-        extensions.navigation.navigateTo({page: Page.LIST});
+      if (this.currentPage_.page !== extensions.Page.LIST) {
+        extensions.navigation.navigateTo({page: extensions.Page.LIST});
       }
       this.filter = event.detail;
     },
@@ -402,15 +402,15 @@ cr.define('extensions', function() {
       // that the DOM will have stale data, but there's no point in causing the
       // extra work.
       if (this.detailViewItem_ && this.detailViewItem_.id == item.id &&
-          this.currentPage_.page == Page.DETAILS) {
+          this.currentPage_.page == extensions.Page.DETAILS) {
         this.detailViewItem_ = item;
       } else if (
           this.errorPageItem_ && this.errorPageItem_.id == item.id &&
-          this.currentPage_.page == Page.ERRORS) {
+          this.currentPage_.page == extensions.Page.ERRORS) {
         this.errorPageItem_ = item;
       } else if (
           this.activityLogItem_ && this.activityLogItem_.id == item.id &&
-          this.currentPage_.page == Page.ACTIVITY_LOG) {
+          this.currentPage_.page == extensions.Page.ACTIVITY_LOG) {
         this.activityLogItem_ = item;
       }
     },
@@ -432,12 +432,12 @@ cr.define('extensions', function() {
       // We should never try and remove a non-existent item.
       assert(index >= 0);
       this.splice(listId, index, 1);
-      if ((this.currentPage_.page == Page.ACTIVITY_LOG ||
-           this.currentPage_.page == Page.DETAILS ||
-           this.currentPage_.page == Page.ERRORS) &&
+      if ((this.currentPage_.page == extensions.Page.ACTIVITY_LOG ||
+           this.currentPage_.page == extensions.Page.DETAILS ||
+           this.currentPage_.page == extensions.Page.ERRORS) &&
           this.currentPage_.extensionId == itemId) {
         // Leave the details page (the 'list' page is a fine choice).
-        extensions.navigation.replaceWith({page: Page.LIST});
+        extensions.navigation.replaceWith({page: extensions.Page.LIST});
       }
     },
 
@@ -456,7 +456,7 @@ cr.define('extensions', function() {
 
     /**
      * Changes the active page selection.
-     * @param {PageState} newPage
+     * @param {extensions.PageState} newPage
      * @private
      */
     changePage_: function(newPage) {
@@ -478,29 +478,31 @@ cr.define('extensions', function() {
           // extension ID is not valid. This enables the use case of seeing an
           // extension's install-time activities by navigating to an extension's
           // activity log page, then installing the extension.
-          if (this.showActivityLog && toPage == Page.ACTIVITY_LOG) {
+          if (this.showActivityLog && toPage == extensions.Page.ACTIVITY_LOG) {
             activityLogPlaceholder = {
               id: newPage.extensionId,
               isPlaceholder: true,
             };
           } else {
             // Attempting to view an invalid (removed?) app or extension ID.
-            extensions.navigation.replaceWith({page: Page.LIST});
+            extensions.navigation.replaceWith({page: extensions.Page.LIST});
             return;
           }
         }
       }
 
-      if (toPage == Page.DETAILS) {
+      if (toPage == extensions.Page.DETAILS) {
         this.detailViewItem_ = assert(data);
-      } else if (toPage == Page.ERRORS) {
+      } else if (toPage == extensions.Page.ERRORS) {
         this.errorPageItem_ = assert(data);
-      } else if (toPage == Page.ACTIVITY_LOG) {
+      } else if (toPage == extensions.Page.ACTIVITY_LOG) {
         if (!this.showActivityLog) {
           // Redirect back to the details page if we try to view the
           // activity log of an extension but the flag is not set.
-          extensions.navigation.replaceWith(
-              {page: Page.DETAILS, extensionId: newPage.extensionId});
+          extensions.navigation.replaceWith({
+            page: extensions.Page.DETAILS,
+            extensionId: newPage.extensionId
+          });
           return;
         }
 
@@ -509,11 +511,11 @@ cr.define('extensions', function() {
 
       if (fromPage != toPage) {
         /** @type {CrViewManagerElement} */ (this.$.viewManager)
-            .switchView(toPage);
+            .switchView(/** @type {string} */ (toPage));
       }
 
       if (newPage.subpage) {
-        assert(newPage.subpage == Dialog.OPTIONS);
+        assert(newPage.subpage == extensions.Dialog.OPTIONS);
         assert(newPage.extensionId);
         this.showOptionsDialog_ = true;
         this.async(() => {
@@ -521,7 +523,7 @@ cr.define('extensions', function() {
         });
       }
 
-      document.title = toPage == Page.DETAILS ?
+      document.title = toPage == extensions.Page.DETAILS ?
           `${loadTimeData.getString('title')} - ${this.detailViewItem_.name}` :
           loadTimeData.getString('title');
       this.currentPage_ = newPage;

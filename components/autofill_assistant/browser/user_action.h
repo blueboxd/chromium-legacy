@@ -32,6 +32,7 @@ class UserAction {
   UserAction& operator=(UserAction&&);
 
   // Initializes user action from proto.
+  UserAction(const UserActionProto& action);
   UserAction(const ChipProto& chip, const DirectActionProto& direct_action);
 
   // Returns true if the action has no trigger, that is, there is no chip and no

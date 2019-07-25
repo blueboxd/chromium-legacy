@@ -10,10 +10,12 @@
 @interface SendTabToSelfCommand : NSObject
 
 @property(copy, nonatomic, readonly) NSString* targetDeviceID;
+@property(copy, nonatomic, readonly) NSString* targetDeviceName;
 
 - (instancetype)init NS_UNAVAILABLE;
 
 - (instancetype)initWithTargetDeviceID:(NSString*)targetDeviceID
+                      targetDeviceName:(NSString*)targetDeviceName
     NS_DESIGNATED_INITIALIZER;
 
 @end

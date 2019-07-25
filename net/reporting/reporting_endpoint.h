@@ -21,10 +21,10 @@ struct NET_EXPORT ReportingEndpointGroupKey {
   ReportingEndpointGroupKey(url::Origin origin, std::string group_name);
 
   // Origin that configured this endpoint group.
-  const url::Origin origin;
+  url::Origin origin;
 
   // Name of the endpoint group (defaults to "default" during header parsing).
-  const std::string group_name;
+  std::string group_name;
 };
 
 NET_EXPORT bool operator==(const ReportingEndpointGroupKey& lhs,
@@ -32,6 +32,8 @@ NET_EXPORT bool operator==(const ReportingEndpointGroupKey& lhs,
 NET_EXPORT bool operator!=(const ReportingEndpointGroupKey& lhs,
                            const ReportingEndpointGroupKey& rhs);
 NET_EXPORT bool operator<(const ReportingEndpointGroupKey& lhs,
+                          const ReportingEndpointGroupKey& rhs);
+NET_EXPORT bool operator>(const ReportingEndpointGroupKey& lhs,
                           const ReportingEndpointGroupKey& rhs);
 
 // The configuration by an origin to use an endpoint for report delivery.
@@ -81,13 +83,16 @@ struct NET_EXPORT ReportingEndpoint {
   ReportingEndpoint(const ReportingEndpoint& other);
   ReportingEndpoint(ReportingEndpoint&& other);
 
+  ReportingEndpoint& operator=(const ReportingEndpoint&);
+  ReportingEndpoint& operator=(ReportingEndpoint&&);
+
   ~ReportingEndpoint();
 
   bool is_valid() const;
   explicit operator bool() const { return is_valid(); }
 
   // Identifies the endpoint group to which this endpoint belongs.
-  const ReportingEndpointGroupKey group_key;
+  ReportingEndpointGroupKey group_key;
 
   // URL, priority, and weight of the endpoint.
   EndpointInfo info;
@@ -138,7 +143,7 @@ struct NET_EXPORT CachedReportingEndpointGroup {
                                base::Time now);
 
   // Origin and group name.
-  const ReportingEndpointGroupKey group_key;
+  ReportingEndpointGroupKey group_key;
 
   // Whether this group applies to subdomains of |group_key.origin|.
   OriginSubdomains include_subdomains = OriginSubdomains::DEFAULT;

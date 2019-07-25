@@ -2122,7 +2122,7 @@ void EventHandler::MayUpdateHoverWhenContentUnderMouseChanged(
     MouseEventManager::UpdateHoverReason update_hover_reason) {
   if (update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     return;
   }
   mouse_event_manager_->MayUpdateHoverWhenContentUnderMouseChanged(

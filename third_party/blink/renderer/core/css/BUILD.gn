@@ -181,7 +181,6 @@ blink_core_sources("css") {
     "css_style_sheet.h",
     "css_supports_rule.cc",
     "css_supports_rule.h",
-    "css_syntax_component.cc",
     "css_syntax_component.h",
     "css_syntax_descriptor.cc",
     "css_syntax_descriptor.h",

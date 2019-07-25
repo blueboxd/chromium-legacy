@@ -143,10 +143,20 @@ interface PerfettoService {
                         ProducerHost& producer_host);
 };
 
-// The size of a buffer that the Consumer can request Perfetto to allocate
-// and then configure specific data sources to be written into.
+// The policy for filling the trace buffer.
+enum BufferFillPolicy {
+  kUnspecified,
+  // Overwrite old chunks for new ones.
+  kRingBuffer,
+  // Discard all chunks once the buffer is full.
+  kDiscard
+};
+
 struct BufferConfig {
+  // The size of a buffer that the Consumer can request Perfetto to allocate
+  // and then configure specific data sources to be written into.
   uint32 size_kb;
+  BufferFillPolicy fill_policy;
 };
 
 struct DataSource {

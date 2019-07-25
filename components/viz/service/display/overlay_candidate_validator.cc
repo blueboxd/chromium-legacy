@@ -144,16 +144,18 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
     DisplayResourceProvider* resource_provider,
     RenderPassList* render_pass_list,
     OverlayCandidateList* candidates,
-    std::vector<gfx::Rect>* content_bounds) const {
+    std::vector<gfx::Rect>* content_bounds) {
   for (const auto& strategy : strategies_) {
     if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
                           resource_provider, render_pass_list, candidates,
                           content_bounds)) {
+      last_successful_strategy_ = strategy.get();
       UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                                 strategy->GetUMAEnum());
       return true;
     }
   }
+  last_successful_strategy_ = nullptr;
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy",
                             OverlayStrategy::kNoStrategyUsed);
   return false;
@@ -162,6 +164,12 @@ bool OverlayCandidateValidator::AttemptWithStrategies(
 gfx::Rect OverlayCandidateValidator::GetOverlayDamageRectForOutputSurface(
     const OverlayCandidate& candidate) const {
   return ToEnclosedRect(candidate.display_rect);
+}
+
+void OverlayCandidateValidator::AdjustOutputSurfaceOverlay(
+    OverlayProcessor::OutputSurfaceOverlayPlane* output_surface_plane) {
+  if (last_successful_strategy_)
+    last_successful_strategy_->AdjustOutputSurfaceOverlay(output_surface_plane);
 }
 
 }  // namespace viz

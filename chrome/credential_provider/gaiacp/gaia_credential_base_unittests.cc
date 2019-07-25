@@ -26,6 +26,42 @@ namespace testing {
 
 constexpr char kFakeResourceId[] = "fake_resource_id";
 
+// DER-encoded, PKIX public key.
+constexpr char kTestPublicKey[] =
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlFxKse4DGwIDQKLN/4Su\n"
+    "TvF6+J5Juv/Ywwovws+UV7UmXDCRPaaFj36u9LpIqzja2/KG+17Ob7L4KDLLIe6g\n"
+    "mJ2wP9ioawBDJ1JWryNkHcVUcc/bbTgpyD6N0RcpvsbM8YpccYJ1aDAsdKy0593s\n"
+    "ozMUBZ9Y7Z3Yb1Xvoq965At6ihD7s0FMNzehCuwrfJ+A47ChIho0IMxpa2NhrQUo\n"
+    "1Sjm7NEh5u9xTzH+5VtGLJnF5FJ6fWy2YEUfMUM9TxrPPDt795UQj5MyVjph0Ssp\n"
+    "vXuLQ1Ub7zonhhRcfXi/iCC42n+lpW9TeECKXxj/4xAP4Gqq/VoF1Sr1M6+aZTK5\n"
+    "qwIDAQAB";
+
+// DER-encoded, PKCS#8 private key.
+const char kTestPrivateKey[] =
+    "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCUXEqx7gMbAgNAos3/hK5O8"
+    "Xr4nkm6/9jDCi/Cz5RXtSZcMJE9poWPfq70ukirONrb8ob7Xs5vsvgoMssh7qCYnbA/2KhrAE"
+    "MnUlavI2QdxVRxz9ttOCnIPo3RFym+xszxilxxgnVoMCx0rLTn3eyjMxQFn1jtndhvVe+ir3r"
+    "kC3qKEPuzQUw3N6EK7Ct8n4DjsKEiGjQgzGlrY2GtBSjVKObs0SHm73FPMf7lW0YsmcXkUnp9"
+    "bLZgRR8xQz1PGs88O3v3lRCPkzJWOmHRKym9e4tDVRvvOieGFFx9eL+IILjaf6Wlb1N4QIpfG"
+    "P/jEA/gaqr9WgXVKvUzr5plMrmrAgMBAAECggEACK3liMc900So4A0mM/6VG/Uwln7cHV5+Vd"
+    "qwtJrkOMVWOyp0NMEbKyvkHFkRi0LGOvvTPb1sIki8D8346EFHj+YZu4J3R9s6EoDUpWZSoxM"
+    "6P3ZDhf41I4vVTBgozwpeTvsjMVjKeY/n6eN4qd/nyhxg3XtW/n+ve8PxQvk1HUYfxokJBkjs"
+    "5IF/Nka18Ia/nEjaItnix+tdYPH/e074QorvXR+VYH+YKiOEfVCFH98HyLjsd2g7TOwEzQnzh"
+    "ECSR7tAa7Q4EsrwmpPfQ9TJy476CY/RcVe5waLRfpj8medkVEDgqmds+KI/qI/TMJL2aCTfax"
+    "1g4yBzzf/ADgyBYQKBgQDRbtChbtTM4srMqsIwO/g2kKzv3b/c3fAKW8HbkHdMRAVswJbBMJ/"
+    "OrPO6cxLbpy7CtJzH8A7DSZuVH7oyUTI4xVQRT53MF+dmeDyAdwN8pPeS9pb1o2qCXTBKigKD"
+    "pFUccq2T3dm9wHLdIwysa5PziOUoRGrgHFoyijcazLN5OQKBgQC1WSklS+fPwpI9fQOj949gj"
+    "osTcK/3QeqS2so5xZaSFUPvJtK3PezFGvyF05FM+3VzpS3wfl0Z30msuAMQL7a9tKGykkoUDs"
+    "XgmS+Rg4yoqmzk5nWRuE2AenJZs7rtkyLujrv5QYCG5A7TX5rU+c/GquZbmG4lSZ58hbYOxCC"
+    "+AwKBgE+u8PQq/g5CT9TVN3MwrfzcyN+uqDw5uQXH6ZdHfQxoaQP6tqEkhfkVttn+xHMMRe9Q"
+    "1sH/pS5KSEbRvn88g3Y0Jgs8Fpa7lZBYOPTL02jOP2AMMF2fYnvdRu1lWxWJJdTgEQjMhPb8T"
+    "Pe0STMk7zLeqAnNFjjUsMC/871fmv2JAoGAb7mWl9vD3UPKRQeYDpSeSKaJGFj8kCCUHBWfMS"
+    "iCM03WpKgOecY08NpHaUuG4R6qpazGOLwhL6dZBIf5mydKNmXqmNF3whO35T97BvM83Uzh+cP"
+    "h+vzJArZtbMZGC8fyZXaaaF3qiTBH0gG8qimd0I/Ji/TFJ0PL2HuoRkCey3ECgYAJh9HYMbVe"
+    "9+Sxa1/UL+HSC/AgA8ueMNxzFZ4fI8haab16xefDXwdrHm3PSxt0pn1E1kmTQyP2KPuoOLYas"
+    "q6BRf4WzsjBrS1kPrlCwZNZkPqz3QnV4oVT3tW6q9kWyY+WKz0s7byT0AiriRrCLcQbYYYog7"
+    "OaEw4i7JOShaPsLQ==";
+
 class GcpGaiaCredentialBaseTest : public GlsRunnerTestBase {};
 
 TEST_F(GcpGaiaCredentialBaseTest, Advise) {
@@ -1253,11 +1289,11 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   // retrieval.
   std::string generate_success_response =
       fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
-          "public_key", kFakeResourceId);
+          kTestPublicKey, kFakeResourceId);
 
   std::string get_key_success_response =
       fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
-          "private_key");
+          kTestPrivateKey);
 
   // Make timeout events for the various escrow service requests if needed.
   std::unique_ptr<base::WaitableEvent> get_key_event;
@@ -1478,11 +1514,11 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   // retrieval.
   std::string generate_success_response =
       fake_password_recovery_manager()->MakeGenerateKeyPairResponseForTesting(
-          "public_key", kFakeResourceId);
+          kTestPublicKey, kFakeResourceId);
 
   std::string get_key_success_response =
       fake_password_recovery_manager()->MakeGetPrivateKeyResponseForTesting(
-          "private_key");
+          kTestPrivateKey);
 
   fake_http_url_fetcher_factory()->SetFakeResponse(
       fake_password_recovery_manager()->GetEscrowServiceGenerateKeyPairUrl(),

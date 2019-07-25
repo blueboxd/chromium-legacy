@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_SMS_SMS_SERVICE_H_
 #define CONTENT_BROWSER_SMS_SMS_SERVICE_H_
 
-#include <list>
 #include <memory>
 
 #include "base/callback_forward.h"
@@ -47,16 +46,6 @@ class CONTENT_EXPORT SmsService
              blink::mojom::SmsReceiverRequest);
   ~SmsService() override;
 
-  struct Request {
-    explicit Request(ReceiveCallback callback);
-    ~Request();
-
-    base::OneShotTimer timer;
-    ReceiveCallback callback;
-
-    DISALLOW_COPY_AND_ASSIGN(Request);
-  };
-
   // content::SmsProvider::Observer:
   bool OnReceive(const url::Origin&, const std::string& message) override;
 
@@ -64,13 +53,15 @@ class CONTENT_EXPORT SmsService
   void Receive(base::TimeDelta timeout, ReceiveCallback) override;
 
  private:
-  bool Pop(blink::mojom::SmsStatus, base::Optional<std::string>);
-
+  void Process(blink::mojom::SmsStatus, base::Optional<std::string> sms);
   // Shows/Dismisses the dialog.
   void Prompt();
   void Dismiss();
 
-  void OnTimeout(Request* request);
+  // Callback when the |timer_| times out.
+  void OnTimeout();
+  // Callback when the user manually clicks 'Continue' button.
+  void OnContinue();
   // Callback when the user manually dismisses the dialog.
   void OnCancel();
 
@@ -84,8 +75,9 @@ class CONTENT_EXPORT SmsService
 
   const url::Origin origin_;
 
-  using SmsRequestList = std::list<std::unique_ptr<Request>>;
-  SmsRequestList requests_;
+  base::OneShotTimer timer_;
+  ReceiveCallback callback_;
+  base::Optional<std::string> sms_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(SmsService);

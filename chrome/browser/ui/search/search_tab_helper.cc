@@ -395,6 +395,8 @@ void SearchTabHelper::FileSelected(const base::FilePath& path,
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_DONE,
                  base::TimeDelta::FromSeconds(0));
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(NTP_BACKGROUND_UPLOAD_DONE, base::TimeDelta::FromSeconds(0));
 
   ipc_router_.SendLocalBackgroundSelected();
 }
@@ -406,6 +408,8 @@ void SearchTabHelper::FileSelectionCanceled(void* params) {
   NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
       ->LogEvent(NTP_CUSTOMIZE_LOCAL_IMAGE_CANCEL,
                  base::TimeDelta::FromSeconds(0));
+  NTPUserDataLogger::GetOrCreateFromWebContents(web_contents())
+      ->LogEvent(NTP_BACKGROUND_UPLOAD_CANCEL, base::TimeDelta::FromSeconds(0));
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {

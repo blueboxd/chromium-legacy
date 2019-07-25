@@ -12,7 +12,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "extensions/common/api/mime_handler.mojom.h"
 #include "extensions/common/guest_view/mime_handler_view_uma_types.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/post_message_support.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "third_party/blink/public/web/web_element.h"

@@ -38,6 +38,7 @@ chrome.settingsPrivate.ControlledBy = {
   PRIMARY_USER: 'PRIMARY_USER',
   EXTENSION: 'EXTENSION',
   PARENT: 'PARENT',
+  CHILD_RESTRICTION: 'CHILD_RESTRICTION',
 };
 
 /**

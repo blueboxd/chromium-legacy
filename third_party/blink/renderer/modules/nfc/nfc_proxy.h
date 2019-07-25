@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -23,6 +24,7 @@ class NFCWriter;
 class MODULES_EXPORT NFCProxy final
     : public GarbageCollectedFinalized<NFCProxy>,
       public PageVisibilityObserver,
+      public FocusChangedObserver,
       public Supplement<Document>,
       public device::mojom::blink::NFCClient {
   USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
@@ -44,34 +46,41 @@ class MODULES_EXPORT NFCProxy final
   // collected.
   void AddWriter(NFCWriter*);
 
-  void AddReader(NFCReader*);
-  void RemoveReader(NFCReader*);
+  void StartReading(NFCReader*);
+  void StopReading(NFCReader*);
+  bool IsReading(const NFCReader*);
   void Push(device::mojom::blink::NDEFMessagePtr message,
             device::mojom::blink::NFCPushOptionsPtr options,
             device::mojom::blink::NFC::PushCallback cb);
   void CancelPush(const String& target,
                   device::mojom::blink::NFC::CancelPushCallback callback);
 
-  // Implementation of PageVisibilityObserver.
-  void PageVisibilityChanged() override;
-
  private:
   // Implementation of device::mojom::blink::NFCClient.
-  void OnWatch(const Vector<uint32_t>& ids,
+  void OnWatch(const Vector<uint32_t>&,
+               const String&,
                device::mojom::blink::NDEFMessagePtr) override;
 
   void OnReaderRegistered(NFCReader* reader,
                           uint32_t id,
                           device::mojom::blink::NFCErrorPtr error);
 
-  void OnCancelWatch(NFCReader* reader,
-                     device::mojom::blink::NFCErrorPtr error);
+  // Implementation of PageVisibilityObserver.
+  void PageVisibilityChanged() override;
+
+  // Implementation of FocusChangedObserver.
+  void FocusedFrameChanged() override;
+
+  void UpdateSuspendedStatus();
+  bool ShouldSuspendNFC() const;
 
   // For the Mojo connection with the DeviceService.
   void EnsureMojoConnection();
   void OnMojoConnectionError();
 
-  // The <NFCReader, WatchId> map.
+  // The <NFCReader, WatchId> map. An reader is inserted with the WatchId
+  // initially being 0, then we send a watch request to |nfc_|, the watch ID is
+  // then updated to the value (>= 1) passed to OnReaderRegistered().
   using ReaderMap = HeapHashMap<WeakMember<NFCReader>, uint32_t>;
   ReaderMap readers_;
 

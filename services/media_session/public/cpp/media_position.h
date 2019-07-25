@@ -34,6 +34,21 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
   // Return the current position of the media.
   base::TimeDelta GetPosition() const;
 
+  // Return the current playback rate of the media.
+  double playback_rate() const;
+
+  // Return the time the position state was last updated.
+  base::TimeTicks last_updated_time() const;
+
+  // Return the updated position of the media, assuming current time is
+  // |time|.
+  base::TimeDelta GetPositionAtTime(base::TimeTicks time) const;
+
+  bool operator==(const MediaPosition&) const;
+  bool operator!=(const MediaPosition&) const;
+
+  std::string ToString() const;
+
  private:
   friend struct mojo::StructTraits<mojom::MediaPositionDataView, MediaPosition>;
   friend class MediaPositionTest;
@@ -45,13 +60,14 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
                            TestPositionUpdatedFasterPlayback);
   FRIEND_TEST_ALL_PREFIXES(MediaPositionTest,
                            TestPositionUpdatedSlowerPlayback);
-
-  // Return the updated position of the media, assuming current time is
-  // |time|.
-  base::TimeDelta GetPositionAtTime(base::Time time) const;
+  FRIEND_TEST_ALL_PREFIXES(MediaPositionTest, TestEquals_AllSame);
+  FRIEND_TEST_ALL_PREFIXES(MediaPositionTest, TestEquals_SameButDifferentTime);
+  FRIEND_TEST_ALL_PREFIXES(MediaPositionTest, TestNotEquals_DifferentDuration);
+  FRIEND_TEST_ALL_PREFIXES(MediaPositionTest,
+                           TestNotEquals_DifferentPlaybackRate);
 
   // Playback rate of the media.
-  double playback_rate_;
+  double playback_rate_ = 0;
 
   // Duration of the media.
   base::TimeDelta duration_;
@@ -60,7 +76,7 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
   base::TimeDelta position_;
 
   // Last time |position_| was updated.
-  base::Time last_updated_time_;
+  base::TimeTicks last_updated_time_;
 };
 
 }  // namespace media_session

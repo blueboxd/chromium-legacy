@@ -326,6 +326,8 @@ class ScriptExecutor : public ActionDelegate,
   void OnGetPaymentInformation(
       base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
       std::unique_ptr<PaymentInformation> result);
+  void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
+                                   int index);
   void OnGetFullCard(GetFullCardCallback callback,
                      std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);

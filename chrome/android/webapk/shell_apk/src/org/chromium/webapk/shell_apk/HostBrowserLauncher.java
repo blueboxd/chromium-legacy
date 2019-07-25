@@ -13,8 +13,6 @@ import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
 
-import java.util.ArrayList;
-
 /** Contains methods for launching host browser. */
 public class HostBrowserLauncher {
     private static final String TAG = "cr_HostBrowserLauncher";
@@ -29,22 +27,6 @@ public class HostBrowserLauncher {
     // {@link org.chromium.chrome.browser.ShortcutHelper#REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB}.
     private static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
-
-    private static void grantUriPermissionToHostBrowser(
-            Context context, Intent launchIntent, String hostBrowserPackageName) {
-        ArrayList<Uri> uris = launchIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-        if (uris == null) {
-            uris = new ArrayList<>();
-            Uri uri = launchIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-            if (uri != null) {
-                uris.add(uri);
-            }
-        }
-        for (Uri uri : uris) {
-            context.grantUriPermission(
-                    hostBrowserPackageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        }
-    }
 
     /**
      * Launches host browser in WebAPK mode if the browser is WebAPK-compatible.
@@ -65,11 +47,6 @@ public class HostBrowserLauncher {
     /** Launches host browser in WebAPK mode. */
     public static void launchBrowserInWebApkMode(
             Context context, HostBrowserLauncherParams params, Bundle extraExtras, int flags) {
-        if (params.getSelectedShareTargetActivityClassName() != null) {
-            grantUriPermissionToHostBrowser(
-                    context, params.getOriginalIntent(), params.getHostBrowserPackageName());
-        }
-
         Intent intent = new Intent();
         intent.setAction(ACTION_START_WEBAPK);
         intent.setPackage(params.getHostBrowserPackageName());

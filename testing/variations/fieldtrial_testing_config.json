@@ -1918,6 +1918,21 @@
             ]
         }
     ],
+    "DownloadsAutoResumptionNative": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DownloadsAutoResumptionNative"
+                    ]
+                }
+            ]
+        }
+    ],
     "DownloadsLocationChange": [
         {
             "platforms": [
@@ -5762,25 +5777,6 @@
                     "name": "CacheInlineScriptCode",
                     "enable_features": [
                         "CacheInlineScriptCode"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8HugeMaxOldGenerationSize": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "V8HugeMaxOldGenerationSize"
                     ]
                 }
             ]

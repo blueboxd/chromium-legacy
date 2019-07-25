@@ -8,7 +8,7 @@ import "chrome/chrome_cleaner/mojom/cleaner_engine_requests.mojom";
 import "chrome/chrome_cleaner/mojom/engine_requests.mojom";
 import "chrome/chrome_cleaner/mojom/engine_file_requests.mojom";
 import "chrome/chrome_cleaner/mojom/pup.mojom";
-import "components/chrome_cleaner/public/mojom/chrome_prompt.mojom";
+import "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom";
 
 // All result_code parameters and return values in these interfaces are either
 // an EngineResultCode or, if higher than EngineResultCode::kEngineInternal, an

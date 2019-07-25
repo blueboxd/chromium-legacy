@@ -590,8 +590,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
     }
 
     @Override
-    public void postMessageToFrame(String frameName, String message,
-            String sourceOrigin, String targetOrigin, MessagePort[] ports) {
+    public void postMessageToMainFrame(
+            String message, String sourceOrigin, String targetOrigin, MessagePort[] ports) {
         if (ports != null) {
             for (MessagePort port : ports) {
                 if (port.isClosed() || port.isTransferred()) {
@@ -606,8 +606,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         if (targetOrigin.equals("*")) {
             targetOrigin = "";
         }
-        nativePostMessageToFrame(
-                mNativeWebContentsAndroid, frameName, message, sourceOrigin, targetOrigin, ports);
+        nativePostMessageToMainFrame(
+                mNativeWebContentsAndroid, message, sourceOrigin, targetOrigin, ports);
     }
 
     @Override
@@ -999,8 +999,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             String script, JavaScriptCallback callback);
     private native void nativeAddMessageToDevToolsConsole(
             long nativeWebContentsAndroid, int level, String message);
-    private native void nativePostMessageToFrame(long nativeWebContentsAndroid, String frameName,
-            String message, String sourceOrigin, String targetOrigin, MessagePort[] ports);
+    private native void nativePostMessageToMainFrame(long nativeWebContentsAndroid, String message,
+            String sourceOrigin, String targetOrigin, MessagePort[] ports);
     private native boolean nativeHasAccessedInitialDocument(
             long nativeWebContentsAndroid);
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);

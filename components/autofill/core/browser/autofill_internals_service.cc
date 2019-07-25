@@ -20,7 +20,4 @@ LogBuffer& operator<<(LogBuffer& buf, LogMessage message) {
              << Attrib{"class", "log-message"} << LogMessageValue(message);
 }
 
-AutofillInternalsService::AutofillInternalsService() = default;
-AutofillInternalsService::~AutofillInternalsService() = default;
-
 }  // namespace autofill

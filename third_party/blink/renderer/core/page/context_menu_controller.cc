@@ -241,11 +241,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
   auto* html_element = DynamicTo<HTMLElement>(result.InnerNode());
   if (html_element) {
-    if (!html_element->title().IsEmpty()) {
-      data.title_text = html_element->title();
-    } else {
-      data.title_text = html_element->AltText();
-    }
+    data.title_text = html_element->title();
+    data.alt_text = html_element->AltText();
   }
 
   if (IsHTMLCanvasElement(result.InnerNode())) {

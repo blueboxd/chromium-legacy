@@ -37,7 +37,9 @@ render-blocking-resources
 resource-summary
 screenshot-thumbnails
 speed-index
+third-party-summary
 time-to-first-byte
+total-blocking-time
 total-byte-weight
 unminified-css
 unminified-javascript

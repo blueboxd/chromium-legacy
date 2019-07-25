@@ -83,7 +83,8 @@ class NFC final : public ScriptWrappable,
                          device::mojom::blink::NFCErrorPtr);
 
   // device::mojom::blink::NFCClient implementation.
-  void OnWatch(const Vector<uint32_t>& ids,
+  void OnWatch(const Vector<uint32_t>&,
+               const String&,
                device::mojom::blink::NDEFMessagePtr) override;
 
  private:

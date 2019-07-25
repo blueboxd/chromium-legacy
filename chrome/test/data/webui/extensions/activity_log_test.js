@@ -82,7 +82,8 @@ suite('ExtensionsActivityLogTest', function() {
 
     activityLog.$$('#closeButton').click();
     expectDeepEquals(
-        currentPage, {page: Page.DETAILS, extensionId: EXTENSION_ID});
+        currentPage,
+        {page: extensions.Page.DETAILS, extensionId: EXTENSION_ID});
   });
 
   test(
@@ -98,7 +99,7 @@ suite('ExtensionsActivityLogTest', function() {
         });
 
         activityLog.$$('#closeButton').click();
-        expectDeepEquals(currentPage, {page: Page.LIST});
+        expectDeepEquals(currentPage, {page: extensions.Page.LIST});
       });
 
   test('tab transitions', async () => {

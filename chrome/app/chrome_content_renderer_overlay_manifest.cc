@@ -35,8 +35,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/mojo/app_window.mojom.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/app_window.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #endif
 
 const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {

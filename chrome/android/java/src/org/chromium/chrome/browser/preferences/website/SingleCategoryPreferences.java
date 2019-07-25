@@ -341,11 +341,14 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.website_preferences);
+        // Handled in onActivityCreated. Moving the addPreferencesFromResource call up to here
+        // causes animation jank (crbug.com/985734).
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.website_preferences);
+
         String title = getArguments().getString(EXTRA_TITLE);
         if (title != null) getActivity().setTitle(title);
 

@@ -1096,12 +1096,8 @@ function stopReorder(tile) {
  */
 function setupReorder(tile) {
   // Starts the reorder flow.
-  tile.addEventListener('mousedown', (event) => {
-    // Do not reorder if the edit menu was clicked or if ctrl/shift/alt/meta is
-    // also held down.
-    if (event.button == 0 /* LEFT CLICK */ && !event.ctrlKey &&
-        !event.shiftKey && !event.altKey && !event.metaKey &&
-        !event.target.classList.contains(CLASSES.MD_MENU) && !reordering) {
+  tile.addEventListener('dragstart', (event) => {
+    if (!reordering) {
       startReorder(tile);
     }
   });

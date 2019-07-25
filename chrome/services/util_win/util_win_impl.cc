@@ -219,9 +219,8 @@ bool IsPinnedToTaskbarHelper::GetResult() {
 
 }  // namespace
 
-UtilWinImpl::UtilWinImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
+UtilWinImpl::UtilWinImpl(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 UtilWinImpl::~UtilWinImpl() = default;
 

@@ -199,6 +199,8 @@ component("cpp") {
     "touch_uma.cc",
     "touch_uma.h",
     "update_types.h",
+    "view_shadow.cc",
+    "view_shadow.h",
     "voice_interaction_controller.cc",
     "voice_interaction_controller.h",
     "wallpaper_controller.cc",
@@ -298,6 +300,7 @@ source_set("unit_tests") {
     "power_utils_unittest.cc",
     "rounded_corner_decorator_unittest.cc",
     "shelf_model_unittest.cc",
+    "view_shadow_unittest.cc",
     "voice_interaction_controller_unittest.cc",
   ]
 
@@ -307,7 +310,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//testing/gtest",
     "//ui/aura:test_support",
+    "//ui/compositor_extra",
     "//ui/gfx:test_support",
+    "//ui/views",
     "//ui/views:test_support",
   ]
 }

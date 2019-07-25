@@ -18,6 +18,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/geometry/insets.h"
@@ -358,7 +359,8 @@ void XWindow::Map(bool inactive) {
 
   ignore_keyboard_input_ = inactive;
   unsigned long wm_user_time_ms =
-      ignore_keyboard_input_ ? 0 : delegate_->GetTimestampForXWindow();
+      ignore_keyboard_input_ ? 0
+                             : X11EventSource::GetInstance()->GetTimestamp();
   if (inactive || wm_user_time_ms != 0) {
     XChangeProperty(xdisplay_, xwindow_, gfx::GetAtom("_NET_WM_USER_TIME"),
                     XA_CARDINAL, 32, PropModeReplace,
@@ -457,7 +459,7 @@ void XWindow::Activate() {
       ui::GuessWindowManager() != ui::WM_WMII &&
       ui::WmSupportsHint(gfx::GetAtom("_NET_ACTIVE_WINDOW"));
 
-  ::Time timestamp = delegate_->GetTimestampForXWindow();
+  ::Time timestamp = X11EventSource::GetInstance()->GetTimestamp();
 
   // override_redirect windows ignore _NET_ACTIVE_WINDOW.
   // https://crbug.com/940924

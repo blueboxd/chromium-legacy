@@ -457,7 +457,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   // Update dataSink.
 }
 
-#pragma mark - SuggestedContentDelegate
+#pragma mark - ContentSuggestionsItemDelegate
 
 - (void)loadImageForSuggestedItem:(ContentSuggestionsItem*)suggestedItem {
   __weak ContentSuggestionsMediator* weakSelf = self;

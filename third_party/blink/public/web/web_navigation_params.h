@@ -295,6 +295,8 @@ struct BLINK_EXPORT WebNavigationParams {
   bool had_transient_activation = false;
   // Whether this navigation has a sticky user activation flag.
   bool is_user_activated = false;
+  // Whether this navigation was browser initiated.
+  bool is_browser_initiated = false;
   // The previews state which should be used for this navigation.
   WebURLRequest::PreviewsState previews_state =
       WebURLRequest::kPreviewsUnspecified;

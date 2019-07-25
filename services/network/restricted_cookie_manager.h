@@ -45,7 +45,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   //
   // |is_service_worker|, |process_id| and |frame_id| will be used when
   // reporting activity to |network_context_client|.
-  RestrictedCookieManager(net::CookieStore* cookie_store,
+  RestrictedCookieManager(mojom::RestrictedCookieManagerRole role,
+                          net::CookieStore* cookie_store,
                           const CookieSettings* cookie_settings,
                           const url::Origin& origin,
                           mojom::NetworkContextClient* network_context_client,
@@ -120,6 +121,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // mojo::ReportBadMessage(), which closes the pipe.
   bool ValidateAccessToCookiesAt(const GURL& url);
 
+  const mojom::RestrictedCookieManagerRole role_;
   net::CookieStore* const cookie_store_;
   const CookieSettings* const cookie_settings_;
   const url::Origin origin_;

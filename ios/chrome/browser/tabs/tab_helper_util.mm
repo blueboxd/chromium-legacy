@@ -60,6 +60,7 @@
 #import "ios/chrome/browser/web/print_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/web/public/web_state/web_state.h"
 
@@ -73,6 +74,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   // IOSChromeSessionTabHelper sets up the session ID used by other helpers,
   // so it needs to be created before them.
   IOSChromeSessionTabHelper::CreateForWebState(web_state);
+
+  WebStateDelegateTabHelper::CreateForWebState(web_state);
 
   NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
   NetworkActivityIndicatorTabHelper::CreateForWebState(web_state, tab_id);

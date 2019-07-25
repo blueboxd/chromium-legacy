@@ -54,23 +54,26 @@ cr.define('extension_navigation_helper_tests', function() {
 
       navigationHelper.addListener(changePage);
 
-      expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
+      expectDeepEquals(
+          {page: extensions.Page.LIST}, navigationHelper.getCurrentPage());
 
       let currentLength = history.length;
-      navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id});
+      navigationHelper.updateHistory(
+          {page: extensions.Page.DETAILS, extensionId: id});
       expectEquals(++currentLength, history.length);
 
-      navigationHelper.updateHistory({page: Page.ERRORS, extensionId: id});
+      navigationHelper.updateHistory(
+          {page: extensions.Page.ERRORS, extensionId: id});
       expectEquals(++currentLength, history.length);
 
-      mock.addExpectation({page: Page.DETAILS, extensionId: id});
+      mock.addExpectation({page: extensions.Page.DETAILS, extensionId: id});
       const waitForPop = getOnPopState();
       history.back();
       return waitForPop
           .then(() => {
             mock.verifyMock();
 
-            mock.addExpectation({page: Page.LIST});
+            mock.addExpectation({page: extensions.Page.LIST});
             const waitForNextPop = getOnPopState();
             history.back();
             return waitForNextPop;
@@ -85,27 +88,27 @@ cr.define('extension_navigation_helper_tests', function() {
       const stateUrlPairs = {
         extensions: {
           url: 'chrome://extensions/',
-          state: {page: Page.LIST},
+          state: {page: extensions.Page.LIST},
         },
         details: {
           url: 'chrome://extensions/?id=' + id,
-          state: {page: Page.DETAILS, extensionId: id},
+          state: {page: extensions.Page.DETAILS, extensionId: id},
         },
         options: {
           url: 'chrome://extensions/?options=' + id,
           state: {
-            page: Page.DETAILS,
+            page: extensions.Page.DETAILS,
             extensionId: id,
-            subpage: Dialog.OPTIONS,
+            subpage: extensions.Dialog.OPTIONS,
           },
         },
         errors: {
           url: 'chrome://extensions/?errors=' + id,
-          state: {page: Page.ERRORS, extensionId: id},
+          state: {page: extensions.Page.ERRORS, extensionId: id},
         },
         shortcuts: {
           url: 'chrome://extensions/shortcuts',
-          state: {page: Page.SHORTCUTS},
+          state: {page: extensions.Page.SHORTCUTS},
         },
       };
 
@@ -129,43 +132,54 @@ cr.define('extension_navigation_helper_tests', function() {
       const id2 = 'b'.repeat(32);
 
       history.pushState({}, '', 'chrome://extensions/');
-      expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
+      expectDeepEquals(
+          {page: extensions.Page.LIST}, navigationHelper.getCurrentPage());
 
       let expectedLength = history.length;
 
       // Navigating to a new page pushes new state.
-      navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id1});
+      navigationHelper.updateHistory(
+          {page: extensions.Page.DETAILS, extensionId: id1});
       expectEquals(++expectedLength, history.length);
 
       // Navigating to a subpage (like the options page) just opens a dialog,
       // and shouldn't push new state.
-      navigationHelper.updateHistory(
-          {page: Page.DETAILS, extensionId: id1, subpage: Dialog.OPTIONS});
+      navigationHelper.updateHistory({
+        page: extensions.Page.DETAILS,
+        extensionId: id1,
+        subpage: extensions.Dialog.OPTIONS
+      });
       expectEquals(expectedLength, history.length);
 
       // Navigating away from a subpage also shouldn't push state (it just
       // closes the dialog).
-      navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id1});
+      navigationHelper.updateHistory(
+          {page: extensions.Page.DETAILS, extensionId: id1});
       expectEquals(expectedLength, history.length);
 
       // Navigating away should push new state.
-      navigationHelper.updateHistory({page: Page.LIST});
+      navigationHelper.updateHistory({page: extensions.Page.LIST});
       expectEquals(++expectedLength, history.length);
 
       // Navigating to a subpage of a different page should push state.
-      navigationHelper.updateHistory(
-          {page: Page.DETAILS, extensionId: id1, subpage: Dialog.OPTIONS});
+      navigationHelper.updateHistory({
+        page: extensions.Page.DETAILS,
+        extensionId: id1,
+        subpage: extensions.Dialog.OPTIONS
+      });
       expectEquals(++expectedLength, history.length);
 
       // Navigating away from a subpage to a page for a different item should
       // push state.
-      navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id2});
+      navigationHelper.updateHistory(
+          {page: extensions.Page.DETAILS, extensionId: id2});
       expectEquals(++expectedLength, history.length);
 
       // Using replaceWith, which passes true for replaceState should not push
       // state.
       navigationHelper.updateHistory(
-          {page: Page.DETAILS, extensionId: id1}, true /* replaceState */);
+          {page: extensions.Page.DETAILS, extensionId: id1},
+          true /* replaceState */);
       expectEquals(expectedLength, history.length);
     });
 

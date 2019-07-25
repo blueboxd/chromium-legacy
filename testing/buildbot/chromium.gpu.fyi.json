@@ -3725,15 +3725,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -3741,11 +3738,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -4243,15 +4236,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4259,11 +4249,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -4481,15 +4467,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4497,11 +4480,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "android_webview_pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -4753,15 +4732,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -4769,11 +4745,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -5325,15 +5297,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5341,11 +5310,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -5915,15 +5880,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -5931,11 +5893,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -6462,15 +6420,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6478,11 +6433,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -6616,15 +6567,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6632,11 +6580,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -6789,15 +6733,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "android",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6805,11 +6746,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "vulkan_pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -7845,15 +7782,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -7861,11 +7795,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -8410,15 +8340,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8426,11 +8353,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -8605,15 +8528,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -8621,11 +8541,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "vulkan_pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -9207,15 +9123,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9223,11 +9136,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -9402,15 +9311,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc \"--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback\"",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -9418,11 +9324,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "vulkan_pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -10105,15 +10007,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10121,11 +10020,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -10658,15 +10553,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10674,11 +10566,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -11263,15 +11151,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11279,11 +11164,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -11877,15 +11758,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "linux",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "experiment_percentage": 100,
         "isolate_name": "telemetry_gpu_integration_test",
@@ -11894,11 +11772,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "skia_renderer_pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -12817,15 +12691,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -12833,11 +12704,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -13635,15 +13502,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -13651,11 +13515,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -14453,15 +14313,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -14469,11 +14326,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -15037,15 +14890,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15053,11 +14903,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -15555,15 +15401,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -15571,11 +15414,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -16128,15 +15967,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16144,11 +15980,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -16706,15 +16538,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -16722,11 +16551,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -17312,15 +17137,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17328,11 +17150,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -17882,15 +17700,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -17898,11 +17713,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -18447,15 +18258,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -18463,11 +18271,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -18966,15 +18770,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -18982,11 +18783,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -19480,15 +19277,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -19496,11 +19290,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -20083,15 +19873,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20099,11 +19886,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -20777,15 +20560,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "mac",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -20793,11 +20573,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -23919,15 +23695,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -23935,11 +23708,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -24805,15 +24574,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -24821,11 +24587,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -25799,15 +25561,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -25815,11 +25574,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -26673,15 +26428,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -26689,11 +26441,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -27719,15 +27467,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -27735,11 +27480,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -28935,15 +28676,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -28951,11 +28689,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -30747,15 +30481,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -30763,11 +30494,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -31555,15 +31282,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -31571,11 +31295,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -32594,15 +32314,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -32610,11 +32327,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",
@@ -33841,15 +33554,12 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--dont-restore-color-profile-after-test",
-          "--refimg-cloud-storage-bucket",
-          "chromium-gpu-archive/reference-images",
           "--os-type",
           "win",
           "--build-revision",
           "${got_revision}",
           "--test-machine-name",
-          "${buildername}",
-          "--use-skia-gold"
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -33857,11 +33567,7 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "pixel_skia_gold_test",
-        "non_precommit_args": [
-          "--upload-refimg-to-cloud-storage"
-        ],
         "precommit_args": [
-          "--download-refimg-from-cloud-storage",
           "--review-patch-issue",
           "${patch_issue}",
           "--review-patch-set",

@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -1265,12 +1266,16 @@ IN_PROC_BROWSER_TEST_F(IsolateIcelandFrameTreeBrowserTest,
   WaitForLoadStop(contents);
 
   // Make sure we did a process transfer back to "b.is".
-  EXPECT_EQ(
-      " Site A ------------ proxies for B\n"
-      "   +--Site B ------- proxies for A\n"
-      "Where A = http://a.com/\n"
-      "      B = http://b.is/",
-      FrameTreeVisualizer().DepictFrameTree(root));
+  const std::string kExpectedSiteURL =
+      AreDefaultSiteInstancesEnabled()
+          ? SiteInstanceImpl::GetDefaultSiteURL().spec()
+          : "http://a.com/";
+  EXPECT_EQ(base::StringPrintf(" Site A ------------ proxies for B\n"
+                               "   +--Site B ------- proxies for A\n"
+                               "Where A = %s\n"
+                               "      B = http://b.is/",
+                               kExpectedSiteURL.c_str()),
+            FrameTreeVisualizer().DepictFrameTree(root));
 }
 
 #if !defined(OS_ANDROID)

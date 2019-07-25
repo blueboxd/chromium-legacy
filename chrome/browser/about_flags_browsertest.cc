@@ -19,6 +19,28 @@ namespace {
 
 const char kSwitchName[] = "unsafely-treat-insecure-origin-as-secure";
 
+// Command line switch containing an invalid origin.
+const char kUnsanitizedCommandLine[] =
+    "http://example-cmdline.test,invalid-cmdline";
+
+// Command line switch without the invalid origin.
+const char kSanitizedCommandLine[] = "http://example-cmdline.test";
+
+// User input containing invalid origins.
+const char kUnsanitizedInput[] =
+    "http://example.test/path    http://example2.test/?query\n"
+    "invalid-value, filesystem:http://example.test.file, "
+    "ws://example3.test http://&^.com";
+
+// User input with invalid origins removed and formatted.
+const char kSanitizedInput[] =
+    "http://example.test,http://example2.test,ws://example3.test";
+
+// Command Line + user input with invalid origins removed and formatted.
+const char kSanitizedInputAndCommandLine[] =
+    "http://example-cmdline.test,http://example.test,http://"
+    "example2.test,ws://example3.test";
+
 void SimulateTextType(content::WebContents* contents,
                       const char* experiment_id,
                       const char* text) {
@@ -38,8 +60,7 @@ void ToggleEnableDropdown(content::WebContents* contents,
   EXPECT_TRUE(content::ExecuteScript(
       contents,
       base::StringPrintf(
-          "var k = "
-          "document.getElementById('%s');"
+          "var k = document.getElementById('%s');"
           "var s = k.getElementsByClassName('experiment-enable-disable')[0];"
           "s.focus();"
           "s.selectedIndex = %d;"
@@ -47,96 +68,180 @@ void ToggleEnableDropdown(content::WebContents* contents,
           experiment_id, enable ? 1 : 0)));
 }
 
-void SetSwitch(base::CommandLine::SwitchMap* switch_map,
-               const std::string& switch_name,
-               const std::string& switch_value) {
-#if defined(OS_WIN)
-  (*switch_map)[switch_name] = base::ASCIIToUTF16(switch_value.c_str());
-#else
-  (*switch_map)[switch_name] = switch_value;
-#endif
+std::string GetOriginListText(content::WebContents* contents,
+                              const char* experiment_id) {
+  std::string text;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents,
+      base::StringPrintf(
+          "var k = document.getElementById('%s');"
+          "var s = k.getElementsByClassName('experiment-origin-list-value')[0];"
+          "window.domAutomationController.send(s.value );",
+          experiment_id),
+      &text));
+  return text;
 }
 
-class AboutFlagsBrowserTest : public InProcessBrowserTest {};
+bool IsDropdownEnabled(content::WebContents* contents,
+                       const char* experiment_id) {
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      base::StringPrintf(
+          "var k = document.getElementById('%s');"
+          "var s = k.getElementsByClassName('experiment-enable-disable')[0];"
+          "window.domAutomationController.send(s.value == 'enabled');",
+          experiment_id),
+      &result));
+  return result;
+}
 
-// Tests experiments with origin values in chrome://flags page.
-// TODO(crbug.com/972121): renable the test when flakiness is resolved.
-IN_PROC_BROWSER_TEST_F(AboutFlagsBrowserTest, DISABLED_OriginFlag) {
+// In these tests, valid origins in the existing command line flag will be
+// appended to the list entered by the user in chrome://flags.
+// The tests are run twice for each bool value: Once with an existing command
+// line (provided in SetUpCommandLine) and once without.
+class AboutFlagsBrowserTest : public InProcessBrowserTest,
+                              public testing::WithParamInterface<bool> {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(kSwitchName, GetInitialCommandLine());
+  }
+
+ protected:
+  bool has_initial_command_line() const { return GetParam(); }
+
+  std::string GetInitialCommandLine() const {
+    return has_initial_command_line() ? kUnsanitizedCommandLine : std::string();
+  }
+
+  std::string GetSanitizedCommandLine() const {
+    return has_initial_command_line() ? kSanitizedCommandLine : std::string();
+  }
+
+  std::string GetSanitizedInputAndCommandLine() const {
+    return has_initial_command_line() ? kSanitizedInputAndCommandLine
+                                      : kSanitizedInput;
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         AboutFlagsBrowserTest,
+                         ::testing::Values(true, false));
+
+// Goes to chrome://flags page, types text into an ORIGIN_LIST_VALUE field but
+// does not enable the feature.
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagDisabled) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
 
-  const base::CommandLine::SwitchMap switches =
+  const base::CommandLine::SwitchMap kInitialSwitches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+
+  // The page should be populated with the sanitized command line value.
+  EXPECT_EQ(GetSanitizedCommandLine(),
+            GetOriginListText(contents, kSwitchName));
 
   // Type a value in the experiment's textarea. Since the flag state is
   // "Disabled" by default, command line shouldn't change.
-  SimulateTextType(contents, kSwitchName, "http://example.test");
-  EXPECT_EQ(switches, base::CommandLine::ForCurrentProcess()->GetSwitches());
-
-  // Enable the experiment. Command line should change.
-  ToggleEnableDropdown(contents, kSwitchName, true);
-  base::CommandLine::SwitchMap expected_switches = switches;
-  SetSwitch(&expected_switches, kSwitchName, "http://example.test");
-  EXPECT_EQ(expected_switches,
+  SimulateTextType(contents, kSwitchName, kUnsanitizedInput);
+  EXPECT_EQ(kInitialSwitches,
             base::CommandLine::ForCurrentProcess()->GetSwitches());
 
-  // Typing while enabled should immediately change the flag.
-  SimulateTextType(contents, kSwitchName, "http://example.test.com");
-  SetSwitch(&expected_switches, kSwitchName, "http://example.test.com");
-  EXPECT_EQ(expected_switches,
-            base::CommandLine::ForCurrentProcess()->GetSwitches());
-
-  // Disable the experiment. Command line switch should be cleared.
-  ToggleEnableDropdown(contents, kSwitchName, false);
-  expected_switches.erase(kSwitchName);
-  EXPECT_EQ(expected_switches,
-            base::CommandLine::ForCurrentProcess()->GetSwitches());
-
-  // Enable again. Command line switch should be added back.
-  ToggleEnableDropdown(contents, kSwitchName, true);
-  SetSwitch(&expected_switches, kSwitchName, "http://example.test.com");
-  EXPECT_EQ(expected_switches,
-            base::CommandLine::ForCurrentProcess()->GetSwitches());
-
-  // Disable again and type. Command line switch should stay cleared.
-  ToggleEnableDropdown(contents, kSwitchName, false);
-  SimulateTextType(contents, kSwitchName, "http://example.test2.com");
-  expected_switches.erase(kSwitchName);
-  EXPECT_EQ(expected_switches,
-            base::CommandLine::ForCurrentProcess()->GetSwitches());
-
-  // Enable one last time. Command line should pick up the last typed value.
-  ToggleEnableDropdown(contents, kSwitchName, true);
-  SetSwitch(&expected_switches, kSwitchName, "http://example.test2.com");
-  EXPECT_EQ(expected_switches,
-            base::CommandLine::ForCurrentProcess()->GetSwitches());
+  // Input should be restored after a page reload.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  EXPECT_EQ(GetSanitizedInputAndCommandLine(),
+            GetOriginListText(contents, kSwitchName));
 }
 
-// Tests that only valid http and https origins should be added to the command
-// line when modified from chrome://flags.
-IN_PROC_BROWSER_TEST_F(AboutFlagsBrowserTest, StringFlag) {
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagDisabled) {
+  // Even though the feature is disabled, the switch is set directly via command
+  // line.
+  EXPECT_EQ(
+      GetInitialCommandLine(),
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
+
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(IsDropdownEnabled(contents, kSwitchName));
+  EXPECT_EQ(GetSanitizedInputAndCommandLine(),
+            GetOriginListText(contents, kSwitchName));
+}
+
+// Goes to chrome://flags page, types text into an ORIGIN_LIST_VALUE field and
+// enables the feature.
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
 
-  const base::CommandLine::SwitchMap switches =
+  const base::CommandLine::SwitchMap kInitialSwitches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  const char kValue[] =
-      "http://example.test/path    http://example2.test/?query\n"
-      "invalid-value, filesystem:http://example.test.file, "
-      "ws://example3.test http://&^.com";
+  // The page should be populated with the sanitized command line value.
+  EXPECT_EQ(GetSanitizedCommandLine(),
+            GetOriginListText(contents, kSwitchName));
 
-  ToggleEnableDropdown(contents, kSwitchName, true);
-  SimulateTextType(contents, kSwitchName, kValue);
-  base::CommandLine::SwitchMap expected_switches = switches;
-  SetSwitch(&expected_switches, kSwitchName,
-            "http://example.test,http://example2.test,ws://example3.test");
-  EXPECT_EQ(expected_switches,
+  // Type a value in the experiment's textarea. Since the flag state is
+  // "Disabled" by default, command line shouldn't change.
+  SimulateTextType(contents, kSwitchName, kUnsanitizedInput);
+  EXPECT_EQ(kInitialSwitches,
             base::CommandLine::ForCurrentProcess()->GetSwitches());
+
+  // Enable the experiment. The behavior is different between ChromeOS and
+  // non-ChromeOS.
+  ToggleEnableDropdown(contents, kSwitchName, true);
+
+#if !defined(OS_CHROMEOS)
+  // On non-ChromeOS, the command line is not modified until restart.
+  EXPECT_EQ(kInitialSwitches,
+            base::CommandLine::ForCurrentProcess()->GetSwitches());
+#else
+  // On ChromeOS, the command line is immediately modified.
+  EXPECT_NE(kInitialSwitches,
+            base::CommandLine::ForCurrentProcess()->GetSwitches());
+  EXPECT_EQ(
+      GetSanitizedInputAndCommandLine(),
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
+#endif
+
+  // Input should be restored after a page reload.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  EXPECT_EQ(GetSanitizedInputAndCommandLine(),
+            GetOriginListText(contents, kSwitchName));
+}
+
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagEnabled) {
+#if !defined(OS_CHROMEOS)
+  // On non-ChromeOS, the command line is modified after restart.
+  EXPECT_EQ(
+      GetSanitizedInputAndCommandLine(),
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
+#else
+  // On ChromeOS, the command line isn't modified after restart.
+  EXPECT_EQ(
+      GetInitialCommandLine(),
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
+#endif
+
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(IsDropdownEnabled(contents, kSwitchName));
+  EXPECT_EQ(GetSanitizedInputAndCommandLine(),
+            GetOriginListText(contents, kSwitchName));
+
+#if defined(OS_CHROMEOS)
+  // ChromeOS doesn't read chrome://flags values on startup so we explicitly
+  // need to disable and re-enable the flag here.
+  ToggleEnableDropdown(contents, kSwitchName, true);
+#endif
+
+  EXPECT_EQ(
+      GetSanitizedInputAndCommandLine(),
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 }
 
 }  // namespace

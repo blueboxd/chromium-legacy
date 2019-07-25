@@ -7,12 +7,27 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+
+namespace {
+
+class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
+ public:
+  ConnectionType GetCurrentConnectionType() const override { return type_; }
+  void set_type(ConnectionType type) { type_ = type; }
+
+ private:
+  ConnectionType type_;
+};
+
+}  // namespace
 
 class BackgroundTracingConfigTest : public testing::Test {
  public:
@@ -654,6 +669,34 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
         "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_delay\":30,"
         "\"trigger_name\":\"foo2\"}],\"mode\":\"REACTIVE_TRACING_MODE\"}");
   }
+}
+
+TEST_F(BackgroundTracingConfigTest, BufferLimitConfig) {
+  MockNetworkChangeNotifier notifier;
+
+  std::unique_ptr<BackgroundTracingConfigImpl> config;
+
+  config = ReadFromJSONString(
+      "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
+      "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\", "
+      "\"category\": \"BENCHMARK\",\"trigger_delay\":30,"
+      "\"trigger_name\": \"foo\"}],\"low_ram_buffer_size_kb\":800,"
+      "\"medium_ram_buffer_size_kb\":1000,\"mobile_network_buffer_size_kb\":"
+      "300,\"max_buffer_size_kb\":1000,\"upload_limit_kb\":500,"
+      "\"upload_limit_network_kb\":600}");
+  EXPECT_TRUE(config);
+  EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
+  EXPECT_EQ(config->rules().size(), 1u);
+
+  notifier.set_type(net::NetworkChangeNotifier::CONNECTION_2G);
+#if defined(OS_ANDROID)
+  EXPECT_EQ(300u, config->GetTraceConfig().GetTraceBufferSizeInKb());
+  EXPECT_EQ(600u, config->GetTraceUploadLimitKb());
+#endif
+
+  notifier.set_type(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_LE(800u, config->GetTraceConfig().GetTraceBufferSizeInKb());
+  EXPECT_EQ(500u, config->GetTraceUploadLimitKb());
 }
 
 }  // namespace content

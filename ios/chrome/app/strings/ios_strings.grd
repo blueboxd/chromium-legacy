@@ -1506,7 +1506,7 @@ Handoff must also be enabled in the General section of Settings, and your device
         Send To Your Devices
       </message>
       <message name="IDS_IOS_SEND_TAB_TO_SELF_SNACKBAR_MESSAGE" desc="Message briefly displayed at the bottom of the screen to the user to inform that the tab is being sent to the target device. [Length: 35em]" meaning="The is being sent to the target device. [Length: 35em]">
-        Sending...
+        Sending to <ph name="DEVICE_NAME">$1<ex>IPhone</ex></ph>...
       </message>
       <message name="IDS_IOS_SEND_TAB_TO_SELF_TARGET_DEVICE_ACTION" desc="Button label for the Send Tab To Self modal dialog that sends the current tab to a user's other device. [iOS only]">
         Send To Your Device

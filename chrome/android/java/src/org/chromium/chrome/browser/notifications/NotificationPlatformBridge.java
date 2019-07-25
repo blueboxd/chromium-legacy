@@ -510,7 +510,7 @@ public class NotificationPlatformBridge {
         if (webApkPackage == null) return Promise.fulfilled("");
         Promise<String> promise = new Promise<>();
         ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackage,
-                (doesBrowserBackWebApk)
+                (doesBrowserBackWebApk, browserPackageName)
                         -> promise.fulfill(doesBrowserBackWebApk ? webApkPackage : ""));
         return promise;
     }
@@ -740,7 +740,8 @@ public class NotificationPlatformBridge {
                 WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
                         new WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback() {
                             @Override
-                            public void onChecked(boolean doesBrowserBackWebApk) {
+                            public void onChecked(
+                                    boolean doesBrowserBackWebApk, String backingBrowser) {
                                 closeNotificationInternal(notificationId,
                                         doesBrowserBackWebApk ? webApkPackageFound : null,
                                         scopeUrl);

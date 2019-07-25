@@ -72,10 +72,11 @@ class DspHotwordStateManager : public AudioInputImpl::HotwordStateManager {
     }
     stream_state_ = StreamState::NORMAL;
 
-    // Inform power manager of the user activity happened every time
-    // Libassistant recognized hotword and started a conversation.
-    chromeos::PowerManagerClient::Get()->NotifyUserActivity(
-        power_manager::USER_ACTIVITY_OTHER);
+    // Inform power manager of a wake notification when Libassistant
+    // recognized hotword and started a conversation. We intentionally
+    // avoid using |NotifyUserActivity| because it is not suitable for
+    // this case according to the Platform team.
+    chromeos::PowerManagerClient::Get()->NotifyWakeNotification();
   }
 
   // Runs on main thread.

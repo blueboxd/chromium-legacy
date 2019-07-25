@@ -17,10 +17,10 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
-#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/base/ui_base_features.h"
 
 namespace chromeos {
@@ -43,19 +43,14 @@ void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
 
 }  // namespace
 
-LoginDisplayHostCommon::LoginDisplayHostCommon() : weak_factory_(this) {
-  keep_alive_.reset(
-      new ScopedKeepAlive(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
-                          KeepAliveRestartOption::DISABLED));
-
-  // Close the login screen on NOTIFICATION_APP_TERMINATING.
+LoginDisplayHostCommon::LoginDisplayHostCommon()
+    : keep_alive_(KeepAliveOrigin::LOGIN_DISPLAY_HOST_WEBUI,
+                  KeepAliveRestartOption::DISABLED) {
+  // Close the login screen on NOTIFICATION_APP_TERMINATING (for the case where
+  // shutdown occurs before login completes).
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
-  // NOTIFICATION_BROWSER_OPENED is issued after browser is created, but
-  // not shown yet. Lock window has to be closed at this point so that
-  // a browser window exists and the window can acquire input focus.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllSources());
+  BrowserList::AddObserver(this);
 }
 
 LoginDisplayHostCommon::~LoginDisplayHostCommon() {
@@ -235,21 +230,25 @@ void LoginDisplayHostCommon::ResyncUserData() {
     GetExistingUserController()->ResyncUserData();
 }
 
+void LoginDisplayHostCommon::OnBrowserAdded(Browser* browser) {
+  // Browsers created before session start (windows opened by extensions, for
+  // example) are ignored.
+  if (session_starting_) {
+    // OnBrowserAdded is called when the browser is created, but not shown yet.
+    // Lock window has to be closed at this point so that a browser window
+    // exists and the window can acquire input focus.
+    OnBrowserCreated();
+    registrar_.RemoveAll();
+    BrowserList::RemoveObserver(this);
+  }
+}
+
 void LoginDisplayHostCommon::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_APP_TERMINATING) {
+  if (type == chrome::NOTIFICATION_APP_TERMINATING)
     ShutdownDisplayHost();
-  } else if (type == chrome::NOTIFICATION_BROWSER_OPENED && session_starting_) {
-    // Browsers created before session start (windows opened by extensions, for
-    // example) are ignored.
-    OnBrowserCreated();
-    registrar_.Remove(this, chrome::NOTIFICATION_APP_TERMINATING,
-                      content::NotificationService::AllSources());
-    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                      content::NotificationService::AllSources());
-  }
 }
 
 void LoginDisplayHostCommon::OnCancelPasswordChangedFlow() {}
@@ -265,6 +264,7 @@ void LoginDisplayHostCommon::ShutdownDisplayHost() {
   ProfileHelper::Get()->ClearSigninProfile(base::DoNothing());
   shutting_down_ = true;
   registrar_.RemoveAll();
+  BrowserList::RemoveObserver(this);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 

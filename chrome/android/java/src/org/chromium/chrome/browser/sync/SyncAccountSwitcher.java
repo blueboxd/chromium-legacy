@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.preference.Preference;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.preferences.sync.SyncedAccountPreference;
@@ -27,9 +26,8 @@ import org.chromium.chrome.browser.signin.SignoutReason;
  *   {@link ConfirmImportSyncDataDialog.Listener#onConfirm}
  *   {@link SignInCallback#onSignInComplete}
  */
-public class SyncAccountSwitcher
-        implements OnPreferenceChangeListener, ConfirmImportSyncDataDialog.Listener,
-                   SignInCallback {
+public class SyncAccountSwitcher implements Preference.OnPreferenceChangeListener,
+                                            ConfirmImportSyncDataDialog.Listener, SignInCallback {
     private static final String TAG = "SyncAccountSwitcher";
 
     private final SyncedAccountPreference mSyncedAccountPreference;

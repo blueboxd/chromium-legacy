@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "extensions/common/mojo/wifi_display_session_service.mojom.h"
+#include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_audio_encoder.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_video_encoder.h"

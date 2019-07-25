@@ -11,10 +11,10 @@ js_type_check("closure_compile") {
     ":base_page",
     ":button_bar",
     ":cellular_setup",
+    ":final_page",
     ":mojo_interface_provider",
     ":provisioning_page",
     ":sim_detect_page",
-    ":success_page",
   ]
 }
 
@@ -39,7 +39,7 @@ js_library("provisioning_page") {
   ]
 }
 
-js_library("success_page") {
+js_library("final_page") {
   deps = [
     ":base_page",
   ]
@@ -48,10 +48,10 @@ js_library("success_page") {
 js_library("cellular_setup") {
   deps = [
     ":button_bar",
+    ":final_page",
     ":mojo_interface_provider",
     ":provisioning_page",
     ":sim_detect_page",
-    ":success_page",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }

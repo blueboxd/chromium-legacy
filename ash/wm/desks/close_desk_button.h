@@ -10,15 +10,20 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/view_targeter_delegate.h"
 
 namespace ash {
 
 // A button view that shows up on hovering over the associated desk mini_view,
 // which let users remove the mini_view and its corresponding desk.
-class ASH_EXPORT CloseDeskButton : public views::ImageButton {
+class ASH_EXPORT CloseDeskButton : public views::ImageButton,
+                                   public views::ViewTargeterDelegate {
  public:
   explicit CloseDeskButton(views::ButtonListener* listener);
   ~CloseDeskButton() override;
+
+  // The size of the close button.
+  static constexpr int kCloseButtonSize = 16;
 
   // views::ImageButton:
   const char* GetClassName() const override;
@@ -29,7 +34,11 @@ class ASH_EXPORT CloseDeskButton : public views::ImageButton {
   SkColor GetInkDropBaseColor() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
-  bool IsPointOnButton(const gfx::Point& screen_location) const;
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
+
+  bool DoesIntersectScreenRect(const gfx::Rect& screen_rect) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloseDeskButton);

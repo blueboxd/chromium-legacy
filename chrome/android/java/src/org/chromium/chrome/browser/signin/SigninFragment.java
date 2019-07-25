@@ -134,7 +134,7 @@ public class SigninFragment extends SigninFragmentBase {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 true);
                         if (settingsClicked) {
-                            PreferencesLauncher.launchSettingsPage(getActivity(),
+                            PreferencesLauncher.launchSettingsPageCompat(getActivity(),
                                     SyncAndServicesPreferences.class,
                                     SyncAndServicesPreferences.createArguments(true));
                         }

@@ -1454,11 +1454,17 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppList) {
   EXPECT_TRUE(apps_grid_view->GetVisible());
 }
 
-// Verifies that mouse dragging AppListView causes to change the opacity.
+// Verifies that mouse dragging AppListView creates layers, causes to change the
+// opacity, and destroys the layers when done.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppListItemOpacity) {
-  std::unique_ptr<app_list::AppListItem> item(
-      new app_list::AppListItem("fake id"));
-  Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+  const int items_in_page =
+      app_list::AppListConfig::instance().preferred_cols() *
+      app_list::AppListConfig::instance().preferred_rows();
+  for (int i = 0; i < items_in_page; ++i) {
+    std::unique_ptr<app_list::AppListItem> item(
+        new app_list::AppListItem(base::StringPrintf("fake id %d", i)));
+    Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+  }
 
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
@@ -1474,23 +1480,41 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseDragAppListItemOpacity) {
                                                ->contents_view()
                                                ->GetAppsContainerView()
                                                ->apps_grid_view();
-  views::View* item_view = apps_grid_view->view_model()->view_at(0);
-  EXPECT_FALSE(item_view->layer());
+  // No items have layer.
+  for (int i = 0; i < items_in_page; ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_FALSE(item_view->layer()) << "at " << i;
+  }
 
   // Drags the mouse a bit above (twice as shelf's height). This should show the
   // item vaguely.
   const int shelf_height =
       GetPrimaryShelf()->GetShelfViewForTesting()->height();
   generator->MoveMouseBy(0, -shelf_height * 2);
-  EXPECT_TRUE(item_view->layer());
-  EXPECT_LE(0.f, item_view->layer()->opacity());
-  EXPECT_GT(1.f, item_view->layer()->opacity());
+  // All of the item should have the layer at this point.
+  for (int i = 0; i < items_in_page; ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_TRUE(item_view->layer()) << "at " << i;
+    EXPECT_LE(0.f, item_view->layer()->opacity()) << "at " << i;
+    EXPECT_GE(1.f, item_view->layer()->opacity()) << "at " << i;
+  }
 
-  // Finishes the drag to expand the app-list. Now the app-list item should be
-  // fully visible and does not need layer anymore.
+  // Moves the mouse to the top edge of the screen; now all app-list items are
+  // fully visible, but stays to keep layer. The opacity should be almost 1.0.
   generator->MoveMouseTo(start_point.x(), 0);
+  for (int i = 0; i < items_in_page; ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_TRUE(item_view->layer()) << "at " << i;
+    EXPECT_LE(0.f, item_view->layer()->opacity()) << "at " << i;
+    EXPECT_GE(1.f, item_view->layer()->opacity()) << "at " << i;
+  }
+
+  // Finishes the drag. It should destruct the layer.
   generator->ReleaseLeftButton();
-  EXPECT_FALSE(item_view->layer());
+  for (int i = 0; i < items_in_page; ++i) {
+    views::View* item_view = apps_grid_view->view_model()->view_at(i);
+    EXPECT_FALSE(item_view->layer()) << "at " << i;
+  }
 }
 
 // Tests that the app list is shown automatically when the tablet mode is on.

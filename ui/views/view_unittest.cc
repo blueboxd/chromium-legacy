@@ -3778,6 +3778,31 @@ void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
   last_bounds_ = bounds;
 }
 
+class TestingLayerViewObserver : public ViewObserver {
+ public:
+  explicit TestingLayerViewObserver(View* view) : view_(view) {
+    view_->AddObserver(this);
+  }
+  ~TestingLayerViewObserver() override { view_->RemoveObserver(this); }
+
+  gfx::Rect GetLastLayerBoundsAndReset() {
+    gfx::Rect value = last_layer_bounds_;
+    last_layer_bounds_ = gfx::Rect();
+    return value;
+  }
+
+ private:
+  // ViewObserver:
+  void OnLayerTargetBoundsChanged(View* view) override {
+    last_layer_bounds_ = view->layer()->bounds();
+  }
+
+  gfx::Rect last_layer_bounds_;
+  View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingLayerViewObserver);
+};
+
 }  // namespace
 
 class ViewLayerTest : public ViewsTestBase {
@@ -3905,6 +3930,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
 
   // Create v2 as a child of v1 and do basic assertion testing.
   View* v2 = new View;
+  TestingLayerViewObserver v2_observer(v2);
   v1->AddChildView(v2);
   EXPECT_TRUE(v2->layer() == nullptr);
   v2->SetBoundsRect(gfx::Rect(10, 20, 30, 40));
@@ -3912,6 +3938,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   ASSERT_TRUE(v2->layer() != nullptr);
   EXPECT_EQ(v1->layer(), v2->layer()->parent());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 
   // Turn off v1s layer. v2 should still have a layer but its parent should have
   // changed.
@@ -3924,6 +3951,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   // The bounds of the layer should have changed to be relative to the root view
   // now.
   EXPECT_EQ(gfx::Rect(30, 50, 30, 40), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 
   // Make v1 have a layer again and verify v2s layer is wired up correctly.
   gfx::Transform transform;
@@ -3938,6 +3966,7 @@ TEST_F(ViewLayerTest, LayerToggling) {
   ASSERT_EQ(1u, v1->layer()->children().size());
   EXPECT_EQ(v1->layer()->children()[0], v2->layer());
   EXPECT_EQ(gfx::Rect(10, 20, 30, 40), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 }
 
 // Verifies turning on a layer wires up children correctly.
@@ -3950,15 +3979,20 @@ TEST_F(ViewLayerTest, NestedLayerToggling) {
   v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
 
   View* v2 = v1->AddChildView(std::make_unique<View>());
+  v2->SetBoundsRect(gfx::Rect(10, 10, 100, 100));
 
   View* v3 = v2->AddChildView(std::make_unique<View>());
+  TestingLayerViewObserver v3_observer(v3);
+  v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
   v3->SetPaintToLayer();
   ASSERT_TRUE(v3->layer() != nullptr);
+  EXPECT_EQ(v3->layer()->bounds(), v3_observer.GetLastLayerBoundsAndReset());
 
   // At this point we have v1-v2-v3. v3 has a layer, v1 and v2 don't.
 
   v1->SetPaintToLayer();
   EXPECT_EQ(v1->layer(), v3->layer()->parent());
+  EXPECT_EQ(v3->layer()->bounds(), v3_observer.GetLastLayerBoundsAndReset());
 }
 
 TEST_F(ViewLayerTest, LayerAnimator) {
@@ -3989,25 +4023,31 @@ TEST_F(ViewLayerTest, BoundsChangeWithLayer) {
   v1->SetBoundsRect(gfx::Rect(20, 30, 140, 150));
 
   View* v2 = v1->AddChildView(std::make_unique<View>());
+  TestingLayerViewObserver v2_observer(v2);
   v2->SetBoundsRect(gfx::Rect(10, 11, 40, 50));
   v2->SetPaintToLayer();
   ASSERT_TRUE(v2->layer() != nullptr);
   EXPECT_EQ(gfx::Rect(30, 41, 40, 50), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 
   v1->SetPosition(gfx::Point(25, 36));
   EXPECT_EQ(gfx::Rect(35, 47, 40, 50), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 
   v2->SetPosition(gfx::Point(11, 12));
   EXPECT_EQ(gfx::Rect(36, 48, 40, 50), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 
   // Bounds of the layer should change even if the view is not invisible.
   v1->SetVisible(false);
   v1->SetPosition(gfx::Point(20, 30));
   EXPECT_EQ(gfx::Rect(31, 42, 40, 50), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 
   v2->SetVisible(false);
   v2->SetBoundsRect(gfx::Rect(10, 11, 20, 30));
   EXPECT_EQ(gfx::Rect(30, 41, 20, 30), v2->layer()->bounds());
+  EXPECT_EQ(v2->layer()->bounds(), v2_observer.GetLastLayerBoundsAndReset());
 }
 
 // Make sure layers are positioned correctly in RTL.

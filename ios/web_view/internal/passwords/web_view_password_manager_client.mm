@@ -8,16 +8,16 @@
 #include <utility>
 
 #include "components/autofill/core/browser/logging/log_manager.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "ios/web_view/internal/app/application_context.h"
-#import "ios/web_view/internal/passwords/web_view_password_manager_internals_service_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "net/cert/cert_status_flags.h"
@@ -41,7 +41,7 @@ WebViewPasswordManagerClient::WebViewPasswordManagerClient(
     : delegate_(delegate),
       credentials_filter_(),
       log_manager_(autofill::LogManager::Create(
-          ios_web_view::WebViewPasswordManagerInternalsServiceFactory::
+          ios_web_view::WebViewPasswordManagerLogRouterFactory::
               GetForBrowserState(delegate_.browserState),
           base::RepeatingClosure())),
       helper_(this) {

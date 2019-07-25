@@ -792,10 +792,10 @@ MockClientSocketFactory::CreateTransportClientSocket(
 }
 
 std::unique_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
+    const SSLConfig& ssl_config) {
   SSLSocketDataProvider* next_ssl_data = mock_ssl_data_.GetNext();
   if (next_ssl_data->next_protos_expected_in_ssl_config.has_value()) {
     EXPECT_EQ(next_ssl_data->next_protos_expected_in_ssl_config.value().size(),

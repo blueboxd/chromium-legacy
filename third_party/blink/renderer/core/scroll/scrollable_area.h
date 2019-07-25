@@ -351,7 +351,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual ~ScrollableArea();
 
   void Dispose();
-  virtual void DisposeImpl();
+  virtual void DisposeImpl() {}
 
   // Called when any of horizontal scrollbar, vertical scrollbar and scroll
   // corner is setNeedsPaintInvalidation.
@@ -465,7 +465,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // then reset to alpha, causing spurrious "visibilityChanged" calls.
   virtual void ScrollbarVisibilityChanged() {}
 
-  virtual bool HasBeenDisposed() const { return false; }
+  bool HasBeenDisposed() const { return has_been_disposed_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
@@ -504,6 +504,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned scrollbars_hidden_if_overlay_ : 1;
   unsigned scrollbar_captured_ : 1;
   unsigned mouse_over_scrollbar_ : 1;
+  unsigned has_been_disposed_ : 1;
 
   // Indicates that the next compositing update needs to call
   // cc::Layer::ShowScrollbars() on our scroll layer. Ignored if not composited.

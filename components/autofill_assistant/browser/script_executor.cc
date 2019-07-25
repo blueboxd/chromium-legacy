@@ -209,9 +209,13 @@ void ScriptExecutor::ClickOrTapElement(
 
 void ScriptExecutor::GetPaymentInformation(
     std::unique_ptr<PaymentRequestOptions> options) {
-  options->callback = base::BindOnce(&ScriptExecutor::OnGetPaymentInformation,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     std::move(options->callback));
+  options->confirm_callback = base::BindOnce(
+      &ScriptExecutor::OnGetPaymentInformation, weak_ptr_factory_.GetWeakPtr(),
+      std::move(options->confirm_callback));
+  options->additional_actions_callback =
+      base::BindOnce(&ScriptExecutor::OnAdditionalActionTriggered,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(options->additional_actions_callback));
   delegate_->SetPaymentRequestOptions(std::move(options));
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
@@ -221,6 +225,13 @@ void ScriptExecutor::OnGetPaymentInformation(
     std::unique_ptr<PaymentInformation> result) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   std::move(callback).Run(std::move(result));
+}
+
+void ScriptExecutor::OnAdditionalActionTriggered(
+    base::OnceCallback<void(int)> callback,
+    int index) {
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  std::move(callback).Run(index);
 }
 
 void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {

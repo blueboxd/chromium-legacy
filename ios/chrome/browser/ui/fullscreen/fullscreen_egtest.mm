@@ -32,6 +32,10 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForPageLoadTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
+
 namespace {
 
 // The page height of test pages. This must be big enough to triger fullscreen.
@@ -59,7 +63,7 @@ void AssertURLIs(const GURL& expectedURL) {
                     error:&error];
     return (error == nil);
   };
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(1.0, condition),
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
              description);
 }
 
@@ -207,10 +211,10 @@ void AssertURLIs(const GURL& expectedURL) {
         finished = true;
       }));
 
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(1.0,
-                                                          ^{
-                                                            return finished;
-                                                          }),
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout,
+                                         ^{
+                                           return finished;
+                                         }),
              @"JavaScript to hide the toolbar did not complete");
 
   // Scroll up to be sure the toolbar can be dismissed by scrolling down.

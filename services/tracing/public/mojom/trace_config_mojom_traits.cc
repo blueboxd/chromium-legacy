@@ -16,6 +16,10 @@ bool StructTraits<tracing::mojom::BufferConfigDataView,
     Read(tracing::mojom::BufferConfigDataView data,
          perfetto::TraceConfig::BufferConfig* out) {
   out->set_size_kb(data.size_kb());
+  perfetto::TraceConfig::BufferConfig::FillPolicy policy;
+  if (data.ReadFillPolicy(&policy)) {
+    out->set_fill_policy(policy);
+  }
 
   return true;
 }

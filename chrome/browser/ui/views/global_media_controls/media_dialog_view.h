@@ -36,6 +36,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   bool Close() override;
 
   // views::View implementation.
+  void AddedToWidget() override;
   gfx::Size CalculatePreferredSize() const override;
 
  private:

@@ -30,6 +30,8 @@ source_set("gfx") {
     "compositor_id.h",
     "deferred_gpu_command_service.cc",
     "deferred_gpu_command_service.h",
+    "gpu_service_web_view.cc",
+    "gpu_service_web_view.h",
     "hardware_renderer.cc",
     "hardware_renderer.h",
     "java_browser_view_renderer_helper.cc",
@@ -44,6 +46,10 @@ source_set("gfx") {
     "scoped_app_gl_state_restore.h",
     "surfaces_instance.cc",
     "surfaces_instance.h",
+    "task_forwarding_sequence.cc",
+    "task_forwarding_sequence.h",
+    "task_queue_web_view.cc",
+    "task_queue_web_view.h",
   ]
 
   deps = [

@@ -107,12 +107,11 @@ TEST(HttpAuthGSSAPIPOSIXTest, GSSAPIStartup) {
                                            NetLogEventPhase::END);
   ASSERT_LT(offset, entries.size());
 
-  auto& entry = entries[offset];
-  const std::string* library_name = entry.params.FindStringKey("library_name");
-  const std::string* load_result = entry.params.FindStringPath("load_result");
-  ASSERT_TRUE(library_name);
-  EXPECT_FALSE(library_name->empty());
-  EXPECT_FALSE(load_result);  // No load_result since it succeeded.
+  const auto& entry = entries[offset];
+  EXPECT_NE("", GetStringValueFromParams(entry, "library_name"));
+
+  // No load_result since it succeeded.
+  EXPECT_FALSE(GetOptionalStringValueFromParams(entry, "load_result"));
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
@@ -127,10 +126,8 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMissing) {
       entries, 0, NetLogEventType::AUTH_LIBRARY_LOAD, NetLogEventPhase::END);
   ASSERT_LT(offset, entries.size());
 
-  auto& entry = entries[offset];
-  const std::string* load_result = entry.params.FindStringKey("load_result");
-  ASSERT_TRUE(load_result);
-  EXPECT_FALSE(load_result->empty());
+  const auto& entry = entries[offset];
+  EXPECT_NE("", GetStringValueFromParams(entry, "load_result"));
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
@@ -147,12 +144,10 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryExists) {
       entries, 0, NetLogEventType::AUTH_LIBRARY_LOAD, NetLogEventPhase::END);
   ASSERT_LT(offset, entries.size());
 
-  auto& entry = entries[offset];
-  const std::string* load_result = entry.params.FindStringKey("load_result");
-  const std::string* library_name = entry.params.FindStringKey("library_name");
-  EXPECT_FALSE(load_result);
-  ASSERT_TRUE(library_name);
-  EXPECT_EQ(*library_name, module.AsUTF8Unsafe());
+  const auto& entry = entries[offset];
+  EXPECT_FALSE(GetOptionalStringValueFromParams(entry, "load_result"));
+  EXPECT_EQ(module.AsUTF8Unsafe(),
+            GetStringValueFromParams(entry, "library_name"));
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
@@ -179,10 +174,8 @@ TEST(HttpAuthGSSAPIPOSIXTest, CustomLibraryMethodsMissing) {
       NetLogEventPhase::NONE);
   ASSERT_LT(offset, entries.size());
 
-  auto& entry = entries[offset];
-  const std::string* method = entry.params.FindStringKey("method");
-  ASSERT_TRUE(method);
-  EXPECT_EQ(*method, "gss_import_name");
+  const auto& entry = entries[offset];
+  EXPECT_EQ("gss_import_name", GetStringValueFromParams(entry, "method"));
 }
 
 TEST(HttpAuthGSSAPIPOSIXTest, GSSAPICycle) {

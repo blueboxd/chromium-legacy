@@ -84,9 +84,9 @@ const int64_t kLastUsedFolderNone = -1;
   return self;
 }
 
-- (void)addBookmarkWithTitle:(NSString*)title
-                         URL:(const GURL&)URL
-                  editAction:(void (^)())editAction {
+- (MDCSnackbarMessage*)addBookmarkWithTitle:(NSString*)title
+                                        URL:(const GURL&)URL
+                                 editAction:(void (^)())editAction {
   base::RecordAction(base::UserMetricsAction("BookmarkAdded"));
   const BookmarkNode* defaultFolder =
       [[self class] folderForNewBookmarksInBrowserState:self.browserState];
@@ -112,7 +112,7 @@ const int64_t kLastUsedFolderNone = -1;
   MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
   message.action = action;
   message.category = bookmark_utils_ios::kBookmarksSnackbarCategory;
-  [MDCSnackbarManager showMessage:message];
+  return message;
 }
 
 @end

@@ -40,19 +40,6 @@
 
 namespace net {
 
-namespace {
-
-SSLClientSocketContext CreateClientSocketContext(
-    const HttpNetworkSession::Context& context,
-    SSLClientSessionCache* ssl_client_session_cache) {
-  return SSLClientSocketContext(
-      context.cert_verifier, context.transport_security_state,
-      context.cert_transparency_verifier, context.ct_policy_enforcer,
-      ssl_client_session_cache);
-}
-
-}  // unnamed namespace
-
 // The maximum receive window sizes for HTTP/2 sessions and streams.
 const int32_t kSpdySessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32_t kSpdyStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
@@ -152,6 +139,11 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
       ssl_client_session_cache_(SSLClientSessionCache::Config()),
+      ssl_client_context_(context.cert_verifier,
+                          context.transport_security_state,
+                          context.cert_transparency_verifier,
+                          context.ct_policy_enforcer,
+                          &ssl_client_session_cache_),
       push_delegate_(nullptr),
       quic_stream_factory_(
           context.net_log,
@@ -445,8 +437,7 @@ CommonConnectJobParams HttpNetworkSession::CreateCommonConnectJobParams(
       context_.http_auth_handler_factory, &spdy_session_pool_,
       &params_.quic_params.supported_versions, &quic_stream_factory_,
       context_.proxy_delegate, context_.http_user_agent_settings,
-      CreateClientSocketContext(context_, &ssl_client_session_cache_),
-      context_.socket_performance_watcher_factory,
+      &ssl_client_context_, context_.socket_performance_watcher_factory,
       context_.network_quality_estimator, context_.net_log,
       for_websockets ? &websocket_endpoint_lock_manager_ : nullptr);
 }

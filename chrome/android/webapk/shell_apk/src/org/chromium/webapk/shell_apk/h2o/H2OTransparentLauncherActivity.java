@@ -10,6 +10,7 @@ import android.content.Context;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
 import org.chromium.webapk.shell_apk.TransparentLauncherActivity;
+import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /**
  * UI-less activity which launches host browser. Relaunches itself if the android.intent.action.MAIN
@@ -21,6 +22,8 @@ public class H2OTransparentLauncherActivity extends TransparentLauncherActivity 
         if (params == null) {
             return;
         }
+
+        WebApkUtils.grantUriPermissionToHostBrowserIfShare(getApplicationContext(), params);
 
         boolean shouldLaunchSplash = H2OLauncher.shouldIntentLaunchSplashActivity(params);
         if (relaunchIfNeeded(params, shouldLaunchSplash)) {

@@ -253,6 +253,7 @@ void NFC::OnConnectionError() {
 }
 
 void NFC::OnWatch(const Vector<uint32_t>& ids,
+                  const String& serial_number,
                   device::mojom::blink::NDEFMessagePtr message) {
   if (!GetExecutionContext())
     return;
@@ -266,7 +267,7 @@ void NFC::OnWatch(const Vector<uint32_t>& ids,
       if (!script_state)
         continue;
       callback->InvokeAndReportException(
-          nullptr, MakeGarbageCollected<NDEFMessage>(message));
+          nullptr, MakeGarbageCollected<NDEFMessage>(*message));
     }
   }
 }

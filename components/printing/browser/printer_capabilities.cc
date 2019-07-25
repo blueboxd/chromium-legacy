@@ -87,10 +87,10 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
 #endif
   info.papers.insert(info.papers.end(), additional_papers.begin(),
                      additional_papers.end());
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   if (!has_secure_protocol)
     info.pin_supported = false;
-#endif  // defined(CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }

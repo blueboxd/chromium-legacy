@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_H_
 
 #include "services/shape_detection/public/mojom/barcodedetection.mojom-blink.h"
-#include "services/shape_detection/public/mojom/barcodedetection_provider.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
@@ -38,21 +37,16 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
  private:
   ~BarcodeDetector() override = default;
 
-  void OnEnumerateSupportedFormats(
-      ScriptPromiseResolver*,
-      const Vector<shape_detection::mojom::blink::BarcodeFormat>&);
-
   ScriptPromise DoDetect(ScriptPromiseResolver*, SkBitmap) override;
   void OnDetectBarcodes(
       ScriptPromiseResolver*,
       Vector<shape_detection::mojom::blink::BarcodeDetectionResultPtr>);
 
-  void OnBarcodeServiceConnectionError();
+  void OnConnectionError();
 
-  shape_detection::mojom::blink::BarcodeDetectionPtr barcode_service_;
-  shape_detection::mojom::blink::BarcodeDetectionProviderPtr barcode_provider_;
+  shape_detection::mojom::blink::BarcodeDetectionPtr service_;
 
-  HeapHashSet<Member<ScriptPromiseResolver>> barcode_service_requests_;
+  HeapHashSet<Member<ScriptPromiseResolver>> detect_requests_;
 };
 
 }  // namespace blink

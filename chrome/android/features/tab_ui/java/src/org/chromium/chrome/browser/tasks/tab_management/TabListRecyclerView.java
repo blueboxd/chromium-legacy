@@ -422,8 +422,10 @@ class TabListRecyclerView extends RecyclerView {
      */
     static int getHoveredTabIndex(
             RecyclerView recyclerView, View view, float dX, float dY, float threshold) {
-        for (int i = 0; i < recyclerView.getChildCount(); i++) {
-            View child = recyclerView.getChildAt(i);
+        for (int i = 0; i < recyclerView.getAdapter().getItemCount(); i++) {
+            ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(i);
+            if (viewHolder == null) continue;
+            View child = viewHolder.itemView;
             if (child.getLeft() == view.getLeft() && child.getTop() == view.getTop()) {
                 continue;
             }

@@ -322,6 +322,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSafeSitesFilterBehavior,
     policy_prefs::kSafeSitesFilterBehavior,
     base::Value::Type::INTEGER},
+  { key::kSafeBrowsingRealTimeLookupEnabled,
+    prefs::kSafeBrowsingRealTimeLookupEnabled,
+    base::Value::Type::BOOLEAN
+  },
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
     prefs::kAuthNegotiateDelegateByKdcPolicy,

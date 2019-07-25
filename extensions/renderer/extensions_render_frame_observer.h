@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "extensions/common/mojo/app_window.mojom.h"
+#include "extensions/common/mojom/app_window.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 

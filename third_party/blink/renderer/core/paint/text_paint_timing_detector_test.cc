@@ -621,8 +621,7 @@ TEST_F(TextPaintTimingDetectorTest, CaptureSVGText) {
     </svg>
   )HTML");
 
-  SVGTextContentElement* elem =
-      ToSVGTextContentElement(GetDocument().QuerySelector("text"));
+  auto* elem = To<SVGTextContentElement>(GetDocument().QuerySelector("text"));
   UpdateAllLifecyclePhasesAndSimulateSwapTime();
 
   EXPECT_EQ(CountVisibleTexts(), 1u);

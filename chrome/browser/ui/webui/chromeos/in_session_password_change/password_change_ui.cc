@@ -65,9 +65,9 @@ std::string GetPasswordChangeUrl(Profile* profile) {
       .password_change_url();
 }
 
-base::string16 GetManagementNotice(Profile* profile) {
-  base::string16 host = base::UTF8ToUTF16(
-      net::GetHostAndOptionalPort(GURL(GetPasswordChangeUrl(profile))));
+base::string16 GetHostedHeaderText(const std::string& password_change_url) {
+  base::string16 host =
+      base::UTF8ToUTF16(net::GetHostAndOptionalPort(GURL(password_change_url)));
   DCHECK(!host.empty());
   return l10n_util::GetStringFUTF16(IDS_LOGIN_SAML_PASSWORD_CHANGE_NOTICE,
                                     host);
@@ -105,9 +105,9 @@ gfx::Size FitSizeToDisplay(int max_width, int max_height) {
 
 }  // namespace
 
-PasswordChangeDialog::PasswordChangeDialog(const base::string16& title)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIPasswordChangeUrl), title) {
-}
+PasswordChangeDialog::PasswordChangeDialog()
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIPasswordChangeUrl),
+                              /*title=*/base::string16()) {}
 
 PasswordChangeDialog::~PasswordChangeDialog() {
   DCHECK_EQ(this, g_dialog);
@@ -119,18 +119,23 @@ void PasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
                            kMaxPasswordChangeDialogHeight);
 }
 
+void PasswordChangeDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+}
+
 ui::ModalType PasswordChangeDialog::GetDialogModalType() const {
   return ui::ModalType::MODAL_TYPE_SYSTEM;
 }
 
 // static
-void PasswordChangeDialog::Show(Profile* profile) {
+void PasswordChangeDialog::Show() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (g_dialog) {
     g_dialog->Focus();
     return;
   }
-  g_dialog = new PasswordChangeDialog(GetManagementNotice(profile));
+  g_dialog = new PasswordChangeDialog();
   g_dialog->ShowSystemDialog();
 }
 
@@ -149,9 +154,11 @@ PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPasswordChangeHost);
 
+  const std::string password_change_url = GetPasswordChangeUrl(profile);
   web_ui->AddMessageHandler(
-      std::make_unique<PasswordChangeHandler>(GetPasswordChangeUrl(profile)));
+      std::make_unique<PasswordChangeHandler>(password_change_url));
 
+  source->AddString("hostedHeader", GetHostedHeaderText(password_change_url));
   source->SetJsonPath("strings.js");
 
   source->SetDefaultResource(IDR_PASSWORD_CHANGE_HTML);

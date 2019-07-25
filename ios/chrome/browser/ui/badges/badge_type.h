@@ -7,8 +7,10 @@
 
 // Badge types.
 enum class BadgeType {
-  // Badge type for the confirm Infobar.
-  kBadgeTypeConfirm = 0,
+  // Badge type for no badge. This is to allow other features to distinguish
+  // when a badge is necessary or not. Setting a BadgeModel type to
+  // kBadgeTypeNone might result in a crash.
+  kBadgeTypeNone = 0,
   // Badge type for the Save Passwords Infobar.
   kBadgeTypePasswordSave = 1,
   // Badge type for the Update Passwords Infobar.

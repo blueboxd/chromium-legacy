@@ -30,7 +30,6 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   static std::unique_ptr<AuthenticatorFactory> CreateWithPin(
       bool use_service_account,
       const std::string& host_owner,
-      const std::string& host_owner_email,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       std::vector<std::string> required_client_domain_list,
@@ -41,7 +40,6 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
   static std::unique_ptr<AuthenticatorFactory> CreateWithThirdPartyAuth(
       bool use_service_account,
       const std::string& host_owner,
-      const std::string& host_owner_email,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       std::vector<std::string> required_client_domain_list,
@@ -58,7 +56,6 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  private:
   // Used for all host authenticators.
   bool use_service_account_;
-  std::string host_owner_;
   std::string canonical_host_owner_email_;
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;

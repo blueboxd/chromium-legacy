@@ -877,12 +877,6 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, CallObservers) {
       ->RemoveObserver(&observer);
 }
 
-// TODO(crbug.com/936407): Most of this suite is flaky.
-#if !defined(NDEBUG) || defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-// Run all ScreenTimeControllerTest with UsageTimeStateNotifier feature enabled
-// and disabled.
-INSTANTIATE_TEST_SUITE_P(DISABLED_, ScreenTimeControllerTest, testing::Bool());
-#else
 INSTANTIATE_TEST_SUITE_P(, ScreenTimeControllerTest, testing::Bool());
-#endif
+
 }  // namespace chromeos

@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class PropertyRegistration;
-
 // This class provides utility functions for determining whether a property
 // can accept a CSSStyleValue type or instance. Its implementation is generated
 // using input from css_properties.json5 and the script
@@ -33,15 +31,9 @@ class CSSOMTypes {
   static bool IsCSSStyleValuePosition(const CSSStyleValue&);
 
   static bool IsPropertySupported(CSSPropertyID);
-  // For registered custom properties, if the CSSStyleValue is accepted
-  // because it matches the registered grammar (and not because it is
-  // a CSSUnsupportedStyleValue with matching name), 'match' will be set
-  // to the component that was matched.
   static bool PropertyCanTake(CSSPropertyID,
                               const AtomicString& custom_property_name,
-                              const PropertyRegistration*,
-                              const CSSStyleValue&,
-                              const CSSSyntaxComponent*& match);
+                              const CSSStyleValue&);
 };
 
 }  // namespace blink

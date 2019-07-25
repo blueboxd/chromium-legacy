@@ -28,6 +28,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_transitioning_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_delegate.h"
@@ -113,7 +114,8 @@ enum class PresentedState {
 
 @property(nonatomic, strong) BookmarkMediator* mediator;
 
-@property(nonatomic, readonly, weak) id<ApplicationCommands> dispatcher;
+@property(nonatomic, readonly, weak) id<ApplicationCommands, BrowserCommands>
+    dispatcher;
 
 // The transitioning delegate that is used when presenting
 // |self.bookmarkBrowser|.
@@ -152,10 +154,11 @@ enum class PresentedState {
 @synthesize folderEditor = _folderEditor;
 @synthesize mediator = _mediator;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                    parentController:(UIViewController*)parentController
-                          dispatcher:(id<ApplicationCommands>)dispatcher
-                        webStateList:(WebStateList*)webStateList {
+- (instancetype)
+    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+        parentController:(UIViewController*)parentController
+              dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
+            webStateList:(WebStateList*)webStateList {
   self = [super init];
   if (self) {
     // Bookmarks are always opened with the main browser state, even in
@@ -204,9 +207,12 @@ enum class PresentedState {
     void (^editAction)() = ^{
       [weakSelf presentBookmarkEditorForBookmarkedURL:bookmarkedURL];
     };
-    [self.mediator addBookmarkWithTitle:tab_util::GetTabTitle(webState)
-                                    URL:bookmarkedURL
-                             editAction:editAction];
+    [self.dispatcher
+        showSnackbarMessage:[self.mediator
+                                addBookmarkWithTitle:tab_util::GetTabTitle(
+                                                         webState)
+                                                 URL:bookmarkedURL
+                                          editAction:editAction]];
   }
 }
 
@@ -254,7 +260,8 @@ enum class PresentedState {
     self.currentPresentedState = PresentedState::BOOKMARK_EDITOR;
     BookmarkEditViewController* bookmarkEditor =
         [[BookmarkEditViewController alloc] initWithBookmark:node
-                                                browserState:_browserState];
+                                                browserState:_browserState
+                                                  dispatcher:self.dispatcher];
     self.bookmarkEditor = bookmarkEditor;
     self.bookmarkEditor.delegate = self;
     editorController = bookmarkEditor;
@@ -264,7 +271,8 @@ enum class PresentedState {
         [BookmarkFolderEditorViewController
             folderEditorWithBookmarkModel:self.bookmarkModel
                                    folder:node
-                             browserState:_browserState];
+                             browserState:_browserState
+                               dispatcher:self.dispatcher];
     folderEditor.delegate = self;
     self.folderEditor = folderEditor;
     editorController = folderEditor;

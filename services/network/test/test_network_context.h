@@ -47,6 +47,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
   void GetRestrictedCookieManager(
       mojom::RestrictedCookieManagerRequest restricted_cookie_manager,
+      mojom::RestrictedCookieManagerRole role,
       const url::Origin& origin,
       bool is_service_worker,
       int32_t process_id,

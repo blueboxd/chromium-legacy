@@ -62,7 +62,6 @@ bool OverlayStrategyUnderlay::Attempt(
     OverlayCandidateList new_candidate_list = *candidate_list;
     new_candidate_list.push_back(candidate);
     new_candidate_list.back().plane_z_order = -1;
-    new_candidate_list.front().is_opaque = false;
 
     // Check for support.
     capability_checker_->CheckOverlaySupport(&new_candidate_list);
@@ -98,6 +97,14 @@ bool OverlayStrategyUnderlay::Attempt(
   }
 
   return false;
+}
+
+// Turn on blending for the output surface plane so the underlay could show
+// through.
+void OverlayStrategyUnderlay::AdjustOutputSurfaceOverlay(
+    OverlayProcessor::OutputSurfaceOverlayPlane* output_surface_plane) {
+  if (output_surface_plane)
+    output_surface_plane->enable_blending = true;
 }
 
 OverlayStrategy OverlayStrategyUnderlay::GetUMAEnum() const {

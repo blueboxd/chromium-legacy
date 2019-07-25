@@ -44,9 +44,9 @@ base::string16 GetMiniViewTitle(int mini_view_index) {
   return l10n_util::GetStringUTF16(kStringIds[mini_view_index]);
 }
 
-gfx::Point GetGestureEventScreenPoint(const ui::Event& event) {
+gfx::Rect GetGestureEventScreenRect(const ui::Event& event) {
   DCHECK(event.IsGestureEvent());
-  return event.AsGestureEvent()->details().bounding_box().CenterPoint();
+  return event.AsGestureEvent()->details().bounding_box();
 }
 
 }  // namespace
@@ -82,13 +82,13 @@ class DeskBarHoverObserver : public ui::EventObserver {
 
       case ui::ET_GESTURE_LONG_PRESS:
       case ui::ET_GESTURE_LONG_TAP:
-        owner_->OnGestureTap(GetGestureEventScreenPoint(event),
+        owner_->OnGestureTap(GetGestureEventScreenRect(event),
                              /*is_long_gesture=*/true);
         break;
 
       case ui::ET_GESTURE_TAP:
       case ui::ET_GESTURE_TAP_DOWN:
-        owner_->OnGestureTap(GetGestureEventScreenPoint(event),
+        owner_->OnGestureTap(GetGestureEventScreenRect(event),
                              /*is_long_gesture=*/false);
         break;
 
@@ -171,10 +171,10 @@ void DesksBarView::OnHoverStateMayHaveChanged() {
     mini_view->OnHoverStateMayHaveChanged();
 }
 
-void DesksBarView::OnGestureTap(const gfx::Point& screen_location,
+void DesksBarView::OnGestureTap(const gfx::Rect& screen_rect,
                                 bool is_long_gesture) {
   for (auto& mini_view : mini_views_)
-    mini_view->OnWidgetGestureTap(screen_location, is_long_gesture);
+    mini_view->OnWidgetGestureTap(screen_rect, is_long_gesture);
 }
 
 void DesksBarView::SetDragDetails(const gfx::Point& screen_location,

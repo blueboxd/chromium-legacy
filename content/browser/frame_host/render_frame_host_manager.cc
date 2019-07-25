@@ -1501,7 +1501,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // scheme) can be reused for subsequent navigations in the same WebContents.
     // See http://crbug.com/386542.
     if (dest_is_restore && SiteInstanceImpl::ShouldAssignSiteForURL(dest_url))
-      current_instance_impl->SetSite(dest_url);
+      current_instance_impl->ConvertToDefaultOrSetSite(dest_url);
 
     return SiteInstanceDescriptor(current_instance_impl);
   }

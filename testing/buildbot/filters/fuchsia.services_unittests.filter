@@ -26,3 +26,6 @@
 
 # https://crbug.com/976319 - Flakily times-out due to virtualization overhead.
 -SimpleURLLoaderTest.OnUploadProgressCallback/*
+
+# https://crbug.com/986544 - Flakes with mismatched state expectations.
+-URLLoaderTest.ResourceSchedulerIntegration

@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.module_installer.ModuleInterface;
 
@@ -54,4 +56,10 @@ public interface TabManagementDelegate {
      * @return the {@link StartSurface}
      */
     StartSurface createStartSurface(ChromeActivity activity);
+
+    /**
+     * Create a {@link TabGroupModelFilter} for the given {@link TabModel}.
+     * @return The {@link TabGroupModelFilter}.
+     */
+    TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel);
 }

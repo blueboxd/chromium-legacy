@@ -53,6 +53,8 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -75,6 +77,27 @@ bool IsPrivilegedCrosSetting(const std::string& pref_name) {
   // controlled or owner controlled.
   return true;
 }
+
+bool IsRestrictedCrosSettingForChildUser(Profile* profile,
+                                         const std::string& pref_name) {
+  if (!profile->IsChild())
+    return false;
+
+  return SupervisedUserServiceFactory::GetForProfile(profile)
+      ->IsRestrictedCrosSettingForChildUser(pref_name);
+}
+
+const base::Value* GetRestrictedCrosSettingValueForChildUser(
+    Profile* profile,
+    const std::string& pref_name) {
+  // Make sure that profile belongs to a child and the preference is
+  // pre-set.
+  DCHECK(IsRestrictedCrosSettingForChildUser(profile, pref_name));
+
+  return SupervisedUserServiceFactory::GetForProfile(profile)
+      ->GetRestrictedCrosSettingValueForChildUser(pref_name);
+}
+
 #endif
 
 bool IsSettingReadOnly(const std::string& pref_name) {
@@ -745,6 +768,15 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
     pref_object->controlled_by_name.reset(new std::string(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail()));
+    return pref_object;
+  }
+
+  if (IsRestrictedCrosSettingForChildUser(profile_, name)) {
+    pref_object->controlled_by =
+        settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTIONS;
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->value = std::make_unique<base::Value>(
+        GetRestrictedCrosSettingValueForChildUser(profile_, name)->Clone());
     return pref_object;
   }
 #endif

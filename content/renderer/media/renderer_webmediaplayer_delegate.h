@@ -65,6 +65,9 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
+  void DidPlayerMediaPositionStateChange(
+      int delegate_id,
+      const media_session::MediaPosition& position) override {}
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;

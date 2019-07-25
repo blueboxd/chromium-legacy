@@ -179,8 +179,8 @@ public class MockWebContents implements WebContents {
     public void addMessageToDevToolsConsole(int level, String message) {}
 
     @Override
-    public void postMessageToFrame(String frameName, String message, String sourceOrigin,
-            String targetOrigin, MessagePort[] ports) {}
+    public void postMessageToMainFrame(
+            String message, String sourceOrigin, String targetOrigin, MessagePort[] ports) {}
 
     @Override
     public MessagePort[] createMessageChannel() {

@@ -76,15 +76,10 @@ void GetInterfaceImpl(const std::string& interface_name,
   if (interface_name == network::mojom::RestrictedCookieManager::Name_) {
     network::mojom::RestrictedCookieManagerRequest request(
         std::move(interface_pipe));
-    if (!GetContentClient()->browser()->WillCreateRestrictedCookieManager(
-            process->GetBrowserContext(), origin, true /* is_service_worker */,
-            process_id, MSG_ROUTING_NONE, &request)) {
-      process->GetStoragePartition()
-          ->GetNetworkContext()
-          ->GetRestrictedCookieManager(std::move(request), origin,
-                                       true /* is_service_worker */, process_id,
-                                       MSG_ROUTING_NONE);
-    }
+    process->GetStoragePartition()->CreateRestrictedCookieManager(
+        network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
+        true /* is_service_worker */, process_id, MSG_ROUTING_NONE,
+        std::move(request));
     return;
   }
 

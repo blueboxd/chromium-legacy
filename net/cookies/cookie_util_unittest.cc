@@ -379,6 +379,33 @@ TEST(CookieUtilTest, ComputeSameSiteContextForSet) {
           GURL("http://example.com/dir"), GURL("https://sub.example.com")));
 }
 
+TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
+  // |site_for_cookies| not matching the URL -> it's cross-site.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+            cookie_util::ComputeSameSiteContextForSubresource(
+                GURL("http://example.com"), GURL("http://notexample.com")));
+
+  // This isn't a full on origin check --- subdomains and different schema are
+  // accepted.
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContextForSubresource(
+                GURL("https://example.com"), GURL("http://example.com")));
+
+  EXPECT_EQ(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+      cookie_util::ComputeSameSiteContextForSubresource(
+          GURL("http://sub.example.com"), GURL("http://sub2.example.com")));
+
+  EXPECT_EQ(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+      cookie_util::ComputeSameSiteContextForSubresource(
+          GURL("http://sub.example.com"), GURL("http://sub.example.com:8080")));
+
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
+            cookie_util::ComputeSameSiteContextForSubresource(
+                GURL("http://example.com"), GURL("http://example.com")));
+}
+
 TEST(CookieUtilTest, IgnoreCookieStatusList) {
   CookieList cookie_list_out;
   base::OnceCallback<void(const CookieList&)> callback =

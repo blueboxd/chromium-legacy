@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -225,7 +226,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeCopySite];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_COPY_BUTTON);
-  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  item.textColor = [UIColor colorNamed:kTintColor];
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -243,7 +244,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeCopyUsername];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON);
-  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  item.textColor = [UIColor colorNamed:kTintColor];
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -262,7 +263,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeCopyPassword];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON);
-  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  item.textColor = [UIColor colorNamed:kTintColor];
   // Accessibility label adds the header to the text, so that accessibility
   // users do not have to rely on the visual grouping to understand which part
   // of the credential is being copied.
@@ -281,7 +282,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeShowHide];
   item.text = [self showHideButtonText];
-  item.textColor = UIColorFromRGB(kTableViewTextLabelColorBlue);
+  item.textColor = [UIColor colorNamed:kTintColor];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }
@@ -291,7 +292,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeDelete];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON);
-  item.textColor = [UIColor redColor];
+  item.textColor = [UIColor colorNamed:kDestructiveTintColor];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   return item;
 }

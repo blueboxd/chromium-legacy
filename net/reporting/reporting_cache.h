@@ -159,6 +159,15 @@ class NET_EXPORT ReportingCache {
   // they become empty.
   virtual void RemoveEndpointsForUrl(const GURL& url) = 0;
 
+  // Insert endpoints and endpoint groups that have been loaded from the store.
+  //
+  // You must only call this method if context.store() was non-null when you
+  // constructed the cache and persist_clients_across_restarts in your
+  // ReportingPolicy is true.
+  virtual void AddClientsLoadedFromStore(
+      std::vector<ReportingEndpoint> loaded_endpoints,
+      std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups) = 0;
+
   // Gets endpoints that apply to a delivery for |origin| and |group|.
   //
   // First checks for |group| in a client exactly matching |origin|.

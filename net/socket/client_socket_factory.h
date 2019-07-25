@@ -22,8 +22,8 @@ class DatagramClientSocket;
 class HostPortPair;
 class NetLog;
 struct NetLogSource;
+class SSLClientContext;
 class SSLClientSocket;
-struct SSLClientSocketContext;
 struct SSLConfig;
 class ProxyClientSocket;
 class ProxyDelegate;
@@ -52,10 +52,10 @@ class NET_EXPORT ClientSocketFactory {
   // It is allowed to pass in a StreamSocket that is not obtained from a
   // socket pool. The caller could create a StreamSocket directly.
   virtual std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
+      SSLClientContext* context,
       std::unique_ptr<StreamSocket> stream_socket,
       const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context) = 0;
+      const SSLConfig& ssl_config) = 0;
 
   virtual std::unique_ptr<ProxyClientSocket> CreateProxyClientSocket(
       std::unique_ptr<StreamSocket> stream_socket,

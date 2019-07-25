@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol ApplicationCommands;
+@protocol BrowserCommands;
 @class BookmarkHomeViewController;
 namespace bookmarks {
 class BookmarkNode;
@@ -49,10 +50,10 @@ class WebStateList;
 @property(nonatomic, weak) id<BookmarkHomeViewControllerDelegate> homeDelegate;
 
 // Initializers.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                          dispatcher:(id<ApplicationCommands>)dispatcher
-                        webStateList:(WebStateList*)webStateList
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)
+    initWithBrowserState:(ios::ChromeBrowserState*)browserState
+              dispatcher:(id<ApplicationCommands, BrowserCommands>)dispatcher
+            webStateList:(WebStateList*)webStateList NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)tableViewStyle
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle

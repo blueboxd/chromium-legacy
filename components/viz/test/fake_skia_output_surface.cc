@@ -83,7 +83,8 @@ void FakeSkiaOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   NOTIMPLEMENTED();
 }
 
-void FakeSkiaOutputSurface::ScheduleOverlays(OverlayCandidateList overlays) {
+void FakeSkiaOutputSurface::ScheduleOutputSurfaceAsOverlay(
+    OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   NOTIMPLEMENTED();
 }
@@ -339,6 +340,12 @@ void FakeSkiaOutputSurface::SwapBuffersAck() {
   base::TimeTicks now = base::TimeTicks::Now();
   client_->DidReceiveSwapBuffersAck({now, now});
   client_->DidReceivePresentationFeedback({now, base::TimeDelta(), 0});
+}
+
+void FakeSkiaOutputSurface::ScheduleGpuTaskForTesting(
+    base::OnceClosure callback,
+    std::vector<gpu::SyncToken> sync_tokesn) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace viz

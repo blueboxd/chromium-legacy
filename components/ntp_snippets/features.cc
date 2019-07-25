@@ -34,10 +34,9 @@ const base::Feature kRemoteSuggestionsBackendFeature{
 
 // Keep sorted, and keep nullptr at the end.
 const base::Feature* const kAllFeatures[] = {
-    &kArticleSuggestionsFeature,
-    &kKeepPrefetchedContentSuggestions,
-    &kNotificationsFeature,
-    &kRemoteSuggestionsBackendFeature};
+    &kArticleSuggestionsFeature, &kKeepPrefetchedContentSuggestions,
+    &kNotificationsFeature, &kRemoteSuggestionsBackendFeature,
+    &kOptionalImagesEnabledFeature};
 
 const base::Feature kArticleSuggestionsFeature{
     "NTPArticleSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -71,6 +70,9 @@ const char kNotificationsIgnoredLimitParam[] = "ignored_limit";
 
 const base::Feature kKeepPrefetchedContentSuggestions{
     "KeepPrefetchedContentSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kOptionalImagesEnabledFeature{
+    "NTPRemoteSuggestionsOptionalImages", base::FEATURE_DISABLED_BY_DEFAULT};
 
 std::vector<const base::Feature*> GetAllFeatures() {
   // Skip the last feature as it's a nullptr.

@@ -1378,9 +1378,6 @@ extern const char kEnableAndroidSpellcheckerDescription[];
 extern const char kEnableCommandLineOnNonRootedName[];
 extern const char kEnableCommandLineOnNoRootedDescription[];
 
-extern const char kEnableCustomContextMenuName[];
-extern const char kEnableCustomContextMenuDescription[];
-
 extern const char kEnableRevampedContextMenuName[];
 extern const char kEnableRevampedContextMenuDescription[];
 

@@ -16,6 +16,7 @@
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -28,14 +29,27 @@
 
 namespace views {
 
+namespace {
+
+InstallableInkDropConfig GetPlaceholderInstallableInkDropConfig() {
+  InstallableInkDropConfig config{0};
+  config.base_color = gfx::kPlaceholderColor;
+  config.ripple_opacity = 1.0f;
+  config.highlight_opacity = 1.0f;
+  return config;
+}
+
+}  // namespace
+
 const base::Feature kInstallableInkDropFeature{
     "InstallableInkDrop", base::FEATURE_DISABLED_BY_DEFAULT};
 
 InstallableInkDrop::InstallableInkDrop(View* view)
     : view_(view),
+      config_(GetPlaceholderInstallableInkDropConfig()),
       layer_(std::make_unique<ui::Layer>()),
       event_handler_(view_, this),
-      painter_(&visual_state_),
+      painter_(&config_, &visual_state_),
       animation_container_(base::MakeRefCounted<gfx::AnimationContainer>()),
       animator_(layer_->size(),
                 &visual_state_,
@@ -79,6 +93,11 @@ InstallableInkDrop::~InstallableInkDrop() {
     ink_drop_host_view_->set_ink_drop_event_handler_override(nullptr);
   if (DCHECK_IS_ON())
     view_->RemoveObserver(this);
+}
+
+void InstallableInkDrop::SetConfig(InstallableInkDropConfig config) {
+  config_ = config;
+  SchedulePaint();
 }
 
 void InstallableInkDrop::HostSizeChanged(const gfx::Size& new_size) {

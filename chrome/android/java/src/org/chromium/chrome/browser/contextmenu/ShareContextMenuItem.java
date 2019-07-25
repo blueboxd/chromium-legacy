@@ -32,7 +32,7 @@ public class ShareContextMenuItem implements ContextMenuItem {
     /**
      * A representation of a Context Menu Item. Each item should have a string and an id associated
      * with it.
-     * @param iconId The icon that appears in {@link TabularContextMenuUi} to represent each item.
+     * @param iconId The icon that represents each item.
      * @param stringId The string that describes the action of the item.
      * @param menuId The id found in ids.xml.
      * @param isShareLink Whether the menu is for sharing a link.

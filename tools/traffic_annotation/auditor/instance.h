@@ -156,6 +156,9 @@ class CallInstance : public InstanceBase {
   std::string file_path;
   uint32_t line_number;
 
+  // Name of the function in which the call happens.
+  std::string function_context;
+
   // Name of the function that may need annotation.
   std::string function_name;
 
@@ -184,6 +187,9 @@ class AssignmentInstance : public InstanceBase {
 
   std::string file_path;
   uint32_t line_number;
+
+  // Name of the function in which assignment happens.
+  std::string function_context;
 };
 
 #endif  // TOOLS_TRAFFIC_ANNOTATION_AUDITOR_INSTANCE_H_

@@ -16296,6 +16296,25 @@
       Otherwise, all of VM management CLI is disabled and hidden.
       ''',
     },
+    {
+      'name': 'SafeBrowsingRealTimeLookupEnabled',
+      'type': 'main',
+      'schema': {
+        'type': 'boolean',
+      },
+      'example_value': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'id': 578,
+      'supported_on': ['chrome.*:77-','chrome_os:77-'],
+      'caption': '''Check SafeBrowsing reputation of visited URLs in real time''',
+      'tags': ['google-sharing'],
+      'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
+
+      When this policy is set to disabled, or not set, the consumer Safe Browsing checks will be applied.'''
+    }
   ],
 
   'messages': {
@@ -17089,6 +17108,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562],
-  'highest_id_currently_used': 577,
+  'highest_id_currently_used': 578,
   'highest_atomic_group_id_currently_used': 37
 }

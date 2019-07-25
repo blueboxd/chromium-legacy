@@ -18,6 +18,23 @@ struct CookieManagerGetOptions {
   CookieMatchType match_type;
 };
 
+// Affects whether http-only cookies are accessible, and the rules used for
+// SameSite cookie computations.
+enum RestrictedCookieManagerRole {
+  // Used for script access to cookies. Will not be able to get to HttpOnly
+  // cookies, and will apply SameSite cookies access rules appropriate for
+  // script cookie access. OK to give to the renderer.
+  SCRIPT,
+
+  // Access to cookies appropriate for network requests --- meant for cases
+  // where, for some reason, a fetch needs to be performed by some external
+  // library.  Will get HttpOnly cookies, and compute SameSite accessibility
+  // appropriate for subresource loading (but NOT for navigations).
+  //
+  // Should only be used within the browser.
+  NETWORK
+};
+
 // Capability to access the cookie store on behalf of a single origin.
 //
 // Instances of this interface are restricted to a single origin, and will

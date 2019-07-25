@@ -270,8 +270,6 @@ const CGFloat kAnimationDuration = 0.3;
     [_imageContainer.topAnchor
         constraintEqualToAnchor:self.contentView.topAnchor
                        constant:kStandardSpacing],
-    [_imageContainer.bottomAnchor
-        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor],
 
     // Favicon.
     [_faviconView.leadingAnchor
@@ -328,6 +326,10 @@ const CGFloat kAnimationDuration = 0.3;
                          constant:-kStandardSpacing],
     ];
   } else {
+    [_imageContainer.bottomAnchor
+        constraintLessThanOrEqualToAnchor:_faviconView.bottomAnchor]
+        .active = YES;
+
     _imageTitleHorizontalSpacing = [_titleLabel.leadingAnchor
         constraintEqualToAnchor:_imageContainer.trailingAnchor
                        constant:kStandardSpacing];

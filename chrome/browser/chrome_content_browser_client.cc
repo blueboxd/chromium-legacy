@@ -327,8 +327,6 @@
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
-#include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_options.h"
 #include "net/http/http_util.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -381,12 +379,10 @@
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/apps/intent_helper/mac_apps_navigation_throttle.h"
 #include "chrome/browser/chrome_browser_main_mac.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #elif defined(OS_CHROMEOS)
@@ -981,19 +977,7 @@ AppLoadedInTabSource ClassifyAppLoadedInTabSource(
   // The forbidden app URL was being opened by a non-extension page (e.g. http).
   return APP_LOADED_IN_TAB_SOURCE_OTHER;
 }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
-WebContents* GetWebContentsFromProcessAndFrameId(int render_process_id,
-                                                 int render_frame_id) {
-  if (render_process_id) {
-    RenderFrameHost* rfh =
-        RenderFrameHost::FromID(render_process_id, render_frame_id);
-    return WebContents::FromRenderFrameHost(rfh);
-  }
-  return WebContents::FromFrameTreeNodeId(render_frame_id);
-}
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 // Returns true if there is is an extension matching |url| in
 // |opener_render_process_id| with APIPermission::kBackground.
 //
@@ -1100,33 +1084,6 @@ void MaybeAppendSecureOriginsAllowlistSwitch(base::CommandLine* cmdline) {
         network::switches::kUnsafelyTreatInsecureOriginAsSecure,
         base::JoinString(allowlist, ","));
   }
-}
-
-void CookiesReadOnUI(
-    const base::Callback<content::WebContents*(void)>& wc_getter,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return;
-  web_contents->OnCookiesRead(url, first_party_url, cookie_list,
-                              blocked_by_policy);
-}
-
-void CookieChangedOnUI(
-    const base::Callback<content::WebContents*(void)>& wc_getter,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  WebContents* web_contents = wc_getter.Run();
-  if (!web_contents)
-    return;
-  web_contents->OnCookieChange(url, first_party_url, cookie, blocked_by_policy);
 }
 
 }  // namespace
@@ -2498,41 +2455,6 @@ bool ChromeContentBrowserClient::AllowSignedExchange(
   return profile->GetPrefs()->GetBoolean(prefs::kSignedHTTPExchangeEnabled);
 }
 
-bool ChromeContentBrowserClient::AllowGetCookie(
-    const GURL& url,
-    const GURL& first_party,
-    const net::CookieList& cookie_list,
-    content::ResourceContext* context,
-    int render_process_id,
-    int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  bool allow =
-      io_data->GetCookieSettings()->IsCookieAccessAllowed(url, first_party);
-  OnCookiesRead(render_process_id, render_frame_id, url, first_party,
-                cookie_list, !allow);
-
-  return allow;
-}
-
-bool ChromeContentBrowserClient::AllowSetCookie(
-    const GURL& url,
-    const GURL& first_party,
-    const net::CanonicalCookie& cookie,
-    content::ResourceContext* context,
-    int render_process_id,
-    int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  content_settings::CookieSettings* cookie_settings =
-      io_data->GetCookieSettings();
-  bool allow = cookie_settings->IsCookieAccessAllowed(url, first_party);
-
-  OnCookieChange(render_process_id, render_frame_id, url, first_party, cookie,
-                 !allow);
-  return allow;
-}
-
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
@@ -2618,39 +2540,6 @@ void ChromeContentBrowserClient::FileSystemAccessed(
                        it.child_id, it.frame_routing_id, url, !allow));
   }
   callback.Run(allow);
-}
-
-void ChromeContentBrowserClient::OnCookiesRead(
-    int process_id,
-    int routing_id,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CookieList& cookie_list,
-    bool blocked_by_policy) {
-  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
-      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
-                          routing_id);
-
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CookiesReadOnUI, wc_getter, url, first_party_url,
-                     cookie_list, blocked_by_policy));
-}
-
-void ChromeContentBrowserClient::OnCookieChange(
-    int process_id,
-    int routing_id,
-    const GURL& url,
-    const GURL& first_party_url,
-    const net::CanonicalCookie& cookie,
-    bool blocked_by_policy) {
-  base::RepeatingCallback<content::WebContents*(void)> wc_getter =
-      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
-                          routing_id);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&CookieChangedOnUI, wc_getter, url, first_party_url,
-                     cookie, blocked_by_policy));
 }
 
 bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
@@ -4287,8 +4176,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     auto url_to_apps_throttle =
 #if defined(OS_CHROMEOS)
         chromeos::ChromeOsAppsNavigationThrottle::MaybeCreate(handle);
-#elif defined(OS_MACOSX)
-        apps::MacAppsNavigationThrottle::MaybeCreate(handle);
 #else
         apps::AppsNavigationThrottle::MaybeCreate(handle);
 #endif
@@ -5184,6 +5071,7 @@ void ChromeContentBrowserClient::CreateWebSocket(
 }
 
 bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
     const url::Origin& origin,
     bool is_service_worker,
@@ -5193,6 +5081,7 @@ bool ChromeContentBrowserClient::WillCreateRestrictedCookieManager(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (origin.scheme() == extensions::kExtensionScheme) {
+    DCHECK_EQ(network::mojom::RestrictedCookieManagerRole::SCRIPT, role);
     extensions::ChromeExtensionCookies::Get(browser_context)
         ->CreateRestrictedCookieManager(origin, std::move(*request));
     return true;

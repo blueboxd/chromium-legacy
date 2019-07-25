@@ -5,9 +5,9 @@
 #ifndef CONTENT_RENDERER_ACCESSIBILITY_AX_ACTION_TARGET_FACTORY_H_
 #define CONTENT_RENDERER_ACCESSIBILITY_AX_ACTION_TARGET_FACTORY_H_
 
-#include "content/common/content_export.h"
-
 #include <memory>
+
+#include "content/common/content_export.h"
 
 namespace blink {
 class WebDocument;

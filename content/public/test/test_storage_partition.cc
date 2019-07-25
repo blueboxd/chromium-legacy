@@ -49,6 +49,16 @@ TestStoragePartition::GetCookieManagerForBrowserProcess() {
   return cookie_manager_for_browser_process_;
 }
 
+void TestStoragePartition::CreateRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRole role,
+    const url::Origin& origin,
+    bool is_service_worker,
+    int process_id,
+    int routing_id,
+    network::mojom::RestrictedCookieManagerRequest request) {
+  NOTREACHED();
+}
+
 storage::QuotaManager* TestStoragePartition::GetQuotaManager() {
   return quota_manager_;
 }

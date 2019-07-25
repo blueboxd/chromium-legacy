@@ -36,6 +36,7 @@
     "RTCDtlsTransport",
     "RTCPeerConnection",
     "RTCSctpTransport",
+    "NFCReader",
     "NetworkInformation",
     "Notification",
     "PaymentRequest",

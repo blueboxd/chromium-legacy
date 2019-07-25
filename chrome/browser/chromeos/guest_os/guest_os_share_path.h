@@ -64,6 +64,11 @@ class GuestOsSharePath : public KeyedService,
   explicit GuestOsSharePath(Profile* profile);
   ~GuestOsSharePath() override;
 
+  // KeyedService:
+  // FilePathWatchers are removed in Shutdown to ensure they are all destroyed
+  // before the service.
+  void Shutdown() override;
+
   // Observer receives unshare events.
   void AddObserver(Observer* obs);
 

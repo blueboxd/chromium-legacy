@@ -569,10 +569,9 @@ void WebContentsAndroid::AddMessageToDevToolsConsole(
       ConvertJavaStringToUTF8(env, message));
 }
 
-void WebContentsAndroid::PostMessageToFrame(
+void WebContentsAndroid::PostMessageToMainFrame(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jframe_name,
     const JavaParamRef<jstring>& jmessage,
     const JavaParamRef<jstring>& jsource_origin,
     const JavaParamRef<jstring>& jtarget_origin,

@@ -662,10 +662,6 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
     if (!selection_controller->MoveSelection(key_event))
       return true;
 
-    // Tells ChromeVox to read this result
-    selection_controller->selected_result()->NotifyAccessibilityEvent(
-        ax::mojom::Event::kSelection, true);
-
     // Fill text on result change.
     SearchResultBaseView* selected_result_view =
         selection_controller->selected_result();

@@ -13,7 +13,8 @@
 <canvas />
 
 <script>
-
+// This test manipulates mojo directly to simulate some behavior, and as such is
+// chromium specific.
 let testName = "Outstanding promises get rejected if environmentProvider disconencts";
 
 let fakeDeviceInitParams = { supportsImmersive: true,

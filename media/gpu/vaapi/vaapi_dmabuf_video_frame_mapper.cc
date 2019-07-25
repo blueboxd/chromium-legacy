@@ -11,10 +11,9 @@
 #include "media/gpu/format_utils.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-#include "media/video/picture.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 namespace media {
 
@@ -113,15 +112,13 @@ VaapiDmaBufVideoFrameMapper::VaapiDmaBufVideoFrameMapper(
     : VideoFrameMapper(format),
       vaapi_wrapper_(VaapiWrapper::CreateForVideoCodec(VaapiWrapper::kDecode,
                                                        H264PROFILE_MAIN,
-                                                       base::DoNothing())),
-      vaapi_picture_factory_(new VaapiPictureFactory()) {}
+                                                       base::DoNothing())) {}
 
 VaapiDmaBufVideoFrameMapper::~VaapiDmaBufVideoFrameMapper() {}
 
 scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {
   DCHECK(vaapi_wrapper_);
-  DCHECK(vaapi_picture_factory_);
   if (!video_frame->HasDmaBufs()) {
     return nullptr;
   }
@@ -130,34 +127,16 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
     return nullptr;
   }
 
-  const gfx::Size& coded_size = video_frame->coded_size();
-  constexpr int32_t kDummyPictureBufferId = 0;
-
-  // Passing empty callbacks is ok, because given PictureBuffer doesn't have
-  // texture id and thus these callbacks will never called.
-  auto va_picture = vaapi_picture_factory_->Create(
-      vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
-      PictureBuffer(kDummyPictureBufferId, coded_size));
-  if (!va_picture) {
-    VLOGF(1) << "Failed to create VaapiPicture.";
+  const scoped_refptr<gfx::NativePixmap> pixmap =
+      CreateNativePixmapDmaBuf(video_frame.get());
+  if (!pixmap) {
+    VLOGF(1) << "Failed to create NativePixmap";
     return nullptr;
   }
-
-  gfx::GpuMemoryBufferHandle gmb_handle;
-  gmb_handle = CreateGpuMemoryBufferHandle(video_frame.get());
-  if (gmb_handle.is_null()) {
-    VLOGF(1) << "Failed to CreateGMBHandleFromVideoFrame.";
-    return nullptr;
-  }
-  auto buffer_format = VideoPixelFormatToGfxBufferFormat(video_frame->format());
-  if (!buffer_format) {
-    VLOGF(1) << "Unsupported format: " << video_frame->format();
-    return nullptr;
-  }
-
-  if (!va_picture->ImportGpuMemoryBufferHandle(*buffer_format,
-                                               std::move(gmb_handle))) {
-    VLOGF(1) << "Failed in ImportGpuMemoryBufferHandle.";
+  scoped_refptr<VASurface> va_surface =
+      vaapi_wrapper_->CreateVASurfaceForPixmap(pixmap);
+  if (!va_surface) {
+    VLOGF(1) << "Failed to create VASurface";
     return nullptr;
   }
 
@@ -166,7 +145,7 @@ scoped_refptr<VideoFrame> VaapiDmaBufVideoFrameMapper::Map(
   constexpr VideoPixelFormat kConvertedFormat = PIXEL_FORMAT_NV12;
   VAImageFormat va_image_format = kImageFormatNV12;
   auto va_image = vaapi_wrapper_->CreateVaImage(
-      va_picture->va_surface_id(), &va_image_format, video_frame->coded_size());
+      va_surface->id(), &va_image_format, va_surface->size());
   if (!va_image || !va_image->IsValid()) {
     VLOGF(1) << "Failed in CreateVaImage.";
     return nullptr;

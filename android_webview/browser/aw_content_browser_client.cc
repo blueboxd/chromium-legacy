@@ -499,26 +499,6 @@ bool AwContentBrowserClient::AllowAppCache(const GURL& manifest_url,
   return true;
 }
 
-bool AwContentBrowserClient::AllowGetCookie(const GURL& url,
-                                            const GURL& first_party,
-                                            const net::CookieList& cookie_list,
-                                            content::ResourceContext* context,
-                                            int render_process_id,
-                                            int render_frame_id) {
-  return AwCookieAccessPolicy::GetInstance()->AllowCookies(
-      url, first_party, render_process_id, render_frame_id);
-}
-
-bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
-                                            const GURL& first_party,
-                                            const net::CanonicalCookie& cookie,
-                                            content::ResourceContext* context,
-                                            int render_process_id,
-                                            int render_frame_id) {
-  return AwCookieAccessPolicy::GetInstance()->AllowCookies(
-      url, first_party, render_process_id, render_frame_id);
-}
-
 void AwContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
@@ -1112,6 +1092,7 @@ uint32_t AwContentBrowserClient::GetWebSocketOptions(
 }
 
 bool AwContentBrowserClient::WillCreateRestrictedCookieManager(
+    network::mojom::RestrictedCookieManagerRole role,
     content::BrowserContext* browser_context,
     const url::Origin& origin,
     bool is_service_worker,

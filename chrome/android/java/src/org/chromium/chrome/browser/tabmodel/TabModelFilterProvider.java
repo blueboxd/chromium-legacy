@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.ArrayList;
@@ -93,7 +94,10 @@ public class TabModelFilterProvider {
      */
     private TabModelFilter createTabModelFilter(TabModel model) {
         if (FeatureUtilities.isTabGroupsAndroidEnabled()) {
-            return new TabGroupModelFilter(model);
+            TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
+            if (tabManagementDelegate != null) {
+                return tabManagementDelegate.createTabGroupModelFilter(model);
+            }
         }
         return new EmptyTabModelFilter(model);
     }

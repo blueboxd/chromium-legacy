@@ -44,13 +44,11 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     static final int INTRODUCTORY_SESSIONS = 6;
     static final int INTRODUCTORY_PAGE_LOAD_CYCLE = 3;
 
-    @IntDef({DisplayCause.PAGE_LOAD_STARTED, DisplayCause.PAGE_LOAD_FINISHED,
-            DisplayCause.FALLBACK_CURSOR_TOGGLED})
+    @IntDef({DisplayCause.PAGE_LOAD_STARTED, DisplayCause.PAGE_LOAD_FINISHED})
     @Retention(RetentionPolicy.SOURCE)
     private @interface DisplayCause {
         int PAGE_LOAD_STARTED = 0;
         int PAGE_LOAD_FINISHED = 1;
-        int FALLBACK_CURSOR_TOGGLED = 2;
     }
 
     KeyFunctionsIPHMediator(PropertyModel model, ActivityTabProvider activityTabProvider,
@@ -68,7 +66,6 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     @Override
     public void onFallbackCursorModeToggled(boolean isOn) {
         mIsFallbackCursorModeOn = isOn;
-        show(DisplayCause.FALLBACK_CURSOR_TOGGLED);
     }
 
     private void show(@DisplayCause int displayCause) {

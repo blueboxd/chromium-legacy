@@ -50,8 +50,10 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
 
-  if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature))
+  if (base::FeatureList::IsEnabled(views::kInstallableInkDropFeature)) {
     installable_ink_drop_ = std::make_unique<views::InstallableInkDrop>(this);
+    installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
+  }
 
   SetInkDropMode(InkDropMode::ON);
 
@@ -158,6 +160,12 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
   UpdateHighlightBackgroundAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
+}
+
+void ToolbarButton::OnThemeChanged() {
+  LabelButton::OnThemeChanged();
+  if (installable_ink_drop_)
+    installable_ink_drop_->SetConfig(GetToolbarInstallableInkDropConfig(this));
 }
 
 gfx::Rect ToolbarButton::GetAnchorBoundsInScreen() const {

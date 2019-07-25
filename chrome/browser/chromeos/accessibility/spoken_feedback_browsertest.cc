@@ -558,12 +558,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
       break;
   }
 
-  SendKeyPress(ui::VKEY_TAB);
   // On Chrome OS accessibility title for tabbed browser windows contains app
   // name ("Chrome" or "Chromium") in overview mode.
   while (true) {
+    // Tabbing may select a desk item in the overview desks bar, so we tab
+    // repeatedly until the window is selected.
+    SendKeyPress(ui::VKEY_TAB);
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Chromium - about:blank"))
+    if (base::MatchPattern(utterance, "Chrom* - about:blank"))
       break;
   }
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());

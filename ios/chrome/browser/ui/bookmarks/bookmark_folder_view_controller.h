@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @class BookmarkFolderViewController;
+@protocol BrowserCommands;
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
@@ -47,11 +48,12 @@ class BookmarkNode;
 // |allowsCancel| puts a cancel and done button in the navigation bar instead of
 // a back button, which is needed if this view controller is presented modally.
 - (instancetype)
-initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-     allowsNewFolders:(BOOL)allowsNewFolders
-          editedNodes:(const std::set<const bookmarks::BookmarkNode*>&)nodes
-         allowsCancel:(BOOL)allowsCancel
-       selectedFolder:(const bookmarks::BookmarkNode*)selectedFolder;
+    initWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+         allowsNewFolders:(BOOL)allowsNewFolders
+              editedNodes:(const std::set<const bookmarks::BookmarkNode*>&)nodes
+             allowsCancel:(BOOL)allowsCancel
+           selectedFolder:(const bookmarks::BookmarkNode*)selectedFolder
+               dispatcher:(id<BrowserCommands>)dispatcher;
 
 // This method changes the currently selected folder and updates the UI. The
 // delegate is not notified of the change.

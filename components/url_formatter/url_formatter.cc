@@ -17,7 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
-#include "components/url_formatter/idn_spoof_checker.h"
+#include "components/url_formatter/spoof_checks/idn_spoof_checker.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
 #include "third_party/icu/source/common/unicode/utypes.h"

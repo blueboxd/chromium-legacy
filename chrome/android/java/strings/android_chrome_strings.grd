@@ -195,7 +195,7 @@ CHAR-LIMIT guidelines:
         Close
       </message>
       <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR-LIMIT=32]">
-        No Thanks
+        No thanks
       </message>
       <message name="IDS_NEXT" desc="Generic label for a button to advance to the next item. [CHAR-LIMIT=20]">
         Next
@@ -4021,6 +4021,20 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Remove from group
       </message>
 
+      <!-- Tab Grid Drag-and-drop IPH strings -->
+      <message name="IDS_IPH_DRAG_AND_DROP_INTRODUCTION" desc="This text shows on the entry point for the in-product help for drag-and-drop. It introduces that this IPH is about how to use drag-and-drop.">
+        Drag tabs to group them
+      </message>
+      <message name="IDS_IPH_DRAG_AND_DROP_SHOW_ME" desc="This text button shows on the entry point for the in-product help for drag-and-drop. When user clicks on the text button, the dialog for IPH shows up.">
+        Show me
+      </message>
+      <message name="IDS_IPH_DRAG_AND_DROP_TITLE" desc="This text shows on the in-product help dialog for drag-and-drop. It decribes why drag-and-drop is useful.">
+        Get organized
+      </message>
+      <message name="IDS_IPH_DRAG_AND_DROP_CONTENT" desc="This text shows on the in-product help dialog for drag-and-drop. It gives instructions on how to drag and drop to create a group.">
+        Drag a tab onto another tab to group them
+      </message>
+
       <message name="IDS_AUTOFILL_ASSISTANT_MODULE_TITLE"
   desc="Text shown when the Foo module is referenced in install start, success,
         failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to
@@ -4038,6 +4052,9 @@ The site does NOT gain access to the camera. The camera images are only visible 
       </message>
       <message name="IDS_SMS_DIALOG_STATUS_WAITING" desc="Message shown when Chrome is waiting for an SMS on the user's behalf">
         Waiting for code
+      </message>
+      <message name="IDS_SMS_DIALOG_CONTINUE_BUTTON_TEXT" desc="Label on the button that users can click to continue SMS verification by passing the incoming SMS to the site.">
+        Continue
       </message>
 
     </messages>

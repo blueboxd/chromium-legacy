@@ -21,7 +21,3 @@ vr_module_desc = {
     loadable_module = "libvr_ui_dummy_lib.so"
   }
 }
-
-vr_chrome_modern_module_desc = vr_module_desc
-vr_chrome_modern_module_desc.android_manifest =
-    "//chrome/android/features/vr/java/AndroidManifest_chrome_modern.xml"

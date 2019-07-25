@@ -21,6 +21,8 @@
  *   lastUpdateCheckTimeMs: number,
  *   lastUpdateCompletionTimeMs: number,
  *   relaxUpdates: boolean,
+ *   backingBrowser: string,
+ *   isBackingBrowser: boolean,
  *   updateStatus: string,
  * }}
  */
@@ -53,16 +55,13 @@ function createElementWithTextAndClass(text, type, className) {
 
 /**
  * Callback from the backend with the information of a WebAPK to display.
- * This will be called once. All WebAPKs available on the device will be
- * returned.
+ * This will be called once per WebAPK.
  *
- * @param {!Array<WebApkInfo>} webApkList List of objects with information about
- * WebAPKs installed.
+ * @param {!WebApkInfo} webApkInfo Object with information about an
+ * installed WebAPK.
  */
-function returnWebApksInfo(webApkList) {
-  for (const webApkInfo of webApkList) {
-    addWebApk(webApkInfo);
-  }
+function returnWebApkInfo(webApkInfo) {
+  addWebApk(webApkInfo);
 }
 
 /**
@@ -131,10 +130,12 @@ function addWebApk(webApkInfo) {
   addWebApkField(
       webApkList, 'Check for Updates Less Frequently: ',
       webApkInfo.relaxUpdates.toString());
+  addWebApkField(webApkList, 'Owning Browser: ', webApkInfo.backingBrowser);
   addWebApkField(webApkList, 'Update Status: ', webApkInfo.updateStatus);
 
   // TODO(ckitagawa): Convert to an enum using mojom handlers.
-  if (webApkInfo.updateStatus == 'Not updatable') {
+  if (webApkInfo.updateStatus == 'Not updatable' ||
+      !webApkInfo.isBackingBrowser) {
     return;
   }
 

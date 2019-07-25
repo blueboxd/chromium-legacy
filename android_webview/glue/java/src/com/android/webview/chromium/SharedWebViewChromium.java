@@ -114,7 +114,7 @@ public class SharedWebViewChromium {
             });
             return;
         }
-        mAwContents.postMessageToFrame(null, message, targetOrigin, sentPorts);
+        mAwContents.postMessageToMainFrame(message, targetOrigin, sentPorts);
     }
 
     public void setWebViewRendererClientAdapter(

@@ -314,9 +314,9 @@ base::Value GetContextStateAsValue(GSSAPILibrary* gssapi_lib,
 
 namespace {
 
-// NetLogParametersCallback for the result of loading a library.
-base::Value LibraryLoadResultCallback(base::StringPiece library_name,
-                                      base::StringPiece load_result) {
+// Return a NetLog value for the result of loading a library.
+base::Value LibraryLoadResultParams(base::StringPiece library_name,
+                                    base::StringPiece load_result) {
   base::Value params{base::Value::Type::DICTIONARY};
   params.SetStringKey("library_name", library_name);
   if (!load_result.empty())
@@ -397,7 +397,7 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary(
     if (lib) {
       if (BindMethods(lib, library_name, net_log)) {
         net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_LOAD, [&] {
-          return LibraryLoadResultCallback(library_name, "");
+          return LibraryLoadResultParams(library_name, "");
         });
         return lib;
       }
@@ -410,15 +410,15 @@ base::NativeLibrary GSSAPISharedLibrary::LoadSharedLibrary(
   // library. Doing so also always logs the failure when the GSSAPI library
   // name is explicitly specified.
   net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_LOAD, [&] {
-    return LibraryLoadResultCallback(library_name, load_error.ToString());
+    return LibraryLoadResultParams(library_name, load_error.ToString());
   });
   return nullptr;
 }
 
 namespace {
 
-base::Value BindFailureCallback(base::StringPiece library_name,
-                                base::StringPiece method) {
+base::Value BindFailureParams(base::StringPiece library_name,
+                              base::StringPiece method) {
   base::Value params{base::Value::Type::DICTIONARY};
   params.SetStringKey("library_name", library_name);
   params.SetStringKey("method", method);
@@ -433,7 +433,7 @@ void* BindUntypedMethod(base::NativeLibrary lib,
   if (ptr == nullptr) {
     std::string method_string = method.as_string();
     net_log.AddEvent(NetLogEventType::AUTH_LIBRARY_BIND_FAILED,
-                     [&] { return BindFailureCallback(library_name, method); });
+                     [&] { return BindFailureParams(library_name, method); });
   }
   return ptr;
 }
@@ -801,10 +801,10 @@ int MapInitSecContextStatusToError(OM_uint32 major_status) {
   return ERR_UNDOCUMENTED_SECURITY_LIBRARY_STATUS;
 }
 
-base::Value ImportNameErrorCallback(GSSAPILibrary* library,
-                                    base::StringPiece spn,
-                                    OM_uint32 major_status,
-                                    OM_uint32 minor_status) {
+base::Value ImportNameErrorParams(GSSAPILibrary* library,
+                                  base::StringPiece spn,
+                                  OM_uint32 major_status,
+                                  OM_uint32 minor_status) {
   base::Value params{base::Value::Type::DICTIONARY};
   params.SetStringKey("spn", spn);
   if (major_status != GSS_S_COMPLETE)
@@ -813,10 +813,10 @@ base::Value ImportNameErrorCallback(GSSAPILibrary* library,
   return params;
 }
 
-base::Value InitSecContextErrorCallback(GSSAPILibrary* library,
-                                        gss_ctx_id_t context,
-                                        OM_uint32 major_status,
-                                        OM_uint32 minor_status) {
+base::Value InitSecContextErrorParams(GSSAPILibrary* library,
+                                      gss_ctx_id_t context,
+                                      OM_uint32 major_status,
+                                      OM_uint32 minor_status) {
   base::Value params{base::Value::Type::DICTIONARY};
   if (major_status != GSS_S_COMPLETE)
     params.SetKey("status", GetGssStatusValue(library, "gss_init_sec_context",
@@ -853,7 +853,7 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
       library_->import_name(&minor_status, &spn_buffer,
                             &kGSS_C_NT_HOSTBASED_SERVICE, &principal_name);
   net_log.AddEvent(NetLogEventType::AUTH_LIBRARY_IMPORT_NAME, [&] {
-    return ImportNameErrorCallback(library_, spn, major_status, minor_status);
+    return ImportNameErrorParams(library_, spn, major_status, minor_status);
   });
   int rv = MapImportNameStatusToError(major_status);
   if (rv != OK)
@@ -871,8 +871,8 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
       nullptr,  // ret flags
       nullptr);
   net_log.EndEvent(NetLogEventType::AUTH_LIBRARY_INIT_SEC_CTX, [&] {
-    return InitSecContextErrorCallback(library_, scoped_sec_context_.get(),
-                                       major_status, minor_status);
+    return InitSecContextErrorParams(library_, scoped_sec_context_.get(),
+                                     major_status, minor_status);
   });
   return MapInitSecContextStatusToError(major_status);
 }

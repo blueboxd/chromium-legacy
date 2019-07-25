@@ -106,7 +106,7 @@ public class NfcImpl implements Nfc {
      * Map of watchId <-> NfcReaderOptions. All NfcReaderOptions are matched against tag that is in
      * proximity, when match algorithm (@see #matchesWatchOptions) returns true, watcher with
      * corresponding ID would be notified using NfcClient interface.
-     * @see NfcClient#onWatch(int[] id, NdefMessage message)
+     * @see NfcClient#onWatch(int[] id, String serial_number, NdefMessage message)
      */
     private final SparseArray<NfcReaderOptions> mWatchers = new SparseArray<>();
 
@@ -240,7 +240,7 @@ public class NfcImpl implements Nfc {
      * is within proximity. On success, watch ID is returned to caller through WatchResponse
      * callback. When NdefMessage that matches NfcReaderOptions is found, it is passed to NfcClient
      * interface together with corresponding watch ID.
-     * @see NfcClient#onWatch(int[] id, NdefMessage message)
+     * @see NfcClient#onWatch(int[] id, String serial_number, NdefMessage message)
      *
      * @param options used to filter NdefMessages, @see NfcReaderOptions.
      * @param callback that is used to notify caller when watch() is completed and return watch ID.
@@ -584,7 +584,7 @@ public class NfcImpl implements Nfc {
                 for (int i = 0; i < watchIds.size(); ++i) {
                     ids[i] = watchIds.get(i).intValue();
                 }
-                mClient.onWatch(ids, ndefMessage);
+                mClient.onWatch(ids, mTagHandler.serialNumber(), ndefMessage);
             }
         } catch (UnsupportedEncodingException e) {
             Log.w(TAG, "Cannot convert NdefMessage to NdefMessage.");

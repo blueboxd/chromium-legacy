@@ -5,14 +5,10 @@
 """Base classes for a test which uploads results (reference images,
 error images) to cloud storage."""
 
-import json
 import logging
 import os
 import re
-import subprocess
-from subprocess import CalledProcessError
 
-import sys
 import tempfile
 
 from py_utils import cloud_storage
@@ -25,27 +21,6 @@ test_data_dir = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
 
 default_generated_data_dir = os.path.join(test_data_dir, 'generated')
-
-error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
-
-chromium_root_dir = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', '..', '..'))
-goldctl_bin = os.path.join(
-    chromium_root_dir, 'tools', 'skia_goldctl', 'goldctl')
-if sys.platform == 'win32':
-  goldctl_bin += '.exe'
-
-SKIA_GOLD_INSTANCE = 'chrome-gpu'
-
-class _ReferenceImageParameters(object):
-  def __init__(self):
-    # Parameters for cloud storage reference images.
-    self.vendor_id = None
-    self.device_id = None
-    self.vendor_string = None
-    self.device_string = None
-    self.msaa = False
-    self.model_name = None
 
 
 class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
@@ -66,6 +41,8 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
 
   _skia_gold_temp_dir = None
 
+  _error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
+
   @classmethod
   def SetParsedCommandLineOptions(cls, options):
     cls._parsed_command_line_options = options
@@ -81,22 +58,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       '--build-revision',
       help='Chrome revision being tested.',
       default="unknownrev")
-    parser.add_option(
-      '--upload-refimg-to-cloud-storage',
-      dest='upload_refimg_to_cloud_storage',
-      action='store_true', default=False,
-      help='Upload resulting images to cloud storage as reference images')
-    parser.add_option(
-      '--download-refimg-from-cloud-storage',
-      dest='download_refimg_from_cloud_storage',
-      action='store_true', default=False,
-      help='Download reference images from cloud storage')
-    parser.add_option(
-      '--refimg-cloud-storage-bucket',
-      help='Name of the cloud storage bucket to use for reference images; '
-      'required with --upload-refimg-to-cloud-storage and '
-      '--download-refimg-from-cloud-storage. Example: '
-      '"chromium-gpu-archive/reference-images"')
     parser.add_option(
       '--os-type',
       help='Type of operating system on which the pixel test is being run, '
@@ -123,30 +84,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       help='(Mainly on Mac) don\'t restore the system\'s original color '
       'profile after the test completes; leave the system using the sRGB color '
       'profile. See http://crbug.com/784456.')
-    parser.add_option(
-      '--review-patch-issue',
-      help='For Skia Gold integration. Gerrit issue ID.',
-      default='')
-    parser.add_option(
-      '--review-patch-set',
-      help='For Skia Gold integration. Gerrit patch set number.',
-      default='')
-    parser.add_option(
-      '--buildbucket-build-id',
-      help='For Skia Gold integration. Buildbucket build ID.',
-      default='')
-    parser.add_option(
-      '--no-skia-gold-failure',
-      action='store_true', default=False,
-      help='For Skia Gold integration. Always report that the test passed even '
-           'if the Skia Gold image comparison reported a failure, but '
-           'otherwise perform the same steps as usual.')
-    parser.add_option(
-      '--local-run',
-      action='store_true', default=False,
-      help='Runs the tests in a manner more suitable for local testing. '
-           'Specifically, runs goldctl in dryrun mode (no upload) and outputs '
-           'local links to generated images. Implies --no-luci-auth.')
 
   def _CompareScreenshotSamples(self, tab, screenshot, expected_colors,
                                 tolerance, device_pixel_ratio,
@@ -250,89 +187,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       self._WriteImage(
           os.path.join(img_dir, 'DIFF_' + full_image_name), diff_png)
 
-  ###
-  ### Cloud storage code path -- the bots use this.
-  ###
-
-  @classmethod
-  def ResetGpuInfo(cls):
-    cls._reference_image_parameters = None
-
-  @classmethod
-  def GetReferenceImageParameters(cls, tab, page):
-    if not cls._reference_image_parameters:
-      cls._ComputeGpuInfo(tab, page)
-    return cls._reference_image_parameters
-
-  @classmethod
-  def _ComputeGpuInfo(cls, tab, page):
-    if cls._reference_image_parameters:
-      return
-    browser = cls.browser
-    system_info = browser.GetSystemInfo()
-    if not system_info:
-      raise Exception('System info must be supported by the browser')
-    if not system_info.gpu:
-      raise Exception('GPU information was absent')
-    device = system_info.gpu.devices[0]
-    cls._reference_image_parameters = _ReferenceImageParameters()
-    params = cls._reference_image_parameters
-    if device.vendor_id and device.device_id:
-      params.vendor_id = device.vendor_id
-      params.device_id = device.device_id
-    elif device.vendor_string and device.device_string:
-      params.vendor_string = device.vendor_string
-      params.device_string = device.device_string
-    elif page.gpu_process_disabled:
-      # Match the vendor and device IDs that the browser advertises
-      # when the software renderer is active.
-      params.vendor_id = 65535
-      params.device_id = 65535
-    else:
-      raise Exception('GPU device information was incomplete')
-    # TODO(senorblanco): This should probably be checking
-    # for the presence of the extensions in system_info.gpu_aux_attributes
-    # in order to check for MSAA, rather than sniffing the blacklist.
-    params.msaa = not (
-        ('disable_chromium_framebuffer_multisample' in
-          system_info.gpu.driver_bug_workarounds) or
-        ('disable_multisample_render_to_texture' in
-          system_info.gpu.driver_bug_workarounds))
-    params.model_name = system_info.model_name
-
-  @classmethod
-  def _FormatGpuInfo(cls, tab, page):
-    cls._ComputeGpuInfo(tab, page)
-    params = cls._reference_image_parameters
-    msaa_string = '_msaa' if params.msaa else '_non_msaa'
-    if params.vendor_id:
-      os_type = cls.GetParsedCommandLineOptions().os_type
-      if str(cls.browser.platform.GetOSVersionName()).lower() == "win10":
-        # Allow separate baselines for Windows 10 and Windows 7.
-        os_type = "win10"
-      return '%s_%04x_%04x%s' % (
-        os_type, params.vendor_id, params.device_id, msaa_string)
-    else:
-      # This is the code path for Android devices. Disambiguate
-      # chrome on Android and Android webview. Include the model
-      # name (e.g. "Nexus 9") in the GPU string to disambiguate
-      # multiple devices on the waterfall which might have the same
-      # device string ("NVIDIA Tegra") but different screen
-      # resolutions and device pixel ratios.
-      os_type = cls.GetParsedCommandLineOptions().os_type
-      if cls.browser.browser_type.startswith('android-webview'):
-        os_type = os_type + "_webview"
-      return '%s_%s_%s_%s%s' % (
-        os_type, params.vendor_string, params.device_string,
-        params.model_name, msaa_string)
-
-  @classmethod
-  def _FormatReferenceImageName(cls, img_name, page, tab):
-    return '%s_v%s_%s.png' % (
-      img_name,
-      page.revision,
-      cls._FormatGpuInfo(tab, page))
-
   @classmethod
   def _UploadBitmapToCloudStorage(cls, bucket, name, bitmap, public=False):
     # This sequence of steps works on all platforms to write a temporary
@@ -342,199 +196,6 @@ class CloudStorageIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
     image_util.WritePngFile(bitmap, temp_file)
     cloud_storage.Insert(bucket, name, temp_file, publicly_readable=public)
-
-  @classmethod
-  def _ConditionallyUploadToCloudStorage(cls, img_name, page, tab, screenshot):
-    """Uploads the screenshot to cloud storage as the reference image
-    for this test, unless it already exists. Returns True if the
-    upload was actually performed."""
-    if not cls.GetParsedCommandLineOptions().refimg_cloud_storage_bucket:
-      raise Exception('--refimg-cloud-storage-bucket argument is required')
-    cloud_name = cls._FormatReferenceImageName(img_name, page, tab)
-    if not cloud_storage.Exists(
-        cls.GetParsedCommandLineOptions().refimg_cloud_storage_bucket,
-        cloud_name):
-      cls._UploadBitmapToCloudStorage(
-        cls.GetParsedCommandLineOptions().refimg_cloud_storage_bucket,
-        cloud_name,
-        screenshot)
-      return True
-    return False
-
-  @classmethod
-  def _DownloadFromCloudStorage(cls, img_name, page, tab):
-    """Downloads the reference image for the given test from cloud
-    storage, returning it as a Telemetry Bitmap object."""
-    # TODO(kbr): there's a race condition between the deletion of the
-    # temporary file and gsutil's overwriting it.
-    if not cls.GetParsedCommandLineOptions().refimg_cloud_storage_bucket:
-      raise Exception('--refimg-cloud-storage-bucket argument is required')
-    temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
-    cloud_storage.Get(
-      cls.GetParsedCommandLineOptions().refimg_cloud_storage_bucket,
-      cls._FormatReferenceImageName(img_name, page, tab),
-      temp_file)
-    return image_util.FromPngFile(temp_file)
-
-  @classmethod
-  def _UploadErrorImagesToCloudStorage(cls, image_name, screenshot, ref_img):
-    """For a failing run, uploads the failing image, reference image (if
-    supplied), and diff image (if reference image was supplied) to cloud
-    storage. This subsumes the functionality of the
-    archive_gpu_pixel_test_results.py script."""
-    machine_name = re.sub(r'\W+', '_',
-                          cls.GetParsedCommandLineOptions().test_machine_name)
-    upload_dir = '%s_%s_telemetry' % (
-      cls.GetParsedCommandLineOptions().build_revision, machine_name)
-    base_bucket = '%s/runs/%s' % (error_image_cloud_storage_bucket, upload_dir)
-    image_name_with_revision = '%s_%s.png' % (
-      image_name, cls.GetParsedCommandLineOptions().build_revision)
-    cls._UploadBitmapToCloudStorage(
-      base_bucket + '/gen', image_name_with_revision, screenshot,
-      public=True)
-    if ref_img is not None:
-      cls._UploadBitmapToCloudStorage(
-        base_bucket + '/ref', image_name_with_revision, ref_img, public=True)
-      diff_img = image_util.Diff(screenshot, ref_img)
-      cls._UploadBitmapToCloudStorage(
-        base_bucket + '/diff', image_name_with_revision, diff_img,
-        public=True)
-    print ('See http://%s.commondatastorage.googleapis.com/'
-           'view_test_results.html?%s for this run\'s test results') % (
-      error_image_cloud_storage_bucket, upload_dir)
-
-  # Not used consistently, but potentially useful for debugging issues on the
-  # bots, so kept around for future use.
-  @classmethod
-  def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
-    machine_name = re.sub(r'\W+', '_',
-                          cls.GetParsedCommandLineOptions().test_machine_name)
-    base_bucket = '%s/gold_failures' % (error_image_cloud_storage_bucket)
-    image_name_with_revision_and_machine = '%s_%s_%s.png' % (
-      image_name, machine_name,
-      cls.GetParsedCommandLineOptions().build_revision)
-    cls._UploadBitmapToCloudStorage(
-      base_bucket, image_name_with_revision_and_machine, screenshot,
-      public=True)
-
-  def _ValidateScreenshotSamples(self, tab, url, screenshot, expectations,
-                                 tolerance, device_pixel_ratio):
-    """Samples the given screenshot and verifies pixel color values.
-       The sample locations and expected color values are given in expectations.
-       In case any of the samples do not match the expected color, it raises
-       a Failure and dumps the screenshot locally or cloud storage depending on
-       what machine the test is being run."""
-    try:
-      self._CompareScreenshotSamples(
-        tab, screenshot, expectations, tolerance, device_pixel_ratio,
-        self.GetParsedCommandLineOptions().test_machine_name)
-    except Exception:
-      # An exception raised from self.fail() indicates a failure.
-      image_name = self._UrlToImageName(url)
-      if self.GetParsedCommandLineOptions().test_machine_name:
-        self._UploadErrorImagesToCloudStorage(image_name, screenshot, None)
-      else:
-        self._WriteErrorImages(
-          self.GetParsedCommandLineOptions().generated_dir, image_name,
-          screenshot, None)
-      raise
-
-  def ToHex(self, num):
-    return hex(int(num))
-
-  def ToHexOrNone(self, num):
-    return 'None' if num == None else self.ToHex(num)
-
-  def _UploadTestResultToSkiaGold(self, image_name, screenshot,
-                                  tab, page, build_id_args=None):
-    if build_id_args is None:
-      raise Exception('Requires build args to be specified, including --commit')
-    if self._skia_gold_temp_dir is None:
-      # TODO(kbr): this depends on Swarming to clean up the temporary
-      # directory to avoid filling up the local disk.
-      self._skia_gold_temp_dir = tempfile.mkdtemp()
-    # Write screenshot to PNG file on local disk.
-    png_temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
-    image_util.WritePngFile(screenshot, png_temp_file)
-    ref_img_params = self.GetReferenceImageParameters(tab, page)
-    # All values need to be strings, otherwise goldctl fails.
-    gpu_keys = {
-      'vendor_id': self.ToHexOrNone(ref_img_params.vendor_id),
-      'device_id': self.ToHexOrNone(ref_img_params.device_id),
-      'vendor_string': str(ref_img_params.vendor_string),
-      'device_string': str(ref_img_params.device_string),
-      'msaa': str(ref_img_params.msaa),
-      'model_name': str(ref_img_params.model_name),
-    }
-    mode = ['--passfail']
-    dryrun = []
-    luci = []
-    if self.GetParsedCommandLineOptions().local_run:
-      dryrun = ['--dryrun']
-    elif not self.GetParsedCommandLineOptions().no_luci_auth:
-      luci = ['--luci']
-    json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
-    failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
-    with open(json_temp_file, 'w+') as f:
-      json.dump(gpu_keys, f)
-    try:
-      subprocess.check_output([goldctl_bin, 'auth',
-                               '--work-dir', self._skia_gold_temp_dir]
-                               + luci,
-            stderr=subprocess.STDOUT)
-      cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
-                            ['--test-name', image_name,
-                             '--instance', SKIA_GOLD_INSTANCE,
-                             '--keys-file', json_temp_file,
-                             '--png-file', png_temp_file,
-                             '--work-dir', self._skia_gold_temp_dir,
-                             '--failure-file', failure_file] +
-                            build_id_args + dryrun)
-      subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    except CalledProcessError as e:
-      try:
-        # The triage link for the image is output to the failure file, so report
-        # that if it's available so it shows up in Milo. If for whatever reason
-        # the file is not present or malformed, the triage link will still be
-        # present in the stdout of the goldctl command.
-        with open(failure_file, 'r') as ff:
-          self.artifacts.CreateLink('gold_triage_link', ff.read())
-      except Exception:
-        logging.error('Failed to read contents of goldctl failure file')
-      logging.error('goldctl failed with output: %s', e.output)
-      if self.GetParsedCommandLineOptions().local_run:
-        logging.error(
-            'Image produced by %s: file://%s', image_name, png_temp_file)
-      if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
-        raise Exception('goldctl command failed')
-
-  def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
-                                             expectations, tolerance,
-                                             device_pixel_ratio,
-                                             build_id_args):
-    """Samples the given screenshot and verifies pixel color values.
-       The sample locations and expected color values are given in expectations.
-       In case any of the samples do not match the expected color, it raises
-       a Failure and dumps the screenshot locally or cloud storage depending on
-       what machine the test is being run."""
-    url = page.name
-    try:
-      self._CompareScreenshotSamples(
-        tab, screenshot, expectations, tolerance, device_pixel_ratio,
-        self.GetParsedCommandLineOptions().test_machine_name)
-    except Exception:
-      # An exception raised from self.fail() indicates a failure.
-      image_name = self._UrlToImageName(url)
-      if self.GetParsedCommandLineOptions().test_machine_name:
-        self._UploadTestResultToSkiaGold(
-          image_name, screenshot,
-          tab, page,
-          build_id_args=build_id_args)
-      else:
-        self._WriteErrorImages(
-          self.GetParsedCommandLineOptions().generated_dir, image_name,
-          screenshot, None)
-      raise
 
   @classmethod
   def GenerateGpuTests(cls, options):

@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
@@ -261,6 +262,19 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(
         ContentWebUIControllerFactory::GetInstance());
+
+    if (AreDefaultSiteInstancesEnabled()) {
+      // Isolate |isolated_cross_site_url()| so we can't get a default
+      // SiteInstance for it.
+      ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
+          {url::Origin::Create(isolated_cross_site_url())},
+          ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
+          browser_context());
+
+      // Reset the WebContents so the isolated origin will be honored by
+      // all BrowsingInstances used in the test.
+      SetContents(CreateTestWebContents());
+    }
   }
 
   void TearDown() override {
@@ -273,6 +287,10 @@ class WebContentsImplTest : public RenderViewHostImplTestHarness {
     return contents()
         ->media_web_contents_observer()
         ->has_audio_wake_lock_for_testing();
+  }
+
+  GURL isolated_cross_site_url() const {
+    return GURL("http://isolated-cross-site.com");
   }
 };
 
@@ -650,7 +668,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   EXPECT_EQ(instance1, contents2->GetSiteInstance());
 
   // Navigate first contents to a new site.
-  const GURL url2a("http://www.yahoo.com");
+  const GURL url2a = isolated_cross_site_url();
   auto navigation1 =
       NavigationSimulator::CreateBrowserInitiated(url2a, contents());
   navigation1->SetTransition(ui::PAGE_TRANSITION_LINK);
@@ -661,7 +679,7 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
   EXPECT_NE(instance1, instance2a);
 
   // Navigate second contents to the same site as the first tab.
-  const GURL url2b("http://www.yahoo.com/foo");
+  const GURL url2b = isolated_cross_site_url().Resolve("/foo");
   auto navigation2 =
       NavigationSimulator::CreateBrowserInitiated(url2b, contents2.get());
   navigation2->SetTransition(ui::PAGE_TRANSITION_LINK);
@@ -724,12 +742,18 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   SiteInstanceImpl* orig_site_instance = orig_rfh->GetSiteInstance();
 
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
-  EXPECT_TRUE(
-      contents()->GetSiteInstance()->GetSiteURL().DomainIs("google.com"));
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Verify that the empty SiteInstance gets converted into a default
+    // SiteInstance because |url| does not require a dedicated process.
+    EXPECT_TRUE(contents()->GetSiteInstance()->IsDefaultSiteInstance());
+  } else {
+    EXPECT_TRUE(
+        contents()->GetSiteInstance()->GetSiteURL().DomainIs("google.com"));
+  }
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
 
   // Navigate to another new site (should create a new site instance).
-  const GURL url2("http://www.yahoo.com");
+  const GURL url2 = isolated_cross_site_url();
   auto navigation2 =
       NavigationSimulator::CreateBrowserInitiated(url2, contents());
   navigation2->ReadyToCommit();
@@ -838,11 +862,25 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
                               regular_url, ui::PAGE_TRANSITION_RELOAD);
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
   EXPECT_TRUE(orig_instance->HasSite());
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            orig_instance->IsDefaultSiteInstance());
 
   // Navigate to another site and verify that a new SiteInstance was created.
   const GURL url("http://www.google.com");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
-  EXPECT_NE(orig_instance, contents()->GetSiteInstance());
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Verify this remains the default SiteInstance since |url| does
+    // not require a dedicated process.
+    EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
+
+    // Navigate to a URL that does require a dedicated process and verify that
+    // the SiteInstance changes.
+    NavigationSimulator::NavigateAndCommitFromBrowser(
+        contents(), isolated_cross_site_url());
+    EXPECT_NE(orig_instance, contents()->GetSiteInstance());
+  } else {
+    EXPECT_NE(orig_instance, contents()->GetSiteInstance());
+  }
 
   // Cleanup.
   DeleteContents();
@@ -899,10 +937,19 @@ TEST_F(WebContentsImplTest, CrossSiteComparesAgainstCurrentPage) {
   }
 
   TestRenderFrameHost* orig_rfh = main_test_rfh();
-  SiteInstance* instance1 = contents()->GetSiteInstance();
+  SiteInstanceImpl* instance1 = contents()->GetSiteInstance();
+
+  const GURL url("http://www.google.com");
+
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Explicitly set the site for this instance so that it cannot be
+    // converted into a default SiteInstance. This ensures that the navigation
+    // to |url2|, which does not require a dedicated process, will not be
+    // mapped to this instance.
+    instance1->SetSite(url);
+  }
 
   // Navigate to URL.
-  const GURL url("http://www.google.com");
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
 
   // Open a related contents to a second site.

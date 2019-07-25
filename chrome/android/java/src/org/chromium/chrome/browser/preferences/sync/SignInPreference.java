@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.preferences.sync;
 
 import android.content.Context;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
-import android.view.View;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -266,16 +265,16 @@ public class SignInPreference
     }
 
     @Override
-    protected void onBindView(final View view) {
-        super.onBindView(view);
-        ViewUtils.setEnabledRecursive(view, mViewEnabled);
+    public void onBindViewHolder(PreferenceViewHolder holder) {
+        super.onBindViewHolder(holder);
+        ViewUtils.setEnabledRecursive(holder.itemView, mViewEnabled);
 
         if (mSigninPromoController == null) {
             return;
         }
 
         PersonalizedSigninPromoView signinPromoView =
-                view.findViewById(R.id.signin_promo_view_container);
+                (PersonalizedSigninPromoView) holder.findViewById(R.id.signin_promo_view_container);
         SigninPromoUtil.setupPromoViewFromCache(
                 mSigninPromoController, mProfileDataCache, signinPromoView, () -> {
                     ChromePreferenceManager.getInstance().writeBoolean(

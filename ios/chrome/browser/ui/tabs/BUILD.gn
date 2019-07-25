@@ -50,7 +50,7 @@ source_set("tabs") {
     "//ios/chrome/browser/ui/bubble",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/favicon/resources:default_favicon",
+    "//ios/chrome/browser/ui/favicon/resources:default_world_favicon",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/ntp:util",

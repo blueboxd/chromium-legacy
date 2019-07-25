@@ -188,13 +188,13 @@ cr.define('extensions', function() {
       }
 
       extensions.navigation.navigateTo(
-          {page: Page.ERRORS, extensionId: this.data.id});
+          {page: extensions.Page.ERRORS, extensionId: this.data.id});
     },
 
     /** @private */
     onDetailsTap_: function() {
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: this.data.id});
+          {page: extensions.Page.DETAILS, extensionId: this.data.id});
     },
 
     /**
@@ -208,7 +208,7 @@ cr.define('extensions', function() {
     /** @private */
     onExtraInspectTap_: function() {
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: this.data.id});
+          {page: extensions.Page.DETAILS, extensionId: this.data.id});
     },
 
     /** @private */

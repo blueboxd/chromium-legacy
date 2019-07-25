@@ -186,11 +186,11 @@ class SearchResultAnswerCardView::AnswerCardResultView
   // views::Button overrides:
   const char* GetClassName() const override { return "AnswerCardResultView"; }
 
-  void OnBlur() override { SetBackgroundHighlighted(false); }
+  void OnBlur() override { SetSelected(false, base::nullopt); }
 
   void OnFocus() override {
     ScrollRectToVisible(GetLocalBounds());
-    SetBackgroundHighlighted(true);
+    SetSelected(true, base::nullopt);
   }
 
   bool OnKeyPressed(const ui::KeyEvent& event) override {
@@ -210,7 +210,7 @@ class SearchResultAnswerCardView::AnswerCardResultView
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
-    if (background_highlighted())
+    if (selected())
       canvas->FillRect(GetContentsBounds(), kAnswerCardSelectedColor);
   }
 

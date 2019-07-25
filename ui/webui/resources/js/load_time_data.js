@@ -24,7 +24,7 @@
  *   tags: (Array<string>|undefined),
  * }}
  */
-let SanitizeInnerHtmlOpts;
+/* #export */ let SanitizeInnerHtmlOpts;
 
 // eslint-disable-next-line no-var
 /* #export */ /** @type {!LoadTimeData} */ var loadTimeData;

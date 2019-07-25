@@ -28,6 +28,22 @@ source_set("features") {
   ]
 }
 
+source_set("chrome_browser_state_client") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "chrome_browser_state_client.h",
+    "chrome_browser_state_client.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/metrics:demographic_metrics_provider",
+    "//components/network_time",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/sync",
+  ]
+}
+
 source_set("metrics") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -57,6 +73,7 @@ source_set("metrics") {
     ":ukm_url_recorder",
   ]
   deps = [
+    ":chrome_browser_state_client",
     ":features",
     "//base",
     "//components/browser_sync",
@@ -64,6 +81,7 @@ source_set("metrics") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/metrics",
+    "//components/metrics:demographic_metrics_provider",
     "//components/metrics:net",
     "//components/metrics:ui",
     "//components/metrics_services_manager",
@@ -103,6 +121,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "chrome_browser_state_client_unittest.mm",
     "ios_chrome_metrics_service_accessor_unittest.cc",
     "ios_chrome_stability_metrics_provider_unittest.mm",
     "mobile_session_shutdown_metrics_provider_unittest.mm",
@@ -110,18 +129,23 @@ source_set("unit_tests") {
     "ukm_url_recorder_unittest.mm",
   ]
   deps = [
+    ":chrome_browser_state_client",
     ":metrics",
     "//base",
     "//base/test:test_support",
     "//components/metrics",
     "//components/metrics:test_support",
+    "//components/network_time:network_time",
     "//components/prefs",
     "//components/prefs:test_support",
     "//components/ukm:test_support",
     "//components/version_info",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/web/public:public",
+    "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//net:test_support",
     "//testing/gtest",

@@ -255,6 +255,7 @@
       </if>
       <if expr="not is_android">
         <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
+        <structure type="chrome_scaled_image" name="IDR_SHARING_EMPTY_LIST" file="common/sharing_empty_list.png" />
         <structure type="chrome_scaled_image" name="IDR_SHOW_PASSWORD_HOVER" file="common/show_password_hover.png" />
       </if>
       <if expr="chromeos">

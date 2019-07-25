@@ -21,3 +21,4 @@ Local changes:
 * Saturate add to avoid int overflow to fix chromium:842528. This should be
   reverted when updating to v1.3
 * Apply https://github.com/xiph/opus/commit/4f4b11c2398e96134dc62ee794bfe33ecd6e9bd2
+* Apply https://git.xiph.org/?p=opus.git;a=commit;h=812ae3fb5c589aaafe761b8ebf86bcbbb8f0ed76

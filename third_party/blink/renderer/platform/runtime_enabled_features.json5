@@ -135,10 +135,12 @@
     {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
+      status: "experimental",
     },
     {
       name: "AutomaticLazyImageLoading",
       depends_on: ["LazyImageLoading"],
+      status: "experimental",
     },
     {
       name: "AutomationControlled",
@@ -1567,11 +1569,7 @@
       implied_by: ["ExperimentalProductivityFeatures"]
     },
     {
-      name: "UpdateHoverFromLayoutChangeAtBeginFrame",
-      settable_from_internals: true,
-    },
-    {
-      name: "UpdateHoverFromScrollAtBeginFrame",
+      name: "UpdateHoverAtBeginFrame",
       settable_from_internals: true,
     },
     {

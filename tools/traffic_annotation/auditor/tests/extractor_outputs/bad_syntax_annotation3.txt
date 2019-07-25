@@ -1,4 +1,5 @@
 chrome/browser/supervised_user/legacy/supervised_user_refresh_token_fetcher.cc
+OnGetTokenSuccess
 166
 Definition
 supervised_user_refresh_token_fetcher

@@ -13,16 +13,11 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/scoped_paint_state.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
 
@@ -52,11 +47,6 @@ void BlockPainter::Paint(const PaintInfo& paint_info) {
         local_paint_info.SetSkipsBackground(true);
       layout_block_.PaintObject(local_paint_info, paint_offset);
       local_paint_info.SetSkipsBackground(false);
-
-      // Record the scroll hit test after the non-scrolling background so
-      // background squashing is not affected. Hit test order would be
-      // equivalent if this were immediately before the background.
-      PaintScrollHitTestDisplayItem(paint_info);
 
       if (paint_location & kBackgroundPaintInScrollingContents) {
         local_paint_info.SetIsPaintingScrollingBackground(true);
@@ -195,36 +185,6 @@ void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
   ObjectPainter(
       *LineLayoutAPIShim::ConstLayoutObjectFrom(inline_box.GetLineLayoutItem()))
       .PaintAllPhasesAtomically(paint_info);
-}
-
-void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
-  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  // Scroll hit test display items are only needed for compositing. This flag is
-  // used for for printing and drag images which do not need hit testing.
-  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
-    return;
-
-  // The scroll hit test layer is in the unscrolled and unclipped space so the
-  // scroll hit test layer can be enlarged beyond the clip. This will let us fix
-  // crbug.com/753124 in the future where the scrolling element's border is hit
-  // test differently if composited.
-
-  const auto* fragment = paint_info.FragmentToPaint(layout_block_);
-  const auto* properties = fragment ? fragment->PaintProperties() : nullptr;
-
-  // If there is an associated scroll node, emit a scroll hit test display item.
-  if (properties && properties->Scroll()) {
-    DCHECK(properties->ScrollTranslation());
-    // The local border box properties are used instead of the contents
-    // properties so that the scroll hit test is not clipped or scrolled.
-    ScopedPaintChunkProperties scroll_hit_test_properties(
-        paint_info.context.GetPaintController(),
-        fragment->LocalBorderBoxProperties(), layout_block_,
-        DisplayItem::kScrollHitTest);
-    ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
-                                     *properties->ScrollTranslation());
-  }
 }
 
 DISABLE_CFI_PERF

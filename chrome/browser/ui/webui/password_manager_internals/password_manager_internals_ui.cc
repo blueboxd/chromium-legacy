@@ -8,17 +8,17 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/browser/logging/log_receiver.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
-#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
+#include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/escape.h"
 
-using password_manager::PasswordManagerInternalsService;
-using password_manager::PasswordManagerInternalsServiceFactory;
+using autofill::LogRouter;
+using password_manager::PasswordManagerLogRouterFactory;
 
 namespace {
 
@@ -58,9 +58,8 @@ class PasswordManagerInternalsUIHandler : public content::WebUIMessageHandler,
   // JavaScript call handler.
   void OnLoaded(const base::ListValue* args);
 
-  // Whether |this| is registered as a log receiver with the
-  // PasswordManagerInternalsService.
-  bool registered_with_logging_service_ = false;
+  // Whether |this| is registered as a log receiver with the LogRouter.
+  bool registered_with_log_router_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsUIHandler);
 };
@@ -93,32 +92,30 @@ void PasswordManagerInternalsUIHandler::OnLoaded(const base::ListValue* args) {
 }
 
 void PasswordManagerInternalsUIHandler::StartSubscription() {
-  PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  if (!service)
+  LogRouter* log_router = PasswordManagerLogRouterFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()));
+  if (!log_router)
     return;
 
-  registered_with_logging_service_ = true;
+  registered_with_log_router_ = true;
 
-  const auto& past_logs = service->RegisterReceiver(this);
+  const auto& past_logs = log_router->RegisterReceiver(this);
   for (const auto& entry : past_logs)
     LogEntry(entry);
 }
 
 void PasswordManagerInternalsUIHandler::EndSubscription() {
-  if (!registered_with_logging_service_)
+  if (!registered_with_log_router_)
     return;
-  registered_with_logging_service_ = false;
-  PasswordManagerInternalsService* service =
-      PasswordManagerInternalsServiceFactory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  if (service)
-    service->UnregisterReceiver(this);
+  registered_with_log_router_ = false;
+  LogRouter* log_router = PasswordManagerLogRouterFactory::GetForBrowserContext(
+      Profile::FromWebUI(web_ui()));
+  if (log_router)
+    log_router->UnregisterReceiver(this);
 }
 
 void PasswordManagerInternalsUIHandler::LogEntry(const base::Value& entry) {
-  if (!registered_with_logging_service_ || entry.is_none())
+  if (!registered_with_log_router_ || entry.is_none())
     return;
   CallJavascriptFunction("addRawLog", entry);
 }

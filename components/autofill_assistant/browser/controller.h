@@ -218,6 +218,7 @@ class Controller : public ScriptExecutorDelegate,
 
   void UpdatePaymentRequestActions();
   void OnPaymentRequestContinueButtonClicked();
+  void OnPaymentRequestAdditionalActionTriggered(int index);
 
   // Overrides ScriptTracker::Listener:
   void OnNoRunnableScriptsForPage() override;

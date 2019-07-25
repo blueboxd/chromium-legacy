@@ -66,6 +66,7 @@ jumbo_source_set("blink") {
   deps = [
     "//cc:cc",
     "//third_party/blink/public:blink_headers",
+    "//third_party/one_euro_filter",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",

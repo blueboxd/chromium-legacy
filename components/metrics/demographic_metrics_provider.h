@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_METRICS_DEMOGRAPHIC_METRICS_PROVIDER_H_
 #define COMPONENTS_METRICS_DEMOGRAPHIC_METRICS_PROVIDER_H_
 
+#include <memory>
+
+#include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_service.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 namespace base {
@@ -17,21 +20,35 @@ namespace metrics {
 
 class DemographicMetricsProvider : public MetricsProvider {
  public:
-  // Constructs a demographic metrics provider that gets demographic data from
-  // |pref_service|, which must outlive the use of an object of this class.
-  explicit DemographicMetricsProvider(PrefService* pref_service);
-  ~DemographicMetricsProvider() override = default;
+  // Interface that represents the client that retrieves Profile information.
+  class ProfileClient {
+   public:
+    virtual ~ProfileClient() = default;
+
+    // Gets the total number of profiles that are on disk (loaded + not loaded)
+    // for the browser.
+    virtual int GetNumberOfProfilesOnDisk() = 0;
+
+    // Gets a weak pointer to the ProfileSyncService of the Profile.
+    virtual syncer::SyncService* GetSyncService() = 0;
+
+    // Gets the network time that represents now.
+    virtual base::Time GetNetworkTime() const = 0;
+  };
+
+  explicit DemographicMetricsProvider(
+      std::unique_ptr<ProfileClient> profile_client);
+  ~DemographicMetricsProvider() override;
 
   // MetricsProvider:
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override;
 
-  // Feature switch for reporting demographic data.
+  // Feature switch to report user demographic data.
   static const base::Feature kDemographicMetricsReporting;
 
  private:
-  // Preference Service to get profile prefs from.
-  PrefService* const pref_service_;
+  std::unique_ptr<ProfileClient> profile_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DemographicMetricsProvider);
 };

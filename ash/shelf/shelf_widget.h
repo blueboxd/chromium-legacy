@@ -129,8 +129,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
     return &background_animator_;
   }
 
-  void set_activated_from_other_widget(bool val) {
-    activated_from_other_widget_ = val;
+  void set_activated_from_overflow_bubble(bool val) {
+    activated_from_overflow_bubble_ = val;
   }
 
  private:
@@ -167,7 +167,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Set to true when the widget is activated from another widget. Do not
   // focus the default element in this case. This should be set when
   // cycling focus from another widget to the shelf.
-  bool activated_from_other_widget_ = false;
+  bool activated_from_overflow_bubble_ = false;
 
   ScopedSessionObserver scoped_session_observer_;
 

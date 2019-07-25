@@ -2354,6 +2354,8 @@ enum WebFeature {
   kSVGSMILDiscardElementTriggered = 2969,
   kLinkHeaderStylesheet = 2970,
   kV8PointerEvent_GetPredictedEvents_Method = 2971,
+  kScrollSnapOnViewportBreaks = 2972,
+  kScrollPaddingOnViewportBreaks = 2973,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

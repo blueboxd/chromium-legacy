@@ -271,11 +271,11 @@ cr.define('extension_detail_view_tests', function() {
       MockInteractions.tap(item.$$('#extensionsActivityLogLink'));
       expectDeepEquals(
           currentPage,
-          {page: Page.ACTIVITY_LOG, extensionId: extensionData.id});
+          {page: extensions.Page.ACTIVITY_LOG, extensionId: extensionData.id});
 
       // Reset current page and test delegate calls.
       extensions.navigation.navigateTo(
-          {page: Page.DETAILS, extensionId: extensionData.id});
+          {page: extensions.Page.DETAILS, extensionId: extensionData.id});
       currentPage = null;
 
       mockDelegate.testClickingCalls(

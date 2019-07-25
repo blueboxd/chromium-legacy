@@ -26,7 +26,7 @@ chrome_cleaner_mojom("engine_sandbox_interface") {
     "windows_handle.mojom",
   ]
   deps = [
-    "//components/chrome_cleaner/public/mojom:mojom",
+    "//components/chrome_cleaner/public/interfaces",
     "//mojo/public/mojom/base",
   ]
 }

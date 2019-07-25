@@ -155,15 +155,17 @@ cr.define('extension_item_tests', function() {
 
       MockInteractions.tap(item.$$('#detailsButton'));
       expectDeepEquals(
-          currentPage, {page: Page.DETAILS, extensionId: item.data.id});
+          currentPage,
+          {page: extensions.Page.DETAILS, extensionId: item.data.id});
 
       // Reset current page and test inspect-view navigation.
-      extensions.navigation.navigateTo({page: Page.LIST});
+      extensions.navigation.navigateTo({page: extensions.Page.LIST});
       currentPage = null;
       MockInteractions.tap(
           item.$$('#inspect-views a[is="action-link"]:nth-of-type(2)'));
       expectDeepEquals(
-          currentPage, {page: Page.DETAILS, extensionId: item.data.id});
+          currentPage,
+          {page: extensions.Page.DETAILS, extensionId: item.data.id});
 
       item.set('data.disableReasons.corruptInstall', true);
       Polymer.dom.flush();

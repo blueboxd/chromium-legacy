@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/hit_test_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
 
@@ -61,8 +62,9 @@ void BoxPainter::PaintBoxDecorationBackground(
   PhysicalRect paint_rect;
   const DisplayItemClient* background_client = nullptr;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
-  if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
-                                                       layout_box_)) {
+  bool painting_scrolling_background =
+      BoxDecorationData::IsPaintingScrollingBackground(paint_info, layout_box_);
+  if (painting_scrolling_background) {
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
@@ -95,6 +97,14 @@ void BoxPainter::PaintBoxDecorationBackground(
   }
 
   RecordHitTestData(paint_info, paint_rect, *background_client);
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // Record the scroll hit test after the non-scrolling background so
+    // background squashing is not affected. Hit test order would be equivalent
+    // if this were immediately before the non-scrolling background.
+    if (!painting_scrolling_background)
+      RecordScrollHitTestData(paint_info, *background_client);
+  }
 }
 
 bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
@@ -285,6 +295,43 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   HitTestDisplayItem::Record(
       paint_info.context, background_client,
       HitTestRect(paint_rect.ToLayoutRect(), touch_action));
+}
+
+void BoxPainter::RecordScrollHitTestData(
+    const PaintInfo& paint_info,
+    const DisplayItemClient& background_client) {
+  DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
+  // Hit test display items are only needed for compositing. This flag is used
+  // for for printing and drag images which do not need hit testing.
+  if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
+    return;
+
+  // If an object is not visible, it does not scroll.
+  if (layout_box_.StyleRef().Visibility() != EVisibility::kVisible)
+    return;
+
+  // Only create scroll hit test data for objects that scroll.
+  if (!layout_box_.GetScrollableArea() ||
+      !layout_box_.GetScrollableArea()->ScrollsOverflow()) {
+    return;
+  }
+
+  const auto* fragment = paint_info.FragmentToPaint(layout_box_);
+  const auto* properties = fragment ? fragment->PaintProperties() : nullptr;
+
+  // If there is an associated scroll node, emit a scroll hit test display item.
+  if (properties && properties->Scroll()) {
+    DCHECK(properties->ScrollTranslation());
+    // The local border box properties are used instead of the contents
+    // properties so that the scroll hit test is not clipped or scrolled.
+    ScopedPaintChunkProperties scroll_hit_test_properties(
+        paint_info.context.GetPaintController(),
+        fragment->LocalBorderBoxProperties(), background_client,
+        DisplayItem::kScrollHitTest);
+    ScrollHitTestDisplayItem::Record(paint_info.context, background_client,
+                                     *properties->ScrollTranslation());
+  }
 }
 
 }  // namespace blink

@@ -61,6 +61,7 @@ source_set("location_bar") {
     "//ios/chrome/browser/ui/orchestrator:orchestrator",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/buttons/resources:tab_toolbar_button_color",
+    "//ios/chrome/browser/ui/toolbar/buttons/resources:tab_toolbar_button_color_incognito",
     "//ios/chrome/browser/ui/toolbar/keyboard_assist:keyboard_assist",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/toolbar/public:feature_flags",

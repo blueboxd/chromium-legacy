@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
-#include "components/chrome_cleaner/public/mojom/chrome_prompt.mojom.h"
+#include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
 namespace chrome_cleaner {
 

@@ -606,10 +606,25 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
     manager.WaitForNavigationFinished();
   }
 
-  // At this point, the popup and the opener should still be in separate
-  // SiteInstances.
-  EXPECT_NE(new_shell->web_contents()->GetMainFrame()->GetSiteInstance(),
-            root->current_frame_host()->GetSiteInstance());
+  const SiteInstanceImpl* const root_site_instance_impl =
+      static_cast<SiteInstanceImpl*>(
+          root->current_frame_host()->GetSiteInstance());
+  const SiteInstanceImpl* const newshell_site_instance_impl =
+      static_cast<SiteInstanceImpl*>(
+          new_shell->web_contents()->GetMainFrame()->GetSiteInstance());
+  if (AreDefaultSiteInstancesEnabled()) {
+    // When default SiteInstances are enabled, all sites that do not
+    // require a dedicated process all end up in the same default SiteInstance.
+    EXPECT_EQ(newshell_site_instance_impl, root_site_instance_impl);
+    EXPECT_TRUE(newshell_site_instance_impl->IsDefaultSiteInstance());
+  } else {
+    // At this point, the popup and the opener should still be in separate
+    // SiteInstances.
+    EXPECT_NE(newshell_site_instance_impl, root_site_instance_impl);
+    EXPECT_NE(AreAllSitesIsolatedForTesting(),
+              newshell_site_instance_impl->IsDefaultSiteInstance());
+    EXPECT_FALSE(root_site_instance_impl->IsDefaultSiteInstance());
+  }
 
   // Simulate the isolated origin in the popup navigating to www.foo.com.
   {

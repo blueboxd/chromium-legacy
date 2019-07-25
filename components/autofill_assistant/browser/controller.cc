@@ -858,7 +858,7 @@ void Controller::OnPaymentRequestContinueButtonClicked() {
   if (!payment_request_options_ || !payment_request_info_)
     return;
 
-  auto callback = std::move(payment_request_options_->callback);
+  auto callback = std::move(payment_request_options_->confirm_callback);
   auto payment_request_info = std::move(payment_request_info_);
 
   // TODO(crbug.com/806868): succeed is currently always true, but we might want
@@ -868,6 +868,16 @@ void Controller::OnPaymentRequestContinueButtonClicked() {
 
   SetPaymentRequestOptions(nullptr);
   std::move(callback).Run(std::move(payment_request_info));
+}
+
+void Controller::OnPaymentRequestAdditionalActionTriggered(int index) {
+  if (!payment_request_options_)
+    return;
+
+  auto callback =
+      std::move(payment_request_options_->additional_actions_callback);
+  SetPaymentRequestOptions(nullptr);
+  std::move(callback).Run(index);
 }
 
 void Controller::SetShippingAddress(
@@ -960,8 +970,7 @@ void Controller::UpdatePaymentRequestActions() {
   bool confirm_button_enabled =
       contact_info_ok && shipping_address_ok && payment_method_ok && terms_ok;
 
-  UserAction confirm(payment_request_options_->confirm_chip,
-                     payment_request_options_->confirm_direct_action);
+  UserAction confirm(payment_request_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);
   if (confirm_button_enabled) {
     confirm.SetCallback(
@@ -971,6 +980,17 @@ void Controller::UpdatePaymentRequestActions() {
 
   auto user_actions = std::make_unique<std::vector<UserAction>>();
   user_actions->emplace_back(std::move(confirm));
+
+  // Add additional actions.
+  for (size_t i = 0; i < payment_request_options_->additional_actions.size();
+       ++i) {
+    auto action = payment_request_options_->additional_actions[i];
+    user_actions->push_back({action.chip(), action.direct_action()});
+    user_actions->back().SetCallback(
+        base::BindOnce(&Controller::OnPaymentRequestAdditionalActionTriggered,
+                       weak_ptr_factory_.GetWeakPtr(), i));
+  }
+
   SetUserActions(std::move(user_actions));
 }
 
@@ -1243,7 +1263,8 @@ void Controller::OnTouchableAreaChanged(
 
 void Controller::SetPaymentRequestOptions(
     std::unique_ptr<PaymentRequestOptions> options) {
-  DCHECK(!options || options->callback);
+  DCHECK(!options ||
+         (options->confirm_callback && options->additional_actions_callback));
 
   if (payment_request_options_ == nullptr && options == nullptr)
     return;

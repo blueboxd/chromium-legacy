@@ -36,7 +36,6 @@
 #include "chromecast/browser/cast_network_delegate.h"
 #include "chromecast/browser/cast_overlay_manifests.h"
 #include "chromecast/browser/cast_quota_permission_context.h"
-#include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
@@ -62,7 +61,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
@@ -99,7 +97,6 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/app/crashpad.h"
 #include "media/mojo/services/android_mojo_media_client.h"
@@ -311,14 +308,6 @@ CastContentBrowserClient::media_pipeline_backend_manager() {
 std::unique_ptr<::media::AudioManager>
 CastContentBrowserClient::CreateAudioManager(
     ::media::AudioLogFactory* audio_log_factory) {
-#if defined(OS_ANDROID)
-  // Disable CMA backend on builds older than N.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_NOUGAT) {
-    return nullptr;
-  }
-#endif  // defined(OS_ANDROID)
-
   // Create the audio thread and initialize the CastSessionIdMap. We need to
   // initialize the CastSessionIdMap as soon as possible, so that the task
   // runner gets set before any calls to it.
@@ -349,14 +338,6 @@ CastContentBrowserClient::CreateAudioManager(
 }
 
 bool CastContentBrowserClient::OverridesAudioManager() {
-  // See CreateAudioManager().
-#if defined(OS_ANDROID)
-  // Disable CMA backend on builds older than N.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_NOUGAT) {
-    return false;
-  }
-#endif  // defined(OS_ANDROID)
   return true;
 }
 
@@ -636,13 +617,6 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
   DCHECK(prefs->viewport_meta_enabled);
   prefs->viewport_style = content::ViewportStyle::TELEVISION;
 #endif  // defined(OS_ANDROID)
-}
-
-void CastContentBrowserClient::ResourceDispatcherHostCreated() {
-  resource_dispatcher_host_delegate_.reset(
-      new CastResourceDispatcherHostDelegate);
-  content::ResourceDispatcherHost::Get()->SetDelegate(
-      resource_dispatcher_host_delegate_.get());
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {

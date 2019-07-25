@@ -138,10 +138,7 @@ class MockScrollableAreaForAnimatorTest
     ScrollableArea::Trace(visitor);
   }
 
-  void DisposeImpl() override {
-      timer_task_runner_.reset();
-      ScrollableArea::DisposeImpl();
-  }
+  void DisposeImpl() override { timer_task_runner_.reset(); }
 
  private:
   bool scroll_animator_enabled_;

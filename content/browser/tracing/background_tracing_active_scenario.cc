@@ -71,7 +71,8 @@ class PerfettoTracingSession
       public mojo::DataPipeDrainer::Client {
  public:
   PerfettoTracingSession(BackgroundTracingActiveScenario* parent_scenario,
-                         const TraceConfig& chrome_config)
+                         const TraceConfig& chrome_config,
+                         int interning_reset_interval_ms)
       : parent_scenario_(parent_scenario),
         raw_data_(std::make_unique<std::string>()) {
 #if !defined(OS_ANDROID)
@@ -89,6 +90,8 @@ class PerfettoTracingSession
 
     perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
         chrome_config, /*privacy_filtering_enabled=*/true);
+    perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(
+        interning_reset_interval_ms);
 
     tracing::mojom::TracingSessionClientPtr tracing_session_client;
     binding_.Bind(mojo::MakeRequest(&tracing_session_client));
@@ -264,11 +267,9 @@ class LegacyTracingSession
 
 BackgroundTracingActiveScenario::BackgroundTracingActiveScenario(
     std::unique_ptr<BackgroundTracingConfigImpl> config,
-    bool requires_anonymized_data,
     BackgroundTracingManager::ReceiveCallback receive_callback,
     base::OnceClosure on_aborted_callback)
     : config_(std::move(config)),
-      requires_anonymized_data_(requires_anonymized_data),
       receive_callback_(std::move(receive_callback)),
       on_aborted_callback_(std::move(on_aborted_callback)) {
   DCHECK(config_ && !config_->rules().empty());
@@ -333,8 +334,7 @@ void BackgroundTracingActiveScenario::StartTracingIfConfigNeedsIt() {
 }
 
 bool BackgroundTracingActiveScenario::StartTracing() {
-  TraceConfig chrome_config =
-      config_->GetTraceConfig(requires_anonymized_data_);
+  TraceConfig chrome_config = config_->GetTraceConfig();
 
   // If the tracing controller is tracing, i.e. DevTools or about://tracing,
   // we don't start background tracing to not interfere with the user activity.
@@ -354,8 +354,8 @@ bool BackgroundTracingActiveScenario::StartTracing() {
 
   DCHECK(!tracing_session_);
   if (base::FeatureList::IsEnabled(features::kBackgroundTracingProtoOutput)) {
-    tracing_session_ =
-        std::make_unique<PerfettoTracingSession>(this, chrome_config);
+    tracing_session_ = std::make_unique<PerfettoTracingSession>(
+        this, chrome_config, config_->interning_reset_interval_ms());
   } else {
     tracing_session_ =
         std::make_unique<LegacyTracingSession>(this, chrome_config);
@@ -616,6 +616,10 @@ void BackgroundTracingActiveScenario::GenerateMetadataProto(
   auto* triggered_rule =
       metadata->set_background_tracing_metadata()->set_triggered_rule();
   last_triggered_rule_->GenerateMetadataProto(triggered_rule);
+}
+
+size_t BackgroundTracingActiveScenario::GetTraceUploadLimitKb() const {
+  return config_->GetTraceUploadLimitKb();
 }
 
 }  // namespace content

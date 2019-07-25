@@ -217,25 +217,34 @@ MessageType GetStatusLabelsImpl(
 
 }  // namespace
 
+MessageType GetStatusLabels(syncer::SyncService* sync_service,
+                            signin::IdentityManager* identity_manager,
+                            bool is_user_signout_allowed,
+                            base::string16* status_label,
+                            base::string16* link_label,
+                            ActionType* action_type) {
+  if (!sync_service) {
+    // This can happen if Sync is disabled via the command line.
+    return PRE_SYNCED;
+  }
+  DCHECK(identity_manager);
+  CoreAccountInfo account_info = sync_service->GetAuthenticatedAccountInfo();
+  GoogleServiceAuthError auth_error =
+      identity_manager->GetErrorStateOfRefreshTokenForAccount(
+          account_info.account_id);
+  return GetStatusLabelsImpl(sync_service, is_user_signout_allowed, auth_error,
+                             status_label, link_label, action_type);
+}
+
 MessageType GetStatusLabels(Profile* profile,
                             base::string16* status_label,
                             base::string16* link_label,
                             ActionType* action_type) {
   DCHECK(profile);
-  syncer::SyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  if (!service) {
-    // This can happen if Sync is disabled via the command line.
-    return PRE_SYNCED;
-  }
-  const bool is_user_signout_allowed =
-      signin_util::IsUserSignoutAllowedForProfile(profile);
-  CoreAccountInfo account_info = service->GetAuthenticatedAccountInfo();
-  GoogleServiceAuthError auth_error =
-      IdentityManagerFactory::GetForProfile(profile)
-          ->GetErrorStateOfRefreshTokenForAccount(account_info.account_id);
-  return GetStatusLabelsImpl(service, is_user_signout_allowed, auth_error,
-                             status_label, link_label, action_type);
+  return GetStatusLabels(ProfileSyncServiceFactory::GetForProfile(profile),
+                         IdentityManagerFactory::GetForProfile(profile),
+                         signin_util::IsUserSignoutAllowedForProfile(profile),
+                         status_label, link_label, action_type);
 }
 
 MessageType GetStatus(Profile* profile) {

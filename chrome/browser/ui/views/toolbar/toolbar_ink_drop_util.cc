@@ -16,9 +16,14 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/installable_ink_drop_config.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+
+namespace {
+constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
+}
 
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
                                     const gfx::Insets& margin_insets) {
@@ -54,7 +59,6 @@ void SetToolbarButtonHighlightPath(views::View* host_view,
 
 std::unique_ptr<views::InkDropHighlight> CreateToolbarInkDropHighlight(
     const views::InkDropHostView* host_view) {
-  constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
   auto highlight = host_view->views::InkDropHostView::CreateInkDropHighlight();
   highlight->set_visible_opacity(kToolbarInkDropHighlightVisibleOpacity);
   return highlight;
@@ -69,4 +73,13 @@ SkColor GetToolbarInkDropBaseColor(const views::View* host_view) {
   }
 
   return gfx::kPlaceholderColor;
+}
+
+views::InstallableInkDropConfig GetToolbarInstallableInkDropConfig(
+    const views::View* host_view) {
+  views::InstallableInkDropConfig config;
+  config.base_color = GetToolbarInkDropBaseColor(host_view);
+  config.ripple_opacity = kToolbarInkDropVisibleOpacity;
+  config.highlight_opacity = kToolbarInkDropHighlightVisibleOpacity;
+  return config;
 }

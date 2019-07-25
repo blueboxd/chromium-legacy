@@ -133,10 +133,10 @@ FuzzedSocketFactory::CreateTransportClientSocket(
 }
 
 std::unique_ptr<SSLClientSocket> FuzzedSocketFactory::CreateSSLClientSocket(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
+    const SSLConfig& ssl_config) {
   return std::make_unique<FailingSSLClientSocket>();
 }
 

@@ -15,6 +15,13 @@ NFCReadingEvent::NFCReadingEvent(const AtomicString& event_type,
       serial_number_(initializer->serialNumber()),
       message_(NDEFMessage::Create(initializer->message())) {}
 
+NFCReadingEvent::NFCReadingEvent(const AtomicString& event_type,
+                                 const String& serial_number,
+                                 NDEFMessage* message)
+    : Event(event_type, Bubbles::kNo, Cancelable::kNo),
+      serial_number_(serial_number),
+      message_(message) {}
+
 NFCReadingEvent::~NFCReadingEvent() = default;
 
 const AtomicString& NFCReadingEvent::InterfaceName() const {

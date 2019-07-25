@@ -26,6 +26,17 @@ namespace cc {
 static constexpr uint32_t kInvalidImageTransferCacheEntryId =
     static_cast<uint32_t>(-1);
 
+enum class YUVDecodeFormat {
+  kYUV3,   // e.g., YUV 4:2:0, 4:2:2, or 4:4:4 as 3 planes.
+  kYUVA4,  // e.g., YUV 4:2:0 as 3 planes plus an alpha plane.
+  kYVU3,   // e.g., YVU 4:2:0, 4:2:2, or 4:4:4 as 3 planes.
+  kYUV2,   // e.g., YUV 4:2:0 as NV12 (2 planes).
+  kUnknown,
+  kMaxValue = kUnknown,
+};
+
+CC_PAINT_EXPORT size_t NumberOfPlanesForYUVDecodeFormat(YUVDecodeFormat format);
+
 // Client/ServiceImageTransferCacheEntry implement a transfer cache entry
 // for transferring image data. On the client side, this is a CPU SkPixmap,
 // on the service side the image is uploaded and is a GPU SkImage.
@@ -90,21 +101,20 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
   // Populates this entry using the result of a hardware decode. The assumption
   // is that |plane_images| are backed by textures that are in turn backed by a
   // buffer (dmabuf in Chrome OS) containing the planes of the decoded image.
+  // |plane_images_format| indicates the planar layout of |plane_images|.
   // |buffer_byte_size| is the size of the buffer. We assume the following:
   //
-  // - |plane_images| represents a YUV 4:2:0 triplanar image.
   // - The backing textures don't have mipmaps. We will generate the mipmaps if
   //   |needs_mips| is true.
   // - The conversion from YUV to RGB will be performed assuming a JPEG image.
-  // - The colorspace of the resulting RGB image is sRGB. We will convert from
-  //   this to |image_color_space| (if non-null) at raster.
+  // - The colorspace of the resulting RGB image is sRGB.
   //
   // Returns true if the entry can be built, false otherwise.
   bool BuildFromHardwareDecodedImage(GrContext* context,
                                      std::vector<sk_sp<SkImage>> plane_images,
+                                     YUVDecodeFormat plane_images_format,
                                      size_t buffer_byte_size,
-                                     bool needs_mips,
-                                     sk_sp<SkColorSpace> image_color_space);
+                                     bool needs_mips);
 
   // ServiceTransferCacheEntry implementation:
   size_t CachedSize() const final;
@@ -135,6 +145,7 @@ class CC_PAINT_EXPORT ServiceImageTransferCacheEntry
 
   GrContext* context_ = nullptr;
   std::vector<sk_sp<SkImage>> plane_images_;
+  YUVDecodeFormat plane_images_format_ = YUVDecodeFormat::kUnknown;
   std::vector<size_t> plane_sizes_;
   sk_sp<SkImage> image_;
   SkYUVColorSpace yuv_color_space_;

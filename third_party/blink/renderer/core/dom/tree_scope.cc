@@ -284,7 +284,7 @@ static bool ShouldAcceptNonElementNode(const Node& node) {
   // SVG text content elements has no background, and are thus not
   // hit during the background phase of hit-testing. Because of that
   // we need to allow any child (Text) node of these elements.
-  return IsSVGTextContentElement(*parent);
+  return IsA<SVGTextContentElement>(parent);
 }
 
 HeapVector<Member<Element>> TreeScope::ElementsFromHitTestResult(

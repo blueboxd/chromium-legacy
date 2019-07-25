@@ -232,7 +232,8 @@ void InSessionPasswordChangeManager::OnScreenUnlocked() {
 void InSessionPasswordChangeManager::StartInSessionPasswordChange() {
   NotifyObservers(START_SAML_IDP_PASSWORD_CHANGE);
   DismissExpiryNotification();
-  PasswordChangeDialog::Show(primary_profile_);
+  PasswordChangeDialog::Show();
+  ConfirmPasswordChangeDialog::Dismiss();
 }
 
 void InSessionPasswordChangeManager::OnSamlPasswordChanged(
@@ -242,6 +243,7 @@ void InSessionPasswordChangeManager::OnSamlPasswordChanged(
 
   user_manager::UserManager::Get()->SaveForceOnlineSignin(
       primary_user_->GetAccountId(), true);
+  DismissExpiryNotification();
   PasswordChangeDialog::Dismiss();
 
   const bool both_passwords_scraped =

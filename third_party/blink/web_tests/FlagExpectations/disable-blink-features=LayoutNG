@@ -290,3 +290,10 @@ crbug.com/591099 external/wpt/css/css-tables/absolute-tables-002.html [ Failure 
 
 crbug.com/591099 virtual/scalefactor200/external/wpt/element-timing/observe-text.html [ Failure ]
 crbug.com/591099 virtual/scalefactor200withoutzoom/external/wpt/element-timing/css-generated-text.html [ Failure ]
+
+### 7/22/2019 update
+crbug.com/591099 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
+crbug.com/591099 fast/text/emoji-vertical-origin-visual.html [ Failure ]
+crbug.com/591099 virtual/gpu/fast/canvas/image-object-in-canvas.html [ Failure ]
+crbug.com/591099 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
+

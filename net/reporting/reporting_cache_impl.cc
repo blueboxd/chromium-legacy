@@ -398,6 +398,98 @@ void ReportingCacheImpl::RemoveEndpointsForUrl(const GURL& url) {
   context_->NotifyCachedClientsUpdated();
 }
 
+// Reconstruct an OriginClient from the loaded endpoint groups, and add the
+// loaded endpoints and endpoint groups into the cache.
+void ReportingCacheImpl::AddClientsLoadedFromStore(
+    std::vector<ReportingEndpoint> loaded_endpoints,
+    std::vector<CachedReportingEndpointGroup> loaded_endpoint_groups) {
+  DCHECK(context_->IsClientDataPersisted());
+
+  std::sort(loaded_endpoints.begin(), loaded_endpoints.end(),
+            [](const ReportingEndpoint& a, const ReportingEndpoint& b) -> bool {
+              return a.group_key < b.group_key;
+            });
+  std::sort(loaded_endpoint_groups.begin(), loaded_endpoint_groups.end(),
+            [](const CachedReportingEndpointGroup& a,
+               const CachedReportingEndpointGroup& b) -> bool {
+              return a.group_key < b.group_key;
+            });
+
+  // If using a persistent store, cache should be empty before loading finishes.
+  DCHECK(origin_clients_.empty());
+  DCHECK(endpoint_groups_.empty());
+  DCHECK(endpoints_.empty());
+  DCHECK(endpoint_its_by_url_.empty());
+
+  // |loaded_endpoints| and |loaded_endpoint_groups| should both be sorted by
+  // origin and group name.
+  auto endpoints_it = loaded_endpoints.begin();
+  auto endpoint_groups_it = loaded_endpoint_groups.begin();
+
+  base::Optional<OriginClient> origin_client;
+
+  while (endpoint_groups_it != loaded_endpoint_groups.end() &&
+         endpoints_it != loaded_endpoints.end()) {
+    const CachedReportingEndpointGroup& group = *endpoint_groups_it;
+    const ReportingEndpointGroupKey& group_key = group.group_key;
+
+    if (group_key < endpoints_it->group_key) {
+      // This endpoint group has no associated endpoints, so move on to the next
+      // endpoint group.
+      ++endpoint_groups_it;
+      continue;
+    } else if (group_key > endpoints_it->group_key) {
+      // This endpoint has no associated endpoint group, so move on to the next
+      // endpoint.
+      ++endpoints_it;
+      continue;
+    }
+
+    DCHECK(group_key == endpoints_it->group_key);
+
+    size_t cur_group_endpoints_count = 0;
+
+    // Insert the endpoints corresponding to this group.
+    while (endpoints_it != loaded_endpoints.end() &&
+           endpoints_it->group_key == group_key) {
+      EndpointMap::iterator inserted = endpoints_.insert(
+          std::make_pair(group_key, std::move(*endpoints_it)));
+      endpoint_its_by_url_.insert(
+          std::make_pair(inserted->second.info.url, inserted));
+      ++cur_group_endpoints_count;
+      ++endpoints_it;
+    }
+
+    if (!origin_client || origin_client->origin != group_key.origin) {
+      // Store the old origin_client and start a new one.
+      if (origin_client) {
+        OriginClientMap::iterator client_it =
+            origin_clients_.insert(std::make_pair(origin_client->origin.host(),
+                                                  std::move(*origin_client)));
+        EnforcePerOriginAndGlobalEndpointLimits(client_it->second.origin);
+      }
+      origin_client.emplace(group_key.origin);
+    }
+    DCHECK(origin_client.has_value());
+    origin_client->endpoint_group_names.insert(group_key.group_name);
+    origin_client->endpoint_count += cur_group_endpoints_count;
+    origin_client->last_used =
+        std::max(origin_client->last_used, group.last_used);
+
+    endpoint_groups_.insert(std::make_pair(group_key, std::move(group)));
+
+    ++endpoint_groups_it;
+  }
+
+  if (origin_client) {
+    OriginClientMap::iterator client_it = origin_clients_.insert(std::make_pair(
+        origin_client->origin.host(), std::move(*origin_client)));
+    EnforcePerOriginAndGlobalEndpointLimits(client_it->second.origin);
+  }
+
+  SanityCheckClients();
+}
+
 std::vector<ReportingEndpoint>
 ReportingCacheImpl::GetCandidateEndpointsForDelivery(
     const url::Origin& origin,
@@ -642,6 +734,7 @@ size_t ReportingCacheImpl::SanityCheckOriginClient(
   for (const std::string& group_name : client.endpoint_group_names) {
     ++endpoint_group_count_in_client;
     ReportingEndpointGroupKey group_key(client.origin, group_name);
+    DCHECK(endpoint_groups_.find(group_key) != endpoint_groups_.end());
     const CachedReportingEndpointGroup& group = endpoint_groups_.at(group_key);
     endpoint_count_in_client += SanityCheckEndpointGroup(group_key, group);
   }

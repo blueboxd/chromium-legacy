@@ -69,10 +69,10 @@ cr.define('extension_sidebar_tests', function() {
       });
 
       MockInteractions.tap(sidebar.$$('#sections-shortcuts'));
-      expectDeepEquals(currentPage, {page: Page.SHORTCUTS});
+      expectDeepEquals(currentPage, {page: extensions.Page.SHORTCUTS});
 
       MockInteractions.tap(sidebar.$$('#sections-extensions'));
-      expectDeepEquals(currentPage, {page: Page.LIST});
+      expectDeepEquals(currentPage, {page: extensions.Page.LIST});
 
       // Clicking on the link for the current page should close the dialog.
       sidebar.addEventListener('close-drawer', () => done());

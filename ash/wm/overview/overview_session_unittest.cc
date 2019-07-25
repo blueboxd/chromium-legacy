@@ -241,6 +241,14 @@ class OverviewSessionTest : public AshTestBase {
     GetEventGenerator()->ReleaseKey(key, flags);
   }
 
+  // Press the key repeatedly until a window is highlighted, i.e. ignoring any
+  // desk items.
+  void SendKeyUntilOverviewItemIsHighlighted(ui::KeyboardCode key) {
+    do {
+      SendKey(key);
+    } while (!GetHighlightedWindow());
+  }
+
   bool InOverviewSession() {
     return overview_controller()->InOverviewSession();
   }
@@ -635,7 +643,7 @@ TEST_F(OverviewSessionTest, NoCrashWithDesktopTap) {
 
   // Tap on the desktop, which should not cause a crash. Overview mode should
   // be disengaged.
-  GetEventGenerator()->GestureTapAt(gfx::Point(0, 0));
+  GetEventGenerator()->GestureTapAt(GetGridBounds().CenterPoint());
   EXPECT_FALSE(InOverviewSession());
 
   GetEventGenerator()->ReleaseTouchId(kTouchId);
@@ -1537,11 +1545,11 @@ TEST_F(OverviewSessionTest, BasicTabKeyNavigation) {
 
   const std::vector<std::unique_ptr<OverviewItem>>& overview_windows =
       GetWindowItemsForRoot(0);
-  SendKey(ui::VKEY_TAB);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(GetHighlightedWindow(), overview_windows[0]->GetWindow());
-  SendKey(ui::VKEY_TAB);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(GetHighlightedWindow(), overview_windows[1]->GetWindow());
-  SendKey(ui::VKEY_TAB);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(GetHighlightedWindow(), overview_windows[0]->GetWindow());
 }
 
@@ -1566,7 +1574,7 @@ TEST_F(OverviewSessionTest, CloseWindowWithKey) {
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
   ToggleOverview();
 
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(widget->GetNativeWindow(), GetHighlightedWindow());
   SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(widget->IsClosed());
@@ -1599,7 +1607,7 @@ TEST_F(OverviewSessionTest, BasicArrowKeyNavigation) {
     const std::vector<std::unique_ptr<OverviewItem>>& overview_windows =
         GetWindowItemsForRoot(0);
     for (size_t i = 0; i < test_windows + 1; i++) {
-      SendKey(arrow_keys[key_index]);
+      SendKeyUntilOverviewItemIsHighlighted(arrow_keys[key_index]);
       // TODO(flackr): Add a more readable error message by constructing a
       // string from the window IDs.
       const int index = index_path_for_direction[key_index][i];
@@ -1670,13 +1678,14 @@ TEST_F(OverviewSessionTest, BasicMultiMonitorArrowKeyNavigation) {
       GetWindowItemsForRoot(0);
   const std::vector<std::unique_ptr<OverviewItem>>& overview_root2 =
       GetWindowItemsForRoot(1);
-  SendKey(ui::VKEY_RIGHT);
+
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(GetHighlightedWindow(), overview_root1[0]->GetWindow());
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(GetHighlightedWindow(), overview_root1[1]->GetWindow());
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(GetHighlightedWindow(), overview_root2[0]->GetWindow());
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(GetHighlightedWindow(), overview_root2[1]->GetWindow());
 }
 
@@ -1698,7 +1707,7 @@ TEST_F(OverviewSessionTest, MultiMonitorReversedOrder) {
 
   // Coming from the left to right, we should select window1 first being on the
   // display to the left.
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(GetHighlightedWindow(), window1.get());
 
   // Exit and reenter overview.
@@ -1707,7 +1716,7 @@ TEST_F(OverviewSessionTest, MultiMonitorReversedOrder) {
 
   // Coming from right to left, we should select window2 first being on the
   // display on the right.
-  SendKey(ui::VKEY_LEFT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_LEFT);
   EXPECT_EQ(GetHighlightedWindow(), window2.get());
 }
 
@@ -1726,9 +1735,9 @@ TEST_F(OverviewSessionTest, ThreeMonitor) {
 
   ToggleOverview();
 
-  SendKey(ui::VKEY_RIGHT);
-  SendKey(ui::VKEY_RIGHT);
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   EXPECT_EQ(window3.get(), GetHighlightedWindow());
 
   // If the selected window is closed, then nothing should be selected.
@@ -1738,9 +1747,9 @@ TEST_F(OverviewSessionTest, ThreeMonitor) {
 
   window3 = CreateTestWindow(gfx::Rect(800, 0, 100, 100));
   ToggleOverview();
-  SendKey(ui::VKEY_RIGHT);
-  SendKey(ui::VKEY_RIGHT);
-  SendKey(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
 
   // If the window on the second display is removed, the selected window should
   // remain window3.
@@ -1774,15 +1783,11 @@ TEST_F(OverviewSessionTest, HighlightWindowWithReturnKey) {
 }
 
 TEST_F(OverviewSessionTest, CancelOverviewOnMouseClick) {
-  // Point and bounds selected so that they don't intersect. This causes
-  // events located at the point to be passed to WallpaperController,
-  // and not the window.
-  const gfx::Point point_in_background_page(0, 0);
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 10, 100, 100)));
   // Move mouse to point in the background page. Sending an event here will pass
   // it to the WallpaperController in both regular and overview mode.
-  GetEventGenerator()->MoveMouseTo(point_in_background_page);
+  GetEventGenerator()->MoveMouseTo(gfx::Point(0, 0));
 
   // Clicking on the background page while not in overview should not toggle
   // overview.
@@ -1792,27 +1797,30 @@ TEST_F(OverviewSessionTest, CancelOverviewOnMouseClick) {
   // Switch to overview mode. Clicking should now exit overview mode.
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
+  // Choose a point that doesn't intersect with the window or the desks bar.
+  const gfx::Point point_in_background_page = GetGridBounds().CenterPoint();
+  GetEventGenerator()->MoveMouseTo(point_in_background_page);
   GetEventGenerator()->ClickLeftButton();
   EXPECT_FALSE(InOverviewSession());
 }
 
 // Tests tapping on the desktop itself to cancel overview mode.
 TEST_F(OverviewSessionTest, CancelOverviewOnTap) {
-  // Point and bounds selected so that they don't intersect. This causes
-  // events located at the point to be passed to WallpaperController,
-  // and not the window.
-  gfx::Point point_in_background_page(0, 0);
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 10, 100, 100)));
 
   // Tapping on the background page while not in overview should not toggle
   // overview.
-  GetEventGenerator()->GestureTapAt(point_in_background_page);
+  GetEventGenerator()->GestureTapAt(gfx::Point(0, 0));
   EXPECT_FALSE(InOverviewSession());
 
   // Switch to overview mode. Tapping should now exit overview mode.
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
+  // A point that doesn't intersect with the window nor the desks bar. This
+  // causes events located at the point to be passed to WallpaperController, and
+  // not the window.
+  const gfx::Point point_in_background_page = GetGridBounds().CenterPoint();
   GetEventGenerator()->GestureTapAt(point_in_background_page);
   EXPECT_FALSE(InOverviewSession());
 }
@@ -4719,7 +4727,7 @@ TEST_F(OverviewSessionTest, HighlightLocationWhileDragging) {
   ToggleOverview();
 
   // Tab once to show the highlight.
-  SendKey(ui::VKEY_TAB);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(window3.get(), GetHighlightedWindow());
   OverviewItem* item = GetWindowItemForWindow(0, window3.get());
 
@@ -4731,7 +4739,7 @@ TEST_F(OverviewSessionTest, HighlightLocationWhileDragging) {
   overview_session()->InitiateDrag(item, start_point,
                                    /*allow_drag_to_close=*/true);
   overview_session()->Drag(item, end_point);
-  SendKey(ui::VKEY_TAB);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(window3.get(), GetHighlightedWindow());
 
   // Tests that on releasing the item, the highlighted window remains the same.
@@ -4741,7 +4749,7 @@ TEST_F(OverviewSessionTest, HighlightLocationWhileDragging) {
 
   // Tests that on tabbing after releasing, the highlighted window is the next
   // one.
-  SendKey(ui::VKEY_TAB);
+  SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_TAB);
   EXPECT_EQ(window2.get(), GetHighlightedWindow());
 }
 

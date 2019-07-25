@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace autofill {
 
@@ -23,10 +24,10 @@ class LogReceiver;
 // the following communication is enabled:
 //   * LogManagers are notified when logging starts or stops being possible
 //   * LogReceivers are sent logs routed through LogRouter
-class LogRouter {
+class LogRouter : public KeyedService {
  public:
   LogRouter();
-  ~LogRouter();
+  ~LogRouter() override;
 
   // Returns a JSON entry that can be fed into the logger.
   static base::Value CreateEntryForText(const std::string& text);

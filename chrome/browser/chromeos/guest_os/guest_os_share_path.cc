@@ -182,7 +182,9 @@ GuestOsSharePath::GuestOsSharePath(Profile* profile)
   }
 }
 
-GuestOsSharePath::~GuestOsSharePath() {
+GuestOsSharePath::~GuestOsSharePath() = default;
+
+void GuestOsSharePath::Shutdown() {
   for (auto& shared_path : shared_paths_) {
     if (shared_path.second.watcher) {
       sequenced_task_runner_->DeleteSoon(FROM_HERE,
@@ -613,7 +615,6 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
 }
 
 void GuestOsSharePath::OnFileChanged(const base::FilePath& path, bool error) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (shared_paths_.find(path) == shared_paths_.end()) {
     return;
   }

@@ -2364,6 +2364,9 @@ crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-in
 
 crbug.com/876732 [ Win ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 
+# This test needs the mock nfc service to be ready for wpt tests.
+crbug.com/520391 external/wpt/web-nfc/NFCReader-manual.https.html [ Skip ]
+
 # These tests only pass with --enable-threaded-compositing.
 crbug.com/770028 external/wpt/dom/events/document-level-wheel-event-listener-passive-by-default-manual.html [ Skip ]
 crbug.com/770028 external/wpt/dom/events/document-level-touchmove-event-listener-passive-by-default.html [ Skip ]
@@ -2453,7 +2456,6 @@ crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-024.html [ Fail
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-025.html [ Failure ]
 crbug.com/965137 external/wpt/css/css-overflow/webkit-line-clamp-026.html [ Failure ]
 crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-027.html [ Failure ]
-crbug.com/305376 external/wpt/css/css-overflow/webkit-line-clamp-033.html [ Failure ]
 
 crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-024.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-margin-001.html [ Failure ]
@@ -2510,6 +2512,7 @@ crbug.com/905315 external/wpt/css/css-text/word-break/word-break-break-word-over
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-003.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-006.html [ Skip ]
 crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-before-first-char-013.html [ Skip ]
+crbug.com/905315 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Failure ]
 
 crbug.com/6122 external/wpt/css/css-text/shaping/shaping-024.html [ Failure ]
 crbug.com/6122 external/wpt/css/css-text/shaping/shaping-025.html [ Failure ]
@@ -3257,18 +3260,20 @@ crbug.com/968164 external/wpt/css/css-ui/appearance-menulist-button-002.html [ F
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-001.html [ Failure ]
 crbug.com/968164 external/wpt/css/css-ui/webkit-appearance-menulist-button-001.html [ Failure ]
 
+# Implement text-decoration-thickness and text-decoration-offset
+crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-linethrough-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
+crbug.com/785230 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_gt_50_size_gt_maximum_size.html [ Failure ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
 crbug.com/626703 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-offer.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-underline-offset-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-overline-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-scroll-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-linethrough-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-tab-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-underline-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text-decor/text-decoration-thickness-vertical-002.html [ Failure ]
 crbug.com/626703 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.https.html [ Timeout ]
 crbug.com/626703 [ Win10 ] virtual/omt-worker-fetch/external/wpt/fetch/api/request/destination/fetch-destination-worker.https.html [ Crash ]
 crbug.com/626703 external/wpt/webauthn/idlharness-manual.https.window.js [ Skip ]

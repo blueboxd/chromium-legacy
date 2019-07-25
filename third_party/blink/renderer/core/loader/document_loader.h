@@ -289,9 +289,11 @@ class CORE_EXPORT DocumentLoader
     return previews_state_;
   }
 
- protected:
-  bool had_transient_activation() const { return had_transient_activation_; }
+  bool HadTransientActivation() const { return had_transient_activation_; }
 
+  bool IsBrowserInitiated() const { return is_browser_initiated_; }
+
+ protected:
   Vector<KURL> redirect_chain_;
 
   // Archive used to load document and/or subresources. If one of the ancestor
@@ -479,6 +481,9 @@ class CORE_EXPORT DocumentLoader
   bool had_sticky_activation_ = false;
   // Whether this load request had a user activation when created.
   bool had_transient_activation_ = false;
+
+  // Whether this load request was initiated by the browser.
+  bool is_browser_initiated_ = false;
 
   // See WebNavigationParams for definition.
   bool was_discarded_ = false;

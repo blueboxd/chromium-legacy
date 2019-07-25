@@ -37,6 +37,11 @@ import sys
 import subprocess
 import tempfile
 
+_DIR_SOURCE_ROOT = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+_GSUTIL = os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'depot_tools',
+                       'gsutil.py')
+
 _PUSH_URL = 'gs://chrome-supersize/milestones/'
 
 _DESIRED_CPUS = ['arm', 'arm_64']
@@ -60,8 +65,8 @@ _DESIRED_VERSIONS = [
     '72.0.3626.105',
     '73.0.3683.75',
     '74.0.3729.112',
-    '75.0.3770.67',
-    '76.0.3809.13',  # Official build
+    '75.0.3770.143',
+    '76.0.3809.62',
 ]
 
 
@@ -163,7 +168,7 @@ def _DownloadOneSizeFile(arg_tuples):
   src = '{}/{}'.format(base_url, subpath)
   dest = os.path.join(temp_dir, subpath)
   _MakeDirectory(os.path.dirname(dest))
-  subprocess.check_call(['gsutil.py', '-q', 'cp', src, dest])
+  subprocess.check_call([_GSUTIL, '-q', 'cp', src, dest])
 
 
 @contextlib.contextmanager
@@ -184,8 +189,7 @@ def _DownloadSizeFiles(base_url, reports):
 
 
 def _FetchExistingMilestoneReports():
-  milestones = subprocess.check_output(
-      ['gsutil.py', 'ls', '-R', _PUSH_URL + '*'])
+  milestones = subprocess.check_output([_GSUTIL, 'ls', '-R', _PUSH_URL + '*'])
   for path in milestones.splitlines()[1:]:
     report = Report.FromUrl(path)
     if report:
@@ -288,8 +292,15 @@ def main():
 
   logging.warning('Reports saved to %s', args.directory)
   cmd = [
-      'gsutil.py', '-m', 'rsync', '-J', '-a', 'public-read', '-r',
-      args.directory, _PUSH_URL,
+      _GSUTIL,
+      '-m',
+      'rsync',
+      '-J',
+      '-a',
+      'public-read',
+      '-r',
+      args.directory,
+      _PUSH_URL,
   ]
 
   if args.sync:

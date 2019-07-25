@@ -11,7 +11,7 @@ Tests that audits panel passes flags.
 Run audits: enabled visible
 
 =============== Lighthouse Results ===============
-emulatedFormFactor: none
+emulatedFormFactor: desktop
 disableStorageReset: false
 throttlingMethod: provided
 

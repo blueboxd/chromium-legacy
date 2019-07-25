@@ -24,8 +24,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
                                   gpu::SurfaceHandle surface_handle);
   ~SkiaOutputSurfaceDependencyImpl() override;
 
-  void ScheduleGpuTask(base::OnceClosure task,
-                       std::vector<gpu::SyncToken> sync_tokens) override;
+  std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() override;
   bool IsUsingVulkan() override;
   gpu::SharedImageManager* GetSharedImageManager() override;
   gpu::SyncPointManager* GetSyncPointManager() override;
@@ -34,7 +33,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceDependencyImpl
   gpu::raster::GrShaderCache* GetGrShaderCache() override;
   VulkanContextProvider* GetVulkanContextProvider() override;
   const gpu::GpuPreferences& GetGpuPreferences() override;
-  gpu::SequenceId GetSequenceId() override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
   gpu::MailboxManager* GetMailboxManager() override;
   bool IsOffscreen() override;

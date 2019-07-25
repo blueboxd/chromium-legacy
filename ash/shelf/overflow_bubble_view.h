@@ -66,14 +66,13 @@ class ASH_EXPORT OverflowBubbleView : public ShelfBubble,
   bool ShouldCloseOnPressDown() override;
   bool ShouldCloseOnMouseExit() override;
 
+  static int GetArrowButtonSize();
+
   // Padding at the two ends of the shelf in overflow mode.
   static constexpr int kEndPadding = 4;
 
   // Minimum margin around the bubble so that it doesn't hug the screen edges.
   static constexpr int kMinimumMargin = 8;
-
-  // Size of the arrow button.
-  static const int kArrowButtonSize;
 
  private:
   friend class OverflowBubbleViewTestAPI;

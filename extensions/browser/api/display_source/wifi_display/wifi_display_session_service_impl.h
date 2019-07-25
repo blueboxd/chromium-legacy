@@ -7,7 +7,7 @@
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "extensions/browser/api/display_source/display_source_connection_delegate.h"
-#include "extensions/common/mojo/wifi_display_session_service.mojom.h"
+#include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

@@ -300,7 +300,7 @@ void Service::Init(mojom::ClientPtr client,
 void Service::OnPrefServiceConnected(
     std::unique_ptr<::PrefService> pref_service) {
   // TODO(b/110211045): Add testing support for Assistant prefs.
-  if (!pref_service_)
+  if (!pref_service)
     return;
 
   pref_service_ = std::move(pref_service);

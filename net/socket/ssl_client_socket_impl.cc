@@ -397,36 +397,29 @@ const SSL_PRIVATE_KEY_METHOD
 };
 
 SSLClientSocketImpl::SSLClientSocketImpl(
+    SSLClientContext* context,
     std::unique_ptr<StreamSocket> stream_socket,
     const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context)
+    const SSLConfig& ssl_config)
     : pending_read_error_(kSSLClientSocketNoPendingResult),
       pending_read_ssl_error_(SSL_ERROR_NONE),
       completed_connect_(false),
       was_ever_used_(false),
-      cert_verifier_(context.cert_verifier),
+      context_(context),
       cert_verification_result_(kCertVerifyPending),
-      cert_transparency_verifier_(context.cert_transparency_verifier),
       stream_socket_(std::move(stream_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
-      ssl_client_session_cache_(context.ssl_client_session_cache),
       next_handshake_state_(STATE_NONE),
       in_confirm_handshake_(false),
       disconnected_(false),
       negotiated_protocol_(kProtoUnknown),
       certificate_requested_(false),
       signature_result_(kSSLClientSocketNoPendingResult),
-      transport_security_state_(context.transport_security_state),
-      policy_enforcer_(context.ct_policy_enforcer),
       pkp_bypassed_(false),
       is_fatal_cert_error_(false),
       net_log_(stream_socket_->NetLog()) {
-  CHECK(cert_verifier_);
-  CHECK(transport_security_state_);
-  CHECK(cert_transparency_verifier_);
-  CHECK(policy_enforcer_);
+  CHECK(context_);
 }
 
 SSLClientSocketImpl::~SSLClientSocketImpl() {
@@ -789,15 +782,16 @@ int SSLClientSocketImpl::Init() {
   }
 
   if (IsCachingEnabled()) {
-    bssl::UniquePtr<SSL_SESSION> session = ssl_client_session_cache_->Lookup(
-        GetSessionCacheKey(/*dest_ip_addr=*/base::nullopt));
+    bssl::UniquePtr<SSL_SESSION> session =
+        context_->ssl_client_session_cache()->Lookup(
+            GetSessionCacheKey(/*dest_ip_addr=*/base::nullopt));
     if (!session) {
       // If a previous session negotiated an RSA cipher suite then it may have
       // been inserted into the cache keyed by both hostname and resolved IP
       // address. See https://crbug.com/969684.
       IPEndPoint peer_address;
       if (stream_socket_->GetPeerAddress(&peer_address) == OK) {
-        session = ssl_client_session_cache_->Lookup(
+        session = context_->ssl_client_session_cache()->Lookup(
             GetSessionCacheKey(peer_address.address()));
       }
     }
@@ -1163,7 +1157,7 @@ ssl_verify_result_t SSLClientSocketImpl::VerifyCert() {
   base::StringPiece sct_list(reinterpret_cast<const char*>(sct_list_raw),
                              sct_list_len);
 
-  cert_verification_result_ = cert_verifier_->Verify(
+  cert_verification_result_ = context_->cert_verifier()->Verify(
       CertVerifier::RequestParams(
           server_cert_, host_and_port_.host(), ssl_config_.GetCertVerifyFlags(),
           ocsp_response.as_string(), sct_list.as_string()),
@@ -1223,7 +1217,7 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
         IsCertStatusMinorError(server_cert_verify_result_.cert_status)))) {
     int ct_result = VerifyCT();
     TransportSecurityState::PKPStatus pin_validity =
-        transport_security_state_->CheckPublicKeyPins(
+        context_->transport_security_state()->CheckPublicKeyPins(
             host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
             server_cert_verify_result_.public_key_hashes, server_cert_.get(),
             server_cert_verify_result_.verified_cert.get(),
@@ -1248,7 +1242,8 @@ ssl_verify_result_t SSLClientSocketImpl::HandleVerifyResult() {
   is_fatal_cert_error_ =
       IsCertStatusError(server_cert_verify_result_.cert_status) &&
       !IsCertStatusMinorError(server_cert_verify_result_.cert_status) &&
-      transport_security_state_->ShouldSSLErrorsBeFatal(host_and_port_.host());
+      context_->transport_security_state()->ShouldSSLErrorsBeFatal(
+          host_and_port_.host());
 
   if (IsCertificateError(result) && ssl_config_.ignore_certificate_errors) {
     result = OK;
@@ -1487,15 +1482,17 @@ int SSLClientSocketImpl::VerifyCT() {
   // Note that this is a completely synchronous operation: The CT Log Verifier
   // gets all the data it needs for SCT verification and does not do any
   // external communication.
-  cert_transparency_verifier_->Verify(
+  context_->cert_transparency_verifier()->Verify(
       host_and_port().host(), server_cert_verify_result_.verified_cert.get(),
       ocsp_response, sct_list, &ct_verify_result_.scts, net_log_);
 
   ct::SCTList verified_scts =
       ct::SCTsMatchingStatus(ct_verify_result_.scts, ct::SCT_STATUS_OK);
 
-  ct_verify_result_.policy_compliance = policy_enforcer_->CheckCompliance(
-      server_cert_verify_result_.verified_cert.get(), verified_scts, net_log_);
+  ct_verify_result_.policy_compliance =
+      context_->ct_policy_enforcer()->CheckCompliance(
+          server_cert_verify_result_.verified_cert.get(), verified_scts,
+          net_log_);
   if (server_cert_verify_result_.cert_status & CERT_STATUS_IS_EV) {
     if (ct_verify_result_.policy_compliance !=
             ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
@@ -1526,7 +1523,7 @@ int SSLClientSocketImpl::VerifyCT() {
   }
 
   TransportSecurityState::CTRequirementsStatus ct_requirement_status =
-      transport_security_state_->CheckCTRequirements(
+      context_->transport_security_state()->CheckCTRequirements(
           host_and_port_, server_cert_verify_result_.is_issued_by_known_root,
           server_cert_verify_result_.public_key_hashes,
           server_cert_verify_result_.verified_cert.get(), server_cert_.get(),
@@ -1637,8 +1634,8 @@ int SSLClientSocketImpl::NewSessionCallback(SSL_SESSION* session) {
 
   // OpenSSL optionally passes ownership of |session|. Returning one signals
   // that this function has claimed it.
-  ssl_client_session_cache_->Insert(GetSessionCacheKey(ip_addr),
-                                    bssl::UniquePtr<SSL_SESSION>(session));
+  context_->ssl_client_session_cache()->Insert(
+      GetSessionCacheKey(ip_addr), bssl::UniquePtr<SSL_SESSION>(session));
   return 1;
 }
 
@@ -1679,7 +1676,7 @@ bool SSLClientSocketImpl::IsRenegotiationAllowed() const {
 }
 
 bool SSLClientSocketImpl::IsCachingEnabled() const {
-  return ssl_client_session_cache_ != nullptr;
+  return context_->ssl_client_session_cache() != nullptr;
 }
 
 ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(

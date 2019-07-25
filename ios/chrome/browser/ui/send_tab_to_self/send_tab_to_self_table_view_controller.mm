@@ -236,7 +236,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)sendTabWhenPressed:(UIButton*)sender {
   base::UmaHistogramEnumeration(kClickResultHistogramName,
                                 SendTabToSelfClickResult::kClickItem);
-  [self.delegate sendTabToTargetDeviceCacheGUID:self.selectedItem.cacheGuid];
+  [self.delegate sendTabToTargetDeviceCacheGUID:self.selectedItem.cacheGuid
+                               targetDeviceName:self.selectedItem.text];
   [self.delegate dismissViewControllerAnimated:YES completion:nil];
 }
 

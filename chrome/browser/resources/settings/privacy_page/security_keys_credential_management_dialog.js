@@ -59,7 +59,7 @@ Polymer({
     deleteInProgress_: Boolean,
   },
 
-  /** @private {?settings.SecurityKeysBrowserProxy} */
+  /** @private {?settings.SecurityKeysCredentialBrowserProxy} */
   browserProxy_: null,
 
   /** @private {?Set<string>} */
@@ -72,7 +72,8 @@ Polymer({
         'security-keys-credential-management-finished',
         this.onError_.bind(this));
     this.checkedCredentialIds_ = new Set();
-    this.browserProxy_ = settings.SecurityKeysBrowserProxyImpl.getInstance();
+    this.browserProxy_ =
+        settings.SecurityKeysCredentialBrowserProxyImpl.getInstance();
     this.browserProxy_.startCredentialManagement().then(
         this.collectPin_.bind(this));
   },
@@ -97,16 +98,15 @@ Polymer({
     if (!this.$.pin.validate()) {
       return;
     }
-    this.browserProxy_.credentialManagementProvidePIN(this.$.pin.value)
-        .then((retries) => {
-          if (retries != null) {
-            this.$.pin.showIncorrectPINError(retries);
-            this.collectPin_();
-            return;
-          }
-          this.browserProxy_.credentialManagementEnumerate().then(
-              this.onCredentials_.bind(this));
-        });
+    this.browserProxy_.providePIN(this.$.pin.value).then((retries) => {
+      if (retries != null) {
+        this.$.pin.showIncorrectPINError(retries);
+        this.collectPin_();
+        return;
+      }
+      this.browserProxy_.enumerateCredentials().then(
+          this.onCredentials_.bind(this));
+    });
   },
 
   /**
@@ -257,9 +257,7 @@ Polymer({
     assert(this.checkedCredentialIds_.size > 0);
 
     this.deleteInProgress_ = true;
-    this.browserProxy_
-        .credentialManagementDeleteCredentials(
-            Array.from(this.checkedCredentialIds_))
+    this.browserProxy_.deleteCredentials(Array.from(this.checkedCredentialIds_))
         .then((err) => {
           this.deleteInProgress_ = false;
           this.onError_(err);

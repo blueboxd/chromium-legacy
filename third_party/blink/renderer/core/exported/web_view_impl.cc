@@ -1462,9 +1462,7 @@ void WebViewImpl::BeginFrame(base::TimeTicks last_frame_time,
   if (!MainFrameImpl())
     return;
 
-  if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::
-          UpdateHoverFromLayoutChangeAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     MainFrameImpl()
         ->GetFrame()
         ->GetEventHandler()
@@ -3365,7 +3363,7 @@ void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
   UpdateBrowserControlsConstraint(args.browser_controls_constraint);
 
   if (args.scroll_gesture_did_end &&
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     MainFrameImpl()->GetFrame()->GetEventHandler().MarkHoverStateDirty();
   }
 }

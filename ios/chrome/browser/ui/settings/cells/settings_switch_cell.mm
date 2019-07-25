@@ -8,6 +8,7 @@
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -80,7 +81,7 @@ const CGFloat kIconImageSize = 28;
 
     _switchView = [[UISwitch alloc] initWithFrame:CGRectZero];
     _switchView.translatesAutoresizingMaskIntoConstraints = NO;
-    _switchView.onTintColor = UIColorFromRGB(kTableViewSwitchTintColor);
+    _switchView.onTintColor = [UIColor colorNamed:kTintColor];
     [_switchView
         setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
                                         forAxis:

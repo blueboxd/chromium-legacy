@@ -510,9 +510,7 @@ void FillNavigationParamsRequest(
     }
   }
 
-#if defined(OS_ANDROID)
   navigation_params->had_transient_activation = common_params.has_user_gesture;
-#endif
 }
 
 CommonNavigationParams MakeCommonNavigationParams(
@@ -1038,6 +1036,8 @@ void FillMiscNavigationParams(const CommonNavigationParams& common_params,
 
   navigation_params->is_user_activated =
       commit_params.was_activated == WasActivatedOption::kYes;
+
+  navigation_params->is_browser_initiated = commit_params.is_browser_initiated;
 
   if (commit_params.origin_to_commit) {
     navigation_params->origin_to_commit =

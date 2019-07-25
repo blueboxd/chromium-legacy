@@ -1061,11 +1061,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-custom-context-menu",
-    "owners": [ "chrome-android-app" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "enable-custom-mac-paper-sizes",
     "owners": [ "//printing/OWNERS" ],
     "expiry_milestone": 76

@@ -778,6 +778,8 @@ NavigationRequest::NavigationRequest(
       std::move(navigation_initiator)));
 
   navigation_entry_offset_ = EstimateHistoryOffset();
+
+  commit_params_.is_browser_initiated = browser_initiated_;
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -1424,7 +1426,7 @@ void NavigationRequest::OnResponseStarted(
     if (!instance->HasSite() &&
         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
             instance->GetIsolationContext(), common_params_.url)) {
-      instance->SetSite(common_params_.url);
+      instance->ConvertToDefaultOrSetSite(common_params_.url);
     }
   }
 

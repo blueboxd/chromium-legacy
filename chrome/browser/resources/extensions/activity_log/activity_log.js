@@ -147,10 +147,12 @@ cr.define('extensions', function() {
     /** @private */
     onCloseButtonTap_: function() {
       if (this.extensionInfo.isPlaceholder) {
-        extensions.navigation.navigateTo({page: Page.LIST});
+        extensions.navigation.navigateTo({page: extensions.Page.LIST});
       } else {
-        extensions.navigation.navigateTo(
-            {page: Page.DETAILS, extensionId: this.extensionInfo.id});
+        extensions.navigation.navigateTo({
+          page: extensions.Page.DETAILS,
+          extensionId: this.extensionInfo.id
+        });
       }
     },
   });

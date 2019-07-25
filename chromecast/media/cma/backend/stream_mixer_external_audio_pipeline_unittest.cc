@@ -89,14 +89,9 @@ class ExternalAudioPipelineTest : public ::testing::Test {
   }
   // Run async operations in the stream mixer.
   void RunLoopForMixer() {
-    // SendLoopbackData.
-    base::RunLoop run_loop1;
-    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop1.QuitClosure());
-    run_loop1.Run();
-    // Playbackloop.
-    base::RunLoop run_loop2;
-    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop2.QuitClosure());
-    run_loop2.Run();
+    base::RunLoop run_loop;
+    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
   }
 
  protected:
@@ -201,11 +196,10 @@ TEST_F(ExternalAudioPipelineTest, ExternalAudioPipelineLoopbackData) {
   mixer_->AddLoopbackAudioObserver(&mock_loopback_observer);
 
   mixer_->AddInput(&input);
-
   RunLoopForMixer();
+
   // Send data to the stream mixer.
   input.SetData(std::move(data));
-
   RunLoopForMixer();
 
   // Get actual data from our mocked loopback observer.

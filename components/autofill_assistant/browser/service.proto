@@ -410,6 +410,10 @@ message PaymentDetails {
   optional bool is_terms_and_conditions_accepted = 2;
   // The email address of the payer.
   optional string payer_email = 3;
+  // If set, this means that the user triggered the action in
+  // |GetPaymentInformationProto.additional_actions| that has index
+  // |additional_action_index|.
+  optional int32 additional_action_index = 4;
 }
 
 message ProcessedActionProto {
@@ -1032,6 +1036,10 @@ message GetPaymentInformationProto {
   optional bool request_terms_and_conditions = 9 [default = true];
   // Optionally allows confiriming through the given direct actions.
   optional DirectActionProto confirm_direct_action = 10;
+  // Additional actions available to the user. This can be used for instance to
+  // display a "Show terms" button that will navigate the user to the terms and
+  // conditions page when clicked.
+  repeated UserActionProto additional_actions = 11;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.
@@ -1491,6 +1499,14 @@ message DirectActionProto {
   // This is included into the definition reported to the caller without being
   // interpreted.
   repeated string optional_arguments = 3;
+}
+
+// An action that can be performed via the UI and/or via Direct Actions (in
+// Android Q+).
+message UserActionProto {
+  optional ChipProto chip = 1;
+
+  optional DirectActionProto direct_action = 2;
 }
 
 // Action to show a popup bubble on top of the bottom sheet, anchored at the

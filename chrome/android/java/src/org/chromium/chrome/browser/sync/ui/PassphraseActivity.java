@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.sync.ui;
 
 import android.accounts.Account;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 
 import org.chromium.base.library_loader.ProcessInitException;
@@ -51,7 +51,7 @@ public class PassphraseActivity extends FragmentActivity implements
             return;
         }
         assert ProfileSyncService.get() != null;
-        getFragmentManager().addOnBackStackChangedListener(this);
+        getSupportFragmentManager().addOnBackStackChangedListener(this);
     }
 
     @Override
@@ -110,13 +110,13 @@ public class PassphraseActivity extends FragmentActivity implements
 
     private void displayPassphraseDialog() {
         assert ProfileSyncService.get().isEngineInitialized();
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.addToBackStack(null);
         PassphraseDialogFragment.newInstance(null).show(ft, FRAGMENT_PASSPHRASE);
     }
 
     private void displaySpinnerDialog() {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.addToBackStack(null);
         SpinnerDialogFragment dialog = new SpinnerDialogFragment();
         dialog.show(ft, FRAGMENT_SPINNER);

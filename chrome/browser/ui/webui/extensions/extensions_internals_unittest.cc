@@ -12,11 +12,13 @@
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/version_info/channel.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
@@ -42,6 +44,10 @@ std::unique_ptr<KeyedService> BuildEventRouter(
 // Test that active and optional permissions show up correctly in the JSON
 // returned by WriteToString.
 TEST_F(ExtensionsInternalsUnitTest, WriteToStringPermissions) {
+  // The automation manifest entry is restricted to the dev channel, so we do
+  // this so the test is fine on stable/beta.
+  extensions::ScopedCurrentChannel current_channel(version_info::Channel::DEV);
+
   InitializeEmptyExtensionService();
   extensions::EventRouterFactory::GetInstance()->SetTestingFactory(
       profile(), base::BindRepeating(&BuildEventRouter));

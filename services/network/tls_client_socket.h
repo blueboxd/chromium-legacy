@@ -10,7 +10,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "net/base/address_family.h"
-#include "net/socket/ssl_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/address_family.mojom.h"
 #include "services/network/public/mojom/ip_endpoint.mojom.h"
@@ -20,6 +19,7 @@
 
 namespace net {
 class ClientSocketFactory;
+class SSLClientContext;
 class SSLClientSocket;
 class StreamSocket;
 }  // namespace net
@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TLSClientSocket
   void Connect(const net::HostPortPair& host_port_pair,
                const net::SSLConfig& ssl_config,
                std::unique_ptr<net::StreamSocket> tcp_socket,
-               const net::SSLClientSocketContext& ssl_client_socket_context,
+               net::SSLClientContext* ssl_client_context,
                net::ClientSocketFactory* socket_factory,
                mojom::TCPConnectedSocket::UpgradeToTLSCallback callback,
                bool send_ssl_info);

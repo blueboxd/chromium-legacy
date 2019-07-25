@@ -287,5 +287,36 @@ TEST_F(FlingBoosterTest, NoFlingBoostIfDifferentFlingSourceDevices) {
       << "Changed modifier keys should prevent boost.";
 }
 
+// Ensure a scroll starting after the boosting cutoff time doesn't extend the
+// timeout.
+TEST_F(FlingBoosterTest, NoFlingBoostIfScrollBeginPastCutoffTime) {
+  WebGestureEvent fling_start = CreateFlingStart(Vector2dF(0, 1000));
+  Vector2dF fling_velocity = SendFlingStart(fling_start);
+  ASSERT_EQ(Vector2dF(0, 1000), fling_velocity);
+
+  // Simulate a new fling boost delayed by more than the timeout.
+  {
+    event_time_ += kEventDelta;
+    fling_booster_.ObserveGestureEvent(CreateFlingCancel());
+    fling_booster_.ObserveGestureEvent(CreateScrollEnd());
+    event_time_ += kFlingBoostTimeoutDelay + TimeDelta::FromMilliseconds(1);
+    fling_booster_.ObserveGestureEvent(CreateScrollBegin(Vector2dF(0, 1)));
+
+    // GestureScrollUpdates in the same direction and at sufficient speed should
+    // be considered boosting. First GSU speed is ignored since we need 2 to
+    // determine velocity.
+    event_time_ += kEventDelta;
+    fling_booster_.ObserveGestureEvent(CreateScrollUpdate(Vector2dF(0, 1)));
+    event_time_ += kEventDelta;
+    fling_booster_.ObserveGestureEvent(CreateScrollUpdate(
+        DeltaFromVelocity(Vector2dF(0, kMinBoostScrollSpeed), kEventDelta)));
+  }
+
+  fling_velocity = SendFlingStart(CreateFlingStart(Vector2dF(0, 2000)));
+  EXPECT_EQ(Vector2dF(0, 2000), fling_velocity)
+      << "Scroll must not be boosted since it occured after the boost timeout "
+         "delay.";
+}
+
 }  // namespace test
 }  // namespace ui

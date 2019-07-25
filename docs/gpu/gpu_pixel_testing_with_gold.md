@@ -216,21 +216,18 @@ produced by a test run. This does not work if the data is not actually uploaded.
 In order to get around both of these issues, simply pass the `--local-run` flag
 to the tests. This will disable uploading, but otherwise go through the same
 steps as a test normally would. Each test will also print out a `file://` URL to
-the image it produces.
+the image it produces and a link to all approved images for that test in Gold.
 
 Because the image produced by the test locally is likely slightly different from
 any of the approved images in Gold, local test runs are likely to fail during
 the comparison step. In order to cut down on the amount of noise, you can also
 pass the `--no-skia-gold-failure` flag to not fail the test on a failed image
-comparison.
+comparison. When using `--no-skia-gold-failure`, you'll also need to pass the
+`--passthrough` flag in order to actually see the link output.
 
 Example usage:
-`run_gpu_integration_test.py pixel --download-refimg-from-cloud-storage
---use-skia-gold --no-skia-gold-failure --build-revision aabbccdd
---test-machine-name local`
-
-The `--download-refimg-from-cloud-storage` is a temporary hold-over from the
-legacy pixel tests, and will be removed in the near future.
+`run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run
+--passthrough --build-revision aabbccdd --test-machine-name local`
 
 ## Working On Gold
 

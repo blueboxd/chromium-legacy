@@ -81,18 +81,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   bool AllowAppCache(const GURL& manifest_url,
                      const GURL& first_party,
                      content::BrowserContext* context) override;
-  bool AllowGetCookie(const GURL& url,
-                      const GURL& first_party,
-                      const net::CookieList& cookie_list,
-                      content::ResourceContext* context,
-                      int render_process_id,
-                      int render_frame_id) override;
-  bool AllowSetCookie(const GURL& url,
-                      const GURL& first_party,
-                      const net::CanonicalCookie& cookie,
-                      content::ResourceContext* context,
-                      int render_process_id,
-                      int render_frame_id) override;
   void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
@@ -245,6 +233,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       override;
   uint32_t GetWebSocketOptions(content::RenderFrameHost* frame) override;
   bool WillCreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
       content::BrowserContext* browser_context,
       const url::Origin& origin,
       bool is_service_worker,

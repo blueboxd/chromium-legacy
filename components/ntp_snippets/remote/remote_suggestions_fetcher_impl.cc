@@ -215,7 +215,8 @@ void RemoteSuggestionsFetcherImpl::FetchSnippets(
       .SetParseJsonCallback(parse_json_callback_)
       .SetClock(clock_)
       .SetUrlLoaderFactory(url_loader_factory_)
-      .SetUserClassifier(*user_classifier_);
+      .SetUserClassifier(*user_classifier_)
+      .SetOptionalImagesCapability(true);
 
   if (identity_manager_->HasPrimaryAccount()) {
     // Signed-in: get OAuth token --> fetch suggestions.

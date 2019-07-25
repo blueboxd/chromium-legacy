@@ -74,13 +74,11 @@ enum class FinalResult { kReactivation = 0, kOff = 1, kMaxValue = kOff };
 // Logs user activity after an idle event is observed.
 // TODO(renjieliu): Add power-related activity as well.
 class UserActivityManager : public ui::UserActivityObserver,
-                            public IdleEventNotifier::Observer,
                             public PowerManagerClient::Observer,
                             public viz::mojom::VideoDetectorObserver,
                             public session_manager::SessionManagerObserver {
  public:
   UserActivityManager(UserActivityUkmLogger* ukm_logger,
-                      IdleEventNotifier* idle_event_notifier,
                       ui::UserActivityDetector* detector,
                       chromeos::PowerManagerClient* power_manager_client,
                       session_manager::SessionManager* session_manager,
@@ -108,13 +106,15 @@ class UserActivityManager : public ui::UserActivityObserver,
   void OnVideoActivityStarted() override;
   void OnVideoActivityEnded() override {}
 
-  // IdleEventNotifier::Observer overrides.
-  void OnIdleEventObserved(
-      const IdleEventNotifier::ActivityData& data) override;
+  // Called in UserActivityController::ShouldDeferScreenDim to make smart dim
+  // decision and response via |callback|.
+  void UpdateAndGetSmartDimDecision(const IdleEventNotifier::ActivityData& data,
+                                    base::OnceCallback<void(bool)> callback);
 
-  // Decides whether or not to instruct the power manager to dim the screen
-  // given a |prediction| from the Smart Dim predictor.
-  void ApplyDimDecision(UserActivityEvent::ModelPrediction prediction);
+  // Converts a Smart Dim model |prediction| into a yes/no decision about
+  // whether to defer the screen dim and provides the result via |callback|.
+  void HandleSmartDimDecision(base::OnceCallback<void(bool)> callback,
+                              UserActivityEvent::ModelPrediction prediction);
 
   // session_manager::SessionManagerObserver overrides:
   void OnSessionManagerDestroyed() override;
@@ -194,8 +194,6 @@ class UserActivityManager : public ui::UserActivityObserver,
 
   SmartDimModel* const smart_dim_model_;
 
-  ScopedObserver<IdleEventNotifier, IdleEventNotifier::Observer>
-      idle_event_observer_;
   ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver>
       user_activity_observer_;
   ScopedObserver<chromeos::PowerManagerClient,

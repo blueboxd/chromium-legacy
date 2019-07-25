@@ -39,6 +39,7 @@ public class TransparentLauncherActivity extends Activity {
 
     protected void onHostBrowserSelected(HostBrowserLauncherParams params) {
         if (params != null) {
+            WebApkUtils.grantUriPermissionToHostBrowserIfShare(getApplicationContext(), params);
             HostBrowserLauncher.launch(getApplicationContext(), params);
         }
     }

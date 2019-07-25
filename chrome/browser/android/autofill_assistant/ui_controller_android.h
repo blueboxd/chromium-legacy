@@ -71,6 +71,12 @@ class UiControllerAndroid : public ControllerObserver {
   // Returns true if the UI is attached to a delegate.
   bool IsAttached() { return ui_delegate_; }
 
+  // Have the UI react as if a close or cancel button was pressed.
+  //
+  // If action_index != -1, execute that action as close/cancel. Otherwise
+  // execute the default close or cancel action.
+  void CloseOrCancel(int action_index);
+
   // Overrides UiController:
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
@@ -184,8 +190,7 @@ class UiControllerAndroid : public ControllerObserver {
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
-  void OnCancelButtonClicked();
-  void OnCancelButtonWithActionIndexClicked(int action_index);
+
   void OnCancel(int action_index);
 
   // Updates the state of the UI to reflect the UIDelegate's state.

@@ -10,8 +10,6 @@ source_set("lib") {
     "av_products.h",
     "util_win_impl.cc",
     "util_win_impl.h",
-    "util_win_service.cc",
-    "util_win_service.h",
   ]
 
   deps = [
@@ -25,7 +23,6 @@ source_set("lib") {
 
   public_deps = [
     "//chrome/services/util_win/public/mojom",
-    "//services/service_manager/public/cpp",
     "//third_party/metrics_proto",
   ]
 }

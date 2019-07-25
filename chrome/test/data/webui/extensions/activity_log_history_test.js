@@ -386,7 +386,7 @@ suite('ExtensionsActivityLogHistoryTest', function() {
     await setupActivityLogHistory();
 
     // Pretend the activity log is still loading.
-    activityLogHistory.pageState_ = ActivityLogPageState.LOADING;
+    activityLogHistory.pageState_ = extensions.ActivityLogPageState.LOADING;
 
     Polymer.dom.flush();
 

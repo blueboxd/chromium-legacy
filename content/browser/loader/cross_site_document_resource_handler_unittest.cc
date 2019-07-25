@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Warning: This file is slated for removal. Add new tests to
+// cross_origin_read_blocking_unittests.cc instead.
+
+// TODO(lukasza): These tests have been copied to
+// cross_origin_read_blocking_unittests.cc. We should delete this file once the
+// document resource handler path has been fully removed from Chrome.
+
 #include "content/browser/loader/cross_site_document_resource_handler.h"
 
 #include <stdint.h>
@@ -1377,7 +1384,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.js",  // target_url
         ResourceType::kScript,           // resource_type
         "http://www.a.com/",             // initiator_origin
-        OriginHeader::kOmit,             // cors_request
+        OriginHeader::kInclude,          // cors_request
         "HTTP/1.1 206 OK\n"
         "Vary: Origin\n"
         "Access-Control-Allow-Origin: http://www.a.com/\n"
@@ -1397,7 +1404,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "Vary: Origin\n"
         "X-Content-Type-Options: nosniff\n"
@@ -1417,7 +1424,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "Vary: Origin\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
@@ -1437,7 +1444,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kScript,             // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "Vary: Origin\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
@@ -1458,7 +1465,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
         "text/html",                                  // response_content_type
@@ -1683,7 +1690,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.js",  // target_url
         ResourceType::kScript,           // resource_type
         "http://www.a.com/",             // initiator_origin
-        OriginHeader::kOmit,             // cors_request
+        OriginHeader::kInclude,          // cors_request
         "HTTP/1.1 206 OK\n"
         "Vary: Origin\n"
         "Content-Range: bytes 200-1000/67589\n"
@@ -1705,7 +1712,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "Accept-Ranges: bytes\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
@@ -1725,7 +1732,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "Accept-Ranges: none\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
@@ -1807,7 +1814,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.html",  // target_url
         ResourceType::kXhr,                // resource_type
         "http://www.a.com/",               // initiator_origin
-        OriginHeader::kOmit,               // cors_request
+        OriginHeader::kInclude,            // cors_request
         "HTTP/1.1 200 OK\n"
         "X-Content-Type-Options: nosniff\n"
         "Accept-Ranges: none\n"
@@ -1832,7 +1839,7 @@ const TestScenario kScenarios[] = {
         "http://www.a.com/resource.js",  // target_url
         ResourceType::kScript,           // resource_type
         "http://www.a.com/",             // initiator_origin
-        OriginHeader::kOmit,             // cors_request
+        OriginHeader::kInclude,          // cors_request
         "HTTP/1.1 206 OK\n"
         "X-Content-Type-Options: nosniff\n"
         "Accept-Ranges: bytes\n"
@@ -1854,7 +1861,7 @@ const TestScenario kScenarios[] = {
         "http://a.com/resource.html",  // target_url
         ResourceType::kXhr,            // resource_type
         "http://a.com/",               // initiator_origin
-        OriginHeader::kOmit,           // cors_request
+        OriginHeader::kInclude,        // cors_request
         "HTTP/1.1 204 NO CONTENT\n"
         "Access-Control-Allow-Origin: http://www.a.com/",  // response_headers
         "text/html",                               // response_content_type
@@ -2561,6 +2568,9 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
   const bool seems_sensitive_from_cache_heuristic =
       network::CrossOriginReadBlocking::ResponseAnalyzer::
           SeemsSensitiveFromCacheHeuristic(response->head);
+  const bool expect_nosniff =
+      network::CrossOriginReadBlocking::ResponseAnalyzer::HasNoSniff(
+          response->head);
 
   // Call OnResponseStarted.
   ASSERT_EQ(MockResourceLoader::Status::IDLE,
@@ -2668,6 +2678,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
             testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
         expected_counts[cors_protected + blocked_with_range_support] = 1;
       }
+      if (scenario.mime_type_bucket == MimeTypeBucket::kProtected &&
+          scenario.protection_decision ==
+              CrossOriginProtectionDecision::kBlock) {
+        EXPECT_THAT(histograms.GetAllSamples(
+                        cors_protected + ".BlockedWithoutSniffing.HasNoSniff"),
+                    testing::ElementsAre(base::Bucket(expect_nosniff, 1)));
+        expected_counts[cors_protected + ".BlockedWithoutSniffing.HasNoSniff"] =
+            1;
+      }
     }
     if (seems_sensitive_from_cache_heuristic) {
       expected_counts[cache_base + mime_type_bucket] = 1;
@@ -2681,6 +2700,15 @@ TEST_P(CrossSiteDocumentResourceHandlerTest, CORBProtectionLogging) {
                                      blocked_with_range_support),
             testing::ElementsAre(base::Bucket(supports_range_requests, 1)));
         expected_counts[cache_protected + blocked_with_range_support] = 1;
+      }
+      if (scenario.mime_type_bucket == MimeTypeBucket::kProtected &&
+          scenario.protection_decision ==
+              CrossOriginProtectionDecision::kBlock) {
+        EXPECT_THAT(histograms.GetAllSamples(
+                        cache_protected + ".BlockedWithoutSniffing.HasNoSniff"),
+                    testing::ElementsAre(base::Bucket(expect_nosniff, 1)));
+        expected_counts[cache_protected +
+                        ".BlockedWithoutSniffing.HasNoSniff"] = 1;
       }
     }
 

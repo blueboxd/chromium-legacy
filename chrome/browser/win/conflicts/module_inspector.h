@@ -21,13 +21,10 @@
 #include "chrome/browser/win/conflicts/module_database_observer.h"
 #include "chrome/browser/win/conflicts/module_info.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class SequencedTaskRunner;
-}
-
-namespace service_manager {
-class Connector;
 }
 
 // This class takes care of inspecting several modules (identified by their
@@ -62,8 +59,8 @@ class ModuleInspector : public ModuleDatabaseObserver {
       base::RepeatingCallback<void(const ModuleInfoKey& module_key,
                                    ModuleInspectionResult inspection_result)>;
 
-  ModuleInspector(const OnModuleInspectedCallback& on_module_inspected_callback,
-                  std::unique_ptr<service_manager::Connector> connector);
+  explicit ModuleInspector(
+      const OnModuleInspectedCallback& on_module_inspected_callback);
   ~ModuleInspector() override;
 
   // Adds the module to the queue of modules to inspect. Starts the inspection
@@ -79,19 +76,19 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // ModuleDatabaseObserver:
   void OnModuleDatabaseIdle() override;
 
-  void SetConnectorForTesting(service_manager::Connector* connector) {
-    test_connector_ = connector;
-  }
-
   static base::FilePath GetInspectionResultsCachePath();
 
   void SetModuleInspectionResultForTesting(
       const ModuleInfoKey& module_key,
       ModuleInspectionResult inspection_result);
 
+  void SetRemoteUtilWinForTesting(
+      mojo::PendingRemote<chrome::mojom::UtilWin> remote) {
+    remote_util_win_.Bind(std::move(remote));
+  }
+
  private:
-  // Ensures the |util_win_ptr_| instance is bound to the UtilWin service. This
-  // may result in an unbounded pointer if Chrome is currently shutting down.
+  // Ensures the |remote_util_win_| instance is bound to the UtilWin service.
   void EnsureUtilWinServiceBound();
 
   // Invoked when Chrome has finished starting up to initiate the inspection of
@@ -133,13 +130,10 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // inspection tasks in order to not negatively impact startup performance.
   bool is_after_startup_;
 
-  // Allows this class to connect to the UtilWin service.
-  std::unique_ptr<service_manager::Connector> connector_;
-
-  // A pointer to the UtilWin service. Only used if the WinOOPInspectModule
-  // feature is enabled. It is created when inspection is ongoing, and freed
-  // when no longer needed.
-  chrome::mojom::UtilWinPtr util_win_ptr_;
+  // A remote interface to the UtilWin service. Only used if the
+  // WinOOPInspectModule feature is enabled. It is created when inspection is
+  // ongoing, and freed when no longer needed.
+  mojo::Remote<chrome::mojom::UtilWin> remote_util_win_;
 
   // The task runner where module inspections takes place. It originally starts
   // at BEST_EFFORT priority, but is changed to USER_VISIBLE when
@@ -178,9 +172,6 @@ class ModuleInspector : public ModuleDatabaseObserver {
   // kDisableBackgroundModuleInspection feature state, but will be set
   // unconditionally to false if IncreaseInspectionPriority() is called.
   bool background_inspection_disabled_;
-
-  // Used to connect to the UtilWin service during tests.
-  service_manager::Connector* test_connector_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -22,9 +22,12 @@ import org.chromium.webapk.lib.common.identity_service.IIdentityService;
  * "WebAPK Identity service".
  */
 public class WebApkIdentityServiceClient {
-    /** Used to notify the consumer after checking whether the caller browser backs the WebAPK. */
+    /**
+     * Used to notify the consumer after checking whether the caller browser backs the WebAPK.
+     *  |browserPackageName| is the package name of the browser which backs the WebAPK.
+     */
     public interface CheckBrowserBacksWebApkCallback {
-        void onChecked(boolean doesBrowserBackWebApk);
+        void onChecked(boolean doesBrowserBackWebApk, String browserPackageName);
     }
 
     /**
@@ -106,7 +109,8 @@ public class WebApkIdentityServiceClient {
      */
     private static void onGotWebApkRuntimeHost(String browserPackageName,
             String webApkBackingBrowserPackageName, CheckBrowserBacksWebApkCallback callback) {
-        callback.onChecked(TextUtils.equals(webApkBackingBrowserPackageName, browserPackageName));
+        callback.onChecked(TextUtils.equals(webApkBackingBrowserPackageName, browserPackageName),
+                webApkBackingBrowserPackageName);
     }
 
     /**

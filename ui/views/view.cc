@@ -1692,14 +1692,11 @@ void View::UpdateParentLayer() {
     return;
 
   ui::Layer* parent_layer = nullptr;
-  gfx::Vector2d offset(GetMirroredX(), y());
 
-  if (parent_) {
-    offset +=
-        parent_->CalculateOffsetToAncestorWithLayer(&parent_layer).offset();
-  }
+  if (parent_)
+    parent_->CalculateOffsetToAncestorWithLayer(&parent_layer);
 
-  ReparentLayer(offset, parent_layer);
+  ReparentLayer(parent_layer);
 }
 
 void View::MoveLayerToParent(ui::Layer* parent_layer,
@@ -2450,12 +2447,17 @@ void View::SetLayoutManagerImpl(std::unique_ptr<LayoutManager> layout_manager) {
 void View::SetLayerBounds(const gfx::Size& size,
                           const LayerOffsetData& offset_data) {
   const gfx::Rect bounds = gfx::Rect(size) + offset_data.offset();
+  const bool bounds_changed = (bounds != layer()->GetTargetBounds());
   layer()->SetBounds(bounds);
   for (ui::Layer* layer_beneath : layers_beneath_) {
     layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) +
                              bounds.OffsetFromOrigin());
   }
   SnapLayerToPixelBoundary(offset_data);
+  if (bounds_changed) {
+    for (ViewObserver& observer : observers_)
+      observer.OnLayerTargetBoundsChanged(this);
+  }
 }
 
 // Transformations -------------------------------------------------------------
@@ -2590,11 +2592,7 @@ void View::OrphanLayers() {
     child->OrphanLayers();
 }
 
-void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
-  layer()->SetBounds(GetLocalBounds() + offset);
-  for (ui::Layer* layer_beneath : layers_beneath_)
-    layer_beneath->SetBounds(gfx::Rect(layer_beneath->size()) + offset);
-
+void View::ReparentLayer(ui::Layer* parent_layer) {
   DCHECK_NE(layer(), parent_layer);
   if (parent_layer) {
     // Adding the main layer can trigger a call to |SnapLayerToPixelBoundary()|.
@@ -2604,6 +2602,13 @@ void View::ReparentLayer(const gfx::Vector2d& offset, ui::Layer* parent_layer) {
       parent_layer->Add(layer_beneath);
     parent_layer->Add(layer());
   }
+  // Update the layer bounds; this needs to be called after this layer is added
+  // to the new parent layer since snapping to pixel boundary will be affected
+  // by the layer hierarchy.
+  LayerOffsetData offset =
+      parent_ ? parent_->CalculateOffsetToAncestorWithLayer(nullptr)
+              : LayerOffsetData(layer()->device_scale_factor());
+  SetLayerBounds(size(), offset + GetMirroredBounds().OffsetFromOrigin());
   layer()->SchedulePaint(GetLocalBounds());
   MoveLayerToParent(layer(), LayerOffsetData(layer()->device_scale_factor()));
 }

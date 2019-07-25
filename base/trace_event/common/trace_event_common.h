@@ -616,6 +616,11 @@
   INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                          \
       TRACE_EVENT_PHASE_ASYNC_BEGIN, category_group, name, id,                 \
       TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, TRACE_EVENT_FLAG_COPY)
+#define TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP_AND_FLAGS0(     \
+    category_group, name, id, timestamp, flags)                \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(          \
+      TRACE_EVENT_PHASE_ASYNC_BEGIN, category_group, name, id, \
+      TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, flags)
 
 // Records a single ASYNC_STEP_INTO event for |step| immediately. If the
 // category is not enabled, then this does nothing. The |name| and |id| must
@@ -715,6 +720,11 @@
   INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                        \
       TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id,                 \
       TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, TRACE_EVENT_FLAG_COPY)
+#define TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP_AND_FLAGS0(category_group, name, \
+                                                        id, timestamp, flags) \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                         \
+      TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id,                  \
+      TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, flags)
 
 // NESTABLE_ASYNC_* APIs are used to describe an async operation, which can
 // be nested within a NESTABLE_ASYNC event and/or have inner NESTABLE_ASYNC

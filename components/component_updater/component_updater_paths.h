@@ -32,7 +32,6 @@ enum {
   DIR_RECOVERY_BASE,               // The Recovery.
   DIR_SWIFT_SHADER,                // The SwiftShader.
   DIR_SUPERVISED_USER_WHITELISTS,  // The Supervised user whitelists.
-  DIR_ON_DEVICE_HEAD_SUGGEST,      // The On Device Head Suggest model.
   PATH_END
 };
 

@@ -16,7 +16,8 @@ cr.define('insession.password.change', function() {
    * Initialize the UI.
    */
   function initialize() {
-    authExtHost = new cr.samlPasswordChange.Authenticator('signin-frame');
+    const signinFrame = $('main-element').getSigninFrame();
+    authExtHost = new cr.samlPasswordChange.Authenticator(signinFrame);
     authExtHost.addEventListener('authCompleted', onAuthCompleted_);
     chrome.send('initialize');
   }
@@ -42,3 +43,22 @@ cr.define('insession.password.change', function() {
 
 document.addEventListener(
     'DOMContentLoaded', insession.password.change.initialize);
+
+Polymer({
+  is: 'password-change',
+  behaviors: [I18nBehavior],
+
+  /** @override */
+  attached: function() {
+    this.$.dialog.showModal();
+  },
+
+  getSigninFrame: function() {
+    return this.$['signin-frame'];
+  },
+
+  /** @private */
+  onCloseTap_: function() {
+    chrome.send('dialogClose');
+  },
+});

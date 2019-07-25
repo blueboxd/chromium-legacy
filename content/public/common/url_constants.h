@@ -26,6 +26,10 @@ CONTENT_EXPORT extern const char kViewSourceScheme[];
 CONTENT_EXPORT extern const char kExternalFileScheme[];
 #endif
 
+// The `googlechrome:` scheme is registered on several platforms, and is
+// both interesting and dangerous.
+CONTENT_EXPORT extern const char kGoogleChromeScheme[];
+
 CONTENT_EXPORT extern const char kChromeUIAccessibilityHost[];
 CONTENT_EXPORT extern const char kChromeUIAppCacheInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIBlobInternalsHost[];

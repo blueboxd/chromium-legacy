@@ -2412,18 +2412,18 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="ARC app preferred and pressed"/>
   <int value="9" label="Progressive web app pressed"/>
   <int value="10" label="Error before showing picker"/>
-  <int value="11" label="Invalid"/>
-  <int value="12" label="Mac native app pressed"/>
 </enum>
 
 <enum name="ArcIntentHandlerDestinationPlatform">
+  <obsolete>
+    Deprecated as of 9/2018 (M71).
+  </obsolete>
   <summary>
     Defines ARC intent handler platforms to continue the navigation.
   </summary>
   <int value="0" label="ARC"/>
   <int value="1" label="Chrome"/>
   <int value="2" label="Progressive web app"/>
-  <int value="3" label="Mac native app"/>
 </enum>
 
 <enum name="ArcIntentHelperOpenType">
@@ -5990,6 +5990,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Has distilled data"/>
 </enum>
 
+<enum name="BooleanHasNoSniff">
+  <int value="0" label="Does not have nosniff"/>
+  <int value="1" label="Has nosniff"/>
+</enum>
+
 <enum name="BooleanHasPath">
   <int value="0" label="No path"/>
   <int value="1" label="Has path"/>
@@ -7396,6 +7401,29 @@ histogram as enum -->
   <int value="2" label="DEV"/>
   <int value="3" label="BETA"/>
   <int value="4" label="STABLE"/>
+</enum>
+
+<enum name="ChromeColorsInfo">
+  <int value="0" label="OTHER"/>
+  <int value="1" label="PISTACHIO"/>
+  <int value="2" label="SEAFOAM"/>
+  <int value="3" label="MIST"/>
+  <int value="4" label="FLAMINGO"/>
+  <int value="5" label="WINE"/>
+  <int value="6" label="LAVENDER"/>
+  <int value="7" label="ELEPHANT"/>
+  <int value="8" label="SUNSET"/>
+  <int value="9" label="BANANA"/>
+  <int value="10" label="KIWI"/>
+  <int value="11" label="ROBINS EGG"/>
+  <int value="12" label="BLUE"/>
+  <int value="13" label="PINE"/>
+  <int value="14" label="OCEANIC"/>
+  <int value="15" label="BORDEAUX"/>
+  <int value="16" label="EGGPLANT"/>
+  <int value="17" label="NAVY"/>
+  <int value="18" label="MIDNIGHT"/>
+  <int value="19" label="RASPBERRY"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
@@ -17502,6 +17530,7 @@ Called by update_net_error_codes.py.-->
   <int value="575" label="BuiltinCertificateVerifierEnabled"/>
   <int value="576" label="CrostiniRootAccessAllowed"/>
   <int value="577" label="VmManagementCliAllowed"/>
+  <int value="578" label="CheckURLsInRealTime"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24009,6 +24038,8 @@ Called by update_net_error_codes.py.-->
   <int value="2969" label="SVGSMILDiscardElementTriggered"/>
   <int value="2970" label="LinkHeaderStylesheet"/>
   <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
+  <int value="2972" label="ScrollSnapOnViewportBreaks"/>
+  <int value="2973" label="ScrollPaddingOnViewportBreaks"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -61821,87 +61852,123 @@ Full version information for the fingerprint enum values:
 <enum name="WebUISettingsPathHashes">
   <int value="-2088016711" label="/startupPages"/>
   <int value="-2082028555" label="/androidApps/details"/>
-  <int value="-2081867874" label="/usbDevices"/>
   <int value="-2019732586" label="/printing"/>
+  <int value="-1950073287" label="/crostini/details"/>
   <int value="-1930329480" label="/signOut"/>
   <int value="-1924511305" label="/help"/>
-  <int value="-1915654604" label="/sound"/>
-  <int value="-1836863301" label="/ads"/>
   <int value="-1820397898" label="/manageAccessibility"/>
-  <int value="-1737559358" label="/flash"/>
+  <int value="-1795544471" label="/languages/inputMethods"/>
+  <int value="-1791818691" label="/content/camera"/>
+  <int value="-1732727903" label="/kerberosAccounts"/>
   <int value="-1688600161" label="/manageProfile"/>
+  <int value="-1675675685" label="/content/clipboard"/>
+  <int value="-1610814282" label="/content/popups"/>
+  <int value="-1575150353" label="/content/cookies"/>
   <int value="-1569772500" label="/manageAccessibility/tts"/>
-  <int value="-1351149930" label="/backgroundSync"/>
+  <int value="-1555301506" label="/content/notifications"/>
+  <int value="-1484929503" label="/manageAccessibility/switchAccess"/>
   <int value="-1312744606" label="/knownNetworks"/>
+  <int value="-1299234352" label="/pluginVm/details"/>
   <int value="-1297176639" label="/fonts"/>
+  <int value="-1283080115" label="/content/backgroundSync"/>
   <int value="-1279337432" label="/power"/>
   <int value="-1227595649" label="/all"/>
+  <int value="-1204780990" label="/dateTime/timeZone"/>
   <int value="-1167413307" label="/inputMethods"/>
   <int value="-1165810228" label="/searchEngines"/>
   <int value="-1119639824" label="/display"/>
+  <int value="-1068416040" label="/multidevice/features/smartLock"/>
   <int value="-1058065329" label="/languages"/>
   <int value="-1048015830" label="/"/>
-  <int value="-1024208058" label="/midiDevices"/>
-  <int value="-1021686484" label="/javascript"/>
+  <int value="-1028177121" label="/content/serialPorts"/>
+  <int value="-1007016915" label="/help/management"/>
   <int value="-1006445425" label="/importData"/>
   <int value="-988053194" label="/lockScreen"/>
   <int value="-972517930" label="/googleAssistant"/>
+  <int value="-940942794" label="/content/pdfDocuments"/>
   <int value="-916174295" label="/internet"/>
   <int value="-907780721" label="/certificates"/>
-  <int value="-843556233" label="/location"/>
-  <int value="-732448620" label="/pdfDocuments"/>
+  <int value="-898481268" label="/multidevice/features"/>
+  <int value="-842548379" label="/apps"/>
+  <int value="-809146474" label="/content/location"/>
+  <int value="-794215283" label="/content/images"/>
   <int value="-710357049" label="/bluetooth"/>
   <int value="-686834549" label="/downloads"/>
-  <int value="-536183569" label="/protectedContent"/>
+  <int value="-655433489" label="/payments"/>
+  <int value="-590688273" label="/content/sensors"/>
+  <int value="-570956986" label="/personalization"/>
   <int value="-512116630" label="/search"/>
   <int value="-482801316" label="/appearance"/>
   <int value="-469021167" label="/resetProfileSettings"/>
   <int value="-442978022" label="/networks"/>
+  <int value="-413956322" label="/content/zoomLevels"/>
   <int value="-378866134" label="/networkDetail"/>
+  <int value="-372127353" label="/content/paymentHandler"/>
+  <int value="-327540120" label="/content/javascript"/>
   <int value="-319293467" label="/multidevice"/>
   <int value="-300300075" label="/system"/>
+  <int value="-295702530" label="/smbShares"/>
+  <int value="-237154443" label="/manageAccessibility/tts/googleTtsEngine"/>
   <int value="-230959653" label="/syncSetup"/>
   <int value="-210069062" label="/content"/>
+  <int value="-189314307" label="/crostini/exportImport"/>
+  <int value="-152132510" label="/captions"/>
+  <int value="-146134264" label="/content/protectedContent"/>
+  <int value="-59332819" label="/accountManager"/>
   <int value="-44267040" label="/bluetoothDevices"/>
   <int value="-14666765" label="/accounts"/>
-  <int value="16194264" label="/popups"/>
-  <int value="48697687" label="/zoomLevels"/>
+  <int value="8030578" label="/crostini/sharedUsbDevices"/>
+  <int value="8530592" label="/syncSetup/advanced"/>
+  <int value="16287984" label="/languages/details"/>
+  <int value="60238454" label="/content/ads"/>
   <int value="223791833" label="/help/about"/>
   <int value="273561147" label="/autofill"/>
   <int value="297583680" label="/device"/>
-  <int value="306239043" label="/camera"/>
   <int value="334469894" label="/people"/>
   <int value="338873252" label="/passwords"/>
-  <int value="350639838" label="/cookies"/>
   <int value="408074355" label="/onStartup"/>
-  <int value="511430105" label="/automaticDownloads"/>
+  <int value="463749620" label="/content/flash"/>
   <int value="537677705" label="/cookies/detail"/>
+  <int value="547337090" label="/content/automaticDownloads"/>
+  <int value="614423407" label="/incompatibleApplications"/>
   <int value="618530678" label="/advanced"/>
+  <int value="682420978" label="/content/bluetoothScanning"/>
   <int value="683177973" label="/cupsPrinters"/>
   <int value="754547746" label="/help/details"/>
   <int value="856943564" label="/content/siteDetails"/>
   <int value="868952532" label="/pointer-overlay"/>
+  <int value="872535792" label="/parentalControls"/>
+  <int value="900733129" label="/content/microphone"/>
   <int value="912274271" label="/siteData"/>
   <int value="943458628" label="/triggeredResetProfileSettings"/>
+  <int value="1001064152" label="/pluginVm"/>
+  <int value="1051104480" label="/cleanup"/>
   <int value="1114615837" label="/accessibility"/>
   <int value="1147116633" label="/networkConfig"/>
-  <int value="1220946500" label="/notifications"/>
+  <int value="1161126439" label="/content/midiDevices"/>
+  <int value="1225485397" label="/content/unsandboxedPlugins"/>
+  <int value="1258785570" label="/crostini/sharedPaths"/>
+  <int value="1289631391" label="/pluginVm/sharedPaths"/>
   <int value="1300569861" label="/keyboard-overlay"/>
   <int value="1364454971" label="/androidApps"/>
-  <int value="1383875055" label="/microphone"/>
   <int value="1384165448" label="/stylus"/>
   <int value="1462185522" label="/dateTime"/>
-  <int value="1497571989" label="/images"/>
+  <int value="1463148011" label="/securityKeys"/>
   <int value="1513138656" label="/passwordsAndForms"/>
   <int value="1602314362" label="/storage"/>
   <int value="1641570017" label="/defaultBrowser"/>
+  <int value="1643599659" label="/content/usbDevices"/>
   <int value="1661964813" label="/reset"/>
   <int value="1742260422" label="/cloudPrinters"/>
   <int value="1798082697" label="/handlers"/>
+  <int value="1799541633" label="/addresses"/>
+  <int value="1810385625" label="/crostini"/>
   <int value="1853516270" label="/lockScreen/fingerprint"/>
   <int value="1935584577" label="/clearBrowserData"/>
   <int value="1956464558" label="/changePicture"/>
-  <int value="2083843665" label="/unsandboxedPlugins"/>
+  <int value="2014923527" label="/storage/externalStoragePreferences"/>
+  <int value="2030415176" label="/files"/>
+  <int value="2037005918" label="/content/sound"/>
   <int value="2127311241" label="/editDictionary"/>
   <int value="2136150421" label="/content/all"/>
   <int value="2136345292" label="/privacy"/>

@@ -87,7 +87,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/api/mime_handler.mojom.h"  // nogncheck
-#include "extensions/common/mojo/keep_alive.mojom.h"   // nogncheck
+#include "extensions/common/mojom/keep_alive.mojom.h"  // nogncheck
 #endif
 
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)

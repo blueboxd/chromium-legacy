@@ -22,6 +22,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -332,6 +333,19 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     WebUIControllerFactory::RegisterFactory(&factory_);
+
+    if (AreDefaultSiteInstancesEnabled()) {
+      // Isolate |isolated_cross_site_url()| so we can't get a default
+      // SiteInstance for it.
+      ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
+          {url::Origin::Create(isolated_cross_site_url())},
+          ChildProcessSecurityPolicy::IsolatedOriginSource::TEST,
+          browser_context());
+
+      // Reset the WebContents so the isolated origin will be honored by
+      // all BrowsingInstances used in the test.
+      SetContents(CreateTestWebContents());
+    }
   }
 
   void TearDown() override {
@@ -344,6 +358,10 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
   }
 
   void set_webui_type(int type) { factory_.set_webui_type(type); }
+
+  GURL isolated_cross_site_url() const {
+    return GURL("http://isolated-cross-site.com");
+  }
 
   // Creates a test RenderViewHost that's swapped out.
   void CreateSwappedOutRenderViewHost() {
@@ -694,12 +712,18 @@ TEST_F(RenderFrameHostManagerTest, ActiveFrameCountWhileSwappingInAndOut) {
   TestRenderFrameHost* rfh2 = main_test_rfh();
   SiteInstanceImpl* instance2 = rfh2->GetSiteInstance();
 
-  // rvh2 is on chromium.org which is different from google.com on
-  // which other tabs are.
-  EXPECT_EQ(instance2->active_frame_count(), 1U);
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
+    EXPECT_EQ(instance1->active_frame_count(), 3U);
+    EXPECT_EQ(instance1, instance2);
+  } else {
+    // rvh2 is on chromium.org which is different from google.com on
+    // which other tabs are.
+    EXPECT_EQ(instance2->active_frame_count(), 1U);
 
-  // There are two active views on google.com now.
-  EXPECT_EQ(instance1->active_frame_count(), 2U);
+    // There are two active views on google.com now.
+    EXPECT_EQ(instance1->active_frame_count(), 2U);
+  }
 
   // Navigate to the original origin (google.com).
   contents()->NavigateAndCommit(kUrl1);
@@ -1145,7 +1169,7 @@ TEST_F(RenderFrameHostManagerTest, WebUIWasCleared) {
 // See http://crbug.com/93427.
 TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to two pages.
   contents()->NavigateAndCommit(kUrl1);
@@ -1183,7 +1207,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateAfterMissingSwapOutACK) {
 // JavaScript calls (http://crbug.com/99202).
 TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
   const GURL kChromeUrl(GetWebUIURL("foo"));
 
   // Navigate to an initial URL.
@@ -1193,6 +1217,8 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
   RenderFrameDeletedObserver rfh1_deleted_observer(rfh1);
   TestRenderViewHost* rvh1 = test_rvh();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create 2 new tabs and simulate them being the opener chain for the main
   // tab.  They should be in the same SiteInstance.
@@ -1257,12 +1283,14 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
 // Test that a page can disown the opener of the WebContents.
 TEST_F(RenderFrameHostManagerTest, DisownOpener) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create a new tab and simulate having it be the opener for the main tab.
   std::unique_ptr<TestWebContents> opener1(
@@ -1308,12 +1336,14 @@ TEST_F(RenderFrameHostManagerTest, DisownSameSiteOpener) {
 // in progress.
 TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   scoped_refptr<SiteInstanceImpl> site_instance1 =
       main_test_rfh()->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create a new tab and simulate having it be the opener for the main tab.
   std::unique_ptr<TestWebContents> opener1(
@@ -1351,12 +1381,14 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerDuringNavigation) {
 // commits.
 TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   scoped_refptr<SiteInstanceImpl> site_instance1 =
       main_test_rfh()->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create a new tab and simulate having it be the opener for the main tab.
   std::unique_ptr<TestWebContents> opener1(
@@ -1387,7 +1419,7 @@ TEST_F(RenderFrameHostManagerTest, DisownOpenerAfterNavigation) {
 // those associated RenderViews crashes. http://crbug.com/258993
 TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
@@ -1635,7 +1667,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
 
 TEST_F(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   CloseWebContentsDelegate close_delegate;
   contents()->SetDelegate(&close_delegate);
@@ -1794,7 +1826,7 @@ TEST_F(RenderFrameHostManagerTest,
 TEST_F(RenderFrameHostManagerTest,
        CancelPendingProperlyDeletesOrSwaps) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
   RenderFrameHostImpl* pending_rfh = nullptr;
   base::TimeTicks now = base::TimeTicks::Now();
 
@@ -2103,12 +2135,14 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
 // chain.
 TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create 2 new tabs and construct the opener chain as follows:
   //
@@ -2166,12 +2200,14 @@ TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
 // to itself.
 TEST_F(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   const GURL kUrl1("http://www.google.com/");
-  const GURL kUrl2("http://www.chromium.org/");
+  const GURL kUrl2 = isolated_cross_site_url();
 
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   TestRenderFrameHost* rfh1 = main_test_rfh();
   scoped_refptr<SiteInstanceImpl> site_instance1 = rfh1->GetSiteInstance();
+  EXPECT_EQ(AreDefaultSiteInstancesEnabled(),
+            site_instance1->IsDefaultSiteInstance());
 
   // Create an opener tab, and simulate that its opener points to itself.
   std::unique_ptr<TestWebContents> opener(
@@ -3237,8 +3273,13 @@ TEST_F(RenderFrameHostManagerTest,
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kFooUrl);
   scoped_refptr<SiteInstanceImpl> initial_instance =
       main_test_rfh()->GetSiteInstance();
-  EXPECT_EQ(kFooUrl, initial_instance->original_url());
-  EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(initial_instance->IsDefaultSiteInstance());
+  } else {
+    EXPECT_FALSE(initial_instance->IsDefaultSiteInstance());
+    EXPECT_EQ(kFooUrl, initial_instance->original_url());
+    EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
+  }
 
   // Simulate a browser-initiated navigation to an app URL, which should swap
   // processes and create a new SiteInstance in a new BrowsingInstance.

@@ -75,9 +75,6 @@ Polymer({
     showAndroidApps_: Boolean,
 
     /** @private */
-    showAssistant_: Boolean,
-
-    /** @private */
     showCrostini_: Boolean,
 
     /** @private */
@@ -136,6 +133,8 @@ Polymer({
           loadTimeData.getString('controlledSettingNoOwner'),
       controlledSettingParent:
           loadTimeData.getString('controlledSettingParent'),
+      controlledSettingChildRestriction:
+          loadTimeData.getString('controlledSettingChildRestriction'),
     };
 
     CrOncStrings = {
@@ -165,8 +164,6 @@ Polymer({
 
     this.showApps_ = loadTimeData.getBoolean('showApps');
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
-    // Assistant can be disallowed due to flag, policy, locale, etc.
-    this.showAssistant_ = loadTimeData.getBoolean('isAssistantAllowed');
 
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');

@@ -186,7 +186,7 @@ TEST_F(PrinterCapabilitiesTest, AdditionalPapers) {
   EXPECT_EQ(600, height->GetInt());
 }
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 TEST_F(PrinterCapabilitiesTest, HasNotSecureProtocol) {
   std::string printer_name = "test_printer";
   PrinterBasicInfo basic_info;
@@ -219,6 +219,6 @@ TEST_F(PrinterCapabilitiesTest, HasNotSecureProtocol) {
   ASSERT_TRUE(pin_supported.has_value());
   ASSERT_FALSE(pin_supported.value());
 }
-#endif  // defined(CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace printing

@@ -14,7 +14,7 @@ _typemap_imports = [
   "//chromeos/services/secure_channel/public/mojom/typemaps.gni",
   "//components/arc/common/typemaps.gni",
   "//components/chromeos_camera/common/typemaps.gni",
-  "//components/sync/mojo/typemaps.gni",
+  "//components/sync/mojom/typemaps.gni",
   "//components/typemaps.gni",
   "//content/browser/typemaps.gni",
   "//content/common/typemaps.gni",

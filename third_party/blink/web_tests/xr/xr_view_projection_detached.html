@@ -11,6 +11,7 @@
 <canvas />
 
 <script>
+// This behavior is not in the webxr spec, so this is an internal-only test.
 function detachView(array_buffer_view) {
   try {
     postMessage('', '', [array_buffer_view.buffer]);

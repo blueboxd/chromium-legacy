@@ -291,7 +291,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (name.empty())
     has_name |= GetProperty(AXStringProperty::PANE_TITLE, &name);
 
-  // If it exists, set tooltip value as descritiption on node.
+  // If it exists, set tooltip value as description on node.
   std::string tooltip;
   if (GetProperty(AXStringProperty::TOOLTIP, &tooltip)) {
     out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,

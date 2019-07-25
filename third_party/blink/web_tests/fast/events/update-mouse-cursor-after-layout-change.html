@@ -38,7 +38,7 @@ function addOverlay() {
 
 window.onload = async () => {
   if (window.internals) {
-    internals.runtimeFlags.updateHoverFromLayoutChangeAtBeginFrameEnabled = true;
+    internals.runtimeFlags.updateHoverAtBeginFrameEnabled = true;
   }
 
   promise_test (async () => {

@@ -11,7 +11,7 @@
  */
 
 // #import {parseHtmlSubset} from './parse_html_subset.m.js';
-// #import {loadTimeData} from './load_time_data.m.js';
+// #import {loadTimeData, SanitizeInnerHtmlOpts} from './load_time_data.m.js';
 
 /** @polymerBehavior */
 /* #export */ const I18nBehavior = {

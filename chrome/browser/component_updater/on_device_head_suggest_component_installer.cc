@@ -9,29 +9,23 @@
 #include <string>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "components/component_updater/component_installer.h"
-#include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/omnibox/browser/on_device_model_update_listener.h"
 #include "components/omnibox/common/omnibox_features.h"
 
 namespace component_updater {
 
 namespace {
-// CRX hash. The extension id is: feejiaigafnbpeeogmhmjfmkcjplcneb.
+// CRX hash. The extension id is: obedbbhbpmojnkanicioggnmelmoomoc.
 const uint8_t kOnDeviceHeadSuggestPublicKeySHA256[32] = {
-    0x54, 0x49, 0x80, 0x86, 0x05, 0xd1, 0xf4, 0x4e, 0x6c, 0x7c, 0x95,
-    0xca, 0x29, 0xfb, 0x2d, 0x41, 0xe5, 0x12, 0x55, 0x83, 0x59, 0x58,
-    0x50, 0x41, 0x02, 0x6b, 0xb9, 0x06, 0x2c, 0xe0, 0xf8, 0x34};
-
-void UpdateModelDirectory(const base::FilePath& file_path) {
-  base::PathService::Override(DIR_ON_DEVICE_HEAD_SUGGEST, file_path);
-}
+    0xe1, 0x43, 0x11, 0x71, 0xfc, 0xe9, 0xda, 0x0d, 0x82, 0x8e, 0x66,
+    0xdc, 0x4b, 0xce, 0xec, 0xe2, 0xa3, 0xb0, 0x47, 0x00, 0x3d, 0xb8,
+    0xcf, 0x8e, 0x0f, 0x4a, 0x73, 0xa1, 0x89, 0x1f, 0x5f, 0x38};
 
 // Normalizes and returns current application locale, i.e capitalizes all
 // letters and removes all hyphens and underscores in the locale string,
@@ -87,9 +81,9 @@ void OnDeviceHeadSuggestInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-                           base::BindOnce(&UpdateModelDirectory, install_dir));
+  auto* listener = OnDeviceModelUpdateListener::GetInstance();
+  if (listener)
+    listener->OnModelUpdate(install_dir);
 }
 
 base::FilePath OnDeviceHeadSuggestInstallerPolicy::GetRelativeInstallDir()

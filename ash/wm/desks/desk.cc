@@ -166,6 +166,16 @@ void Desk::OnRootWindowAdded(aura::Window* root) {
 void Desk::OnRootWindowClosing(aura::Window* root) {
   const size_t count = roots_to_containers_observers_.erase(root);
   DCHECK(count);
+
+  // The windows on this root are about to be destroyed. We already stopped
+  // observing the container above, so we won't get a call to
+  // DeskContainerObserver::OnWindowRemoved(). Therefore, we must remove those
+  // windows manually. This happens when the last root window is destroyed (i.e.
+  // there are no more roots to move those windows to). This typically happen
+  // when shutting down.
+  const auto roots = Shell::GetAllRootWindows();
+  if (roots.size() == 1u && roots[0] == root)
+    windows_.clear();
 }
 
 void Desk::AddWindowToDesk(aura::Window* window) {

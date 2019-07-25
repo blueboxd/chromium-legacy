@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -131,6 +131,10 @@ public class TabListMediatorUnitTest {
     private TabListModel mModel;
     private TabGridViewHolder mViewHolder1;
     private TabGridViewHolder mViewHolder2;
+    private RecyclerView.ViewHolder mDummyViewHolder1;
+    private RecyclerView.ViewHolder mDummyViewHolder2;
+    private View mItemView1 = mock(View.class);
+    private View mItemView2 = mock(View.class);
 
     @Before
     public void setUp() {
@@ -143,6 +147,8 @@ public class TabListMediatorUnitTest {
         mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
         mViewHolder1 = prepareViewHolder(TAB1_ID, POSITION1);
         mViewHolder2 = prepareViewHolder(TAB2_ID, POSITION2);
+        mDummyViewHolder1 = prepareDummyViewHolder(mItemView1, POSITION1);
+        mDummyViewHolder2 = prepareDummyViewHolder(mItemView2, POSITION2);
         List<Tab> tabs1 = new ArrayList<>(Arrays.asList(mTab1));
         List<Tab> tabs2 = new ArrayList<>(Arrays.asList(mTab2));
 
@@ -300,15 +306,17 @@ public class TabListMediatorUnitTest {
         itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
         itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
         itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
-        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mViewHolder1);
+        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
 
         // Simulate the drop action.
-        itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+        itemTouchHelperCallback.onSelectedChanged(
+                mDummyViewHolder2, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).mergeTabsToGroup(eq(TAB2_ID), eq(TAB1_ID));
+        verify(mRecyclerView).removeView(mItemView2);
     }
 
     @Test
@@ -321,15 +329,17 @@ public class TabListMediatorUnitTest {
         itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
         itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
         itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
-        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mViewHolder1);
+        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
 
         // Simulate the drop action.
-        itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+        itemTouchHelperCallback.onSelectedChanged(
+                mDummyViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
+        verify(mRecyclerView, never()).removeView(any(View.class));
     }
 
     @Test
@@ -343,15 +353,17 @@ public class TabListMediatorUnitTest {
         itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(true);
         itemTouchHelperCallback.setHoveredTabIndexForTest(POSITION1);
         itemTouchHelperCallback.setSelectedTabIndexForTest(POSITION2);
-        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mViewHolder1);
+        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
 
         // Simulate the drop action.
-        itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+        itemTouchHelperCallback.onSelectedChanged(
+                mDummyViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(anyInt(), anyInt());
+        verify(mRecyclerView, never()).removeView(any(View.class));
     }
 
     @Test
@@ -366,15 +378,17 @@ public class TabListMediatorUnitTest {
         TabGridItemTouchHelperCallback itemTouchHelperCallback = getItemTouchHelperCallback();
         itemTouchHelperCallback.setActionsOnAllRelatedTabsForTest(false);
         itemTouchHelperCallback.setUnGroupTabIndexForTest(POSITION1);
-        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mViewHolder1);
+        itemTouchHelperCallback.getMovementFlags(mRecyclerView, mDummyViewHolder1);
 
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(mAdapter).when(mRecyclerView).getAdapter();
 
         // Simulate the ungroup action.
-        itemTouchHelperCallback.onSelectedChanged(mViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+        itemTouchHelperCallback.onSelectedChanged(
+                mDummyViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
 
         verify(mTabGroupModelFilter).moveTabOutOfGroup(eq(TAB1_ID));
+        verify(mRecyclerView).removeView(mItemView1);
     }
 
     @Test
@@ -927,6 +941,12 @@ public class TabListMediatorUnitTest {
         TabGridViewHolder viewHolder = mock(TabGridViewHolder.class);
         doReturn(id).when(viewHolder).getTabId();
         doReturn(position).when(viewHolder).getAdapterPosition();
+        return viewHolder;
+    }
+
+    private RecyclerView.ViewHolder prepareDummyViewHolder(View itemView, int index) {
+        RecyclerView.ViewHolder viewHolder = new RecyclerView.ViewHolder(itemView) {};
+        when(mRecyclerView.findViewHolderForAdapterPosition(index)).thenReturn(viewHolder);
         return viewHolder;
     }
 

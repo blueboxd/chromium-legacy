@@ -158,12 +158,11 @@ void FtlSignalingPlayground::AcceptIncoming(base::OnceClosure on_done) {
   std::string host_owner = cmd->HasSwitch(kSwitchNameHostOwner)
                                ? cmd->GetSwitchValueASCII(kSwitchNameHostOwner)
                                : user_email;
-  std::string host_owner_email = host_owner;
   HOST_LOG << "Using host owner: " << host_owner;
   bool is_service_account =
       test::TestOAuthTokenGetter::IsServiceAccount(user_email);
   auto factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithPin(
-      is_service_account, host_owner, host_owner_email, cert, key_pair,
+      is_service_account, host_owner, cert, key_pair,
       /* domain_list */ {}, pin_hash, /* pairing_registry */ {});
   session_manager_->set_authenticator_factory(std::move(factory));
   HOST_LOG << "Waiting for incoming session...";

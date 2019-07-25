@@ -1,11 +1,15 @@
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import glob
+
+import json
+import logging
 import os
 import re
+import subprocess
 from subprocess import CalledProcessError
 import sys
+import tempfile
 
 from gpu_tests import gpu_integration_test
 from gpu_tests import cloud_storage_integration_test_base
@@ -13,7 +17,6 @@ from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
 from gpu_tests import color_profile_manager
 
-from py_utils import cloud_storage
 from telemetry.util import image_util
 
 gpu_relative_path = "content/test/data/gpu/"
@@ -51,6 +54,24 @@ test_harness_script = r"""
 
   window.domAutomationController = domAutomationController;
 """
+
+goldctl_bin = os.path.join(
+    path_util.GetChromiumSrcDir(), 'tools', 'skia_goldctl', 'goldctl')
+if sys.platform == 'win32':
+  goldctl_bin += '.exe'
+
+SKIA_GOLD_INSTANCE = 'chrome-gpu'
+
+
+class _ReferenceImageParameters(object):
+  def __init__(self):
+    # Parameters for cloud storage reference images.
+    self.vendor_id = None
+    self.device_id = None
+    self.vendor_string = None
+    self.device_string = None
+    self.msaa = False
+    self.model_name = None
 
 
 class PixelIntegrationTest(
@@ -98,10 +119,29 @@ class PixelIntegrationTest(
       '(only used for local testing without a cloud storage account)',
       default=default_reference_image_dir)
     parser.add_option(
-      '--use-skia-gold',
-      dest='use_skia_gold',
+      '--review-patch-issue',
+      help='For Skia Gold integration. Gerrit issue ID.',
+      default='')
+    parser.add_option(
+      '--review-patch-set',
+      help='For Skia Gold integration. Gerrit patch set number.',
+      default='')
+    parser.add_option(
+      '--buildbucket-build-id',
+      help='For Skia Gold integration. Buildbucket build ID.',
+      default='')
+    parser.add_option(
+      '--no-skia-gold-failure',
       action='store_true', default=False,
-      help='Use the Skia team\'s Gold tool to handle image comparisons')
+      help='For Skia Gold integration. Always report that the test passed even '
+           'if the Skia Gold image comparison reported a failure, but '
+           'otherwise perform the same steps as usual.')
+    parser.add_option(
+      '--local-run',
+      action='store_true', default=False,
+      help='Runs the tests in a manner more suitable for local testing. '
+           'Specifically, runs goldctl in dryrun mode (no upload) and outputs '
+           'local links to generated images. Implies --no-luci-auth.')
     parser.add_option(
       '--no-luci-auth',
       action='store_true', default=False,
@@ -127,6 +167,72 @@ class PixelIntegrationTest(
     for p in pages:
       yield(p.name, gpu_relative_path + p.url, (p))
 
+  @classmethod
+  def ResetGpuInfo(cls):
+    cls._reference_image_parameters = None
+
+  @classmethod
+  def GetReferenceImageParameters(cls, tab, page):
+    if not cls._reference_image_parameters:
+      cls._ComputeGpuInfo(tab, page)
+    return cls._reference_image_parameters
+
+  @classmethod
+  def _ComputeGpuInfo(cls, tab, page):
+    if cls._reference_image_parameters:
+      return
+    browser = cls.browser
+    system_info = browser.GetSystemInfo()
+    if not system_info:
+      raise Exception('System info must be supported by the browser')
+    if not system_info.gpu:
+      raise Exception('GPU information was absent')
+    device = system_info.gpu.devices[0]
+    cls._reference_image_parameters = _ReferenceImageParameters()
+    params = cls._reference_image_parameters
+    if device.vendor_id and device.device_id:
+      params.vendor_id = device.vendor_id
+      params.device_id = device.device_id
+    elif device.vendor_string and device.device_string:
+      params.vendor_string = device.vendor_string
+      params.device_string = device.device_string
+    elif page.gpu_process_disabled:
+      # Match the vendor and device IDs that the browser advertises
+      # when the software renderer is active.
+      params.vendor_id = 65535
+      params.device_id = 65535
+    else:
+      raise Exception('GPU device information was incomplete')
+    # TODO(senorblanco): This should probably be checking
+    # for the presence of the extensions in system_info.gpu_aux_attributes
+    # in order to check for MSAA, rather than sniffing the blacklist.
+    params.msaa = not (
+        ('disable_chromium_framebuffer_multisample' in
+          system_info.gpu.driver_bug_workarounds) or
+        ('disable_multisample_render_to_texture' in
+          system_info.gpu.driver_bug_workarounds))
+    params.model_name = system_info.model_name
+
+  # Not used consistently, but potentially useful for debugging issues on the
+  # bots, so kept around for future use.
+  @classmethod
+  def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
+    machine_name = re.sub(r'\W+', '_',
+                          cls.GetParsedCommandLineOptions().test_machine_name)
+    base_bucket = '%s/gold_failures' % (cls._error_image_cloud_storage_bucket)
+    image_name_with_revision_and_machine = '%s_%s_%s.png' % (
+      image_name, machine_name,
+      cls.GetParsedCommandLineOptions().build_revision)
+    cls._UploadBitmapToCloudStorage(
+      base_bucket, image_name_with_revision_and_machine, screenshot,
+      public=True)
+
+  def ToHex(self, num):
+    return hex(int(num))
+
+  def ToHexOrNone(self, num):
+    return 'None' if num == None else self.ToHex(num)
+
   def RunActualGpuTest(self, test_path, *args):
     page = args[0]
     # Some pixel tests require non-standard browser arguments. Need to
@@ -144,80 +250,7 @@ class PixelIntegrationTest(
       'domAutomationController._readyForActions')
     if do_page_action:
       self._DoPageAction(tab, page)
-    if self.GetParsedCommandLineOptions().use_skia_gold:
-      self.RunSkiaGoldBasedPixelTest(test_path, do_page_action, args)
-    else:
-      self.RunLegacyPixelTest(test_path, do_page_action, args)
-
-  def RunLegacyPixelTest(self, test_path, do_page_action, args):
-    page = args[0]
-    tab = self.tab
-    try:
-      if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
-        self.fail('page indicated test failure')
-      if not tab.screenshot_supported:
-        self.fail('Browser does not support screenshot capture')
-      screenshot = tab.Screenshot(5)
-      if screenshot is None:
-        self.fail('Could not capture screenshot')
-      dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
-      if page.test_rect:
-        screenshot = image_util.Crop(
-            screenshot, int(page.test_rect[0] * dpr),
-            int(page.test_rect[1] * dpr), int(page.test_rect[2] * dpr),
-            int(page.test_rect[3] * dpr))
-      if page.expected_colors:
-        # Use expected colors instead of ref images for validation.
-        self._ValidateScreenshotSamples(
-            tab, page.name, screenshot, page.expected_colors, page.tolerance,
-            dpr)
-        return
-      image_name = self._UrlToImageName(page.name)
-      if self.GetParsedCommandLineOptions().upload_refimg_to_cloud_storage:
-        if self._ConditionallyUploadToCloudStorage(image_name, page, tab,
-                                                   screenshot):
-          # This is the new reference image; there's nothing to compare against.
-          ref_png = screenshot
-        else:
-          # There was a preexisting reference image, so we might as well
-          # compare against it.
-          ref_png = self._DownloadFromCloudStorage(image_name, page, tab)
-      elif self.GetParsedCommandLineOptions().\
-          download_refimg_from_cloud_storage:
-        # This bot doesn't have the ability to properly generate a
-        # reference image, so download it from cloud storage.
-        try:
-          ref_png = self._DownloadFromCloudStorage(image_name, page, tab)
-        except cloud_storage.NotFoundError:
-          # There is no reference image yet in cloud storage. This
-          # happens when the revision of the test is incremented or when
-          # a new test is added, because the trybots are not allowed to
-          # produce reference images, only the bots on the main
-          # waterfalls. Report this as a failure so the developer has to
-          # take action by explicitly suppressing the failure and
-          # removing the suppression once the reference images have been
-          # generated. Otherwise silent failures could happen for long
-          # periods of time.
-          self.fail('Could not find image %s in cloud storage' % image_name)
-      else:
-        # Legacy path using on-disk results.
-        ref_png = self._GetReferenceImage(
-          self.GetParsedCommandLineOptions().reference_dir,
-          image_name, page.revision, screenshot)
-
-      # Test new snapshot against existing reference image
-      if not image_util.AreEqual(ref_png, screenshot, tolerance=page.tolerance):
-        if self.GetParsedCommandLineOptions().test_machine_name:
-          self._UploadErrorImagesToCloudStorage(image_name, screenshot, ref_png)
-        else:
-          self._WriteErrorImages(
-            self.GetParsedCommandLineOptions().generated_dir, image_name,
-            screenshot, ref_png)
-        self.fail('Reference image did not match captured screen')
-    finally:
-      if do_page_action:
-        # Assume that page actions might have killed the GPU process.
-        self._RestartBrowser('Must restart after page actions')
+    self.RunSkiaGoldBasedPixelTest(test_path, do_page_action, args)
 
   def RunSkiaGoldBasedPixelTest(self, test_path, do_page_action, args):
     page = args[0]
@@ -242,21 +275,16 @@ class PixelIntegrationTest(
         self.GetParsedCommandLineOptions().build_revision,
       ]
       parsed_options = self.GetParsedCommandLineOptions()
-      # Trybots conceptually download their reference images from
-      # cloud storage; they don't produce them. (TODO(kbr): remove
-      # this once fully switched over to Gold.)
-      if parsed_options.download_refimg_from_cloud_storage:
-        # Tryjobs in Gold need:
-        #   CL issue number (in Gerrit)
-        #   Patchset number
-        #   Buildbucket ID
+      # If --review-patch-issue is passed, then we assume we're running on a
+      # trybot.
+      if parsed_options.review_patch_issue:
         build_id_args += [
           '--issue',
-          self.GetParsedCommandLineOptions().review_patch_issue,
+          parsed_options.review_patch_issue,
           '--patchset',
-          self.GetParsedCommandLineOptions().review_patch_set,
+          parsed_options.review_patch_set,
           '--jobid',
-          self.GetParsedCommandLineOptions().buildbucket_build_id
+          parsed_options.buildbucket_build_id
         ]
       if page.expected_colors:
         # Use expected colors instead of ref images for validation.
@@ -265,35 +293,111 @@ class PixelIntegrationTest(
             dpr, build_id_args)
         return
       image_name = self._UrlToImageName(page.name)
-      is_local_run = not (parsed_options.upload_refimg_to_cloud_storage or
-                          parsed_options.download_refimg_from_cloud_storage)
-      if is_local_run:
-        # Legacy path using on-disk results.
-        ref_png = self._GetReferenceImage(
-          self.GetParsedCommandLineOptions().reference_dir,
-          image_name, page.revision, screenshot)
-        # Test new snapshot against existing reference image
-        if not image_util.AreEqual(ref_png, screenshot,
-                                   tolerance=page.tolerance):
-          if parsed_options.test_machine_name:
-            self._UploadErrorImagesToCloudStorage(image_name, screenshot,
-                                                  ref_png)
-          else:
-            self._WriteErrorImages(
-              parsed_options.generated_dir, image_name, screenshot, ref_png)
-        self.fail('Reference image did not match captured screen')
-      else:
-        try:
-          self._UploadTestResultToSkiaGold(
-            image_name, screenshot,
-            tab, page,
-            build_id_args=build_id_args)
-        except CalledProcessError:
-          self.fail('Gold said the test failed, so fail.')
+      self._UploadTestResultToSkiaGold(
+        image_name, screenshot,
+        tab, page,
+        build_id_args=build_id_args)
     finally:
       if do_page_action:
         # Assume that page actions might have killed the GPU process.
         self._RestartBrowser('Must restart after page actions')
+
+  def _UploadTestResultToSkiaGold(self, image_name, screenshot,
+                                  tab, page, build_id_args=None):
+    if build_id_args is None:
+      raise Exception('Requires build args to be specified, including --commit')
+    if self._skia_gold_temp_dir is None:
+      # TODO(kbr): this depends on Swarming to clean up the temporary
+      # directory to avoid filling up the local disk.
+      self._skia_gold_temp_dir = tempfile.mkdtemp()
+    # Write screenshot to PNG file on local disk.
+    png_temp_file = tempfile.NamedTemporaryFile(suffix='.png').name
+    image_util.WritePngFile(screenshot, png_temp_file)
+    ref_img_params = self.GetReferenceImageParameters(tab, page)
+    # All values need to be strings, otherwise goldctl fails.
+    gpu_keys = {
+      'vendor_id': self.ToHexOrNone(ref_img_params.vendor_id),
+      'device_id': self.ToHexOrNone(ref_img_params.device_id),
+      'vendor_string': str(ref_img_params.vendor_string),
+      'device_string': str(ref_img_params.device_string),
+      'msaa': str(ref_img_params.msaa),
+      'model_name': str(ref_img_params.model_name),
+    }
+    mode = ['--passfail']
+    dryrun = []
+    luci = []
+    if self.GetParsedCommandLineOptions().local_run:
+      dryrun = ['--dryrun']
+    elif not self.GetParsedCommandLineOptions().no_luci_auth:
+      luci = ['--luci']
+    json_temp_file = tempfile.NamedTemporaryFile(suffix='.json').name
+    failure_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+    with open(json_temp_file, 'w+') as f:
+      json.dump(gpu_keys, f)
+    try:
+      subprocess.check_output([goldctl_bin, 'auth',
+                               '--work-dir', self._skia_gold_temp_dir]
+                               + luci,
+            stderr=subprocess.STDOUT)
+      cmd = ([goldctl_bin, 'imgtest', 'add'] + mode +
+                            ['--test-name', image_name,
+                             '--instance', SKIA_GOLD_INSTANCE,
+                             '--keys-file', json_temp_file,
+                             '--png-file', png_temp_file,
+                             '--work-dir', self._skia_gold_temp_dir,
+                             '--failure-file', failure_file] +
+                            build_id_args + dryrun)
+      subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    except CalledProcessError as e:
+      try:
+        # The triage link for the image is output to the failure file, so report
+        # that if it's available so it shows up in Milo. If for whatever reason
+        # the file is not present or malformed, the triage link will still be
+        # present in the stdout of the goldctl command.
+        with open(failure_file, 'r') as ff:
+          self.artifacts.CreateLink('gold_triage_link', ff.read())
+      except Exception:
+        logging.error('Failed to read contents of goldctl failure file')
+      logging.error('goldctl failed with output: %s', e.output)
+      if self.GetParsedCommandLineOptions().local_run:
+        logging.error(
+            'Image produced by %s: file://%s', image_name, png_temp_file)
+        gold_images = ('https://%s-gold.skia.org/search?'
+                      'match=name&metric=combined&pos=true&'
+                      'query=name%%3D%s&unt=false' % (
+                          SKIA_GOLD_INSTANCE, image_name))
+        logging.error(
+            'Approved images for %s in Gold: %s', image_name, gold_images)
+      if not self.GetParsedCommandLineOptions().no_skia_gold_failure:
+        raise Exception('goldctl command failed')
+
+  def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
+                                             expectations, tolerance,
+                                             device_pixel_ratio,
+                                             build_id_args):
+    """Samples the given screenshot and verifies pixel color values.
+       The sample locations and expected color values are given in expectations.
+       In case any of the samples do not match the expected color, it raises
+       a Failure and dumps the screenshot locally or cloud storage depending on
+       what machine the test is being run."""
+    url = page.name
+    try:
+      self._CompareScreenshotSamples(
+        tab, screenshot, expectations, tolerance, device_pixel_ratio,
+        self.GetParsedCommandLineOptions().test_machine_name)
+    except Exception:
+      # An exception raised from self.fail() indicates a failure.
+      image_name = self._UrlToImageName(url)
+      if self.GetParsedCommandLineOptions().test_machine_name:
+        self._UploadTestResultToSkiaGold(
+          image_name, screenshot,
+          tab, page,
+          build_id_args=build_id_args)
+      else:
+        self._WriteErrorImages(
+          self.GetParsedCommandLineOptions().generated_dir, image_name,
+          screenshot, None)
+      raise
 
   def _DoPageAction(self, tab, page):
     getattr(self, '_' + page.optional_action)(tab, page)
@@ -301,42 +405,6 @@ class PixelIntegrationTest(
     # report completion.
     tab.action_runner.WaitForJavaScriptCondition(
       'domAutomationController._finished', timeout=300)
-
-  def _DeleteOldReferenceImages(self, ref_image_path, cur_revision):
-    if not cur_revision:
-      return
-
-    old_revisions = glob.glob(ref_image_path + "_*.png")
-    for rev_path in old_revisions:
-      m = re.match(r'^.*_(\d+)\.png$', rev_path)
-      if m and int(m.group(1)) < cur_revision:
-        print 'Found deprecated reference image. Deleting rev ' + m.group(1)
-        os.remove(rev_path)
-
-  def _GetReferenceImage(self, img_dir, img_name, cur_revision, screenshot):
-    if not cur_revision:
-      cur_revision = 0
-
-    image_path = os.path.join(img_dir, img_name)
-
-    self._DeleteOldReferenceImages(image_path, cur_revision)
-
-    image_path = image_path + '_v' + str(cur_revision) + '.png'
-
-    try:
-      ref_png = image_util.FromPngFile(image_path)
-    # This can raise a couple of exceptions including IOError and ValueError.
-    except Exception:
-      ref_png = None
-
-    if ref_png is not None:
-      return ref_png
-
-    print ('Reference image not found. Writing tab contents as reference to: ' +
-           image_path)
-
-    self._WriteImage(image_path, screenshot)
-    return screenshot
 
   #
   # Optional actions pages can take.

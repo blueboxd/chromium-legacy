@@ -6,6 +6,7 @@
 
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -50,7 +51,8 @@ static float GetMoveDistance(const FloatRect& old_rect,
   return std::max(fabs(location_delta.Width()), fabs(location_delta.Height()));
 }
 
-static float RegionGranularityScale(const IntRect& viewport) {
+float LayoutShiftTracker::RegionGranularityScale(
+    const IntRect& viewport) const {
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     return kSweepLineRegionGranularity;
 
@@ -121,7 +123,7 @@ LayoutShiftTracker::LayoutShiftTracker(LocalFrameView* frame_view)
       observed_input_or_scroll_(false),
       most_recent_input_timestamp_initialized_(false) {}
 
-void LayoutShiftTracker::AccumulateJank(
+void LayoutShiftTracker::ObjectShifted(
     const LayoutObject& source,
     const PropertyTreeState& property_tree_state,
     FloatRect old_rect,
@@ -144,7 +146,7 @@ void LayoutShiftTracker::AccumulateJank(
 
   // Ignore layout objects that move (in the coordinate space of the paint
   // invalidation container) on scroll.
-  // TODO(skobes): Find a way to detect when these objects jank.
+  // TODO(skobes): Find a way to detect when these objects shift.
   if (source.IsFixedPositioned() || source.IsStickyPositioned())
     return;
 
@@ -202,7 +204,7 @@ void LayoutShiftTracker::AccumulateJank(
 
 #if DCHECK_IS_ON()
   LocalFrame& frame = frame_view_->GetFrame();
-  if (!HadRecentInput() && ShouldLog(frame)) {
+  if (ShouldLog(frame)) {
     DVLOG(2) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", "
              << source.DebugName() << " moved from " << old_rect.ToString()
@@ -232,8 +234,8 @@ void LayoutShiftTracker::NotifyObjectPrePaint(
   if (!IsActive())
     return;
 
-  AccumulateJank(object, property_tree_state, FloatRect(old_visual_rect),
-                 FloatRect(new_visual_rect));
+  ObjectShifted(object, property_tree_state, FloatRect(old_visual_rect),
+                FloatRect(new_visual_rect));
 }
 
 void LayoutShiftTracker::NotifyCompositedLayerMoved(
@@ -247,8 +249,8 @@ void LayoutShiftTracker::NotifyCompositedLayerMoved(
   if (!layout_object.FirstFragment().HasLocalBorderBoxProperties())
     return;
 
-  AccumulateJank(layout_object, PropertyTreeStateFor(layout_object),
-                 old_layer_rect, new_layer_rect);
+  ObjectShifted(layout_object, PropertyTreeStateFor(layout_object),
+                old_layer_rect, new_layer_rect);
 }
 
 double LayoutShiftTracker::SubframeWeightingFactor() const {
@@ -296,8 +298,8 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       double(scaled_viewport.Width()) * double(scaled_viewport.Height());
   uint64_t region_area =
       use_sweep_line ? region_experimental_.Area() : region_.Area();
-  double jank_fraction = region_area / viewport_area;
-  DCHECK_GT(jank_fraction, 0);
+  double impact_fraction = region_area / viewport_area;
+  DCHECK_GT(impact_fraction, 0);
 
   DCHECK_GT(frame_max_distance_, 0.0);
   double viewport_max_dimension = std::max(viewport.Width(), viewport.Height());
@@ -305,37 +307,54 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
       (frame_max_distance_ < viewport_max_dimension)
           ? double(frame_max_distance_) / viewport_max_dimension
           : 1.0;
-  double jank_fraction_with_move_distance =
-      jank_fraction * move_distance_factor;
-
-  if (!HadRecentInput())
-    score_ += jank_fraction_with_move_distance;
+  double score_delta = impact_fraction * move_distance_factor;
+  double weighted_score_delta = score_delta * SubframeWeightingFactor();
 
   overall_max_distance_ = std::max(overall_max_distance_, frame_max_distance_);
 
-  LocalFrame& frame = frame_view_->GetFrame();
 #if DCHECK_IS_ON()
-  if (!HadRecentInput() && ShouldLog(frame)) {
+  LocalFrame& frame = frame_view_->GetFrame();
+  if (ShouldLog(frame)) {
     DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
              << frame.GetDocument()->Url().GetString() << ", viewport was "
-             << (jank_fraction * 100) << "% janked with distance fraction "
-             << move_distance_factor << "; raising score to " << score_;
+             << (impact_fraction * 100) << "% impacted with distance fraction "
+             << move_distance_factor;
   }
 #endif
 
-  TRACE_EVENT_INSTANT2(
-      "loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD, "data",
-      PerFrameTraceData(jank_fraction, jank_fraction_with_move_distance,
-                        granularity_scale, HadRecentInput()),
-      "frame", ToTraceValue(&frame));
+  if (pointerdown_pending_data_.saw_pointerdown) {
+    pointerdown_pending_data_.score_delta += score_delta;
+    pointerdown_pending_data_.weighted_score_delta += weighted_score_delta;
+  } else {
+    ReportShift(score_delta, weighted_score_delta);
+  }
 
-  if (!HadRecentInput()) {
-    double weighted_jank_fraction_with_move_distance =
-        jank_fraction_with_move_distance * SubframeWeightingFactor();
-    if (weighted_jank_fraction_with_move_distance > 0) {
-      weighted_score_ += weighted_jank_fraction_with_move_distance;
-      frame.Client()->DidObserveLayoutShift(
-          weighted_jank_fraction_with_move_distance, observed_input_or_scroll_);
+  if (use_sweep_line) {
+    if (!region_experimental_.IsEmpty()) {
+      SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
+    }
+    region_experimental_.Reset();
+  } else {
+    if (!region_.IsEmpty()) {
+      SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
+    }
+    region_ = Region();
+  }
+  frame_max_distance_ = 0.0;
+  frame_scroll_delta_ = ScrollOffset();
+}
+
+void LayoutShiftTracker::ReportShift(double score_delta,
+                                     double weighted_score_delta) {
+  LocalFrame& frame = frame_view_->GetFrame();
+  bool had_recent_input = timer_.IsActive();
+
+  if (!had_recent_input) {
+    score_ += score_delta;
+    if (weighted_score_delta > 0) {
+      weighted_score_ += weighted_score_delta;
+      frame.Client()->DidObserveLayoutShift(weighted_score_delta,
+                                            observed_input_or_scroll_);
     }
   }
 
@@ -345,46 +364,65 @@ void LayoutShiftTracker::NotifyPrePaintFinished() {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
     if (performance) {
-      performance->AddLayoutJankFraction(jank_fraction_with_move_distance,
-                                         HadRecentInput(),
+      performance->AddLayoutJankFraction(score_delta, had_recent_input,
                                          most_recent_input_timestamp_);
     }
   }
 
-  if (use_sweep_line) {
-    if (!region_experimental_.IsEmpty() && !HadRecentInput()) {
-      SetLayoutShiftRects(region_experimental_.GetRects(), 1, true);
-    }
-    region_experimental_.Reset();
-  } else {
-    if (!region_.IsEmpty() && !HadRecentInput()) {
-      SetLayoutShiftRects(region_.Rects(), granularity_scale, false);
-    }
-    region_ = Region();
+  TRACE_EVENT_INSTANT2("loading", "LayoutShift", TRACE_EVENT_SCOPE_THREAD,
+                       "data", PerFrameTraceData(score_delta, had_recent_input),
+                       "frame", ToTraceValue(&frame));
+
+#if DCHECK_IS_ON()
+  if (ShouldLog(frame)) {
+    DVLOG(1) << "in " << (frame.IsMainFrame() ? "" : "subframe ")
+             << frame.GetDocument()->Url().GetString() << ", layout shift of "
+             << score_delta
+             << (had_recent_input ? " excluded by recent input" : " reported")
+             << "; cumulative score is " << score_;
   }
-  frame_max_distance_ = 0.0;
-  frame_scroll_delta_ = ScrollOffset();
+#endif
 }
 
 void LayoutShiftTracker::NotifyInput(const WebInputEvent& event) {
-  bool event_is_meaningful =
-      event.GetType() == WebInputEvent::kMouseDown ||
-      event.GetType() == WebInputEvent::kKeyDown ||
-      event.GetType() == WebInputEvent::kRawKeyDown ||
+  const WebInputEvent::Type type = event.GetType();
+  const bool saw_pointerdown = pointerdown_pending_data_.saw_pointerdown;
+  const bool pointerdown_became_tap =
+      saw_pointerdown && type == WebInputEvent::kPointerUp;
+  const bool event_type_stops_pointerdown_buffering =
+      type == WebInputEvent::kPointerUp ||
+      type == WebInputEvent::kPointerCausedUaAction ||
+      type == WebInputEvent::kPointerCancel;
+
+  // Only non-hovering pointerdown requires buffering.
+  const bool is_hovering_pointerdown =
+      type == WebInputEvent::kPointerDown &&
+      static_cast<const WebPointerEvent&>(event).hovering;
+
+  const bool should_trigger_shift_exclusion =
+      type == WebInputEvent::kMouseDown || type == WebInputEvent::kKeyDown ||
+      type == WebInputEvent::kRawKeyDown ||
       // We need to explicitly include tap, as if there are no listeners, we
       // won't receive the pointer events.
-      event.GetType() == WebInputEvent::kGestureTap ||
-      // Ignore kPointerDown, since it might be a scroll.
-      event.GetType() == WebInputEvent::kPointerUp;
+      type == WebInputEvent::kGestureTap || is_hovering_pointerdown ||
+      pointerdown_became_tap;
 
-  if (!event_is_meaningful)
-    return;
+  if (should_trigger_shift_exclusion) {
+    observed_input_or_scroll_ = true;
 
-  observed_input_or_scroll_ = true;
+    // This cancels any previously scheduled task from the same timer.
+    timer_.StartOneShot(kTimerDelay, FROM_HERE);
+    UpdateInputTimestamp(event.TimeStamp());
+  }
 
-  // This cancels any previously scheduled task from the same timer.
-  timer_.StartOneShot(kTimerDelay, FROM_HERE);
-  UpdateInputTimestamp(event.TimeStamp());
+  if (saw_pointerdown && event_type_stops_pointerdown_buffering) {
+    double score_delta = pointerdown_pending_data_.score_delta;
+    if (score_delta > 0)
+      ReportShift(score_delta, pointerdown_pending_data_.weighted_score_delta);
+    pointerdown_pending_data_ = PointerdownPendingData();
+  }
+  if (type == WebInputEvent::kPointerDown && !is_hovering_pointerdown)
+    pointerdown_pending_data_.saw_pointerdown = true;
 }
 
 void LayoutShiftTracker::UpdateInputTimestamp(base::TimeTicks timestamp) {
@@ -412,10 +450,6 @@ void LayoutShiftTracker::NotifyViewportSizeChanged() {
   UpdateInputTimestamp(base::TimeTicks::Now());
 }
 
-bool LayoutShiftTracker::HadRecentInput() {
-  return timer_.IsActive();
-}
-
 bool LayoutShiftTracker::IsActive() {
   // This eliminates noise from the private Page object created by
   // SVGImage::DataChanged.
@@ -425,21 +459,22 @@ bool LayoutShiftTracker::IsActive() {
 }
 
 std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
-    double jank_fraction,
-    double jank_fraction_with_move_distance,
-    double granularity_scale,
+    double score_delta,
     bool input_detected) const {
   auto value = std::make_unique<TracedValue>();
-  value->SetDouble("score", jank_fraction);
-  value->SetDouble("score_with_move_distance",
-                   jank_fraction_with_move_distance);
+  value->SetDouble("score", score_delta);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("overall_max_distance", overall_max_distance_);
   value->SetDouble("frame_max_distance", frame_max_distance_);
+
+  float granularity_scale = RegionGranularityScale(
+      IntRect(IntPoint(),
+              frame_view_->GetScrollableArea()->VisibleContentRect().Size()));
   if (RuntimeEnabledFeatures::JankTrackingSweepLineEnabled())
     RegionToTracedValue(region_experimental_, granularity_scale, *value);
   else
     RegionToTracedValue(region_, granularity_scale, *value);
+
   value->SetBoolean("is_main_frame", frame_view_->GetFrame().IsMainFrame());
   value->SetBoolean("had_recent_input", input_detected);
   return value;

@@ -5,35 +5,61 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_READER_H_
 
-#include "services/device/public/mojom/nfc.mojom-blink.h"
+#include "services/device/public/mojom/nfc.mojom-blink-forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class MODULES_EXPORT NFCReader : public GarbageCollectedMixin {
+class ExecutionContext;
+class NFCProxy;
+class NFCReaderOptions;
+
+class MODULES_EXPORT NFCReader : public EventTargetWithInlineData,
+                                 public ActiveScriptWrappable<NFCReader>,
+                                 public ContextLifecycleObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(NFCReader);
+  DEFINE_WRAPPERTYPEINFO();
+
  public:
-  explicit NFCReader(device::mojom::blink::NFCReaderOptionsPtr options);
-  virtual ~NFCReader() {}
+  static NFCReader* Create(ExecutionContext*, NFCReaderOptions*);
+
+  NFCReader(ExecutionContext*, NFCReaderOptions*);
+  ~NFCReader() override;
+
+  // EventTarget overrides.
+  const AtomicString& InterfaceName() const override;
+  ExecutionContext* GetExecutionContext() const override;
+
+  // ActiveScriptWrappable overrides.
+  bool HasPendingActivity() const override;
+
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading)
+  void start();
+  void stop();
 
   void Trace(blink::Visitor*) override;
 
-  // Get reader options.
-  const device::mojom::blink::NFCReaderOptions& options() const {
-    return *options_;
-  }
+  const NFCReaderOptions* options() const { return options_; }
 
-  // An reading event with NDEF message.
-  virtual void OnMessage(const device::mojom::blink::NDEFMessage& message);
-
-  // An reading error has occurred.
-  virtual void OnReadingError(const device::mojom::blink::NFCError& error);
-
-  // Called by NFCProxy for notification about connection error.
-  void OnMojoConnectionError();
+  // Called by NFCProxy for dispatching events.
+  virtual void OnReading(const String& serial_number,
+                         const device::mojom::blink::NDEFMessage& message);
+  virtual void OnError(device::mojom::blink::NFCErrorType error);
 
  private:
-  device::mojom::blink::NFCReaderOptionsPtr options_;
+  // ContextLifecycleObserver overrides.
+  void ContextDestroyed(ExecutionContext*) override;
+
+  NFCProxy* GetNfcProxy() const;
+
+  bool CheckSecurity();
+
+  const Member<NFCReaderOptions> options_;
 };
 
 }  // namespace blink

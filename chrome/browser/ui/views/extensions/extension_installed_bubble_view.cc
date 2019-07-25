@@ -23,7 +23,10 @@
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -74,13 +77,23 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
 
   switch (controller->anchor_position()) {
     case ExtensionInstalledBubble::ANCHOR_ACTION: {
-      BrowserActionsContainer* container =
-          browser_view->toolbar()->browser_actions();
-      // Hitting this DCHECK means |ShouldShow| failed.
-      DCHECK(container);
-      DCHECK(!container->animating());
+      if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+        // TODO(pbos): Make sure this view pops out so that we can actually
+        // anchor to a visible action. Right now this view is most likely not
+        // visible, and will fall back on the default case on showing the
+        // installed dialog anchored to the general extensions toolbar button.
+        reference_view =
+            browser_view->toolbar()->extensions_container()->GetViewForId(
+                controller->extension()->id());
+      } else {
+        BrowserActionsContainer* container =
+            browser_view->toolbar()->browser_actions();
+        // Hitting this DCHECK means |ShouldShow| failed.
+        DCHECK(container);
+        DCHECK(!container->animating());
 
-      reference_view = container->GetViewForId(controller->extension()->id());
+        reference_view = container->GetViewForId(controller->extension()->id());
+      }
       break;
     }
     case ExtensionInstalledBubble::ANCHOR_OMNIBOX: {
@@ -93,8 +106,14 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
   }
 
   // Default case.
-  if (!reference_view || !reference_view->GetVisible())
+  if (!reference_view || !reference_view->GetVisible()) {
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      return browser_view->toolbar()
+          ->extensions_container()
+          ->extensions_button();
+    }
     return browser_view->toolbar_button_provider()->GetAppMenuButton();
+  }
   return reference_view;
 }
 
@@ -369,6 +388,8 @@ void ExtensionInstalledBubbleUi::OnWidgetClosing(views::Widget* widget) {
 
 // Views (BrowserView) specific implementation.
 bool ExtensionInstalledBubble::ShouldShow() {
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+    return true;
   if (anchor_position() == ANCHOR_ACTION) {
     BrowserActionsContainer* container =
         BrowserView::GetBrowserViewForBrowser(browser())

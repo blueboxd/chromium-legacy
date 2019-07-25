@@ -5,17 +5,17 @@
 #include "ios/chrome/browser/ui/webui/password_manager_internals_ui_ios.h"
 
 #include "base/hash/hash.h"
+#include "components/autofill/core/browser/logging/log_router.h"
 #include "components/grit/components_resources.h"
-#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/passwords/password_manager_internals_service_factory.h"
+#include "ios/chrome/browser/passwords/password_manager_log_router_factory.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "net/base/escape.h"
 
-using password_manager::PasswordManagerInternalsService;
+using autofill::LogRouter;
 
 namespace {
 
@@ -48,19 +48,18 @@ PasswordManagerInternalsUIIOS::~PasswordManagerInternalsUIIOS() {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());
   DCHECK(browser_state);
-  if (registered_with_logging_service_) {
-    registered_with_logging_service_ = false;
-    PasswordManagerInternalsService* service =
-        ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
-            browser_state);
-    if (service)
-      service->UnregisterReceiver(this);
+  if (registered_with_log_router_) {
+    registered_with_log_router_ = false;
+    autofill::LogRouter* log_router =
+        ios::PasswordManagerLogRouterFactory::GetForBrowserState(browser_state);
+    if (log_router)
+      log_router->UnregisterReceiver(this);
   }
   web_ui()->GetWebState()->RemoveObserver(this);
 }
 
 void PasswordManagerInternalsUIIOS::LogEntry(const base::Value& entry) {
-  if (!registered_with_logging_service_ || entry.is_none())
+  if (!registered_with_log_router_ || entry.is_none())
     return;
   web_ui()->CallJavascriptFunction("addRawLog", {&entry});
 }
@@ -74,19 +73,18 @@ void PasswordManagerInternalsUIIOS::PageLoaded(
   web_ui()->CallJavascriptFunction("setUpPasswordManagerInternals", {});
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());
-  PasswordManagerInternalsService* service =
-      ios::PasswordManagerInternalsServiceFactory::GetForBrowserState(
-          browser_state);
+  autofill::LogRouter* log_router =
+      ios::PasswordManagerLogRouterFactory::GetForBrowserState(browser_state);
   // No service means the WebUI is displayed in Incognito.
-  base::Value is_incognito(!service);
+  base::Value is_incognito(!log_router);
 
   std::vector<const base::Value*> args{&is_incognito};
   web_ui()->CallJavascriptFunction("notifyAboutIncognito", args);
 
-  if (service) {
-    registered_with_logging_service_ = true;
+  if (log_router) {
+    registered_with_log_router_ = true;
 
-    const auto& past_logs = service->RegisterReceiver(this);
+    const auto& past_logs = log_router->RegisterReceiver(this);
     for (const auto& entry : past_logs)
       LogEntry(entry);
   }

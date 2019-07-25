@@ -18,6 +18,12 @@
 namespace remoting {
 namespace protocol {
 
+namespace {
+// It seems Chrome currently only properly supports receiving messages up to
+// 64KiB.
+constexpr int kMaxSafeMessageSizeInBytes = 64 * 1024;
+}  // namespace
+
 HostControlDispatcher::HostControlDispatcher()
     : ChannelDispatcherBase(kControlChannelName) {}
 HostControlDispatcher::~HostControlDispatcher() = default;
@@ -52,6 +58,11 @@ void HostControlDispatcher::SetVideoLayout(const VideoLayout& layout) {
 void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);
+  if (message.ByteSizeLong() > kMaxSafeMessageSizeInBytes) {
+    // Better to drop the event than drop the connection, which can happen if
+    // the browser receives a message larger than it can handle.
+    return;
+  }
   message_pipe()->Send(&message, base::Closure());
 }
 

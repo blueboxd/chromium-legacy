@@ -90,6 +90,7 @@ class JsonRequest {
     Builder& SetUrlLoaderFactory(
         scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
     Builder& SetUserClassifier(const UserClassifier& user_classifier);
+    Builder& SetOptionalImagesCapability(bool supports_optional_images);
 
     // These preview methods allow to inspect the Request without exposing it
     // publicly.
@@ -127,6 +128,7 @@ class JsonRequest {
     // Optional properties.
     std::string obfuscated_gaia_id_;
     std::string user_class_;
+    std::string display_capability_;
     const language::UrlLanguageHistogram* language_histogram_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);

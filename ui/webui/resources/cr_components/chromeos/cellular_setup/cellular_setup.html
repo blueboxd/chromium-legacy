@@ -5,7 +5,7 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/button_bar.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/sim_detect_page.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/provisioning_page.html">
-<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/success_page.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/cellular_setup/final_page.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 
@@ -23,7 +23,7 @@
         selected-item="{{selectedPage_}}">
       <sim-detect-page show-error="[[showError_]]"></sim-detect-page>
       <provisioning-page show-error="[[showError_]]"></provisioning-page>
-      <success-page show-error="[[showError_]]"></success-page>
+      <final-page show-error="[[showError_]]"></final-page>
     </iron-pages>
     <button-bar show-try-again-button="[[showTryAgainButton_]]"
         show-finish-button="[[showFinishButton_]]"

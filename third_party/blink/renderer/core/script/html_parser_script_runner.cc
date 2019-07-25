@@ -27,6 +27,7 @@
 
 #include <inttypes.h>
 #include <memory>
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
@@ -649,9 +650,13 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
 }
 
 void HTMLParserScriptRunner::RecordMetricsAtParseEnd() const {
-  // This method is called just before starting execution of force deferred
+  // This method is called just before starting execution of force defer
   // scripts in order to capture the all force deferred scripts in
   // |force_deferred_scripts_| before any are popped for execution.
+
+  if (!document_->GetFrame())
+    return;
+
   if (!force_deferred_scripts_.IsEmpty()) {
     uint32_t force_deferred_external_script_count = 0;
     for (const auto& pending_script : force_deferred_scripts_) {
@@ -664,6 +669,13 @@ void HTMLParserScriptRunner::RecordMetricsAtParseEnd() const {
       UMA_HISTOGRAM_COUNTS_100(
           "Blink.Script.ForceDeferredScripts.Mainframe.External",
           force_deferred_external_script_count);
+      if (document_->UkmRecorder()) {
+        ukm::builders::PreviewsDeferAllScript(document_->UkmSourceID())
+            .Setforce_deferred_scripts_mainframe(force_deferred_scripts_.size())
+            .Setforce_deferred_scripts_mainframe_external(
+                force_deferred_external_script_count)
+            .Record(document_->UkmRecorder());
+      }
     } else {
       UMA_HISTOGRAM_COUNTS_100("Blink.Script.ForceDeferredScripts.Subframe",
                                force_deferred_scripts_.size());

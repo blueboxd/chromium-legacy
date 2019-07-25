@@ -7,12 +7,18 @@
 #include <utility>
 
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_writer.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
+
+namespace {
+constexpr uint32_t kInvalidNfcWatchId = 0;
+}
 
 // static
 const char NFCProxy::kSupplementName[] = "NFCProxy";
@@ -34,6 +40,7 @@ NFCProxy* NFCProxy::From(Document& document) {
 // NFCProxy
 NFCProxy::NFCProxy(Document& document)
     : PageVisibilityObserver(document.GetPage()),
+      FocusChangedObserver(document.GetPage()),
       Supplement<Document>(document),
       client_binding_(this) {}
 
@@ -47,30 +54,38 @@ void NFCProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(writers_);
   visitor->Trace(readers_);
   PageVisibilityObserver::Trace(visitor);
+  FocusChangedObserver::Trace(visitor);
   Supplement<Document>::Trace(visitor);
 }
 
-void NFCProxy::AddReader(NFCReader* reader) {
+void NFCProxy::StartReading(NFCReader* reader) {
   DCHECK(reader);
-
   if (readers_.Contains(reader))
     return;
 
   EnsureMojoConnection();
-  nfc_->Watch(reader->options().Clone(),
+  nfc_->Watch(device::mojom::blink::NFCReaderOptions::From(reader->options()),
               WTF::Bind(&NFCProxy::OnReaderRegistered, WrapPersistent(this),
                         WrapPersistent(reader)));
+  readers_.insert(reader, kInvalidNfcWatchId);
 }
 
-void NFCProxy::RemoveReader(NFCReader* reader) {
+void NFCProxy::StopReading(NFCReader* reader) {
+  DCHECK(reader);
   auto iter = readers_.find(reader);
   if (iter != readers_.end()) {
-    DCHECK(nfc_);
-    nfc_->CancelWatch(iter->value,
-                      WTF::Bind(&NFCProxy::OnCancelWatch, WrapPersistent(this),
-                                WrapPersistent(reader)));
+    if (nfc_ && iter->value != kInvalidNfcWatchId) {
+      // We do not need to notify |reader| of anything.
+      nfc_->CancelWatch(iter->value,
+                        device::mojom::blink::NFC::CancelWatchCallback());
+    }
     readers_.erase(iter);
   }
+}
+
+bool NFCProxy::IsReading(const NFCReader* reader) {
+  DCHECK(reader);
+  return readers_.Contains(const_cast<NFCReader*>(reader));
 }
 
 void NFCProxy::AddWriter(NFCWriter* writer) {
@@ -92,27 +107,17 @@ void NFCProxy::CancelPush(
   nfc_->CancelPush(StringToNFCPushTarget(target), std::move(callback));
 }
 
-void NFCProxy::PageVisibilityChanged() {
-  // If service is not initialized, there cannot be any pending NFC activities
-  if (!nfc_)
-    return;
-
-  // NFC operations should be suspended.
-  // https://w3c.github.io/web-nfc/#nfc-suspended
-  if (GetPage()->IsPageVisible())
-    nfc_->ResumeNFCOperations();
-  else
-    nfc_->SuspendNFCOperations();
-}
-
 // device::mojom::blink::NFCClient implementation.
 void NFCProxy::OnWatch(const Vector<uint32_t>& ids,
+                       const String& serial_number,
                        device::mojom::blink::NDEFMessagePtr message) {
-  // Dispatch the event to all matched and registered observers.
-  // All readers in the list should be active.
+  // Dispatch the event to all matched readers. Of course readers with
+  // kInvalidNfcWatchId do not match.
+  // This loop is O(n^2), however, we assume the number of readers to be small
+  // so it'd be just OK.
   for (auto pair : readers_) {
     if (ids.Contains(pair.value)) {
-      pair.key->OnMessage(*message);
+      pair.key->OnReading(serial_number, *message);
     }
   }
 }
@@ -121,22 +126,57 @@ void NFCProxy::OnReaderRegistered(NFCReader* reader,
                                   uint32_t id,
                                   device::mojom::blink::NFCErrorPtr error) {
   DCHECK(reader);
+  // |reader| may have already stopped reading.
+  if (!readers_.Contains(reader))
+    return;
 
   if (error) {
-    reader->OnReadingError(*error);
+    reader->OnError(error->error_type);
+    readers_.erase(reader);
     return;
   }
 
-  readers_.insert(reader, id);
+  DCHECK_NE(id, kInvalidNfcWatchId);
+  readers_.Set(reader, id);
 }
 
-void NFCProxy::OnCancelWatch(NFCReader* reader,
-                             device::mojom::blink::NFCErrorPtr error) {
-  DCHECK(reader);
+void NFCProxy::PageVisibilityChanged() {
+  UpdateSuspendedStatus();
+}
 
-  if (error) {
-    reader->OnReadingError(*error);
-  }
+void NFCProxy::FocusedFrameChanged() {
+  UpdateSuspendedStatus();
+}
+
+void NFCProxy::UpdateSuspendedStatus() {
+  // If service is not initialized, there cannot be any pending NFC activities.
+  if (!nfc_)
+    return;
+
+  // NFC operations should be suspended.
+  // https://w3c.github.io/web-nfc/#nfc-suspended
+  // TODO(https://crbug.com/520391): Suspend/Resume NFC in the browser process
+  // instead to prevent a compromised renderer from using NFC in the background.
+  if (ShouldSuspendNFC())
+    nfc_->SuspendNFCOperations();
+  else
+    nfc_->ResumeNFCOperations();
+}
+
+bool NFCProxy::ShouldSuspendNFC() const {
+  if (!GetPage()->IsPageVisible())
+    return true;
+
+  LocalFrame* focused_frame = GetPage()->GetFocusController().FocusedFrame();
+  LocalFrame* this_frame = GetSupplementable()->GetFrame();
+
+  if (!focused_frame || !this_frame)
+    return true;
+
+  if (focused_frame != this_frame)
+    return true;
+
+  return false;
 }
 
 void NFCProxy::EnsureMojoConnection() {
@@ -162,12 +202,13 @@ void NFCProxy::OnMojoConnectionError() {
   nfc_.reset();
   client_binding_.Close();
 
-  // Notify all active readers about the connection error.
-  for (auto pair : readers_) {
-    pair.key->OnMojoConnectionError();
+  // Notify all active readers about the connection error and clear the list.
+  ReaderMap readers = std::move(readers_);
+  for (auto pair : readers) {
+    // The reader may call StopReading() to remove itself from |readers_| when
+    // handling the error.
+    pair.key->OnError(device::mojom::blink::NFCErrorType::NOT_READABLE);
   }
-  // Clear the reader list.
-  readers_.clear();
 
   // Notify all writers about the connection error.
   for (auto& writer : writers_) {

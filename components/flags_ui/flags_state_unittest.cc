@@ -154,7 +154,8 @@ static FeatureEntry kEntries[] = {
 class FlagsStateTest : public ::testing::Test {
  protected:
   FlagsStateTest() : flags_storage_(&prefs_), trial_list_(nullptr) {
-    prefs_.registry()->RegisterListPref(prefs::kEnabledLabsExperiments);
+    prefs_.registry()->RegisterListPref(prefs::kAboutFlagsEntries);
+    prefs_.registry()->RegisterDictionaryPref(prefs::kAboutFlagsOriginLists);
 
     for (size_t i = 0; i < base::size(kEntries); ++i)
       kEntries[i].supported_platforms = FlagsState::GetCurrentPlatform();
@@ -221,7 +222,7 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveOne) {
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
 
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
 
   ASSERT_EQ(2u, entries_list->GetSize());
@@ -237,7 +238,7 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveOne) {
   // Remove one entry, check the other's still around.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
 
-  entries_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
+  entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
   ASSERT_EQ(1u, entries_list->GetSize());
   ASSERT_TRUE(entries_list->GetString(0, &s0));
@@ -249,13 +250,13 @@ TEST_F(FlagsStateTest, AddTwoFlagsRemoveBoth) {
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, true);
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, true);
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list != nullptr);
 
   // Remove both, the pref should have been removed completely.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags1, false);
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, kFlags2, false);
-  entries_list = prefs_.GetList(prefs::kEnabledLabsExperiments);
+  entries_list = prefs_.GetList(prefs::kAboutFlagsEntries);
   EXPECT_TRUE(entries_list == nullptr || entries_list->GetSize() == 0);
 }
 
@@ -633,7 +634,7 @@ TEST_F(FlagsStateTest, PersistAndPrune) {
 
   // FeatureEntry 3 should show still be persisted in preferences though.
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list);
   EXPECT_EQ(2U, entries_list->GetSize());
   std::string s0;
@@ -688,7 +689,7 @@ TEST_F(FlagsStateTest, CheckValues) {
 
   // And it should persist.
   const base::ListValue* entries_list =
-      prefs_.GetList(prefs::kEnabledLabsExperiments);
+      prefs_.GetList(prefs::kAboutFlagsEntries);
   ASSERT_TRUE(entries_list);
   EXPECT_EQ(2U, entries_list->GetSize());
   std::string s0;

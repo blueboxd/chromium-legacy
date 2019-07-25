@@ -13932,6 +13932,137 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="NTPRicherPicker.Backgrounds.BackClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>The back arrow was clicked the richer picker.</description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.BackgroundDeselected">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    A background image tile was deselected in the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.BackgroundReset">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The NTP background image was reset to default from the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.BackgroundSelected">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    A background image tile was selected in the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.BackgroundSet">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    A background image was set as the NTP background from the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.CollectionClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    A collection tile was selected in the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.DefaultDeselected">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    'No background' was deselected in the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.DefaultSelected">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>'No background' was selected in the richer picker.</description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.UploadCanceled">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    'Cancel' was clicked on the file select dialog originating from the richer
+    picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.UploadClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    'Upload from device' was clicked in the richer picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Backgrounds.UploadConfirmed">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    'Open' was clicked on the file select dialog originating from the richer
+    picker.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.CancelClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>'Cancel' was clicked in the richer picker.</description>
+</action>
+
+<action name="NTPRicherPicker.DoneClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>'Done' was clicked in the richer picker.</description>
+</action>
+
+<action name="NTPRicherPicker.Opened">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>The richer picker was opened.</description>
+</action>
+
+<action name="NTPRicherPicker.Shortcuts.CustomLinksClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The 'My shortcuts' (i.e. custom links) option was clicked in the richer
+    picker shortcuts submenu.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Shortcuts.MostVisitedClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The 'Most visited sites' option was clicked in the richer picker shortcuts
+    submenu.
+  </description>
+</action>
+
+<action name="NTPRicherPicker.Shortcuts.VisibilityToggleClicked">
+  <owner>yyushkina@chromium.org</owner>
+  <owner>dbeam@chromium.org</owner>
+  <description>
+    The 'Hide shortcuts' toggle was clicked in the richer picker shortcuts
+    submenu.
+  </description>
+</action>
+
 <action name="OfflinePages.Edit.RemoveButtonClicked">
   <obsolete>Offline pages were pulled out of bookmarks UI.</obsolete>
   <owner>jianli@chromium.org</owner>

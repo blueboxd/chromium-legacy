@@ -57,9 +57,6 @@ extern const int kTableViewTextLabelColorLightGrey;
 // metadata...).
 extern const int kTableViewSecondaryLabelLightGrayTextColor;
 
-// Hex Value for the tint color for switches.
-extern const int kTableViewSwitchTintColor;
-
 // A masked password string(e.g. "••••••••").
 extern NSString* const kMaskedPassword;
 

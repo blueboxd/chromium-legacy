@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 using testing::ElementsAre;
 
@@ -126,6 +127,9 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   )HTML");
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // The scroll hit test should be before the scrolled contents to ensure the
+    // hit test does not prevent the background squashing with the scrolling
+    // contents.
     EXPECT_THAT(
         RootPaintController().GetDisplayItemList(),
         ElementsAre(IsSameId(&GetLayoutView(), DisplayItem::kScrollHitTest),
@@ -155,6 +159,81 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
                                    kDocumentBackgroundType),
                     GetLayoutView().FirstFragment().ContentsProperties())));
   }
+}
+
+TEST_P(ViewPainterTest, FrameScrollHitTestProperties) {
+  // This test depends on the CompositeAfterPaint behavior of painting solid
+  // color backgrounds into both the non-scrolled and scrolled spaces.
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar { display: none; }
+      body { margin: 0; }
+      #child { width: 100px; height: 2000px; background: green; }
+    </style>
+    <div id='child'></div>
+  )HTML");
+
+  auto& html =
+      To<LayoutBlock>(*GetDocument().documentElement()->GetLayoutObject());
+  auto& child = *GetLayoutObjectByElementId("child");
+
+  // The scroll hit test should be before the scrolled contents to ensure the
+  // hit test does not prevent the background squashing with the scrolling
+  // contents.
+  EXPECT_THAT(RootPaintController().GetDisplayItemList(),
+              ElementsAre(IsSameId(&GetLayoutView(), kScrollHitTestType),
+                          IsSameId(&ViewScrollingBackgroundClient(),
+                                   kDocumentBackgroundType),
+                          IsSameId(&child, kBackgroundType)));
+
+  const auto& paint_chunks = RootPaintController().PaintChunks();
+  const auto& view_contents_properties =
+      GetLayoutView().FirstFragment().ContentsProperties();
+  EXPECT_THAT(
+      paint_chunks,
+      ElementsAre(
+          IsPaintChunk(
+              0, 1,
+              PaintChunk::Id(*GetLayoutView().Layer(),
+                             DisplayItem::kLayerChunkBackground),
+              GetLayoutView().FirstFragment().LocalBorderBoxProperties()),
+          IsPaintChunk(1, 2,
+                       PaintChunk::Id(ViewScrollingBackgroundClient(),
+                                      kDocumentBackgroundType),
+                       view_contents_properties),
+          IsPaintChunk(2, 3,
+                       PaintChunk::Id(*html.Layer(),
+                                      kNonScrollingContentsBackgroundChunkType),
+                       html.FirstFragment().ContentsProperties())));
+
+  // The scroll hit test should not be scrolled and should not be clipped.
+  const auto& scroll_hit_test_chunk = RootPaintController().PaintChunks()[0];
+  const auto& scroll_hit_test_transform =
+      scroll_hit_test_chunk.properties.Transform();
+  EXPECT_EQ(nullptr, scroll_hit_test_transform.ScrollNode());
+  const auto& scroll_hit_test_clip = scroll_hit_test_chunk.properties.Clip();
+  EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
+            scroll_hit_test_clip.ClipRect().Rect());
+
+  // The scrolled contents should be scrolled and clipped.
+  const auto& contents_chunk = RootPaintController().PaintChunks()[2];
+  const auto& contents_transform = contents_chunk.properties.Transform();
+  const auto* contents_scroll = contents_transform.ScrollNode();
+  EXPECT_EQ(IntSize(800, 2000), contents_scroll->ContentsSize());
+  EXPECT_EQ(IntRect(0, 0, 800, 600), contents_scroll->ContainerRect());
+  const auto& contents_clip = contents_chunk.properties.Clip();
+  EXPECT_EQ(FloatRect(0, 0, 800, 600), contents_clip.ClipRect().Rect());
+
+  // The scroll hit test display item maintains a reference to a scroll offset
+  // translation node and the contents should be scrolled by this node.
+  const auto& scroll_hit_test_display_item =
+      static_cast<const ScrollHitTestDisplayItem&>(
+          RootPaintController()
+              .GetDisplayItemList()[scroll_hit_test_chunk.begin_index]);
+  EXPECT_EQ(&contents_transform,
+            &scroll_hit_test_display_item.scroll_offset_node());
 }
 
 class ViewPainterTouchActionRectTest : public ViewPainterTest {

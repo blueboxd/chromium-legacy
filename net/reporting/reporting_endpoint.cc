@@ -32,6 +32,11 @@ bool operator<(const ReportingEndpointGroupKey& lhs,
   return std::tie(lhs.origin, lhs.group_name) <
          std::tie(rhs.origin, rhs.group_name);
 }
+bool operator>(const ReportingEndpointGroupKey& lhs,
+               const ReportingEndpointGroupKey& rhs) {
+  return std::tie(lhs.origin, lhs.group_name) >
+         std::tie(rhs.origin, rhs.group_name);
+}
 
 const int ReportingEndpoint::EndpointInfo::kDefaultPriority = 1;
 const int ReportingEndpoint::EndpointInfo::kDefaultWeight = 1;
@@ -50,6 +55,10 @@ ReportingEndpoint::ReportingEndpoint(url::Origin origin,
 
 ReportingEndpoint::ReportingEndpoint(const ReportingEndpoint& other) = default;
 ReportingEndpoint::ReportingEndpoint(ReportingEndpoint&& other) = default;
+
+ReportingEndpoint& ReportingEndpoint::operator=(const ReportingEndpoint&) =
+    default;
+ReportingEndpoint& ReportingEndpoint::operator=(ReportingEndpoint&&) = default;
 
 ReportingEndpoint::~ReportingEndpoint() = default;
 

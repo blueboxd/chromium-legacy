@@ -21,6 +21,7 @@ import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -201,10 +202,10 @@ public class PreferencesTest {
         Preferences preferenceActivity = ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), Preferences.class);
 
-        final MainPreferences mainPreferences =
-                ActivityUtils.waitForFragmentToAttach(preferenceActivity, MainPreferences.class);
+        final MainPreferences mainPreferences = ActivityUtils.waitForFragmentToAttachCompat(
+                preferenceActivity, MainPreferences.class);
 
-        final Preference searchEnginePref =
+        final android.support.v7.preference.Preference searchEnginePref =
                 waitForPreference(mainPreferences, MainPreferences.PREF_SEARCH_ENGINE);
 
         CriteriaHelper.pollUiThread(Criteria.equals(null, new Callable<Object>() {
@@ -214,7 +215,7 @@ public class PreferencesTest {
             }
         }));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ManagedPreferenceDelegate managedPrefDelegate =
+            ManagedPreferenceDelegateCompat managedPrefDelegate =
                     mainPreferences.getManagedPreferenceDelegateForTest();
             Assert.assertTrue(managedPrefDelegate.isPreferenceControlledByPolicy(searchEnginePref));
         });
@@ -433,8 +434,9 @@ public class PreferencesTest {
                 () -> { accessibilityPref.onPreferenceChange(forceEnableZoomPref, enabled); });
     }
 
-    private static Preference waitForPreference(final PreferenceFragment prefFragment,
-            final String preferenceKey) throws ExecutionException {
+    private static android.support.v7.preference.Preference waitForPreference(
+            final PreferenceFragmentCompat prefFragment, final String preferenceKey)
+            throws ExecutionException {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -442,11 +444,12 @@ public class PreferencesTest {
             }
         });
 
-        return TestThreadUtils.runOnUiThreadBlocking(new Callable<Preference>() {
-            @Override
-            public Preference call() throws Exception {
-                return prefFragment.findPreference(preferenceKey);
-            }
-        });
+        return TestThreadUtils.runOnUiThreadBlocking(
+                new Callable<android.support.v7.preference.Preference>() {
+                    @Override
+                    public android.support.v7.preference.Preference call() throws Exception {
+                        return prefFragment.findPreference(preferenceKey);
+                    }
+                });
     }
 }

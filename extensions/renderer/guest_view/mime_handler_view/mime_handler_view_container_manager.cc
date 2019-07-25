@@ -15,7 +15,7 @@
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_base.h"
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_frame_container.h"
 #include "third_party/blink/public/web/web_document.h"

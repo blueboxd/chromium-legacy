@@ -638,9 +638,11 @@ void CastBrowserMainParts::StartPeriodicCrashReportUpload() {
 
 void CastBrowserMainParts::OnStartPeriodicCrashReportUpload() {
   base::FilePath crash_dir;
-  CrashHandler::GetCrashDumpLocation(&crash_dir);
+  if (!CrashHandler::GetCrashDumpLocation(&crash_dir))
+    return;
   base::FilePath reports_dir;
-  CrashHandler::GetCrashReportsLocation(&reports_dir);
+  if (!CrashHandler::GetCrashReportsLocation(&reports_dir))
+    return;
   CrashHandler::UploadDumps(crash_dir, reports_dir, "", "");
 }
 #endif  // defined(OS_ANDROID)

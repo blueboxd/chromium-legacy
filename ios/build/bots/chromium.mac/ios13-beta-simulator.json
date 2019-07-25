@@ -89,6 +89,7 @@
       }
     },
     {
+      "shards": 1,
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
       "os": "13.0",
@@ -102,6 +103,7 @@
       }
     },
     {
+      "shards": 1,
       "include": "eg_cq_tests.json",
       "device type": "iPad Pro (12.9-inch)",
       "os": "13.0",
@@ -115,6 +117,7 @@
       }
     },
     {
+      "shards": 1,
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "13.0",
@@ -128,6 +131,7 @@
       }
     },
     {
+      "shards": 1,
       "include": "eg_tests.json",
       "device type": "iPad Air (3rd generation)",
       "os": "13.0",

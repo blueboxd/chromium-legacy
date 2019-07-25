@@ -23,6 +23,8 @@ WebApkInfo::WebApkInfo(std::string name,
                        base::Time last_update_check_time,
                        base::Time last_update_completion_time,
                        bool relax_updates,
+                       std::string backing_browser_package_name,
+                       bool is_backing_browser,
                        std::string update_status)
     : name(std::move(name)),
       short_name(std::move(short_name)),
@@ -41,6 +43,8 @@ WebApkInfo::WebApkInfo(std::string name,
       last_update_check_time(last_update_check_time),
       last_update_completion_time(last_update_completion_time),
       relax_updates(relax_updates),
+      backing_browser_package_name(std::move(backing_browser_package_name)),
+      is_backing_browser(is_backing_browser),
       update_status(std::move(update_status)) {}
 
 WebApkInfo::~WebApkInfo() {}

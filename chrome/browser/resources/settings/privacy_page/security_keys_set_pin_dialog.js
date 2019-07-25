@@ -140,13 +140,13 @@ Polymer({
     title_: String,
   },
 
-  /** @private {?settings.SecurityKeysBrowserProxy} */
+  /** @private {?settings.SecurityKeysPINBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   attached: function() {
     this.title_ = this.i18n('securityKeysSetPINInitialTitle');
-    this.browserProxy_ = settings.SecurityKeysBrowserProxyImpl.getInstance();
+    this.browserProxy_ = settings.SecurityKeysPINBrowserProxyImpl.getInstance();
     this.$.dialog.showModal();
 
     this.browserProxy_.startSetPIN().then(([success, errorCode]) => {

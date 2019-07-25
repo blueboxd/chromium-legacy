@@ -24,6 +24,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -52,6 +53,7 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#include "ios/chrome/browser/metrics/chrome_browser_state_client.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/ios_user_type_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
@@ -242,6 +244,10 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<IOSUserTypeMetricsProvider>());
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::DemographicMetricsProvider>(
+          std::make_unique<metrics::ChromeBrowserStateClient>()));
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {

@@ -5,24 +5,21 @@
 package org.chromium.chrome.browser.sync.ui;
 
 import android.accounts.Account;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceFragment;
-import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.SwitchPreferenceCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -30,13 +27,13 @@ import android.text.style.ForegroundColorSpan;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.sync.SyncPreferenceUtils;
 import org.chromium.chrome.browser.preferences.sync.SyncedAccountPreference;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -62,10 +59,11 @@ import java.util.Set;
 /**
  * Settings fragment to customize Sync options (data types, encryption).
  */
-public class SyncCustomizationFragment extends PreferenceFragment
+public class SyncCustomizationFragment extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
-                   PassphraseTypeDialogFragment.Listener, OnPreferenceClickListener,
-                   OnPreferenceChangeListener, ProfileSyncService.SyncStateChangedListener {
+                   PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceClickListener,
+                   Preference.OnPreferenceChangeListener,
+                   ProfileSyncService.SyncStateChangedListener {
     private static final String TAG = "SyncCustomizationFragment";
 
     @VisibleForTesting
@@ -112,11 +110,11 @@ public class SyncCustomizationFragment extends PreferenceFragment
         int OTHER_ERRORS = 128;
     }
 
-    private ChromeSwitchPreference mSyncSwitchPreference;
+    private ChromeSwitchPreferenceCompat mSyncSwitchPreference;
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
 
-    private SwitchPreference mSyncEverything;
+    private SwitchPreferenceCompat mSyncEverything;
     private CheckBoxPreference mSyncAutofill;
     private CheckBoxPreference mSyncBookmarks;
     private CheckBoxPreference mSyncOmnibox;
@@ -137,9 +135,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private int mCurrentSyncError = SyncError.NO_ERROR;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
         // Prevent sync settings changes from taking effect until the user leaves this screen.
@@ -150,10 +146,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
 
         getActivity().setTitle(R.string.sign_in_sync);
-        try (StrictModeContext ctx = StrictModeContext.allowDiskReads()) {
-            addPreferencesFromResource(R.xml.sync_customization_preferences);
-        }
-        mSyncEverything = (SwitchPreference) findPreference(PREFERENCE_SYNC_EVERYTHING);
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_customization_preferences);
+        mSyncEverything = (SwitchPreferenceCompat) findPreference(PREFERENCE_SYNC_EVERYTHING);
         mSyncAutofill = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_AUTOFILL);
         mSyncBookmarks = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_BOOKMARKS);
         mSyncOmnibox = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_OMNIBOX);
@@ -179,7 +173,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             type.setOnPreferenceChangeListener(this);
         }
 
-        mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
+        mSyncSwitchPreference = (ChromeSwitchPreferenceCompat) findPreference(PREF_SYNC_SWITCH);
         mSyncSwitchPreference.setOnPreferenceChangeListener((preference, newValue) -> {
             assert canDisableSync();
             SyncPreferenceUtils.enableSync((boolean) newValue);
@@ -192,11 +186,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
         mSyncedAccountPreference =
                 (SyncedAccountPreference) findPreference(PREFERENCE_SYNC_ACCOUNT_LIST);
 
-        // TODO(https://crbug.com/710657): Migrate to SyncCustomizationFragment to
-        // extend android.support.v7.preference.Preference and remove this cast.
-        FragmentActivity fragmentActivity = (FragmentActivity) getActivity();
         mSyncedAccountPreference.setOnPreferenceChangeListener(
-                new SyncAccountSwitcher(fragmentActivity, mSyncedAccountPreference));
+                new SyncAccountSwitcher(getActivity(), mSyncedAccountPreference));
     }
 
     @Override

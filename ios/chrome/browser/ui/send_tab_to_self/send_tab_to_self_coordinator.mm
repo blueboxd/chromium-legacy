@@ -105,10 +105,12 @@
   [self stop];
 }
 
-- (void)sendTabToTargetDeviceCacheGUID:(NSString*)cacheGUID {
+- (void)sendTabToTargetDeviceCacheGUID:(NSString*)cacheGUID
+                      targetDeviceName:(NSString*)deviceName {
   // TODO(crbug.com/970284) log histogram of send event.
   SendTabToSelfCommand* command =
-      [[SendTabToSelfCommand alloc] initWithTargetDeviceID:cacheGUID];
+      [[SendTabToSelfCommand alloc] initWithTargetDeviceID:cacheGUID
+                                          targetDeviceName:deviceName];
 
   [self.dispatcher sendTabToSelf:command];
   [self stop];

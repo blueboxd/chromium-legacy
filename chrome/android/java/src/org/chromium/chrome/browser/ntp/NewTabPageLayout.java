@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
@@ -282,16 +281,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         }
 
         manager.addDestructionObserver(NewTabPageLayout.this::onDestroy);
-
-        // Native will be initialized at this time (see NativePageFactory.java).
-        // TODO(crbug.com/982430): Check for changes to the DSE and react accordingly.
-        // TODO(crbug.com/973150): Fetch the favicon when the DSE isn't Google.
-        if (LocationBarLayout.shouldShowGoogleLogo()) {
-            ImageView logoView = findViewById(R.id.search_engine_logo);
-
-            assert logoView != null;
-            logoView.setVisibility(VISIBLE);
-        }
 
         mInitialized = true;
 

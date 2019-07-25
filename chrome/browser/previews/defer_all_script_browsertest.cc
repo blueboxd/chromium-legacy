@@ -199,7 +199,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsWhitelisted)) {
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   GURL url = https_url();
 
@@ -207,6 +206,7 @@ IN_PROC_BROWSER_TEST_F(
   SetDeferAllScriptHintWithPageWithPattern(url, "*");
 
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -228,12 +228,21 @@ IN_PROC_BROWSER_TEST_F(
       "Blink.Script.ForceDeferredScripts.Mainframe", 2, 1);
   histogram_tester.ExpectUniqueSample(
       "Blink.Script.ForceDeferredScripts.Mainframe.External", 1, 1);
+
+  // Verify UKM force deferred count entries.
+  using UkmDeferEntry = ukm::builders::PreviewsDeferAllScript;
+  auto entries = test_ukm_recorder.GetEntriesByName(UkmDeferEntry::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  auto* entry = entries.at(0);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmDeferEntry::kforce_deferred_scripts_mainframeName, 2);
+  test_ukm_recorder.ExpectEntryMetric(
+      entry, UkmDeferEntry::kforce_deferred_scripts_mainframe_externalName, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(DeferAllScriptHttpsNotWhitelisted)) {
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   GURL url = https_url();
 
@@ -241,6 +250,7 @@ IN_PROC_BROWSER_TEST_F(
   SetDeferAllScriptHintWithPageWithPattern(url, "/NoMatch/");
 
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   // The URL is not whitelisted.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -274,14 +284,13 @@ IN_PROC_BROWSER_TEST_F(
         {{"force_coin_flip_always_holdback", "true"}}}},
       {previews::features::kOfflinePreviews});
 
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
-
   GURL url = https_url();
 
   // Whitelist DeferAllScript for any path for the url's host.
   SetDeferAllScriptHintWithPageWithPattern(url, "*");
 
   base::HistogramTester histogram_tester;
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
 
   ui_test_utils::NavigateToURL(browser(), url);
 

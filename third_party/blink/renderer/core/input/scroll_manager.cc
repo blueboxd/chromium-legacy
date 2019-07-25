@@ -317,7 +317,7 @@ bool ScrollManager::LogicalScroll(ScrollDirection direction,
     }
 
     ScrollableArea::ScrollCallback callback;
-    if (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
       callback = ScrollableArea::ScrollCallback(WTF::Bind(
           [](WeakPersistent<ScrollableArea> area) {
             if (area)
@@ -714,7 +714,7 @@ WebInputEventResult ScrollManager::HandleGestureScrollEnd(
   // hover state dirty at the end of the programmatic scroll animation caused
   // by the snap, and we should avoid marking the hover state dirty here.
   if (!snap_at_gesture_scroll_end &&
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled()) {
+      RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     frame_->LocalFrameRoot().GetEventHandler().MarkHoverStateDirty();
   }
 

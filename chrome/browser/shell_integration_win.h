@@ -12,10 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace shell_integration {
 namespace win {
 
@@ -67,11 +63,9 @@ base::string16 GetChromiumModelIdForProfile(const base::FilePath& profile_path);
 // is true if Chrome is pinned to the taskbar.
 // The ConnectionErrorCallback is called instead if something wrong happened
 // with the connection to the remote process.
-// |connector| should be a fresh connector unbound to any thread.
 using ConnectionErrorCallback = base::Closure;
 using IsPinnedToTaskbarCallback = base::Callback<void(bool, bool)>;
 void GetIsPinnedToTaskbarState(
-    std::unique_ptr<service_manager::Connector> connector,
     const ConnectionErrorCallback& on_error_callback,
     const IsPinnedToTaskbarCallback& result_callback);
 

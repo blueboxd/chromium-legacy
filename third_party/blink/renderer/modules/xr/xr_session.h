@@ -34,7 +34,6 @@ class V8XRFrameRequestCallback;
 class XR;
 class XRCanvasInputProvider;
 class XRSpace;
-class XRInputSourceEvent;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
@@ -60,8 +59,6 @@ class XRSession final
     kBlendModeAdditive,
     kBlendModeAlphaBlend
   };
-
-  enum class UserActivation { kEnabled, kDisabled };
 
   XRSession(XR* xr,
             device::mojom::blink::XRSessionClientRequest client_request,
@@ -107,7 +104,7 @@ class XRSession final
   // Called by JavaScript to manually end the session.
   ScriptPromise end(ScriptState* script_state);
 
-  bool ended() { return ended_; }
+  bool ended() const { return ended_; }
 
   // Called when the session is ended, either via calling the "end" function or
   // when the presentation service connection is closed.
@@ -152,11 +149,6 @@ class XRSession final
 
   void AddTransientInputSource(XRInputSource* input_source);
   void RemoveTransientInputSource(XRInputSource* input_source);
-
-  void OnSelectStart(XRInputSource* input_source);
-  void OnSelectEnd(XRInputSource* input_source,
-                   UserActivation user_activation = UserActivation::kEnabled);
-  void OnSelect(XRInputSource* input_source);
 
   void OnPoseReset();
 
@@ -203,19 +195,13 @@ class XRSession final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
+  XRFrame* CreatePresentationFrame();
+
  private:
   class XRSessionResizeObserverDelegate;
 
-  XRFrame* CreatePresentationFrame();
   void UpdateCanvasDimensions(Element*);
   void ApplyPendingRenderState();
-
-  void UpdateSelectState(
-      XRInputSource* input_source,
-      const device::mojom::blink::XRInputSourceStatePtr& state);
-  void UpdateSelectStateOnRemoval(XRInputSource* input_source);
-  XRInputSourceEvent* CreateInputSourceEvent(const AtomicString& type,
-                                             XRInputSource* input_source);
 
   void OnInputStateChangeInternal(
       int16_t frame_id,

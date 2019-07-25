@@ -35,7 +35,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/content/browser/autofill_internals_service_factory.h"
+#include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_internals_service.h"
@@ -569,7 +569,7 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
   // TODO(crbug.com/928595): Replace the closure with a callback to the renderer
   // that indicates if log messages should be sent from the renderer.
   log_manager_ =
-      LogManager::Create(AutofillInternalsServiceFactory::GetForBrowserContext(
+      LogManager::Create(AutofillLogRouterFactory::GetForBrowserContext(
                              web_contents->GetBrowserContext()),
                          base::Closure());
 

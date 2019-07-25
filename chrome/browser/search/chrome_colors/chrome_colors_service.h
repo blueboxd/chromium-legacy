@@ -24,6 +24,14 @@ class ChromeColorsService : public KeyedService {
   explicit ChromeColorsService(Profile* profile);
   ~ChromeColorsService() override;
 
+  // Returns id for the given |color| if it is in the predefined set, and 0
+  // otherwise.
+  static int GetColorId(const SkColor color);
+
+  // Record installed color id to UMA histogram. If |color| is not in the
+  // predefined set 0 is recorded.
+  static void RecordColorOnLoadHistogram(SkColor color);
+
   // Applies a theme that can be reverted by saving the previous theme state and
   // the |tab| that changes are made from.
   void ApplyDefaultTheme(content::WebContents* tab);

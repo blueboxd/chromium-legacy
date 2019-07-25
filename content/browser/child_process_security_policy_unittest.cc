@@ -249,6 +249,7 @@ TEST_F(ChildProcessSecurityPolicyTest, IsPseudoSchemeTest) {
   EXPECT_TRUE(p->IsPseudoScheme(url::kAboutScheme));
   EXPECT_TRUE(p->IsPseudoScheme(url::kJavaScriptScheme));
   EXPECT_TRUE(p->IsPseudoScheme(kViewSourceScheme));
+  EXPECT_TRUE(p->IsPseudoScheme(kGoogleChromeScheme));
 
   EXPECT_FALSE(p->IsPseudoScheme("registered-pseudo-scheme"));
   p->RegisterPseudoScheme("registered-pseudo-scheme");
@@ -590,6 +591,22 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
                                GURL("view-source:file:///etc/passwd")));
   EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID,
                                        GURL("view-source:file:///etc/passwd")));
+  p->Remove(kRendererID);
+}
+
+TEST_F(ChildProcessSecurityPolicyTest, GoogleChromeScheme) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  p->Add(kRendererID, browser_context());
+
+  GURL test_url("googlechrome://whatever");
+
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, test_url));
+  EXPECT_FALSE(p->CanRedirectToURL(test_url));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, test_url));
+  EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID, test_url));
+
   p->Remove(kRendererID);
 }
 

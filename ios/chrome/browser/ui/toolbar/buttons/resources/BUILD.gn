@@ -10,15 +10,33 @@ colorset("tab_toolbar_button_color") {
   ]
 }
 
+colorset("tab_toolbar_button_color_incognito") {
+  sources = [
+    "tab_toolbar_button_color_incognito.colorset/Contents.json",
+  ]
+}
+
 colorset("tab_toolbar_button_color_highlighted") {
   sources = [
     "tab_toolbar_button_color_highlighted.colorset/Contents.json",
   ]
 }
 
+colorset("tab_toolbar_button_color_highlighted_incognito") {
+  sources = [
+    "tab_toolbar_button_color_highlighted_incognito.colorset/Contents.json",
+  ]
+}
+
 colorset("tab_toolbar_button_halo_color") {
   sources = [
     "tab_toolbar_button_halo_color.colorset/Contents.json",
+  ]
+}
+
+colorset("tab_toolbar_button_halo_color_incognito") {
+  sources = [
+    "tab_toolbar_button_halo_color_incognito.colorset/Contents.json",
   ]
 }
 

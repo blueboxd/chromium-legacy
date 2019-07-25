@@ -73,6 +73,13 @@ class TestStoragePartition : public StoragePartition {
     cookie_manager_for_browser_process_ = cookie_manager_for_browser_process;
   }
   network::mojom::CookieManager* GetCookieManagerForBrowserProcess() override;
+  void CreateRestrictedCookieManager(
+      network::mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int process_id,
+      int routing_id,
+      network::mojom::RestrictedCookieManagerRequest request) override;
 
   void set_quota_manager(storage::QuotaManager* manager) {
     quota_manager_ = manager;

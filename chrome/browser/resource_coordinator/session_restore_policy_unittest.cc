@@ -462,7 +462,7 @@ TEST_F(SessionRestorePolicyTest, CalculateAgeScore) {
     ASSERT_GE(tab_data[i - 1].score, tab_data[i].score);
 }
 
-TEST_F(SessionRestorePolicyTest, ScoreTabDefaultBehaviour) {
+TEST_F(SessionRestorePolicyTest, ScoreTabExperimentDisabled) {
   using TabData = TestSessionRestorePolicy::TabData;
 
   TabData td_app;
@@ -487,11 +487,11 @@ TEST_F(SessionRestorePolicyTest, ScoreTabDefaultBehaviour) {
   // Check the score produces the expected ordering of tabs.
   EXPECT_LT(td_internal.score, td_normal_old.score);
   EXPECT_LT(td_normal_old.score, td_normal_young.score);
-  EXPECT_LT(td_normal_young.score, td_pinned.score);
-  EXPECT_LT(td_pinned.score, td_app.score);
+  EXPECT_EQ(td_normal_young.score, td_pinned.score);
+  EXPECT_EQ(td_pinned.score, td_app.score);
 }
 
-TEST_F(SessionRestorePolicyTest, ScoreTabExperimentEnabled) {
+TEST_F(SessionRestorePolicyTest, ScoreTabDefaultBehaviour) {
   using TabData = TestSessionRestorePolicy::TabData;
 
   base::test::ScopedFeatureList feature_list;

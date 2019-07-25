@@ -114,9 +114,11 @@ struct WebContextMenuData {
   // The raw text of the selection in context.
   WebString selected_text;
 
-  // Title attribute or alt attribute (if title is not available) of the
-  // selection in context.
+  // Title attribute of the selection in context.
   WebString title_text;
+
+  // Alt attribute of the selection in context.
+  WebString alt_text;
 
   // Whether spell checking is enabled.
   bool is_spell_checking_enabled;

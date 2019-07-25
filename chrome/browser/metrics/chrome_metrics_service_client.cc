@@ -38,6 +38,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/cached_metrics_profile.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
 #include "chrome/browser/metrics/desktop_platform_features_metrics_provider.h"
@@ -67,6 +68,7 @@
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/component_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
+#include "components/metrics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/field_trials_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
@@ -85,6 +87,7 @@
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/url_constants.h"
 #include "components/metrics/version_utils.h"
+#include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/omnibox_metrics_provider.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -390,6 +393,45 @@ bool IsProcessRunning(base::ProcessId pid) {
   return false;
 }
 
+// Client used by DemographicMetricsProvider to retrieve Profile information.
+class ProfileClientImpl
+    : public metrics::DemographicMetricsProvider::ProfileClient {
+ public:
+  ~ProfileClientImpl() override {}
+  ProfileClientImpl() = default;
+
+  int GetNumberOfProfilesOnDisk() override {
+    return g_browser_process->profile_manager()->GetNumberOfProfiles();
+  }
+
+  syncer::SyncService* GetSyncService() override {
+    Profile* profile = cached_metrics_profile_.GetMetricsProfile();
+    if (!profile)
+      return nullptr;
+
+    return ProfileSyncServiceFactory::GetForProfile(profile);
+  }
+
+  base::Time GetNetworkTime() const override {
+    base::Time time;
+    if (g_browser_process->network_time_tracker()->GetNetworkTime(&time,
+                                                                  nullptr) !=
+        network_time::NetworkTimeTracker::NETWORK_TIME_AVAILABLE) {
+      // Return null time to indicate that it could not get the network time. It
+      // is the responsibility of the client to have the strategy to deal with
+      // the absence of network time.
+      return base::Time();
+    }
+    return time;
+  }
+
+ private:
+  // Provides the same cached Profile each time.
+  metrics::CachedMetricsProfile cached_metrics_profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileClientImpl);
+};
+
 }  // namespace
 
 // UKM suffix for field trial recording.
@@ -400,7 +442,7 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     : metrics_state_manager_(state_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
-  incognito_observer_ = std::make_unique<IncognitoObserver>(
+  incognito_observer_ = IncognitoObserver::Create(
       base::BindRepeating(&ChromeMetricsServiceClient::UpdateRunningServices,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -644,6 +686,10 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<tracing::BackgroundTracingMetricsProvider>());
 
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::DemographicMetricsProvider>(
+          std::make_unique<ProfileClientImpl>()));
+
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<AndroidMetricsProvider>());
@@ -669,8 +715,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
           base::Bind(&GetExecutableVersionDetails)));
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<AntiVirusMetricsProvider>(
-          content::GetSystemConnector()));
+      std::make_unique<AntiVirusMetricsProvider>());
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

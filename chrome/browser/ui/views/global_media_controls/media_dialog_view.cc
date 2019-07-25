@@ -10,11 +10,17 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_list_view.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/views/background.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 using media_session::mojom::MediaSessionAction;
+
+namespace {
+
+constexpr int kMediaDialogCornerRadius = 8;
+
+}  // anonymous namespace
 
 // static
 MediaDialogView* MediaDialogView::instance_ = nullptr;
@@ -65,6 +71,12 @@ int MediaDialogView::GetDialogButtons() const {
 
 bool MediaDialogView::Close() {
   return Cancel();
+}
+
+void MediaDialogView::AddedToWidget() {
+  views::BubbleFrameView* frame = GetBubbleFrameView();
+  if (frame)
+    frame->SetCornerRadius(kMediaDialogCornerRadius);
 }
 
 gfx::Size MediaDialogView::CalculatePreferredSize() const {

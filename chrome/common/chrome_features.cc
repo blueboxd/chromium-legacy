@@ -527,7 +527,7 @@ const base::Feature kParentAccessCode{"ParentAccessCode",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kParentAccessCodeForTimeChange{
-    "ParentAccessCodeForTimeChange", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ParentAccessCodeForTimeChange", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Delegate permissions to cross-origin iframes when the feature has been

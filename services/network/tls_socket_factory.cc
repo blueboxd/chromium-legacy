@@ -47,12 +47,11 @@ class FakeCertVerifier : public net::CertVerifier {
 TLSSocketFactory::TLSSocketFactory(
     net::URLRequestContext* url_request_context,
     const net::HttpNetworkSession::Context* http_context)
-    : ssl_client_socket_context_(
-          url_request_context->cert_verifier(),
-          url_request_context->transport_security_state(),
-          url_request_context->cert_transparency_verifier(),
-          url_request_context->ct_policy_enforcer(),
-          nullptr /* Disables SSL session caching */),
+    : ssl_client_context_(url_request_context->cert_verifier(),
+                          url_request_context->transport_security_state(),
+                          url_request_context->cert_transparency_verifier(),
+                          url_request_context->ct_policy_enforcer(),
+                          nullptr /* Disables SSL session caching */),
       client_socket_factory_(nullptr),
       ssl_config_service_(url_request_context->ssl_config_service()) {
   if (http_context) {
@@ -108,8 +107,7 @@ void TLSSocketFactory::CreateTLSClientSocket(
 
   net::SSLConfig ssl_config;
   ssl_config_service_->GetSSLConfig(&ssl_config);
-  net::SSLClientSocketContext& ssl_client_socket_context =
-      ssl_client_socket_context_;
+  net::SSLClientContext* ssl_client_context = &ssl_client_context_;
 
   bool send_ssl_info = false;
   if (socket_options) {
@@ -121,29 +119,28 @@ void TLSSocketFactory::CreateTLSClientSocket(
     send_ssl_info = socket_options->send_ssl_info;
 
     if (socket_options->unsafely_skip_cert_verification) {
-      if (!no_verification_cert_verifier_) {
-        no_verification_cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
-        no_verification_transport_security_state_.reset(
-            new net::TransportSecurityState);
-        no_verification_cert_transparency_verifier_.reset(
-            new net::MultiLogCTVerifier());
-        no_verification_ct_policy_enforcer_.reset(
-            new net::DefaultCTPolicyEnforcer());
-        no_verification_ssl_client_socket_context_.cert_verifier =
-            no_verification_cert_verifier_.get();
-        no_verification_ssl_client_socket_context_.transport_security_state =
-            no_verification_transport_security_state_.get();
-        no_verification_ssl_client_socket_context_.cert_transparency_verifier =
-            no_verification_cert_transparency_verifier_.get();
-        no_verification_ssl_client_socket_context_.ct_policy_enforcer =
-            no_verification_ct_policy_enforcer_.get();
+      if (!no_verification_ssl_client_context_) {
+        no_verification_cert_verifier_ = std::make_unique<FakeCertVerifier>();
+        no_verification_transport_security_state_ =
+            std::make_unique<net::TransportSecurityState>();
+        no_verification_cert_transparency_verifier_ =
+            std::make_unique<net::MultiLogCTVerifier>();
+        no_verification_ct_policy_enforcer_ =
+            std::make_unique<net::DefaultCTPolicyEnforcer>();
+        no_verification_ssl_client_context_ =
+            std::make_unique<net::SSLClientContext>(
+                no_verification_cert_verifier_.get(),
+                no_verification_transport_security_state_.get(),
+                no_verification_cert_transparency_verifier_.get(),
+                no_verification_ct_policy_enforcer_.get(),
+                nullptr /* no session cache */);
       }
-      ssl_client_socket_context = no_verification_ssl_client_socket_context_;
+      ssl_client_context = no_verification_ssl_client_context_.get();
       send_ssl_info = true;
     }
   }
   socket_raw->Connect(host_port_pair, ssl_config, std::move(underlying_socket),
-                      ssl_client_socket_context, client_socket_factory_,
+                      ssl_client_context, client_socket_factory_,
                       std::move(callback), send_ssl_info);
 }
 

@@ -24,6 +24,7 @@ public class NfcTagHandler {
     private final TagTechnology mTech;
     private final TagTechnologyHandler mTechHandler;
     private boolean mWasConnected;
+    private final String mSerialNumber;
 
     /**
      * Factory method that creates NfcTagHandler for a given NFC Tag.
@@ -42,13 +43,13 @@ public class NfcTagHandler {
                     || type.equals(Ndef.NFC_FORUM_TYPE_3) || type.equals(Ndef.NFC_FORUM_TYPE_4)) {
                 compatibility = NdefCompatibility.NFC_FORUM;
             }
-            return new NfcTagHandler(compatibility, ndef, new NdefHandler(ndef));
+            return new NfcTagHandler(compatibility, ndef, new NdefHandler(ndef), tag.getId());
         }
 
         NdefFormatable formattable = NdefFormatable.get(tag);
         if (formattable != null) {
-            return new NfcTagHandler(
-                    NdefCompatibility.VENDOR, formattable, new NdefFormattableHandler(formattable));
+            return new NfcTagHandler(NdefCompatibility.VENDOR, formattable,
+                    new NdefFormattableHandler(formattable), tag.getId());
         }
 
         return null;
@@ -112,10 +113,35 @@ public class NfcTagHandler {
         }
     }
 
-    protected NfcTagHandler(int compatibility, TagTechnology tech, TagTechnologyHandler handler) {
+    protected NfcTagHandler(
+            int compatibility, TagTechnology tech, TagTechnologyHandler handler, byte[] id) {
         mCompatibility = compatibility;
         mTech = tech;
         mTechHandler = handler;
+        mSerialNumber = bytesToSerialNumber(id);
+    }
+
+    /**
+     * Convert byte array to serial number string (4-7 ASCII hex digits concatenated by ":").
+     */
+    private static String bytesToSerialNumber(byte[] octets) {
+        if (octets.length < 0) return null;
+
+        StringBuilder sb = new StringBuilder(octets.length * 3);
+        for (byte b : octets) {
+            if (sb.length() > 0) {
+                sb.append(":");
+            }
+            sb.append(String.format("%02x", b & 0xff));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Get the serial number of this NFC tag.
+     */
+    public String serialNumber() {
+        return mSerialNumber;
     }
 
     /**

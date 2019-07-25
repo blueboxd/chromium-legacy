@@ -25,6 +25,5 @@ const CGFloat kTableViewAccessoryWidth = 40;
 const int kTableViewTextLabelColorBlue = 0x1A73E8;
 const int kTableViewTextLabelColorLightGrey = 0x6D6D72;
 const int kTableViewSecondaryLabelLightGrayTextColor = 0x5F6368;
-const int kTableViewSwitchTintColor = 0x1A73E8;
 
 NSString* const kMaskedPassword = @"••••••••";

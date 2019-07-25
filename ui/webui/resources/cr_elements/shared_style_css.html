@@ -56,6 +56,10 @@
       [scrollable].can-scroll:not(.scrolled-to-bottom) {
         border-bottom-color: var(--scrollable-border-color);
       }
+      [scrollable] iron-list > :not(.no-outline):focus {
+        @apply --cr-list-item-focus;
+        @apply --cr-selectable-focus;
+      }
 
       .scroll-container {
         display: flex;
@@ -64,10 +68,8 @@
       }
 
       [selectable]:focus,
-      [selectable] > :focus,
-      [scrollable] iron-list > :not(.no-outline):focus {
-        background-color: var(--cr-focused-item-color);
-        outline: none;
+      [selectable] > :focus {
+        @apply --cr-selectable-focus;
       }
       [selectable] > * {
         cursor: pointer;

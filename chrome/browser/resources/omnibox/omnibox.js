@@ -66,9 +66,10 @@ class BrowserProxy {
     this.callbackRouter_.handleAnswerImageData.addListener(
         omniboxOutput.updateAnswerImage.bind(omniboxOutput));
 
-    /** @private {!mojom.OmniboxPageHandlerProxy} */
-    this.handler_ = mojom.OmniboxPageHandler.getProxy();
-    this.handler_.setClientPage(this.callbackRouter_.$.createProxy());
+    /** @private {!mojom.OmniboxPageHandlerRemote} */
+    this.handler_ = mojom.OmniboxPageHandler.getRemote();
+    this.handler_.setClientPage(
+        this.callbackRouter_.$.bindNewPipeAndPassRemote());
 
     /** @private {Request} */
     this.lastRequest;

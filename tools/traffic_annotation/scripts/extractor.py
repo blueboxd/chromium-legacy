@@ -54,6 +54,13 @@ class Annotation:
       file_path: Path to the file that contains this annotation.
     """
     self.file_path = file_path
+    # TODO(crbug/966883): Remove function_name from here and from the clang
+    # tool's output.
+    #
+    # |function_name| is not supported, but keep it in the output for
+    # compatibility with the clang tool. Use an obviously wrong function name
+    # in case this details ends up in auditor output.
+    self.function_name = "XXX_UNIMPLEMENTED_XXX"
     self.line_number = line_number
     self.type_name = type_name
     self.unique_id = unique_id
@@ -81,6 +88,7 @@ class Annotation:
     return "\n".join(map(str, [
         "==== NEW ANNOTATION ====",
         self.file_path,
+        self.function_name,
         self.line_number,
         self.type_name,
         self.unique_id,

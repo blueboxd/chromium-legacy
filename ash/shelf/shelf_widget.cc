@@ -482,15 +482,14 @@ bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
     return false;
   if (active) {
     // Do not focus the default element if the widget activation came from the
-    // another widget's focus cycling. The setter of
-    // |activated_from_other_widget_| should handle focusing the correct view.
-    if (activated_from_other_widget_) {
-      activated_from_other_widget_ = false;
-      return true;
+    // overflow bubble's focus cycling. The setter of
+    // |activated_from_overflow_bubble_| should handle focusing the correct
+    // view.
+    if (activated_from_overflow_bubble_) {
+      activated_from_overflow_bubble_ = false;
+    } else {
+      delegate_view_->SetPaneFocusAndFocusDefault();
     }
-    delegate_view_->SetPaneFocusAndFocusDefault();
-  } else {
-    delegate_view_->GetFocusManager()->ClearFocus();
   }
   return true;
 }

@@ -24,7 +24,7 @@ source_set("chrome_prompt_ipc") {
   deps = [
     ":mojo_task_runner",
     "//base",
-    "//components/chrome_cleaner/public/mojom",
+    "//components/chrome_cleaner/public/interfaces",
     "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
   ]
@@ -91,11 +91,11 @@ source_set("unittest_sources") {
     "//base",
     "//base/test:test_support",
     "//chrome/chrome_cleaner:buildflags",
-    "//chrome/chrome_cleaner/mojom:mojo_sandbox_hooks_test_interface",
     "//chrome/chrome_cleaner/logging:common",
+    "//chrome/chrome_cleaner/mojom:mojo_sandbox_hooks_test_interface",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/test:test_util",
-    "//components/chrome_cleaner/public/mojom:mojom",
+    "//components/chrome_cleaner/public/interfaces",
     "//components/chrome_cleaner/test:test_name_helper",
     "//mojo/core/embedder",
     "//sandbox/win:sandbox",
@@ -114,7 +114,7 @@ source_set("mock_chrome_prompt_ipc") {
 
   deps = [
     ":chrome_prompt_ipc",
-    "//components/chrome_cleaner/public/mojom:mojom",
+    "//components/chrome_cleaner/public/interfaces",
     "//testing/gmock",
     "//testing/gtest",
   ]

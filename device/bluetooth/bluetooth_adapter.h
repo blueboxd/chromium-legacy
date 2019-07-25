@@ -137,17 +137,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
         const BluetoothDevice::ServiceDataMap& service_data_map,
         const BluetoothDevice::ManufacturerDataMap& manufacturer_data_map) {}
 
-// TODO(crbug.com/732991): Update comment and fix redundant #ifs throughout.
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-    // This function is implemented for ChromeOS only, and the support for
-    // Android, MaxOS and Windows should be added on demand in the future.
     // Called when paired property of the device |device| known to the adapter
     // |adapter| changed.
     virtual void DevicePairedChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device,
                                      bool new_paired_status) {}
 
-    // This function is implemented for ChromeOS only.
     // Called when the MTU |mtu| (Bluetooth Spec Vol 3, Part F, 3.4.2) used in
     // ATT communication with device |device| known to the adapter |adapter|
     // changed.
@@ -155,7 +151,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                   BluetoothDevice* device,
                                   uint16_t mtu) {}
 
-    // This function is implemented for ChromeOS only.
     // Called when advertisement is received from |device|. |eir| is the
     // extended inquiry response specified in Bluetooth Core Spec, Vol 3,
     // Part C, Section 11.
@@ -168,7 +163,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
                                              int16_t rssi,
                                              const std::vector<uint8_t>& eir) {}
 
-    // This function is implemented for ChromeOS only.
     // Called when |device|'s state has changed from connected to not connected
     // or vice versa.
     virtual void DeviceConnectedStateChanged(BluetoothAdapter* adapter,
@@ -585,8 +579,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   void NotifyDeviceChanged(BluetoothDevice* device);
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  // This function is implemented for ChromeOS only, and the support on
-  // Android, MaxOS and Windows should be added on demand in the future.
   void NotifyDevicePairedChanged(BluetoothDevice* device,
                                  bool new_paired_status);
 #endif

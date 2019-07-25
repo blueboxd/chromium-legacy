@@ -14,7 +14,13 @@ namespace settingsPrivate {
     OWNER,
     PRIMARY_USER,
     EXTENSION,
-    PARENT
+
+    // Preferences are controlled by the parent of the child user.
+    PARENT,
+
+    // Preferences are controlled neither by parent nor the child user.
+    // Preference values are hard-coded values and can not be changed.
+    CHILD_RESTRICTIONS
   };
 
   enum Enforcement { ENFORCED, RECOMMENDED };

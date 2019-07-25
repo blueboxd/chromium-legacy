@@ -17,6 +17,7 @@ const char kViewSourceScheme[] = "view-source";
 #if defined(OS_CHROMEOS)
 const char kExternalFileScheme[] = "externalfile";
 #endif
+const char kGoogleChromeScheme[] = "googlechrome";
 
 const char kChromeUIAppCacheInternalsHost[] = "appcache-internals";
 const char kChromeUIIndexedDBInternalsHost[] = "indexeddb-internals";

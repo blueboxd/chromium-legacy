@@ -150,6 +150,8 @@ Computing artifact: Speedline
 Auditing: Final Screenshot
 Auditing: Estimated Input Latency
 Computing artifact: EstimatedInputLatency
+Auditing: Total Blocking Time
+Computing artifact: TotalBlockingTime
 Auditing: Max Potential First Input Delay
 Computing artifact: MaxPotentialFID
 Auditing: No browser errors logged to the console
@@ -191,6 +193,7 @@ Auditing: start_url responds with a 200 when offline
 Auditing: Performance budget
 Computing artifact: ResourceSummary
 Auditing: Keep request counts low and transfer sizes small
+Auditing: Third-Party Usage
 Auditing: Site works cross-browser
 Auditing: Page transitions don't feel like they block on the network
 Auditing: Each page has a URL
@@ -279,7 +282,7 @@ Generating results...
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
-Version: 5.1.0
+Version: 5.2.0
 
 
 accesskeys: notApplicable
@@ -298,7 +301,7 @@ button-name: notApplicable
 bypass: notApplicable
 canonical: notApplicable
 color-contrast: notApplicable
-content-width: notApplicable
+content-width: pass
 critical-request-chains: notApplicable
 custom-controls-labels: manual
 custom-controls-roles: manual
@@ -308,7 +311,7 @@ diagnostics: ERROR Something went wrong with recording the trace over your page 
 dlitem: notApplicable
 doctype: fail
 document-title: fail
-dom-size: ERROR Required DOMStats gatherer encountered an error: Cannot read property 'localName' of null
+dom-size: numeric
 duplicate-id: notApplicable
 efficient-animated-content: flaky
 errors-in-console: pass
@@ -321,7 +324,7 @@ first-meaningful-paint: flaky
 focus-traps: manual
 focusable-controls: manual
 font-display: pass
-font-size: notApplicable
+font-size: fail
 frame-title: notApplicable
 geolocation-on-start: pass
 heading-levels: manual
@@ -381,11 +384,13 @@ speed-index: flaky
 splash-screen: fail
 structured-data: manual
 tabindex: notApplicable
-tap-targets: notApplicable
+tap-targets: fail
 td-headers-attr: notApplicable
 th-has-data-cells: notApplicable
 themed-omnibox: fail
+third-party-summary: ERROR Something went wrong with recording the trace over your page load. Please run Lighthouse again. (NO_FCP)
 time-to-first-byte: pass
+total-blocking-time: ERROR Something went wrong with recording the trace over your page load. Please run Lighthouse again. (NO_FCP)
 total-byte-weight: numeric
 unminified-css: flaky
 unminified-javascript: flaky
@@ -409,5 +414,5 @@ visual-order-follows-dom: manual
 without-javascript: fail
 works-offline: fail
 
-# of .lh-audit divs: 114
+# of .lh-audit divs: 115
 

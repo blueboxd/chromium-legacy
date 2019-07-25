@@ -316,6 +316,9 @@
     <dimen name="omnibox_suggestion_multiline_text_vertical_padding">10dp</dimen>
     <dimen name="omnibox_suggestion_refine_view_modern_end_padding">4dp</dimen>
 
+    <!-- Adding search engine logo to the omnibox. -->
+    <dimen name="omnibox_search_engine_logo_favicon_size">24dp</dimen>
+
     <!-- NTP dimensions -->
     <dimen name="tile_grid_layout_max_width">504dp</dimen>
     <dimen name="tile_grid_layout_padding_top">24dp</dimen>
@@ -571,16 +574,8 @@
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
     <dimen name="sync_passphrase_type_instructions_padding">25dp</dimen>
 
-    <!-- Context Menu Dimensions -->
-    <dimen name="context_menu_header_image_width_padding">15dp</dimen>
-    <dimen name="context_menu_header_image_min_size">56dp</dimen>
-    <dimen name="context_menu_header_image_max_height">150dp</dimen>
-    <dimen name="context_menu_max_width">500dp</dimen>
-    <dimen name="context_menu_min_padding">20dp</dimen>
-    <dimen name="context_menu_image_vertical_margin">30dp</dimen>
-    <dimen name="context_menu_selectable_items_min_size">120dp</dimen>
-
     <!-- Revamped Context Menu Dimensions -->
+    <dimen name="context_menu_max_width">500dp</dimen>
     <dimen name="revamped_context_menu_lateral_margin">40dp</dimen>
     <dimen name="revamped_context_menu_vertical_margin">20dp</dimen>
     <dimen name="revamped_context_menu_list_lateral_padding">16dp</dimen>

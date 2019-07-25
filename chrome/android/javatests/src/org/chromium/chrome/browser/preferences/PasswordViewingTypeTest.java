@@ -43,7 +43,7 @@ public class PasswordViewingTypeTest {
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     private MainPreferences mMainPreferences;
-    private ChromeBasePreference mPasswordsPref;
+    private ChromeBasePreferenceCompat mPasswordsPref;
     private Context mContext;
     private MockSyncContentResolverDelegate mSyncContentResolverDelegate;
     private String mAuthority;
@@ -57,8 +57,8 @@ public class PasswordViewingTypeTest {
         mContext = InstrumentationRegistry.getTargetContext();
         mMainPreferences = (MainPreferences) startMainPreferences(
                 InstrumentationRegistry.getInstrumentation(), mContext)
-                                   .getMainFragment();
-        mPasswordsPref = (ChromeBasePreference) mMainPreferences.findPreference(
+                                   .getMainFragmentCompat();
+        mPasswordsPref = (ChromeBasePreferenceCompat) mMainPreferences.findPreference(
                 MainPreferences.PREF_SAVED_PASSWORDS);
         AndroidSyncSettings.overrideForTests(mSyncContentResolverDelegate, null);
         mAuthority = AndroidSyncSettings.get().getContractAuthority();

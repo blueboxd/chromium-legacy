@@ -10,22 +10,21 @@
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-class Profile;
-
 namespace chromeos {
 
 // System dialog wrapping chrome:://password-change
 class PasswordChangeDialog : public SystemWebDialogDelegate {
  public:
-  static void Show(Profile* profile);
+  static void Show();
   static void Dismiss();
 
  protected:
-  explicit PasswordChangeDialog(const base::string16& title);
+  PasswordChangeDialog();
   ~PasswordChangeDialog() override;
 
   // ui::WebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
   ui::ModalType GetDialogModalType() const override;
 
  private:

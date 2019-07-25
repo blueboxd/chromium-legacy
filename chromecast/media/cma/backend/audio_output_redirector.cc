@@ -22,6 +22,10 @@
 namespace chromecast {
 namespace media {
 
+namespace {
+const int kDefaultBufferSize = 2048;
+}  // namespace
+
 class AudioOutputRedirector::InputImpl : public AudioOutputRedirectorInput {
  public:
   using RenderingDelay = MediaPipelineBackend::AudioDecoder::RenderingDelay;
@@ -59,6 +63,10 @@ AudioOutputRedirector::InputImpl::InputImpl(
   DCHECK(output_redirector_);
   DCHECK(mixer_input_);
 
+  temp_buffer_ = ::media::AudioBus::Create(mixer_input_->num_channels(),
+                                           kDefaultBufferSize);
+  temp_buffer_->Zero();
+
   mixer_input_->AddAudioOutputRedirector(this);
 }
 
@@ -84,16 +92,21 @@ void AudioOutputRedirector::InputImpl::Redirect(::media::AudioBus* const buffer,
       buffer->CopyPartialFramesTo(0, num_frames, 0, temp_buffer_.get());
     }
 
+    const int num_channels = buffer->channels();
+    float* channels[num_channels];
+    for (int c = 0; c < num_channels; ++c) {
+      channels[c] = buffer->channel(c);
+    }
     if (previous_ended_in_silence_) {
       if (!redirected) {
         // Smoothly fade in from previous silence.
-        AudioFader::FadeInHelper(temp_buffer_.get(), num_frames, 0, num_frames,
+        AudioFader::FadeInHelper(channels, num_channels, num_frames, num_frames,
                                  num_frames);
       }
     } else if (redirected) {
       // Smoothly fade out to silence, since output is now being redirected by a
       // previous output splitter.
-      AudioFader::FadeOutHelper(temp_buffer_.get(), num_frames, 0, num_frames,
+      AudioFader::FadeOutHelper(channels, num_channels, num_frames, num_frames,
                                 num_frames);
     }
     previous_ended_in_silence_ = redirected;
@@ -111,6 +124,13 @@ AudioOutputRedirector::AudioOutputRedirector(
       channel_data_(config.num_output_channels) {
   DCHECK(output_);
   DCHECK_GT(config_.num_output_channels, 0);
+
+  mixed_ = ::media::AudioBus::Create(config_.num_output_channels,
+                                     kDefaultBufferSize);
+  mixed_->Zero();
+  for (int c = 0; c < config_.num_output_channels; ++c) {
+    channel_data_[c] = mixed_->channel(c);
+  }
 }
 
 AudioOutputRedirector::~AudioOutputRedirector() = default;

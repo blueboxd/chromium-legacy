@@ -67,6 +67,17 @@ export class StdToastElement extends HTMLElement {
   #timeoutID;
   #actionSlot;
   #closeButtonElement;
+  #setCloseTimeout = duration => {
+    clearTimeout(this.#timeoutID);
+
+    if (duration === Infinity) {
+      this.#timeoutID = null;
+    } else {
+      this.#timeoutID = setTimeout(() => {
+        this.removeAttribute('open');
+      }, duration);
+    }
+  };
 
   constructor(message) {
     super();
@@ -160,11 +171,12 @@ export class StdToastElement extends HTMLElement {
   }
 
   show({duration = DEFAULT_DURATION} = {}) {
+    if (duration <= 0) {
+      throw new RangeError(`Invalid Argument: duration must be greater than 0 [${duration} given]`);
+    }
+
     this.setAttribute('open', '');
-    clearTimeout(this.#timeoutID);
-    this.#timeoutID = setTimeout(() => {
-      this.removeAttribute('open');
-    }, duration);
+    this.#setCloseTimeout(duration);
   }
 
   hide() {
@@ -182,8 +194,7 @@ export class StdToastElement extends HTMLElement {
           this.dispatchEvent(new Event('show'));
         } else if (newValue === null) {
           this.dispatchEvent(new Event('hide'));
-          clearTimeout(this.#timeoutID);
-          this.#timeoutID = null;
+          this.#setCloseTimeout(Infinity);
         }
         break;
       case 'closebutton':

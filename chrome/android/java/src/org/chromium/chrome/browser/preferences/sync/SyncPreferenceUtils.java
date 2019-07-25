@@ -9,11 +9,11 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
@@ -171,7 +171,7 @@ public class SyncPreferenceUtils {
      * @param runnable The runnable to call from {@link Preference.OnPreferenceClickListener}.
      */
     static Preference.OnPreferenceClickListener toOnClickListener(
-            PreferenceFragment fragment, Runnable runnable) {
+            PreferenceFragmentCompat fragment, Runnable runnable) {
         return preference -> {
             if (!fragment.isResumed()) {
                 // This event could come in after onPause if the user clicks back and the preference

@@ -352,8 +352,8 @@ int SSLConnectJob::DoSSLConnect() {
   ssl_config.network_isolation_key = params_->network_isolation_key();
   ssl_config.privacy_mode = params_->privacy_mode();
   ssl_socket_ = client_socket_factory()->CreateSSLClientSocket(
-      std::move(nested_socket_), params_->host_and_port(), ssl_config,
-      ssl_client_socket_context());
+      ssl_client_context(), std::move(nested_socket_), params_->host_and_port(),
+      ssl_config);
   nested_connect_job_.reset();
   return ssl_socket_->Connect(callback_);
 }

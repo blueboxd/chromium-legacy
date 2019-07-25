@@ -42,6 +42,9 @@ checking_closure_args = strict_error_checking_closure_args + [
                           "polymer_pass",
 
                           "jscomp_off=duplicate",
+
+                          "js_module_root=../../ui/webui/resources/",
+                          "js_module_root=gen/ui/webui/resources/",
                         ]
 
 # Additional closure arguments for minifying

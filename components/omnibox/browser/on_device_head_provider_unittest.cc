@@ -29,7 +29,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
     client_.reset(new FakeAutocompleteProviderClient());
     SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
@@ -49,7 +49,18 @@ class OnDeviceHeadProviderTest : public testing::Test,
     // The same test model also used in ./on_device_head_serving_unittest.cc.
     file_path = file_path.AppendASCII("components/test/data/omnibox");
     ASSERT_TRUE(base::PathExists(file_path));
-    OnDeviceHeadProvider::OverrideEnumDirOnDeviceHeadSuggestForTest(file_path);
+    auto* update_listener = OnDeviceModelUpdateListener::GetInstance();
+    if (update_listener)
+      update_listener->OnModelUpdate(file_path);
+    scoped_task_environment_.RunUntilIdle();
+  }
+
+  void ResetServingInstance() {
+    if (provider_) {
+      provider_->serving_.reset();
+      provider_->current_model_filename_.clear();
+      provider_->new_model_filename_.clear();
+    }
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -58,38 +69,39 @@ class OnDeviceHeadProviderTest : public testing::Test,
 };
 
 TEST_F(OnDeviceHeadProviderTest, ServingInstanceNotCreated) {
-  AutocompleteInput input(base::UTF8ToUTF16("a"),
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
+  ResetServingInstance();
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(false));
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
 
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
 }
 
 TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
-  AutocompleteInput input(base::UTF8ToUTF16("a"),
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(false);
 
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
 }
 
 TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
-  AutocompleteInput input(base::UTF8ToUTF16("a"),
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
                           metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
@@ -98,7 +110,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -115,7 +127,7 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -132,7 +144,7 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
@@ -160,7 +172,7 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   provider_->Start(input2, false);
 
   if (!provider_->done())
-    base::RunLoop().RunUntilIdle();
+    scoped_task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());

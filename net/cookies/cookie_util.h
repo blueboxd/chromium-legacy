@@ -137,6 +137,13 @@ NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForScriptSet(const GURL& url,
                                    const GURL& site_for_cookies);
 
+// Determines which of the cookies for |url| can be accessed when fetching a
+// subresources. This is either CROSS_SITE or SAME_SITE_STRICT,
+// since the initiator for a subresource is the frame loading it.
+NET_EXPORT CookieOptions::SameSiteCookieContext
+ComputeSameSiteContextForSubresource(const GURL& url,
+                                     const GURL& site_for_cookies);
+
 // Checks whether a cookie would be excluded due to SameSite restrictions,
 // assuming SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
 // were turned on. This should be called on a cookie that is in fact included,

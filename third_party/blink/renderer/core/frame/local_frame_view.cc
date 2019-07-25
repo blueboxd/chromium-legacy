@@ -1817,8 +1817,7 @@ void LocalFrameView::PerformPostLayoutTasks() {
   // send the right mouse out/over events.
   // TODO(lanwei): we should check whether the mouse is inside the frame before
   // dirtying the hover state.
-  if (RuntimeEnabledFeatures::
-          UpdateHoverFromLayoutChangeAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
     frame_->LocalFrameRoot().GetEventHandler().MarkHoverStateDirty();
   } else {
     frame_->GetEventHandler().MayUpdateHoverWhenContentUnderMouseChanged(

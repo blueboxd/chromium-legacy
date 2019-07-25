@@ -1162,11 +1162,26 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ShouldNotHaveNoThanksButton) {
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillSaveCardShowNoThanks);
   FillForm();
   SubmitFormAndWaitForCardLocalSaveBubble();
 
   // Assert that the cancel button cannot be found.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
+}
+
+// Tests the local save bubble. Ensures that the bubble has a
+// [No thanks] button if |kAutofillSaveCardShowNoThanks| experiment is enabled.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Local_ShouldHaveNoThanksButtonIfExperimentEnabled) {
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillSaveCardShowNoThanks);
+  FillForm();
+  SubmitFormAndWaitForCardLocalSaveBubble();
+
+  // Assert that the cancel button can be found.
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 #endif
 
@@ -1387,7 +1402,11 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // [No thanks] button (it has an [X] Close button instead.)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Upload_ShouldNotHaveNoThanksButton) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillUpstream},
+      // Disabled
+      {features::kAutofillSaveCardShowNoThanks});
 
   // Start sync.
   harness_->SetupSync();
@@ -1397,6 +1416,26 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 
   // Assert that the cancel button cannot be found.
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
+}
+
+// Tests the upload save bubble. Ensures that the bubble has a
+// [No thanks] button if |kAutofillSaveCardShowNoThanks| experiment is enabled.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
+                       Upload_ShouldHaveNoThanksButtonIfExperimentEnabled) {
+  scoped_feature_list_.InitWithFeatures(
+      // Enabled
+      {features::kAutofillSaveCardShowNoThanks, features::kAutofillUpstream},
+      // Disabled
+      {});
+
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Assert that the cancel button can be found.
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 #endif  // defined(OS_CHROMEOS)
 

@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/services/util_win/util_win_service.h",
+  "+chrome/services/util_win/util_win_impl.h",
 ]
 
 specific_include_rules = {

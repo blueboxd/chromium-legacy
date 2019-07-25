@@ -399,7 +399,11 @@ void WindowsSpellChecker::IgnoreWordForAllLanguagesInBackgroundThread(
 bool WindowsSpellChecker::IsLanguageSupportedInBackgroundThread(
     const std::string& current_language) {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
-  DCHECK(IsSpellCheckerFactoryInitialized());
+
+  if (!IsSpellCheckerFactoryInitialized()) {
+    // The native spellchecker creation failed; no language is supported.
+    return false;
+  }
 
   BOOL is_language_supported = (BOOL) false;
   std::wstring bcp47_language_tag = base::UTF8ToWide(current_language);
@@ -428,6 +432,12 @@ void WindowsSpellChecker::RecordMissingLanguagePacksCountInBackgroundThread(
     SpellCheckHostMetrics* metrics) {
   DCHECK(!main_task_runner_->BelongsToCurrentThread());
   DCHECK(metrics);
+
+  if (!IsSpellCheckerFactoryInitialized()) {
+    // The native spellchecker creation failed. Do not record any metrics.
+    return;
+  }
+
   metrics->RecordMissingLanguagePacksCount(
       std::count_if(spellcheck_locales.begin(), spellcheck_locales.end(),
                     [this](const std::string& s) {

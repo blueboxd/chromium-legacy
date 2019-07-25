@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v7.app.AppCompatActivity;
 
 import org.junit.Assert;
 
@@ -186,6 +187,40 @@ public class ActivityUtils {
     }
 
     /**
+     * TODO(crbug.com/967022): This method is a duplicate of {@link #waitForFragment(Activity,
+     * String)}, but with Support Library classes replacing deprecated Framework classes. When
+     * Preference Support Library migration is complete remove {@link #waitForFragment(Activity,
+     * String)} and {@link FragmentPresentCriteria} in favor of this method.
+     *
+     * Waits for a fragment to be registered by the specified activity.
+     *
+     * @param activity The activity that owns the fragment.
+     * @param fragmentTag The tag of the fragment to be loaded.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends android.support.v4.app.Fragment> T waitForFragmentCompat(
+            AppCompatActivity activity, String fragmentTag) {
+        String failureReason =
+                String.format("Could not locate the fragment with tag '%s'", fragmentTag);
+        CriteriaHelper.pollInstrumentationThread(new Criteria(failureReason) {
+            @Override
+            public boolean isSatisfied() {
+                android.support.v4.app.Fragment fragment =
+                        activity.getSupportFragmentManager().findFragmentByTag(fragmentTag);
+                if (fragment == null) return false;
+                if (fragment instanceof android.support.v4.app.DialogFragment) {
+                    android.support.v4.app.DialogFragment dialogFragment =
+                            (android.support.v4.app.DialogFragment) fragment;
+                    return dialogFragment.getDialog() != null
+                            && dialogFragment.getDialog().isShowing();
+                }
+                return fragment.getView() != null;
+            }
+        }, ACTIVITY_START_TIMEOUT_MS, CONDITION_POLL_INTERVAL_MS);
+        return (T) activity.getSupportFragmentManager().findFragmentByTag(fragmentTag);
+    }
+
+    /**
      * Waits until the specified fragment has been attached to the specified activity. Note that
      * we don't guarantee that the fragment is visible. Some UI operations can happen too
      * quickly and we can miss the time that a fragment is visible. This method allows you to get a
@@ -210,10 +245,10 @@ public class ActivityUtils {
     }
 
     /**
-     * TODO(crbug.com/967022): This method is a duplicate of {@link #waitForFragment(Activity,
-     * String)}, but with Support Library classes replacing deprecated Framework classes. When
-     * Preference Support Library migration is complete remove {@link #waitForFragment(Activity,
-     * String)} in favor of this method.
+     * TODO(crbug.com/967022): This method is a duplicate of {@link
+     * #waitForFragmentToAttach(Preferences, Class)}, but with Support Library classes replacing
+     * deprecated Framework classes. When Preference Support Library migration is complete remove
+     * {@link #waitForFragmentToAttach(Preferences, Class)} in favor of this method.
      *
      * Waits until the specified fragment has been attached to the specified activity. Note that
      * we don't guarantee that the fragment is visible. Some UI operations can happen too

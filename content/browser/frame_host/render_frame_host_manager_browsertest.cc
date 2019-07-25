@@ -278,7 +278,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
       new_shell, embedded_test_server()->GetURL("foo.com", "/title1.html")));
   scoped_refptr<SiteInstance> new_site_instance(
       new_shell->web_contents()->GetSiteInstance());
-  EXPECT_NE(orig_site_instance, new_site_instance);
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_EQ(orig_site_instance, new_site_instance);
+  } else {
+    EXPECT_NE(orig_site_instance, new_site_instance);
+  }
 
   // We should no longer have script access to the opened window's location.
   success = false;
@@ -289,6 +293,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   EXPECT_FALSE(success);
 
   // We now navigate the window to an about:blank page.
+  TestNavigationObserver navigation_observer(new_shell->web_contents());
   success = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       shell(), "window.domAutomationController.send(clickBlankTargetedLink());",
@@ -296,7 +301,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, NoScriptAccessAfterSwapOut) {
   EXPECT_TRUE(success);
 
   // Wait for the navigation in the new window to finish.
-  WaitForLoadStop(new_shell->web_contents());
+  navigation_observer.Wait();
+
   GURL blank_url(url::kAboutBlankURL);
   EXPECT_EQ(blank_url,
             new_shell->web_contents()->GetLastCommittedURL());
@@ -753,6 +759,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   StartEmbeddedServer();
 
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed to get a non-default
+    // SiteInstance for navigations to this origin.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
+
   // Load a page with links that open in a new window.
   NavigateToPageWithLinks(shell());
 
@@ -846,6 +859,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        PreserveTopFrameWindowNameOnCrossProcessNavigations) {
   StartEmbeddedServer();
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed it is placed in a different
+    // process.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   GURL main_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -870,7 +889,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(new_shell, foo_url));
   scoped_refptr<SiteInstance> new_site_instance(
       new_shell->web_contents()->GetSiteInstance());
-  EXPECT_NE(orig_site_instance, new_site_instance);
+  EXPECT_NE(orig_site_instance->GetProcess(), new_site_instance->GetProcess());
 
   // window.name should still be "foo".
   name = "";
@@ -908,6 +927,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SupportCrossProcessPostMessage) {
   StartEmbeddedServer();
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed it is placed in a different
+    // process.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   // Load a page with links that open in a new window.
   NavigateToPageWithLinks(shell());
@@ -1046,6 +1071,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SupportCrossProcessPostMessageWithMessagePort) {
   StartEmbeddedServer();
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed it is placed in a different
+    // process.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   // Load a page with links that open in a new window.
   NavigateToPageWithLinks(shell());
@@ -1130,6 +1161,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        AllowTargetedNavigationsInOpenerAfterSwap) {
   StartEmbeddedServer();
+
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed to get a non-default
+    // SiteInstance for navigations to this origin.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   // Load a page with links that open in a new window.
   NavigateToPageWithLinks(shell());
@@ -1231,6 +1269,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ProcessExitWithSwappedOutViews) {
   StartEmbeddedServer();
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed to get a non-default
+    // SiteInstance for navigations to this origin.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   // Load a page with links that open in a new window.
   NavigateToPageWithLinks(shell());
@@ -1932,6 +1976,8 @@ IN_PROC_BROWSER_TEST_F(
   if (AreAllSitesIsolatedForTesting()) {
     EXPECT_EQ(kRedirectSiteURL,
               speculative_rfh->GetSiteInstance()->GetSiteURL());
+  } else if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(speculative_rfh->GetSiteInstance()->IsDefaultSiteInstance());
   } else {
     EXPECT_EQ(kOriginalSiteURL,
               speculative_rfh->GetSiteInstance()->GetSiteURL());
@@ -1973,7 +2019,12 @@ IN_PROC_BROWSER_TEST_F(
                         ->render_manager()
                         ->speculative_frame_host();
   CHECK(speculative_rfh);
-  EXPECT_EQ(kOriginalSiteURL, speculative_rfh->GetSiteInstance()->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(speculative_rfh->GetSiteInstance()->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(kOriginalSiteURL,
+              speculative_rfh->GetSiteInstance()->GetSiteURL());
+  }
   if (AreAllSitesIsolatedForTesting())
     EXPECT_NE(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
 }
@@ -2202,6 +2253,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontPreemptNavigationWithFrameTreeUpdate) {
   StartEmbeddedServer();
+
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed to get a non-default
+    // SiteInstance for navigations to this origin.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   // 1. Load a page that deletes its iframe during unload.
   NavigateToURL(shell(),
@@ -2841,6 +2899,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ReinitializeOpenerChainAfterCrashAndReload) {
   StartEmbeddedServer();
 
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed to get a non-default
+    // SiteInstance for navigations to this origin.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
+
   GURL main_url = embedded_test_server()->GetURL("/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -2904,6 +2969,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // the other popup, and ensure that the opener is updated in all processes.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   StartEmbeddedServer();
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Isolate "foo.com" so we are guaranteed it is placed in a different
+    // process.
+    IsolateOriginsForTesting(embedded_test_server(), shell()->web_contents(),
+                             {"foo.com"});
+  }
 
   GURL main_url = embedded_test_server()->GetURL("/post_message.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2928,10 +2999,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, UpdateOpener) {
   Shell* bar_shell = OpenPopup(shell(), bar_url, "bar");
   EXPECT_TRUE(bar_shell);
 
-  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
-            foo_shell->web_contents()->GetSiteInstance());
-  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
-            bar_shell->web_contents()->GetSiteInstance());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance()->GetProcess(),
+            foo_shell->web_contents()->GetSiteInstance()->GetProcess());
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance()->GetProcess(),
+            bar_shell->web_contents()->GetSiteInstance()->GetProcess());
 
   // Initially, both popups' openers should point to main window.
   FrameTreeNode* foo_root =
@@ -3705,14 +3776,17 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, CoReferencingFrames) {
         "      B = http://b.com/",
         FrameTreeVisualizer().DepictFrameTree(root));
   } else {
-    EXPECT_EQ(
-        " Site A\n"
-        "   +--Site A\n"
-        "        +--Site A\n"
-        "             +--Site A\n"
-        "                  +--Site A\n"
-        "Where A = http://a.com/",
-        FrameTreeVisualizer().DepictFrameTree(root));
+    const GURL kExpectedSiteURL = AreDefaultSiteInstancesEnabled()
+                                      ? SiteInstanceImpl::GetDefaultSiteURL()
+                                      : GURL("http://a.com/");
+    EXPECT_EQ(std::string(" Site A\n"
+                          "   +--Site A\n"
+                          "        +--Site A\n"
+                          "             +--Site A\n"
+                          "                  +--Site A\n"
+                          "Where A = ") +
+                  kExpectedSiteURL.spec(),
+              FrameTreeVisualizer().DepictFrameTree(root));
   }
   FrameTreeNode* bottom_child =
       root->child_at(0)->child_at(0)->child_at(0)->child_at(0);
@@ -3760,12 +3834,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // The FrameTree contains two successful instances of the url plus an
   // unsuccessfully-navigated third instance with a blank URL.
-  EXPECT_EQ(
-      " Site A\n"
-      "   +--Site A\n"
-      "        +--Site A\n"
-      "Where A = http://a.com/",
-      FrameTreeVisualizer().DepictFrameTree(root));
+  const GURL kExpectedSiteURL = AreDefaultSiteInstancesEnabled()
+                                    ? SiteInstanceImpl::GetDefaultSiteURL()
+                                    : GURL("http://a.com/");
+  EXPECT_EQ(std::string(" Site A\n"
+                        "   +--Site A\n"
+                        "        +--Site A\n"
+                        "Where A = ") +
+                kExpectedSiteURL.spec(),
+            FrameTreeVisualizer().DepictFrameTree(root));
 
   // The URL of the grandchild has not changed.
   EXPECT_EQ(expected_url, grandchild->current_url());
@@ -3791,12 +3868,15 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // The third navigation should fail and be cancelled, leaving a FrameTree with
   // a height of 2.
-  EXPECT_EQ(
-      " Site A\n"
-      "   +--Site A\n"
-      "        +--Site A\n"
-      "Where A = http://a.com/",
-      FrameTreeVisualizer().DepictFrameTree(root));
+  const GURL kExpectedSiteURL = AreDefaultSiteInstancesEnabled()
+                                    ? SiteInstanceImpl::GetDefaultSiteURL()
+                                    : GURL("http://a.com/");
+  EXPECT_EQ(std::string(" Site A\n"
+                        "   +--Site A\n"
+                        "        +--Site A\n"
+                        "Where A = ") +
+                kExpectedSiteURL.spec(),
+            FrameTreeVisualizer().DepictFrameTree(root));
 
   EXPECT_EQ(GURL(url::kAboutBlankURL),
             root->child_at(0)->child_at(0)->current_url());
@@ -5799,7 +5879,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   GURL url2(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url2));
   EXPECT_EQ(instance1, web_contents->GetMainFrame()->GetSiteInstance());
-  EXPECT_EQ(GURL("http://foo.com"), instance1->GetSiteURL());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
+  } else {
+    EXPECT_EQ(GURL("http://foo.com"), instance1->GetSiteURL());
+  }
 
   // Navigate to bar.com, which destroys the previous RenderProcessHost.
   GURL url3(embedded_test_server()->GetURL("bar.com", "/title1.html"));
@@ -5807,7 +5891,19 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       process1, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   EXPECT_TRUE(NavigateToURL(shell(), url3));
   exit_observer.Wait();
-  EXPECT_NE(instance1, web_contents->GetMainFrame()->GetSiteInstance());
+
+  if (AreDefaultSiteInstancesEnabled()) {
+    // Verify that the new navigation also results in a default SiteInstance,
+    // and verify that it is not related to |instance1| because the navigation
+    // swapped to a new BrowsingInstance.
+    EXPECT_TRUE(web_contents->GetMainFrame()
+                    ->GetSiteInstance()
+                    ->IsDefaultSiteInstance());
+    EXPECT_FALSE(instance1->IsRelatedSiteInstance(
+        web_contents->GetMainFrame()->GetSiteInstance()));
+  } else {
+    EXPECT_NE(instance1, web_contents->GetMainFrame()->GetSiteInstance());
+  }
 
   // At this point, process1 is deleted, and the first entry is unfortunately
   // pointing to instance1, which has been locked to url2 and has no process.

@@ -29,6 +29,9 @@ UserAction::~UserAction() = default;
 UserAction& UserAction::operator=(UserAction&& other) = default;
 
 // Initializes user action from proto.
+UserAction::UserAction(const UserActionProto& action)
+    : chip_(action.chip()), direct_action_(action.direct_action()) {}
+
 UserAction::UserAction(const ChipProto& chip_proto,
                        const DirectActionProto& direct_action_proto)
     : chip_(chip_proto), direct_action_(direct_action_proto) {}

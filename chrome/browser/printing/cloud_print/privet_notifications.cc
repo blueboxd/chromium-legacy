@@ -283,13 +283,13 @@ void PrivetNotificationService::PrivetRemoveNotification() {
 }
 
 void PrivetNotificationService::Start() {
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   auto* identity_manager = IdentityManagerFactory::GetForProfileIfExists(
       Profile::FromBrowserContext(profile_));
 
   if (!identity_manager || !identity_manager->HasPrimaryAccount())
     return;
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   enable_privet_notification_member_.Init(
       prefs::kLocalDiscoveryNotificationsEnabled,

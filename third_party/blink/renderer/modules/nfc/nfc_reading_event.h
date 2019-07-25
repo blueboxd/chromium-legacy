@@ -24,6 +24,7 @@ class NFCReadingEvent final : public Event {
   }
 
   NFCReadingEvent(const AtomicString&, const NFCReadingEventInit*);
+  NFCReadingEvent(const AtomicString&, const String&, NDEFMessage*);
   ~NFCReadingEvent() override;
 
   const AtomicString& InterfaceName() const override;

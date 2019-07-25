@@ -40,8 +40,7 @@
     case NORMAL:
       return ntp_home::kNTPBackgroundColor();
     case INCOGNITO:
-      return [UIColor colorWithWhite:kNTPBackgroundColorBrightnessIncognito
-                               alpha:1.0];
+      return [UIColor colorNamed:kBackgroundDarkColor];
   }
 }
 
@@ -58,7 +57,7 @@
     case NORMAL:
       return [UIColor colorNamed:kBackgroundColor];
     case INCOGNITO:
-      return UIColorFromRGB(kIncognitoToolbarBackgroundColor);
+      return [UIColor colorNamed:kBackgroundDarkColor];
   }
 }
 
@@ -75,7 +74,7 @@
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_color"];
     case INCOGNITO:
-      return [UIColor whiteColor];
+      return [UIColor colorNamed:@"tab_toolbar_button_color_incognito"];
   }
 }
 
@@ -93,8 +92,7 @@
       return [UIColor colorNamed:@"tab_toolbar_button_color_highlighted"];
     case INCOGNITO:
       return [UIColor
-          colorWithWhite:1
-                   alpha:kIncognitoToolbarButtonTintColorAlphaHighlighted];
+          colorNamed:@"tab_toolbar_button_color_highlighted_incognito"];
   }
 }
 
@@ -111,7 +109,7 @@
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
     case INCOGNITO:
-      return [UIColor colorWithWhite:1 alpha:kToolbarSpotlightAlpha];
+      return [UIColor colorNamed:@"tab_toolbar_button_halo_color_incognito"];
   }
 }
 
@@ -128,7 +126,7 @@
     case NORMAL:
       return [UIColor colorNamed:@"tab_toolbar_button_halo_color"];
     case INCOGNITO:
-      return [UIColor colorWithWhite:1 alpha:kDimmedToolbarSpotlightAlpha];
+      return [UIColor colorNamed:@"tab_toolbar_button_halo_color_incognito"];
   }
 }
 
@@ -147,10 +145,8 @@
       return [[UIColor colorNamed:kTextfieldBackgroundColor]
           colorWithAlphaComponent:visibilityFactor];
     case INCOGNITO:
-      return
-          [UIColor colorWithWhite:1
-                            alpha:kAdaptiveLocationBarBackgroundAlphaIncognito *
-                                  visibilityFactor];
+      return [[UIColor colorNamed:kTextfieldBackgroundDarkColor]
+          colorWithAlphaComponent:visibilityFactor];
   }
 }
 

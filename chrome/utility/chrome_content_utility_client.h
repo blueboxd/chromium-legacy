@@ -33,6 +33,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
       service_manager::mojom::ServiceRequest request) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
+  void RunMainThreadService(mojo::GenericPendingReceiver receiver) override;
   void RunIOThreadService(mojo::GenericPendingReceiver* receiver) override;
 
   // See NetworkBinderProvider above.

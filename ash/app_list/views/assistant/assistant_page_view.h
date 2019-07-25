@@ -15,6 +15,7 @@
 namespace ash {
 class AssistantViewDelegate;
 class AssistantWebView;
+class ViewShadow;
 }  // namespace ash
 
 namespace app_list {
@@ -73,6 +74,8 @@ class APP_LIST_EXPORT AssistantPageView : public AppListPage,
   ash::AssistantWebView* assistant_web_view_ = nullptr;
 
   int min_height_dip_;
+
+  std::unique_ptr<ash::ViewShadow> view_shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantPageView);
 };

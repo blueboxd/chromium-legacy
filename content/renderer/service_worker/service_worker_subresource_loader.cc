@@ -494,17 +494,13 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     body_as_blob_.Bind(std::move(response->blob->blob));
     body_as_blob_size_ = response->blob->size;
 
-    // If parallel reading is enabled, then start reading the body blob
-    // immediately. This will allow the body to start buffering in the
-    // pipe while the side data is read.
+    // Start reading the body blob immediately. This will allow the body to
+    // start buffering in the pipe while the side data is read.
     mojo::ScopedDataPipeConsumerHandle data_pipe;
-    if (base::FeatureList::IsEnabled(
-            blink::features::kServiceWorkerParallelSideDataReading)) {
-      int error = StartBlobReading(&data_pipe);
-      if (error != net::OK) {
-        CommitCompleted(error);
-        return;
-      }
+    int error = StartBlobReading(&data_pipe);
+    if (error != net::OK) {
+      CommitCompleted(error);
+      return;
     }
 
     // Read side data if necessary.
@@ -735,16 +731,9 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
   if (metadata.has_value())
     url_loader_client_->OnReceiveCachedMetadata(std::move(metadata.value()));
 
-  // If parallel reading is disabled then we need to start reading the blob.
-  if (!data_pipe.is_valid()) {
-    DCHECK(!base::FeatureList::IsEnabled(
-        blink::features::kServiceWorkerParallelSideDataReading));
-    int error = StartBlobReading(&data_pipe);
-    if (error != net::OK) {
-      CommitCompleted(error);
-      return;
-    }
-  }
+  // We should have started reading the body in parallel before trying to load
+  // side data.
+  DCHECK(data_pipe.is_valid());
 
   base::TimeDelta delay =
       base::TimeTicks::Now() - response_head_.response_start;
@@ -757,9 +746,6 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
   // If the blob reading completed before the side data reading, then we
   // must manually finalize the blob reading now.
   if (blob_reading_complete_) {
-    // This should only be possible if parallel reading is enabled.
-    DCHECK(base::FeatureList::IsEnabled(
-        blink::features::kServiceWorkerParallelSideDataReading));
     OnBlobReadingComplete(net::OK);
   }
 

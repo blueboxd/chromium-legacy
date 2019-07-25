@@ -81,7 +81,6 @@ class X11WindowOzone : public PlatformWindow,
   void OnXWindowCloseRequested() override;
   void OnXWindowLostCapture() override;
   void OnXWindowIsActiveChanged(bool active) override;
-  ::Time GetTimestampForXWindow() override;
 
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;

@@ -146,8 +146,8 @@
             </settings-device-page>
           </settings-section>
         </template>
-        <template is="dom-if" if="[[showAssistant]]" restamp>
-          <settings-section page-title="$i18n{osAssistantPageTitle}"
+        <template is="dom-if" if="[[showPage_(pageVisibility.search)]]" restamp>
+          <settings-section page-title="$i18n{osSearchPageTitle}"
               section="search">
             <os-settings-search-page prefs="{{prefs}}">
             </os-settings-search-page>

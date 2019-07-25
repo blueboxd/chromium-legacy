@@ -165,7 +165,8 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        PreferenceUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
+        // Handled in displaySitePermissions. Moving the addPreferencesFromResource call up to here
+        // causes animation jank (crbug.com/985734).
     }
 
     @Override
@@ -293,6 +294,8 @@ public class SingleWebsitePreferences extends PreferenceFragmentCompat
      * Must only be called once mSite is set.
      */
     private void displaySitePermissions() {
+        PreferenceUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
+
         Set<String> permissionPreferenceKeys =
                 new HashSet<>(Arrays.asList(PERMISSION_PREFERENCE_KEYS));
         int maxPermissionOrder = 0;

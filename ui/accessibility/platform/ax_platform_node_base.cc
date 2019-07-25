@@ -1129,7 +1129,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
     return;
   }
 
-  int child_count = delegate_->GetChildCount();
+  int child_count = GetChildCount();
 
   if (!child_count) {
     if (IsRichTextField()) {
@@ -1148,7 +1148,7 @@ void AXPlatformNodeBase::UpdateComputedHypertext() {
   // child object it points to.
   base::string16 hypertext;
   for (int i = 0; i < child_count; ++i) {
-    const auto* child = FromNativeViewAccessible(delegate_->ChildAtIndex(i));
+    const auto* child = FromNativeViewAccessible(ChildAtIndex(i));
 
     DCHECK(child);
     // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
@@ -1289,11 +1289,10 @@ int32_t AXPlatformNodeBase::GetHypertextOffsetFromChild(
     int32_t hypertext_offset = 0;
     int32_t index_in_parent = child->GetDelegate()->GetIndexInParent();
     DCHECK_GE(index_in_parent, 0);
-    DCHECK_LT(index_in_parent,
-              static_cast<int32_t>(GetDelegate()->GetChildCount()));
+    DCHECK_LT(index_in_parent, static_cast<int32_t>(GetChildCount()));
     for (uint32_t i = 0; i < static_cast<uint32_t>(index_in_parent); ++i) {
       auto* sibling = static_cast<AXPlatformNodeBase*>(
-          FromNativeViewAccessible(GetDelegate()->ChildAtIndex(i)));
+          FromNativeViewAccessible(ChildAtIndex(i)));
       DCHECK(sibling);
       if (sibling->IsTextOnlyObject()) {
         hypertext_offset += (int32_t)sibling->GetHypertext().size();
@@ -1357,11 +1356,11 @@ int AXPlatformNodeBase::GetHypertextOffsetFromEndpoint(
 
       // Adjust the |endpoint_offset| because the selection endpoint is a tree
       // position, i.e. it represents a child index and not a text offset.
-      if (endpoint_offset == endpoint_object->GetDelegate()->GetChildCount()) {
+      if (endpoint_offset >= endpoint_object->GetChildCount()) {
         return static_cast<int>(endpoint_object->GetHypertext().size());
       } else {
         auto* child = static_cast<AXPlatformNodeBase*>(FromNativeViewAccessible(
-            endpoint_object->GetDelegate()->ChildAtIndex(endpoint_offset)));
+            endpoint_object->ChildAtIndex(endpoint_offset)));
         DCHECK(child);
         return endpoint_object->GetHypertextOffsetFromChild(child);
       }

@@ -4,15 +4,15 @@
 
 package org.chromium.chrome.browser.preferences.sync;
 
-import android.app.DialogFragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.preference.CheckBoxPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -48,7 +48,7 @@ import java.util.Set;
  * Settings fragment to customize Sync options (data types, encryption). Can be accessed from
  * {@link SyncAndServicesPreferences}.
  */
-public class ManageSyncPreferences extends PreferenceFragment
+public class ManageSyncPreferences extends PreferenceFragmentCompat
         implements PassphraseDialogFragment.Listener, PassphraseCreationDialogFragment.Listener,
                    PassphraseTypeDialogFragment.Listener, Preference.OnPreferenceChangeListener,
                    ProfileSyncService.SyncStateChangedListener {
@@ -73,7 +73,7 @@ public class ManageSyncPreferences extends PreferenceFragment
 
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
 
-    private ChromeSwitchPreference mSyncEverything;
+    private ChromeSwitchPreferenceCompat mSyncEverything;
     private CheckBoxPreference mSyncAutofill;
     private CheckBoxPreference mSyncBookmarks;
     private CheckBoxPreference mSyncPaymentsIntegration;
@@ -91,15 +91,13 @@ public class ManageSyncPreferences extends PreferenceFragment
     private ProfileSyncService.SyncSetupInProgressHandle mSyncSetupInProgressHandle;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
         getActivity().setTitle(R.string.manage_sync_title);
         setHasOptionsMenu(true);
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.manage_sync_preferences);
 
-        mSyncEverything = (ChromeSwitchPreference) findPreference(PREF_SYNC_EVERYTHING);
+        mSyncEverything = (ChromeSwitchPreferenceCompat) findPreference(PREF_SYNC_EVERYTHING);
         mSyncEverything.setOnPreferenceChangeListener(this);
 
         mSyncAutofill = (CheckBoxPreference) findPreference(PREF_SYNC_AUTOFILL);

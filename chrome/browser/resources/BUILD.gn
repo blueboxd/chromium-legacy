@@ -30,7 +30,7 @@ if (closure_compile) {
         "settings:closure_compile",
         "signin/sync_confirmation:closure_compile",
         "user_manager:closure_compile",
-        "welcome/onboarding_welcome:closure_compile",
+        "welcome:closure_compile",
       ]
     }
     if (is_chromeos) {
@@ -219,7 +219,7 @@ if (is_chromeos) {
 
 if (!is_android && !is_chromeos) {
   grit("onboarding_welcome_resources") {
-    source = "welcome/onboarding_welcome/onboarding_welcome_resources.grd"
+    source = "welcome/onboarding_welcome_resources.grd"
 
     defines = chrome_grit_defines
     outputs = [

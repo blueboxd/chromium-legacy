@@ -38,6 +38,14 @@ void ExtensionsToolbarContainer::UpdateAllIcons() {
     action->UpdateState();
 }
 
+ToolbarActionView* ExtensionsToolbarContainer::GetViewForId(
+    const std::string& id) {
+  auto it = icons_.find(id);
+  if (it == icons_.end())
+    return nullptr;
+  return it->second.get();
+}
+
 ToolbarActionViewController* ExtensionsToolbarContainer::GetActionForId(
     const std::string& action_id) {
   for (const auto& action : actions_) {

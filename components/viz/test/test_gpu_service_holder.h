@@ -14,6 +14,7 @@
 
 namespace gpu {
 class CommandBufferTaskExecutor;
+class SingleTaskSequence;
 #if BUILDFLAG(ENABLE_VULKAN)
 class VulkanImplementation;
 #endif
@@ -69,6 +70,8 @@ class TestGpuServiceHolder {
     return task_executor_.get();
   }
 
+  void ScheduleGpuTask(base::OnceClosure callback);
+
   bool is_vulkan_enabled() {
 #if BUILDFLAG(ENABLE_VULKAN)
     return !!vulkan_implementation_;
@@ -90,6 +93,8 @@ class TestGpuServiceHolder {
   // These should only be created and deleted on the gpu thread.
   std::unique_ptr<GpuServiceImpl> gpu_service_;
   std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  // This is used to schedule gpu tasks in sequence.
+  std::unique_ptr<gpu::SingleTaskSequence> gpu_task_sequence_;
 #if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation_;
 #endif

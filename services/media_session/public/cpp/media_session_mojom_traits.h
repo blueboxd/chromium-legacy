@@ -91,7 +91,7 @@ struct StructTraits<media_session::mojom::MediaPositionDataView,
     return media_position.position_;
   }
 
-  static base::Time last_updated_time(
+  static base::TimeTicks last_updated_time(
       const media_session::MediaPosition& media_position) {
     return media_position.last_updated_time_;
   }

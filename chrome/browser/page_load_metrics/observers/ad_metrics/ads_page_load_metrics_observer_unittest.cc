@@ -382,38 +382,26 @@ class AdsPageLoadMetricsObserverTest : public SubresourceFilterTestHarness {
     int total_task_time = pre_task_time + post_task_time;
     int total_time = pre_time + post_time;
     std::string suffix = type == "Activated" ? "Activation" : "Interactive";
-    std::string percent_usage_version =
-        prefix == "Cpu.AdFrames.PerFrame" ? "2" : "";
     type = type.empty() ? "" : "." + type;
 
-    CheckSpecificCpuHistogram(SuffixedHistogram(prefix + ".PercentUsage" +
-                                                percent_usage_version + type),
-                              SuffixedHistogram(prefix + ".TotalUsage" + type),
+    CheckSpecificCpuHistogram(SuffixedHistogram(prefix + ".TotalUsage" + type),
                               total_task_time, total_time);
     CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + percent_usage_version +
-                          type + ".Pre" + suffix),
         SuffixedHistogram(prefix + ".TotalUsage" + type + ".Pre" + suffix),
         pre_task_time, pre_time);
     CheckSpecificCpuHistogram(
-        SuffixedHistogram(prefix + ".PercentUsage" + percent_usage_version +
-                          type + ".Post" + suffix),
         SuffixedHistogram(prefix + ".TotalUsage" + type + ".Post" + suffix),
         post_task_time, post_time);
   }
 
  private:
-  void CheckSpecificCpuHistogram(std::string percent_histogram,
-                                 std::string total_histogram,
+  void CheckSpecificCpuHistogram(std::string total_histogram,
                                  int total_task_time,
                                  int total_time) {
     if (total_time) {
-      histogram_tester().ExpectUniqueSample(
-          percent_histogram, 100 * total_task_time / total_time, 1);
       histogram_tester().ExpectUniqueSample(total_histogram, total_task_time,
                                             1);
     } else {
-      histogram_tester().ExpectTotalCount(percent_histogram, 0);
       histogram_tester().ExpectTotalCount(total_histogram, 0);
     }
   }

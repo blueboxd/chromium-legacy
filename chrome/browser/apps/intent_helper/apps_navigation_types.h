@@ -84,9 +84,8 @@ struct IntentPickerAppInfo {
   // The icon to be displayed for this app in the picker.
   gfx::Image icon;
 
-  // The string used to launch this app. Represents an Android package name when
-  // |type| is kArc, and when |type| is kMacNative, it is the file path of the
-  // native app to use.
+  // The string used to launch this app. Represents an Android package name
+  // when type is ARC.
   std::string launch_name;
 
   // The string shown to the user to identify this app in the intent picker.

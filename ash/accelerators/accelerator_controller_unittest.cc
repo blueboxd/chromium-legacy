@@ -1629,33 +1629,52 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
       Shell::Get()->accessibility_controller();
   TestAccessibilityControllerClient client;
 
-  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+  // Extract the accelerators of actions that need windows to be able to provide
+  // them to PerformActionIfEnabled(), otherwise we could hit some NOTREACHED()
+  // if we don't provide the correct keybindings.
+  std::set<AcceleratorAction> actions_needing_window;
+  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i)
+    actions_needing_window.insert(kActionsNeedingWindow[i]);
+  std::map<AcceleratorAction, ui::Accelerator> accelerators_needing_window;
+  for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
+    const auto& accelerator_data = kAcceleratorData[i];
+    auto iter = actions_needing_window.find(accelerator_data.action);
+    if (iter == actions_needing_window.end())
+      continue;
+
+    ui::Accelerator accelerator{accelerator_data.keycode,
+                                accelerator_data.modifiers};
+    if (!accelerator_data.trigger_on_press)
+      accelerator.set_key_state(ui::Accelerator::KeyState::RELEASED);
+    accelerators_needing_window[*iter] = accelerator;
+  }
+
+  for (const auto& iter : accelerators_needing_window) {
     accessibility_controller->TriggerAccessibilityAlert(
         AccessibilityAlert::NONE);
-    EXPECT_TRUE(
-        controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {}));
+    EXPECT_TRUE(controller_->PerformActionIfEnabled(iter.first, iter.second));
     EXPECT_EQ(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 
   // Make sure we don't alert if we do have a window.
   std::unique_ptr<aura::Window> window;
-  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+  for (const auto& iter : accelerators_needing_window) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     accessibility_controller->TriggerAccessibilityAlert(
         AccessibilityAlert::NONE);
-    controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
+    controller_->PerformActionIfEnabled(iter.first, iter.second);
     EXPECT_NE(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 
   // Don't alert if we have a minimized window either.
-  for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
+  for (const auto& iter : accelerators_needing_window) {
     window.reset(CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
     wm::ActivateWindow(window.get());
     controller_->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     accessibility_controller->TriggerAccessibilityAlert(
         AccessibilityAlert::NONE);
-    controller_->PerformActionIfEnabled(kActionsNeedingWindow[i], {});
+    controller_->PerformActionIfEnabled(iter.first, iter.second);
     EXPECT_NE(AccessibilityAlert::WINDOW_NEEDED, client.last_a11y_alert());
   }
 }

@@ -26,8 +26,6 @@ Polymer({
 
     showAndroidApps: Boolean,
 
-    showAssistant: Boolean,
-
     showCrostini: Boolean,
 
     allowCrostini_: Boolean,

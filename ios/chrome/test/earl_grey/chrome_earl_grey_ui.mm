@@ -30,6 +30,7 @@ using chrome_test_util::ClearBrowsingDataView;
 using chrome_test_util::ConfirmClearBrowsingDataButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::ToolsMenuView;
+using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
@@ -217,7 +218,6 @@ bool IsAppCompactWidth() {
 }
 
 - (void)waitForToolbarVisible:(BOOL)isVisible {
-  const NSTimeInterval kWaitForToolbarAnimationTimeout = 1.0;
   ConditionBlock condition = ^{
     NSError* error = nil;
     id<GREYMatcher> visibleMatcher = isVisible ? grey_notNil() : grey_nil();
@@ -230,7 +230,7 @@ bool IsAppCompactWidth() {
       isVisible ? @"Toolbar was not visible" : @"Toolbar was visible";
 
   bool toolbarVisibility = base::test::ios::WaitUntilConditionOrTimeout(
-      kWaitForToolbarAnimationTimeout, condition);
+      kWaitForUIElementTimeout, condition);
   EG_TEST_HELPER_ASSERT_TRUE(toolbarVisibility, errorMessage);
 }
 

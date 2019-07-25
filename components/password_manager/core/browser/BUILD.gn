@@ -129,8 +129,6 @@ jumbo_static_library("browser") {
     "password_manager_constants.cc",
     "password_manager_constants.h",
     "password_manager_driver.h",
-    "password_manager_internals_service.cc",
-    "password_manager_internals_service.h",
     "password_manager_metrics_recorder.cc",
     "password_manager_metrics_recorder.h",
     "password_manager_metrics_util.cc",

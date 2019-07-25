@@ -184,13 +184,10 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 
     PowerManagerClient::InitializeFake();
     viz::mojom::VideoDetectorObserverPtr observer;
-    idle_event_notifier_ = std::make_unique<IdleEventNotifier>(
-        PowerManagerClient::Get(), &user_activity_detector_,
-        mojo::MakeRequest(&observer));
     activity_logger_ = std::make_unique<UserActivityManager>(
-        &delegate_, idle_event_notifier_.get(), &user_activity_detector_,
-        PowerManagerClient::Get(), &session_manager_,
-        mojo::MakeRequest(&observer), &fake_user_manager_, &model_);
+        &delegate_, &user_activity_detector_, PowerManagerClient::Get(),
+        &session_manager_, mojo::MakeRequest(&observer), &fake_user_manager_,
+        &model_);
     activity_logger_->SetTaskRunnerForTesting(
         thread_bundle()->GetMainThreadTaskRunner(),
         std::make_unique<FakeBootClock>(thread_bundle(),
@@ -199,7 +196,6 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override {
     activity_logger_.reset();
-    idle_event_notifier_.reset();
     PowerManagerClient::Shutdown();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -209,8 +205,17 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     activity_logger_->OnUserActivity(event);
   }
 
-  void ReportIdleEvent(const IdleEventNotifier::ActivityData& data) {
-    activity_logger_->OnIdleEventObserved(data);
+  // Requests a smart dim decision from UserActivityManager based on |data|.
+  // Populates |*should_defer| with the result once it is provided.
+  void ReportIdleEvent(const IdleEventNotifier::ActivityData& data,
+                       bool* should_defer = nullptr) {
+    activity_logger_->UpdateAndGetSmartDimDecision(
+        data, base::BindOnce(
+                  [](bool* should_defer, bool decision) {
+                    if (should_defer)
+                      *should_defer = decision;
+                  },
+                  should_defer));
   }
 
   void ReportLidEvent(chromeos::PowerManagerClient::LidState state) {
@@ -258,10 +263,6 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
     proto.set_screen_dim_ms(screen_dim_delay.InMilliseconds());
     proto.set_screen_off_ms(screen_off_delay.InMilliseconds());
     FakePowerManagerClient::Get()->SetInactivityDelays(proto);
-  }
-
-  int GetNumberOfDeferredDims() {
-    return FakePowerManagerClient::Get()->num_defer_screen_dim_calls();
   }
 
   TabProperty UpdateOpenTabURL() {
@@ -986,10 +987,11 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
   model_.set_decision_threshold(65);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_TRUE(should_defer);
 
   std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(histogram, 1);
@@ -1026,9 +1028,10 @@ TEST_F(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
   model_.set_decision_threshold(65);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_TRUE(should_defer);
 
   std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(histogram, 1);
@@ -1051,12 +1054,13 @@ TEST_F(UserActivityManagerTest, ScreenDimRequestCanceled) {
   model_.set_decision_threshold(65);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   // Report user activity immediately after the idle event, so that
   // the SmartDimModel doesn't get a chance to run.
   ReportUserActivity(nullptr);
   thread_bundle()->RunUntilIdle();
-  EXPECT_EQ(0, GetNumberOfDeferredDims());
+  EXPECT_FALSE(should_defer);
 
   std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(hist_complete, 0);
@@ -1083,11 +1087,13 @@ TEST_F(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
   model_.set_decision_threshold(65);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
-  ReportIdleEvent(data);
+  bool should_defer_1 = false;
+  bool should_defer_2 = false;
+  ReportIdleEvent(data, &should_defer_1);
+  ReportIdleEvent(data, &should_defer_2);
   thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_NE(should_defer_1, should_defer_2);
 
   std::string hist_complete("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(hist_complete, 1);
@@ -1126,10 +1132,11 @@ TEST_F(UserActivityManagerTest, ScreenDimNotDeferred) {
   model_.set_decision_threshold(50);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
-  EXPECT_EQ(0, GetNumberOfDeferredDims());
+  EXPECT_FALSE(should_defer);
 
   std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(histogram, 1);
@@ -1159,9 +1166,10 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
   model_.set_inactivity_score(40);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_TRUE(should_defer);
 
   thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(6));
   ReportSuspend(power_manager::SuspendImminent_Reason_IDLE,
@@ -1170,9 +1178,9 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
   // 2nd ScreenDimImminent is not deferred despite model score says so.
   model_.set_inactivity_score(20);
   thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(10));
-  ReportIdleEvent(data);
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_FALSE(should_defer);
 
   std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(histogram, 2);
@@ -1233,16 +1241,17 @@ TEST_F(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   // 1st ScreenDimImminent gets deferred
   model_.set_inactivity_score(40);
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_TRUE(should_defer);
 
   // 2nd ScreenDimImminent is not deferred despite model score says so.
   model_.set_inactivity_score(20);
   thread_bundle()->FastForwardBy(base::TimeDelta::FromSeconds(10));
-  ReportIdleEvent(data);
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
-  EXPECT_EQ(1, GetNumberOfDeferredDims());
+  EXPECT_FALSE(should_defer);
 
   std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(histogram, 2);
@@ -1299,10 +1308,11 @@ TEST_F(UserActivityManagerTest, ModelError) {
   model_.set_decision_threshold(65);
 
   const IdleEventNotifier::ActivityData data;
-  ReportIdleEvent(data);
+  bool should_defer = false;
+  ReportIdleEvent(data, &should_defer);
   thread_bundle()->RunUntilIdle();
   ReportUserActivity(nullptr);
-  EXPECT_EQ(0, GetNumberOfDeferredDims());
+  EXPECT_FALSE(should_defer);
 
   std::string histogram("PowerML.SmartDimModel.RequestCompleteDuration");
   histogram_tester.ExpectTotalCount(histogram, 1);

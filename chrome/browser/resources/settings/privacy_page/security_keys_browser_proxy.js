@@ -28,7 +28,7 @@ let Credential;
 
 cr.define('settings', function() {
   /** @interface */
-  class SecurityKeysBrowserProxy {
+  class SecurityKeysPINBrowserProxy {
     /**
      * Starts a PIN set/change operation by flashing all security keys. Resolves
      * with a pair of numbers. The first is one if the process has immediately
@@ -50,6 +50,12 @@ cr.define('settings', function() {
      */
     setPIN(oldPIN, newPIN) {}
 
+    /** Cancels all outstanding operations. */
+    close() {}
+  }
+
+  /** @interface */
+  class SecurityKeysCredentialBrowserProxy {
     /**
      * Starts a credential management operation.
      *
@@ -70,24 +76,30 @@ cr.define('settings', function() {
      * @return {!Promise<?number>} a promise that resolves with null if the PIN
      *     was correct or the number of retries remaining otherwise.
      */
-    credentialManagementProvidePIN(pin) {}
+    providePIN(pin) {}
 
     /**
      * Enumerates credentials on the authenticator. A correct PIN must have
-     * previously been supplied via credentialManagementProvidePIN() before this
+     * previously been supplied via providePIN() before this
      * method may be called.
      * @return {!Promise<!Array<!Credential>>}
      */
-    credentialManagementEnumerate() {}
+    enumerateCredentials() {}
 
     /**
      * Deletes the credentials with the given IDs from the security key.
-     * @param {!Array<!string>} ids
-     * @return {!Promise<!string>} a localized response message to display to
+     * @param {!Array<string>} ids
+     * @return {!Promise<string>} a localized response message to display to
      *     the user (on either success or error)
      */
-    credentialManagementDeleteCredentials(ids) {}
+    deleteCredentials(ids) {}
 
+    /** Cancels all outstanding operations. */
+    close() {}
+  }
+
+  /** @interface */
+  class SecurityKeysResetBrowserProxy {
     /**
      * Starts a reset operation by flashing all security keys and sending a
      * reset command to the one that the user activates. Resolves with a CTAP
@@ -102,16 +114,12 @@ cr.define('settings', function() {
      */
     completeReset() {}
 
-    /**
-     * Cancel all outstanding operations.
-     */
+    /** Cancels all outstanding operations. */
     close() {}
   }
 
-  /**
-   * @implements {settings.SecurityKeysBrowserProxy}
-   */
-  class SecurityKeysBrowserProxyImpl {
+  /** @implements {settings.SecurityKeysPINBrowserProxy} */
+  class SecurityKeysPINBrowserProxyImpl {
     /** @override */
     startSetPIN() {
       return cr.sendWithPromise('securityKeyStartSetPIN');
@@ -123,25 +131,41 @@ cr.define('settings', function() {
     }
 
     /** @override */
+    close() {
+      return chrome.send('securityKeyPINClose');
+    }
+  }
+
+  /** @implements {settings.SecurityKeysCredentialBrowserProxy} */
+  class SecurityKeysCredentialBrowserProxyImpl {
+    /** @override */
     startCredentialManagement() {
-      return cr.sendWithPromise('securityKeyCredentialManagement');
+      return cr.sendWithPromise('securityKeyCredentialManagementStart');
     }
 
     /** @override */
-    credentialManagementProvidePIN(pin) {
+    providePIN(pin) {
       return cr.sendWithPromise('securityKeyCredentialManagementPIN', pin);
     }
 
     /** @override */
-    credentialManagementEnumerate() {
+    enumerateCredentials() {
       return cr.sendWithPromise('securityKeyCredentialManagementEnumerate');
     }
 
     /** @override */
-    credentialManagementDeleteCredentials(ids) {
+    deleteCredentials(ids) {
       return cr.sendWithPromise('securityKeyCredentialManagementDelete', ids);
     }
 
+    /** @override */
+    close() {
+      return chrome.send('securityKeyCredentialManagementClose');
+    }
+  }
+
+  /** @implements {settings.SecurityKeysResetBrowserProxy} */
+  class SecurityKeysResetBrowserProxyImpl {
     /** @override */
     reset() {
       return cr.sendWithPromise('securityKeyReset');
@@ -154,16 +178,23 @@ cr.define('settings', function() {
 
     /** @override */
     close() {
-      return chrome.send('securityKeyClose');
+      return chrome.send('securityKeyResetClose');
     }
   }
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
-  cr.addSingletonGetter(SecurityKeysBrowserProxyImpl);
+  cr.addSingletonGetter(SecurityKeysPINBrowserProxyImpl);
+  cr.addSingletonGetter(SecurityKeysCredentialBrowserProxyImpl);
+  cr.addSingletonGetter(SecurityKeysResetBrowserProxyImpl);
 
   return {
-    SecurityKeysBrowserProxy: SecurityKeysBrowserProxy,
-    SecurityKeysBrowserProxyImpl: SecurityKeysBrowserProxyImpl,
+    SecurityKeysPINBrowserProxy: SecurityKeysPINBrowserProxy,
+    SecurityKeysPINBrowserProxyImpl: SecurityKeysPINBrowserProxyImpl,
+    SecurityKeysCredentialBrowserProxy: SecurityKeysCredentialBrowserProxy,
+    SecurityKeysCredentialBrowserProxyImpl:
+        SecurityKeysCredentialBrowserProxyImpl,
+    SecurityKeysResetBrowserProxy: SecurityKeysResetBrowserProxy,
+    SecurityKeysResetBrowserProxyImpl: SecurityKeysResetBrowserProxyImpl,
   };
 });

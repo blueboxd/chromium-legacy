@@ -17,6 +17,8 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
@@ -54,5 +56,10 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public StartSurface createStartSurface(ChromeActivity activity) {
         return new StartSurfaceCoordinator(activity);
+    }
+
+    @Override
+    public TabGroupModelFilter createTabGroupModelFilter(TabModel tabModel) {
+        return new TabGroupModelFilter(tabModel);
     }
 }

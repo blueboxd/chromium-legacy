@@ -52,9 +52,7 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   // From CSSStyleValue.
   StyleValueType GetType() const final;
   const CSSNumericLiteralValue* ToCSSValue() const final;
-  const CSSPrimitiveValue* ToCSSValueWithProperty(
-      CSSPropertyID,
-      const CSSSyntaxComponent*) const final;
+  const CSSPrimitiveValue* ToCSSValueWithProperty(CSSPropertyID) const final;
   CSSMathExpressionNode* ToCalcExpressionNode() const final;
 
  private:

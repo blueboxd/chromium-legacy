@@ -142,6 +142,9 @@ ContextMenuHelper::CreateJavaContextMenuParams(
 
   bool can_save = params.media_flags & blink::WebContextMenuData::kMediaCanSave;
   JNIEnv* env = base::android::AttachCurrentThread();
+  base::string16 title_text =
+      (params.title_text.empty() ? params.alt_text : params.title_text);
+
   base::android::ScopedJavaLocalRef<jobject> jmenu_info =
       ContextMenuParamsAndroid::Java_ContextMenuParams_create(
           env, params.media_type,
@@ -150,7 +153,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, params.link_text),
           ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()),
           ConvertUTF8ToJavaString(env, params.src_url.spec()),
-          ConvertUTF16ToJavaString(env, params.title_text),
+          ConvertUTF16ToJavaString(env, title_text),
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
           static_cast<int>(params.referrer_policy), can_save, params.x,
           params.y, params.source_type);

@@ -350,6 +350,9 @@ struct CONTENT_EXPORT CommitNavigationParams {
   // passed in the |CommonNavigationParams::url| field.
   std::string data_url_as_string;
 #endif
+
+  // Whether this navigation was browser initiated.
+  bool is_browser_initiated = false;
 };
 
 }  // namespace content

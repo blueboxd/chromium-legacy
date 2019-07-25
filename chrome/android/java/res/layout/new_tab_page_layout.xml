@@ -40,13 +40,6 @@
         android:background="@drawable/ntp_search_box"
         android:orientation="horizontal"
         android:paddingStart="@dimen/location_bar_lateral_padding" >
-        <ImageView
-            style="@style/OmniboxIcon"
-            android:id="@+id/search_engine_logo"
-            android:visibility="gone"
-            android:importantForAccessibility="no"
-            android:src="@drawable/ic_logo_googleg_24dp"
-            android:scaleType="centerInside" />
         <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
         <EditText
             tools:ignore="Autofill,LabelFor"

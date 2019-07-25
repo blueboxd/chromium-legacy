@@ -100,18 +100,17 @@ public class ServiceTabLauncher {
         if (webApkPackageName != null) {
             final List<ResolveInfo> resolveInfosFinal = resolveInfos;
             WebApkIdentityServiceClient.CheckBrowserBacksWebApkCallback callback =
-                    doesBrowserBackWebApk -> {
-                        if (doesBrowserBackWebApk) {
-                            Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
-                                    webApkPackageName, url, true /* forceNavigation */);
-                            intent.putExtra(
-                                    ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
-                            ContextUtils.getApplicationContext().startActivity(intent);
-                            return;
-                        }
-                        launchTabOrWebapp(requestId, incognito, url, referrerUrl,
-                                referrerPolicy, extraHeaders, postData, resolveInfosFinal);
-                    };
+                    (doesBrowserBackWebApk, browserPackageName) -> {
+                if (doesBrowserBackWebApk) {
+                    Intent intent = WebApkNavigationClient.createLaunchWebApkIntent(
+                            webApkPackageName, url, true /* forceNavigation */);
+                    intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
+                    ContextUtils.getApplicationContext().startActivity(intent);
+                    return;
+                }
+                launchTabOrWebapp(requestId, incognito, url, referrerUrl, referrerPolicy,
+                        extraHeaders, postData, resolveInfosFinal);
+            };
             ChromeWebApkHost.checkChromeBacksWebApkAsync(webApkPackageName, callback);
             return;
         }

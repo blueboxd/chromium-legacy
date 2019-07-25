@@ -4,8 +4,11 @@
 
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/common/search/generated_colors_info.h"
+#include "chrome/common/search/selected_colors_info.h"
 
 namespace chrome_colors {
 
@@ -13,6 +16,23 @@ ChromeColorsService::ChromeColorsService(Profile* profile)
     : theme_service_(ThemeServiceFactory::GetForProfile(profile)) {}
 
 ChromeColorsService::~ChromeColorsService() = default;
+
+// static
+int ChromeColorsService::GetColorId(const SkColor color) {
+  for (chrome_colors::ColorInfo color_info :
+       chrome_colors::kGeneratedColorsInfo) {
+    if (color == color_info.color)
+      return color_info.id;
+  }
+
+  return 0;
+}
+
+// static
+void ChromeColorsService::RecordColorOnLoadHistogram(SkColor color) {
+  UMA_HISTOGRAM_ENUMERATION("ChromeColors.ColorOnLoad", GetColorId(color),
+                            kNumColorsInfo);
+}
 
 void ChromeColorsService::ApplyDefaultTheme(content::WebContents* tab) {
   SaveThemeRevertState(tab);

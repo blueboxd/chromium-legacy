@@ -922,7 +922,7 @@ bool CapabilitiesToDeviceInfo(const DeviceCapabilities& capabilities,
   sscanf(capabilities.version, "%" SCNx16, &id.version);
   devinfo->SetId(id);
   devinfo->SetDeviceType(EventDeviceInfo::GetInputDeviceTypeFromId(id));
-
+  devinfo->SetName(capabilities.name);
   return true;
 }
 

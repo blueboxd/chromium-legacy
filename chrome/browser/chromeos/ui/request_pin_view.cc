@@ -36,10 +36,10 @@ constexpr int kDefaultTextWidth = 200;
 RequestPinView::RequestPinView(const std::string& extension_name,
                                RequestPinView::RequestPinCodeType code_type,
                                int attempts_left,
-                               const RequestPinCallback& callback,
+                               RequestPinCallback callback,
                                Delegate* delegate)
-    : callback_(callback), delegate_(delegate), weak_ptr_factory_(this) {
-  DCHECK(code_type != RequestPinCodeType::UNCHANGED);
+    : callback_(std::move(callback)), delegate_(delegate) {
+  DCHECK_NE(code_type, RequestPinCodeType::UNCHANGED);
   DCHECK(delegate);
   Init();
   SetExtensionName(extension_name);
@@ -53,10 +53,8 @@ RequestPinView::RequestPinView(const std::string& extension_name,
 // destroyed without triggering Accept or Cancel. If the callback_ wasn't called
 // it needs to send the response.
 RequestPinView::~RequestPinView() {
-  if (!callback_.is_null()) {
-    std::move(callback_).Run(base::string16());
-  }
-
+  if (callback_)
+    std::move(callback_).Run(/*user_input=*/std::string());
   delegate_->OnPinDialogClosed();
 }
 
@@ -73,9 +71,8 @@ bool RequestPinView::Cancel() {
 bool RequestPinView::Accept() {
   DCHECK(!callback_.is_null());
 
-  if (!textfield_->GetEnabled()) {
+  if (!textfield_->GetEnabled())
     return true;
-  }
   DCHECK(!textfield_->text().empty());
 
   error_label_->SetVisible(true);
@@ -87,7 +84,7 @@ bool RequestPinView::Accept() {
   // The |textfield_| and OK button become disabled, but the user still can
   // close the dialog.
   SetAcceptInput(false);
-  std::move(callback_).Run(textfield_->text());
+  std::move(callback_).Run(base::UTF16ToUTF8(textfield_->text()));
   DialogModelChanged();
   delegate_->OnPinDialogInput();
 
@@ -99,15 +96,13 @@ bool RequestPinView::IsDialogButtonEnabled(ui::DialogButton button) const {
     case ui::DialogButton::DIALOG_BUTTON_CANCEL:
       return true;
     case ui::DialogButton::DIALOG_BUTTON_OK:
-      if (callback_.is_null()) {
+      if (callback_.is_null())
         return false;
-      }
       // Not locked but the |textfield_| is not enabled. It's just a
       // notification to the user and [OK] button can be used to close the
       // dialog.
-      if (!textfield_->GetEnabled()) {
+      if (!textfield_->GetEnabled())
         return true;
-      }
       return textfield_->text().size() > 0;
     case ui::DialogButton::DIALOG_BUTTON_NONE:
       return true;
@@ -135,13 +130,13 @@ gfx::Size RequestPinView::CalculatePreferredSize() const {
   return gfx::Size(default_width, GetHeightForWidth(default_width));
 }
 
-bool RequestPinView::IsLocked() {
+bool RequestPinView::IsLocked() const {
   return callback_.is_null();
 }
 
-void RequestPinView::SetCallback(const RequestPinCallback& callback) {
-  DCHECK(callback_.is_null());
-  callback_ = callback;
+void RequestPinView::SetCallback(RequestPinCallback callback) {
+  DCHECK(!callback_);
+  callback_ = std::move(callback);
 }
 
 void RequestPinView::SetDialogParameters(

@@ -90,7 +90,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
-  void ScheduleOverlays(OverlayCandidateList overlays) override;
+  void ScheduleOutputSurfaceAsOverlay(
+      OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane)
+      override;
 
   SkCanvas* BeginPaintRenderPass(const RenderPassId& id,
                                  const gfx::Size& surface_size,
@@ -120,6 +122,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
   void SetCapabilitiesForTesting(bool flipped_output_surface);
+
+  // Used in unit tests.
+  void ScheduleGpuTaskForTesting(
+      base::OnceClosure callback,
+      std::vector<gpu::SyncToken> sync_tokens) override;
 
  private:
   bool Initialize();
@@ -196,6 +203,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // applied to the frame content. The transform can be rotations in 90 degree
   // increments or flips.
   gfx::OverlayTransform pre_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
+
+  // |task_sequence| is used to schedule task on GPU as a single
+  // sequence. In regular Viz it is implemented by SchedulerSequence. For
+  // Android WebView it is implemented on top of WebView's task queue.
+  std::unique_ptr<gpu::SingleTaskSequence> task_sequence_;
 
   // |impl_on_gpu| is created and destroyed on the GPU thread.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;

@@ -14,6 +14,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/containers/span.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/context_group.h"
@@ -21,7 +22,6 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class GrContext;
-class SkColorSpace;
 class SkImage;
 
 namespace gpu {
@@ -73,9 +73,9 @@ class GPU_GLES2_EXPORT ServiceTransferCache
       ServiceDiscardableHandle handle,
       GrContext* context,
       std::vector<sk_sp<SkImage>> plane_images,
+      cc::YUVDecodeFormat plane_images_format,
       size_t buffer_byte_size,
-      bool needs_mips,
-      sk_sp<SkColorSpace> image_color_space);
+      bool needs_mips);
 
   void PurgeMemory(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);

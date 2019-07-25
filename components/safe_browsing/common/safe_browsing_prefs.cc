@@ -108,6 +108,8 @@ const char kAdvancedProtectionLastRefreshInUs[] =
     "safebrowsing.advanced_protection_last_refresh";
 const char kPasswordProtectedAllowed[] =
     "safebrowsing.password_protected_allowed";
+const char kSafeBrowsingRealTimeLookupEnabled[] =
+    "safebrowsing.real_time_lookup_enabled";
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -170,6 +172,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 PASSWORD_PROTECTION_OFF);
   registry->RegisterInt64Pref(prefs::kAdvancedProtectionLastRefreshInUs, 0);
   registry->RegisterBooleanPref(prefs::kPasswordProtectedAllowed, true);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
+                                false);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {

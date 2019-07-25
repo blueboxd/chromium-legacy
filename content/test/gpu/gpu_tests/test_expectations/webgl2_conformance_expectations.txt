@@ -1,5 +1,5 @@
+# tags: [ android chromeos highsierra linux mac mojave sierra win win7 ]
 # tags: [ d3d11 no-angle vulkan opengl opengles ]
-# tags: [ win win7 highsierra mac linux sierra android mojave ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0xa2e
 #         amd amd-0x6613 amd-0x699f
@@ -79,6 +79,16 @@ crbug.com/772651 [ nvidia ] conformance/glsl/bugs/vector-scalar-arithmetic-insid
 # performance; it's currently too flaky even on release bots.
 crbug.com/735483 conformance/rendering/texture-switch-performance.html [ Skip ]
 crbug.com/735483 conformance2/rendering/texture-switch-performance.html [ Skip ]
+
+# This test is unfortunately flaky for unknown reasons.
+# TODO(crbug.com/979444): once this is passing on the passthrough
+# command decoder on Android, simplify this expectation to just not
+# declare any OS.
+crbug.com/979444 [ chromeos ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ linux ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ mac ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ win ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
+crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
 # Nvidia bugs fixed in latest driver
 # TODO(http://crbug.com/887241): Upgrade the drivers on the bots.
@@ -760,6 +770,9 @@ crbug.com/874620 [ android nvidia ] conformance2/glsl3/const-struct-from-array-a
 crbug.com/905006 [ android nvidia ] conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html [ Failure ]
 
 # Android ANGLE GLES
+# TODO(crbug.com/979444): once this is passing on the passthrough
+# command decoder, simplify the RetryOnFailure expectation at the top
+# of this file to just not declare any OS.
 crbug.com/979444 [ android opengles ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/906724 [ android opengles ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]

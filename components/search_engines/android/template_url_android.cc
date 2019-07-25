@@ -54,3 +54,9 @@ ScopedJavaLocalRef<jobject> CreateTemplateUrlAndroid(
     const TemplateURL* template_url) {
   return Java_TemplateUrl_create(env, reinterpret_cast<intptr_t>(template_url));
 }
+
+ScopedJavaLocalRef<jstring> JNI_TemplateUrl_GetURL(JNIEnv* env,
+                                                   jlong template_url_ptr) {
+  TemplateURL* template_url = ToTemplateURL(template_url_ptr);
+  return base::android::ConvertUTF8ToJavaString(env, template_url->url());
+}

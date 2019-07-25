@@ -34,6 +34,10 @@ import org.chromium.chrome.R;
             R.string.undo_bar_group_tabs_message,
             R.string.menu_group_tabs,
             R.string.tab_grid_dialog_remove_from_group,
+            R.string.iph_drag_and_drop_introduction,
+            R.string.iph_drag_and_drop_show_me,
+            R.string.iph_drag_and_drop_title,
+            R.string.iph_drag_and_drop_content,
     };
 
     private SilenceLintErrors() {}

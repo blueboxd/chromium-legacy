@@ -57,8 +57,7 @@ class ASH_EXPORT DeskMiniView
   // Gesture tapping may affect the visibility of the close button. There's only
   // one mini_view that shows the close button on long press at any time.
   // This is useful for touch-only UIs.
-  void OnWidgetGestureTap(const gfx::Point& screen_location,
-                          bool is_long_gesture);
+  void OnWidgetGestureTap(const gfx::Rect& screen_rect, bool is_long_gesture);
 
   // Updates the border color of the DeskPreviewView based on the activation
   // state of the corresponding desk.

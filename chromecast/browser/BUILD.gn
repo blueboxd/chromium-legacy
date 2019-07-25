@@ -82,8 +82,6 @@ cast_source_set("browser") {
     "cast_quota_permission_context.h",
     "cast_renderer_block_data.cc",
     "cast_renderer_block_data.h",
-    "cast_resource_dispatcher_host_delegate.cc",
-    "cast_resource_dispatcher_host_delegate.h",
     "cast_session_id_map.cc",
     "cast_session_id_map.h",
     "cast_web_contents_impl.cc",

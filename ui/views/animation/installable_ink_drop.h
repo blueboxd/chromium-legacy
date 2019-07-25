@@ -14,6 +14,7 @@
 #include "ui/views/animation/ink_drop_event_handler.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/animation/installable_ink_drop_animator.h"
+#include "ui/views/animation/installable_ink_drop_config.h"
 #include "ui/views/animation/installable_ink_drop_painter.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_export.h"
@@ -59,6 +60,9 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   InstallableInkDrop(InstallableInkDrop&&) = delete;
 
   ~InstallableInkDrop() override;
+
+  void SetConfig(InstallableInkDropConfig config);
+  InstallableInkDropConfig config() const { return config_; }
 
   // Should only be used for inspecting properties of the layer in tests.
   const ui::Layer* layer_for_testing() const { return layer_.get(); }
@@ -106,6 +110,9 @@ class VIEWS_EXPORT InstallableInkDrop : public InkDrop,
   // If we were installed on an InkDropHostView, this will be non-null. We store
   // this to to remove our InkDropEventHandler override.
   InkDropHostView* ink_drop_host_view_ = nullptr;
+
+  // Contains the colors and opacities used to paint.
+  InstallableInkDropConfig config_;
 
   // The layer we paint to.
   std::unique_ptr<ui::Layer> layer_;

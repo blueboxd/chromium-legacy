@@ -24,7 +24,7 @@ const base::Feature kV8MemoryReducerForSmallHeaps{
 
 // Increase V8 heap size to 4GB if the physical memory is bigger than 16 GB.
 const base::Feature kV8HugeMaxOldGenerationSize{
-    "V8HugeMaxOldGenerationSize", base::FEATURE_DISABLED_BY_DEFAULT};
+    "V8HugeMaxOldGenerationSize", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables new background GC scheduling heuristics.
 const base::Feature kV8GCBackgroundSchedule{"V8GCBackgroundSchedule",

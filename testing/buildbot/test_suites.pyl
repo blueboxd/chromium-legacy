@@ -159,21 +159,14 @@
         'name': 'android_webview_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
           '--os-type',
           '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--use-skia-gold',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
         ],
         'precommit_args': [
-          '--download-refimg-from-cloud-storage',
           # Gerrit issue ID
           '--review-patch-issue',
           '${patch_issue}',
@@ -3568,22 +3561,15 @@
         'name': 'skia_renderer_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
           '--os-type',
           '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--use-skia-gold',
           '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer',
         ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
         'precommit_args': [
-          '--download-refimg-from-cloud-storage',
           # Gerrit issue ID
           '--review-patch-issue',
           '${patch_issue}',
@@ -3665,22 +3651,15 @@
         'name': 'vulkan_pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
           '--os-type',
           '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--use-skia-gold',
           '--extra-browser-args="--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --disable-software-compositing-fallback"',
         ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
-        ],
         'precommit_args': [
-          '--download-refimg-from-cloud-storage',
           # Gerrit issue ID
           '--review-patch-issue',
           '${patch_issue}',
@@ -3726,21 +3705,14 @@
         'name': 'pixel_skia_gold_test',
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--refimg-cloud-storage-bucket',
-          'chromium-gpu-archive/reference-images',
           '--os-type',
           '${os_type}',
           '--build-revision',
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--use-skia-gold',
-        ],
-        'non_precommit_args': [
-          '--upload-refimg-to-cloud-storage',
         ],
         'precommit_args': [
-          '--download-refimg-from-cloud-storage',
           # Gerrit issue ID
           '--review-patch-issue',
           '${patch_issue}',
@@ -4339,6 +4311,7 @@
     },
 
     'non_android_and_cast_and_chromeos_chromium_gtests': {
+      'crashpad_tests': {},
       'cronet_tests': {},
       'cronet_unittests': {},
       'headless_browsertests': {},
@@ -4390,10 +4363,6 @@
         ],
         'test': 'interactive_ui_tests',
       },
-    },
-
-    'non_linux_chromium_gtests': {
-      'crashpad_tests': {},
     },
 
     # These tests will be run on the main Android waterfall since Android
@@ -5030,7 +4999,6 @@
       'mac_specific_chromium_gtests',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_linux_chromium_gtests',
     ],
 
     'chromium_mac_rel_isolated_scripts': [
@@ -5056,7 +5024,6 @@
       'chromium_gtests_for_win_and_linux_only',
       'non_android_chromium_gtests',
       'non_android_and_cast_and_chromeos_chromium_gtests',
-      'non_linux_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
       'win_specific_chromium_gtests',
     ],

@@ -88,28 +88,7 @@ bool IsSwapChainTearingSupported() {
 }
 }  // namespace
 
-DirectCompositionChildSurfaceWin::PendingFrame::PendingFrame(
-    uint32_t present_count,
-    uint32_t target_refresh_count,
-    PresentationCallback callback)
-    : present_count(present_count),
-      target_refresh_count(target_refresh_count),
-      callback(std::move(callback)) {}
-DirectCompositionChildSurfaceWin::PendingFrame::PendingFrame(
-    PendingFrame&& other) = default;
-DirectCompositionChildSurfaceWin::PendingFrame::~PendingFrame() = default;
-DirectCompositionChildSurfaceWin::PendingFrame&
-DirectCompositionChildSurfaceWin::PendingFrame::operator=(
-    PendingFrame&& other) = default;
-
-// static
-bool DirectCompositionChildSurfaceWin::UseSwapChainFrameStatistics() {
-  return base::FeatureList::IsEnabled(features::kSwapChainFrameStatistics);
-}
-
-DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
-    gfx::VSyncProvider* vsync_provider)
-    : vsync_provider_(vsync_provider) {}
+DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() = default;
 
 DirectCompositionChildSurfaceWin::~DirectCompositionChildSurfaceWin() {
   Destroy();
@@ -212,10 +191,6 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
 }
 
 void DirectCompositionChildSurfaceWin::Destroy() {
-  for (auto& frame : pending_frames_)
-    std::move(frame.callback).Run(gfx::PresentationFeedback::Failure());
-  pending_frames_.clear();
-
   if (default_surface_) {
     if (!eglDestroySurface(GetDisplay(), default_surface_)) {
       DLOG(ERROR) << "eglDestroySurface failed with error "
@@ -256,23 +231,13 @@ gfx::SwapResult DirectCompositionChildSurfaceWin::SwapBuffers(
     PresentationCallback callback) {
   TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::SwapBuffers", "size",
                size_.ToString());
+  // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
+  // surface doesn't need to provide presentation feedback.
+  DCHECK(!callback);
 
-  bool succeeded = ReleaseDrawTexture(false /* will_discard */);
-
-  if (UseSwapChainFrameStatistics()) {
-    vsync_provider_->GetVSyncParametersIfAvailable(&last_vsync_time_,
-                                                   &last_vsync_interval_);
-    CheckPendingFrames();
-    // Enqueue callback after retiring previous callbacks so that it's called
-    // after SwapBuffers() returns.
-    EnqueuePendingFrame(std::move(callback));
-  } else {
-    // PresentationCallback is handled by DirectCompositionSurfaceWin. The child
-    // surface doesn't need to provide presentation feedback.
-    DCHECK(!callback);
-  }
-
-  return succeeded ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
+  return ReleaseDrawTexture(false /* will_discard */)
+             ? gfx::SwapResult::SWAP_ACK
+             : gfx::SwapResult::SWAP_FAILED;
 }
 
 bool DirectCompositionChildSurfaceWin::FlipsVertically() const {
@@ -330,10 +295,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
 
   DXGI_FORMAT dxgi_format = ColorSpaceUtils::GetDXGIFormat(color_space_);
 
-  bool force_swap_chain = UseSwapChainFrameStatistics();
-  bool use_swap_chain = force_swap_chain || !enable_dc_layers_;
-
-  if (!dcomp_surface_ && !use_swap_chain) {
+  if (!dcomp_surface_ && enable_dc_layers_) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSurface",
                  "width", size_.width(), "height", size_.height());
     swap_chain_.Reset();
@@ -346,7 +308,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
       DLOG(ERROR) << "CreateSurface failed with error " << std::hex << hr;
       return false;
     }
-  } else if (!swap_chain_ && use_swap_chain) {
+  } else if (!swap_chain_ && !enable_dc_layers_) {
     TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::CreateSwapChain",
                  "width", size_.width(), "height", size_.height());
     dcomp_surface_.Reset();
@@ -487,7 +449,6 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
       return true;
     DLOG(ERROR) << "ResizeBuffers failed with error 0x" << std::hex << hr;
   }
-  ClearPendingFrames();
   // Next SetDrawRectangle call will recreate the swap chain or surface.
   swap_chain_.Reset();
   dcomp_surface_.Reset();
@@ -500,103 +461,10 @@ bool DirectCompositionChildSurfaceWin::SetEnableDCLayers(bool enable) {
   enable_dc_layers_ = enable;
   if (!ReleaseDrawTexture(true /* will_discard */))
     return false;
-  ClearPendingFrames();
   // Next SetDrawRectangle call will recreate the swap chain or surface.
   swap_chain_.Reset();
   dcomp_surface_.Reset();
   return true;
-}
-
-void DirectCompositionChildSurfaceWin::CheckPendingFrames() {
-  DCHECK(UseSwapChainFrameStatistics());
-
-  // Check if swap chain has already been destroyed e.g. due to Resize().
-  if (!swap_chain_ || pending_frames_.empty())
-    return;
-
-  TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::CheckPendingFrames",
-               "num_pending_frames", pending_frames_.size());
-
-  // The stats indicate that the present corresponding to |stats.PresentCount|
-  // was displayed at the vblank corresponding to |stats.PresentRefreshCount|
-  // with presentation time |stats.SyncQPCTime|.
-  DXGI_FRAME_STATISTICS stats = {};
-  if (SUCCEEDED(swap_chain_->GetFrameStatistics(&stats))) {
-    auto present_time =
-        base::TimeTicks::FromQPCValue(stats.SyncQPCTime.QuadPart);
-
-    auto traced_stats = std::make_unique<base::trace_event::TracedValue>();
-    traced_stats->SetInteger("PresentCount", stats.PresentCount);
-    traced_stats->SetInteger("PresentRefreshCount", stats.PresentRefreshCount);
-    traced_stats->SetInteger("SyncRefreshCount", stats.SyncRefreshCount);
-    traced_stats->SetDouble("SyncQPCTime",
-                            present_time.since_origin().InMillisecondsF());
-    TRACE_EVENT_INSTANT1("gpu", "Swap chain frame statistics",
-                         TRACE_EVENT_SCOPE_THREAD, "DXGI_FRAME_STATISTICS",
-                         std::move(traced_stats));
-    // Retire presentation callbacks for presents up to |stats.PresentCount|.
-    uint32_t last_refresh_count = 0;
-    while (!pending_frames_.empty()) {
-      auto& frame = pending_frames_.front();
-      // Subtraction will underflow if stats.PresentCount > frame.present_count
-      // including when present count wraps around.
-      if (stats.PresentCount - frame.present_count > 0x80000000u)
-        break;
-      std::move(frame.callback)
-          .Run(gfx::PresentationFeedback(
-              present_time, last_vsync_interval_,
-              gfx::PresentationFeedback::kVSync |
-                  gfx::PresentationFeedback::kHWClock |
-                  gfx::PresentationFeedback::kHWCompletion));
-      last_refresh_count = frame.target_refresh_count;
-      pending_frames_.pop_front();
-    }
-    // Glitch detection doesn't work correctly for the first few frames after
-    // a pause in presentation since we don't know how old the stats are.
-    if (last_refresh_count > 0 &&
-        last_refresh_count != stats.PresentRefreshCount) {
-      uint32_t num_frames = stats.PresentRefreshCount - last_refresh_count;
-      TRACE_EVENT_INSTANT1("gpu", "Swap chain presentation glitch",
-                           TRACE_EVENT_SCOPE_THREAD, "num_frames", num_frames);
-    }
-    // Update target refresh count for remaining frames.
-    uint32_t next_refresh_count = stats.PresentRefreshCount + 1;
-    for (auto& frame : pending_frames_)
-      frame.target_refresh_count = next_refresh_count++;
-  } else {
-    ClearPendingFrames();
-  }
-}
-
-void DirectCompositionChildSurfaceWin::EnqueuePendingFrame(
-    PresentationCallback callback) {
-  DCHECK(UseSwapChainFrameStatistics());
-
-  uint32_t next_refresh_count = 0;
-  if (!pending_frames_.empty())
-    next_refresh_count = pending_frames_.back().target_refresh_count + 1;
-
-  UINT present_count = 0;
-  // |swap_chain_| can be null if SetDrawRectangle() failed.  We still enqueue
-  // the callback so that it's released in order after pending callbacks.
-  if (swap_chain_)
-    swap_chain_->GetLastPresentCount(&present_count);
-
-  pending_frames_.emplace_back(present_count, next_refresh_count,
-                               std::move(callback));
-}
-
-void DirectCompositionChildSurfaceWin::ClearPendingFrames() {
-  if (pending_frames_.empty())
-    return;
-  TRACE_EVENT1("gpu", "DirectCompositionChildSurfaceWin::ClearPendingFrames",
-               "num_pending_frames", pending_frames_.size());
-  for (auto& frame : pending_frames_) {
-    std::move(frame.callback)
-        .Run(gfx::PresentationFeedback(last_vsync_time_, last_vsync_interval_,
-                                       gfx::PresentationFeedback::kVSync));
-  }
-  pending_frames_.clear();
 }
 
 }  // namespace gl

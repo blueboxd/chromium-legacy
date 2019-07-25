@@ -374,7 +374,6 @@ configData.translatedStrings.connectionError;
 configData.translatedStrings.connectionErrorNoPeriod;
 configData.translatedStrings.copyLink;
 configData.translatedStrings.customizeThisPage;
-configData.translatedStrings.dailyRefresh;
 configData.translatedStrings.defaultWallpapers;
 configData.translatedStrings.details;
 configData.translatedStrings.editLinkTitle;

@@ -52,10 +52,8 @@ class ReportingHeaderParserTest : public ReportingTestBase,
     // All ReportingCache methods assume that the store has been initialized.
     if (mock_store()) {
       mock_store()->LoadReportingClients(
-          base::BindOnce([](std::vector<ReportingEndpoint>,
-                            std::vector<CachedReportingEndpointGroup>) {
-            // TODO(crbug.com/895821): Insert into the cache.
-          }));
+          base::BindOnce(&ReportingCache::AddClientsLoadedFromStore,
+                         base::Unretained(cache())));
       mock_store()->FinishLoading(true);
     }
   }

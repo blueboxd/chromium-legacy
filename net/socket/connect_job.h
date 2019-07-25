@@ -68,7 +68,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
       QuicStreamFactory* quic_stream_factory,
       ProxyDelegate* proxy_delegate,
       const HttpUserAgentSettings* http_user_agent_settings,
-      const SSLClientSocketContext& ssl_client_socket_context,
+      SSLClientContext* ssl_client_context,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       NetworkQualityEstimator* network_quality_estimator,
       NetLog* net_log,
@@ -87,7 +87,7 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   QuicStreamFactory* quic_stream_factory;
   ProxyDelegate* proxy_delegate;
   const HttpUserAgentSettings* http_user_agent_settings;
-  SSLClientSocketContext ssl_client_socket_context;
+  SSLClientContext* ssl_client_context;
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
   NetworkQualityEstimator* network_quality_estimator;
   NetLog* net_log;
@@ -263,8 +263,8 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const HttpUserAgentSettings* http_user_agent_settings() const {
     return common_connect_job_params_->http_user_agent_settings;
   }
-  const SSLClientSocketContext& ssl_client_socket_context() {
-    return common_connect_job_params_->ssl_client_socket_context;
+  SSLClientContext* ssl_client_context() {
+    return common_connect_job_params_->ssl_client_context;
   }
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory() {
     return common_connect_job_params_->socket_performance_watcher_factory;

@@ -43,22 +43,6 @@ _get_generic = lambda tags: set(
 
 ResultType = json_results.ResultType
 
-def _ConflictLeaksRegression(possible_collision, exp):
-  reason_template = (
-      'Pattern \'{0}\' on line {1} has the %s expectation however the '
-      'the pattern on \'{2}\' line {3} has the Pass expectation'). format(
-          possible_collision.test, possible_collision.lineno, exp.test,
-          exp.lineno)
-  causes_regression = not(
-      ResultType.Failure in exp.results or ResultType.Skip in exp.results)
-  if (ResultType.Skip in possible_collision.results and
-      causes_regression):
-    return reason_template % 'Skip'
-  if (ResultType.Failure in possible_collision.results and
-      causes_regression):
-    return reason_template % 'Failure'
-  return ''
-
 
 def _IsCollision(s1, s2, tag_sets):
   # s1 and s2 do not collide when there exists a tag in s1 and tag in s2 that
@@ -211,68 +195,6 @@ def CheckTestExpectationsAreForExistingTests(
         "%s:%d: Pattern '%s' does not match with any tests in the %s test suite"
         % (expectations_file, exp.lineno, exp.test, test_class.Name()))
 
-def CheckTestExpectationGlobsForCollision(
-    expectations, file_name, test_class=None):
-  """This function looks for collisions between test expectations with patterns
-  that match with test expectation patterns that are globs. A test expectation
-  collides with another if its pattern matches with another's glob and if its
-  tags is a super set of the other expectation's tags. The less specific test
-  expectation must have a failure or skip expectation while the more specific
-  test expectation does not. The more specific test expectation will trump
-  the less specific test expectation and may cause an unexpected regression.
-
-  Args:
-  expectations: A string containing test expectations in the new format
-  file_name: Name of the file that the test expectations came from
-  """
-  master_conflicts_found = False
-  error_msg = ''
-  trie = {}
-  parser = expectations_parser.TaggedTestListParser(expectations)
-  globs_to_expectations = defaultdict(list)
-
-  _MapGpuDevicesToVendors(parser.tag_sets)
-
-  for exp in parser.expectations:
-    _trie = trie.setdefault(exp.test[0], {})
-    for l in exp.test[1:]:
-      _trie = _trie.setdefault(l, {})
-    _trie.setdefault('$', []).append(exp)
-
-  for exp in parser.expectations:
-    _trie = trie
-    glob = ''
-    for l in exp.test:
-      if '*' in _trie:
-        globs_to_expectations[glob + '*'].append(exp)
-      glob += l
-      if l in _trie:
-        _trie = _trie[l]
-      else:
-        break
-    if '*' in _trie:
-      globs_to_expectations[glob + '*'].append(exp)
-
-  for glob, expectations in globs_to_expectations.items():
-    conflicts_found = False
-    globs_to_match = [e for e in expectations if e.test == glob]
-    matched_to_globs = [e for e in expectations if e.test != glob]
-    for match in matched_to_globs:
-      for possible_collision in globs_to_match:
-        reason = _ConflictLeaksRegression(possible_collision, match)
-        if (reason and
-            (_IsCollision(possible_collision.tags, match.tags, parser.tag_sets)
-                or _IsDriverTagDuplicated(
-                    possible_collision.tags, match.tags, test_class,
-                    parser.tag_sets))):
-          if not conflicts_found:
-            error_msg += ('\n\nFound conflicts for pattern %s in %s:\n' %
-                          (glob, file_name))
-          master_conflicts_found = conflicts_found = True
-          error_msg += ('  line %d conflicts with line %d: %s\n' %
-                        (possible_collision.lineno, match.lineno, reason))
-  assert not master_conflicts_found, error_msg
-
 
 def CheckTestExpectationPatternsForCollision(
     expectations, file_name, test_class=None):
@@ -356,19 +278,6 @@ class GpuTestExpectationsValidation(unittest.TestCase):
               CheckTestExpectationPatternsForCollision(f.read(),
               os.path.basename(f.name))
 
-  def testNoCollisionsWithGlobsInGpuTestExpectations(self):
-    webgl_conformance_test_class = (
-        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
-    for test_case in _FindTestCases():
-      if 'gpu_tests.gpu_integration_test_unittest' not in test_case.__module__:
-        for i in xrange(1, 2 + (test_case == webgl_conformance_test_class)):
-          _ = list(test_case.GenerateGpuTests(
-              gpu_helper.GetMockArgs(webgl_version=('%d.0.0' % i))))
-          if test_case.ExpectationsFiles():
-            with open(test_case.ExpectationsFiles()[0]) as f:
-              CheckTestExpectationGlobsForCollision(f.read(),
-              os.path.basename(f.name))
-
   def testGpuTestExpectationsAreForExistingTests(self):
     options = gpu_helper.GetMockArgs()
     for test_case in _FindTestCases():
@@ -446,33 +355,6 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
       CheckTestExpectationPatternsForCollision(
           test_expectations, 'test.txt', webgl_conformance_test_class)
 
-  def testCollisionWithGlobsWithGpuDriverTags(self):
-    webgl_conformance_test_class = (
-        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
-    failed_test_expectations = _ExtractUnitTestTestExpectations(
-        'failed_test_expectations_with_driver_tags.txt')
-    for test_expectations in failed_test_expectations:
-      test_expectations = test_expectations.replace(
-          'abc.html [ Failure ]', 'a/b/c/* [ Failure ]')
-      test_expectations = test_expectations.replace(
-          'abc.html [ RetryOnFailure ]', 'a/b/c/abc.html [ RetryOnFailure ]')
-      with self.assertRaises(AssertionError):
-        CheckTestExpectationGlobsForCollision(
-            test_expectations, 'test.txt', webgl_conformance_test_class)
-
-  def testNoCollisionWithGlobsWithGpuDriverTags(self):
-    webgl_conformance_test_class = (
-        webgl_conformance_integration_test.WebGLConformanceIntegrationTest)
-    passed_test_expectations = _ExtractUnitTestTestExpectations(
-        'passed_test_expectations_with_driver_tags.txt')
-    for test_expectations in passed_test_expectations:
-      test_expectations = test_expectations.replace(
-          'abc.html [ Failure ]', 'a/b/c/* [ Failure ]')
-      test_expectations = test_expectations.replace(
-          'abc.html [ RetryOnFailure ]', 'a/b/c/abc.html [ RetryOnFailure ]')
-      CheckTestExpectationGlobsForCollision(
-          test_expectations, 'test.txt', webgl_conformance_test_class)
-
   def testCollisionsBetweenAngleAndNonAngleConfiguration(self):
     test_expectations = '''
     # tags: [ android ]
@@ -484,18 +366,6 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
     '''
     with self.assertRaises(AssertionError):
       CheckTestExpectationPatternsForCollision(test_expectations, 'test.txt')
-
-  def testCollisionsBetweenAngleAndNonAngleConfigurationUsingGlobs(self):
-    test_expectations = '''
-    # tags: [ android ]
-    # tags: [ qualcomm-adreno-(tm)-418 ]
-    # tags: [ opengles ]
-    # results: [ RetryOnFailure Skip ]
-    [ android qualcomm-adreno-(tm)-418 ] a/b/c* [ Skip ]
-    [ android opengles ] a/b/c/d [ RetryOnFailure ]
-    '''
-    with self.assertRaises(AssertionError):
-      CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
 
   def testCollisionInTestExpectationsWithSpecifcAndGenericOsTags(self):
     test_expectations = '''# tags: [ mac win linux xp ]
@@ -591,70 +461,6 @@ class TestGpuTestExpectationsValidators(unittest.TestCase):
       str(context.exception))
     self.assertNotIn("Found conflicts for test a/b/c in test.txt:",
       str(context.exception))
-
-  def testCollisionWithGlobsWithFailureExpectation(self):
-    test_expectations = '''# tags: [ mac win linux ]
-    # tags: [ intel amd nvidia ]
-    # tags: [ debug release ]
-    # results: [ Failure RetryOnFailure ]
-    [ intel debug ] a/b/c/d* [ Failure ]
-    [ intel debug mac ] a/b/c/d [ RetryOnFailure ]
-    [ intel debug mac ] a/b/c/d/e [ Failure ]
-    '''
-    with self.assertRaises(AssertionError) as context:
-      CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
-    self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
-        str(context.exception))
-    self.assertIn(("line 5 conflicts with line 6: Pattern 'a/b/c/d*' on line 5 "
-        "has the Failure expectation however the the pattern on 'a/b/c/d'"
-        " line 6 has the Pass expectation"),
-        str(context.exception))
-    self.assertNotIn('line 5 conflicts with line 7',
-        str(context.exception))
-
-  def testNoCollisionWithGlobsWithFailureExpectation(self):
-    test_expectations = '''# tags: [ mac win linux ]
-    # tags: [ intel amd nvidia ]
-    # tags: [ debug release ]
-    # results: [ Failure Skip ]
-    [ intel debug mac ] a/b/c/* [ Failure ]
-    [ intel debug ] a/b/c/d [ Failure ]
-    [ intel debug ] a/b/c/d [ Skip ]
-    '''
-    CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
-
-  def testCollisionWithGlobsWithSkipExpectation(self):
-    test_expectations = '''# tags: [ mac win linux ]
-    # tags: [ intel amd nvidia ]
-    # tags: [ debug release ]
-    # results: [ Skip Failure RetryOnFailure ]
-    [ intel debug ] a/b/c/d* [ Skip ]
-    [ intel debug mac ] a/b/c/d [ Failure ]
-    [ intel debug mac ] a/b/c/d/e [ RetryOnFailure ]
-    '''
-    with self.assertRaises(AssertionError) as context:
-      CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
-    self.assertIn('Found conflicts for pattern a/b/c/d* in test.txt:',
-        str(context.exception))
-    self.assertNotIn('line 5 conflicts with line 6',
-        str(context.exception))
-    self.assertIn('line 5 conflicts with line 7',
-        str(context.exception))
-    self.assertIn(("line 5 conflicts with line 7: Pattern 'a/b/c/d*' on line 5 "
-        "has the Skip expectation however the the pattern on 'a/b/c/d/e'"
-        " line 7 has the Pass expectation"),
-        str(context.exception))
-
-  def testNoCollisionWithGlobsWithSkipExpectation(self):
-    test_expectations = '''# tags: [ mac win linux ]
-    # tags: [ intel amd nvidia ]
-    # tags: [ debug release ]
-    # results: [ Skip ]
-    [ intel debug mac ] a/b/c/* [ Skip ]
-    [ intel debug ] a/b/c/d [ Skip ]
-    [ intel debug ] a/b/c/d [ Skip ]
-    '''
-    CheckTestExpectationGlobsForCollision(test_expectations, 'test.txt')
 
   def testNoCollisionInTestExpectations(self):
     test_expectations = '''# tags: [ mac win linux ]

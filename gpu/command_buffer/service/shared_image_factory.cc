@@ -294,12 +294,6 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
                                share_between_gl_vulkan || using_dawn ||
                                share_between_gl_metal;
 
-  // TODO(vasilyt): Android required AHB for overlays
-  // What about other platforms?
-#if defined(OS_ANDROID)
-  using_interop_factory |= usage & SHARED_IMAGE_USAGE_SCANOUT;
-#endif
-
   // wrapped_sk_image_factory_ is only used for OOPR and supports
   // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |

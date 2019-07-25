@@ -31,7 +31,7 @@
 #include "extensions/common/api/mime_handler_private.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
-#include "extensions/common/mojo/guest_view.mojom.h"
+#include "extensions/common/mojom/guest_view.mojom.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"

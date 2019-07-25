@@ -1847,7 +1847,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        PreferencesLauncher.launchSettingsPage(context, MainPreferences.class);
+        PreferencesLauncher.launchSettingsPageCompat(context, MainPreferences.class);
     }
 
     @Override

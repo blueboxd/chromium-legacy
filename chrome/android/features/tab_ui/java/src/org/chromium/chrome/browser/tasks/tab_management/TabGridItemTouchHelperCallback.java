@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -15,8 +16,8 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
-import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import java.util.List;
@@ -141,8 +142,12 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
+                RecyclerView.ViewHolder selectedViewHolder =
+                        mRecyclerView.findViewHolderForAdapterPosition(mSelectedTabIndex);
+                assert selectedViewHolder != null;
+                View selectedItemView = selectedViewHolder.itemView;
                 onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
-                mRecyclerView.removeViewAt(mSelectedTabIndex);
+                mRecyclerView.removeView(selectedItemView);
                 RecordUserAction.record("GridTabSwitcher.Drag.AddToGroupOrCreateGroup");
             }
             mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
@@ -156,8 +161,12 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                 TabGroupModelFilter filter =
                         (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter();
+                RecyclerView.ViewHolder ungroupViewHolder =
+                        mRecyclerView.findViewHolderForAdapterPosition(mUnGroupTabIndex);
+                assert ungroupViewHolder != null;
+                View ungroupItemView = ungroupViewHolder.itemView;
                 filter.moveTabOutOfGroup(mModel.get(mUnGroupTabIndex).get(TabProperties.TAB_ID));
-                mRecyclerView.removeViewAt(mUnGroupTabIndex);
+                mRecyclerView.removeView(ungroupItemView);
                 RecordUserAction.record("TabGridDialog.Drag.RemoveFromGroup");
             }
             mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;

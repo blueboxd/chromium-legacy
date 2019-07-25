@@ -1386,7 +1386,7 @@ void AppListControllerImpl::UpdateLauncherContainer(
          Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(
              kActiveDesk)) {
       if (!parent_window->Contains(app_window) &&
-          !wm::GetWindowState(app_window)->IsMinimized()) {
+          !WindowState::Get(app_window)->IsMinimized()) {
         is_showing_app_window = true;
         break;
       }

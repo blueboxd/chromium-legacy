@@ -18,7 +18,7 @@ namespace ash {
 
 // Updates the bounds of widgets in the overlay container whenever the display
 // bounds change. Keeps children snapped to pixel bounds.
-class ASH_EXPORT OverlayLayoutManager : public wm::WmDefaultLayoutManager,
+class ASH_EXPORT OverlayLayoutManager : public WmDefaultLayoutManager,
                                         public display::DisplayObserver {
  public:
   explicit OverlayLayoutManager(aura::Window* overlay_container);

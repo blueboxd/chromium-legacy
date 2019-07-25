@@ -36,7 +36,7 @@ enum Direction {
 class ASH_EXPORT MultiWindowResizeController
     : public views::MouseWatcherListener,
       public aura::WindowObserver,
-      public wm::WindowStateObserver {
+      public WindowStateObserver {
  public:
   MultiWindowResizeController();
   ~MultiWindowResizeController() override;
@@ -55,8 +55,8 @@ class ASH_EXPORT MultiWindowResizeController
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
  private:

@@ -38,7 +38,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/arc_apps.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
@@ -324,11 +324,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     bool flush_app_service_mojo_calls = false;
     if (app_service_proxy_connector_) {
       DCHECK(profile());
-      app_service_proxy_impl_.reset(apps::AppServiceProxyImpl::CreateForTesting(
+      app_service_proxy_.reset(apps::AppServiceProxy::CreateForTesting(
           profile(), app_service_proxy_connector_));
       old_app_service_proxy_for_testing_ =
           AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
-              app_service_proxy_impl_.get());
+              app_service_proxy_.get());
       // Flush the App Service Mojo calls, but only after calling
       // arc_test_.SetUp, as it also pumps the run-loop in general.
       flush_app_service_mojo_calls = true;
@@ -338,7 +338,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       arc_test_.SetUp(profile());
 
     if (flush_app_service_mojo_calls)
-      app_service_proxy_impl_->FlushMojoCallsForTesting();
+      app_service_proxy_->FlushMojoCallsForTesting();
 
     // Wait until |extension_system| is signaled as started.
     base::RunLoop run_loop;
@@ -481,10 +481,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
   void TearDown() override {
     arc_test_.TearDown();
-    if (app_service_proxy_impl_) {
+    if (app_service_proxy_) {
       AppServiceAppModelBuilder::SetAppServiceProxyForTesting(
           old_app_service_proxy_for_testing_);
-      app_service_proxy_impl_.reset(nullptr);
+      app_service_proxy_.reset(nullptr);
     }
     launcher_controller_ = nullptr;
     BrowserWithTestWindowTest::TearDown();
@@ -969,7 +969,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   app_list::AppListSyncableService* app_list_syncable_service_ = nullptr;
 
   service_manager::Connector* app_service_proxy_connector_ = nullptr;
-  std::unique_ptr<apps::AppServiceProxyImpl> app_service_proxy_impl_;
+  std::unique_ptr<apps::AppServiceProxy> app_service_proxy_;
   apps::AppServiceProxy* old_app_service_proxy_for_testing_ = nullptr;
 
  private:
@@ -1015,8 +1015,8 @@ class ChromeLauncherControllerWithArcTest
 
     ChromeLauncherControllerTest::SetUp();
     if (app_service_proxy_connector_) {
-      arc_apps_.reset(apps::ArcApps::CreateForTesting(
-          profile(), app_service_proxy_impl_.get()));
+      arc_apps_.reset(
+          apps::ArcApps::CreateForTesting(profile(), app_service_proxy_.get()));
     }
   }
 
@@ -1489,8 +1489,8 @@ TEST_F(ChromeLauncherControllerWithArcTest, ArcAppPinCrossPlatformWorkflow) {
   EXPECT_EQ("App2, Fake App 1, Chrome, App1, Fake App 0, Gmail",
             GetPinnedAppStatus());
 
-  if (app_service_proxy_impl_)
-    app_service_proxy_impl_->FlushMojoCallsForTesting();
+  if (app_service_proxy_)
+    app_service_proxy_->FlushMojoCallsForTesting();
   copy_sync_list = app_list_syncable_service_->GetAllSyncData(syncer::APP_LIST);
 
   ResetLauncherController();

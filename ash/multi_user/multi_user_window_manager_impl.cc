@@ -399,7 +399,7 @@ bool MultiUserWindowManagerImpl::ShowWindowForUserIntern(
       (owner == account_id && IsWindowOnDesktopOfUser(window, account_id)))
     return false;
 
-  bool minimized = ::wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED);
+  bool minimized = wm::WindowStateIs(window, ui::SHOW_STATE_MINIMIZED);
   // Check that we are not trying to transfer ownership of a minimized window.
   if (account_id != owner && minimized)
     return false;

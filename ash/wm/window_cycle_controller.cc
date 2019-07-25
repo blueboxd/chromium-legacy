@@ -62,7 +62,7 @@ void WindowCycleController::StartCycling() {
   // windows, so if a window in |window_list| has a transient root also in
   // |window_list|, we can remove it as the transient root will handle showing
   // the window.
-  wm::RemoveTransientDescendants(&window_list);
+  window_util::RemoveTransientDescendants(&window_list);
 
   active_window_before_window_cycle_ = GetActiveWindow(window_list);
 

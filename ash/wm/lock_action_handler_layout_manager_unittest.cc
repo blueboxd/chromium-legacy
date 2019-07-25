@@ -455,7 +455,7 @@ TEST_F(LockActionHandlerLayoutManagerTest, MultipleMonitors) {
 
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
   window_state->Maximize();
 

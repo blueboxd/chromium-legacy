@@ -155,7 +155,7 @@ void EndOverview() {
 
 OverviewSession::OverviewSession(OverviewDelegate* delegate)
     : delegate_(delegate),
-      restore_focus_window_(wm::GetFocusedWindow()),
+      restore_focus_window_(window_util::GetFocusedWindow()),
       overview_start_time_(base::Time::Now()),
       highlight_controller_(
           std::make_unique<OverviewHighlightController>(this)) {
@@ -204,7 +204,7 @@ void OverviewSession::Init(const WindowList& windows,
     // Observed switchable containers for newly created windows on all root
     // windows.
     for (auto* container :
-         wm::GetSwitchableContainersForRoot(root, /*active_desk_only=*/true)) {
+         GetSwitchableContainersForRoot(root, /*active_desk_only=*/true)) {
       container->AddObserver(this);
       observed_windows_.insert(container);
     }
@@ -390,7 +390,7 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
     }
   }
   item->EnsureVisible();
-  ::wm::ActivateWindow(window);
+  wm::ActivateWindow(window);
 }
 
 void OverviewSession::SetSplitViewDragIndicatorsIndicatorState(
@@ -430,7 +430,7 @@ void OverviewSession::AddItem(
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
-  ::wm::ActivateWindow(GetOverviewFocusWindow());
+  wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
 void OverviewSession::AppendItem(aura::Window* window,
@@ -449,7 +449,7 @@ void OverviewSession::AppendItem(aura::Window* window,
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
-  ::wm::ActivateWindow(GetOverviewFocusWindow());
+  wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
 void OverviewSession::RemoveItem(OverviewItem* overview_item) {
@@ -769,7 +769,7 @@ void OverviewSession::OnWindowHierarchyChanged(
   }
 
   aura::Window* new_window = params.target;
-  wm::WindowState* state = wm::GetWindowState(new_window);
+  WindowState* state = WindowState::Get(new_window);
   if (!state->IsUserPositionable() || state->IsPip())
     return;
 
@@ -784,7 +784,7 @@ void OverviewSession::OnWindowHierarchyChanged(
     return;
   }
 
-  if (wm::IsSwitchableContainer(new_window->parent()) &&
+  if (IsSwitchableContainer(new_window->parent()) &&
       !::wm::GetTransientParent(new_window)) {
     // The new window is in one of the switchable containers, abort overview.
     EndOverview();

@@ -1239,14 +1239,10 @@ TEST_F(AutoclickTest, ScrollOccursWhenHoveredOverScrollButtons) {
     int scroll_x;
     int scroll_y;
   } kTestCases[] = {
-      {AutoclickScrollView::ButtonId::kScrollUp, 0,
-       ui::MouseWheelEvent::kWheelDelta},
-      {AutoclickScrollView::ButtonId::kScrollDown, 0,
-       -ui::MouseWheelEvent::kWheelDelta},
-      {AutoclickScrollView::ButtonId::kScrollLeft,
-       ui::MouseWheelEvent::kWheelDelta, 0},
-      {AutoclickScrollView::ButtonId::kScrollRight,
-       -ui::MouseWheelEvent::kWheelDelta, 0},
+      {AutoclickScrollView::ButtonId::kScrollUp, 0, 10},
+      {AutoclickScrollView::ButtonId::kScrollDown, 0, -10},
+      {AutoclickScrollView::ButtonId::kScrollLeft, 10, 0},
+      {AutoclickScrollView::ButtonId::kScrollRight, -10, 0},
   };
   for (auto& test : kTestCases) {
     views::View* button = GetScrollButton(test.button_id);

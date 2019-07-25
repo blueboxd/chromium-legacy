@@ -729,7 +729,7 @@ TEST_F(ImmersiveFullscreenControllerTest, WindowsInTabletMode) {
   // mode either.
   Shell::Get()->split_view_controller()->SnapWindow(window(),
                                                     SplitViewController::LEFT);
-  EXPECT_TRUE(wm::GetWindowState(window())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(window())->IsSnapped());
   EXPECT_TRUE(Shell::Get()->split_view_controller()->InSplitViewMode());
   AttemptReveal(MODALITY_GESTURE_SCROLL);
   EXPECT_FALSE(controller()->IsRevealed());
@@ -834,7 +834,7 @@ TEST_F(ImmersiveFullscreenControllerTest, EventsDoNotLeakToWindowUnderneath) {
 
 // Check that the window state gets properly marked for immersive fullscreen.
 TEST_F(ImmersiveFullscreenControllerTest, WindowStateImmersiveFullscreen) {
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window());
+  ash::WindowState* window_state = ash::WindowState::Get(window());
   SetWindowShowState(ui::SHOW_STATE_NORMAL);
 
   EXPECT_FALSE(window_state->IsInImmersiveFullscreen());

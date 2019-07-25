@@ -167,6 +167,7 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
+#import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -807,10 +808,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     _downloadManagerCoordinator.presenter =
         [[VerticalAnimationContainer alloc] init];
 
-    if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
-      _javaScriptDialogPresenter =
-          std::make_unique<OverlayJavaScriptDialogPresenter>();
-    } else {
+    if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
       _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                           presentingViewController:self];
       _javaScriptDialogPresenter =
@@ -3392,6 +3390,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
+  if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
+    return WebStateDelegateTabHelper::FromWebState(webState)
+        ->GetJavaScriptDialogPresenter(webState);
+  }
+  DCHECK(_javaScriptDialogPresenter.get());
   return _javaScriptDialogPresenter.get();
 }
 
@@ -3400,10 +3403,20 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                       proposedCredential:(NSURLCredential*)proposedCredential
                        completionHandler:(void (^)(NSString* username,
                                                    NSString* password))handler {
-  [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
-                                     proposedCredential:proposedCredential
-                                               webState:webState
-                                      completionHandler:handler];
+  DCHECK(handler);
+  if (base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
+    web::WebStateDelegate::AuthCallback callback =
+        base::BindRepeating(^(NSString* user, NSString* password) {
+          handler(user, password);
+        });
+    WebStateDelegateTabHelper::FromWebState(webState)->OnAuthRequired(
+        webState, protectionSpace, proposedCredential, callback);
+  } else {
+    [self.dialogPresenter runAuthDialogForProtectionSpace:protectionSpace
+                                       proposedCredential:proposedCredential
+                                                 webState:webState
+                                        completionHandler:handler];
+  }
 }
 
 - (BOOL)webState:(web::WebState*)webState

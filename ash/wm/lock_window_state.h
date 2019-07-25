@@ -15,7 +15,7 @@ namespace ash {
 // and is applied only on lock (login) window container and window containers
 // associated with apps handling lock screen tray actions.
 // LockWindowState implements Ash behavior without state machine.
-class LockWindowState : public wm::WindowState::State {
+class LockWindowState : public WindowState::State {
  public:
   // The |window|'s state object will be modified to use this new window mode
   // state handler.
@@ -28,35 +28,31 @@ class LockWindowState : public wm::WindowState::State {
   ~LockWindowState() override;
 
   // WindowState::State overrides:
-  void OnWMEvent(wm::WindowState* window_state,
-                 const wm::WMEvent* event) override;
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override;
   WindowStateType GetType() const override;
-  void AttachState(wm::WindowState* window_state,
-                   wm::WindowState::State* previous_state) override;
-  void DetachState(wm::WindowState* window_state) override;
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override;
+  void DetachState(WindowState* window_state) override;
 
   // Creates new LockWindowState instance and attaches it to |window|.
-  static wm::WindowState* SetLockWindowState(aura::Window* window);
-  static wm::WindowState* SetLockWindowStateWithShelfExcluded(
-      aura::Window* window);
+  static WindowState* SetLockWindowState(aura::Window* window);
+  static WindowState* SetLockWindowStateWithShelfExcluded(aura::Window* window);
 
  private:
   // Updates the window to |new_state_type| and resulting bounds:
   // Either full screen, maximized centered or minimized. If the state does not
   // change, only the bounds will be changed.
-  void UpdateWindow(wm::WindowState* window_state,
-                    WindowStateType new_state_type);
+  void UpdateWindow(WindowState* window_state, WindowStateType new_state_type);
 
   // Depending on the capabilities of the window we either return
   // |WindowStateType::kMaximized| or |WindowStateType::kNormal|.
-  WindowStateType GetMaximizedOrCenteredWindowType(
-      wm::WindowState* window_state);
+  WindowStateType GetMaximizedOrCenteredWindowType(WindowState* window_state);
 
   // Returns boudns to be used for the provided window.
   gfx::Rect GetWindowBounds(aura::Window* window);
 
   // Updates the bounds taking virtual keyboard bounds into consideration.
-  void UpdateBounds(wm::WindowState* window_state);
+  void UpdateBounds(WindowState* window_state);
 
   // The current state type. Due to the nature of this state, this can only be
   // WM_STATE_TYPE{NORMAL, MINIMIZED, MAXIMIZED}.

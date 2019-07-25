@@ -441,9 +441,9 @@ TEST_F(DesksTest, TestWindowPositioningPaused) {
   const auto win1_bounds = gfx::Rect{50, 50, 200, 200};
   auto win0 = CreateTestWindow(win0_bounds);
   auto win1 = CreateTestWindow(win1_bounds);
-  wm::WindowState* window_state = wm::GetWindowState(win0.get());
+  WindowState* window_state = WindowState::Get(win0.get());
   window_state->SetWindowPositionManaged(true);
-  window_state = wm::GetWindowState(win1.get());
+  window_state = WindowState::Get(win1.get());
   window_state->SetWindowPositionManaged(true);
   EXPECT_EQ(win0_bounds, win0->GetBoundsInScreen());
   EXPECT_EQ(win1_bounds, win1->GetBoundsInScreen());
@@ -630,7 +630,7 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_EQ(desk_1, controller->active_desk());
   EXPECT_EQ(3u, desk_1->windows().size());
   EXPECT_TRUE(desk_2->windows().empty());
-  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
   // Activate the newly-added desk. Expect that the tracked windows per each
   // desk will remain the same.
@@ -641,7 +641,7 @@ TEST_F(DesksTest, WindowActivation) {
 
   // `desk_2` has no windows, so now no window should be active. However,
   // windows on `desk_1` are activateable.
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
   EXPECT_TRUE(wm::CanActivateWindow(win0.get()));
   EXPECT_TRUE(wm::CanActivateWindow(win1.get()));
   EXPECT_TRUE(wm::CanActivateWindow(win2.get()));
@@ -656,14 +656,14 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_FALSE(DoesActiveDeskContainWindow(win0.get()));
   EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
   EXPECT_FALSE(DoesActiveDeskContainWindow(win2.get()));
-  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
 
   // Delete `win0` and expect that `desk_1`'s windows will be updated.
   win0.reset();
   EXPECT_EQ(2u, desk_1->windows().size());
   EXPECT_EQ(2u, desk_2->windows().size());
   // No change in the activation.
-  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
 
   // Switch back to `desk_1`. Now we can activate its windows.
   ActivateDesk(desk_1);
@@ -674,7 +674,7 @@ TEST_F(DesksTest, WindowActivation) {
   EXPECT_TRUE(wm::CanActivateWindow(win4.get()));
 
   // After `win0` has been deleted, `win2` is next on the MRU list.
-  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
 
   // Remove `desk_2` and expect that its windows will be moved to the active
   // desk.
@@ -693,7 +693,7 @@ TEST_F(DesksTest, WindowActivation) {
 
   // `desk_2`'s windows moved to `desk_1`, but that should not change the
   // already active window.
-  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
 
   // Moved windows can still be activated.
   EXPECT_TRUE(wm::CanActivateWindow(win3.get()));
@@ -713,7 +713,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win1.get());
-  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
 
   // Enter overview mode, and expect the desk bar is shown with exactly four
   // desks mini views, and there are exactly two windows in the overview mode
@@ -750,7 +750,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // and until that happens, focus will be on the dummy
   // "OverviewModeFocusedWidget".
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
 
   // Create one window in desk_4 and enter overview mode. Expect the grid is
   // showing exactly one window.
@@ -768,7 +768,7 @@ TEST_F(DesksTest, ActivateDeskFromOverview) {
   // Run a loop since the overview session is destroyed async and until that
   // happens, focus will be on the dummy "OverviewModeFocusedWidget".
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
 }
 
 // This test makes sure we have coverage for that desk switch animation when run
@@ -827,7 +827,7 @@ TEST_F(DesksTest, RemoveInactiveDeskFromOverview) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win0.get());
-  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
   // Active desk_4 and enter overview mode. Expect that the grid is currently
   // empty.
@@ -904,14 +904,14 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win0.get());
-  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
   // Activate desk_2 and create one more window.
   Desk* desk_2 = controller->desks()[1].get();
   ActivateDesk(desk_2);
   auto win2 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
   wm::ActivateWindow(win2.get());
-  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
 
   // Enter overview mode, and remove desk_2 from its mini-view close button.
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -1003,9 +1003,9 @@ TEST_F(DesksTest, MinimizedWindow) {
 
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(win0.get());
-  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
-  auto* window_state = wm::GetWindowState(win0.get());
+  auto* window_state = WindowState::Get(win0.get());
   window_state->Minimize();
   EXPECT_TRUE(window_state->IsMinimized());
 
@@ -1027,7 +1027,7 @@ TEST_F(DesksTest, MinimizedWindow) {
   // them.
   ActivateDesk(desk_1);
   EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_NE(win0.get(), wm::GetActiveWindow());
+  EXPECT_NE(win0.get(), window_util::GetActiveWindow());
 }
 
 TEST_P(DesksTest, DragWindowToDesk) {
@@ -1040,7 +1040,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
   auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win2 = CreateTestWindow(gfx::Rect(0, 0, 200, 150));
   wm::ActivateWindow(win1.get());
-  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
 
   ui::Shadow* shadow = ::wm::ShadowController::GetShadowForWindow(win1.get());
   ASSERT_TRUE(shadow);
@@ -1095,7 +1095,8 @@ TEST_P(DesksTest, DragWindowToDesk) {
   // After dragging an item outside of overview to another desk, the focus
   // should not be given to another window in overview, and should remain on the
   // OverviewModeFocusedWidget.
-  EXPECT_EQ(overview_session->GetOverviewFocusWindow(), wm::GetActiveWindow());
+  EXPECT_EQ(overview_session->GetOverviewFocusWindow(),
+            window_util::GetActiveWindow());
 
   // It is possible to select the remaining window which will activate it and
   // exit overview.
@@ -1110,7 +1111,7 @@ TEST_P(DesksTest, DragWindowToDesk) {
     event_generator->ClickLeftButton();
   }
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
 
   // After the window is dropped onto another desk, its shadow should be
   // restored properly.
@@ -1125,10 +1126,10 @@ TEST_P(DesksTest, DragMinimizedWindowToDesk) {
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Minimize the window before entering Overview Mode.
-  auto* window_state = wm::GetWindowState(window.get());
+  auto* window_state = WindowState::Get(window.get());
   window_state->Minimize();
   ASSERT_TRUE(window_state->IsMinimized());
 
@@ -1176,7 +1177,7 @@ TEST_P(DesksTest, DragWindowToNonMiniViewPoints) {
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
@@ -1275,23 +1276,23 @@ TEST_F(DesksTest, NextActivatable) {
   EXPECT_EQ(desk_2, controller->active_desk());
   auto win2 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
   auto win3 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
-  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
 
   // When deactivating a window, the next activatable window should be on the
   // same desk.
   wm::DeactivateWindow(win3.get());
-  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win2.get(), window_util::GetActiveWindow());
   wm::DeactivateWindow(win2.get());
-  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win3.get(), window_util::GetActiveWindow());
 
   // Similarly for desk_1.
   Desk* desk_1 = controller->desks()[0].get();
   ActivateDesk(desk_1);
-  EXPECT_EQ(win1.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win1.get(), window_util::GetActiveWindow());
   win1.reset();
-  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
   win0.reset();
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
 }
 
 class TabletModeDesksTest : public DesksTest {
@@ -1322,7 +1323,7 @@ TEST_F(TabletModeDesksTest, Backdrops) {
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Enter tablet mode and expect that the backdrop is created only for desk_1,
   // since it's the one that has a window in it.
@@ -1394,7 +1395,7 @@ TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Enter overview and expect that the DesksBar widget won't be created.
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -1428,7 +1429,7 @@ TEST_F(TabletModeDesksTest, NoDesksBarInTabletModeWithOneDesk) {
 TEST_F(TabletModeDesksTest, DesksCreationRemovalCycle) {
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Create and remove desks in a cycle while in overview mode. Expect as the
   // containers are reused for new desks, their backdrop state are always
@@ -1486,8 +1487,8 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   EXPECT_EQ(nullptr, split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
   // However, the snapped windows on desk 1 should retain their snapped state.
-  EXPECT_TRUE(wm::GetWindowState(win1.get())->IsSnapped());
-  EXPECT_TRUE(wm::GetWindowState(win2.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win2.get())->IsSnapped());
 
   // Snap two other windows in desk 2.
   auto win3 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
@@ -1501,8 +1502,8 @@ TEST_F(TabletModeDesksTest, RestoreSplitViewOnDeskSwitch) {
   ActivateDesk(desk_1);
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(win2.get(), split_view_controller->right_window());
-  EXPECT_TRUE(wm::GetWindowState(win3.get())->IsSnapped());
-  EXPECT_TRUE(wm::GetWindowState(win4.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win3.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win4.get())->IsSnapped());
 }
 
 TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
@@ -1534,8 +1535,8 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
     ClickOnMiniView(mini_view, GetEventGenerator());
     waiter.Wait();
   }
-  EXPECT_TRUE(wm::GetWindowState(win1.get())->IsSnapped());
-  EXPECT_TRUE(wm::GetWindowState(win2.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win2.get())->IsSnapped());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // Snap two other windows in desk_2, and switch back to desk_1 from overview.
@@ -1559,10 +1560,10 @@ TEST_F(TabletModeDesksTest, SnappedStateRetainedOnSwitchingDesksFromOverview) {
     ClickOnMiniView(mini_view, GetEventGenerator());
     waiter.Wait();
   }
-  EXPECT_TRUE(wm::GetWindowState(win1.get())->IsSnapped());
-  EXPECT_TRUE(wm::GetWindowState(win2.get())->IsSnapped());
-  EXPECT_TRUE(wm::GetWindowState(win3.get())->IsSnapped());
-  EXPECT_TRUE(wm::GetWindowState(win4.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win2.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win3.get())->IsSnapped());
+  EXPECT_TRUE(WindowState::Get(win4.get())->IsSnapped());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 }
 
@@ -1641,7 +1642,7 @@ TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
   auto win2 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   EXPECT_EQ(nullptr, split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
-  EXPECT_TRUE(wm::GetWindowState(win2.get())->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(win2.get())->IsMaximized());
 
   // Removing desk_2 will cause us to enter overview mode without any crashes.
   // SplitView will remain left snapped.
@@ -1776,7 +1777,7 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   ASSERT_EQ(2u, controller->desks().size());
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
@@ -2079,36 +2080,36 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDesk) {
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Moving window left when this is the left-most desk. Nothing happens.
   const int flags = ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN;
   SendAccelerator(ui::VKEY_OEM_4, flags);
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
   EXPECT_TRUE(DoesActiveDeskContainWindow(window.get()));
 
   // Move window right, it should be deactivated.
   SendAccelerator(ui::VKEY_OEM_6, flags);
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
   EXPECT_TRUE(desk_1->windows().empty());
   EXPECT_TRUE(base::Contains(desk_2->windows(), window.get()));
 
   // No more active windows on this desk, nothing happens.
   SendAccelerator(ui::VKEY_OEM_6, flags);
   EXPECT_TRUE(desk_1->windows().empty());
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
 
   // Activate desk 2, and do the same set of tests.
   ActivateDesk(desk_2);
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Move right does nothing.
   SendAccelerator(ui::VKEY_OEM_6, flags);
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   SendAccelerator(ui::VKEY_OEM_4, flags);
   EXPECT_TRUE(desk_2->windows().empty());
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
   EXPECT_TRUE(base::Contains(desk_1->windows(), window.get()));
 }
 
@@ -2123,7 +2124,7 @@ TEST_F(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
   auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   auto win1 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(win0.get());
-  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+  EXPECT_EQ(win0.get(), window_util::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();

@@ -135,7 +135,7 @@ void CollectPositionMetric(const gfx::Rect& bounds_in_screen,
 
 }  // namespace
 
-PipWindowResizer::PipWindowResizer(wm::WindowState* window_state)
+PipWindowResizer::PipWindowResizer(WindowState* window_state)
     : WindowResizer(window_state) {
   window_state->OnDragStarted(details().window_component);
 
@@ -279,7 +279,7 @@ void PipWindowResizer::CompleteDrag() {
   if (should_dismiss) {
     // Close the widget. This will trigger an animation dismissing the PIP
     // window.
-    wm::CloseWidgetForWindow(window_state()->window());
+    window_util::CloseWidgetForWindow(window_state()->window());
   } else {
     // Animate the PIP window to its resting position.
     gfx::Rect bounds;
@@ -297,7 +297,7 @@ void PipWindowResizer::CompleteDrag() {
     base::TimeDelta duration =
         base::TimeDelta::FromMilliseconds(kPipSnapToEdgeAnimationDurationMs);
     ::wm::ConvertRectFromScreen(GetTarget()->parent(), &bounds);
-    wm::SetBoundsEvent event(bounds, /*animate=*/true, duration);
+    SetBoundsWMEvent event(bounds, /*animate=*/true, duration);
     window_state()->OnWMEvent(&event);
 
     // Animate opacity back to normal opacity:

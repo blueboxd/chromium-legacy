@@ -21,7 +21,7 @@ class WorkspaceLayoutManager;
 // container if its "AlwaysOnTop" property is false. Otherwise, put it in
 // |always_on_top_container_|.
 class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver,
-                                         wm::WindowStateObserver {
+                                         WindowStateObserver {
  public:
   explicit AlwaysOnTopController(aura::Window* always_on_top_container,
                                  aura::Window* pip_container);
@@ -47,8 +47,8 @@ class ASH_EXPORT AlwaysOnTopController : public aura::WindowObserver,
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Overridden from wm::WindowStateObserver:
-  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+  // Overridden from WindowStateObserver:
+  void OnPreWindowStateTypeChange(WindowState* window_state,
                                   WindowStateType old_type) override;
 
   aura::Window* always_on_top_container_;

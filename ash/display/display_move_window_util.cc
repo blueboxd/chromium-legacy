@@ -28,7 +28,7 @@ namespace display_move_window_util {
 namespace {
 
 aura::Window* GetTargetWindow() {
-  aura::Window* window = wm::GetActiveWindow();
+  aura::Window* window = window_util::GetActiveWindow();
   if (!window)
     return nullptr;
 
@@ -76,7 +76,7 @@ void HandleMoveActiveWindowBetweenDisplays() {
                               origin_display_id, display::CompareDisplayIds);
   int64_t target_display_id =
       itr == display_id_list.end() ? display_id_list[0] : *itr;
-  wm::MoveWindowToDisplay(window, target_display_id);
+  window_util::MoveWindowToDisplay(window, target_display_id);
   Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
       AccessibilityAlert::WINDOW_MOVED_TO_ANOTHER_DISPLAY);
   base::RecordAction(

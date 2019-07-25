@@ -7,7 +7,7 @@
 #include "ash/wm/window_state.h"
 #include "ui/gfx/geometry/rect.h"
 
-DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::wm::WindowState*)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WindowState*)
 
 namespace ash {
 
@@ -15,6 +15,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowIsJanky, false)
 
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::wm::WindowState, kWindowStateKey, NULL)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(ash::WindowState, kWindowStateKey, nullptr)
 
 }  // namespace ash

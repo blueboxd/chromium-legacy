@@ -100,7 +100,7 @@ aura::Window* GetBottomMostSnappedWindowForDeskContainer(
   // TODO(afakhry|xdai): SplitViewController should be changed to track snapped
   // windows per desk per display.
   for (auto* child : desk_container->children()) {
-    if (wm::GetWindowState(child)->IsSnapped())
+    if (WindowState::Get(child)->IsSnapped())
       return child;
   }
 
@@ -187,7 +187,7 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
     if (window->type() != aura::client::WINDOW_TYPE_NORMAL)
       continue;
 
-    auto* window_state = wm::GetWindowState(window);
+    auto* window_state = WindowState::Get(window);
     if (window_state->IsMinimized())
       continue;
 
@@ -198,7 +198,7 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
       if (!window->layer()->GetTargetVisibility())
         continue;
 
-      if (!::wm::CanActivateWindow(window))
+      if (!wm::CanActivateWindow(window))
         continue;
     }
 
@@ -251,7 +251,7 @@ void BackdropController::OnSplitViewDividerPositionChanged() {
 }
 
 void BackdropController::OnWallpaperPreviewStarted() {
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   if (active_window) {
     active_window->SetProperty(kBackdropWindowMode,
                                BackdropWindowMode::kDisabled);
@@ -294,8 +294,8 @@ void BackdropController::UpdateBackdropInternal() {
 
   // Update the animation type of |backdrop_window_| based on current top most
   // window with backdrop.
-  SetBackdropAnimationType(wm::GetWindowState(window)->CanMaximize()
-                               ? wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
+  SetBackdropAnimationType(WindowState::Get(window)->CanMaximize()
+                               ? WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END
                                : ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   Show();
@@ -330,7 +330,7 @@ void BackdropController::EnsureBackdropWidget() {
   AlwaysOnTopController::SetDisallowReparent(backdrop_window_);
   backdrop_window_->layer()->SetColor(SK_ColorBLACK);
 
-  wm::GetWindowState(backdrop_window_)->set_allow_set_bounds_direct(true);
+  WindowState::Get(backdrop_window_)->set_allow_set_bounds_direct(true);
 }
 
 void BackdropController::UpdateAccessibilityMode() {
@@ -376,7 +376,7 @@ bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
     return false;
 
   // Don't show the backdrop in tablet mode for PIP windows.
-  auto* state = wm::GetWindowState(window);
+  auto* state = WindowState::Get(window);
   if (state->IsPip())
     return false;
 
@@ -410,7 +410,7 @@ void BackdropController::Hide(bool destroy, bool animate) {
   ++window_iter;
   if (window_iter != windows.end()) {
     aura::Window* window_above_backdrop = *window_iter;
-    wm::WindowState* window_state = wm::GetWindowState(window_above_backdrop);
+    WindowState* window_state = WindowState::Get(window_above_backdrop);
     if (!animate || (window_state && window_state->CanMaximize()))
       backdrop_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
   } else {

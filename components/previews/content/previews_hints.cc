@@ -83,21 +83,6 @@ void DeleteSentinelFile(const base::FilePath& sentinel_path) {
   }
 }
 
-// Enumerates status event of processing optimization filters (such as the
-// lite page redirect blacklist). Used in UMA histograms, so the order of
-// enumerators should not be changed.
-//
-// Keep in sync with PreviewsOptimizationFilterStatus in
-// tools/metrics/histograms/enums.xml.
-enum class PreviewsOptimizationFilterStatus {
-  kFoundServerBlacklistConfig = 0,
-  kCreatedServerBlacklist = 1,
-  kFailedServerBlacklistBadConfig = 2,
-  kFailedServerBlacklistTooBig = 3,
-  kFailedServerBlacklistDuplicateConfig = 4,
-  kMaxValue = kFailedServerBlacklistDuplicateConfig
-};
-
 // Returns base::nullopt if |optimization_type| can't be converted.
 base::Optional<PreviewsType> ConvertProtoOptimizationTypeToPreviewsType(
     optimization_guide::proto::OptimizationType optimization_type) {
@@ -159,14 +144,6 @@ net::EffectiveConnectionType ConvertProtoEffectiveConnectionType(
         EFFECTIVE_CONNECTION_TYPE_4G:
       return net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_4G;
   }
-}
-
-void RecordOptimizationFilterStatus(PreviewsType previews_type,
-                                    PreviewsOptimizationFilterStatus status) {
-  std::string histogram_name =
-      base::StringPrintf("Previews.OptimizationFilterStatus.%s",
-                         GetStringNameForType(previews_type).c_str());
-  base::UmaHistogramEnumeration(histogram_name, status);
 }
 
 }  // namespace
@@ -267,14 +244,16 @@ void PreviewsHints::ParseOptimizationFilters(
         previews::params::IsLitePageServerPreviewsEnabled() &&
         blacklist.has_bloom_filter()) {
       RecordOptimizationFilterStatus(
-          previews_type.value(),
-          PreviewsOptimizationFilterStatus::kFoundServerBlacklistConfig);
+          blacklist.optimization_type(),
+          optimization_guide::OptimizationFilterStatus::
+              kFoundServerBlacklistConfig);
       if (lite_page_redirect_blacklist_) {
         DLOG(WARNING)
             << "Found multiple blacklist configs for LITE_PAGE_REDIRECT";
         RecordOptimizationFilterStatus(
-            previews_type.value(), PreviewsOptimizationFilterStatus::
-                                       kFailedServerBlacklistDuplicateConfig);
+            blacklist.optimization_type(),
+            optimization_guide::OptimizationFilterStatus::
+                kFailedServerBlacklistDuplicateConfig);
         continue;
       }
       const auto& bloom_filter_proto = blacklist.bloom_filter();
@@ -287,8 +266,9 @@ void PreviewsHints::ParseOptimizationFilters(
               bloom_filter_proto.data().size() * 8) {
         DLOG(ERROR) << "Bloom filter config issue";
         RecordOptimizationFilterStatus(
-            previews_type.value(),
-            PreviewsOptimizationFilterStatus::kFailedServerBlacklistBadConfig);
+            blacklist.optimization_type(),
+            optimization_guide::OptimizationFilterStatus::
+                kFailedServerBlacklistBadConfig);
         continue;
       }
       if (static_cast<int>(bloom_filter_proto.num_bits()) >
@@ -300,8 +280,9 @@ void PreviewsHints::ParseOptimizationFilters(
                            LitePageRedirectPreviewMaxServerBlacklistByteSize()
                     << " bytes";
         RecordOptimizationFilterStatus(
-            previews_type.value(),
-            PreviewsOptimizationFilterStatus::kFailedServerBlacklistTooBig);
+            blacklist.optimization_type(),
+            optimization_guide::OptimizationFilterStatus::
+                kFailedServerBlacklistTooBig);
         continue;
       }
       std::unique_ptr<optimization_guide::BloomFilter> bloom_filter =
@@ -312,8 +293,9 @@ void PreviewsHints::ParseOptimizationFilters(
           std::make_unique<optimization_guide::HostFilter>(
               std::move(bloom_filter));
       RecordOptimizationFilterStatus(
-          previews_type.value(),
-          PreviewsOptimizationFilterStatus::kCreatedServerBlacklist);
+          blacklist.optimization_type(),
+          optimization_guide::OptimizationFilterStatus::
+              kCreatedServerBlacklist);
     }
   }
 }

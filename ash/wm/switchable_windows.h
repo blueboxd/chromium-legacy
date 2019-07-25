@@ -14,7 +14,6 @@ class Window;
 }
 
 namespace ash {
-namespace wm {
 
 // If |active_desk_only| is true, non-active desks' containers will be excluded.
 ASH_EXPORT std::vector<aura::Window*> GetSwitchableContainersForRoot(
@@ -24,7 +23,6 @@ ASH_EXPORT std::vector<aura::Window*> GetSwitchableContainersForRoot(
 // Returns true if |window| is a container for windows which can be switched to.
 ASH_EXPORT bool IsSwitchableContainer(const aura::Window* window);
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_SWITCHABLE_WINDOWS_H_

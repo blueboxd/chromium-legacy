@@ -11,7 +11,6 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"
-#include "ash/wm/window_parenting_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -25,7 +24,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
 
 namespace {
 // |kMinimumOnScreenArea + 1| is used to avoid adjusting loop.
@@ -154,7 +152,7 @@ void ClientControlledState::HandleCompoundEvents(WindowState* window_state,
   switch (event->type()) {
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
       if (window_state->IsFullscreen()) {
-        const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
         window_state->OnWMEvent(&event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
@@ -165,7 +163,7 @@ void ClientControlledState::HandleCompoundEvents(WindowState* window_state,
       break;
     case WM_EVENT_TOGGLE_MAXIMIZE:
       if (window_state->IsFullscreen()) {
-        const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
         window_state->OnWMEvent(&event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
@@ -198,7 +196,8 @@ void ClientControlledState::HandleBoundsEvents(WindowState* window_state,
     return;
   switch (event->type()) {
     case WM_EVENT_SET_BOUNDS: {
-      const auto* set_bounds_event = static_cast<const SetBoundsEvent*>(event);
+      const auto* set_bounds_event =
+          static_cast<const SetBoundsWMEvent*>(event);
       const gfx::Rect& bounds = set_bounds_event->requested_bounds();
       if (set_bounds_locally_) {
         switch (next_bounds_change_animation_type_) {
@@ -291,5 +290,4 @@ bool ClientControlledState::EnterNextState(WindowState* window_state,
   return true;
 }
 
-}  // namespace wm
 }  // namespace ash

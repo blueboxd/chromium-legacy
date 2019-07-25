@@ -219,7 +219,7 @@ TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
   GetTray()->PerformAction(tap);
   ASSERT_TRUE(!Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_TRUE(wm::IsActiveWindow(window1.get()));
-  wm::GetWindowState(window2.get())->Minimize();
+  WindowState::Get(window2.get())->Minimize();
   ASSERT_EQ(window2->layer()->GetTargetOpacity(), 0.0);
   PerformDoubleTap();
   EXPECT_EQ(window2->layer()->GetTargetOpacity(), 1.0);
@@ -228,8 +228,8 @@ TEST_F(OverviewButtonTrayTest, PerformDoubleTapAction) {
   // Verify that if all windows are minimized, double tapping the tray will have
   // no effect.
   ASSERT_TRUE(!Shell::Get()->overview_controller()->InOverviewSession());
-  wm::GetWindowState(window1.get())->Minimize();
-  wm::GetWindowState(window2.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
+  WindowState::Get(window2.get())->Minimize();
   PerformDoubleTap();
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
@@ -382,15 +382,15 @@ TEST_F(OverviewButtonTrayTest, TransientChildQuickSwitch) {
   std::unique_ptr<aura::Window> window3 = CreateTestWindow();
 
   // Add |window2| as a transient child of |window1|, and focus |window1|.
-  ::wm::AddTransientChild(window1.get(), window2.get());
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::AddTransientChild(window1.get(), window2.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   // Verify that after double tapping, we have switched to |window3|, even
   // though |window2| is more recently used.
   PerformDoubleTap();
-  EXPECT_EQ(window3.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window3.get(), window_util::GetActiveWindow());
 }
 
 // Verify that quick switch works properly when in split view mode.
@@ -410,20 +410,20 @@ TEST_F(OverviewButtonTrayTest, SplitviewModeQuickSwitch) {
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   ASSERT_EQ(window1.get(), split_view_controller->GetDefaultSnappedWindow());
-  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
 
   // Verify that after double tapping, we have switched to |window3|, even
   // though |window1| is more recently used.
   PerformDoubleTap();
   EXPECT_EQ(window3.get(), split_view_controller->right_window());
-  EXPECT_EQ(window3.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window3.get(), window_util::GetActiveWindow());
 
   // Focus |window1|. Verify that after double tapping, |window2| is the on the
   // right side for splitview.
   wm::ActivateWindow(window1.get());
   PerformDoubleTap();
   EXPECT_EQ(window2.get(), split_view_controller->right_window());
-  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
 
   split_view_controller->EndSplitView();
 }

@@ -279,7 +279,7 @@ void MultiWindowResizeController::OnWindowDestroying(aura::Window* window) {
 }
 
 void MultiWindowResizeController::OnPostWindowStateTypeChange(
-    wm::WindowState* window_state,
+    WindowState* window_state,
     WindowStateType old_type) {
   if (window_state->IsMaximized() || window_state->IsFullscreen() ||
       window_state->IsMinimized()) {
@@ -293,7 +293,8 @@ MultiWindowResizeController::DetermineWindowsFromScreenPoint(
   gfx::Point mouse_location(
       display::Screen::GetScreen()->GetCursorScreenPoint());
   mouse_location = ConvertPointFromScreen(window, mouse_location);
-  const int component = wm::GetNonClientComponent(window, mouse_location);
+  const int component =
+      window_util::GetNonClientComponent(window, mouse_location);
   return DetermineWindows(window, component, mouse_location);
 }
 
@@ -431,12 +432,12 @@ void MultiWindowResizeController::FindWindowsTouching(
 
 void MultiWindowResizeController::StartObserving(aura::Window* window) {
   window->AddObserver(this);
-  wm::GetWindowState(window)->AddObserver(this);
+  WindowState::Get(window)->AddObserver(this);
 }
 
 void MultiWindowResizeController::StopObserving(aura::Window* window) {
   window->RemoveObserver(this);
-  wm::GetWindowState(window)->RemoveObserver(this);
+  WindowState::Get(window)->RemoveObserver(this);
 }
 
 void MultiWindowResizeController::ShowIfValidMouseLocation() {
@@ -525,7 +526,7 @@ void MultiWindowResizeController::StartResize(
     windows.push_back(windows_.other_windows[i]);
   }
   int component = windows_.direction == LEFT_RIGHT ? HTRIGHT : HTBOTTOM;
-  wm::WindowState* window_state = wm::GetWindowState(windows_.window1);
+  WindowState* window_state = WindowState::Get(windows_.window1);
   window_state->CreateDragDetails(location_in_parent, component,
                                   ::wm::WINDOW_MOVE_SOURCE_MOUSE);
   window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
@@ -552,7 +553,7 @@ void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
 
 void MultiWindowResizeController::CompleteResize() {
   window_resizer_->CompleteDrag();
-  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
+  WindowState::Get(window_resizer_->GetTarget())->DeleteDragDetails();
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.
@@ -575,7 +576,7 @@ void MultiWindowResizeController::CancelResize() {
   if (!window_resizer_)
     return;  // Happens if window was destroyed and we nuked the WindowResizer.
   window_resizer_->RevertDrag();
-  wm::GetWindowState(window_resizer_->GetTarget())->DeleteDragDetails();
+  WindowState::Get(window_resizer_->GetTarget())->DeleteDragDetails();
   ResetResizer();
 }
 
@@ -645,7 +646,7 @@ bool MultiWindowResizeController::IsOverComponent(
     const gfx::Point& location_in_screen,
     int component) const {
   gfx::Point window_loc = ConvertPointFromScreen(window, location_in_screen);
-  return wm::GetNonClientComponent(window, window_loc) == component;
+  return window_util::GetNonClientComponent(window, window_loc) == component;
 }
 
 }  // namespace ash

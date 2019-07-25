@@ -165,8 +165,8 @@ TEST_F(OverviewGridTest, MinimizedWindows) {
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(400, 400));
   auto window3 = CreateTestWindow(gfx::Rect(400, 400));
-  wm::GetWindowState(window2.get())->Minimize();
-  wm::GetWindowState(window3.get())->Minimize();
+  WindowState::Get(window2.get())->Minimize();
+  WindowState::Get(window3.get())->Minimize();
   std::vector<gfx::RectF> target_bounds = {gfx::RectF(100.f, 100.f),
                                            gfx::RectF(100.f, 100.f),
                                            gfx::RectF(200.f, 200.f)};
@@ -182,7 +182,7 @@ TEST_F(OverviewGridTest, SelectedWindow) {
   auto window1 = CreateTestWindow(gfx::Rect(100, 100));
   auto window2 = CreateTestWindow(gfx::Rect(400, 400));
   auto window3 = CreateTestWindow(gfx::Rect(400, 400));
-  wm::GetWindowState(window3.get())->Maximize();
+  WindowState::Get(window3.get())->Maximize();
   std::vector<gfx::RectF> target_bounds = {gfx::RectF(100.f, 100.f),
                                            gfx::RectF(100.f, 100.f),
                                            gfx::RectF(100.f, 100.f)};
@@ -199,7 +199,7 @@ TEST_F(OverviewGridTest, WindowWithBackdrop) {
   auto window2 = CreateTestWindow(gfx::Rect(400, 400));
   window1->SetProperty(aura::client::kResizeBehaviorKey,
                        aura::client::kResizeBehaviorNone);
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
   BackdropController* backdrop_controller =
@@ -208,7 +208,7 @@ TEST_F(OverviewGridTest, WindowWithBackdrop) {
           ->backdrop_controller();
   EXPECT_EQ(window1.get(), backdrop_controller->GetTopmostWindowWithBackdrop());
   EXPECT_TRUE(backdrop_controller->backdrop_window());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsMaximized());
 
   // Tests that the second window despite being larger than the first window
   // does not animate as it is hidden behind the backdrop. On exit, it still

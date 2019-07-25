@@ -143,7 +143,7 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   EXPECT_EQ(STATUS_RUNNING, model->items()[index].status);
 
   // Maximize the window.
-  wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeWindow());
+  WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
   EXPECT_FALSE(window_state->IsMaximized());
   window_state->Maximize();
   EXPECT_TRUE(window_state->IsMaximized());

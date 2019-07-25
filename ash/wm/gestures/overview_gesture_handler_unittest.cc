@@ -139,7 +139,7 @@ TEST_F(OverviewGestureHandlerTest, HorizontalScrollInOverview) {
   EXPECT_FALSE(InOverviewSession());
 
   // Second MRU window is selected (i.e. |window4|).
-  EXPECT_EQ(window4.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window4.get(), window_util::GetActiveWindow());
 }
 
 // Tests that a mostly horizontal three-finger scroll does not trigger overview.

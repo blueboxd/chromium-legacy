@@ -118,7 +118,7 @@ void PerformWindowMoveToDeskAnimation(aura::Window* window, bool going_left) {
 
   // The entire transient window tree should appear to animate together towards
   // the target desk.
-  for (auto* transient_window : wm::GetTransientTreeIterator(window)) {
+  for (auto* transient_window : GetTransientTreeIterator(window)) {
     // This is a self-deleting object.
     new WindowMoveToDeskAnimation(transient_window, going_left);
   }

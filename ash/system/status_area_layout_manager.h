@@ -15,12 +15,12 @@ class ShelfWidget;
 // StatusAreaLayoutManager is a layout manager responsible for the status area.
 // In any case when status area needs relayout it redirects this call to
 // ShelfLayoutManager.
-class StatusAreaLayoutManager : public wm::WmDefaultLayoutManager {
+class StatusAreaLayoutManager : public WmDefaultLayoutManager {
  public:
   explicit StatusAreaLayoutManager(ShelfWidget* shelf_widget);
   ~StatusAreaLayoutManager() override;
 
-  // Overridden from wm::WmDefaultLayoutManager:
+  // WmDefaultLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;

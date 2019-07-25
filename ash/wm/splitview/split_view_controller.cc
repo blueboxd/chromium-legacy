@@ -127,7 +127,7 @@ int GetMinimumWindowSize(aura::Window* window, bool is_landscape) {
 bool IsSnapped(aura::Window* window) {
   if (!window)
     return false;
-  return wm::GetWindowState(window)->IsSnapped();
+  return WindowState::Get(window)->IsSnapped();
 }
 
 // Returns the overview session if overview mode is active, otherwise returns
@@ -158,7 +158,7 @@ class SplitViewController::TabDraggedWindowObserver
         dragged_window_(dragged_window),
         desired_snap_position_(desired_snap_position),
         last_location_in_screen_(last_location_in_screen) {
-    DCHECK(wm::IsDraggingTabs(dragged_window_));
+    DCHECK(window_util::IsDraggingTabs(dragged_window_));
     dragged_window_->AddObserver(this);
   }
 
@@ -178,7 +178,8 @@ class SplitViewController::TabDraggedWindowObserver
                                const void* key,
                                intptr_t old) override {
     DCHECK_EQ(window, dragged_window_);
-    if (key == ash::kIsDraggingTabsKey && !wm::IsDraggingTabs(window)) {
+    if (key == ash::kIsDraggingTabsKey &&
+        !window_util::IsDraggingTabs(window)) {
       // At this point we know the newly created dragged window just finished
       // dragging.
       EndTabDragging(window, /*is_being_destroyed=*/false);
@@ -207,7 +208,7 @@ class SplitViewController::TabDraggedWindowObserver
         window->GetProperty(ash::kTabDraggingSourceWindowKey);
     if (source_window) {
       TabletModeWindowState::UpdateWindowPosition(
-          wm::GetWindowState(source_window), /*animate=*/true);
+          WindowState::Get(source_window), /*animate=*/true);
     }
   }
 
@@ -344,7 +345,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
       // animation instead. Therefore skip the divider spawn animation if
       // |window| is minimized.
       if (use_divider_spawn_animation &&
-          !wm::GetWindowState(window)->IsMinimized()) {
+          !WindowState::Get(window)->IsMinimized()) {
         // For the divider spawn animation, at the end of the delay, the divider
         // shall be visually aligned with an edge of |window|. This effect will
         // be more easily achieved after |window| has been snapped and the
@@ -405,22 +406,22 @@ void SplitViewController::SnapWindow(aura::Window* window,
     }
   }
 
-  if (wm::GetWindowState(window)->GetStateType() ==
+  if (WindowState::Get(window)->GetStateType() ==
       GetStateTypeFromSnapPosition(snap_position)) {
     // Update its snapped bounds as its bounds may not be the expected snapped
     // bounds here.
-    const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
-                                                    : wm::WM_EVENT_SNAP_RIGHT);
-    wm::GetWindowState(window)->OnWMEvent(&event);
+    const WMEvent event((snap_position == LEFT) ? WM_EVENT_SNAP_LEFT
+                                                : WM_EVENT_SNAP_RIGHT);
+    WindowState::Get(window)->OnWMEvent(&event);
 
     OnWindowSnapped(window);
   } else {
     // Otherwise, try to snap it first. It will be activated later after the
     // window is snapped. The split view state will also be updated after the
     // window is snapped.
-    const wm::WMEvent event((snap_position == LEFT) ? wm::WM_EVENT_SNAP_LEFT
-                                                    : wm::WM_EVENT_SNAP_RIGHT);
-    wm::GetWindowState(window)->OnWMEvent(&event);
+    const WMEvent event((snap_position == LEFT) ? WM_EVENT_SNAP_LEFT
+                                                : WM_EVENT_SNAP_RIGHT);
+    WindowState::Get(window)->OnWMEvent(&event);
   }
 
   if (do_divider_spawn_animation) {
@@ -579,7 +580,7 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   for (auto* window : {left_window_, right_window_}) {
     if (window == nullptr)
       continue;
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     gfx::Point location_in_parent(location_in_screen);
     ::wm::ConvertPointFromScreen(window->parent(), &location_in_parent);
     int window_component = GetWindowComponentForResize(window);
@@ -735,7 +736,7 @@ void SplitViewController::OnWindowDragEnded(
     aura::Window* dragged_window,
     SnapPosition desired_snap_position,
     const gfx::Point& last_location_in_screen) {
-  if (wm::IsDraggingTabs(dragged_window)) {
+  if (window_util::IsDraggingTabs(dragged_window)) {
     dragged_window_observer_.reset(new TabDraggedWindowObserver(
         this, dragged_window, desired_snap_position, last_location_in_screen));
   } else {
@@ -789,7 +790,7 @@ void SplitViewController::OnWindowBoundsChanged(
     return;
   }
 
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   const bool is_window_moved = window_state->is_dragged() &&
                                window_state->drag_details()->bounds_change ==
                                    WindowResizer::kBoundsChange_Repositions;
@@ -824,7 +825,7 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
   }
 
   const int resize_component =
-      wm::GetWindowState(window)->drag_details()->window_component;
+      WindowState::Get(window)->drag_details()->window_component;
   const OrientationLockType orientation_type = GetCurrentScreenOrientation();
 
   // In clamshell mode, if splitview is active (which means overview is active
@@ -873,12 +874,12 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {
     EndSplitView();
     Shell::Get()->overview_controller()->EndOverview();
-    wm::GetWindowState(window)->Maximize();
+    WindowState::Get(window)->Maximize();
   }
 }
 
 void SplitViewController::OnPostWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
+    ash::WindowState* window_state,
     ash::WindowStateType old_type) {
   if (window_state->IsSnapped()) {
     OnWindowSnapped(window_state->window());
@@ -947,8 +948,8 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // and at that time, IsDraggingTabs() is true, but WindowState::is_dragged()
   // is still false. And later after the window drag starts,
   // WindowState::is_dragged() will then be true.
-  if (wm::GetWindowState(gained_active)->is_dragged() ||
-      wm::IsDraggingTabs(gained_active)) {
+  if (WindowState::Get(gained_active)->is_dragged() ||
+      window_util::IsDraggingTabs(gained_active)) {
     return;
   }
 
@@ -965,7 +966,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // mode, but the cannot snap toast would be inappropriate because the user
   // still might be able to snap |gained_active|.
   if (IsDividerAnimating()) {
-    if (wm::GetWindowState(gained_active)->IsUserPositionable())
+    if (WindowState::Get(gained_active)->IsUserPositionable())
       EndSplitView(EndReason::kUnsnappableWindowActivated);
     return;
   }
@@ -973,7 +974,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
   // If it's a user positionable window but can't be snapped, end split view
   // mode and show the cannot snap toast.
   if (!CanSnapInSplitview(gained_active)) {
-    if (wm::GetWindowState(gained_active)->IsUserPositionable()) {
+    if (WindowState::Get(gained_active)->IsUserPositionable()) {
       EndSplitView(EndReason::kUnsnappableWindowActivated);
       ShowAppCannotSnapToast();
     }
@@ -987,7 +988,7 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
 
 void SplitViewController::OnPinnedStateChanged(aura::Window* pinned_window) {
   // Disable split view for pinned windows.
-  if (wm::GetWindowState(pinned_window)->IsPinned() && InSplitViewMode())
+  if (WindowState::Get(pinned_window)->IsPinned() && InSplitViewMode())
     EndSplitView(EndReason::kUnsnappableWindowActivated);
 }
 
@@ -1187,7 +1188,7 @@ void SplitViewController::StartObserving(aura::Window* window) {
   if (window && !window->HasObserver(this)) {
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window);
     window->AddObserver(this);
-    wm::GetWindowState(window)->AddObserver(this);
+    WindowState::Get(window)->AddObserver(this);
     if (split_view_divider_)
       split_view_divider_->AddObservedWindow(window);
   }
@@ -1202,7 +1203,7 @@ void SplitViewController::StopObserving(SnapPosition snap_position) {
 
   if (window && window->HasObserver(this)) {
     window->RemoveObserver(this);
-    wm::GetWindowState(window)->RemoveObserver(this);
+    WindowState::Get(window)->RemoveObserver(this);
     if (split_view_divider_)
       split_view_divider_->RemoveObservedWindow(window);
     Shell::Get()->shadow_controller()->UpdateShadowForWindow(window);
@@ -1289,12 +1290,12 @@ void SplitViewController::UpdateSnappedWindowsAndDividerBounds() {
 
   // Update the snapped windows' bounds.
   if (IsSnapped(left_window_)) {
-    const wm::WMEvent left_window_event(wm::WM_EVENT_SNAP_LEFT);
-    wm::GetWindowState(left_window_)->OnWMEvent(&left_window_event);
+    const WMEvent left_window_event(WM_EVENT_SNAP_LEFT);
+    WindowState::Get(left_window_)->OnWMEvent(&left_window_event);
   }
   if (IsSnapped(right_window_)) {
-    const wm::WMEvent right_window_event(wm::WM_EVENT_SNAP_RIGHT);
-    wm::GetWindowState(right_window_)->OnWMEvent(&right_window_event);
+    const WMEvent right_window_event(WM_EVENT_SNAP_RIGHT);
+    WindowState::Get(right_window_)->OnWMEvent(&right_window_event);
   }
 
   // Update divider's bounds.
@@ -1482,7 +1483,7 @@ void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
     // dimensions. Note: if split view is no longer constrained to tablet mode
     // this will be need to updated.
     TabletModeWindowState::UpdateWindowPosition(
-        wm::GetWindowState(insert_overview_window), /*animate=*/false);
+        WindowState::Get(insert_overview_window), /*animate=*/false);
     InsertWindowToOverview(insert_overview_window, /*animate=*/false);
   }
 }
@@ -1792,7 +1793,7 @@ void SplitViewController::SetTransformWithAnimation(
     const gfx::Transform& target_transform) {
   gfx::Point target_origin =
       gfx::ToRoundedPoint(GetTargetBoundsInScreen(window).origin());
-  for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
+  for (auto* window_iter : GetTransientTreeIterator(window)) {
     // Adjust |start_transform| and |target_transform| for the transient child.
     aura::Window* parent_window = window_iter->parent();
     gfx::Rect original_bounds(window_iter->GetTargetBounds());
@@ -1854,7 +1855,7 @@ void SplitViewController::InsertWindowToOverview(aura::Window* window,
 
 void SplitViewController::FinishWindowResizing(aura::Window* window) {
   if (window != nullptr) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     window_state->OnCompleteDrag(
         GetEndDragLocationInScreen(window, previous_event_location_));
     window_state->DeleteDragDetails();
@@ -1922,7 +1923,7 @@ void SplitViewController::EndWindowDragImpl(
       // Update the dragged window's bounds. It's possible that the dragged
       // window's bounds was changed during dragging. Update its bounds after
       // the drag ends to ensure it has the right bounds.
-      TabletModeWindowState::UpdateWindowPosition(wm::GetWindowState(window),
+      TabletModeWindowState::UpdateWindowPosition(WindowState::Get(window),
                                                   /*animate=*/true);
     }
   } else {

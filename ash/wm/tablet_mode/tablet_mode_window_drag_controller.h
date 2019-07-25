@@ -13,11 +13,9 @@
 #include "base/memory/weak_ptr.h"
 
 namespace ash {
-class TabletModeWindowDragDelegate;
 
-namespace wm {
+class TabletModeWindowDragDelegate;
 class WindowState;
-}  // namespace wm
 
 // WindowResizer implementation for windows in tablet mode. Currently we
 // don't allow any resizing and any dragging happening on the area other than
@@ -28,7 +26,7 @@ class WindowState;
 class ASH_EXPORT TabletModeWindowDragController : public WindowResizer {
  public:
   TabletModeWindowDragController(
-      wm::WindowState* window_state,
+      WindowState* window_state,
       std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate);
   ~TabletModeWindowDragController() override;
 

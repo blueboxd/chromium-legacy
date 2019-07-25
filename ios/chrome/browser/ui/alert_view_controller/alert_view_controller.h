@@ -14,7 +14,6 @@
 // modalTransitionStyle, or transitioningDelegate. The style is more similar to
 // the rest of Chromium. Current limitations:
 //     Action Sheet Style is not supported.
-//     Text fields are not supported.
 @interface AlertViewController : UIViewController <AlertConsumer>
 
 // The text in the text fields after presentation.

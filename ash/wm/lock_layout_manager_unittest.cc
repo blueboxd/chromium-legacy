@@ -301,7 +301,7 @@ TEST_F(LockLayoutManagerTest, MultipleMonitors) {
 
   EXPECT_EQ(root_windows[0], window->GetRootWindow());
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
 
   // Maximize the window with as the restore bounds is inside 2nd display but
@@ -362,7 +362,7 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
 
   // Restore window with bounds in the second display, the window should be
   // shown in the primary display.
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(400, 0, 30, 40));
 
   window_state->Restore();

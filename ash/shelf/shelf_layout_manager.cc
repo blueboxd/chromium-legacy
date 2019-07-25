@@ -118,8 +118,7 @@ bool IsHomeScreenAvailable() {
 
 // Returns the |WorkspaceWindowState| of the currently active desk on the root
 // window of |shelf_window|.
-wm::WorkspaceWindowState GetShelfWorkspaceWindowState(
-    aura::Window* shelf_window) {
+WorkspaceWindowState GetShelfWorkspaceWindowState(aura::Window* shelf_window) {
   DCHECK(shelf_window);
   // Shelf window does not belong to any desk, use the root to get the active
   // desk's workspace state.
@@ -189,7 +188,7 @@ class ShelfLayoutManager::UpdateShelfObserver
 ShelfLayoutManager::State::State()
     : visibility_state(SHELF_VISIBLE),
       auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
-      window_state(wm::WORKSPACE_WINDOW_STATE_DEFAULT),
+      window_state(WorkspaceWindowState::kDefault),
       pre_lock_screen_animation_active(false),
       session_state(session_manager::SessionState::UNKNOWN) {}
 
@@ -316,7 +315,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
   if (in_shutdown_ || !shelf_window || suspend_visibility_update_)
     return;
 
-  const wm::WorkspaceWindowState window_state =
+  const WorkspaceWindowState window_state =
       GetShelfWorkspaceWindowState(shelf_window);
 
   if (shelf_->ShouldHideOnSecondaryDisplay(state_.session_state)) {
@@ -331,7 +330,7 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in SHELF_AUTO_HIDE_ALWAYS_HIDDEN.
     switch (window_state) {
-      case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN:
+      case WorkspaceWindowState::kFullscreen:
         if (IsShelfAutoHideForFullscreenMaximized()) {
           SetState(SHELF_AUTO_HIDE);
         } else if (IsShelfHiddenForFullscreen()) {
@@ -342,12 +341,12 @@ void ShelfLayoutManager::UpdateVisibilityState() {
           SetState(SHELF_AUTO_HIDE);
         }
         break;
-      case wm::WORKSPACE_WINDOW_STATE_MAXIMIZED:
+      case WorkspaceWindowState::kMaximized:
         SetState(IsShelfAutoHideForFullscreenMaximized()
                      ? SHELF_AUTO_HIDE
                      : CalculateShelfVisibility());
         break;
-      case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
+      case WorkspaceWindowState::kDefault:
         SetState(CalculateShelfVisibility());
         break;
     }
@@ -545,7 +544,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       Shell::Get()->split_view_controller()->InSplitViewMode();
   if (in_split_view_mode ||
       (state_.visibility_state != SHELF_AUTO_HIDE &&
-       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED)) {
+       state_.window_state == WorkspaceWindowState::kMaximized)) {
     return SHELF_BACKGROUND_MAXIMIZED;
   }
 
@@ -604,7 +603,7 @@ void ShelfLayoutManager::OnWindowResized() {
 
 void ShelfLayoutManager::SetChildBounds(aura::Window* child,
                                         const gfx::Rect& requested_bounds) {
-  wm::WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
+  WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
   // effect the layout in anyway.
   if (!updating_bounds_ &&
@@ -832,7 +831,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   //   tablet mode.
   // - Doing so would result in animating the opacity of the shelf while it is
   //   showing blur.
-  if (state.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED &&
+  if (state.window_state == WorkspaceWindowState::kMaximized &&
       ((state.visibility_state == SHELF_VISIBLE &&
         old_state.visibility_state != SHELF_VISIBLE) ||
        is_background_blur_enabled_)) {
@@ -1023,7 +1022,7 @@ bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   for (auto* window : windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     if (window_state && window_state->is_dragged() &&
         (window_state->IsMaximized() || window_state->IsFullscreen()) &&
         (window_state->drag_details()->window_component == HTCLIENT ||
@@ -1375,14 +1374,14 @@ bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
     return false;
   }
 
-  const aura::Window* fullscreen_window = wm::GetWindowForFullscreenModeInRoot(
+  const aura::Window* fullscreen_window = GetWindowForFullscreenModeInRoot(
       shelf_widget_->GetNativeWindow()->GetRootWindow());
   return fullscreen_window &&
-         wm::GetWindowState(fullscreen_window)->GetHideShelfWhenFullscreen();
+         WindowState::Get(fullscreen_window)->GetHideShelfWhenFullscreen();
 }
 
 bool ShelfLayoutManager::IsShelfAutoHideForFullscreenMaximized() const {
-  wm::WindowState* active_window = wm::GetActiveWindowState();
+  WindowState* active_window = WindowState::ForActiveWindow();
   return active_window &&
          active_window->autohide_shelf_when_maximized_or_fullscreen();
 }
@@ -1762,7 +1761,7 @@ bool ShelfLayoutManager::ShouldChangeVisibilityAfterDrag(
 }
 
 void ShelfLayoutManager::UpdateWorkspaceMask(
-    wm::WorkspaceWindowState window_state) {
+    WorkspaceWindowState window_state) {
   // Disable the mask on NonLockScreenContainer if maximized/fullscreen window
   // is on top.
   // TODO(oshima): Investigate if we can remove SetMasksToBounds calls
@@ -1772,28 +1771,26 @@ void ShelfLayoutManager::UpdateWorkspaceMask(
   auto* container = root_window_controller->GetContainer(
       kShellWindowId_NonLockScreenContainersContainer);
   switch (window_state) {
-    case wm::WORKSPACE_WINDOW_STATE_MAXIMIZED:
-    case wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN:
+    case WorkspaceWindowState::kMaximized:
+    case WorkspaceWindowState::kFullscreen:
       container->layer()->SetMasksToBounds(false);
       break;
-    case wm::WORKSPACE_WINDOW_STATE_DEFAULT:
+    case WorkspaceWindowState::kDefault:
       container->layer()->SetMasksToBounds(true);
       break;
   }
 }
 
 void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
-    wm::WorkspaceWindowState current_workspace_window_state) {
-  if (previous_workspace_window_state_ !=
-          wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN &&
-      current_workspace_window_state ==
-          wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
+    WorkspaceWindowState current_workspace_window_state) {
+  if (previous_workspace_window_state_ != WorkspaceWindowState::kFullscreen &&
+      current_workspace_window_state == WorkspaceWindowState::kFullscreen) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
         AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED);
   } else if (previous_workspace_window_state_ ==
-                 wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN &&
+                 WorkspaceWindowState::kFullscreen &&
              current_workspace_window_state !=
-                 wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN) {
+                 WorkspaceWindowState::kFullscreen) {
     Shell::Get()->accessibility_controller()->TriggerAccessibilityAlert(
         AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_EXITED);
   }

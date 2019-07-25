@@ -15,8 +15,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
-
 namespace {
 
 // Gets the parent switchable container of |context|.
@@ -30,7 +28,7 @@ aura::Window* GetSwitchableContainerForContext(aura::Window* context) {
 // Returns the active window if it is a child of a switchable container, or
 // nullptr otherwise.
 aura::Window* GetActiveWindowInSwitchableContainer() {
-  aura::Window* active_window = GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window || !IsSwitchableContainer(active_window->parent()))
     return nullptr;
 
@@ -43,7 +41,7 @@ aura::Window* GetTopMostWindowInContainer(aura::Window* container) {
   DCHECK(IsSwitchableContainer(container));
 
   for (auto* child : base::Reversed(container->children())) {
-    if (GetWindowState(child)->IsUserPositionable() &&
+    if (WindowState::Get(child)->IsUserPositionable() &&
         child->layer()->GetTargetVisibility()) {
       return child;
     }
@@ -56,7 +54,7 @@ aura::Window* GetTopMostWindowInContainer(aura::Window* container) {
 // returned window is fullscreen or pinned. Otherwise, return nullptr.
 aura::Window* FindFullscreenOrPinnedWindow(aura::Window* topmost_window) {
   while (topmost_window) {
-    const WindowState* window_state = GetWindowState(topmost_window);
+    const WindowState* window_state = WindowState::Get(topmost_window);
 
     if (window_state->IsFullscreen() || window_state->IsPinned())
       return topmost_window;
@@ -108,5 +106,4 @@ aura::Window* GetWindowForFullscreenModeInRoot(aura::Window* root) {
   return FindFullscreenOrPinnedWindow(topmost_window);
 }
 
-}  // namespace wm
 }  // namespace ash

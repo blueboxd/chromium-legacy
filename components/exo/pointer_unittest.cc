@@ -630,7 +630,7 @@ TEST_F(PointerTest, RegisterPointerEventsOnModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface->Attach(buffer.get());
   surface->Commit();
-  ash::wm::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
+  ash::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
   // Make the window modal.
   shell_surface->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
@@ -688,7 +688,7 @@ TEST_F(PointerTest, IgnorePointerEventsOnNonModalWhenModalIsOpen) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
   surface2->Commit();
-  ash::wm::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
+  ash::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
   // Make the window modal.
   shell_surface2->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
@@ -749,7 +749,7 @@ TEST_F(PointerTest, IgnorePointerLeaveOnModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface->Attach(buffer.get());
   surface->Commit();
-  ash::wm::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
+  ash::CenterWindow(shell_surface->GetWidget()->GetNativeWindow());
   // Make the window modal.
   shell_surface->SetSystemModal(true);
   EXPECT_TRUE(ash::Shell::IsSystemModalWindowOpen());
@@ -799,7 +799,7 @@ TEST_F(PointerTest, RegisterPointerEventsOnNonModal) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
   surface2->Attach(buffer2.get());
   surface2->Commit();
-  ash::wm::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
+  ash::CenterWindow(shell_surface2->GetWidget()->GetNativeWindow());
 
   MockPointerDelegate delegate;
   std::unique_ptr<Pointer> pointer(new Pointer(&delegate));

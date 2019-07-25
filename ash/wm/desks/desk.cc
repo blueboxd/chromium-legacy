@@ -218,7 +218,7 @@ void Desk::Activate(bool update_window_activation) {
       continue;
 
     // Do not activate minimized windows, otherwise they will unminimize.
-    if (wm::GetWindowState(window)->IsMinimized())
+    if (WindowState::Get(window)->IsMinimized())
       continue;
 
     wm::ActivateWindow(window);
@@ -227,7 +227,7 @@ void Desk::Activate(bool update_window_activation) {
 }
 
 void Desk::Deactivate(bool update_window_activation) {
-  auto* active_window = wm::GetActiveWindow();
+  auto* active_window = window_util::GetActiveWindow();
 
   // Hide the associated containers on all roots.
   for (aura::Window* root : Shell::GetAllRootWindows())
@@ -309,7 +309,7 @@ void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
 
     // Unminimize the window so that it shows up in the mini_view after it had
     // been dragged and moved to another desk.
-    auto* window_state = wm::GetWindowState(transient_root);
+    auto* window_state = WindowState::Get(transient_root);
     if (window_state->IsMinimized())
       window_state->Unminimize();
   }

@@ -27,7 +27,7 @@ TEST_F(ContainerFinderTest, GetContainerForWindow) {
   EXPECT_EQ(kShellWindowId_Invalid, window->id());
 
   // Container lookup finds the default container.
-  aura::Window* container = wm::GetContainerForWindow(window);
+  aura::Window* container = GetContainerForWindow(window);
   ASSERT_TRUE(container);
   EXPECT_EQ(desks_util::GetActiveDeskContainerId(), container->id());
 }

@@ -3851,11 +3851,11 @@ TEST_F(ShelfViewFocusTest, BackwardCycling) {
 // Verify that the overflow bubble does not activate when it is opened.
 TEST_F(ShelfViewFocusTest, OverflowNotActivatedWhenOpened) {
   std::unique_ptr<aura::Window> window = CreateTestWindow();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
 
   AddAppShortcutsUntilOverflow();
   test_api_->ShowOverflowBubble();
-  EXPECT_TRUE(::wm::IsActiveWindow(window.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window.get()));
 }
 
 // Verifies that focus moves as expected between the shelf and the status area.

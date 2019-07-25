@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 
+#include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/scoped_guest_button_blocker.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
@@ -191,6 +193,13 @@ void ResetScreen::Show() {
   if (view_)
     view_->Show();
 
+  // Guest sugn-in button should be disabled as sign-in is not possible while
+  // reset screen is shown.
+  if (!scoped_guest_button_blocker_) {
+    scoped_guest_button_blocker_ =
+        ash::LoginScreen::Get()->GetScopedGuestButtonBlocker();
+  }
+
   reset::DialogViewType dialog_type =
       reset::DIALOG_VIEW_TYPE_SIZE;  // used by UMA metrics.
 
@@ -264,6 +273,8 @@ void ResetScreen::Show() {
 void ResetScreen::Hide() {
   if (view_)
     view_->Hide();
+
+  scoped_guest_button_blocker_.reset();
 }
 
 void ResetScreen::OnViewDestroyed(ResetView* view) {

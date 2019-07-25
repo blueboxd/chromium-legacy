@@ -622,9 +622,8 @@ customize.getTilesWide = function() {
  */
 customize.richerPicker_getNextTile = function(deltaX, deltaY, current) {
   const menu = $(customize.IDS.CUSTOMIZATION_MENU);
-  const container = menu.classList.contains(customize.CLASSES.ON_IMAGE_MENU) ?
-      $(customize.IDS.BACKGROUNDS_IMAGE_MENU) :
-      $(customize.IDS.BACKGROUNDS_MENU);
+  const container = customize.richerPicker_selectedSubmenu.menu;
+
   const tiles = Array.from(
       container.getElementsByClassName(customize.CLASSES.COLLECTION_TILE));
   const curIndex = tiles.indexOf(current);
@@ -681,6 +680,47 @@ customize.getNextTile = function(deltaX, deltaY, currentElem) {
       nextTile = $(idPrefix + target);
     }
     return nextTile;
+  }
+};
+
+/**
+ * Event handler when a key is pressed on a tile in customization menu.
+ * @param {Event} event The event attributes for the interaction.
+ */
+customize.tileOnKeyDownInteraction = function(event) {
+  const tile = event.currentTarget;
+  if (event.keyCode === customize.KEYCODES.ENTER) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (tile.onClickOverride) {
+      tile.onClickOverride(event);
+      return;
+    }
+    tile.onclick(event);
+  } else if (customize.arrowKeys.includes(event.keyCode)) {
+    // Handle arrow key navigation.
+    event.preventDefault();
+    event.stopPropagation();
+
+    let target = null;
+    if (event.keyCode === customize.KEYCODES.LEFT) {
+      target = customize.getNextTile(
+          document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
+          /** @type HTMLElement */ (tile));
+    } else if (event.keyCode === customize.KEYCODES.UP) {
+      target = customize.getNextTile(0, -1, /** @type HTMLElement */ (tile));
+    } else if (event.keyCode === customize.KEYCODES.RIGHT) {
+      target = customize.getNextTile(
+          document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
+          /** @type HTMLElement */ (tile));
+    } else if (event.keyCode === customize.KEYCODES.DOWN) {
+      target = customize.getNextTile(0, 1, /** @type HTMLElement */ (tile));
+    }
+    if (target) {
+      target.focus();
+    } else {
+      tile.focus();
+    }
   }
 };
 
@@ -762,42 +802,6 @@ customize.showCollectionSelectionDialog = function() {
     };
   };
 
-  const tileOnKeyDownInteraction = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER) {
-      event.preventDefault();
-      event.stopPropagation();
-      if (event.currentTarget.onClickOverride) {
-        event.currentTarget.onClickOverride(event);
-        return;
-      }
-      tileOnClickInteraction(event);
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
-      // Handle arrow key navigation.
-      event.preventDefault();
-      event.stopPropagation();
-
-      let target = null;
-      if (event.keyCode === customize.KEYCODES.LEFT) {
-        target = customize.getNextTile(
-            document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-            event.currentTarget);
-      } else if (event.keyCode === customize.KEYCODES.UP) {
-        target = customize.getNextTile(0, -1, event.currentTarget);
-      } else if (event.keyCode === customize.KEYCODES.RIGHT) {
-        target = customize.getNextTile(
-            document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-            event.currentTarget);
-      } else if (event.keyCode === customize.KEYCODES.DOWN) {
-        target = customize.getNextTile(0, 1, event.currentTarget);
-      }
-      if (target) {
-        target.focus();
-      } else {
-        event.currentTarget.focus();
-      }
-    }
-  };
-
   // Create dialog tiles.
   for (let i = 0; i < coll.length; ++i) {
     const id = coll[i].collectionId;
@@ -807,15 +811,15 @@ customize.showCollectionSelectionDialog = function() {
 
     const tile = customize.createTileWithTitle(
         'coll_tile_' + i, imageUrl, name, dataset, tileOnClickInteraction,
-        tileOnKeyDownInteraction);
+        customize.tileOnKeyDownInteraction);
     tileContainer.appendChild(tile);
   }
 
   // Attach event listeners for upload and default tiles
   $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onkeydown =
-      tileOnKeyDownInteraction;
+      customize.tileOnKeyDownInteraction;
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onkeydown =
-      tileOnKeyDownInteraction;
+      customize.tileOnKeyDownInteraction;
   $(customize.IDS.BACKGROUNDS_UPLOAD_WRAPPER).onClickOverride =
       $(customize.IDS.BACKGROUNDS_UPLOAD).onkeydown;
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onClickOverride =
@@ -1137,38 +1141,6 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     }
   };
 
-  const tileOnKeyDownInteraction = function(event) {
-    if (event.keyCode === customize.KEYCODES.ENTER) {
-      event.preventDefault();
-      event.stopPropagation();
-      tileInteraction(event.currentTarget);
-    } else if (customize.arrowKeys.includes(event.keyCode)) {
-      // Handle arrow key navigation.
-      event.preventDefault();
-      event.stopPropagation();
-
-      let target = null;
-      if (event.keyCode == customize.KEYCODES.LEFT) {
-        target = customize.getNextTile(
-            document.documentElement.classList.contains('rtl') ? 1 : -1, 0,
-            event.currentTarget);
-      } else if (event.keyCode == customize.KEYCODES.UP) {
-        target = customize.getNextTile(0, -1, event.currentTarget);
-      } else if (event.keyCode == customize.KEYCODES.RIGHT) {
-        target = customize.getNextTile(
-            document.documentElement.classList.contains('rtl') ? -1 : 1, 0,
-            event.currentTarget);
-      } else if (event.keyCode == customize.KEYCODES.DOWN) {
-        target = customize.getNextTile(0, 1, event.currentTarget);
-      }
-      if (target) {
-        target.focus();
-      } else {
-        event.currentTarget.focus();
-      }
-    }
-  };
-
   const preLoadTiles = [];
   const postLoadTiles = [];
 
@@ -1192,7 +1164,7 @@ customize.showImageSelectionDialog = function(dialogTitle, collIndex) {
     }
     const tile = customize.createTileThumbnail(
         tileId, collImg[i].imageUrl, dataset, tileOnClickInteraction,
-        tileOnKeyDownInteraction);
+        customize.tileOnKeyDownInteraction);
 
     tile.setAttribute('aria-label', collImg[i].attributions[0]);
 
@@ -2107,13 +2079,21 @@ customize.loadColorsMenu = function() {
 
     const tile = customize.createTileWithoutTitle(
         id, imageUrl, dataset, customize.colorTileInteraction,
-        customize.colorTileInteraction);
+        customize.tileOnKeyDownInteraction);
     $(customize.IDS.COLORS_MENU).appendChild(tile);
   }
 
   // Configure the default tile.
   $(customize.IDS.COLORS_DEFAULT_ICON).onclick =
       customize.defaultThemeTileInteraction;
+  $(customize.IDS.COLORS_DEFAULT_ICON).onkeydown =
+      customize.tileOnKeyDownInteraction;
+
+  $(customize.IDS.COLORS_MENU).onkeydown = function(event) {
+    if (customize.arrowKeys.includes(event.keyCode)) {
+      $(customize.IDS.COLORS_DEFAULT_ICON).focus();
+    }
+  };
 
   customize.colorsMenuLoaded = true;
 };

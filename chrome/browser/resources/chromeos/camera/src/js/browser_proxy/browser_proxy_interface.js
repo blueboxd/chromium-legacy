@@ -30,7 +30,7 @@ cca.proxy.BrowserProxy = class {
 
   /**
    * @param {(string|!Array<string>|!Object)} keys
-   * @param {function(!Object)=} callback
+   * @param {function(!Object)} callback
    */
   localStorageGet(keys, callback) {}
 

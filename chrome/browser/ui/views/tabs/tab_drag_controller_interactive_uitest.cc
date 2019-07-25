@@ -275,7 +275,7 @@ int GetDetachY(TabStrip* tab_strip) {
 
 bool GetIsDragged(Browser* browser) {
 #if defined(OS_CHROMEOS)
-  return ash::wm::GetWindowState(browser->window()->GetNativeWindow())
+  return ash::WindowState::Get(browser->window()->GetNativeWindow())
       ->is_dragged();
 #endif
   return false;
@@ -986,7 +986,7 @@ bool IsWindowPositionManaged(aura::Window* window) {
   return window->GetProperty(ash::kWindowPositionManagedTypeKey);
 }
 bool HasUserChangedWindowPositionOrSize(aura::Window* window) {
-  return ash::wm::GetWindowState(window)->bounds_changed_by_user();
+  return ash::WindowState::Get(window)->bounds_changed_by_user();
 }
 #else
 bool IsWindowPositionManaged(gfx::NativeWindow window) {

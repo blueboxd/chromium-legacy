@@ -353,7 +353,7 @@ bool TabletModeController::ShouldAutoHideTitlebars(views::Widget* widget) {
     return false;
 
   return widget->IsMaximized() ||
-         wm::GetWindowState(widget->GetNativeWindow())->IsSnapped();
+         WindowState::Get(widget->GetNativeWindow())->IsSnapped();
 }
 
 bool TabletModeController::AreInternalInputDeviceEventsBlocked() const {

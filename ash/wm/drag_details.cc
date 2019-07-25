@@ -64,7 +64,7 @@ DragDetails::DragDetails(aura::Window* window,
                          const gfx::Point& location,
                          int window_component,
                          ::wm::WindowMoveSource source)
-    : initial_state_type(wm::GetWindowState(window)->GetStateType()),
+    : initial_state_type(WindowState::Get(window)->GetStateType()),
       initial_bounds_in_parent(GetWindowInitialBoundsInParent(window)),
       initial_location_in_parent(location),
       // When drag starts, we might be in the middle of a window opacity
@@ -84,7 +84,7 @@ DragDetails::DragDetails(aura::Window* window,
   if (window_component != HTCAPTION)
     return;
 
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   const bool is_tablet_mode =
       Shell::Get()->tablet_mode_controller()->InTabletMode();
   // TODO(xdai): Move these logic to WindowState::GetRestoreBoundsInScreen()

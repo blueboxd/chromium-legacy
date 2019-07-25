@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 
 #include <utility>
 
@@ -16,10 +16,10 @@
 
 namespace apps {
 
-AppServiceProxyImpl::InnerIconLoader::InnerIconLoader(AppServiceProxyImpl* host)
+AppServiceProxy::InnerIconLoader::InnerIconLoader(AppServiceProxy* host)
     : host_(host), overriding_icon_loader_for_testing_(nullptr) {}
 
-apps::mojom::IconKeyPtr AppServiceProxyImpl::InnerIconLoader::GetIconKey(
+apps::mojom::IconKeyPtr AppServiceProxy::InnerIconLoader::GetIconKey(
     const std::string& app_id) {
   if (overriding_icon_loader_for_testing_) {
     return overriding_icon_loader_for_testing_->GetIconKey(app_id);
@@ -35,7 +35,7 @@ apps::mojom::IconKeyPtr AppServiceProxyImpl::InnerIconLoader::GetIconKey(
 }
 
 std::unique_ptr<IconLoader::Releaser>
-AppServiceProxyImpl::InnerIconLoader::LoadIconFromIconKey(
+AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
@@ -66,23 +66,17 @@ AppServiceProxyImpl::InnerIconLoader::LoadIconFromIconKey(
 }
 
 // static
-AppServiceProxyImpl* AppServiceProxyImpl::GetImplForTesting(Profile* profile) {
-  return static_cast<AppServiceProxyImpl*>(
-      AppServiceProxyFactory::GetForProfile(profile));
-}
-
-// static
-AppServiceProxyImpl* AppServiceProxyImpl::CreateForTesting(
+AppServiceProxy* AppServiceProxy::CreateForTesting(
     Profile* profile,
     service_manager::Connector* connector) {
-  return new AppServiceProxyImpl(profile, connector);
+  return new AppServiceProxy(profile, connector);
 }
 
-AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile)
-    : AppServiceProxyImpl(profile, nullptr) {}
+AppServiceProxy::AppServiceProxy(Profile* profile)
+    : AppServiceProxy(profile, nullptr) {}
 
-AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile,
-                                         service_manager::Connector* connector)
+AppServiceProxy::AppServiceProxy(Profile* profile,
+                                 service_manager::Connector* connector)
     : inner_icon_loader_(this),
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
@@ -100,15 +94,15 @@ AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile,
                            mojo::MakeRequest(&app_service_));
 
   if (app_service_.is_bound()) {
-    // The AppServiceProxyImpl is a subscriber: something that wants to be able
+    // The AppServiceProxy is a subscriber: something that wants to be able
     // to list all known apps.
     apps::mojom::SubscriberPtr subscriber;
     bindings_.AddBinding(this, mojo::MakeRequest(&subscriber));
     app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
 
 #if defined(OS_CHROMEOS)
-    // The AppServiceProxyImpl is also a publisher, of a variety of app types.
-    // That responsibility isn't intrinsically part of the AppServiceProxyImpl,
+    // The AppServiceProxy is also a publisher, of a variety of app types.
+    // That responsibility isn't intrinsically part of the AppServiceProxy,
     // but doing that here, for each such app type, is as good a place as any.
     built_in_chrome_os_apps_.Initialize(app_service_, profile);
     crostini_apps_.Initialize(app_service_, profile);
@@ -120,15 +114,22 @@ AppServiceProxyImpl::AppServiceProxyImpl(Profile* profile,
   }
 }
 
-AppServiceProxyImpl::~AppServiceProxyImpl() = default;
+AppServiceProxy::~AppServiceProxy() = default;
 
-apps::mojom::IconKeyPtr AppServiceProxyImpl::GetIconKey(
-    const std::string& app_id) {
+apps::mojom::AppServicePtr& AppServiceProxy::AppService() {
+  return app_service_;
+}
+
+apps::AppRegistryCache& AppServiceProxy::AppRegistryCache() {
+  return cache_;
+}
+
+apps::mojom::IconKeyPtr AppServiceProxy::GetIconKey(const std::string& app_id) {
   return outer_icon_loader_.GetIconKey(app_id);
 }
 
 std::unique_ptr<apps::IconLoader::Releaser>
-AppServiceProxyImpl::LoadIconFromIconKey(
+AppServiceProxy::LoadIconFromIconKey(
     apps::mojom::AppType app_type,
     const std::string& app_id,
     apps::mojom::IconKeyPtr icon_key,
@@ -141,10 +142,10 @@ AppServiceProxyImpl::LoadIconFromIconKey(
       allow_placeholder_icon, std::move(callback));
 }
 
-void AppServiceProxyImpl::Launch(const std::string& app_id,
-                                 int32_t event_flags,
-                                 apps::mojom::LaunchSource launch_source,
-                                 int64_t display_id) {
+void AppServiceProxy::Launch(const std::string& app_id,
+                             int32_t event_flags,
+                             apps::mojom::LaunchSource launch_source,
+                             int64_t display_id) {
   if (app_service_.is_bound()) {
     cache_.ForOneApp(app_id, [this, event_flags, launch_source,
                               display_id](const apps::AppUpdate& update) {
@@ -154,8 +155,8 @@ void AppServiceProxyImpl::Launch(const std::string& app_id,
   }
 }
 
-void AppServiceProxyImpl::SetPermission(const std::string& app_id,
-                                        apps::mojom::PermissionPtr permission) {
+void AppServiceProxy::SetPermission(const std::string& app_id,
+                                    apps::mojom::PermissionPtr permission) {
   if (app_service_.is_bound()) {
     cache_.ForOneApp(
         app_id, [this, &permission](const apps::AppUpdate& update) {
@@ -165,7 +166,7 @@ void AppServiceProxyImpl::SetPermission(const std::string& app_id,
   }
 }
 
-void AppServiceProxyImpl::Uninstall(const std::string& app_id) {
+void AppServiceProxy::Uninstall(const std::string& app_id) {
   if (app_service_.is_bound()) {
     cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
       app_service_->Uninstall(update.AppType(), update.AppId());
@@ -173,7 +174,7 @@ void AppServiceProxyImpl::Uninstall(const std::string& app_id) {
   }
 }
 
-void AppServiceProxyImpl::OpenNativeSettings(const std::string& app_id) {
+void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
   if (app_service_.is_bound()) {
     cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
       app_service_->OpenNativeSettings(update.AppType(), update.AppId());
@@ -181,11 +182,11 @@ void AppServiceProxyImpl::OpenNativeSettings(const std::string& app_id) {
   }
 }
 
-void AppServiceProxyImpl::FlushMojoCallsForTesting() {
+void AppServiceProxy::FlushMojoCallsForTesting() {
   bindings_.FlushForTesting();
 }
 
-apps::IconLoader* AppServiceProxyImpl::OverrideInnerIconLoaderForTesting(
+apps::IconLoader* AppServiceProxy::OverrideInnerIconLoaderForTesting(
     apps::IconLoader* icon_loader) {
   apps::IconLoader* old =
       inner_icon_loader_.overriding_icon_loader_for_testing_;
@@ -193,7 +194,7 @@ apps::IconLoader* AppServiceProxyImpl::OverrideInnerIconLoaderForTesting(
   return old;
 }
 
-void AppServiceProxyImpl::ReInitializeCrostiniForTesting(Profile* profile) {
+void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
 #if defined(OS_CHROMEOS)
   if (app_service_.is_bound()) {
     crostini_apps_.ReInitializeForTesting(app_service_, profile);
@@ -201,7 +202,7 @@ void AppServiceProxyImpl::ReInitializeCrostiniForTesting(Profile* profile) {
 #endif
 }
 
-void AppServiceProxyImpl::Shutdown() {
+void AppServiceProxy::Shutdown() {
 #if defined(OS_CHROMEOS)
   if (app_service_.is_bound()) {
     extension_apps_.Shutdown();
@@ -210,11 +211,11 @@ void AppServiceProxyImpl::Shutdown() {
 #endif  // OS_CHROMEOS
 }
 
-void AppServiceProxyImpl::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
+void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }
 
-void AppServiceProxyImpl::Clone(apps::mojom::SubscriberRequest request) {
+void AppServiceProxy::Clone(apps::mojom::SubscriberRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

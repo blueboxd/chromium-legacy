@@ -34,10 +34,10 @@ enum class AccessibilityAlert {
   // When the user enters window overview mode.
   WINDOW_OVERVIEW_MODE_ENTERED,
 
-  // When workspace state just changed to WORKSPACE_WINDOW_STATE_FULL_SCREEN.
+  // When workspace state just changed to WorkspaceWindowState::kFullscreen.
   WORKSPACE_FULLSCREEN_STATE_ENTERED,
 
-  // When workspace state just changed from WORKSPACE_WINDOW_STATE_FULL_SCREEN
+  // When workspace state just changed from WorkspaceWindowState::kFullscreen.
   // to others.
   WORKSPACE_FULLSCREEN_STATE_EXITED
 };

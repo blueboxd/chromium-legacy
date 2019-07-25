@@ -39,8 +39,8 @@
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/adapters.h"
@@ -1286,8 +1286,9 @@ bool ShelfView::StartDrag(const std::string& app_id,
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+  wm::ConvertPointFromScreen(
+      window_util::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerPressedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
@@ -1307,8 +1308,9 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
       view_model_->view_at(model_->ItemIndexByID(drag_and_drop_shelf_id_));
   ConvertPointFromScreen(drag_and_drop_view, &pt);
   gfx::Point point_in_root = location_in_screen_coordinates;
-  ::wm::ConvertPointFromScreen(
-      wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
+  wm::ConvertPointFromScreen(
+      window_util::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
   PointerDraggedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);

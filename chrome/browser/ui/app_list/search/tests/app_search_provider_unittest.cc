@@ -20,7 +20,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
@@ -835,8 +836,8 @@ TEST_F(AppSearchProviderTest, AppServiceIconCache) {
     return;
   }
 
-  apps::AppServiceProxyImpl* proxy =
-      apps::AppServiceProxyImpl::GetImplForTesting(profile());
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
   ASSERT_NE(proxy, nullptr);
 
   apps::StubIconLoader stub_icon_loader;

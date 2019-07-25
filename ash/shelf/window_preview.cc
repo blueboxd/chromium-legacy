@@ -38,7 +38,7 @@ WindowPreview::WindowPreview(aura::Window* window,
                              const ui::NativeTheme* theme)
     : delegate_(delegate) {
   preview_view_ =
-      new wm::WindowPreviewView(window, /*trilinear_filtering_on_init=*/false);
+      new WindowPreviewView(window, /*trilinear_filtering_on_init=*/false);
   preview_container_view_ = new views::View();
   preview_container_view_->SetBackground(views::CreateRoundedRectBackground(
       kPreviewContainerBgColor, kPreviewBorderRadius));
@@ -143,7 +143,7 @@ void WindowPreview::ButtonPressed(views::Button* sender,
   // being closed and remove this condition.
   if (!target)
     return;
-  wm::CloseWidgetForWindow(target);
+  window_util::CloseWidgetForWindow(target);
 
   // This will have the effect of deleting this view.
   delegate_->OnPreviewDismissed(this);

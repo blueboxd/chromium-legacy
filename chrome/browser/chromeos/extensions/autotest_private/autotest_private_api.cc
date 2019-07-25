@@ -253,24 +253,23 @@ ash::WindowStateType GetExpectedWindowState(
   }
 }
 
-ash::wm::WMEventType ToWMEventType(
-    api::autotest_private::WMEventType event_type) {
+ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
   switch (event_type) {
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTNORMAL:
-      return ash::wm::WMEventType::WM_EVENT_NORMAL;
+      return ash::WMEventType::WM_EVENT_NORMAL;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMAXMIZE:
-      return ash::wm::WMEventType::WM_EVENT_MAXIMIZE;
+      return ash::WMEventType::WM_EVENT_MAXIMIZE;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTMINIMIZE:
-      return ash::wm::WMEventType::WM_EVENT_MINIMIZE;
+      return ash::WMEventType::WM_EVENT_MINIMIZE;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTFULLSCREEN:
-      return ash::wm::WMEventType::WM_EVENT_FULLSCREEN;
+      return ash::WMEventType::WM_EVENT_FULLSCREEN;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPLEFT:
-      return ash::wm::WMEventType::WM_EVENT_SNAP_LEFT;
+      return ash::WMEventType::WM_EVENT_SNAP_LEFT;
     case api::autotest_private::WMEventType::WM_EVENT_TYPE_WMEVENTSNAPRIGHT:
-      return ash::wm::WMEventType::WM_EVENT_SNAP_RIGHT;
+      return ash::WMEventType::WM_EVENT_SNAP_RIGHT;
     default:
       NOTREACHED();
-      return ash::wm::WMEventType::WM_EVENT_NORMAL;
+      return ash::WMEventType::WM_EVENT_NORMAL;
   }
 }
 
@@ -1985,8 +1984,8 @@ AutotestPrivateSetArcAppWindowStateFunction::Run() {
       base::BindOnce(
           &AutotestPrivateSetArcAppWindowStateFunction::WindowStateChanged,
           this, expected_state));
-  const ash::wm::WMEvent event(ToWMEventType(params->change.event_type));
-  ash::wm::GetWindowState(arc_window)->OnWMEvent(&event);
+  const ash::WMEvent event(ToWMEventType(params->change.event_type));
+  ash::WindowState::Get(arc_window)->OnWMEvent(&event);
 
   return RespondLater();
 }

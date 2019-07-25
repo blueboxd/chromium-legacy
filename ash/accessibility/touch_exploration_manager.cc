@@ -191,8 +191,8 @@ void TouchExplorationManager::OnKeyboardEnabledChanged(bool is_enabled) {
 void TouchExplorationManager::UpdateTouchExplorationState() {
   // See crbug.com/603745 for more details.
   const bool pass_through_surface =
-      wm::GetActiveWindow() &&
-      wm::GetActiveWindow()->GetProperty(
+      window_util::GetActiveWindow() &&
+      window_util::GetActiveWindow()->GetProperty(
           aura::client::kAccessibilityTouchExplorationPassThrough);
 
   const bool spoken_feedback_enabled =

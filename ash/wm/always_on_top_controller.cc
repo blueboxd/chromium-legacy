@@ -56,7 +56,7 @@ aura::Window* AlwaysOnTopController::GetContainer(aura::Window* window) const {
     // active desks' container.
     return desks_util::GetActiveDeskContainerForRoot(root);
   }
-  if (window->parent() && wm::GetWindowState(window)->IsPip())
+  if (window->parent() && WindowState::Get(window)->IsPip())
     return pip_container_;
 
   return always_on_top_container_;
@@ -73,12 +73,12 @@ void AlwaysOnTopController::SetDisallowReparent(aura::Window* window) {
 
 void AlwaysOnTopController::AddWindow(aura::Window* window) {
   window->AddObserver(this);
-  wm::GetWindowState(window)->AddObserver(this);
+  WindowState::Get(window)->AddObserver(this);
 }
 
 void AlwaysOnTopController::RemoveWindow(aura::Window* window) {
   window->RemoveObserver(this);
-  wm::GetWindowState(window)->RemoveObserver(this);
+  WindowState::Get(window)->RemoveObserver(this);
 }
 
 void AlwaysOnTopController::ReparentWindow(aura::Window* window) {
@@ -125,7 +125,7 @@ void AlwaysOnTopController::OnWindowDestroying(aura::Window* window) {
 }
 
 void AlwaysOnTopController::OnPreWindowStateTypeChange(
-    wm::WindowState* window_state,
+    WindowState* window_state,
     WindowStateType old_type) {
   ReparentWindow(window_state->window());
 }

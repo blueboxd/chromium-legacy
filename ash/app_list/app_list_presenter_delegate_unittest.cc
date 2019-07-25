@@ -43,7 +43,6 @@
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -1816,7 +1815,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(false);
   // Open wallpaper picker and start preview. Verify the app list remains
   // hidden.
-  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
+  WindowState::Get(wallpaper_picker_window.get())->Activate();
   wallpaper_test_api.StartWallpaperPreview();
   GetAppListTestHelper()->CheckVisibility(false);
   // Enable tablet mode. Verify the app list is still hidden because wallpaper
@@ -1860,9 +1859,9 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, HomeButtonMinimizeAllWindows) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(0)),
       window2(CreateTestWindowInShellWithId(1)),
       window3(CreateTestWindowInShellWithId(2));
-  wm::WindowState *state1 = wm::GetWindowState(window1.get()),
-                  *state2 = wm::GetWindowState(window2.get()),
-                  *state3 = wm::GetWindowState(window3.get());
+  WindowState *state1 = WindowState::Get(window1.get()),
+              *state2 = WindowState::Get(window2.get()),
+              *state3 = WindowState::Get(window3.get());
   state1->Maximize();
   state2->Maximize();
   state3->Maximize();
@@ -1940,7 +1939,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, WallpaperContextMenu) {
       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   generator->Dispatch(&long_press);
   GetAppListTestHelper()->WaitUntilIdle();
-  const aura::Window* root = wm::GetRootWindowAt(onscreen_point);
+  const aura::Window* root = window_util::GetRootWindowAt(onscreen_point);
   const RootWindowController* root_window_controller =
       RootWindowController::ForWindow(root);
   EXPECT_TRUE(root_window_controller->IsContextMenuShown());
@@ -2063,28 +2062,28 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackdropTest) {
 TEST_F(AppListPresenterDelegateHomeLauncherTest,
        NotActivateAppListWindowWhenActiveWindowExists) {
   // No window is active.
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
 
   // Show app list in tablet mode. It should become active.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(GetAppListView()->GetWidget()->GetNativeWindow(),
-            wm::GetActiveWindow());
+            window_util::GetActiveWindow());
 
   // End tablet mode.
   EnableTabletMode(false);
   GetAppListTestHelper()->CheckVisibility(false);
-  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_EQ(nullptr, window_util::GetActiveWindow());
 
   // Activate a window.
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  wm::GetWindowState(window.get())->Activate();
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  WindowState::Get(window.get())->Activate();
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Show app list in tablet mode. It should not be active.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 // Tests that involve the virtual keyboard.

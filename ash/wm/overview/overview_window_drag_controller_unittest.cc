@@ -104,7 +104,7 @@ class NoDesksNoSplitViewTest : public AshTestBase {
 TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -127,13 +127,13 @@ TEST_F(NoDesksNoSplitViewTest, NormalDragIsNotPossible) {
   // activated.
   event_generator->ReleaseTouch();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 
 TEST_F(NoDesksNoSplitViewTest, CanDoDragToClose) {
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
@@ -171,7 +171,7 @@ using OverviewWindowDragControllerTest = AshTestBase;
 TEST_F(OverviewWindowDragControllerTest, NoDragToCloseUsingMouse) {
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   // Enter tablet mode and enter overview mode.
   // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet mode.
@@ -228,7 +228,7 @@ TEST_F(OverviewWindowDragControllerWithDesksTest,
 
   auto window = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 
   auto* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();

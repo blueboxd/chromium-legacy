@@ -299,7 +299,7 @@ void HandleMoveActiveItem(const ui::Accelerator& accelerator) {
     window_to_move =
         overview_controller->overview_session()->GetHighlightedWindow();
   } else {
-    window_to_move = wm::GetActiveWindow();
+    window_to_move = window_util::GetActiveWindow();
   }
 
   if (!window_to_move)
@@ -406,7 +406,7 @@ void HandleFocusShelf() {
 views::Widget* FindPipWidget() {
   return Shell::Get()->focus_cycler()->FindWidget(
       base::BindRepeating([](views::Widget* widget) {
-        return wm::GetWindowState(widget->GetNativeWindow())->IsPip();
+        return WindowState::Get(widget->GetNativeWindow())->IsPip();
       }));
 }
 
@@ -570,7 +570,7 @@ void HandleRestoreTab() {
 // Rotate the active window.
 void HandleRotateActiveWindow() {
   base::RecordAction(UserMetricsAction("Accel_Rotate_Active_Window"));
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window)
     return;
   // The rotation animation bases its target transform on the current
@@ -708,10 +708,10 @@ void HandleToggleUnifiedDesktop() {
 }
 
 bool CanHandleWindowSnap() {
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   if (!active_window)
     return false;
-  wm::WindowState* window_state = wm::GetWindowState(active_window);
+  WindowState* window_state = WindowState::Get(active_window);
   // Disable window snapping shortcut key for full screen window due to
   // http://crbug.com/135487.
   return (window_state && window_state->IsUserPositionable() &&
@@ -724,12 +724,12 @@ void HandleWindowSnap(AcceleratorAction action) {
   else
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
 
-  const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
-                              ? wm::WM_EVENT_CYCLE_SNAP_LEFT
-                              : wm::WM_EVENT_CYCLE_SNAP_RIGHT);
-  aura::Window* active_window = wm::GetActiveWindow();
+  const WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
+                          ? WM_EVENT_CYCLE_SNAP_LEFT
+                          : WM_EVENT_CYCLE_SNAP_RIGHT);
+  aura::Window* active_window = window_util::GetActiveWindow();
   DCHECK(active_window);
-  wm::GetWindowState(active_window)->OnWMEvent(&event);
+  WindowState::Get(active_window)->OnWMEvent(&event);
 }
 
 void HandleWindowMinimize() {
@@ -993,7 +993,7 @@ bool CanHandleToggleOverview() {
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
   // Do not toggle overview if there is a window being dragged.
   for (auto* window : windows) {
-    if (wm::GetWindowState(window)->is_dragged())
+    if (WindowState::Get(window)->is_dragged())
       return false;
   }
   return true;

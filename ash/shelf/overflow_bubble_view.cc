@@ -616,7 +616,7 @@ bool OverflowBubbleView::CanActivate() const {
 
   // Do not activate the bubble unless the current active window is the shelf
   // window.
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* bubble_window = GetWidget()->GetNativeWindow();
   aura::Window* shelf_window = shelf_->shelf_widget()->GetNativeWindow();
   return active_window == bubble_window || active_window == shelf_window;

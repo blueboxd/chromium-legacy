@@ -75,20 +75,20 @@ Orientation SizeToOrientation(const gfx::Size& size) {
 // A ClientControlledStateDelegate that sends the state/bounds
 // change request to exo client.
 class ClientControlledStateDelegate
-    : public ash::wm::ClientControlledState::Delegate {
+    : public ash::ClientControlledState::Delegate {
  public:
   explicit ClientControlledStateDelegate(
       ClientControlledShellSurface* shell_surface)
       : shell_surface_(shell_surface) {}
   ~ClientControlledStateDelegate() override {}
 
-  // Overridden from ash::wm::ClientControlledState::Delegate:
-  void HandleWindowStateRequest(ash::wm::WindowState* window_state,
+  // Overridden from ash::ClientControlledState::Delegate:
+  void HandleWindowStateRequest(ash::WindowState* window_state,
                                 ash::WindowStateType next_state) override {
     shell_surface_->OnWindowStateChangeEvent(window_state->GetStateType(),
                                              next_state);
   }
-  void HandleBoundsRequest(ash::wm::WindowState* window_state,
+  void HandleBoundsRequest(ash::WindowState* window_state,
                            ash::WindowStateType requested_state,
                            const gfx::Rect& bounds_in_display,
                            int64_t display_id) override {
@@ -116,17 +116,16 @@ class ClientControlledStateDelegate
 
 // A WindowStateDelegate that implements ToggleFullscreen behavior for
 // client controlled window.
-class ClientControlledWindowStateDelegate
-    : public ash::wm::WindowStateDelegate {
+class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
  public:
   explicit ClientControlledWindowStateDelegate(
       ClientControlledShellSurface* shell_surface,
-      ash::wm::ClientControlledState::Delegate* delegate)
+      ash::ClientControlledState::Delegate* delegate)
       : shell_surface_(shell_surface), delegate_(delegate) {}
   ~ClientControlledWindowStateDelegate() override {}
 
-  // Overridden from ash::wm::WindowStateDelegate:
-  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  // Overridden from ash::WindowStateDelegate:
+  bool ToggleFullscreen(ash::WindowState* window_state) override {
     ash::WindowStateType next_state;
     aura::Window* window = window_state->window();
     switch (window_state->GetStateType()) {
@@ -190,12 +189,12 @@ class ClientControlledWindowStateDelegate
 
  private:
   ClientControlledShellSurface* shell_surface_;
-  ash::wm::ClientControlledState::Delegate* delegate_;
+  ash::ClientControlledState::Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientControlledWindowStateDelegate);
 };
 
-bool IsPinned(const ash::wm::WindowState* window_state) {
+bool IsPinned(const ash::WindowState* window_state) {
   return window_state->IsPinned() || window_state->IsTrustedPinned();
 }
 
@@ -281,7 +280,7 @@ class ClientControlledShellSurface::ScopedSetBoundsLocally {
   ~ScopedSetBoundsLocally() { state_->set_bounds_locally(false); }
 
  private:
-  ash::wm::ClientControlledState* const state_;
+  ash::ClientControlledState* const state_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsLocally);
 };
@@ -391,7 +390,7 @@ void ClientControlledShellSurface::SetSystemUiVisibility(bool autohide) {
   if (!widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
-  ash::wm::SetAutoHideShelf(widget_->GetNativeWindow(), autohide);
+  ash::window_util::SetAutoHideShelf(widget_->GetNativeWindow(), autohide);
 }
 
 void ClientControlledShellSurface::SetAlwaysOnTop(bool always_on_top) {
@@ -710,8 +709,8 @@ bool ClientControlledShellSurface::CanMaximize() const {
 
 views::NonClientFrameView*
 ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
-  ash::wm::WindowState* window_state = GetWindowState();
-  std::unique_ptr<ash::wm::ClientControlledState::Delegate> delegate =
+  ash::WindowState* window_state = GetWindowState();
+  std::unique_ptr<ash::ClientControlledState::Delegate> delegate =
       GetFactoryForTesting()
           ? GetFactoryForTesting().Run()
           : std::make_unique<ClientControlledStateDelegate>(this);
@@ -719,7 +718,7 @@ ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
   auto window_delegate = std::make_unique<ClientControlledWindowStateDelegate>(
       this, delegate.get());
   auto state =
-      std::make_unique<ash::wm::ClientControlledState>(std::move(delegate));
+      std::make_unique<ash::ClientControlledState>(std::move(delegate));
   client_controlled_state_ = state.get();
   window_state->SetStateObject(std::move(state));
   window_state->SetDelegate(std::move(window_delegate));
@@ -834,7 +833,7 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   // Calculate a minimum window visibility required bounds.
   gfx::Rect adjusted_bounds = bounds;
   if (!is_display_move_pending) {
-    ash::wm::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
+    ash::ClientControlledState::AdjustBoundsForMinimumWindowVisibility(
         target_display.bounds(), &adjusted_bounds);
   }
 
@@ -892,7 +891,7 @@ gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
 }
 
 void ClientControlledShellSurface::InitializeWindowState(
-    ash::wm::WindowState* window_state) {
+    ash::WindowState* window_state) {
   // Allow the client to request bounds that do not fill the entire work area
   // when maximized, or the entire display when fullscreen.
   window_state->set_allow_set_bounds_direct(true);
@@ -937,12 +936,12 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
     CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
   }
 
-  ash::wm::WindowState* window_state = GetWindowState();
+  ash::WindowState* window_state = GetWindowState();
   if (window_state->GetStateType() == pending_window_state_) {
     // Animate PIP window movement unless it is being dragged.
     if (window_state->IsPip() && !window_state->is_dragged()) {
       client_controlled_state_->set_next_bounds_change_animation_type(
-          ash::wm::ClientControlledState::kAnimationAnimated);
+          ash::ClientControlledState::kAnimationAnimated);
     }
 
     return true;
@@ -953,18 +952,18 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
     return true;
   }
 
-  auto animation_type = ash::wm::ClientControlledState::kAnimationNone;
+  auto animation_type = ash::ClientControlledState::kAnimationNone;
   switch (pending_window_state_) {
     case ash::WindowStateType::kNormal:
       if (widget_->IsMaximized() || widget_->IsFullscreen()) {
-        animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
+        animation_type = ash::ClientControlledState::kAnimationCrossFade;
       }
       break;
 
     case ash::WindowStateType::kMaximized:
     case ash::WindowStateType::kFullscreen:
       if (!window_state->IsPip())
-        animation_type = ash::wm::ClientControlledState::kAnimationCrossFade;
+        animation_type = ash::ClientControlledState::kAnimationCrossFade;
       break;
 
     default:
@@ -1040,7 +1039,7 @@ void ClientControlledShellSurface::UpdateFrame() {
           ->GetDisplayNearestWindow(widget_->GetNativeWindow())
           .work_area();
 
-  ash::wm::WindowState* window_state = GetWindowState();
+  ash::WindowState* window_state = GetWindowState();
   bool enable_wide_frame = GetFrameView()->GetVisible() &&
                            window_state->IsMaximizedOrFullscreenOrPinned() &&
                            work_area.width() != geometry().width();
@@ -1127,8 +1126,8 @@ void ClientControlledShellSurface::
   }
 }
 
-ash::wm::WindowState* ClientControlledShellSurface::GetWindowState() {
-  return ash::wm::GetWindowState(widget_->GetNativeWindow());
+ash::WindowState* ClientControlledShellSurface::GetWindowState() {
+  return ash::WindowState::Get(widget_->GetNativeWindow());
 }
 
 ash::NonClientFrameViewAsh* ClientControlledShellSurface::GetFrameView() {

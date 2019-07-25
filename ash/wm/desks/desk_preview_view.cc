@@ -113,7 +113,7 @@ void GetLayersData(aura::Window* window,
   }
 
   // Minimized windows should not show up in the mini_view.
-  auto* window_state = wm::GetWindowState(window);
+  auto* window_state = WindowState::Get(window);
   if (window_state && window_state->IsMinimized()) {
     layer_data.should_skip_layer = true;
     return;

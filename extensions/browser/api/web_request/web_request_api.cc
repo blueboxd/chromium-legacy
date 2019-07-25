@@ -2363,6 +2363,13 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     return true;
   }
 
+  if (request->is_web_view) {
+    const bool has_declarative_rules = !relevant_registries.empty();
+    UMA_HISTOGRAM_BOOLEAN(
+        "Extensions.DeclarativeWebRequest.WebViewRequestDeclarativeRules",
+        has_declarative_rules);
+  }
+
   bool deltas_created = false;
   for (const auto& it : relevant_registries) {
     WebRequestRulesRegistry* rules_registry = it.first;

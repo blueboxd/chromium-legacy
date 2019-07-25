@@ -41,7 +41,7 @@ aura::Window* TestKeyboardUI::GetKeyboardWindow() const {
 }
 
 ui::InputMethod* TestKeyboardUI::GetInputMethod() {
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* root_window = active_window ? active_window->GetRootWindow()
                                             : Shell::GetPrimaryRootWindow();
   return root_window->GetHost()->GetInputMethod();

@@ -14,7 +14,6 @@ class Window;
 }  // namespace aura
 
 namespace ash {
-namespace wm {
 
 // BaseState implements the common framework for WindowState::State.
 class BaseState : public WindowState::State {
@@ -65,7 +64,6 @@ class BaseState : public WindowState::State {
   DISALLOW_COPY_AND_ASSIGN(BaseState);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_BASE_STATE_H_

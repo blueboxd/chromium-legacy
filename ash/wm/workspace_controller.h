@@ -27,7 +27,7 @@ class ASH_EXPORT WorkspaceController : public aura::WindowObserver {
   ~WorkspaceController() override;
 
   // Returns the current window state.
-  wm::WorkspaceWindowState GetWindowState() const;
+  WorkspaceWindowState GetWindowState() const;
 
   // Starts the animation that occurs on first login.
   void DoInitialAnimation();

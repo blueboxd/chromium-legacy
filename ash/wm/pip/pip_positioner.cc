@@ -60,7 +60,7 @@ gfx::Rect PipPositioner::GetDismissedPosition(
 }
 
 gfx::Rect PipPositioner::GetPositionAfterMovementAreaChange(
-    wm::WindowState* window_state) {
+    WindowState* window_state) {
   // Restore to previous bounds if we have them. This lets us move the PIP
   // window back to its original bounds after transient movement area changes,
   // like the keyboard popping up and pushing the PIP window up.
@@ -75,7 +75,5 @@ gfx::Rect PipPositioner::GetPositionAfterMovementAreaChange(
       window_state->GetDisplay(), bounds_in_screen,
       CollisionDetectionUtils::RelativePriority::kPictureInPicture);
 }
-
-
 
 }  // namespace ash

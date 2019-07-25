@@ -51,14 +51,14 @@ DEFINE_UI_CLASS_PROPERTY_KEY(NonClientFrameViewAsh*,
 // This helper enables and disables immersive mode in response to state such as
 // tablet mode and fullscreen changing. For legacy reasons, it's only
 // instantiated for windows that have no WindowStateDelegate provided.
-class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
+class NonClientFrameViewAshImmersiveHelper : public WindowStateObserver,
                                              public aura::WindowObserver,
                                              public TabletModeObserver {
  public:
   NonClientFrameViewAshImmersiveHelper(views::Widget* widget,
                                        NonClientFrameViewAsh* custom_frame_view)
       : widget_(widget),
-        window_state_(wm::GetWindowState(widget->GetNativeWindow())) {
+        window_state_(WindowState::Get(widget->GetNativeWindow())) {
     window_state_->window()->AddObserver(this);
     window_state_->AddObserver(this);
 
@@ -105,8 +105,8 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
     window_state_ = nullptr;
   }
 
-  // wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override {
     views::Widget* widget =
         views::Widget::GetWidgetForNativeWindow(window_state->window());
@@ -138,7 +138,7 @@ class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
   }
 
   views::Widget* widget_;
-  wm::WindowState* window_state_;
+  WindowState* window_state_;
   std::unique_ptr<ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
@@ -239,7 +239,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
       header_view_(new HeaderView(frame)),
       overlay_view_(new OverlayView(header_view_)) {
   aura::Window* frame_window = frame->GetNativeWindow();
-  wm::InstallResizeHandleWindowTargeterForWindow(frame_window);
+  window_util::InstallResizeHandleWindowTargeterForWindow(frame_window);
   // |header_view_| is set as the non client view's overlay view so that it can
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
@@ -247,7 +247,7 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   // A delegate may be set which takes over the responsibilities of the
   // NonClientFrameViewAshImmersiveHelper. This is the case for container apps
   // such as ARC++, and in some tests.
-  wm::WindowState* window_state = wm::GetWindowState(frame_window);
+  WindowState* window_state = WindowState::Get(frame_window);
   // A window may be created as a child window of the toplevel (captive portal).
   // TODO(oshima): It should probably be a transient child rather than normal
   // child. Investigate if we can remove this check.

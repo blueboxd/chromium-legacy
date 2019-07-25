@@ -29,11 +29,8 @@ class Window;
 
 namespace ash {
 class TabletModeController;
-class TabletModeWindowState;
-
-namespace wm {
 class TabletModeEventHandler;
-}
+class TabletModeWindowState;
 
 // A window manager which - when created - will force all windows into maximized
 // mode. Exception are panels and windows which cannot be maximized.
@@ -172,7 +169,7 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // All accounts that have been active at least once since tablet mode started.
   base::flat_set<AccountId> accounts_since_entering_tablet_;
 
-  std::unique_ptr<wm::TabletModeEventHandler> event_handler_;
+  std::unique_ptr<TabletModeEventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeWindowManager);
 };

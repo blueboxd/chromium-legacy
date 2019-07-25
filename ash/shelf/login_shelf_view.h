@@ -14,9 +14,11 @@
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
 #include "ash/public/cpp/login_types.h"
+#include "ash/public/cpp/scoped_guest_button_blocker.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
 #include "ash/tray_action/tray_action_observer.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -66,6 +68,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
     virtual void OnUiUpdate() = 0;
   };
 
+ public:
   explicit LoginShelfView(
       LockScreenActionBackgroundController* lock_screen_action_background);
   ~LoginShelfView() override;
@@ -126,6 +129,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
     return test_ui_update_delegate_.get();
   }
 
+  // Returns scoped object to temporarily block Browse as Guest login button.
+  std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker();
+
  protected:
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;
@@ -145,6 +151,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnLocaleChanged() override;
 
  private:
+  class ScopedGuestButtonBlockerImpl;
+
   bool LockScreenActionBackgroundAnimating() const;
 
   // Updates the visibility of buttons based on state changes, e.g. shutdown
@@ -196,6 +204,11 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // letting events that target the "empty space" pass through. These
   // coordinates are local to the view.
   gfx::Rect button_union_bounds_;
+
+  // Number of active scoped Guest button blockers.
+  int scoped_guest_button_blockers_ = 0;
+
+  base::WeakPtrFactory<LoginShelfView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LoginShelfView);
 };

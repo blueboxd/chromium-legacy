@@ -22,7 +22,6 @@ class LayerTreeOwner;
 }
 
 namespace ash {
-namespace wm {
 
 // A view that mirrors the client area of a single (source) window.
 class ASH_EXPORT WindowMirrorView : public views::View,
@@ -79,7 +78,6 @@ class ASH_EXPORT WindowMirrorView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(WindowMirrorView);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_MIRROR_VIEW_H_

@@ -232,7 +232,7 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     // Use ash's resize handle detection logic if
     // a) ClientControlledShellSurface
     // b) xdg shell is using the server side decoration.
-    if (!ash::wm::GetWindowState(widget_->GetNativeWindow())
+    if (!ash::WindowState::Get(widget_->GetNativeWindow())
              ->allow_set_bounds_direct() &&
         !widget_->non_client_view()->frame_view()->GetVisible()) {
       return false;
@@ -272,13 +272,13 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 // A place holder to disable default implementation created by
 // ash::NonClientFrameViewAsh, which triggers immersive fullscreen etc, which
 // we don't need.
-class CustomWindowStateDelegate : public ash::wm::WindowStateDelegate {
+class CustomWindowStateDelegate : public ash::WindowStateDelegate {
  public:
   CustomWindowStateDelegate() {}
   ~CustomWindowStateDelegate() override {}
 
-  // Overridden from ash::wm::WindowStateDelegate:
-  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  // Overridden from ash::WindowStateDelegate:
+  bool ToggleFullscreen(ash::WindowState* window_state) override {
     return false;
   }
 
@@ -904,7 +904,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 
   // Start tracking changes to window bounds and window state.
   window->AddObserver(this);
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ash::WindowState* window_state = ash::WindowState::Get(window);
   InitializeWindowState(window_state);
 
   // AutoHide shelf in fullscreen state.
@@ -931,8 +931,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 }
 
 bool ShellSurfaceBase::IsResizing() const {
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget_->GetNativeWindow());
+  ash::WindowState* window_state =
+      ash::WindowState::Get(widget_->GetNativeWindow());
   if (!window_state->is_dragged())
     return false;
   return window_state->drag_details() &&
@@ -944,7 +944,7 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
   aura::Window* window = widget_->GetNativeWindow();
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ash::WindowState* window_state = ash::WindowState::Get(window);
   // Return early if the shell is currently managing the bounds of the widget.
   if (!window_state->allow_set_bounds_direct()) {
     // 1) When a window is either maximized/fullscreen/pinned.
@@ -1048,7 +1048,7 @@ views::NonClientFrameView* ShellSurfaceBase::CreateNonClientFrameViewInternal(
   aura::Window* window = widget_->GetNativeWindow();
   // ShellSurfaces always use immersive mode.
   window->SetProperty(ash::kImmersiveIsActive, true);
-  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
+  ash::WindowState* window_state = ash::WindowState::Get(window);
   if (!frame_enabled() && !window_state->HasDelegate()) {
     window_state->SetDelegate(std::make_unique<CustomWindowStateDelegate>());
   }

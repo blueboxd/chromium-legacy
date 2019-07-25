@@ -13,7 +13,6 @@
 #include "ui/events/event.h"
 
 namespace ash {
-namespace wm {
 namespace {
 
 // The height of the area in which a touch operation leads to exiting the
@@ -47,11 +46,11 @@ bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   }
 
   // Find the active window (from the primary screen) to un-fullscreen.
-  aura::Window* window = GetActiveWindow();
+  aura::Window* window = window_util::GetActiveWindow();
   if (!window)
     return false;
 
-  WindowState* window_state = GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   if (!window_state->IsFullscreen() || window_state->IsInImmersiveFullscreen())
     return false;
 
@@ -67,9 +66,8 @@ bool TabletModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
     return false;
 
   WMEvent toggle_fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
-  GetWindowState(window)->OnWMEvent(&toggle_fullscreen);
+  WindowState::Get(window)->OnWMEvent(&toggle_fullscreen);
   return true;
 }
 
-}  // namespace wm
 }  // namespace ash

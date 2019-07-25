@@ -145,7 +145,7 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
       ->home_launcher_gesture_handler()
       ->ShowHomeLauncher(display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(WindowStateType::kMinimized,
-            wm::GetWindowState(w1.get())->GetStateType());
+            WindowState::Get(w1.get())->GetStateType());
   EXPECT_TRUE(GetExpandArrowViewVisibility());
 
   // Activate w2 then close w1. w2 still exists so expand arrow view shows.

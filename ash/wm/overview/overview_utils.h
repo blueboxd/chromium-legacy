@@ -49,7 +49,7 @@ void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget);
 
 // Iterates through all the windows in the transient tree associated with
 // |window| that are visible.
-wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
+WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
     aura::Window* window);
 
 // Calculates the bounds of the |transformed_window|. Those bounds are a union

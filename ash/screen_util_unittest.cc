@@ -238,8 +238,8 @@ TEST_F(ScreenUtilTest, FullscreenWindowBoundsWithDockedMagnifier) {
       Shell::Get()->docked_magnifier_controller();
   docked_magnifier_controller->SetEnabled(true);
 
-  const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window.get())->OnWMEvent(&event);
+  const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window.get())->OnWMEvent(&event);
 
   constexpr gfx::Rect kDisplayBounds{1366, 768};
   EXPECT_NE(window->bounds(), kDisplayBounds);

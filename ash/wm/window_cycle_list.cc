@@ -84,9 +84,9 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
       : window_title_(new views::Label),
         preview_background_(new views::View),
         preview_view_(
-            new wm::WindowPreviewView(window,
-                                      /*trilinear_filtering_on_init=*/
-                                      features::IsTrilinearFilteringEnabled())),
+            new WindowPreviewView(window,
+                                  /*trilinear_filtering_on_init=*/
+                                  features::IsTrilinearFilteringEnabled())),
         window_observer_(this) {
     header_view_ = new views::View();
     views::BoxLayout* layout =
@@ -227,7 +227,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   // (effectively padding the preview to fit the desired bounds).
   views::View* preview_background_;
   // The view that actually renders a thumbnail version of the window.
-  wm::WindowPreviewView* preview_view_;
+  WindowPreviewView* preview_view_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_;
 
@@ -431,7 +431,7 @@ WindowCycleList::~WindowCycleList() {
   if (!windows_.empty() && user_did_accept_) {
     auto* target_window = windows_[current_index_];
     target_window->Show();
-    wm::GetWindowState(target_window)->Activate();
+    WindowState::Get(target_window)->Activate();
   }
 
   if (cycle_ui_widget_)
@@ -455,7 +455,7 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   if (windows_.size() == 1) {
     ::wm::AnimateWindow(windows_[0], ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     windows_[0]->Show();
-    wm::GetWindowState(windows_[0])->Activate();
+    WindowState::Get(windows_[0])->Activate();
     return;
   }
 

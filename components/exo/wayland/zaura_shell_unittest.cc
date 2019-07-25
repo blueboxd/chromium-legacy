@@ -218,7 +218,8 @@ TEST_F(ZAuraSurfaceTest,
 
   // We should have lost focus, but not reported that the window has been
   // fully occluded.
-  EXPECT_NE(parent_widget().GetNativeWindow(), ash::wm::GetActiveWindow());
+  EXPECT_NE(parent_widget().GetNativeWindow(),
+            ash::window_util::GetActiveWindow());
   EXPECT_EQ(0.0f, occlusion_fraction_on_activation_loss());
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
 }

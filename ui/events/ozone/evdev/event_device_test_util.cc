@@ -652,18 +652,18 @@ const DeviceCapabilities kWilsonBeachActiveStylus = {
 const DeviceAbsoluteAxis kEveStylusAbsAxes[] = {
     {ABS_X, {0, 0, 25920, 0, 0, 100}},     {ABS_Y, {0, 0, 17280, 0, 0, 100}},
     {ABS_PRESSURE, {0, 0, 2047, 0, 0, 0}}, {ABS_TILT_X, {0, -90, 90, 0, 0, 57}},
-    {ABS_TILT_Y, {0, -90, 90, 0, 0, 57}},  {ABS_MISC, {0, 0, 255, 0, 0, 0}},
+    {ABS_TILT_Y, {0, -90, 90, 0, 0, 57}},  {ABS_MISC, {0, 0, 65535, 0, 0, 0}},
 };
 const DeviceCapabilities kEveStylus = {
     /* path */
     "/sys/devices/pci0000:00/0000:00:15.0/i2c_designware.0/i2c-6/"
-    "i2c-WCOM50C1:00/0018:2D1F:5134.0001/input/input7/event7",
-    /* name */ "WCOM50C1:00 2D1F:5134 Pen",
-    /* phys */ "",
+    "i2c-WCOM50C1:00/0018:2D1F:5143.0001/input/input5/event5",
+    /* name */ "WCOM50C1:00 2D1F:5143 Pen",
+    /* phys */ "i2c-WCOM50C1:00",
     /* uniq */ "",
     /* bustype */ "0018",
     /* vendor */ "2d1f",
-    /* product */ "5134",
+    /* product */ "5143",
     /* version */ "0100",
     /* prop */ "0",
     /* ev */ "1b",

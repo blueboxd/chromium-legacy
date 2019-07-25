@@ -44,7 +44,7 @@ class ASH_EXPORT WindowResizer {
   static const int kBoundsChangeDirection_Horizontal;
   static const int kBoundsChangeDirection_Vertical;
 
-  explicit WindowResizer(wm::WindowState* window_state);
+  explicit WindowResizer(WindowState* window_state);
   virtual ~WindowResizer();
 
   // Returns a bitmask of the kBoundsChange_ values.
@@ -88,7 +88,7 @@ class ASH_EXPORT WindowResizer {
   void SetBoundsDuringResize(const gfx::Rect& bounds);
 
   // WindowState of the drag target.
-  wm::WindowState* window_state_;
+  WindowState* window_state_;
 
  private:
   // In case of touch resizing, adjusts deltas so that the border is positioned

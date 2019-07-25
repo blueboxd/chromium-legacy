@@ -15,7 +15,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
 
 WindowPreviewView::WindowPreviewView(aura::Window* window,
                                      bool trilinear_filtering_on_init)
@@ -135,5 +134,4 @@ gfx::RectF WindowPreviewView::GetUnionRect() const {
   return gfx::RectF(bounds);
 }
 
-}  // namespace wm
 }  // namespace ash

@@ -13,7 +13,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace wm {
 
 namespace {
 
@@ -79,5 +78,4 @@ bool IsSwitchableContainer(const aura::Window* window) {
   return base::Contains(GetSwitchableContainersIds(), shell_window_id);
 }
 
-}  // namespace wm
 }  // namespace ash

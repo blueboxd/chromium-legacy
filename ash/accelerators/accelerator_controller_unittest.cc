@@ -464,20 +464,20 @@ TEST_F(AcceleratorControllerTest, IsRegistered) {
 TEST_F(AcceleratorControllerTest, WindowSnap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
 
   window_state->Activate();
 
   {
     controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
     gfx::Rect expected_bounds =
-        wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
+        GetDefaultLeftSnappedWindowBoundsInParent(window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
     controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
     gfx::Rect expected_bounds =
-        wm::GetDefaultRightSnappedWindowBoundsInParent(window.get());
+        GetDefaultRightSnappedWindowBoundsInParent(window.get());
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
@@ -520,14 +520,14 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  WindowState* window_state = WindowState::Get(window.get());
   window_state->Activate();
 
   // Snap right.
   controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT, {});
   gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds =
-      wm::GetDefaultRightSnappedWindowBoundsInParent(window.get());
+      GetDefaultRightSnappedWindowBoundsInParent(window.get());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsSnapped());
   // Snap right again ->> becomes normal.
@@ -540,7 +540,7 @@ TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   // Snap left.
   controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
   EXPECT_TRUE(window_state->IsSnapped());
-  expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(window.get());
+  expected_bounds = GetDefaultLeftSnappedWindowBoundsInParent(window.get());
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   // Snap left again ->> becomes normal.
   controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
@@ -670,7 +670,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
       aura::client::kResizeBehaviorCanMaximize);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
-  wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());
+  WindowState* window_state = WindowState::Get(widget->GetNativeView());
 
   // Toggling not suppressed.
   generator->PressKey(ui::VKEY_J, ui::EF_ALT_DOWN);
@@ -1451,8 +1451,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   aura::Window* w2 = CreateTestWindowInShellWithId(1);
   wm::ActivateWindow(w1);
 
-  wm::WMEvent fullscreen(wm::WM_EVENT_FULLSCREEN);
-  wm::WindowState* w1_state = wm::GetWindowState(w1);
+  WMEvent fullscreen(WM_EVENT_FULLSCREEN);
+  WindowState* w1_state = WindowState::Get(w1);
   w1_state->OnWMEvent(&fullscreen);
   ASSERT_TRUE(w1_state->IsFullscreen());
 
@@ -1473,10 +1473,10 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   };
 
   // A fullscreen window can consume ALT-TAB (preferred).
-  ASSERT_EQ(w1, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
   press_and_release_alt_tab();
-  ASSERT_EQ(w1, wm::GetActiveWindow());
-  ASSERT_NE(w2, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
+  ASSERT_NE(w2, window_util::GetActiveWindow());
 
   // ALT-TAB is non repeatable. Press A to cancel the
   // repeat record.
@@ -1484,14 +1484,14 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
   generator->ReleaseKey(ui::VKEY_A, ui::EF_NONE);
 
   // A normal window shouldn't consume preferred accelerator.
-  wm::WMEvent normal(wm::WM_EVENT_NORMAL);
+  WMEvent normal(WM_EVENT_NORMAL);
   w1_state->OnWMEvent(&normal);
   ASSERT_FALSE(w1_state->IsFullscreen());
 
-  EXPECT_EQ(w1, wm::GetActiveWindow());
+  EXPECT_EQ(w1, window_util::GetActiveWindow());
   press_and_release_alt_tab();
-  ASSERT_NE(w1, wm::GetActiveWindow());
-  ASSERT_EQ(w2, wm::GetActiveWindow());
+  ASSERT_NE(w1, window_util::GetActiveWindow());
+  ASSERT_EQ(w2, window_util::GetActiveWindow());
 }
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
@@ -1500,8 +1500,8 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   wm::ActivateWindow(w1);
 
   {
-    wm::WMEvent pin_event(wm::WM_EVENT_PIN);
-    wm::WindowState* w1_state = wm::GetWindowState(w1);
+    WMEvent pin_event(WM_EVENT_PIN);
+    WindowState* w1_state = WindowState::Get(w1);
     w1_state->OnWMEvent(&pin_event);
     ASSERT_TRUE(w1_state->IsPinned());
   }
@@ -1517,11 +1517,11 @@ TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithPinned) {
   EXPECT_TRUE(test_api.PowerButtonMenuTimerIsRunning());
 
   // A pinned window can consume ALT-TAB (preferred), but no side effect.
-  ASSERT_EQ(w1, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
   generator->PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
   generator->ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  ASSERT_EQ(w1, wm::GetActiveWindow());
-  ASSERT_NE(w2, wm::GetActiveWindow());
+  ASSERT_EQ(w1, window_util::GetActiveWindow());
+  ASSERT_NE(w2, window_util::GetActiveWindow());
 }
 
 TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
@@ -2159,7 +2159,7 @@ TEST_P(MediaSessionAcceleratorTest, MediaPlaybackAcceleratorsBehavior) {
 
     // Setting a window property on the target allows media keys to pass
     // through.
-    wm::GetWindowState(window.get())->SetCanConsumeSystemKeys(true);
+    WindowState::Get(window.get())->SetCanConsumeSystemKeys(true);
     {
       ui::KeyEvent press_key(ui::ET_KEY_PRESSED, key, ui::EF_NONE);
       ui::Event::DispatcherApi dispatch_helper(&press_key);

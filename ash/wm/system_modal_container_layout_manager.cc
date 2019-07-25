@@ -195,7 +195,7 @@ bool SystemModalContainerLayoutManager::IsModalBackground(
 
 void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   if (modal_windows_.empty()) {
-    aura::Window* capture_window = wm::GetCaptureWindow();
+    aura::Window* capture_window = window_util::GetCaptureWindow();
     if (capture_window)
       capture_window->ReleaseCapture();
   }

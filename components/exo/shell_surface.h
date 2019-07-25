@@ -20,8 +20,7 @@ class Surface;
 
 // This class implements toplevel surface for which position and state are
 // managed by the shell.
-class ShellSurface : public ShellSurfaceBase,
-                     public ash::wm::WindowStateObserver {
+class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
  public:
   // The |origin| is the initial position in screen coordinates. The position
   // specified as part of the geometry is relative to the shell surface.
@@ -86,7 +85,7 @@ class ShellSurface : public ShellSurfaceBase,
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
 
   // Overridden from ShellSurfaceBase:
-  void InitializeWindowState(ash::wm::WindowState* window_state) override;
+  void InitializeWindowState(ash::WindowState* window_state) override;
   base::Optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
 
@@ -96,10 +95,10 @@ class ShellSurface : public ShellSurfaceBase,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
-  // Overridden from ash::wm::WindowStateObserver:
-  void OnPreWindowStateTypeChange(ash::wm::WindowState* window_state,
+  // Overridden from ash::WindowStateObserver:
+  void OnPreWindowStateTypeChange(ash::WindowState* window_state,
                                   ash::WindowStateType old_type) override;
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+  void OnPostWindowStateTypeChange(ash::WindowState* window_state,
                                    ash::WindowStateType old_type) override;
 
   // Overridden from wm::ActivationChangeObserver:

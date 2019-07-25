@@ -43,8 +43,8 @@ class SplitViewOverviewSessionTest;
 // TODO(xdai): Make it work for multi-display non mirror environment.
 class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                        public aura::WindowObserver,
-                                       public ash::wm::WindowStateObserver,
-                                       public ::wm::ActivationChangeObserver,
+                                       public WindowStateObserver,
+                                       public wm::ActivationChangeObserver,
                                        public ShellObserver,
                                        public OverviewObserver,
                                        public display::DisplayObserver,
@@ -184,8 +184,8 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
                                const void* key,
                                intptr_t old) override;
 
-  // ash::wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(ash::WindowState* window_state,
                                    ash::WindowStateType old_type) override;
 
   // wm::ActivationChangeObserver:

@@ -783,7 +783,7 @@ ui::EventDispatchDetails WindowTreeHostManager::DispatchKeyEventPostIME(
     // Getting the active root window to dispatch the event. This isn't
     // significant as the event will be sent to the window resolved by
     // aura::client::FocusClient which is FocusController in ash.
-    aura::Window* active_window = wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     root_window = active_window ? active_window->GetRootWindow()
                                 : Shell::GetPrimaryRootWindow();
   }

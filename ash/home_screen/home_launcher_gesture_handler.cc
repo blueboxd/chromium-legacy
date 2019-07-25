@@ -226,7 +226,7 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   void ComputeWindowValues(const gfx::RectF& work_area,
                            const gfx::RectF& target_work_area) {
     transient_descendants_values_.clear();
-    for (auto* window : wm::GetTransientTreeIterator(window_)) {
+    for (auto* window : GetTransientTreeIterator(window_)) {
       WindowValues values;
       values.initial_opacity = window->layer()->opacity();
       values.initial_transform = window->transform();
@@ -543,8 +543,8 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
                                     hidden_windows_.size());
     std::copy(hidden_windows_.rbegin(), hidden_windows_.rend(),
               windows_to_hide_minimize.end() - hidden_windows_.size());
-    wm::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize,
-                                             /*minimize=*/true);
+    window_util::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize,
+                                                      /*minimize=*/true);
   } else {
     // Reshow all windows previously hidden.
     for (auto* window : hidden_windows_) {
@@ -782,7 +782,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     // Do not run slide down animation for the |window| if another active
     // window in mru list exists. Windows minimized in clamshell mode may
     // have opacity of 0, so set them to 1 to ensure visibility.
-    if (wm::GetWindowState(window)->IsMinimized())
+    if (WindowState::Get(window)->IsMinimized())
       window->layer()->SetOpacity(1.f);
     active_window_.reset();
     return false;
@@ -904,8 +904,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
         window->AddObserver(this);
       }
     }
-    wm::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
-                                             /*minimize=*/false);
+    window_util::HideAndMaybeMinimizeWithoutAnimation(hidden_windows_,
+                                                      /*minimize=*/false);
   }
 
   return true;

@@ -68,7 +68,7 @@ void ImeModeIndicatorView::ShowAndFadeOut() {
 void ImeModeIndicatorView::OnBeforeBubbleWidgetInit(
     views::Widget::InitParams* params,
     views::Widget* widget) const {
-  aura::Window* window = wm::GetActiveWindow();
+  aura::Window* window = window_util::GetActiveWindow();
   if (window) {  // Null check for tests.
     params->parent = Shell::GetContainer(window->GetRootWindow(),
                                          kShellWindowId_SettingBubbleContainer);

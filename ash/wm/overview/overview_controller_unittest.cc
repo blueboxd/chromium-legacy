@@ -153,7 +153,7 @@ TEST_F(OverviewControllerTest,
       CreateWindowResizer(dragged_window.get(), gfx::Point(), HTCAPTION,
                           ::wm::WINDOW_MOVE_SOURCE_MOUSE);
   resizer->Drag(CalculateDragPoint(*resizer, 10, 0), 0);
-  EXPECT_TRUE(wm::GetWindowState(dragged_window.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(dragged_window.get())->is_dragged());
   GetEventGenerator()->PressKey(ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   resizer->CompleteDrag();
@@ -252,7 +252,7 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationClamshell) {
 
   // Even with all window minimized, there should not be a slide animation.
   ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  wm::GetWindowState(window.get())->Minimize();
+  WindowState::Get(window.get())->Minimize();
   Shell::Get()->overview_controller()->StartOverview();
   EXPECT_FALSE(observer.last_animation_was_slide());
 }
@@ -281,7 +281,7 @@ TEST_F(OverviewControllerTest, OverviewEnterExitAnimationTablet) {
       OverviewSession::EnterExitOverviewType::kSlideOutExit);
   EXPECT_TRUE(observer.last_animation_was_slide());
   ASSERT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
 
   // All windows are minimized, so we should use the slide animation.
   Shell::Get()->overview_controller()->StartOverview();
@@ -340,7 +340,7 @@ TEST_F(OverviewControllerTest, OcclusionTest) {
   Shell::Get()->overview_controller()->StartOverview();
   EXPECT_EQ(OcclusionState::OCCLUDED, window1->occlusion_state());
   EXPECT_EQ(OcclusionState::VISIBLE, window2->occlusion_state());
-  auto* active = wm::GetActiveWindow();
+  auto* active = window_util::GetActiveWindow();
   EXPECT_EQ(window2.get(), active);
 
   observer.WaitForStartingAnimationComplete();

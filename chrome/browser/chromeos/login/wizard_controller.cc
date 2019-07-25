@@ -1131,6 +1131,9 @@ void WizardController::OnDeviceModificationCanceled() {
   if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
   } else {
+    if (current_screen_)
+      current_screen_->Hide();
+
     ShowLoginScreen(LoginScreenContext());
   }
 }

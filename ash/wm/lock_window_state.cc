@@ -25,54 +25,54 @@
 namespace ash {
 
 LockWindowState::LockWindowState(aura::Window* window, bool exclude_shelf)
-    : current_state_type_(wm::GetWindowState(window)->GetStateType()),
+    : current_state_type_(WindowState::Get(window)->GetStateType()),
       exclude_shelf_(exclude_shelf) {}
 
 LockWindowState::~LockWindowState() = default;
 
-void LockWindowState::OnWMEvent(wm::WindowState* window_state,
-                                const wm::WMEvent* event) {
+void LockWindowState::OnWMEvent(WindowState* window_state,
+                                const WMEvent* event) {
   switch (event->type()) {
-    case wm::WM_EVENT_TOGGLE_FULLSCREEN:
+    case WM_EVENT_TOGGLE_FULLSCREEN:
       ToggleFullScreen(window_state, window_state->delegate());
       break;
-    case wm::WM_EVENT_FULLSCREEN:
+    case WM_EVENT_FULLSCREEN:
       UpdateWindow(window_state, WindowStateType::kFullscreen);
       break;
-    case wm::WM_EVENT_PIP:
-    case wm::WM_EVENT_PIN:
-    case wm::WM_EVENT_TRUSTED_PIN:
+    case WM_EVENT_PIP:
+    case WM_EVENT_PIN:
+    case WM_EVENT_TRUSTED_PIN:
       NOTREACHED();
       break;
-    case wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
-    case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
-    case wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
-    case wm::WM_EVENT_TOGGLE_MAXIMIZE:
-    case wm::WM_EVENT_CYCLE_SNAP_LEFT:
-    case wm::WM_EVENT_CYCLE_SNAP_RIGHT:
-    case wm::WM_EVENT_CENTER:
-    case wm::WM_EVENT_SNAP_LEFT:
-    case wm::WM_EVENT_SNAP_RIGHT:
-    case wm::WM_EVENT_NORMAL:
-    case wm::WM_EVENT_MAXIMIZE:
+    case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
+    case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
+    case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
+    case WM_EVENT_TOGGLE_MAXIMIZE:
+    case WM_EVENT_CYCLE_SNAP_LEFT:
+    case WM_EVENT_CYCLE_SNAP_RIGHT:
+    case WM_EVENT_CENTER:
+    case WM_EVENT_SNAP_LEFT:
+    case WM_EVENT_SNAP_RIGHT:
+    case WM_EVENT_NORMAL:
+    case WM_EVENT_MAXIMIZE:
       UpdateWindow(window_state,
                    GetMaximizedOrCenteredWindowType(window_state));
       return;
-    case wm::WM_EVENT_MINIMIZE:
+    case WM_EVENT_MINIMIZE:
       UpdateWindow(window_state, WindowStateType::kMinimized);
       return;
-    case wm::WM_EVENT_SHOW_INACTIVE:
+    case WM_EVENT_SHOW_INACTIVE:
       return;
-    case wm::WM_EVENT_SET_BOUNDS:
+    case WM_EVENT_SET_BOUNDS:
       if (window_state->IsMaximized() || window_state->IsFullscreen()) {
         UpdateBounds(window_state);
       } else {
-        const ash::wm::SetBoundsEvent* bounds_event =
-            static_cast<const ash::wm::SetBoundsEvent*>(event);
+        const ash::SetBoundsWMEvent* bounds_event =
+            static_cast<const ash::SetBoundsWMEvent*>(event);
         window_state->SetBoundsConstrained(bounds_event->requested_bounds());
       }
       break;
-    case wm::WM_EVENT_ADDED_TO_WORKSPACE:
+    case WM_EVENT_ADDED_TO_WORKSPACE:
       if (current_state_type_ != WindowStateType::kMaximized &&
           current_state_type_ != WindowStateType::kMinimized &&
           current_state_type_ != WindowStateType::kFullscreen) {
@@ -82,11 +82,11 @@ void LockWindowState::OnWMEvent(wm::WindowState* window_state,
         UpdateBounds(window_state);
       }
       break;
-    case wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED:
-    case wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED:
+    case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
+    case WM_EVENT_DISPLAY_BOUNDS_CHANGED:
       UpdateBounds(window_state);
       break;
-    case wm::WM_EVENT_SYSTEM_UI_AREA_CHANGED:
+    case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
       return;
   }
 }
@@ -95,8 +95,8 @@ WindowStateType LockWindowState::GetType() const {
   return current_state_type_;
 }
 
-void LockWindowState::AttachState(wm::WindowState* window_state,
-                                  wm::WindowState::State* previous_state) {
+void LockWindowState::AttachState(WindowState* window_state,
+                                  WindowState::State* previous_state) {
   current_state_type_ = previous_state->GetType();
 
   // Initialize the state to a good preset.
@@ -107,30 +107,30 @@ void LockWindowState::AttachState(wm::WindowState* window_state,
   }
 }
 
-void LockWindowState::DetachState(wm::WindowState* window_state) {}
+void LockWindowState::DetachState(WindowState* window_state) {}
 
 // static
-wm::WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
-  std::unique_ptr<wm::WindowState::State> lock_state =
+WindowState* LockWindowState::SetLockWindowState(aura::Window* window) {
+  std::unique_ptr<WindowState::State> lock_state =
       std::make_unique<LockWindowState>(window, false);
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  std::unique_ptr<wm::WindowState::State> old_state(
+  WindowState* window_state = WindowState::Get(window);
+  std::unique_ptr<WindowState::State> old_state(
       window_state->SetStateObject(std::move(lock_state)));
   return window_state;
 }
 
 // static
-wm::WindowState* LockWindowState::SetLockWindowStateWithShelfExcluded(
+WindowState* LockWindowState::SetLockWindowStateWithShelfExcluded(
     aura::Window* window) {
-  std::unique_ptr<wm::WindowState::State> lock_state =
+  std::unique_ptr<WindowState::State> lock_state =
       std::make_unique<LockWindowState>(window, true);
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  std::unique_ptr<wm::WindowState::State> old_state(
+  WindowState* window_state = WindowState::Get(window);
+  std::unique_ptr<WindowState::State> old_state(
       window_state->SetStateObject(std::move(lock_state)));
   return window_state;
 }
 
-void LockWindowState::UpdateWindow(wm::WindowState* window_state,
+void LockWindowState::UpdateWindow(WindowState* window_state,
                                    WindowStateType target_state) {
   DCHECK(target_state == WindowStateType::kMinimized ||
          target_state == WindowStateType::kMaximized ||
@@ -144,7 +144,7 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
 
     current_state_type_ = target_state;
     ::wm::SetWindowVisibilityAnimationType(
-        window_state->window(), wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+        window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
     window_state->window()->Hide();
     if (window_state->IsActive())
       window_state->Deactivate();
@@ -174,7 +174,7 @@ void LockWindowState::UpdateWindow(wm::WindowState* window_state,
 }
 
 WindowStateType LockWindowState::GetMaximizedOrCenteredWindowType(
-    wm::WindowState* window_state) {
+    WindowState* window_state) {
   return window_state->CanMaximize() ? WindowStateType::kMaximized
                                      : WindowStateType::kNormal;
 }
@@ -196,7 +196,7 @@ gfx::Rect LockWindowState::GetWindowBounds(aura::Window* window) {
   return bounds;
 }
 
-void LockWindowState::UpdateBounds(wm::WindowState* window_state) {
+void LockWindowState::UpdateBounds(WindowState* window_state) {
   if (!window_state->IsMaximized() && !window_state->IsFullscreen())
     return;
 

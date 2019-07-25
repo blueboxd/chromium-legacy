@@ -23,10 +23,7 @@ class View;
 
 namespace ash {
 class RoundedRectView;
-
-namespace wm {
 class WindowPreviewView;
-}  // namespace wm
 
 // CaptionContainerView covers the overview window and listens for events. It
 // also draws a header for overview mode which contains a icon, title and close
@@ -109,7 +106,7 @@ class ASH_EXPORT CaptionContainerView
   views::View* header_view() { return header_view_; }
   views::Label* title_label() { return title_label_; }
   RoundedRectView* backdrop_view() { return backdrop_view_; }
-  wm::WindowPreviewView* preview_view() { return preview_view_; }
+  WindowPreviewView* preview_view() { return preview_view_; }
 
  protected:
   // views::View:
@@ -141,7 +138,7 @@ class ASH_EXPORT CaptionContainerView
   RoundedRectView* backdrop_view_ = nullptr;
 
   // Optionally shows a preview of |window_|.
-  wm::WindowPreviewView* preview_view_ = nullptr;
+  WindowPreviewView* preview_view_ = nullptr;
 
   HeaderVisibility current_header_visibility_ = HeaderVisibility::kVisible;
 

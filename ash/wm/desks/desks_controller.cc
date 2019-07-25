@@ -57,7 +57,7 @@ void AppendWindowsToOverview(const std::vector<aura::Window*>& windows,
   for (auto* window :
        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk)) {
     if (!base::Contains(windows, window) ||
-        wm::ShouldExcludeForOverview(window)) {
+        window_util::ShouldExcludeForOverview(window)) {
       continue;
     }
 

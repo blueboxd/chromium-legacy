@@ -13,7 +13,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
-namespace wm {
 
 // WMEventType defines a set of operations that can change the
 // window's state type and bounds.
@@ -142,14 +141,14 @@ class ASH_EXPORT WMEvent {
 };
 
 // An WMEvent to request new bounds for the window.
-class ASH_EXPORT SetBoundsEvent : public WMEvent {
+class ASH_EXPORT SetBoundsWMEvent : public WMEvent {
  public:
-  SetBoundsEvent(
+  SetBoundsWMEvent(
       const gfx::Rect& requested_bounds,
       bool animate = false,
       base::TimeDelta duration = WindowState::kBoundsChangeSlideDuration);
-  SetBoundsEvent(const gfx::Rect& requested_bounds, int64_t display_id);
-  ~SetBoundsEvent() override;
+  SetBoundsWMEvent(const gfx::Rect& requested_bounds, int64_t display_id);
+  ~SetBoundsWMEvent() override;
 
   const gfx::Rect& requested_bounds() const { return requested_bounds_; }
 
@@ -165,10 +164,9 @@ class ASH_EXPORT SetBoundsEvent : public WMEvent {
   const bool animate_;
   const base::TimeDelta duration_;
 
-  DISALLOW_COPY_AND_ASSIGN(SetBoundsEvent);
+  DISALLOW_COPY_AND_ASSIGN(SetBoundsWMEvent);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WM_EVENT_H_

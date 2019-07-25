@@ -26,7 +26,7 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   // Creates DragWindowResizer that adds the ability of dragging windows across
   // displays to |next_window_resizer|.
   DragWindowResizer(std::unique_ptr<WindowResizer> next_window_resizer,
-                    wm::WindowState* window_state);
+                    WindowState* window_state);
   ~DragWindowResizer() override;
 
   // WindowResizer:

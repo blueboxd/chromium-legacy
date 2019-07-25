@@ -11,7 +11,6 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/screen_pinning_controller.h"
-#include "ash/wm/window_parenting_utils.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -26,7 +25,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
 namespace {
 
 // This specifies how much percent (30%) of a window rect
@@ -102,10 +100,10 @@ void DefaultState::AttachState(WindowState* window_state,
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           window_state->window());
   if (stored_display_state_.bounds() != current_display.bounds()) {
-    const WMEvent event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const WMEvent event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     window_state->OnWMEvent(&event);
   } else if (stored_display_state_.work_area() != current_display.work_area()) {
-    const WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+    const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
     window_state->OnWMEvent(&event);
   }
 }
@@ -163,10 +161,10 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       // visibility which should be enough to see where the window gets
       // moved.
       gfx::Rect display_area = screen_util::GetDisplayBoundsInParent(window);
-      int min_width = bounds.width() * wm::kMinimumPercentOnScreenArea;
-      int min_height = bounds.height() * wm::kMinimumPercentOnScreenArea;
-      wm::AdjustBoundsToEnsureWindowVisibility(display_area, min_width,
-                                               min_height, &bounds);
+      int min_width = bounds.width() * kMinimumPercentOnScreenArea;
+      int min_height = bounds.height() * kMinimumPercentOnScreenArea;
+      AdjustBoundsToEnsureWindowVisibility(display_area, min_width, min_height,
+                                           &bounds);
       window_state->AdjustSnappedBounds(&bounds);
       if (window->bounds() != bounds)
         window_state->SetBoundsConstrained(bounds);
@@ -199,7 +197,7 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
           GetActiveWorkspaceController(window_state->window()->GetRootWindow());
       DCHECK(workspace_controller);
       bool in_fullscreen = workspace_controller->GetWindowState() ==
-                           WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+                           WorkspaceWindowState::kFullscreen;
       if (in_fullscreen && window_state->IsMaximized())
         return;
 
@@ -212,8 +210,8 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
           screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
       gfx::Rect bounds = window_state->window()->GetTargetBounds();
       if (!::wm::GetTransientParent(window_state->window())) {
-        wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                        &bounds);
+        AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                    &bounds);
       }
       window_state->AdjustSnappedBounds(&bounds);
       if (window_state->window()->GetTargetBounds() != bounds)
@@ -234,7 +232,7 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
   switch (event->type()) {
     case WM_EVENT_TOGGLE_MAXIMIZE_CAPTION:
       if (window_state->IsFullscreen()) {
-        const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
         window_state->OnWMEvent(&event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
@@ -245,7 +243,7 @@ void DefaultState::HandleCompoundEvents(WindowState* window_state,
       return;
     case WM_EVENT_TOGGLE_MAXIMIZE:
       if (window_state->IsFullscreen()) {
-        const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+        const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
         window_state->OnWMEvent(&event);
       } else if (window_state->IsMaximized()) {
         window_state->Restore();
@@ -329,8 +327,8 @@ void DefaultState::HandleBoundsEvents(WindowState* window_state,
                                       const WMEvent* event) {
   switch (event->type()) {
     case WM_EVENT_SET_BOUNDS: {
-      const SetBoundsEvent* set_bounds_event =
-          static_cast<const SetBoundsEvent*>(event);
+      const SetBoundsWMEvent* set_bounds_event =
+          static_cast<const SetBoundsWMEvent*>(event);
       SetBounds(window_state, set_bounds_event);
     } break;
     case WM_EVENT_CENTER:
@@ -394,7 +392,7 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
 
 // static
 void DefaultState::SetBounds(WindowState* window_state,
-                             const SetBoundsEvent* event) {
+                             const SetBoundsWMEvent* event) {
   if (window_state->is_dragged() || window_state->allow_set_bounds_direct()) {
     if (event->animate()) {
       window_state->SetBoundsDirectAnimated(event->requested_bounds(),
@@ -556,8 +554,8 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
         // Avoid doing this while the window is being dragged as its root
         // window hasn't been updated yet in the case of dragging to another
         // display. crbug.com/666836.
-        wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                        &bounds_in_parent);
+        AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                    &bounds_in_parent);
       }
       break;
     }
@@ -602,5 +600,4 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
   }
 }
 
-}  // namespace wm
 }  // namespace ash

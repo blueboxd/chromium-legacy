@@ -7,12 +7,11 @@
 
 #include <memory>
 
+#include "components/optimization_guide/proto/hints.pb.h"
+
 namespace optimization_guide {
 
 struct HintsComponentInfo;
-namespace proto {
-class Configuration;
-}  // namespace proto
 
 // Enumerates the possible outcomes of processing the hints component.
 //
@@ -34,6 +33,27 @@ enum class ProcessHintsComponentResult {
 
 // Records the ProcessHintsComponentResult to UMA.
 void RecordProcessHintsComponentResult(ProcessHintsComponentResult result);
+
+// Enumerates status event of processing optimization filters (such as the
+// lite page redirect blacklist). Used in UMA histograms, so the order of
+// enumerators should not be changed.
+//
+// Keep in sync with OptimizationGuideOptimizationFilterStatus in
+// tools/metrics/histograms/enums.xml.
+enum class OptimizationFilterStatus {
+  kFoundServerBlacklistConfig,
+  kCreatedServerBlacklist,
+  kFailedServerBlacklistBadConfig,
+  kFailedServerBlacklistTooBig,
+  kFailedServerBlacklistDuplicateConfig,
+
+  // Insert new values before this line.
+  kMaxValue = kFailedServerBlacklistDuplicateConfig,
+};
+
+// Records the OptimizationFilterStatus to UMA.
+void RecordOptimizationFilterStatus(proto::OptimizationType optimization_type,
+                                    OptimizationFilterStatus status);
 
 // Processes the specified hints component.
 //

@@ -205,15 +205,15 @@ OverviewItem::OverviewItem(aura::Window* window,
       overview_session_(overview_session),
       overview_grid_(overview_grid) {
   CreateWindowLabel();
-  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
-           wm::WindowTransientDescendantIterator(GetWindow()))) {
+  for (auto* window_iter : WindowTransientDescendantIteratorRange(
+           WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->AddObserver(this);
   }
 }
 
 OverviewItem::~OverviewItem() {
-  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
-           wm::WindowTransientDescendantIterator(GetWindow()))) {
+  for (auto* window_iter : WindowTransientDescendantIteratorRange(
+           WindowTransientDescendantIterator(GetWindow()))) {
     window_iter->RemoveObserver(this);
   }
 }
@@ -889,8 +889,8 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
 
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
   // Stops observing the window and all of its transient descendents.
-  for (auto* window_iter : wm::WindowTransientDescendantIteratorRange(
-           wm::WindowTransientDescendantIterator(window))) {
+  for (auto* window_iter : WindowTransientDescendantIteratorRange(
+           WindowTransientDescendantIterator(window))) {
     window_iter->RemoveObserver(this);
   }
   if (window != GetWindow())
@@ -952,7 +952,7 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   // Do not set transform for drop target, set bounds instead.
   if (overview_grid_->IsDropTargetWindow(window)) {
     window->SetBoundsInScreen(gfx::ToEnclosedRect(overview_item_bounds),
-                              wm::GetWindowState(window)->GetDisplay());
+                              WindowState::Get(window)->GetDisplay());
     window->SetTransform(gfx::Transform());
     return;
   }
@@ -1069,7 +1069,7 @@ void OverviewItem::StartDrag() {
 aura::Window::Windows OverviewItem::GetWindowsForHomeGesture() {
   aura::Window::Windows windows = {item_widget_->GetNativeWindow()};
   if (!transform_window_.IsMinimized()) {
-    for (auto* window : wm::GetTransientTreeIterator(GetWindow()))
+    for (auto* window : GetTransientTreeIterator(GetWindow()))
       windows.push_back(window);
   }
   if (cannot_snap_widget_)

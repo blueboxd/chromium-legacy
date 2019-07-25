@@ -56,10 +56,8 @@ class AutoclickScrollView : public views::View {
   };
 
   // The amount of time to wait during a hover over a scroll pad button before
-  // requesting that Autoclick Controller perform a scroll. Decreasing this
-  // below about 100 causes a smooth scroll due to the amount of time scroll
-  // animation takes. Visible for tests.
-  const static int kAutoclickScrollDelayMs = 250;
+  // requesting that Autoclick Controller perform a scroll. Visible for tests.
+  const static int kAutoclickScrollDelayMs = 50;
 
   AutoclickScrollView();
   ~AutoclickScrollView() override = default;

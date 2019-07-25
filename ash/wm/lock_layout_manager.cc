@@ -17,7 +17,7 @@
 namespace ash {
 
 LockLayoutManager::LockLayoutManager(aura::Window* window, Shelf* shelf)
-    : wm::WmDefaultLayoutManager(),
+    : WmDefaultLayoutManager(),
       window_(window),
       root_window_(window->GetRootWindow()),
       shelf_observer_(this) {
@@ -40,7 +40,7 @@ LockLayoutManager::~LockLayoutManager() {
 }
 
 void LockLayoutManager::OnWindowResized() {
-  const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+  const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
   AdjustWindowsForWorkAreaChange(&event);
 }
 
@@ -48,8 +48,8 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   child->AddObserver(this);
 
   // LockWindowState replaces default WindowState of a child.
-  wm::WindowState* window_state = LockWindowState::SetLockWindowState(child);
-  wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
+  WindowState* window_state = LockWindowState::SetLockWindowState(child);
+  WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
 
   aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
@@ -79,8 +79,8 @@ void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
 void LockLayoutManager::SetChildBounds(aura::Window* child,
                                        const gfx::Rect& requested_bounds) {
-  wm::WindowState* window_state = wm::GetWindowState(child);
-  wm::SetBoundsEvent event(requested_bounds);
+  WindowState* window_state = WindowState::Get(child);
+  SetBoundsWMEvent event(requested_bounds);
   window_state->OnWMEvent(&event);
 }
 
@@ -95,7 +95,7 @@ void LockLayoutManager::OnWindowBoundsChanged(aura::Window* window,
                                               const gfx::Rect& new_bounds,
                                               ui::PropertyChangeReason reason) {
   if (root_window_ == window) {
-    const wm::WMEvent wm_event(wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED);
+    const WMEvent wm_event(WM_EVENT_DISPLAY_BOUNDS_CHANGED);
     AdjustWindowsForWorkAreaChange(&wm_event);
   }
 }
@@ -110,7 +110,7 @@ void LockLayoutManager::WillChangeVisibilityState(
   //    screen_util::GetDisplayWorkAreaBoundsInParentForLockScreen).
   // In short, when shelf bounds change, the windows in this layout manager
   // should be updated, too.
-  const wm::WMEvent event(wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+  const WMEvent event(WM_EVENT_WORKAREA_BOUNDS_CHANGED);
   AdjustWindowsForWorkAreaChange(&event);
 }
 
@@ -119,13 +119,12 @@ void LockLayoutManager::OnKeyboardOccludedBoundsChanged(
   OnWindowResized();
 }
 
-void LockLayoutManager::AdjustWindowsForWorkAreaChange(
-    const wm::WMEvent* event) {
-  DCHECK(event->type() == wm::WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
-         event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED);
+void LockLayoutManager::AdjustWindowsForWorkAreaChange(const WMEvent* event) {
+  DCHECK(event->type() == WM_EVENT_DISPLAY_BOUNDS_CHANGED ||
+         event->type() == WM_EVENT_WORKAREA_BOUNDS_CHANGED);
 
   for (aura::Window* child : window_->children())
-    wm::GetWindowState(child)->OnWMEvent(event);
+    WindowState::Get(child)->OnWMEvent(event);
 }
 
 }  // namespace ash

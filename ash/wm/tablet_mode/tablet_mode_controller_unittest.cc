@@ -164,16 +164,16 @@ class TabletModeControllerTest : public AshTestBase {
   // Creates a test window snapped on the left in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
-    wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
-    wm::GetWindowState(window.get())->OnWMEvent(&snap_to_left);
+    WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
+    WindowState::Get(window.get())->OnWMEvent(&snap_to_left);
     return window;
   }
 
   // Creates a test window snapped on the right in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedRight() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
-    wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
-    wm::GetWindowState(window.get())->OnWMEvent(&snap_to_right);
+    WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
+    WindowState::Get(window.get())->OnWMEvent(&snap_to_right);
     return window;
   }
 
@@ -1134,7 +1134,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveNoSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateTestWindow();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1146,7 +1146,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->left_window());
@@ -1159,7 +1159,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kRightSnapped, split_view_controller->state());
   EXPECT_EQ(window.get(), split_view_controller->right_window());
@@ -1175,7 +1175,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousRightSnap) {
   std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(left_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
@@ -1192,7 +1192,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveRightSnapPreviousLeftSnap) {
   std::unique_ptr<aura::Window> left_window = CreateDesktopWindowSnappedLeft();
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(left_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
@@ -1212,7 +1212,7 @@ TEST_F(TabletModeControllerTest,
                            static_cast<int>(AppType::ARC_APP));
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(left_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1233,8 +1233,8 @@ TEST_F(TabletModeControllerTest,
                             static_cast<int>(AppType::ARC_APP));
   std::unique_ptr<aura::Window> extra_right_window =
       CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(right_window.get());
-  ::wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(right_window.get());
+  wm::ActivateWindow(left_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
@@ -1251,8 +1251,8 @@ TEST_F(TabletModeControllerTest, StartTabletActiveTransientChildOfLeftSnap) {
   std::unique_ptr<aura::Window> child =
       CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP);
   ::wm::AddTransientChild(parent.get(), child.get());
-  ::wm::ActivateWindow(parent.get());
-  ::wm::ActivateWindow(child.get());
+  wm::ActivateWindow(parent.get());
+  wm::ActivateWindow(child.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(parent.get(), split_view_controller->left_window());
@@ -1266,9 +1266,9 @@ TEST_F(TabletModeControllerTest, StartTabletActiveAppListPreviousLeftSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   Shell::Get()->app_list_controller()->ShowAppList();
-  ASSERT_TRUE(::wm::IsActiveWindow(
+  ASSERT_TRUE(wm::IsActiveWindow(
       GetAppListTestHelper()->GetAppListView()->GetWidget()->GetNativeView()));
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
@@ -1283,8 +1283,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   SplitViewController* split_view_controller =
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> dragged_window = CreateTestWindow();
-  wm::WindowState* dragged_window_state =
-      wm::GetWindowState(dragged_window.get());
+  WindowState* dragged_window_state = WindowState::Get(dragged_window.get());
   dragged_window_state->CreateDragDetails(
       gfx::Point(), HTNOWHERE,
       ::wm::WindowMoveSource::WINDOW_MOVE_SOURCE_MOUSE);
@@ -1292,8 +1291,8 @@ TEST_F(TabletModeControllerTest, StartTabletActiveDraggedPreviousLeftSnap) {
   ASSERT_TRUE(dragged_window_state->is_dragged());
   std::unique_ptr<aura::Window> snapped_window =
       CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(snapped_window.get());
-  ::wm::ActivateWindow(dragged_window.get());
+  wm::ActivateWindow(snapped_window.get());
+  wm::ActivateWindow(dragged_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
@@ -1312,8 +1311,8 @@ TEST_F(TabletModeControllerTest,
   window_hidden_from_overview->SetProperty(kHideInOverviewKey, true);
   std::unique_ptr<aura::Window> snapped_window =
       CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(snapped_window.get());
-  ::wm::ActivateWindow(window_hidden_from_overview.get());
+  wm::ActivateWindow(snapped_window.get());
+  wm::ActivateWindow(window_hidden_from_overview.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(snapped_window.get(), split_view_controller->left_window());
@@ -1335,15 +1334,15 @@ TEST_F(TabletModeControllerTest,
           left_window.get());
   left_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  wm::WindowState* left_window_state = wm::GetWindowState(left_window.get());
+  WindowState* left_window_state = WindowState::Get(left_window.get());
   ASSERT_TRUE(left_window_state->CanSnap());
   ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
-  wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
   left_window_state->OnWMEvent(&snap_to_left);
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(right_window.get());
-  ::wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(right_window.get());
+  wm::ActivateWindow(left_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1367,13 +1366,13 @@ TEST_F(TabletModeControllerTest,
           right_window.get());
   right_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  wm::WindowState* right_window_state = wm::GetWindowState(right_window.get());
+  WindowState* right_window_state = WindowState::Get(right_window.get());
   ASSERT_TRUE(right_window_state->CanSnap());
   ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
-  wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+  WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
   right_window_state->OnWMEvent(&snap_to_right);
-  ::wm::ActivateWindow(left_window.get());
-  ::wm::ActivateWindow(right_window.get());
+  wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(right_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
@@ -1398,13 +1397,13 @@ TEST_F(TabletModeControllerTest,
           right_window.get());
   right_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  wm::WindowState* right_window_state = wm::GetWindowState(right_window.get());
+  WindowState* right_window_state = WindowState::Get(right_window.get());
   ASSERT_TRUE(right_window_state->CanSnap());
   ASSERT_FALSE(CanSnapInSplitview(right_window.get()));
-  wm::WMEvent snap_to_right(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
+  WMEvent snap_to_right(WM_EVENT_CYCLE_SNAP_RIGHT);
   right_window_state->OnWMEvent(&snap_to_right);
-  ::wm::ActivateWindow(right_window.get());
-  ::wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(right_window.get());
+  wm::ActivateWindow(left_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(left_window.get(), split_view_controller->left_window());
@@ -1427,15 +1426,15 @@ TEST_F(TabletModeControllerTest,
           left_window.get());
   left_window_delegate.set_minimum_size(
       gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
-  wm::WindowState* left_window_state = wm::GetWindowState(left_window.get());
+  WindowState* left_window_state = WindowState::Get(left_window.get());
   ASSERT_TRUE(left_window_state->CanSnap());
   ASSERT_FALSE(CanSnapInSplitview(left_window.get()));
-  wm::WMEvent snap_to_left(wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  WMEvent snap_to_left(WM_EVENT_CYCLE_SNAP_LEFT);
   left_window_state->OnWMEvent(&snap_to_left);
   std::unique_ptr<aura::Window> right_window =
       CreateDesktopWindowSnappedRight();
-  ::wm::ActivateWindow(left_window.get());
-  ::wm::ActivateWindow(right_window.get());
+  wm::ActivateWindow(left_window.get());
+  wm::ActivateWindow(right_window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kRightSnapped, split_view_controller->state());
   EXPECT_EQ(right_window.get(), split_view_controller->right_window());
@@ -1448,7 +1447,7 @@ TEST_F(TabletModeControllerTest, AppListWorksAfterEnteringTabletForOverview) {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
   std::unique_ptr<aura::Window> window = CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   app_list_controller->ShowAppList();
   EXPECT_TRUE(app_list_controller->IsVisible());
@@ -1463,7 +1462,7 @@ TEST_F(TabletModeControllerTest, StartTabletActiveLeftSnapPreviousLeftSnap) {
       Shell::Get()->split_view_controller();
   std::unique_ptr<aura::Window> window1 = CreateDesktopWindowSnappedLeft();
   std::unique_ptr<aura::Window> window2 = CreateDesktopWindowSnappedLeft();
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   tablet_mode_controller()->SetEnabledForTest(true);
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
   EXPECT_EQ(window1.get(), split_view_controller->left_window());
@@ -1478,7 +1477,7 @@ TEST_F(TabletModeControllerTest,
       Shell::Get()->split_view_controller();
   tablet_mode_controller()->SetEnabledForTest(true);
   std::unique_ptr<aura::Window> window = CreateTestWindow();
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(Shell::Get()->overview_controller()->StartOverview());
 }
@@ -1536,7 +1535,7 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   {
     SCOPED_TRACE("Window is maximized");
-    wm::GetWindowState(window.get())->Maximize();
+    WindowState::Get(window.get())->Maximize();
     window->layer()->GetAnimator()->StopAnimating();
     tablet_mode_controller()->SetEnabledForTest(true);
     EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());

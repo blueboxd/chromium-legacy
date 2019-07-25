@@ -127,7 +127,7 @@ class ResizeShadowAndCursorTest : public AshTestBase {
 // mouse's position.
 TEST_F(ResizeShadowAndCursorTest, MouseHover) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
+  ASSERT_TRUE(ash::WindowState::Get(window())->IsNormalStateType());
 
   generator.MoveMouseTo(50, 50);
   VerifyResizeShadow(false);
@@ -175,7 +175,7 @@ TEST_F(ResizeShadowAndCursorTest, MouseHover) {
 // as long as a user is resizing a window.
 TEST_F(ResizeShadowAndCursorTest, MouseDrag) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
+  ASSERT_TRUE(ash::WindowState::Get(window())->IsNormalStateType());
   gfx::Size initial_size(window()->bounds().size());
 
   generator.MoveMouseTo(200, 50);
@@ -200,7 +200,7 @@ TEST_F(ResizeShadowAndCursorTest, MouseDrag) {
 
 // Test that the resize shadows stay visible while resizing a window via touch.
 TEST_F(ResizeShadowAndCursorTest, Touch) {
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
+  ASSERT_TRUE(ash::WindowState::Get(window())->IsNormalStateType());
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   int start_x = 200 + ash::kResizeOutsideBoundsSize - 1;
@@ -217,7 +217,7 @@ TEST_F(ResizeShadowAndCursorTest, Touch) {
 // used when the window is maximized.
 TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
+  ASSERT_TRUE(ash::WindowState::Get(window())->IsNormalStateType());
 
   generator.MoveMouseTo(200, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
@@ -226,7 +226,7 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::CursorType::kEastResize, GetCurrentCursorType());
 
-  ash::wm::GetWindowState(window())->Maximize();
+  ash::WindowState::Get(window())->Maximize();
   gfx::Rect bounds(window()->GetBoundsInRootWindow());
   gfx::Point right_center(bounds.right() - 1,
                           (bounds.y() + bounds.bottom()) / 2);
@@ -234,7 +234,7 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
   VerifyResizeShadow(false);
   EXPECT_EQ(ui::CursorType::kNull, GetCurrentCursorType());
 
-  ash::wm::GetWindowState(window())->Restore();
+  ash::WindowState::Get(window())->Restore();
   generator.MoveMouseTo(200, 50);
   EXPECT_EQ(HTRIGHT, ResizeShadowHitTest());
   EXPECT_EQ(ui::CursorType::kEastResize, GetCurrentCursorType());
@@ -247,15 +247,15 @@ TEST_F(ResizeShadowAndCursorTest, MaximizeRestore) {
 // for crbug.com/752583
 TEST_F(ResizeShadowAndCursorTest, Minimize) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
-  ASSERT_TRUE(ash::wm::GetWindowState(window())->IsNormalStateType());
+  ASSERT_TRUE(ash::WindowState::Get(window())->IsNormalStateType());
 
   generator.MoveMouseTo(200, 50);
   VerifyResizeShadow(true);
 
-  ash::wm::GetWindowState(window())->Minimize();
+  ash::WindowState::Get(window())->Minimize();
   VerifyResizeShadow(false);
 
-  ash::wm::GetWindowState(window())->Restore();
+  ash::WindowState::Get(window())->Restore();
   VerifyResizeShadow(false);
 }
 

@@ -327,7 +327,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // A hidden window that receives focus while in overview mode. It is needed
   // because accessibility needs something focused for it to work and we cannot
-  // use one of the overview windows otherwise ::wm::ActivateWindow will not
+  // use one of the overview windows otherwise wm::ActivateWindow will not
   // work.
   // TODO(sammiequon): Investigate if we can focus the |selection_widget_| in
   // OverviewGrid when it is created, or if we can focus a widget from the

@@ -121,7 +121,7 @@ bool OverviewButtonTray::PerformAction(const ui::Event& event) {
       }
 
       AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
-      ::wm::ActivateWindow(new_active_window);
+      wm::ActivateWindow(new_active_window);
       last_press_event_time_ = base::nullopt;
       return true;
     }

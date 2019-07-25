@@ -341,7 +341,7 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
     if (animator->is_animating())
       window->layer()->GetAnimator()->StopAnimating();
     window_observer_.Add(window);
-    window_state_observer_.Add(wm::GetWindowState(window));
+    window_state_observer_.Add(WindowState::Get(window));
     window_list_.push_back(
         std::make_unique<OverviewItem>(window, overview_session_, this));
   }
@@ -491,7 +491,7 @@ void OverviewGrid::AddItem(aura::Window* window,
   DCHECK_LE(index, window_list_.size());
 
   window_observer_.Add(window);
-  window_state_observer_.Add(wm::GetWindowState(window));
+  window_state_observer_.Add(WindowState::Get(window));
   window_list_.insert(
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
@@ -520,7 +520,7 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
                            });
   DCHECK(iter != window_list_.rend());
   window_observer_.Remove(window);
-  window_state_observer_.Remove(wm::GetWindowState(window));
+  window_state_observer_.Remove(WindowState::Get(window));
 
   if (overview_session_) {
     overview_session_->highlight_controller()->OnViewDestroying(
@@ -742,7 +742,7 @@ OverviewItem* OverviewGrid::GetDropTarget() {
 void OverviewGrid::OnWindowDestroying(aura::Window* window) {
   // TODO(sammiequon): Consider making this use `RemoveItem()`.
   window_observer_.Remove(window);
-  window_state_observer_.Remove(wm::GetWindowState(window));
+  window_state_observer_.Remove(WindowState::Get(window));
   auto iter = GetOverviewItemIterContainingWindow(window);
   DCHECK(iter != window_list_.end());
   if (overview_session_) {
@@ -805,7 +805,7 @@ void OverviewGrid::OnWindowPropertyChanged(aura::Window* window,
   }
 }
 
-void OverviewGrid::OnPostWindowStateTypeChange(wm::WindowState* window_state,
+void OverviewGrid::OnPostWindowStateTypeChange(WindowState* window_state,
                                                WindowStateType old_type) {
   // During preparation, window state can change, e.g. updating shelf
   // visibility may show the temporarily hidden (minimized) panels.
@@ -937,7 +937,7 @@ void OverviewGrid::CalculateWindowListAnimationStates(
   SkRegion occluded_region;
   for (size_t i = 0; i < items.size(); ++i) {
     const bool minimized =
-        wm::GetWindowState(items[i]->GetWindow())->IsMinimized();
+        WindowState::Get(items[i]->GetWindow())->IsMinimized();
     bool src_occluded = minimized;
     bool dst_occluded = false;
     gfx::Rect src_bounds_temp =
@@ -1478,7 +1478,7 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
   // Update the dragged window's bounds before adding it to overview. The
   // dragged window might have resized to a smaller size if the drag
   // happens on tab(s).
-  if (wm::IsDraggingTabs(dragged_window)) {
+  if (window_util::IsDraggingTabs(dragged_window)) {
     const gfx::Rect old_bounds = dragged_window->bounds();
     // We need to temporarily disable the dragged window's ability to merge
     // into another window when changing the dragged window's bounds, so
@@ -1486,7 +1486,7 @@ void OverviewGrid::AddDraggedWindowIntoOverviewOnDragEnd(
     // its changed bounds.
     dragged_window->SetProperty(ash::kCanAttachToAnotherWindowKey, false);
     TabletModeWindowState::UpdateWindowPosition(
-        wm::GetWindowState(dragged_window), /*animate=*/false);
+        WindowState::Get(dragged_window), /*animate=*/false);
     const gfx::Rect new_bounds = dragged_window->bounds();
     if (old_bounds != new_bounds) {
       // It's for smoother animation.

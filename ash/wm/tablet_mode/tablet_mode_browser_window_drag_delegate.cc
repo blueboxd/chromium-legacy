@@ -235,7 +235,7 @@ void TabletModeBrowserWindowDragDelegate::PrepareWindowDrag(
     const gfx::Point& location_in_screen) {
   DCHECK(dragged_window_);
 
-  wm::WindowState* window_state = wm::GetWindowState(dragged_window_);
+  WindowState* window_state = WindowState::Get(dragged_window_);
   window_state->OnDragStarted(window_state->drag_details()->window_component);
 }
 
@@ -251,9 +251,9 @@ void TabletModeBrowserWindowDragDelegate::EndingWindowDrag(
     ToplevelWindowEventHandler::DragResult result,
     const gfx::Point& location_in_screen) {
   if (result == ToplevelWindowEventHandler::DragResult::SUCCESS)
-    wm::GetWindowState(dragged_window_)->OnCompleteDrag(location_in_screen);
+    WindowState::Get(dragged_window_)->OnCompleteDrag(location_in_screen);
   else
-    wm::GetWindowState(dragged_window_)->OnRevertDrag(location_in_screen);
+    WindowState::Get(dragged_window_)->OnRevertDrag(location_in_screen);
 }
 
 void TabletModeBrowserWindowDragDelegate::EndedWindowDrag(
@@ -333,7 +333,7 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
 void TabletModeBrowserWindowDragDelegate::MergeBackToSourceWindowIfApplicable(
     const gfx::Point& location_in_screen) {
   // No need to merge back if we're not in tab dragging process.
-  if (!wm::IsDraggingTabs(dragged_window_))
+  if (!window_util::IsDraggingTabs(dragged_window_))
     return;
 
   aura::Window* source_window =

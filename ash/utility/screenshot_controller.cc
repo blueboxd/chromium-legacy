@@ -283,7 +283,7 @@ void ScreenshotController::StartWindowScreenshotSession() {
         Shell::GetContainer(root, kShellWindowId_OverlayContainer)->layer(),
         true);
   }
-  SetSelectedWindow(wm::GetActiveWindow());
+  SetSelectedWindow(window_util::GetActiveWindow());
 
   cursor_setter_ = std::make_unique<ScopedCursorSetter>(ui::CursorType::kCross);
 

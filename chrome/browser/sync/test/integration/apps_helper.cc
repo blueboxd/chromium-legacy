@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
@@ -118,7 +119,7 @@ void WaitForAppService(Profile* profile) {
   if (!base::FeatureList::IsEnabled(features::kAppServiceAsh))
     return;
 
-  apps::AppServiceProxyImpl::GetImplForTesting(profile)
+  apps::AppServiceProxyFactory::GetForProfile(profile)
       ->FlushMojoCallsForTesting();
 }
 

@@ -156,8 +156,7 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
 
   ui::test::EventGenerator generator(root_window, toplevel->GetNativeWindow());
 
-  wm::WindowState* toplevel_state =
-      wm::GetWindowState(toplevel->GetNativeWindow());
+  WindowState* toplevel_state = WindowState::Get(toplevel->GetNativeWindow());
   // Swipe down to minimize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
   EXPECT_TRUE(toplevel_state->IsMinimized());
@@ -215,8 +214,7 @@ TEST_F(SystemGestureEventFilterTest, WindowsWithMaxSizeDontSnap) {
 
   // Swipe down to minimize.
   generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
-  wm::WindowState* toplevel_state =
-      wm::GetWindowState(toplevel->GetNativeWindow());
+  WindowState* toplevel_state = WindowState::Get(toplevel->GetNativeWindow());
   EXPECT_TRUE(toplevel_state->IsMinimized());
 
   toplevel->Restore();
@@ -413,9 +411,9 @@ TEST_F(SystemGestureEventFilterTest, DragLeftNearEdgeSnaps) {
   generator.GestureMultiFingerScroll(kTouchPoints, points, 120, kSteps, drag_x,
                                      0);
 
-  EXPECT_EQ(ash::wm::GetDefaultLeftSnappedWindowBoundsInParent(toplevel_window)
-                .ToString(),
-            toplevel_window->bounds().ToString());
+  EXPECT_EQ(
+      GetDefaultLeftSnappedWindowBoundsInParent(toplevel_window).ToString(),
+      toplevel_window->bounds().ToString());
 }
 
 TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
@@ -441,9 +439,9 @@ TEST_F(SystemGestureEventFilterTest, DragRightNearEdgeSnaps) {
   int drag_x = work_area.right() - 20 - points[0].x();
   generator.GestureMultiFingerScroll(kTouchPoints, points, 120, kSteps, drag_x,
                                      0);
-  EXPECT_EQ(wm::GetDefaultRightSnappedWindowBoundsInParent(toplevel_window)
-                .ToString(),
-            toplevel_window->bounds().ToString());
+  EXPECT_EQ(
+      GetDefaultRightSnappedWindowBoundsInParent(toplevel_window).ToString(),
+      toplevel_window->bounds().ToString());
 }
 
 // Tests that the window manager does not consume gesture events targeted to

@@ -373,10 +373,10 @@ void SessionControllerImpl::PrepareForLock(PrepareForLockCallback callback) {
   // or app mimicking the lock screen. Do not exit fullscreen if the shelf is
   // visible while in fullscreen because the shelf makes it harder for a web
   // page or app to mimick the lock screen.
-  wm::WindowState* active_window_state = wm::GetActiveWindowState();
+  WindowState* active_window_state = WindowState::ForActiveWindow();
   if (active_window_state && active_window_state->IsFullscreen() &&
       active_window_state->GetHideShelfWhenFullscreen()) {
-    const wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+    const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
     active_window_state->OnWMEvent(&event);
   }
 

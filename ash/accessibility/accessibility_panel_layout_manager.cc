@@ -124,7 +124,7 @@ void AccessibilityPanelLayoutManager::UpdateWindowBounds() {
   // If a fullscreen browser window is open, give the panel a height of 0
   // unless it's active or always_visible_ is true.
   if (!always_visible_ && root_controller->GetWindowForFullscreenMode() &&
-      !::wm::IsActiveWindow(panel_window_)) {
+      !wm::IsActiveWindow(panel_window_)) {
     bounds.set_height(0);
   }
 

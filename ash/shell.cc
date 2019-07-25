@@ -136,7 +136,6 @@
 #include "ash/wm/overlay_event_filter.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/system_gesture_event_filter.h"
@@ -473,7 +472,7 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
     return;
   }
 
-  aura::Window* root = wm::GetRootWindowAt(location_in_screen);
+  aura::Window* root = window_util::GetRootWindowAt(location_in_screen);
   RootWindowController::ForWindow(root)->ShowContextMenu(location_in_screen,
                                                          source_type);
 }
@@ -1325,7 +1324,7 @@ void Shell::OnLockStateChanged(bool locked) {
 #ifndef NDEBUG
   // Make sure that there is no system modal in Lock layer when unlocked.
   if (!locked) {
-    aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
+    aura::Window::Windows containers = GetContainersForAllRootWindows(
         kShellWindowId_LockSystemModalContainer, GetPrimaryRootWindow());
     for (aura::Window* container : containers)
       DCHECK(container->children().empty());

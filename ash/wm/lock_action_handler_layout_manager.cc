@@ -57,11 +57,11 @@ void LockActionHandlerLayoutManager::OnWindowAddedToLayout(
 
   // The lock action background should be shown behind the shelf (which is
   // transparent on the lock screen), unlike lock action handler windows.
-  wm::WindowState* window_state =
+  WindowState* window_state =
       action_background_controller_->IsBackgroundWindow(child)
           ? LockWindowState::SetLockWindowState(child)
           : LockWindowState::SetLockWindowStateWithShelfExcluded(child);
-  wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
+  WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
 }
 

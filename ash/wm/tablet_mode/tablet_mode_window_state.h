@@ -17,10 +17,10 @@ class TabletModeWindowManager;
 // states to minimized and maximized. If a window cannot be maximized it will be
 // set to normal. If a window cannot fill the entire workspace it will be
 // centered within the workspace.
-class TabletModeWindowState : public wm::WindowState::State {
+class TabletModeWindowState : public WindowState::State {
  public:
   // Called when the window position might need to be updated.
-  static void UpdateWindowPosition(wm::WindowState* window_state, bool animate);
+  static void UpdateWindowPosition(WindowState* window_state, bool animate);
 
   // The |window|'s state object will be modified to use this new window mode
   // state handler. |snap| is for carrying over a snapped state from clamshell
@@ -41,46 +41,44 @@ class TabletModeWindowState : public wm::WindowState::State {
   void set_ignore_wm_events(bool ignore) { ignore_wm_events_ = ignore; }
 
   // Leaves the tablet mode by reverting to previous state object.
-  void LeaveTabletMode(wm::WindowState* window_state, bool was_in_overview);
+  void LeaveTabletMode(WindowState* window_state, bool was_in_overview);
 
   // WindowState::State overrides:
-  void OnWMEvent(wm::WindowState* window_state,
-                 const wm::WMEvent* event) override;
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override;
 
   WindowStateType GetType() const override;
-  void AttachState(wm::WindowState* window_state,
-                   wm::WindowState::State* previous_state) override;
-  void DetachState(wm::WindowState* window_state) override;
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override;
+  void DetachState(WindowState* window_state) override;
 
-  wm::WindowState::State* old_state() { return old_state_.get(); }
+  WindowState::State* old_state() { return old_state_.get(); }
 
  private:
   // Updates the window to |new_state_type| and resulting bounds:
   // Either full screen, maximized centered or minimized. If the state does not
   // change, only the bounds will be changed. If |animate| is set, the bound
   // change get animated.
-  void UpdateWindow(wm::WindowState* window_state,
+  void UpdateWindow(WindowState* window_state,
                     WindowStateType new_state_type,
                     bool animate);
 
   // Depending on the capabilities of the window we either return
   // |WindowStateType::kMaximized| or |WindowStateType::kNormal|.
-  WindowStateType GetMaximizedOrCenteredWindowType(
-      wm::WindowState* window_state);
+  WindowStateType GetMaximizedOrCenteredWindowType(WindowState* window_state);
 
   // If |target_state| is LEFT/RIGHT_SNAPPED and the window can be snapped,
   // returns |target_state|. Otherwise depending on the capabilities of the
   // window either returns |WindowStateType::kMaximized| or
   // |WindowStateType::kNormal|.
-  WindowStateType GetSnappedWindowStateType(wm::WindowState* window_state,
+  WindowStateType GetSnappedWindowStateType(WindowState* window_state,
                                             WindowStateType target_state);
 
   // Updates the bounds to the maximum possible bounds according to the current
   // window state. If |animated| is set we animate the change.
-  void UpdateBounds(wm::WindowState* window_state, bool animated);
+  void UpdateBounds(WindowState* window_state, bool animated);
 
   // The original state object of the window.
-  std::unique_ptr<wm::WindowState::State> old_state_;
+  std::unique_ptr<WindowState::State> old_state_;
 
   // The window whose WindowState owns this instance.
   aura::Window* window_;

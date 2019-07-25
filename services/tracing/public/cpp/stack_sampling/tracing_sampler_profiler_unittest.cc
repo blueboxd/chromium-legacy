@@ -206,6 +206,8 @@ class TracingSampleProfilerTest : public testing::Test {
     }
   }
 
+  size_t ProfileEventsCount() const { return events_stack_received_count_; }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -258,6 +260,38 @@ TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   EndTracing();
   base::RunLoop().RunUntilIdle();
   ValidateReceivedEvents();
+  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
+}
+
+TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
+  TracingSamplerProfiler::CreateForCurrentThread();
+  TracingSamplerProfiler::SetupStartupTracing();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+  if (IsStackUnwindingSupported()) {
+    EXPECT_GT(ProfileEventsCount(), 4u);
+  }
+  TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
+}
+
+TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
+  TracingSamplerProfiler::SetupStartupTracing();
+  base::RunLoop().RunUntilIdle();
+  TracingSamplerProfiler::CreateForCurrentThread();
+  WaitForEvents();
+  BeginTrace();
+  base::RunLoop().RunUntilIdle();
+  WaitForEvents();
+  EndTracing();
+  base::RunLoop().RunUntilIdle();
+  if (IsStackUnwindingSupported()) {
+    EXPECT_GT(ProfileEventsCount(), 4u);
+  }
   TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
 

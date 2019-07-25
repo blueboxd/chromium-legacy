@@ -155,6 +155,7 @@ component("cpp") {
     "rounded_corner_decorator.h",
     "scale_utility.cc",
     "scale_utility.h",
+    "scoped_guest_button_blocker.h",
     "select_to_speak_event_handler_delegate.h",
     "session/session_activation_observer.h",
     "session/session_controller.cc",

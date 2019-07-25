@@ -8,7 +8,6 @@
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
-namespace wm {
 
 // An extension of the window animations provided by CoreWm. These are
 // Ash-specific only.
@@ -28,7 +27,6 @@ enum WindowVisibilityAnimationType {
   WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END,
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_WINDOW_ANIMATION_TYPES_H_

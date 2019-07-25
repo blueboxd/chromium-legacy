@@ -16,7 +16,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
-namespace wm {
 
 class FullscreenWindowFinderTest : public AshTestBase {
  public:
@@ -35,8 +34,7 @@ class FullscreenWindowFinderTest : public AshTestBase {
   }
 
   bool FullscreenWindowExists() const {
-    return nullptr !=
-           wm::GetWindowForFullscreenModeForContext(test_window_.get());
+    return nullptr != GetWindowForFullscreenModeForContext(test_window_.get());
   }
 
  protected:
@@ -71,5 +69,4 @@ TEST_F(FullscreenWindowFinderTest, TrustedPinnedFullscreen) {
   EXPECT_TRUE(FullscreenWindowExists());
 }
 
-}  // namespace wm
 }  // namespace ash

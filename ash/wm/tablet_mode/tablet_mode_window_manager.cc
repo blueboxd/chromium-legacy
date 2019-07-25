@@ -67,19 +67,19 @@ GetCarryOverWindowsInSplitView() {
   MruWindowTracker::WindowList mru_windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   if (IsCarryOverCandidateForSplitView(mru_windows, 0u)) {
-    if (wm::GetWindowState(mru_windows[0])->GetStateType() ==
+    if (WindowState::Get(mru_windows[0])->GetStateType() ==
         WindowStateType::kLeftSnapped) {
       windows.emplace(mru_windows[0], WindowStateType::kLeftSnapped);
       if (IsCarryOverCandidateForSplitView(mru_windows, 1u) &&
-          wm::GetWindowState(mru_windows[1])->GetStateType() ==
+          WindowState::Get(mru_windows[1])->GetStateType() ==
               WindowStateType::kRightSnapped) {
         windows.emplace(mru_windows[1], WindowStateType::kRightSnapped);
       }
-    } else if (wm::GetWindowState(mru_windows[0])->GetStateType() ==
+    } else if (WindowState::Get(mru_windows[0])->GetStateType() ==
                WindowStateType::kRightSnapped) {
       windows.emplace(mru_windows[0], WindowStateType::kRightSnapped);
       if (IsCarryOverCandidateForSplitView(mru_windows, 1u) &&
-          wm::GetWindowState(mru_windows[1])->GetStateType() ==
+          WindowState::Get(mru_windows[1])->GetStateType() ==
               WindowStateType::kLeftSnapped) {
         windows.emplace(mru_windows[1], WindowStateType::kLeftSnapped);
       }
@@ -266,7 +266,7 @@ void TabletModeWindowManager::Init() {
   Shell::Get()->overview_controller()->AddObserver(this);
   accounts_since_entering_tablet_.insert(
       Shell::Get()->session_controller()->GetActiveAccountId());
-  event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
+  event_handler_ = std::make_unique<TabletModeEventHandler>();
 }
 
 void TabletModeWindowManager::Shutdown() {
@@ -460,8 +460,8 @@ void TabletModeWindowManager::OnWindowHierarchyChanged(
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
     if (base::Contains(window_state_map_, params.target)) {
-      wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
-      wm::GetWindowState(params.target)->OnWMEvent(&event);
+      WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
+      WindowState::Get(params.target)->OnWMEvent(&event);
     }
   }
 }
@@ -491,7 +491,7 @@ void TabletModeWindowManager::OnWindowBoundsChanged(
 
   // Reposition all non maximizeable windows.
   for (auto& pair : window_state_map_) {
-    pair.second->UpdateWindowPosition(wm::GetWindowState(pair.first),
+    pair.second->UpdateWindowPosition(WindowState::Get(pair.first),
                                       /*animate=*/false);
   }
   if (session)
@@ -512,8 +512,8 @@ void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
     if (IsTrackingWindow(window)) {
-      wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
-      wm::GetWindowState(window)->OnWMEvent(&event);
+      WMEvent event(WM_EVENT_ADDED_TO_WORKSPACE);
+      WindowState::Get(window)->OnWMEvent(&event);
     }
   }
 }
@@ -565,7 +565,7 @@ WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
     aura::Window* window) const {
   auto iter = window_state_map_.find(window);
   return iter == window_state_map_.end()
-             ? wm::GetWindowState(window)->GetStateType()
+             ? WindowState::Get(window)->GetStateType()
              : iter->second->old_state()->GetType();
 }
 
@@ -667,7 +667,7 @@ void TabletModeWindowManager::ForgetWindow(aura::Window* window,
   } else {
     // By telling the state object to revert, it will switch back the old
     // State object and destroy itself, calling WindowStateDestroyed().
-    it->second->LeaveTabletMode(wm::GetWindowState(it->first), was_in_overview);
+    it->second->LeaveTabletMode(WindowState::Get(it->first), was_in_overview);
     DCHECK(!IsTrackingWindow(window));
   }
 }
@@ -684,8 +684,8 @@ bool TabletModeWindowManager::ShouldHandleWindow(aura::Window* window) {
 
   // If the changing bounds in the maximized/fullscreen is allowed, then
   // let the client manage it even in tablet mode.
-  if (!wm::GetWindowState(window) ||
-      wm::GetWindowState(window)->allow_set_bounds_direct()) {
+  if (!WindowState::Get(window) ||
+      WindowState::Get(window)->allow_set_bounds_direct()) {
     return false;
   }
 

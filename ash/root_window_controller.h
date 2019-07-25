@@ -43,6 +43,7 @@ class AppMenuModelAdapter;
 class AshWindowTreeHost;
 class LockScreenActionBackgroundController;
 enum class LoginStatus;
+class RootWindowLayoutManager;
 class Shelf;
 class ShelfLayoutManager;
 class StackingController;
@@ -55,10 +56,6 @@ class TouchHudProjection;
 class WallpaperWidgetController;
 class WindowManager;
 class WorkAreaInsets;
-
-namespace wm {
-class RootWindowLayoutManager;
-}
 
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
@@ -119,7 +116,7 @@ class ASH_EXPORT RootWindowController {
     touch_hud_projection_ = hud;
   }
 
-  wm::RootWindowLayoutManager* root_window_layout_manager() {
+  RootWindowLayoutManager* root_window_layout_manager() {
     return root_window_layout_manager_;
   }
 
@@ -276,7 +273,7 @@ class ASH_EXPORT RootWindowController {
   aura::WindowTreeHost* window_tree_host_;
 
   // LayoutManagers are owned by the window they are installed on.
-  wm::RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
+  RootWindowLayoutManager* root_window_layout_manager_ = nullptr;
 
   std::unique_ptr<WallpaperWidgetController> wallpaper_widget_controller_;
 

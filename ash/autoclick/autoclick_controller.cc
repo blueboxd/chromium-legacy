@@ -15,7 +15,7 @@
 #include "ash/system/accessibility/accessibility_feature_disable_dialog.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/wm/fullscreen_window_finder.h"
-#include "ash/wm/root_window_finder.h"
+#include "ash/wm/window_util.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -36,6 +36,9 @@ namespace {
 // The ratio of how long the gesture should take to begin after a dwell to the
 // total amount of time of the dwell.
 const float kStartGestureDelayRatio = 1 / 6.0;
+
+// How much distance to travel with each generated scroll event.
+const int kScrollDelta = 10;
 
 bool IsModifierKey(const ui::KeyboardCode key_code) {
   return key_code == ui::VKEY_SHIFT || key_code == ui::VKEY_LSHIFT ||
@@ -220,23 +223,23 @@ void AutoclickController::DoScrollAction(ScrollPadAction action) {
   float scroll_y = 0.0f;
   switch (action) {
     case ScrollPadAction::kScrollUp:
-      scroll_y = ui::MouseWheelEvent::kWheelDelta;
+      scroll_y = kScrollDelta;
       break;
     case ScrollPadAction::kScrollDown:
-      scroll_y = -ui::MouseWheelEvent::kWheelDelta;
+      scroll_y = -kScrollDelta;
       break;
     case ScrollPadAction::kScrollLeft:
-      scroll_x = ui::MouseWheelEvent::kWheelDelta;
+      scroll_x = kScrollDelta;
       break;
     case ScrollPadAction::kScrollRight:
-      scroll_x = -ui::MouseWheelEvent::kWheelDelta;
+      scroll_x = -kScrollDelta;
       break;
     case ScrollPadAction::kScrollClose:
       NOTREACHED();
   }
 
   // Generate a scroll event at the current scroll location.
-  aura::Window* root_window = wm::GetRootWindowAt(scroll_location_);
+  aura::Window* root_window = window_util::GetRootWindowAt(scroll_location_);
   gfx::Point location_in_pixels(scroll_location_);
   ::wm::ConvertPointFromScreen(root_window, &location_in_pixels);
   aura::WindowTreeHost* host = root_window->GetHost();
@@ -283,7 +286,7 @@ void AutoclickController::UpdateAutoclickMenuBoundsIfNeeded() {
 
 void AutoclickController::CreateAutoclickRingWidget(
     const gfx::Point& point_in_screen) {
-  aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
+  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
   ring_widget_.reset(new views::Widget);
   ring_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
@@ -292,7 +295,7 @@ void AutoclickController::CreateAutoclickRingWidget(
 
 void AutoclickController::CreateAutoclickScrollPositionWidget(
     const gfx::Point& point_in_screen) {
-  aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
+  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
   scroll_position_widget_.reset(new views::Widget);
   scroll_position_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
@@ -301,7 +304,7 @@ void AutoclickController::CreateAutoclickScrollPositionWidget(
 void AutoclickController::UpdateAutoclickWidgetPosition(
     views::Widget* widget,
     const gfx::Point& point_in_screen) {
-  aura::Window* target = ash::wm::GetRootWindowAt(point_in_screen);
+  aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
   aura::Window* root_window = target->GetRootWindow();
   if (widget->GetNativeView()->GetRootWindow() != root_window) {
@@ -314,7 +317,8 @@ void AutoclickController::UpdateAutoclickWidgetPosition(
 void AutoclickController::DoAutoclickAction() {
   // The gesture_anchor_location_ is the position at which the animation is
   // anchored, and where the click should occur.
-  aura::Window* root_window = wm::GetRootWindowAt(gesture_anchor_location_);
+  aura::Window* root_window =
+      window_util::GetRootWindowAt(gesture_anchor_location_);
   DCHECK(root_window) << "Root window not found while attempting autoclick.";
 
   // But if the thing that would be acted upon is an autoclick menu button, do a
@@ -677,8 +681,8 @@ void AutoclickController::OnCursorVisibilityChanged(bool is_visible) {
   // TODO(katie): Check that the display which is fullscreen is the same as the
   // one containing the bubble, to determine whether to hide the bubble.
   // Currently just checking if the display under the mouse is fullscreen.
-  aura::Window* window = wm::GetWindowForFullscreenModeInRoot(
-      wm::GetRootWindowAt(last_mouse_location_));
+  aura::Window* window = GetWindowForFullscreenModeInRoot(
+      window_util::GetRootWindowAt(last_mouse_location_));
   bool is_fullscreen = window != nullptr;
 
   // Hide the bubble when the cursor is gone in fullscreen mode.

@@ -330,7 +330,21 @@ class ActionSetBadgeBackgroundColorFunction
   ~ActionSetBadgeBackgroundColorFunction() override {}
 };
 
-// TODO(devlin): Add the rest of the action APIs here.
+class ActionEnableFunction : public ExtensionActionShowFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.enable", ACTION_ENABLE)
+
+ protected:
+  ~ActionEnableFunction() override {}
+};
+
+class ActionDisableFunction : public ExtensionActionHideFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("action.disable", ACTION_DISABLE)
+
+ protected:
+  ~ActionDisableFunction() override {}
+};
 
 //
 // browserAction.* aliases for supported browserAction APIs.

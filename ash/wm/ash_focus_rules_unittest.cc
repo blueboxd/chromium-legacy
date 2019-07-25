@@ -179,10 +179,9 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
   EXPECT_TRUE(normal_window->HasFocus());
   EXPECT_FALSE(always_on_top_window->HasFocus());
 
-  wm::WindowState* normal_window_state =
-      wm::GetWindowState(normal_window.get());
-  wm::WindowState* always_on_top_window_state =
-      wm::GetWindowState(always_on_top_window.get());
+  WindowState* normal_window_state = WindowState::Get(normal_window.get());
+  WindowState* always_on_top_window_state =
+      WindowState::Get(always_on_top_window.get());
 
   EXPECT_TRUE(normal_window_state->CanActivate());
   EXPECT_TRUE(always_on_top_window_state->CanActivate());

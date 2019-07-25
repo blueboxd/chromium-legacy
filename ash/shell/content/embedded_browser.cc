@@ -51,8 +51,7 @@ EmbeddedBrowser::EmbeddedBrowser(content::BrowserContext* context,
   params.bounds = gfx::Rect(20, 20, 800, 600);
   params.delegate = new BrowserWidgetDelegateView(context, url);
   widget_->Init(params);
-  wm::GetWindowState(widget_->GetNativeWindow())
-      ->SetWindowPositionManaged(true);
+  WindowState::Get(widget_->GetNativeWindow())->SetWindowPositionManaged(true);
   widget_->Show();
 }
 

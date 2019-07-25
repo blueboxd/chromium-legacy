@@ -60,7 +60,7 @@ void AutomationManagerAura::Enable() {
   cache_->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
-  aura::Window* active_window = ash::wm::GetActiveWindow();
+  aura::Window* active_window = ash::window_util::GetActiveWindow();
   if (active_window) {
     views::AXAuraObjWrapper* focus = cache_->GetOrCreate(active_window);
     if (focus)

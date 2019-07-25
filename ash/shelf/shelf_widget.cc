@@ -167,7 +167,7 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 bool ShelfWidget::DelegateView::CanActivate() const {
   // Allow activations coming from the overflow bubble if it is currently shown
   // and active.
-  aura::Window* active_window = wm::GetActiveWindow();
+  aura::Window* active_window = window_util::GetActiveWindow();
   aura::Window* bubble_window = nullptr;
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
   if (shelf_widget_->IsShowingOverflowBubble()) {

@@ -52,7 +52,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
   const views::Widget* target_widget =
       views::Widget::GetTopLevelWidgetForNativeView(target);
   const aura::Window* container =
-      target ? wm::GetContainerForWindow(target) : nullptr;
+      target ? GetContainerForWindow(target) : nullptr;
   if (target && container) {
     const int container_id = container->id();
     // Don't process events that occurred inside an embedded menu, for example
@@ -90,7 +90,7 @@ void TrayEventFilter::ProcessPressedEvent(const ui::LocatedEvent& event) {
     // |bounds| so that events located outside the bubble's visual bounds are
     // treated as outside of the bubble.
     int bubble_container_id =
-        wm::GetContainerForWindow(bubble_widget->GetNativeWindow())->id();
+        GetContainerForWindow(bubble_widget->GetNativeWindow())->id();
     if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
         bubble_container_id == kShellWindowId_SettingBubbleContainer) {
       bounds.Intersect(bubble_widget->GetWorkAreaBoundsInScreen());

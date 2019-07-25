@@ -57,6 +57,8 @@ source_set("browser_view") {
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/open_in",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/overscroll_actions",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/prefs",

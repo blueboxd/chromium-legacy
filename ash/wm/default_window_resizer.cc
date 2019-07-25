@@ -16,8 +16,7 @@ DefaultWindowResizer::~DefaultWindowResizer() {
 }
 
 // static
-DefaultWindowResizer* DefaultWindowResizer::Create(
-    wm::WindowState* window_state) {
+DefaultWindowResizer* DefaultWindowResizer::Create(WindowState* window_state) {
   return new DefaultWindowResizer(window_state);
 }
 
@@ -45,7 +44,7 @@ void DefaultWindowResizer::RevertDrag() {
 
 void DefaultWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {}
 
-DefaultWindowResizer::DefaultWindowResizer(wm::WindowState* window_state)
+DefaultWindowResizer::DefaultWindowResizer(WindowState* window_state)
     : WindowResizer(window_state), did_move_or_resize_(false) {
   DCHECK(details().is_resizable);
   Shell::Get()->cursor_manager()->LockCursor();

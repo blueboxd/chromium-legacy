@@ -106,8 +106,8 @@ TEST_F(AlwaysOnTopControllerTest, PipContainerReturnedForFloatingPipWindow) {
   std::unique_ptr<aura::Window> pip_window(
       CreateTestWindowInShellWithBounds(bounds));
 
-  wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
-  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  WindowState* window_state = WindowState::Get(pip_window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
   pip_window->SetProperty(aura::client::kZOrderingKey,
                           ui::ZOrderLevel::kFloatingWindow);
@@ -145,14 +145,14 @@ TEST_F(AlwaysOnTopControllerTest,
 
   EXPECT_EQ(kShellWindowId_AlwaysOnTopContainer, window->parent()->id());
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  WindowState* window_state = WindowState::Get(window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
   EXPECT_TRUE(window_state->IsPip());
 
   EXPECT_EQ(kShellWindowId_PipContainer, window->parent()->id());
 
-  const wm::WMEvent enter_normal(wm::WM_EVENT_NORMAL);
+  const WMEvent enter_normal(WM_EVENT_NORMAL);
   window_state->OnWMEvent(&enter_normal);
   EXPECT_FALSE(window_state->IsPip());
 

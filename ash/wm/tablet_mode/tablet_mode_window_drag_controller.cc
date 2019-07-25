@@ -15,7 +15,7 @@
 namespace ash {
 
 TabletModeWindowDragController::TabletModeWindowDragController(
-    wm::WindowState* window_state,
+    WindowState* window_state,
     std::unique_ptr<TabletModeWindowDragDelegate> drag_delegate)
     : WindowResizer(window_state),
       drag_delegate_(std::move(drag_delegate)),
@@ -45,7 +45,7 @@ void TabletModeWindowDragController::Drag(const gfx::Point& location_in_parent,
 
   // Update the dragged window, the drag indicators, the preview window,
   // source window position, blurred background, etc, if necessary.
-  if (wm::IsDraggingTabs(GetTarget())) {
+  if (window_util::IsDraggingTabs(GetTarget())) {
     // Update the dragged window's bounds if it's tab-dragging.
     base::WeakPtr<TabletModeWindowDragController> resizer(
         weak_ptr_factory_.GetWeakPtr());

@@ -26,7 +26,7 @@ class WindowDimmer;
 // System modal windows which are centered on the screen will be kept centered
 // when the container size changes.
 class ASH_EXPORT SystemModalContainerLayoutManager
-    : public wm::WmDefaultLayoutManager,
+    : public WmDefaultLayoutManager,
       public aura::WindowObserver,
       public KeyboardControllerObserver {
  public:

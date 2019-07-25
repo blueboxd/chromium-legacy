@@ -41,12 +41,10 @@
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/core/window_animations.h"
-#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-namespace wm {
-
+namespace window_util {
 namespace {
 
 // Moves |window| to the given |root| window's corresponding container, if it is
@@ -91,7 +89,7 @@ class InteriorResizeHandleTargeter : public aura::WindowTargeter {
 
   bool ShouldUseExtendedBounds(const aura::Window* target) const override {
     // Fullscreen/maximized windows can't be drag-resized.
-    const WindowState* window_state = GetWindowState(window());
+    const WindowState* window_state = WindowState::Get(window());
     if (window_state && window_state->IsMaximizedOrFullscreenOrPinned())
       return false;
     // The shrunken hit region only applies to children of |window()|.
@@ -104,30 +102,9 @@ class InteriorResizeHandleTargeter : public aura::WindowTargeter {
 
 }  // namespace
 
-// TODO(beng): replace many of these functions with the corewm versions.
-void ActivateWindow(aura::Window* window) {
-  ::wm::ActivateWindow(window);
-}
-
-void DeactivateWindow(aura::Window* window) {
-  ::wm::DeactivateWindow(window);
-}
-
-bool IsActiveWindow(aura::Window* window) {
-  return ::wm::IsActiveWindow(window);
-}
-
 aura::Window* GetActiveWindow() {
   return ::wm::GetActivationClient(Shell::GetPrimaryRootWindow())
       ->GetActiveWindow();
-}
-
-aura::Window* GetActivatableWindow(aura::Window* window) {
-  return ::wm::GetActivatableWindow(window);
-}
-
-bool CanActivateWindow(aura::Window* window) {
-  return ::wm::CanActivateWindow(window);
 }
 
 aura::Window* GetFocusedWindow() {
@@ -159,12 +136,12 @@ bool IsWindowUserPositionable(aura::Window* window) {
 }
 
 void PinWindow(aura::Window* window, bool trusted) {
-  wm::WMEvent event(trusted ? wm::WM_EVENT_TRUSTED_PIN : wm::WM_EVENT_PIN);
-  wm::GetWindowState(window)->OnWMEvent(&event);
+  WMEvent event(trusted ? WM_EVENT_TRUSTED_PIN : WM_EVENT_PIN);
+  WindowState::Get(window)->OnWMEvent(&event);
 }
 
 void SetAutoHideShelf(aura::Window* window, bool autohide) {
-  wm::GetWindowState(window)->set_autohide_shelf_when_maximized_or_fullscreen(
+  WindowState::Get(window)->set_autohide_shelf_when_maximized_or_fullscreen(
       autohide);
   for (aura::Window* root_window : Shell::GetAllRootWindows())
     Shelf::ForWindow(root_window)->UpdateVisibilityState();
@@ -172,7 +149,7 @@ void SetAutoHideShelf(aura::Window* window, bool autohide) {
 
 bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
   DCHECK(window);
-  WindowState* window_state = GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   if (window_state->allow_set_bounds_direct()) {
     display::Display display;
     if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
@@ -181,9 +158,8 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
     gfx::Rect bounds = window->bounds();
     gfx::Rect work_area_in_display(display.size());
     work_area_in_display.Inset(display.GetWorkAreaInsets());
-    wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_display,
-                                                    &bounds);
-    wm::SetBoundsEvent event(bounds, display_id);
+    AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_display, &bounds);
+    SetBoundsWMEvent event(bounds, display_id);
     window_state->OnWMEvent(&event);
     return true;
   }
@@ -194,15 +170,6 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
     ::wm::ConvertRectToScreen(root, &restore_bounds);
     window_state->SetRestoreBoundsInScreen(restore_bounds);
   }
-  return root && MoveWindowToRoot(window, root);
-}
-
-bool MoveWindowToEventRoot(aura::Window* window, const ui::Event& event) {
-  DCHECK(window);
-  views::View* target = static_cast<views::View*>(event.target());
-  if (!target)
-    return false;
-  aura::Window* root = target->GetWidget()->GetNativeView()->GetRootWindow();
   return root && MoveWindowToRoot(window, root);
 }
 
@@ -250,7 +217,7 @@ bool ShouldExcludeForCycleList(const aura::Window* window) {
   // - non user positionable windows, such as extension popups.
   // - windows being dragged
   // - pip windows
-  const wm::WindowState* state = wm::GetWindowState(window);
+  const WindowState* state = WindowState::Get(window);
   if (!state->IsUserPositionable() || state->is_dragged() || state->IsPip())
     return true;
 
@@ -307,7 +274,7 @@ void HideAndMaybeMinimizeWithoutAnimation(std::vector<aura::Window*> windows,
     // updates before losing focus from being hidden. See crbug.com/910304.
     // TODO(oshima): Investigate better way to handle ARC apps immediately.
     if (minimize)
-      wm::GetWindowState(window)->Minimize();
+      WindowState::Get(window)->Minimize();
 
     window->Hide();
   }
@@ -323,5 +290,24 @@ void HideAndMaybeMinimizeWithoutAnimation(std::vector<aura::Window*> windows,
   }
 }
 
-}  // namespace wm
+aura::Window* GetRootWindowAt(const gfx::Point& point_in_screen) {
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayNearestPoint(point_in_screen);
+  DCHECK(display.is_valid());
+  RootWindowController* root_window_controller =
+      Shell::GetRootWindowControllerWithDisplayId(display.id());
+  return root_window_controller ? root_window_controller->GetRootWindow()
+                                : nullptr;
+}
+
+aura::Window* GetRootWindowMatching(const gfx::Rect& rect_in_screen) {
+  const display::Display& display =
+      display::Screen::GetScreen()->GetDisplayMatching(rect_in_screen);
+  RootWindowController* root_window_controller =
+      Shell::GetRootWindowControllerWithDisplayId(display.id());
+  return root_window_controller ? root_window_controller->GetRootWindow()
+                                : nullptr;
+}
+
+}  // namespace window_util
 }  // namespace ash

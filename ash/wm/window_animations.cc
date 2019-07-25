@@ -314,19 +314,19 @@ bool AnimateShowWindow(aura::Window* window) {
   }
 
   switch (::wm::GetWindowVisibilityAnimationType(window)) {
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateShowWindow_Minimize(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
       AnimateShowWindow_BrightnessGrayscale(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateShowWindow_SlideDown(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateShowWindow_FadeIn(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
       AnimateShowWindow_StepEnd(window);
       return true;
     default:
@@ -342,18 +342,18 @@ bool AnimateHideWindow(aura::Window* window) {
   }
 
   switch (::wm::GetWindowVisibilityAnimationType(window)) {
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateHideWindow_Minimize(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
       AnimateHideWindow_BrightnessGrayscale(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
       return AnimateHideWindow_SlideDown(window);
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateHideWindow_SlideOut(window);
       return true;
-    case wm::WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
+    case WINDOW_VISIBILITY_ANIMATION_TYPE_STEP_END:
       AnimateHideWindow_StepEnd(window);
       return true;
     default:

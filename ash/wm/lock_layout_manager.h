@@ -19,11 +19,8 @@
 namespace ash {
 
 class Shelf;
-
-namespace wm {
 class WindowState;
 class WMEvent;
-}
 
 // LockLayoutManager is used for the windows created in LockScreenContainer.
 // For Chrome OS this includes out-of-box/login/lock/multi-profile login use
@@ -34,9 +31,9 @@ class WMEvent;
 // keyboard bounds (only if keyboard overscroll is disabled). If keyboard
 // overscroll is enabled then work area always equals to display area size since
 // virtual keyboard changes inner workspace of each WebContents.
-// For all windows in LockScreenContainer default wm::WindowState is replaced
+// For all windows in LockScreenContainer default WindowState is replaced
 // with LockWindowState.
-class ASH_EXPORT LockLayoutManager : public wm::WmDefaultLayoutManager,
+class ASH_EXPORT LockLayoutManager : public WmDefaultLayoutManager,
                                      public aura::WindowObserver,
                                      public ShellObserver,
                                      public ShelfObserver,
@@ -71,7 +68,7 @@ class ASH_EXPORT LockLayoutManager : public wm::WmDefaultLayoutManager,
  protected:
   // Adjusts the bounds of all managed windows when the display area changes.
   // This happens when the display size, work area insets has changed.
-  void AdjustWindowsForWorkAreaChange(const wm::WMEvent* event);
+  void AdjustWindowsForWorkAreaChange(const WMEvent* event);
 
   aura::Window* window() { return window_; }
   aura::Window* root_window() { return root_window_; }

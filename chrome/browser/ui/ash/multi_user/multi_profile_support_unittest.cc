@@ -659,18 +659,18 @@ TEST_F(MultiProfileSupportTest, MinimizeChangesOwnershipBack) {
   EXPECT_TRUE(
       MultiUserWindowManagerHelper::GetInstance()->IsWindowOnDesktopOfUser(
           window(1), account_id_A));
-  wm::GetWindowState(window(1))->Minimize();
+  WindowState::Get(window(1))->Minimize();
   // At this time the window is still on the desktop of that user, but the user
   // does not have a way to get to it.
   EXPECT_EQ("S[a], H[b,a], H[b], S[]", GetStatus());
   EXPECT_TRUE(
       MultiUserWindowManagerHelper::GetInstance()->IsWindowOnDesktopOfUser(
           window(1), account_id_A));
-  EXPECT_TRUE(wm::GetWindowState(window(1))->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window(1))->IsMinimized());
   // Change to user B and make sure that minimizing does not change anything.
   StartUserTransitionAnimation(account_id_B);
   EXPECT_EQ("H[a], S[b], S[b], S[]", GetStatus());
-  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMinimized());
+  EXPECT_FALSE(WindowState::Get(window(1))->IsMinimized());
 }
 
 // Check that we cannot transfer the ownership of a minimized window.
@@ -681,7 +681,7 @@ TEST_F(MultiProfileSupportTest, MinimizeSuppressesViewTransfer) {
   const AccountId account_id_B(AccountId::FromUserEmail("b"));
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
-  wm::GetWindowState(window(0))->Minimize();
+  WindowState::Get(window(0))->Minimize();
   EXPECT_EQ("H[a]", GetStatus());
 
   // Try to transfer the window to user B - which should get ignored.
@@ -728,11 +728,11 @@ TEST_F(MultiProfileSupportTest, ActiveWindowTests) {
 
   // Now test that a minimized window stays minimized upon switch and back.
   StartUserTransitionAnimation(account_id_A);
-  wm::GetWindowState(window(0))->Minimize();
+  WindowState::Get(window(0))->Minimize();
 
   StartUserTransitionAnimation(account_id_B);
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_TRUE(wm::GetWindowState(window(0))->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window(0))->IsMinimized());
   EXPECT_TRUE(::wm::IsActiveWindow(window(1)));
 }
 
@@ -879,19 +879,19 @@ TEST_F(MultiProfileSupportTest, TabletModeInteraction) {
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
 
-  EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
-  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
+  EXPECT_FALSE(WindowState::Get(window(0))->IsMaximized());
+  EXPECT_FALSE(WindowState::Get(window(1))->IsMaximized());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
-  EXPECT_TRUE(wm::GetWindowState(window(0))->IsMaximized());
-  EXPECT_TRUE(wm::GetWindowState(window(1))->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window(0))->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window(1))->IsMaximized());
 
   // Tests that on exiting tablet mode, the window states return to not
   // maximized.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
-  EXPECT_FALSE(wm::GetWindowState(window(0))->IsMaximized());
-  EXPECT_FALSE(wm::GetWindowState(window(1))->IsMaximized());
+  EXPECT_FALSE(WindowState::Get(window(0))->IsMaximized());
+  EXPECT_FALSE(WindowState::Get(window(1))->IsMaximized());
 }
 
 // Test that a system modal dialog will switch to the desktop of the owning
@@ -1076,15 +1076,15 @@ TEST_F(MultiProfileSupportTest, AnimationStepsScreenCoverage) {
   SetUpForThisManyWindows(3);
   // Maximizing, fully covering the screen by bounds or fullscreen mode should
   // make CoversScreen return true.
-  wm::GetWindowState(window(0))->Maximize();
+  WindowState::Get(window(0))->Maximize();
   window(1)->SetBounds(gfx::Rect(0, 0, 3000, 3000));
 
   EXPECT_TRUE(CoversScreen(window(0)));
   EXPECT_TRUE(CoversScreen(window(1)));
   EXPECT_FALSE(CoversScreen(window(2)));
 
-  wm::WMEvent event(wm::WM_EVENT_FULLSCREEN);
-  wm::GetWindowState(window(2))->OnWMEvent(&event);
+  WMEvent event(WM_EVENT_FULLSCREEN);
+  WindowState::Get(window(2))->OnWMEvent(&event);
   EXPECT_TRUE(CoversScreen(window(2)));
 }
 
@@ -1102,7 +1102,7 @@ TEST_F(MultiProfileSupportTest, AnimationStepsMaximizeToNormal) {
       ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
-  wm::GetWindowState(window(0))->Maximize();
+  WindowState::Get(window(0))->Maximize();
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_TRUE(CoversScreen(window(0)));
@@ -1148,7 +1148,7 @@ TEST_F(MultiProfileSupportTest, AnimationStepsNormalToMaximized) {
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  wm::GetWindowState(window(1))->Maximize();
+  WindowState::Get(window(1))->Maximize();
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_FALSE(CoversScreen(window(0)));
   EXPECT_TRUE(CoversScreen(window(1)));
@@ -1193,9 +1193,9 @@ TEST_F(MultiProfileSupportTest, AnimationStepsMaximizedToMaximized) {
       ash::MultiUserWindowManagerImpl::ANIMATION_SPEED_FAST);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
-  wm::GetWindowState(window(0))->Maximize();
+  WindowState::Get(window(0))->Maximize();
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  wm::GetWindowState(window(1))->Maximize();
+  WindowState::Get(window(1))->Maximize();
   multi_user_window_manager()->SetWindowOwner(window(2), account_id_C);
   EXPECT_TRUE(CoversScreen(window(0)));
   EXPECT_TRUE(CoversScreen(window(1)));
@@ -1376,8 +1376,8 @@ TEST_F(MultiProfileSupportTest, MinimizedWindowActivatableTests) {
   multi_user_window_manager()->SetWindowOwner(window(3), user2);
 
   // Minimizes window #0 and window #2.
-  wm::GetWindowState(window(0))->Minimize();
-  wm::GetWindowState(window(2))->Minimize();
+  WindowState::Get(window(0))->Minimize();
+  WindowState::Get(window(2))->Minimize();
 
   // Windows belonging to user2 (window #2 and #3) can't be activated by user1.
   SwitchActiveUser(user1);

@@ -120,6 +120,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
       ParentAccessRequestReason reason,
       bool extra_dimmer) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
+  std::unique_ptr<ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
+      override;
 
   // KioskAppMenu:
   void SetKioskApps(

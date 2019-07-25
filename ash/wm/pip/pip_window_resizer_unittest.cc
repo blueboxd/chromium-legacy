@@ -31,41 +31,39 @@
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
-namespace wm {
 
 namespace {
 
 // WindowState based on a given initial state. Records the last resize bounds.
-class FakeWindowState : public wm::WindowState::State {
+class FakeWindowState : public WindowState::State {
  public:
   explicit FakeWindowState(WindowStateType initial_state_type)
       : state_type_(initial_state_type) {}
   ~FakeWindowState() override = default;
 
   // WindowState::State overrides:
-  void OnWMEvent(wm::WindowState* window_state,
-                 const wm::WMEvent* event) override {
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
     if (event->IsBoundsEvent()) {
-      if (event->type() == wm::WM_EVENT_SET_BOUNDS) {
+      if (event->type() == WM_EVENT_SET_BOUNDS) {
         const auto* set_bounds_event =
-            static_cast<const wm::SetBoundsEvent*>(event);
+            static_cast<const SetBoundsWMEvent*>(event);
         last_bounds_ = set_bounds_event->requested_bounds();
         last_window_state_ = window_state;
       }
     }
   }
   WindowStateType GetType() const override { return state_type_; }
-  void AttachState(wm::WindowState* window_state,
-                   wm::WindowState::State* previous_state) override {}
-  void DetachState(wm::WindowState* window_state) override {}
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
 
   const gfx::Rect& last_bounds() const { return last_bounds_; }
-  wm::WindowState* last_window_state() { return last_window_state_; }
+  WindowState* last_window_state() { return last_window_state_; }
 
  private:
   WindowStateType state_type_;
   gfx::Rect last_bounds_;
-  wm::WindowState* last_window_state_ = nullptr;
+  WindowState* last_window_state_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWindowState);
 };
@@ -137,7 +135,7 @@ class PipWindowResizerTest : public AshTestBase,
   PipWindowResizer* CreateResizerForTest(int window_component,
                                          aura::Window* window,
                                          gfx::Point point_in_parent) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     window_state->CreateDragDetails(point_in_parent, window_component,
                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE);
     return new PipWindowResizer(window_state);
@@ -170,8 +168,8 @@ class PipWindowResizerTest : public AshTestBase,
     widget_ = CreateWidgetForTest(bounds);
     window_ = widget_->GetNativeWindow();
     test_state_ = new FakeWindowState(WindowStateType::kPip);
-    wm::GetWindowState(window_)->SetStateObject(
-        std::unique_ptr<wm::WindowState::State>(test_state_));
+    WindowState::Get(window_)->SetStateObject(
+        std::unique_ptr<WindowState::State>(test_state_));
   }
 
  private:
@@ -509,7 +507,7 @@ TEST_P(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
                                         gfx::Rect(0, 0, 1, 1),
                                         base::DoNothing());
   keyboard_controller->ShowKeyboardInDisplay(
-      wm::GetWindowState(window())->GetDisplay());
+      WindowState::Get(window())->GetDisplay());
   ASSERT_TRUE(keyboard::WaitUntilShown());
 
   aura::Window* keyboard_window = keyboard_controller->GetKeyboardWindow();
@@ -528,7 +526,7 @@ TEST_P(PipWindowResizerTest, PipWindowFlungAvoidsFloatingKeyboard) {
 
 TEST_P(PipWindowResizerTest, PipWindowDoesNotChangeDisplayOnDrag) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  display::Display display = wm::GetWindowState(window())->GetDisplay();
+  display::Display display = WindowState::Get(window())->GetDisplay();
   gfx::Rect rect_in_screen = window()->bounds();
   ::wm::ConvertRectToScreen(window()->parent(), &rect_in_screen);
   EXPECT_TRUE(display.bounds().Contains(rect_in_screen));
@@ -557,7 +555,7 @@ TEST_P(PipWindowResizerTest, PipRestoreBoundsSetOnFling) {
     Fling(std::move(resizer), 3000.f, 3000.f);
   }
 
-  wm::WindowState* window_state = wm::GetWindowState(window());
+  WindowState* window_state = WindowState::Get(window());
   EXPECT_TRUE(window_state->HasRestoreBounds());
   EXPECT_EQ(gfx::Rect(292, 292, 100, 100),
             window_state->GetRestoreBoundsInParent());
@@ -597,7 +595,7 @@ TEST_P(PipWindowResizerTest, PipFreeResizeAreaUmaMetrics) {
 
 TEST_P(PipWindowResizerTest, DragDetailsAreDestroyed) {
   PreparePipWindow(gfx::Rect(200, 200, 100, 100));
-  wm::WindowState* window_state = wm::GetWindowState(window());
+  WindowState* window_state = WindowState::Get(window());
 
   {
     std::unique_ptr<PipWindowResizer> resizer(CreateResizerForTest(HTCAPTION));
@@ -885,5 +883,4 @@ INSTANTIATE_TEST_SUITE_P(
                     std::make_tuple("400x300,4000x3000", 0u),
                     std::make_tuple("4000x3000,400x300", 1u)));
 
-}  // namespace wm
 }  // namespace ash

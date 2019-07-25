@@ -98,7 +98,7 @@ TEST_F(DisplayMoveWindowUtilTest, WindowState) {
   display::Screen* screen = display::Screen::GetScreen();
   ASSERT_EQ(display_manager()->GetDisplayAt(0).id(),
             screen->GetDisplayNearestWindow(window).id());
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   // Set window to maximized state.
   window_state->Maximize();
   EXPECT_TRUE(window_state->IsMaximized());
@@ -114,7 +114,7 @@ TEST_F(DisplayMoveWindowUtilTest, WindowState) {
 
   // Set window to fullscreen state.
   PerformMoveWindowAccel();
-  const wm::WMEvent fullscreen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  const WMEvent fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&fullscreen);
   EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
             screen->GetDisplayNearestWindow(window).id());
@@ -131,7 +131,7 @@ TEST_F(DisplayMoveWindowUtilTest, WindowState) {
 
   // Set window to left snapped state.
   PerformMoveWindowAccel();
-  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(display_manager()->GetDisplayAt(0).id(),
             screen->GetDisplayNearestWindow(window).id());
@@ -265,7 +265,7 @@ TEST_F(DisplayMoveWindowUtilTest, KeepWindowBoundsIfNotChangedByUser) {
   EXPECT_EQ(gfx::Rect(410, 20, 200, 400), window->GetBoundsInScreen());
 
   // Move window to display [p] and set that its bounds is changed by user.
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   PerformMoveWindowAccel();
   window_state->set_bounds_changed_by_user(true);
   // Move window back to display [1], but its bounds has been changed by user.
@@ -284,7 +284,7 @@ TEST_F(DisplayMoveWindowUtilTest, AutoManaged) {
   // which will center the window on display [p].
   aura::Window* window1 =
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
-  wm::WindowState* window1_state = wm::GetWindowState(window1);
+  WindowState* window1_state = WindowState::Get(window1);
   window1_state->SetWindowPositionManaged(true);
   window1->Hide();
   window1->Show();
@@ -297,7 +297,7 @@ TEST_F(DisplayMoveWindowUtilTest, AutoManaged) {
   // which will do auto window management (pushing the other window to side).
   aura::Window* window2 =
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
-  wm::WindowState* window2_state = wm::GetWindowState(window2);
+  WindowState* window2_state = WindowState::Get(window2);
   window2_state->SetWindowPositionManaged(true);
   window2->Hide();
   window2->Show();
@@ -434,7 +434,7 @@ TEST_F(DisplayMoveWindowUtilTest, RestoreMaximizedWindowAfterMovement) {
       CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 200, 100));
   wm::ActivateWindow(w);
 
-  wm::WindowState* window_state = wm::GetWindowState(w);
+  WindowState* window_state = WindowState::Get(w);
   window_state->Maximize();
   EXPECT_EQ(gfx::Rect(0, 0, 400, 300 - ShelfConstants::shelf_size()),
             w->GetBoundsInScreen());

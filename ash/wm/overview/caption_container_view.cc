@@ -228,7 +228,7 @@ void CaptionContainerView::SetShowPreview(bool show) {
     return;
   }
 
-  preview_view_ = new wm::WindowPreviewView(window_, false);
+  preview_view_ = new WindowPreviewView(window_, false);
   AddChildWithLayer(this, preview_view_);
   Layout();
 }

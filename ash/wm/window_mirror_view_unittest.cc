@@ -12,7 +12,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-namespace wm {
 namespace {
 
 using WindowMirrorViewTest = AshTestBase;
@@ -38,5 +37,4 @@ TEST_F(WindowMirrorViewTest, LocalWindowOcclusionMadeVisible) {
 }
 
 }  // namespace
-}  // namespace wm
 }  // namespace ash

@@ -34,7 +34,7 @@ ArcInstanceThrottle::ArcInstanceThrottle() {
   if (!ash::Shell::HasInstance())  // for unit testing.
     return;
   ash::Shell::Get()->activation_client()->AddObserver(this);
-  ThrottleInstance(ash::wm::GetActiveWindow());
+  ThrottleInstance(ash::window_util::GetActiveWindow());
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() {

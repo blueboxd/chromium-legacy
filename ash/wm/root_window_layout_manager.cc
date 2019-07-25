@@ -9,8 +9,6 @@
 
 namespace ash {
 
-namespace wm {
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowLayoutManager, public:
 
@@ -50,5 +48,4 @@ void RootWindowLayoutManager::AddContainer(aura::Window* window) {
   containers_.push_back(window);
 }
 
-}  // namespace wm
 }  // namespace ash

@@ -45,8 +45,8 @@ TEST_F(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
   std::unique_ptr<ui::Event> test_event = std::make_unique<ui::KeyEvent>(
       ui::EventType::ET_MOUSE_PRESSED, ui::VKEY_UNKNOWN, ui::EF_NONE);
   home_screen_controller()->GoHome(GetPrimaryDisplay().id());
-  ASSERT_TRUE(wm::GetWindowState(w1.get())->IsMinimized());
-  ASSERT_FALSE(wm::GetWindowState(w2.get())->IsMinimized());
+  ASSERT_TRUE(WindowState::Get(w1.get())->IsMinimized());
+  ASSERT_FALSE(WindowState::Get(w2.get())->IsMinimized());
 }
 
 }  // namespace

@@ -15,6 +15,12 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
+ * Tuple of device id, width, height of preferred capture resolution and all
+ * available resolutions for a specific video device.
+ * @typedef {[string, number, number, ResolList]} DeviceIdResols
+ */
+
+/**
  * Creates the base controller of settings view.
  * @param {string} selector Selector text of the view's root element.
  * @param {Object<string|function(Event=)>=} itemHandlers Click-handlers
@@ -103,11 +109,15 @@ cca.views.MasterSettings.prototype.openFeedback = function() {
 
 /**
  * Creates the controller of resolution settings view.
- * @param {cca.ResolutionEventBroker} resolBroker
+ * @param {!cca.camera.DeviceInfoUpdater} infoUpdater
+ * @param {!cca.camera.PhotoResolPreferrer} photoPreferrer
+ * @param {!cca.camera.VideoConstraintsPreferrer} videoPreferrer
+ * @param {!cca.ResolutionEventBroker} resolBroker
  * @extends {cca.views.BaseSettings}
  * @constructor
  */
-cca.views.ResolutionSettings = function(resolBroker) {
+cca.views.ResolutionSettings = function(
+    infoUpdater, photoPreferrer, videoPreferrer, resolBroker) {
   cca.views.BaseSettings.call(this, '#resolutionsettings', {
     'settings-front-photores': () => {
       const element = document.querySelector('#settings-front-photores');
@@ -250,26 +260,46 @@ cca.views.ResolutionSettings = function(resolBroker) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.resolBroker_.addPhotoResolChangeListener((front, back, externals) => {
-    // Filter out resolutions of megapixels < 0.1 i.e. megapixels 0.0
-    const zeroMPFilter = (s) => {
-      s = [...s];
-      s.splice(3, 1, s[3].filter(([w, h]) => w * h >= 100000));
-      return s;
-    };
-    this.frontPhotoSetting_ = front && zeroMPFilter(front);
-    this.backPhotoSetting_ = back && zeroMPFilter(back);
-    this.externalPhotoSettings_ = externals.map(zeroMPFilter);
+  infoUpdater.addDeviceChangeListener(async (updater) => {
+    const devices = await updater.getCamera3DevicesInfo();
+    if (!devices) {
+      cca.state.set('no-resolution-settings', true);
+      return;
+    }
+
+    this.frontPhotoSetting_ = this.backPhotoSetting_ = null;
+    this.externalPhotoSettings_ = [];
+    this.frontVideoSetting_ = this.backVideoSetting_ = null;
+    this.externalVideoSettings_ = [];
+
+    devices.forEach(({deviceId, facing, photoResols, videoResols}) => {
+      // Filter out resolutions of megapixels < 0.1 i.e. megapixels 0.0
+      const photoSetting = [
+        deviceId, ...photoPreferrer.getPrefResolution(deviceId),
+        photoResols.filter(([w, h]) => w * h >= 100000),
+      ];
+      const videoSetting = [
+        deviceId, ...videoPreferrer.getPrefResolution(deviceId), videoResols,
+      ];
+      switch (facing) {
+        case cros.mojom.CameraFacing.CAMERA_FACING_FRONT:
+          this.frontPhotoSetting_ = photoSetting;
+          this.frontVideoSetting_ = videoSetting;
+          break;
+        case cros.mojom.CameraFacing.CAMERA_FACING_BACK:
+          this.backPhotoSetting_ = photoSetting;
+          this.backVideoSetting_ = videoSetting;
+          break;
+        case cros.mojom.CameraFacing.CAMERA_FACING_EXTERNAL:
+          this.externalPhotoSettings_.push(photoSetting);
+          this.externalVideoSettings_.push(videoSetting);
+          break;
+        default:
+          console.error(`Ignore device of unknown facing: ${facing}`);
+      }
+    });
     this.updateResolutions_();
   });
-
-  this.resolBroker_.addVideoResolChangeListener((front, back, externals) => {
-    this.frontVideoSetting_ = front;
-    this.backVideoSetting_ = back;
-    this.externalVideoSettings_ = externals;
-    this.updateResolutions_();
-  });
-
 
   this.resolBroker_.addPhotoPrefResolChangeListener(
       this.updateSelectedPhotoResolution_.bind(this));
@@ -341,20 +371,6 @@ cca.views.ResolutionSettings.prototype.getDeviceSetting_ = function(deviceId) {
  * @private
  */
 cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
-  // Since photo/video resolutions may be updated independently and updating
-  // setting menu requires both information, check if their device ids are
-  // matched before update.
-  const compareId = (setting, setting2) =>
-      (setting && setting[0]) === (setting2 && setting2[0]);
-  if (!compareId(this.frontPhotoSetting_, this.frontVideoSetting_) ||
-      !compareId(this.backPhotoSetting_, this.backVideoSetting_) ||
-      this.externalPhotoSettings_.length !=
-          this.externalVideoSettings_.length ||
-      this.externalPhotoSettings_.some(
-          (s, index) => !compareId(s, this.externalVideoSettings_[index]))) {
-    return;
-  }
-
   const prepItem = (item, [id, w, h, resolutions], optTextTempl) => {
     item.dataset.deviceId = id;
     item.classList.toggle('multi-option', resolutions.length > 1);

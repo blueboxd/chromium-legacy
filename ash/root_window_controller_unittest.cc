@@ -240,7 +240,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
             fullscreen->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Test if the restore bounds are correctly updated.
-  wm::GetWindowState(maximized->GetNativeView())->Restore();
+  WindowState::Get(maximized->GetNativeView())->Restore();
   EXPECT_EQ("200,20 100x100", maximized->GetWindowBoundsInScreen().ToString());
   EXPECT_EQ("200,20 100x100",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());

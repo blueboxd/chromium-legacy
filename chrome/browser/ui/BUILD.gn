@@ -1347,7 +1347,6 @@ jumbo_split_static_library("ui") {
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/common:buildflags",
       "//chrome/common:search_mojom",
-      "//chrome/services/app_service/public/cpp:app_service_proxy",
       "//chrome/services/app_service/public/cpp:app_update",
       "//chrome/services/app_service/public/mojom",
       "//components/feedback/proto",

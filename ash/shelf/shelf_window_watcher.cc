@@ -101,7 +101,7 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     aura::Window* window,
     const void* key,
     intptr_t old) {
-  if (key == kShelfIDKey && window == wm::GetActiveWindow()) {
+  if (key == kShelfIDKey && window == window_util::GetActiveWindow()) {
     window_watcher_->model_->SetActiveShelfID(
         ShelfID::Deserialize(window->GetProperty(kShelfIDKey)));
   }

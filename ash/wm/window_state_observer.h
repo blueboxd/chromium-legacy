@@ -9,10 +9,8 @@
 
 namespace ash {
 
-enum class WindowStateType;
-
-namespace wm {
 class WindowState;
+enum class WindowStateType;
 
 class ASH_EXPORT WindowStateObserver {
  public:
@@ -37,7 +35,6 @@ class ASH_EXPORT WindowStateObserver {
                                            WindowStateType old_type) {}
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_STATE_OBSERVER_H_

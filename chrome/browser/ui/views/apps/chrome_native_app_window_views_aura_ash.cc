@@ -244,7 +244,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
-  observed_window_state_.Add(ash::wm::GetWindowState(GetNativeWindow()));
+  observed_window_state_.Add(ash::WindowState::Get(GetNativeWindow()));
 
   ash::NonClientFrameViewAsh* custom_frame_view =
       new ash::NonClientFrameViewAsh(widget);
@@ -445,7 +445,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWidgetActivationChanged(
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnPostWindowStateTypeChange(
-    ash::wm::WindowState* window_state,
+    ash::WindowState* window_state,
     ash::WindowStateType old_type) {
   DCHECK(!IsFrameless());
   DCHECK_EQ(GetNativeWindow(), window_state->window());
@@ -487,7 +487,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWindowPropertyChanged(
 void ChromeNativeAppWindowViewsAuraAsh::OnWindowDestroying(
     aura::Window* window) {
   if (observed_window_state_.IsObservingSources())
-    observed_window_state_.Remove(ash::wm::GetWindowState(window));
+    observed_window_state_.Remove(ash::WindowState::Get(window));
   observed_window_.Remove(window);
 }
 

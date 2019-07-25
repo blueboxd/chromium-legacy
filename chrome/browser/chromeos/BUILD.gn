@@ -72,7 +72,6 @@ source_set("chromeos") {
     "//chrome/common",
     "//chrome/common/extensions/api",
     "//chrome/services/app_service:lib",
-    "//chrome/services/app_service/public/cpp:app_service_proxy",
     "//chrome/services/app_service/public/cpp:app_update",
     "//chrome/services/cups_proxy",
     "//chrome/services/cups_proxy/public/mojom",

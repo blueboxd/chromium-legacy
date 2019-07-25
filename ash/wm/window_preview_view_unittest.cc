@@ -10,7 +10,7 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
+namespace {
 
 using WindowPreviewViewTest = AshTestBase;
 
@@ -109,5 +109,5 @@ TEST_F(WindowPreviewViewTest, LayoutChildOutsideParentBounds) {
             test_api.GetMirrorViewForWidget(widget2.get())->bounds());
 }
 
-}  // namespace wm
+}  // namespace
 }  // namespace ash

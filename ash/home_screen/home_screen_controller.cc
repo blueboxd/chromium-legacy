@@ -36,8 +36,8 @@ bool MinimizeAllWindows() {
   aura::Window::Windows windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {
-    if (!container->Contains(*it) && !wm::GetWindowState(*it)->IsMinimized()) {
-      wm::GetWindowState(*it)->Minimize();
+    if (!container->Contains(*it) && !WindowState::Get(*it)->IsMinimized()) {
+      WindowState::Get(*it)->Minimize();
       handled = true;
     }
   }

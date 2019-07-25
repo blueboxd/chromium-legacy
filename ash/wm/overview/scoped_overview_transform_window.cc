@@ -109,7 +109,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
   type_ = GetWindowDimensionsType(window);
 
   std::vector<aura::Window*> transient_children_to_hide;
-  for (auto* transient : wm::GetTransientTreeIterator(window)) {
+  for (auto* transient : GetTransientTreeIterator(window)) {
     targeting_policy_map_[transient] = transient->event_targeting_policy();
     transient->SetEventTargetingPolicy(aura::EventTargetingPolicy::kNone);
     transient->SetProperty(kIsShowingInOverviewKey, true);
@@ -129,7 +129,7 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
 }
 
 ScopedOverviewTransformWindow::~ScopedOverviewTransformWindow() {
-  for (auto* transient : wm::GetTransientTreeIterator(window_)) {
+  for (auto* transient : GetTransientTreeIterator(window_)) {
     transient->ClearProperty(kIsShowingInOverviewKey);
     DCHECK(targeting_policy_map_.contains(transient));
     auto it = targeting_policy_map_.find(transient);
@@ -239,7 +239,7 @@ void ScopedOverviewTransformWindow::BeginScopedAnimation(
 }
 
 bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
-  for (auto* window : wm::GetTransientTreeIterator(window_)) {
+  for (auto* window : GetTransientTreeIterator(window_)) {
     if (window->Contains(target))
       return true;
   }
@@ -351,7 +351,7 @@ void ScopedOverviewTransformWindow::Close() {
 }
 
 bool ScopedOverviewTransformWindow::IsMinimized() const {
-  return wm::GetWindowState(window_)->IsMinimized();
+  return WindowState::Get(window_)->IsMinimized();
 }
 
 void ScopedOverviewTransformWindow::PrepareForOverview() {
@@ -457,7 +457,7 @@ void ScopedOverviewTransformWindow::OnTransientChildWindowRemoved(
 void ScopedOverviewTransformWindow::CloseWidget() {
   aura::Window* parent_window = ::wm::GetTransientRoot(window_);
   if (parent_window)
-    wm::CloseWidgetForWindow(parent_window);
+    window_util::CloseWidgetForWindow(parent_window);
 }
 
 // static

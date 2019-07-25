@@ -48,7 +48,7 @@ bool CanStartTwoFingerMove(aura::Window* window,
   // the window type and the state type so that we do not steal touches from the
   // web contents.
   if (window->type() != aura::client::WINDOW_TYPE_NORMAL ||
-      !wm::GetWindowState(window)->IsNormalOrSnapped()) {
+      !WindowState::Get(window)->IsNormalOrSnapped()) {
     return false;
   }
   int component1_behavior =
@@ -103,7 +103,7 @@ void OnDragCompleted(
 // ToplevelWindowEventHandler to clean up.
 class ToplevelWindowEventHandler::ScopedWindowResizer
     : public aura::WindowObserver,
-      public wm::WindowStateObserver {
+      public WindowStateObserver {
  public:
   ScopedWindowResizer(ToplevelWindowEventHandler* handler,
                       std::unique_ptr<WindowResizer> resizer);
@@ -121,7 +121,7 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
   void OnWindowDestroying(aura::Window* window) override;
 
   // WindowStateObserver overrides:
-  void OnPreWindowStateTypeChange(wm::WindowState* window_state,
+  void OnPreWindowStateTypeChange(WindowState* window_state,
                                   WindowStateType type) override;
 
  private:
@@ -143,7 +143,7 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     : handler_(handler), resizer_(std::move(resizer)), grabbed_capture_(false) {
   aura::Window* target = resizer_->GetTarget();
   target->AddObserver(this);
-  wm::GetWindowState(target)->AddObserver(this);
+  WindowState::Get(target)->AddObserver(this);
 
   if (IsResize())
     target->NotifyResizeLoopStarted();
@@ -157,7 +157,7 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
   aura::Window* target = resizer_->GetTarget();
   target->RemoveObserver(this);
-  wm::GetWindowState(target)->RemoveObserver(this);
+  WindowState::Get(target)->RemoveObserver(this);
   if (grabbed_capture_)
     target->ReleaseCapture();
   if (!window_destroying_ && IsResize())
@@ -175,8 +175,7 @@ bool ToplevelWindowEventHandler::ScopedWindowResizer::IsResize() const {
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::
-    OnPreWindowStateTypeChange(wm::WindowState* window_state,
-                               WindowStateType old) {
+    OnPreWindowStateTypeChange(WindowState* window_state, WindowStateType old) {
   handler_->CompleteDrag(DragResult::SUCCESS);
 }
 
@@ -266,7 +265,7 @@ void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  int component = wm::GetNonClientComponent(target, event->location());
+  int component = window_util::GetNonClientComponent(target, event->location());
   gfx::Point event_location = event->location();
 
   aura::Window* original_target = target;
@@ -512,7 +511,7 @@ aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return nullptr;
   }
-  wm::WindowState* window_state = wm::GetWindowState(toplevel);
+  WindowState* window_state = WindowState::Get(toplevel);
   if (!window_state ||
       (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
        !window_state->IsSnapped())) {
@@ -594,7 +593,7 @@ aura::Window* ToplevelWindowEventHandler::GetTargetForClientAreaGesture(
 
   // Disable window position auto management while dragging and restore it
   // aftrewards.
-  wm::WindowState* window_state = wm::GetWindowState(source);
+  WindowState* window_state = WindowState::Get(source);
   const bool window_position_managed = window_state->GetWindowPositionManaged();
   window_state->SetWindowPositionManaged(false);
   aura::WindowTracker tracker({source});
@@ -670,7 +669,7 @@ void ToplevelWindowEventHandler::HandleMousePressed(aura::Window* target,
   // We also update the current window component here because for the
   // mouse-drag-release-press case, where the mouse is released and
   // pressed without mouse move event.
-  int component = wm::GetNonClientComponent(target, event->location());
+  int component = window_util::GetNonClientComponent(target, event->location());
   if ((event->flags() & (ui::EF_IS_DOUBLE_CLICK | ui::EF_IS_TRIPLE_CLICK)) ==
           0 &&
       WindowResizer::GetBoundsChangeForWindowComponent(component)) {
@@ -728,7 +727,8 @@ void ToplevelWindowEventHandler::HandleMouseMoved(aura::Window* target,
   // TODO(jamescook): Move the resize cursor update code into here from
   // CompoundEventFilter?
   if (event->flags() & ui::EF_IS_NON_CLIENT) {
-    int component = wm::GetNonClientComponent(target, event->location());
+    int component =
+        window_util::GetNonClientComponent(target, event->location());
     ShowResizeShadow(target, component);
   } else {
     HideResizeShadow(target);

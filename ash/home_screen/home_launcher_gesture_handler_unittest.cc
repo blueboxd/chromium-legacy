@@ -94,7 +94,7 @@ TEST_F(HomeLauncherGestureHandlerTest, NeedsOneMinimizedWindowToHide) {
   DoPress(Mode::kSlideDownToHide);
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
 
-  wm::GetWindowState(window.get())->Minimize();
+  WindowState::Get(window.get())->Minimize();
   DoPress(Mode::kSlideDownToHide);
   EXPECT_TRUE(GetGestureHandler()->GetActiveWindow());
 }
@@ -111,7 +111,7 @@ TEST_F(HomeLauncherGestureHandlerTest, ShowWindowsAreHidden) {
 
   // Test that the most recently activated window is visible, but the others are
   // not.
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   DoPress(Mode::kSlideUpToShow);
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_FALSE(window2->IsVisible());
@@ -167,7 +167,7 @@ TEST_F(HomeLauncherGestureHandlerTest, FlingingSlideDown) {
   UpdateDisplay("400x456");
 
   auto window = CreateWindowForTesting();
-  wm::GetWindowState(window.get())->Minimize();
+  WindowState::Get(window.get())->Minimize();
   ASSERT_FALSE(window->IsVisible());
 
   // Tests that flinging up in this mode will not show the mru window.
@@ -202,8 +202,8 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
 
   auto window1 = CreateWindowForTesting();
   auto window2 = CreateWindowForTesting();
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsMinimized());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsMinimized());
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsMinimized());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsMinimized());
 
   OverviewController* controller = Shell::Get()->overview_controller();
   controller->StartOverview();
@@ -235,8 +235,8 @@ TEST_F(HomeLauncherGestureHandlerTest, OverviewMode) {
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
   EXPECT_FALSE(controller->InOverviewSession());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
 
 TEST_F(HomeLauncherGestureHandlerTest, OverviewModeNoWindows) {
@@ -325,8 +325,8 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewOneSnappedWindow) {
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
   EXPECT_FALSE(overview_controller->InOverviewSession());
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
 
 // Tests that swipe to close works as expected when there are two snapped
@@ -346,7 +346,7 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
 
   // Make |window1| the most recent used window. It should be the main window in
   // HomeLauncherGestureHandler.
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   DoPress(Mode::kSlideUpToShow);
   EXPECT_EQ(window1.get(), GetGestureHandler()->GetActiveWindow());
   EXPECT_EQ(window2.get(), GetGestureHandler()->GetSecondaryWindow());
@@ -368,8 +368,8 @@ TEST_F(HomeLauncherGestureHandlerTest, SplitviewTwoSnappedWindows) {
   DoPress(Mode::kSlideUpToShow);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
   EXPECT_FALSE(split_view_controller->InSplitViewMode());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsMinimized());
 }
 
 // Tests that the shelf background is transparent when the home launcher is
@@ -438,7 +438,7 @@ class HomeLauncherModeGestureHandlerTest
     std::unique_ptr<aura::Window> window =
         HomeLauncherGestureHandlerTest::CreateWindowForTesting();
     if (mode_ == Mode::kSlideDownToHide)
-      wm::GetWindowState(window.get())->Minimize();
+      WindowState::Get(window.get())->Minimize();
     return window;
   }
 
@@ -525,7 +525,7 @@ TEST_P(HomeLauncherModeGestureHandlerTest, AboveHalfReleaseMinimizesWindow) {
 
   // Test that |window1| is minimized on release.
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 100));
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMinimized());
 
   // The rest of the windows remain invisible, to show the home launcher.
   EXPECT_FALSE(window2->IsVisible());
@@ -574,13 +574,13 @@ TEST_P(HomeLauncherModeGestureHandlerTest, EndScrollOnTabletModeEnd) {
   // Scroll to a point above the halfway mark of the work area.
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 50), 1.f);
   EXPECT_TRUE(GetGestureHandler()->GetActiveWindow());
-  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMinimized());
+  EXPECT_FALSE(WindowState::Get(window.get())->IsMinimized());
 
   // Tests that on exiting tablet mode, |window| gets minimized and is no longer
   // tracked by the gesture handler.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_FALSE(GetGestureHandler()->GetActiveWindow());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMinimized());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
 }
 
 // Tests that the variables get set as expected during dragging, and get reset
@@ -592,12 +592,12 @@ TEST_P(HomeLauncherModeGestureHandlerTest, AnimatingToEndResetsState) {
   auto child = CreateTestWindow(gfx::Rect(100, 100, 200, 200),
                                 aura::client::WINDOW_TYPE_POPUP);
   ::wm::AddTransientChild(window1.get(), child.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
 
   // For swipe down to hide launcher, all windows must be minimized.
   if (mode_ == Mode::kSlideDownToHide) {
-    wm::GetWindowState(window2.get())->Minimize();
-    wm::GetWindowState(window1.get())->Minimize();
+    WindowState::Get(window2.get())->Minimize();
+    WindowState::Get(window1.get())->Minimize();
   }
 
   // Tests that the variables which change when dragging are as expected.

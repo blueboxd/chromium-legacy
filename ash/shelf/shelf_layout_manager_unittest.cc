@@ -434,7 +434,7 @@ class ShelfLayoutManagerTest : public AshTestBase {
     timestamp_ += base::TimeDelta::FromMilliseconds(25);
   }
 
-  wm::WorkspaceWindowState GetWorkspaceWindowState() const {
+  WorkspaceWindowState GetWorkspaceWindowState() const {
     // Shelf window does not belong to any desk, use the root to get the active
     // desk's workspace state.
     auto* shelf_window = GetShelfWidget()->GetNativeWindow();
@@ -556,7 +556,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   // Verify that the shelf can still enter auto hide if the |widget_| has been
   // put into fullscreen.
   widget->SetFullscreen(true);
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   window_state->SetHideShelfWhenFullscreen(false);
   window->SetProperty(kImmersiveIsActive, true);
   layout_manager->UpdateVisibilityState();
@@ -720,7 +720,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
   // Put |widget| into fullscreen. Set the shelf to be auto hidden when |widget|
   // is fullscreen. (eg browser immersive fullscreen).
   widget->SetFullscreen(true);
-  wm::GetWindowState(window)->SetHideShelfWhenFullscreen(false);
+  WindowState::Get(window)->SetHideShelfWhenFullscreen(false);
   layout_manager->UpdateVisibilityState();
 
   gfx::Rect window_bounds_fullscreen = window->bounds();
@@ -763,7 +763,7 @@ void ShelfLayoutManagerTest::RunGestureDragTests(
 
   // Set the shelf to be hidden when |widget| is fullscreen. (eg tab fullscreen
   // with or without immersive browser fullscreen).
-  wm::GetWindowState(window)->SetHideShelfWhenFullscreen(true);
+  WindowState::Get(window)->SetHideShelfWhenFullscreen(true);
 
   layout_manager->UpdateVisibilityState();
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
@@ -1540,7 +1540,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   wm::ActivateWindow(window);
   GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kFullscreen, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   // Show the app list and the shelf should be temporarily visible.
@@ -1628,7 +1628,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfWithSystemModalWindowDualDisplay) {
 // toggles visibility when another window is activated.
 TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
   Shelf* shelf = GetPrimaryShelf();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kDefault, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   // Create a window and make it full screen.
@@ -1636,20 +1636,20 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowInFrontHidesShelf) {
   window1->SetBounds(gfx::Rect(0, 0, 100, 100));
   window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   window1->Show();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kFullscreen, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   aura::Window* window2 = CreateTestWindow();
   window2->SetBounds(gfx::Rect(0, 0, 100, 100));
   window2->Show();
 
-  wm::GetWindowState(window1)->Activate();
+  WindowState::Get(window1)->Activate();
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  wm::GetWindowState(window2)->Activate();
+  WindowState::Get(window2)->Activate();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  wm::GetWindowState(window1)->Activate();
+  WindowState::Get(window1)->Activate();
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 }
 
@@ -1674,7 +1674,7 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
-  wm::GetWindowState(window2)->Activate();
+  WindowState::Get(window2)->Activate();
   EXPECT_EQ(
       SHELF_HIDDEN,
       Shelf::ForWindow(window1)->shelf_layout_manager()->visibility_state());
@@ -1693,10 +1693,10 @@ TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
 
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  wm::PinWindow(window1, /* trusted */ false);
+  window_util::PinWindow(window1, /* trusted */ false);
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  wm::GetWindowState(window1)->Restore();
+  WindowState::Get(window1)->Restore();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 }
 
@@ -2276,7 +2276,7 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
   // maximized.
   widget_one->Activate();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  wm::GetWindowState(window_two)
+  WindowState::Get(window_two)
       ->set_autohide_shelf_when_maximized_or_fullscreen(true);
   widget_two->Activate();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
@@ -2287,20 +2287,20 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
 
   // The hide_shelf_when_active flag should override the behavior of the
   // hide_shelf_when_fullscreen flag even if the window is currently fullscreen.
-  wm::GetWindowState(window_two)->SetHideShelfWhenFullscreen(false);
+  WindowState::Get(window_two)->SetHideShelfWhenFullscreen(false);
   widget_two->SetFullscreen(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
-  wm::GetWindowState(window_two)->Restore();
+  WindowState::Get(window_two)->Restore();
 
   // With the flag off, shelf no longer auto-hides.
   widget_one->Activate();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
-  wm::GetWindowState(window_two)
+  WindowState::Get(window_two)
       ->set_autohide_shelf_when_maximized_or_fullscreen(false);
   widget_two->Activate();
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  wm::GetWindowState(window_two)
+  WindowState::Get(window_two)
       ->set_autohide_shelf_when_maximized_or_fullscreen(true);
   window_two->SetProperty(aura::client::kZOrderingKey,
                           ui::ZOrderLevel::kFloatingWindow);
@@ -2313,7 +2313,7 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
   widget_two->Maximize();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 }
 
@@ -2392,33 +2392,33 @@ TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
 TEST_F(ShelfLayoutManagerTest, WorkspaceMask) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
   w1->Show();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kDefault, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   // Overlaps with shelf should not cause any specific behavior.
   w1->SetBounds(GetShelfLayoutManager()->GetIdealBounds());
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kDefault, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kFullscreen, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   std::unique_ptr<aura::Window> w2(CreateTestWindow());
   w2->Show();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kDefault, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w2.reset();
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kFullscreen, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_DEFAULT, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kDefault, GetWorkspaceWindowState());
   EXPECT_TRUE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 }
 
@@ -2455,7 +2455,7 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
   w3->Show();
   wm::ActivateWindow(w3.get());
 
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
   EXPECT_FALSE(GetNonLockScreenContainersContainerLayer()->GetMasksToBounds());
 
   w3.reset();
@@ -2486,7 +2486,7 @@ TEST_F(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
 
   // |window| should be maximized, and the shelf background should match the
   // maximized state.
-  EXPECT_EQ(wm::WORKSPACE_WINDOW_STATE_MAXIMIZED, GetWorkspaceWindowState());
+  EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 }
 
@@ -2998,8 +2998,8 @@ TEST_F(ShelfLayoutManagerTest, A11yAlertOnWorkspaceState) {
 
   // Toggle the current normal window in workspace to fullscreen should send the
   // ENTERED alert.
-  const wm::WMEvent fullscreen(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::WindowState* window_state2 = wm::GetWindowState(window2.get());
+  const WMEvent fullscreen(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState* window_state2 = WindowState::Get(window2.get());
   window_state2->OnWMEvent(&fullscreen);
   EXPECT_TRUE(window_state2->IsFullscreen());
   EXPECT_EQ(AccessibilityAlert::WORKSPACE_FULLSCREEN_STATE_ENTERED,
@@ -3045,8 +3045,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfHiddenForSinglePipWindow) {
   window->SetProperty(aura::client::kZOrderingKey,
                       ui::ZOrderLevel::kFloatingWindow);
   window->Show();
-  const wm::WMEvent pip_event(wm::WM_EVENT_PIP);
-  wm::GetWindowState(window)->OnWMEvent(&pip_event);
+  const WMEvent pip_event(WM_EVENT_PIP);
+  WindowState::Get(window)->OnWMEvent(&pip_event);
   Shell::Get()->UpdateShelfVisibility();
 
   // Expect the shelf to be hidden.

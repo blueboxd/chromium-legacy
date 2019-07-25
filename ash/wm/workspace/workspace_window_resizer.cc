@@ -78,7 +78,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
     const gfx::Point& point_in_parent,
     int window_component,
     ::wm::WindowMoveSource source) {
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   // Only maximized/fullscreen/snapped window can be dragged from the top of
   // the screen.
   if (!window_state->IsMaximized() && !window_state->IsFullscreen() &&
@@ -137,7 +137,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     ::wm::WindowMoveSource source) {
   DCHECK(window);
 
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
 
   // A resizer already exists; don't create a new one.
   if (window_state->drag_details())
@@ -414,7 +414,7 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
 
 // static
 WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
-    wm::WindowState* window_state,
+    WindowState* window_state,
     const std::vector<aura::Window*>& attached_windows) {
   return new WorkspaceWindowResizer(window_state, attached_windows);
 }
@@ -510,8 +510,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
     }
     // TODO(oshima): Add event source type to WMEvent and move
     // metrics recording inside WindowState::OnWMEvent.
-    const wm::WMEvent event(snap_type_ == SNAP_LEFT ? wm::WM_EVENT_SNAP_LEFT
-                                                    : wm::WM_EVENT_SNAP_RIGHT);
+    const WMEvent event(snap_type_ == SNAP_LEFT ? WM_EVENT_SNAP_LEFT
+                                                : WM_EVENT_SNAP_RIGHT);
     window_state()->OnWMEvent(&event);
     if (snap_type_ == SNAP_LEFT)
       base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeLeft"));
@@ -591,7 +591,7 @@ void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
     CompleteDrag();
 
     if (details().bounds_change != WindowResizer::kBoundsChange_Repositions ||
-        !wm::GetWindowState(GetTarget())->IsNormalOrSnapped()) {
+        !WindowState::Get(GetTarget())->IsNormalOrSnapped()) {
       return;
     }
 
@@ -613,7 +613,7 @@ void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
     DCHECK_GT(event->details().touch_points(), 0);
     if (event->details().touch_points() == 1)
       return;
-    if (!wm::GetWindowState(GetTarget())->IsNormalOrSnapped())
+    if (!WindowState::Get(GetTarget())->IsNormalOrSnapped())
       return;
 
     CompleteDrag();
@@ -633,7 +633,7 @@ void WorkspaceWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
 }
 
 WorkspaceWindowResizer::WorkspaceWindowResizer(
-    wm::WindowState* window_state,
+    WindowState* window_state,
     const std::vector<aura::Window*>& attached_windows)
     : WindowResizer(window_state),
       attached_windows_(attached_windows),
@@ -903,7 +903,7 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(
     if (base::Contains(attached_windows_, *i))
       continue;
 
-    wm::WindowState* other_state = wm::GetWindowState(*i);
+    WindowState* other_state = WindowState::Get(*i);
     if (other_state->window() == GetTarget() ||
         !other_state->window()->IsVisible() ||
         !other_state->IsNormalOrSnapped() || !other_state->CanResize()) {
@@ -1077,8 +1077,8 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   // Update phantom window with snapped guide bounds.
   const gfx::Rect phantom_bounds =
       (snap_type_ == SNAP_LEFT)
-          ? wm::GetDefaultLeftSnappedWindowBoundsInParent(GetTarget())
-          : wm::GetDefaultRightSnappedWindowBoundsInParent(GetTarget());
+          ? GetDefaultLeftSnappedWindowBoundsInParent(GetTarget())
+          : GetDefaultRightSnappedWindowBoundsInParent(GetTarget());
 
   if (!snap_phantom_window_controller_) {
     snap_phantom_window_controller_ =
@@ -1159,7 +1159,7 @@ bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(
 void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
     aura::Window* window,
     WindowStateType new_state_type) {
-  wm::WindowState* window_state = wm::GetWindowState(window);
+  WindowState* window_state = WindowState::Get(window);
   // TODO(oshima): Move extra logic (set_unminimize_to_restore_bounds,
   // SetRestoreBoundsInParent) that modifies the window state
   // into WindowState.
@@ -1180,14 +1180,14 @@ void WorkspaceWindowResizer::SetWindowStateTypeFromGesture(
     case WindowStateType::kLeftSnapped:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
-        const wm::WMEvent event(wm::WM_EVENT_SNAP_LEFT);
+        const WMEvent event(WM_EVENT_SNAP_LEFT);
         window_state->OnWMEvent(&event);
       }
       break;
     case WindowStateType::kRightSnapped:
       if (window_state->CanSnap()) {
         window_state->SetRestoreBoundsInParent(pre_drag_window_bounds_);
-        const wm::WMEvent event(wm::WM_EVENT_SNAP_RIGHT);
+        const WMEvent event(WM_EVENT_SNAP_RIGHT);
         window_state->OnWMEvent(&event);
       }
       break;
@@ -1213,7 +1213,7 @@ void WorkspaceWindowResizer::StartDragForAttachedWindows() {
   DCHECK(window_component == HTLEFT || window_component == HTTOP);
 
   for (auto* window : attached_windows_) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     window_state->CreateDragDetails(details().initial_location_in_parent,
                                     window_component,
                                     ::wm::WINDOW_MOVE_SOURCE_MOUSE);
@@ -1226,7 +1226,7 @@ void WorkspaceWindowResizer::EndDragForAttachedWindows(bool revert_drag) {
     return;
 
   for (auto* window : attached_windows_) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     if (revert_drag)
       window_state->OnRevertDrag(last_mouse_location_);
     else

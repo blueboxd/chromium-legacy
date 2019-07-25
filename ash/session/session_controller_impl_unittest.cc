@@ -631,7 +631,7 @@ class CanSwitchUserTest : public AshTestBase {
 
  private:
   static void CloseMessageBox(ActionType action) {
-    aura::Window* active_window = ash::wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     views::DialogDelegate* dialog =
         active_window ? views::Widget::GetWidgetForNativeWindow(active_window)
                             ->widget_delegate()

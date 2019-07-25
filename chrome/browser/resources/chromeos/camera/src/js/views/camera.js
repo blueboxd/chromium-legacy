@@ -17,10 +17,13 @@ cca.views = cca.views || {};
 /**
  * Creates the camera-view controller.
  * @param {cca.models.Gallery} model Model object.
- * @param {cca.ResolutionEventBroker} resolBroker
+ * @param {cca.camera.DeviceInfoUpdater} infoUpdater
+ * @param {cca.camera.PhotoResolPreferrer} photoPreferrer
+ * @param {cca.camera.VideoConstraintsPreferrer} videoPreferrer
  * @constructor
  */
-cca.views.Camera = function(model, resolBroker) {
+cca.views.Camera = function(
+    model, infoUpdater, photoPreferrer, videoPreferrer) {
   cca.views.View.call(this, '#camera');
 
   /**
@@ -31,18 +34,10 @@ cca.views.Camera = function(model, resolBroker) {
   this.model_ = model;
 
   /**
-   * @type {cca.views.camera.PhotoResolPreferrer}
+   * @type {cca.camera.DeviceInfoUpdater}
    * @private
    */
-  this.photoResolPreferrer_ = new cca.views.camera.PhotoResolPreferrer(
-      resolBroker, this.stop_.bind(this));
-
-  /**
-   * @type {cca.views.camera.VideoConstraintsPreferrer}
-   * @private
-   */
-  this.videoPreferrer_ = new cca.views.camera.VideoConstraintsPreferrer(
-      resolBroker, this.stop_.bind(this));
+  this.infoUpdater_ = infoUpdater;
 
   /**
    * Layout handler for the camera view.
@@ -56,15 +51,15 @@ cca.views.Camera = function(model, resolBroker) {
    * @type {cca.views.camera.Preview}
    * @private
    */
-  this.preview_ = new cca.views.camera.Preview(this.stop_.bind(this));
+  this.preview_ = new cca.views.camera.Preview(this.restart.bind(this));
 
   /**
    * Options for the camera.
    * @type {cca.views.camera.Options}
    * @private
    */
-  this.options_ = new cca.views.camera.Options(
-      this.photoResolPreferrer_, this.videoPreferrer_, this.stop_.bind(this));
+  this.options_ =
+      new cca.views.camera.Options(infoUpdater, this.restart.bind(this));
 
   /**
    * @type {HTMLElement}
@@ -82,7 +77,7 @@ cca.views.Camera = function(model, resolBroker) {
    * @private
    */
   this.modes_ = new cca.views.camera.Modes(
-      this.photoResolPreferrer_, this.videoPreferrer_, this.stop_.bind(this),
+      photoPreferrer, videoPreferrer, this.restart.bind(this),
       async (result, filename) => {
         if (result.blob) {
           cca.metrics.log(
@@ -160,10 +155,10 @@ cca.views.Camera = function(model, resolBroker) {
   chrome.idle.onStateChanged.addListener((newState) => {
     this.locked_ = (newState == 'locked');
     if (this.locked_) {
-      this.stop_();
+      this.restart();
     }
   });
-  chrome.app.window.current().onMinimized.addListener(() => this.stop_());
+  chrome.app.window.current().onMinimized.addListener(() => this.restart());
 
   this.start_();
 };
@@ -255,9 +250,8 @@ cca.views.Camera.prototype.handlingKey = function(key) {
 /**
  * Stops camera and tries to start camera stream again if possible.
  * @return {!Promise} Promise for the start-camera operation.
- * @private
  */
-cca.views.Camera.prototype.stop_ = function() {
+cca.views.Camera.prototype.restart = function() {
   // Wait for ongoing 'start' and 'capture' done before restarting camera.
   return Promise
       .all([
@@ -285,7 +279,8 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
         // Null for requesting default camera on HALv1.
         throw new Error('HALv1-api');
       }
-      const previewRs = (await this.options_.getDeviceResolutions(deviceId))[1];
+      const previewRs =
+          (await this.infoUpdater_.getDeviceResolutions(deviceId))[1];
       var resolCandidates =
           this.modes_.getResolutionCandidates(mode, deviceId, previewRs);
     } catch (e) {
@@ -336,25 +331,27 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
 cca.views.Camera.prototype.start_ = function() {
   var suspend = this.locked_ || chrome.app.window.current().isMinimized();
   this.started_ =
-      (async () => {
-        if (!suspend) {
-          for (const id of await this.options_.videoDeviceIds()) {
-            if (await this.startWithDevice_(id)) {
-              return;
+      this.infoUpdater_
+          .lockDeviceInfo(async () => {
+            if (!suspend) {
+              for (const id of await this.options_.videoDeviceIds()) {
+                if (await this.startWithDevice_(id)) {
+                  return;
+                }
+              }
             }
-          }
-        }
-        throw new Error('suspend');
-      })().catch((error) => {
-        if (error && error.message != 'suspend') {
-          console.error(error);
-          cca.nav.open('warning', 'no-camera');
-        }
-        // Schedule to retry.
-        if (this.retryStartTimeout_) {
-          clearTimeout(this.retryStartTimeout_);
-          this.retryStartTimeout_ = null;
-        }
-        this.retryStartTimeout_ = setTimeout(this.start_.bind(this), 100);
-      });
+            throw new Error('suspend');
+          })
+          .catch((error) => {
+            if (error && error.message != 'suspend') {
+              console.error(error);
+              cca.nav.open('warning', 'no-camera');
+            }
+            // Schedule to retry.
+            if (this.retryStartTimeout_) {
+              clearTimeout(this.retryStartTimeout_);
+              this.retryStartTimeout_ = null;
+            }
+            this.retryStartTimeout_ = setTimeout(this.start_.bind(this), 100);
+          });
 };

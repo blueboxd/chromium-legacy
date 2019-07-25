@@ -9,12 +9,13 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
-#include "ash/wm/root_window_finder.h"
+#include "ash/wm/window_util.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/events/event.h"
 
+namespace ash {
 namespace {
 
 // Returns true if |window| is considered to be a toplevel window.
@@ -93,7 +94,7 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
 
   ash::OverviewGrid* grid =
       overview_controller->overview_session()->GetGridWithRootWindow(
-          ash::wm::GetRootWindowAt(screen_point));
+          window_util::GetRootWindowAt(screen_point));
   if (!grid)
     return nullptr;
 
@@ -108,15 +109,13 @@ aura::Window* GetToplevelWindowInOverviewAtPoint(
 
 }  // namespace
 
-namespace ash {
-
 aura::Window* GetTopmostWindowAtPoint(const gfx::Point& screen_point,
                                       const std::set<aura::Window*>& ignore) {
   aura::Window* overview_window =
       GetToplevelWindowInOverviewAtPoint(screen_point, ignore);
   if (overview_window)
     return overview_window;
-  aura::Window* root = wm::GetRootWindowAt(screen_point);
+  aura::Window* root = window_util::GetRootWindowAt(screen_point);
   return GetTopmostWindowAtPointWithinWindow(screen_point, root,
                                              root->targeter(), ignore);
 }

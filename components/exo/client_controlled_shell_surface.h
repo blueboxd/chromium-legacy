@@ -228,7 +228,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // A factory callback to create ClientControlledState::Delegate.
   using DelegateFactoryCallback = base::RepeatingCallback<
-      std::unique_ptr<ash::wm::ClientControlledState::Delegate>(void)>;
+      std::unique_ptr<ash::ClientControlledState::Delegate>(void)>;
 
   // Set the factory callback for unit test.
   static void SetClientControlledStateDelegateFactoryForTest(
@@ -247,7 +247,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Overridden from ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetShadowBounds() const override;
-  void InitializeWindowState(ash::wm::WindowState* window_state) override;
+  void InitializeWindowState(ash::WindowState* window_state) override;
   float GetScale() const override;
   base::Optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
@@ -273,7 +273,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // crbug.com/765954
   void EnsureCompositorIsLockedForOrientationChange();
 
-  ash::wm::WindowState* GetWindowState();
+  ash::WindowState* GetWindowState();
   ash::NonClientFrameViewAsh* GetFrameView();
   const ash::NonClientFrameViewAsh* GetFrameView() const;
 
@@ -298,7 +298,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   Orientation orientation_ = Orientation::LANDSCAPE;
   Orientation expected_orientation_ = Orientation::LANDSCAPE;
 
-  ash::wm::ClientControlledState* client_controlled_state_ = nullptr;
+  ash::ClientControlledState* client_controlled_state_ = nullptr;
 
   ash::WindowStateType pending_window_state_ = ash::WindowStateType::kNormal;
 

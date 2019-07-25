@@ -11,7 +11,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
 
 WmDefaultLayoutManager::WmDefaultLayoutManager() = default;
 
@@ -34,5 +33,4 @@ void WmDefaultLayoutManager::SetChildBounds(aura::Window* child,
   SetChildBoundsDirect(child, requested_bounds);
 }
 
-}  // namespace wm
 }  // namespace ash

@@ -52,6 +52,16 @@ TEST_F(HintsComponentUtilTest, RecordProcessHintsComponentResult) {
                                       ProcessHintsComponentResult::kSuccess, 1);
 }
 
+TEST_F(HintsComponentUtilTest, RecordOptimizationFilterStatus) {
+  base::HistogramTester histogram_tester;
+  RecordOptimizationFilterStatus(
+      proto::OptimizationType::NOSCRIPT,
+      OptimizationFilterStatus::kFoundServerBlacklistConfig);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.OptimizationFilterStatus.NoScript",
+      OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
+}
+
 TEST_F(HintsComponentUtilTest, ProcessHintsComponentInvalidVersion) {
   ProcessHintsComponentResult result;
   std::unique_ptr<proto::Configuration> config = ProcessHintsComponent(

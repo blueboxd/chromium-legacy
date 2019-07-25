@@ -17,7 +17,7 @@ SnapControllerImpl::SnapControllerImpl() = default;
 SnapControllerImpl::~SnapControllerImpl() = default;
 
 bool SnapControllerImpl::CanSnap(aura::Window* window) {
-  return wm::GetWindowState(window)->CanSnap();
+  return WindowState::Get(window)->CanSnap();
 }
 
 void SnapControllerImpl::ShowSnapPreview(aura::Window* window,
@@ -34,8 +34,8 @@ void SnapControllerImpl::ShowSnapPreview(aura::Window* window,
   }
   gfx::Rect phantom_bounds_in_screen =
       (snap == SnapDirection::kLeft)
-          ? wm::GetDefaultLeftSnappedWindowBoundsInParent(window)
-          : wm::GetDefaultRightSnappedWindowBoundsInParent(window);
+          ? GetDefaultLeftSnappedWindowBoundsInParent(window)
+          : GetDefaultRightSnappedWindowBoundsInParent(window);
   ::wm::ConvertRectToScreen(window->parent(), &phantom_bounds_in_screen);
   phantom_window_controller_->Show(phantom_bounds_in_screen);
 }
@@ -45,10 +45,9 @@ void SnapControllerImpl::CommitSnap(aura::Window* window, SnapDirection snap) {
   if (snap == SnapDirection::kNone)
     return;
 
-  wm::WindowState* window_state = wm::GetWindowState(window);
-  const wm::WMEvent snap_event(snap == SnapDirection::kLeft
-                                   ? wm::WM_EVENT_SNAP_LEFT
-                                   : wm::WM_EVENT_SNAP_RIGHT);
+  WindowState* window_state = WindowState::Get(window);
+  const WMEvent snap_event(snap == SnapDirection::kLeft ? WM_EVENT_SNAP_LEFT
+                                                        : WM_EVENT_SNAP_RIGHT);
   window_state->OnWMEvent(&snap_event);
 }
 

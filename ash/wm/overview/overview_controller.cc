@@ -24,7 +24,6 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_utils.h"
-#include "ash/wm/root_window_finder.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -79,7 +78,7 @@ bool ShouldSlideInOutOverview(const std::vector<aura::Window*>& windows) {
 
   // Only slide in if all windows are minimized.
   for (const aura::Window* window : windows) {
-    if (!wm::GetWindowState(window)->IsMinimized())
+    if (!WindowState::Get(window)->IsMinimized())
       return false;
   }
 
@@ -337,13 +336,13 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
   auto* split_view_controller = Shell::Get()->split_view_controller();
   // Exit split view mode if we are already in it.
   if (split_view_controller->InSplitViewMode()) {
-    // In some cases the window returned by wm::GetActiveWindow will be an item
-    // in overview mode (maybe the overview mode dummy focus widget). The
-    // active window may also be a transient descendant of the left or right
+    // In some cases the window returned by window_util::GetActiveWindow will be
+    // an item in overview mode (maybe the overview mode dummy focus widget).
+    // The active window may also be a transient descendant of the left or right
     // snapped window, in which we want to activate the transient window's
     // ancestor (left or right snapped window). Manually set |active_window| as
     // either the left or right window.
-    aura::Window* active_window = wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     while (::wm::GetTransientParent(active_window))
       active_window = ::wm::GetTransientParent(active_window);
     if (!split_view_controller->IsWindowInSplitView(active_window))
@@ -352,7 +351,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
     split_view_controller->EndSplitView();
     EndOverview();
     MaximizeIfSnapped(active_window);
-    ::wm::ActivateWindow(active_window);
+    wm::ActivateWindow(active_window);
     base::RecordAction(
         base::UserMetricsAction("Tablet_LongPressOverviewButtonExitSplitView"));
     return;
@@ -361,7 +360,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
   OverviewItem* item_to_snap = nullptr;
   if (!InOverviewSession()) {
     // The current active window may be a transient child.
-    aura::Window* active_window = wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     while (active_window && ::wm::GetTransientParent(active_window))
       active_window = ::wm::GetTransientParent(active_window);
 
@@ -388,7 +387,7 @@ void OverviewController::OnOverviewButtonTrayLongPressed(
     // overview item and attempt to snap that window.
     DCHECK(overview_session_);
     OverviewGrid* current_grid = overview_session_->GetGridWithRootWindow(
-        wm::GetRootWindowAt(event_location));
+        window_util::GetRootWindowAt(event_location));
     if (current_grid) {
       const auto& windows = current_grid->window_list();
       if (windows.size() > 1)
@@ -548,18 +547,18 @@ bool OverviewController::ToggleOverview(
   auto windows =
       Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
 
-  // Hidden windows will be removed by wm::ShouldExcludeForOverview so we
-  // must copy them out first.
+  // Hidden windows will be removed by window_util::ShouldExcludeForOverview so
+  // we must copy them out first.
   std::vector<aura::Window*> hide_windows(windows.size());
   auto end = std::copy_if(
       windows.begin(), windows.end(), hide_windows.begin(),
       [](aura::Window* w) { return w->GetProperty(kHideInOverviewKey); });
   hide_windows.resize(end - hide_windows.begin());
-  base::EraseIf(windows, wm::ShouldExcludeForOverview);
+  base::EraseIf(windows, window_util::ShouldExcludeForOverview);
   // Overview windows will handle showing their transient related windows, so if
   // a window in |windows| has a transient root also in |windows|, we can remove
   // it as the transient root will handle showing the window.
-  wm::RemoveTransientDescendants(&windows);
+  window_util::RemoveTransientDescendants(&windows);
 
   if (InOverviewSession()) {
     // Do not allow ending overview if we're in single split mode unless swiping
@@ -595,14 +594,15 @@ bool OverviewController::ToggleOverview(
       // HomeLauncherGestureHandler will handle sliding the windows out and when
       // this function is called, we do not need to create minimized widgets.
       std::vector<aura::Window*> windows_to_hide_minimize(windows.size());
-      auto it = std::copy_if(
-          windows.begin(), windows.end(), windows_to_hide_minimize.begin(),
-          [](aura::Window* window) {
-            return !wm::GetWindowState(window)->IsMinimized();
-          });
+      auto it = std::copy_if(windows.begin(), windows.end(),
+                             windows_to_hide_minimize.begin(),
+                             [](aura::Window* window) {
+                               return !WindowState::Get(window)->IsMinimized();
+                             });
       windows_to_hide_minimize.resize(
           std::distance(windows_to_hide_minimize.begin(), it));
-      wm::HideAndMaybeMinimizeWithoutAnimation(windows_to_hide_minimize, true);
+      window_util::HideAndMaybeMinimizeWithoutAnimation(
+          windows_to_hide_minimize, true);
     }
 
     if (!start_animations_.empty())

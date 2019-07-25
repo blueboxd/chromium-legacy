@@ -15,7 +15,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace wm {
 
 // A view that mirrors the client area of a window and all its transient
 // descendants.
@@ -64,7 +63,6 @@ class ASH_EXPORT WindowPreviewView
   DISALLOW_COPY_AND_ASSIGN(WindowPreviewView);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_PREVIEW_VIEW_H_

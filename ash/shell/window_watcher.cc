@@ -85,7 +85,7 @@ aura::Window* WindowWatcher::GetWindowByID(const ShelfID& id) {
 
 // aura::WindowObserver overrides:
 void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
-  if (!wm::IsWindowUserPositionable(new_window))
+  if (!window_util::IsWindowUserPositionable(new_window))
     return;
 
   ShelfModel* model = ShelfModel::Get();

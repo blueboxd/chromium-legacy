@@ -2,18 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("app_service_proxy") {
-  sources = [
-    "app_service_proxy.cc",
-    "app_service_proxy.h",
-  ]
-
-  deps = [
-    ":app_update",
-    ":icon_loader",
-  ]
-}
-
 source_set("app_update") {
   sources = [
     "app_registry_cache.cc",

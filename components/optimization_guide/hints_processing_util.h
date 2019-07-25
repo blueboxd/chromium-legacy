@@ -14,6 +14,10 @@ class GURL;
 namespace optimization_guide {
 class HintUpdateData;
 
+// Returns the string representation of the optimization type.
+std::string GetStringNameForOptimizationType(
+    proto::OptimizationType optimization_type);
+
 // Returns whether |optimization| is disabled subject to it being part of
 // an optimization hint experiment. |optimization| could be disabled either
 // because: it is only to be used with a named optimization experiment; or it

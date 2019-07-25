@@ -11,7 +11,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
 namespace {
 
 // Helper that returns the next window in the preorder traversal.
@@ -106,5 +105,4 @@ WindowTransientDescendantIteratorRange GetTransientTreeIterator(
                                         hide_predicate));
 }
 
-}  // namespace wm
 }  // namespace ash

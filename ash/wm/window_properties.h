@@ -15,9 +15,8 @@ using WindowProperty = ui::ClassProperty<T>;
 }
 
 namespace ash {
-namespace wm {
+
 class WindowState;
-}  // namespace wm
 
 // Shell-specific window property keys; some keys are exported for use in tests.
 
@@ -33,7 +32,7 @@ ASH_EXPORT extern const aura::WindowProperty<bool>* const kWindowIsJanky;
 
 // A property key to store WindowState in the window. The window state
 // is owned by the window.
-ASH_EXPORT extern const aura::WindowProperty<wm::WindowState*>* const
+ASH_EXPORT extern const aura::WindowProperty<WindowState*>* const
     kWindowStateKey;
 
 // Alphabetical sort.

@@ -52,7 +52,7 @@ bool CanCoverAvailableWorkspace(aura::Window* window) {
       Shell::Get()->split_view_controller();
   if (split_view_controller->InSplitViewMode())
     return CanSnapInSplitview(window);
-  return wm::GetWindowState(window)->IsMaximizedOrFullscreenOrPinned();
+  return WindowState::Get(window)->IsMaximizedOrFullscreenOrPinned();
 }
 
 void FadeInWidgetAndMaybeSlideOnEnter(views::Widget* widget,
@@ -128,13 +128,12 @@ void ImmediatelyCloseWidgetOnExit(std::unique_ptr<views::Widget> widget) {
   widget.reset();
 }
 
-wm::WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
+WindowTransientDescendantIteratorRange GetVisibleTransientTreeIterator(
     aura::Window* window) {
   auto hide_predicate = [](aura::Window* window) {
     return window->GetProperty(kHideInOverviewKey);
   };
-  return wm::GetTransientTreeIterator(window,
-                                      base::BindRepeating(hide_predicate));
+  return GetTransientTreeIterator(window, base::BindRepeating(hide_predicate));
 }
 
 gfx::RectF GetTransformedBounds(aura::Window* transformed_window,
@@ -213,10 +212,10 @@ bool IsSlidingOutOverviewFromShelf() {
 }
 
 void MaximizeIfSnapped(aura::Window* window) {
-  auto* window_state = wm::GetWindowState(window);
+  auto* window_state = WindowState::Get(window);
   if (window_state && window_state->IsSnapped()) {
     ScopedAnimationDisabler disabler(window);
-    wm::WMEvent event(wm::WM_EVENT_MAXIMIZE);
+    WMEvent event(WM_EVENT_MAXIMIZE);
     window_state->OnWMEvent(&event);
   }
 }

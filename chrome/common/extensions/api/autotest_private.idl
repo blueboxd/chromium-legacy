@@ -24,7 +24,7 @@ namespace autotestPrivate {
     RightSnapped
   };
 
-  // A subset of WM event types in ash::wm::WMEventType. We may add more in the
+  // A subset of WM event types in ash::WMEventType. We may add more in the
   // set in the future.
   enum WMEventType {
     WMEventNormal,

@@ -225,11 +225,11 @@ aura::Window* KeyboardControllerImpl::GetContainerForDefaultDisplay() {
       GetFirstTouchDisplay();
   const bool has_touch_display = first_touch_display.has_value();
 
-  if (wm::GetFocusedWindow()) {
+  if (window_util::GetFocusedWindow()) {
     // Return the focused display if that display has touch capability or no
     // other display has touch capability.
     const display::Display focused_display =
-        screen->GetDisplayNearestWindow(wm::GetFocusedWindow());
+        screen->GetDisplayNearestWindow(window_util::GetFocusedWindow());
     if (focused_display.is_valid() &&
         (focused_display.touch_support() ==
              display::Display::TouchSupport::AVAILABLE ||

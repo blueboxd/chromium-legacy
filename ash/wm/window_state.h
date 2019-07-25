@@ -25,27 +25,15 @@ class Rect;
 }
 
 namespace ash {
+class ClientControlledState;
 class LockWindowState;
 class TabletModeWindowState;
 enum class WindowPinType;
-enum class WindowStateType;
-
-namespace wm {
-class InitialStateTestState;
 class WindowState;
 class WindowStateDelegate;
 class WindowStateObserver;
+enum class WindowStateType;
 class WMEvent;
-class ClientControlledState;
-
-// Returns the WindowState for the active window, null if there is no active
-// window.
-ASH_EXPORT WindowState* GetActiveWindowState();
-
-// Returns the WindowState for |window|. Creates WindowState if it doesn't
-// exist. The returned value is owned by |window| (you should not delete it).
-ASH_EXPORT WindowState* GetWindowState(aura::Window* window);
-ASH_EXPORT const WindowState* GetWindowState(const aura::Window* window);
 
 // WindowState manages and defines ash specific window state and
 // behavior. Ash specific per-window state (such as ones that controls
@@ -54,7 +42,7 @@ ASH_EXPORT const WindowState* GetWindowState(const aura::Window* window);
 // of defining separate functions (like |MaximizeWindow(aura::Window*
 // window)|) or using aura Window property.
 // The WindowState gets created when first accessed by
-// |wm::GetWindowState|, and deleted when the window is deleted.
+// |WindowState::Get()|, and deleted when the window is deleted.
 // Prefer using this class instead of passing aura::Window* around in
 // ash code as this is often what you need to interact with, and
 // accessing the window using |window()| is cheap.
@@ -112,7 +100,16 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
-  // Call GetWindowState() to instantiate this class.
+  // Returns the WindowState for |window|. Creates WindowState if it doesn't
+  // exist. The returned value is owned by |window| (you should not delete it).
+  static WindowState* Get(aura::Window* window);
+  static const WindowState* Get(const aura::Window* window);
+
+  // Returns the WindowState for the active window, null if there is no active
+  // window.
+  static WindowState* ForActiveWindow();
+
+  // Call WindowState::Get() to instantiate this class.
   ~WindowState() override;
 
   aura::Window* window() { return window_; }
@@ -358,12 +355,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
  private:
   friend class BaseState;
+  friend class ClientControlledState;
   friend class DefaultState;
-  friend class InitialStateTestState;
-  friend class ash::wm::ClientControlledState;
-  friend class ash::LockWindowState;
-  friend class ash::TabletModeWindowState;
-  friend WindowState* GetWindowState(aura::Window*);
+  friend class LockWindowState;
+  friend class TabletModeWindowState;
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest,
                            CrossFadeToBoundsFromTransform);
@@ -484,7 +479,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_STATE_H_

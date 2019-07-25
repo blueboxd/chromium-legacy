@@ -16,9 +16,7 @@
 
 namespace ash {
 
-namespace wm {
 class WindowState;
-}  // namespace wm
 
 // Computes resting and dragging positions for PIP windows. Note that this
 // class uses only Screen coordinates.
@@ -45,7 +43,7 @@ class ASH_EXPORT PipPositioner {
   // change. For example, if the shelf is changed from auto-hidden to always
   // shown, the PIP window should move up to not intersect it.
   static gfx::Rect GetPositionAfterMovementAreaChange(
-      wm::WindowState* window_state);
+      WindowState* window_state);
 
  private:
   friend class PipPositionerDisplayTest;

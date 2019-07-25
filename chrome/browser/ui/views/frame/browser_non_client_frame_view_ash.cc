@@ -115,7 +115,8 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame,
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view) {
-  ash::wm::InstallResizeHandleWindowTargeterForWindow(frame->GetNativeWindow());
+  ash::window_util::InstallResizeHandleWindowTargeterForWindow(
+      frame->GetNativeWindow());
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {

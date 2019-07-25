@@ -11,7 +11,6 @@
 #include "ui/aura/layout_manager.h"
 
 namespace ash {
-namespace wm {
 
 // A layout manager for the root window.
 // Resizes all of its immediate children and their descendants to fill the
@@ -40,7 +39,6 @@ class RootWindowLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_

@@ -41,8 +41,11 @@ source_set("web") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/dialogs:dialogs_internal",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/util",
@@ -95,6 +98,7 @@ source_set("unit_tests") {
     "services_unittest.mm",
     "tab_id_tab_helper_unittest.mm",
     "web_navigation_util_unittest.mm",
+    "web_state_delegate_tab_helper_unittest.mm",
   ]
   deps = [
     ":accessibility",
@@ -112,6 +116,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/overlays",
+    "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test:test_support",

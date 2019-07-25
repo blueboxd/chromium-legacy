@@ -5,7 +5,7 @@ For example, Chrome Apps (platform apps and legacy packaged apps),
 and BMO-based Desktop PWAs can be launched using this service.
 
 The intent is to merge LaunchService into the AppService,
-specifically AppServiceProxyImpl.
+specifically AppServiceProxy.
 
 See `//chrome/services/app_service/README.md` for a description of the
 App Service.

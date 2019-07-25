@@ -10,7 +10,6 @@
 #include "ui/aura/layout_manager.h"
 
 namespace ash {
-namespace wm {
 
 // The default window layout manager used by ash.
 class ASH_EXPORT WmDefaultLayoutManager : public aura::LayoutManager {
@@ -33,7 +32,6 @@ class ASH_EXPORT WmDefaultLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(WmDefaultLayoutManager);
 };
 
-}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_WM_DEFAULT_LAYOUT_MANAGER_H_

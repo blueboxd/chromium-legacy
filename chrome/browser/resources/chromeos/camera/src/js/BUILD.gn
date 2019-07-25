@@ -8,6 +8,7 @@ group("closure_compile") {
   deps = [
     ":compile_resources",
     "browser_proxy:closure_compile",
+    "device:closure_compile",
     "models:closure_compile",
     "mojo:closure_compile",
   ]
@@ -15,10 +16,14 @@ group("closure_compile") {
 
 js_type_check("compile_resources") {
   deps = [
+    ":resolution_event_broker",
     ":state",
     ":tooltip",
     ":util",
   ]
+}
+
+js_library("resolution_event_broker") {
 }
 
 js_library("state") {

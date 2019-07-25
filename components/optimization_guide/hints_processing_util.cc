@@ -15,6 +15,29 @@
 
 namespace optimization_guide {
 
+// The returned string is used to record histograms for the optimization type.
+// Also add the string to OptimizationGuide.OptimizationTypes histogram suffix
+// in histograms.xml.
+std::string GetStringNameForOptimizationType(
+    proto::OptimizationType optimization_type) {
+  switch (optimization_type) {
+    case proto::OptimizationType::TYPE_UNSPECIFIED:
+      return "Unspecified";
+    case proto::OptimizationType::NOSCRIPT:
+      return "NoScript";
+    case proto::OptimizationType::RESOURCE_LOADING:
+      return "ResourceLoading";
+    case proto::OptimizationType::LITE_PAGE_REDIRECT:
+      return "LitePageRedirect";
+    case proto::OptimizationType::OPTIMIZATION_NONE:
+      return "None";
+    case proto::OptimizationType::DEFER_ALL_SCRIPT:
+      return "DeferAllScript";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 bool IsDisabledPerOptimizationHintExperiment(
     const proto::Optimization& optimization) {
   // First check if optimization depends on an experiment being enabled.

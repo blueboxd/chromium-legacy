@@ -107,10 +107,9 @@ void TrayBubbleWrapper::OnWindowActivated(ActivationReason reason,
   if (!gained_active)
     return;
 
-  int container_id = wm::GetContainerForWindow(gained_active)->id();
-  int lost_container_id = lost_active != nullptr
-                              ? wm::GetContainerForWindow(lost_active)->id()
-                              : -1;
+  int container_id = GetContainerForWindow(gained_active)->id();
+  int lost_container_id =
+      lost_active != nullptr ? GetContainerForWindow(lost_active)->id() : -1;
 
   // Don't close the bubble if a popup notification is activated.
   //

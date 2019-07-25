@@ -6,12 +6,12 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
-class AppServiceProxyImplTest : public testing::Test {
+class AppServiceProxyTest : public testing::Test {
  protected:
   using UniqueReleaser = std::unique_ptr<apps::IconLoader::Releaser>;
 
@@ -66,11 +66,11 @@ class AppServiceProxyImplTest : public testing::Test {
 
     return loader->LoadIcon(app_type, app_id, icon_compression,
                             size_hint_in_dip, allow_placeholder_icon,
-                            base::BindOnce(&AppServiceProxyImplTest::OnLoadIcon,
+                            base::BindOnce(&AppServiceProxyTest::OnLoadIcon,
                                            base::Unretained(this)));
   }
 
-  void OverrideAppServiceProxyInnerIconLoader(apps::AppServiceProxyImpl* proxy,
+  void OverrideAppServiceProxyInnerIconLoader(apps::AppServiceProxy* proxy,
                                               apps::IconLoader* icon_loader) {
     proxy->OverrideInnerIconLoaderForTesting(icon_loader);
   }
@@ -84,14 +84,14 @@ class AppServiceProxyImplTest : public testing::Test {
   int num_outer_finished_callbacks_ = 0;
 };
 
-TEST_F(AppServiceProxyImplTest, IconCache) {
+TEST_F(AppServiceProxyTest, IconCache) {
   // This is mostly a sanity check. For an isolated, comprehensive unit test of
   // the IconCache code, see icon_cache_unittest.cc.
   //
-  // This tests an AppServiceProxyImpl as a 'black box', which uses an
+  // This tests an AppServiceProxy as a 'black box', which uses an
   // IconCache but also other IconLoader filters, such as an IconCoalescer.
 
-  apps::AppServiceProxyImpl proxy(nullptr);
+  apps::AppServiceProxy proxy(nullptr);
   FakeIconLoader fake;
   OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
 
@@ -130,14 +130,14 @@ TEST_F(AppServiceProxyImplTest, IconCache) {
   EXPECT_EQ(3, NumOuterFinishedCallbacks());
 }
 
-TEST_F(AppServiceProxyImplTest, IconCoalescer) {
+TEST_F(AppServiceProxyTest, IconCoalescer) {
   // This is mostly a sanity check. For an isolated, comprehensive unit test of
   // the IconCoalescer code, see icon_coalescer_unittest.cc.
   //
-  // This tests an AppServiceProxyImpl as a 'black box', which uses an
+  // This tests an AppServiceProxy as a 'black box', which uses an
   // IconCoalescer but also other IconLoader filters, such as an IconCache.
 
-  apps::AppServiceProxyImpl proxy(nullptr);
+  apps::AppServiceProxy proxy(nullptr);
   FakeIconLoader fake;
   OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
 

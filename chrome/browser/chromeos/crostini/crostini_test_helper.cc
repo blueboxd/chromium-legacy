@@ -5,7 +5,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 
 #include "base/feature_list.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_impl.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -115,7 +116,7 @@ void CrostiniTestHelper::ReInitializeAppServiceIntegration() {
     //
     // We therefore manually have the App Service re-examine whether Crostini
     // is enabled for this profile.
-    auto* proxy = apps::AppServiceProxyImpl::GetImplForTesting(profile_);
+    auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
     proxy->ReInitializeCrostiniForTesting(profile_);
     proxy->FlushMojoCallsForTesting();
   }

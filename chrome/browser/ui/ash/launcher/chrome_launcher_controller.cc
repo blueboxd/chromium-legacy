@@ -561,7 +561,7 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
       TabletModeClient::Get()->tablet_mode_enabled()) {
     // Run slide down animation to show the window.
     wm::SetWindowVisibilityAnimationType(
-        native_window, ash::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN);
+        native_window, ash::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN);
   }
 
   window->Show();

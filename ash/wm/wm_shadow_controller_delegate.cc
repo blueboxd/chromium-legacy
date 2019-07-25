@@ -52,7 +52,7 @@ bool WmShadowControllerDelegate::ShouldShowShadowForWindow(
 
   // Show the shadow if it's currently being dragged no matter of the window's
   // show state.
-  auto* window_state = wm::GetWindowState(window);
+  auto* window_state = WindowState::Get(window);
   if (window_state && window_state->is_dragged())
     return ::wm::GetShadowElevationConvertDefault(window) > 0;
 

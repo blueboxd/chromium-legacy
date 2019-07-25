@@ -63,7 +63,7 @@ void FullscreenNotificationBlocker::OnFullscreenStateChanged(
   bool was_blocked = should_block_;
   should_block_ =
       fullscreen_window &&
-      wm::GetWindowState(fullscreen_window)->GetHideShelfWhenFullscreen();
+      WindowState::Get(fullscreen_window)->GetHideShelfWhenFullscreen();
   if (was_blocked != should_block_)
     NotifyBlockingStateChanged();
 }

@@ -9,8 +9,9 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "components/optimization_guide/hints_component_info.h"
-#include "components/optimization_guide/proto/hints.pb.h"
+#include "components/optimization_guide/hints_processing_util.h"
 
 namespace optimization_guide {
 
@@ -31,6 +32,14 @@ void MaybePopulateProcessHintsComponentResult(
 void RecordProcessHintsComponentResult(ProcessHintsComponentResult result) {
   UMA_HISTOGRAM_ENUMERATION(kProcessHintsComponentResultHistogramString,
                             result);
+}
+
+void RecordOptimizationFilterStatus(proto::OptimizationType optimization_type,
+                                    OptimizationFilterStatus status) {
+  std::string histogram_name = base::StringPrintf(
+      "OptimizationGuide.OptimizationFilterStatus.%s",
+      GetStringNameForOptimizationType(optimization_type).c_str());
+  UMA_HISTOGRAM_ENUMERATION(histogram_name, status);
 }
 
 std::unique_ptr<proto::Configuration> ProcessHintsComponent(

@@ -27,7 +27,7 @@ namespace {
 
 // BrowserWindowStateDelegate class handles a user's fullscreen
 // request (Shift+F4/F4).
-class BrowserWindowStateDelegate : public ash::wm::WindowStateDelegate {
+class BrowserWindowStateDelegate : public ash::WindowStateDelegate {
  public:
   explicit BrowserWindowStateDelegate(Browser* browser)
       : browser_(browser) {
@@ -35,8 +35,8 @@ class BrowserWindowStateDelegate : public ash::wm::WindowStateDelegate {
   }
   ~BrowserWindowStateDelegate() override {}
 
-  // Overridden from ash::wm::WindowStateDelegate.
-  bool ToggleFullscreen(ash::wm::WindowState* window_state) override {
+  // Overridden from ash::WindowStateDelegate.
+  bool ToggleFullscreen(ash::WindowState* window_state) override {
     DCHECK(window_state->IsFullscreen() || window_state->CanMaximize());
     // Windows which cannot be maximized should not be fullscreened.
     if (!window_state->IsFullscreen() && !window_state->CanMaximize())
@@ -44,6 +44,7 @@ class BrowserWindowStateDelegate : public ash::wm::WindowStateDelegate {
     chrome::ToggleFullscreenMode(browser_);
     return true;
   }
+
  private:
   Browser* browser_;  // not owned.
 
@@ -75,8 +76,7 @@ BrowserFrameAsh::~BrowserFrameAsh() {}
 
 void BrowserFrameAsh::OnWidgetInitDone() {
   Browser* browser = browser_view_->browser();
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(GetNativeWindow());
+  ash::WindowState* window_state = ash::WindowState::Get(GetNativeWindow());
   window_state->SetDelegate(
       std::make_unique<BrowserWindowStateDelegate>(browser));
   // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys

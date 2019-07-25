@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_frame_host.h"
@@ -179,6 +180,11 @@ class AwPermissionManager::PendingRequest {
     }
     DCHECK(!IsCompleted());
     results[result->second] = status;
+    if (type == PermissionType::MIDI_SYSEX &&
+        status == PermissionStatus::GRANTED) {
+      content::ChildProcessSecurityPolicy::GetInstance()
+          ->GrantSendMidiSysExMessage(render_process_id);
+    }
     resolved_permissions_.insert(type);
   }
 

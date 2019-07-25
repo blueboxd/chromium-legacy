@@ -355,8 +355,8 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
   // Verify that when we toggle maximize, the header is shown. For example,
   // maximized can be toggled in tablet mode by using the accessibility
   // keyboard.
-  wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
-  wm::GetWindowState(widget->GetNativeWindow())->OnWMEvent(&event);
+  WMEvent event(WM_EVENT_TOGGLE_MAXIMIZE);
+  WindowState::Get(widget->GetNativeWindow())->OnWMEvent(&event);
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
@@ -779,9 +779,8 @@ class TestWidgetDelegate : public TestWidgetConstraintsDelegate {
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     if (custom_) {
-      wm::WindowState* window_state =
-          wm::GetWindowState(widget->GetNativeWindow());
-      window_state->SetDelegate(std::make_unique<wm::WindowStateDelegate>());
+      WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
+      window_state->SetDelegate(std::make_unique<WindowStateDelegate>());
     }
     return TestWidgetConstraintsDelegate::CreateNonClientFrameView(widget);
   }
@@ -865,7 +864,7 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
   EXPECT_EQ(new_inactive_color, header->inactive_frame_color_for_testing());
 }
 
-// Run frame color tests with and without custom wm::WindowStateDelegate.
+// Run frame color tests with and without custom WindowStateDelegate.
 INSTANTIATE_TEST_SUITE_P(,
                          NonClientFrameViewAshFrameColorTest,
                          testing::Bool());

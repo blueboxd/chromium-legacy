@@ -16,6 +16,7 @@ namespace ash {
 
 class LoginScreenClient;
 class LoginScreenModel;
+class ScopedGuestButtonBlocker;
 
 enum class ParentAccessRequestReason;
 
@@ -78,6 +79,10 @@ class ASH_PUBLIC_EXPORT LoginScreen {
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   virtual void SetAllowLoginAsGuest(bool allow_guest) = 0;
+
+  // Returns scoped object to temporarily disable Browse as Guest button.
+  virtual std::unique_ptr<ScopedGuestButtonBlocker>
+  GetScopedGuestButtonBlocker() = 0;
 
  protected:
   LoginScreen();

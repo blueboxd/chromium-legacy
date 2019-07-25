@@ -89,7 +89,7 @@ TEST_F(WindowFinderTest, TopmostWindowWithOverviewActive) {
   EXPECT_EQ(window2.get(),
             GetTopmostWindowAtPoint(bounds2.CenterPoint(), ignore));
 
-  wm::GetWindowState(window1.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
   EXPECT_EQ(window1.get(),
             GetTopmostWindowAtPoint(bounds1.CenterPoint(), ignore));
 }

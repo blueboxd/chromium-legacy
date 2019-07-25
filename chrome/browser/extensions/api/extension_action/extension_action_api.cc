@@ -107,6 +107,8 @@ ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
   registry.RegisterFunction<ActionSetBadgeTextFunction>();
   registry.RegisterFunction<ActionGetBadgeBackgroundColorFunction>();
   registry.RegisterFunction<ActionSetBadgeBackgroundColorFunction>();
+  registry.RegisterFunction<ActionEnableFunction>();
+  registry.RegisterFunction<ActionDisableFunction>();
 }
 
 ExtensionActionAPI::~ExtensionActionAPI() {

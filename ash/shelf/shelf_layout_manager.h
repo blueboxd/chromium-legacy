@@ -61,7 +61,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public OverviewObserver,
                                       public ::wm::ActivationChangeObserver,
                                       public LockStateObserver,
-                                      public wm::WmDefaultLayoutManager,
+                                      public WmDefaultLayoutManager,
                                       public display::DisplayObserver,
                                       public SessionObserver,
                                       public WallpaperControllerObserver,
@@ -129,7 +129,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Cancel the drag if the shelf is in drag progress.
   void CancelDragOnShelfIfInProgress();
 
-  // wm::WmDefaultLayoutManager:
+  // WmDefaultLayoutManager:
   void OnWindowResized() override;
   void SetChildBounds(aura::Window* child,
                       const gfx::Rect& requested_bounds) override;
@@ -264,7 +264,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
     ShelfVisibilityState visibility_state;
     ShelfAutoHideState auto_hide_state;
-    wm::WorkspaceWindowState window_state;
+    WorkspaceWindowState window_state;
 
     // True when the system is in the cancelable, pre-lock screen animation.
     bool pre_lock_screen_animation_active;
@@ -394,12 +394,12 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Updates the mask to limit the content to the non lock screen container.
   // The mask will be removed if the workspace state is either in fullscreen
   // or maximized.
-  void UpdateWorkspaceMask(wm::WorkspaceWindowState window_state);
+  void UpdateWorkspaceMask(WorkspaceWindowState window_state);
 
   // Sends a11y alert for entering/exiting
-  // wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN workspace state.
+  // WorkspaceWindowState::kFullscreen workspace state.
   void SendA11yAlertForFullscreenWorkspaceState(
-      wm::WorkspaceWindowState current_workspace_window_state);
+      WorkspaceWindowState current_workspace_window_state);
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
@@ -479,8 +479,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Stores the previous workspace state. Used by
   // SendA11yAlertForFullscreenWorkspaceState to compare with current workspace
   // state to determite whether need to send an a11y alert.
-  wm::WorkspaceWindowState previous_workspace_window_state_ =
-      wm::WORKSPACE_WINDOW_STATE_DEFAULT;
+  WorkspaceWindowState previous_workspace_window_state_ =
+      WorkspaceWindowState::kDefault;
 
   // The display on which this shelf is shown.
   display::Display display_;

@@ -73,27 +73,26 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 };
 
 // WindowState based on a given initial state. Records the last resize bounds.
-class FakeWindowState : public wm::WindowState::State {
+class FakeWindowState : public WindowState::State {
  public:
   explicit FakeWindowState(WindowStateType initial_state_type)
       : state_type_(initial_state_type) {}
   ~FakeWindowState() override = default;
 
   // WindowState::State overrides:
-  void OnWMEvent(wm::WindowState* window_state,
-                 const wm::WMEvent* event) override {
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {
     if (event->IsBoundsEvent()) {
-      if (event->type() == wm::WM_EVENT_SET_BOUNDS) {
+      if (event->type() == WM_EVENT_SET_BOUNDS) {
         const auto* set_bounds_event =
-            static_cast<const wm::SetBoundsEvent*>(event);
+            static_cast<const SetBoundsWMEvent*>(event);
         last_bounds_ = set_bounds_event->requested_bounds();
       }
     }
   }
   WindowStateType GetType() const override { return state_type_; }
-  void AttachState(wm::WindowState* window_state,
-                   wm::WindowState::State* previous_state) override {}
-  void DetachState(wm::WindowState* window_state) override {}
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
 
   const gfx::Rect& last_bounds() { return last_bounds_; }
 
@@ -190,7 +189,7 @@ class WorkspaceWindowResizerTest : public AshTestBase {
       int window_component,
       ::wm::WindowMoveSource source,
       const std::vector<aura::Window*>& attached_windows) {
-    wm::WindowState* window_state = wm::GetWindowState(window);
+    WindowState* window_state = WindowState::Get(window);
     window_state->CreateDragDetails(point_in_parent, window_component, source);
     return WorkspaceWindowResizer::Create(window_state, attached_windows);
   }
@@ -574,11 +573,11 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   window_->SetProperty(aura::client::kResizeBehaviorKey,
                        aura::client::kResizeBehaviorCanResize |
                            aura::client::kResizeBehaviorCanMaximize);
-  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  WindowState* window_state = WindowState::Get(window_.get());
 
   {
     gfx::Rect expected_bounds_in_parent(
-        wm::GetDefaultLeftSnappedWindowBoundsInParent(window_.get()));
+        GetDefaultLeftSnappedWindowBoundsInParent(window_.get()));
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -595,7 +594,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   // Try the same with the right side.
   {
     gfx::Rect expected_bounds_in_parent(
-        wm::GetDefaultRightSnappedWindowBoundsInParent(window_.get()));
+        GetDefaultRightSnappedWindowBoundsInParent(window_.get()));
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -687,12 +686,12 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
 
 // Verifies that dragging a snapped window unsnaps it.
 TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
-  wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
+  WindowState* window_state = WindowState::Get(window_.get());
 
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
   window_->SetBounds(kInitialBounds);
   window_->Show();
-  const wm::WMEvent snap_event(wm::WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_event(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_event);
   EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
@@ -712,13 +711,13 @@ TEST_F(WorkspaceWindowResizerTest, DragSnapped) {
 
 // Verifies the behavior of resizing a side snapped window.
 TEST_F(WorkspaceWindowResizerTest, ResizeSnapped) {
-  wm::WindowState* window_state = ash::wm::GetWindowState(window_.get());
+  WindowState* window_state = WindowState::Get(window_.get());
 
   const gfx::Rect kInitialBounds(100, 100, 100, 100);
   window_->SetBounds(kInitialBounds);
   window_->Show();
 
-  const wm::WMEvent snap_event(wm::WM_EVENT_SNAP_LEFT);
+  const WMEvent snap_event(WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_event);
   EXPECT_EQ(WindowStateType::kLeftSnapped, window_state->GetStateType());
   gfx::Rect snapped_bounds = window_->bounds();
@@ -924,8 +923,7 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideLeftWorkArea) {
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, -window_width, 0), 0);
   EXPECT_EQ(base::NumberToString(window_x) + ",100 " +
-                base::NumberToString(wm::kMinimumOnScreenArea - window_x) +
-                "x380",
+                base::NumberToString(kMinimumOnScreenArea - window_x) + "x380",
             window_->bounds().ToString());
 }
 
@@ -942,9 +940,9 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideRightWorkArea) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTLEFT));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::NumberToString(right - wm::kMinimumOnScreenArea) + ",100 " +
+  EXPECT_EQ(base::NumberToString(right - kMinimumOnScreenArea) + ",100 " +
                 base::NumberToString(window_width - pixels_to_right_border +
-                                     wm::kMinimumOnScreenArea) +
+                                     kMinimumOnScreenArea) +
                 "x380",
             window_->bounds().ToString());
 }
@@ -961,10 +959,10 @@ TEST_F(WorkspaceWindowResizerTest, ResizeWindowOutsideBottomWorkArea) {
       window_.get(), gfx::Point(0, bottom - delta_to_bottom), HTTOP));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, 0, bottom), 0);
-  EXPECT_EQ("100," + base::NumberToString(bottom - wm::kMinimumOnScreenArea) +
+  EXPECT_EQ("100," + base::NumberToString(bottom - kMinimumOnScreenArea) +
                 " 300x" +
-                base::NumberToString(
-                    height - (delta_to_bottom - wm::kMinimumOnScreenArea)),
+                base::NumberToString(height -
+                                     (delta_to_bottom - kMinimumOnScreenArea)),
             window_->bounds().ToString());
 }
 
@@ -985,7 +983,7 @@ TEST_F(WorkspaceWindowResizerTest, DragWindowOutsideRightToSecondaryDisplay) {
       CreateResizerForTest(window_.get(), gfx::Point(window_x, 0), HTCAPTION));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, window_width, 0), 0);
-  EXPECT_EQ(base::NumberToString(right - wm::kMinimumOnScreenArea) + ",100 " +
+  EXPECT_EQ(base::NumberToString(right - kMinimumOnScreenArea) + ",100 " +
                 base::NumberToString(window_width) + "x380",
             window_->bounds().ToString());
 
@@ -1210,7 +1208,7 @@ TEST_F(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {
 // Verifies that a dragged, non-snapped window will clear restore bounds.
 TEST_F(WorkspaceWindowResizerTest, RestoreClearedOnResize) {
   window_->SetBounds(gfx::Rect(10, 10, 100, 100));
-  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  WindowState* window_state = WindowState::Get(window_.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(50, 50, 50, 50));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTBOTTOMRIGHT));
@@ -1226,7 +1224,7 @@ TEST_F(WorkspaceWindowResizerTest, RestoreClearedOnResize) {
 // Verifies that a dragged window will restore to its pre-maximized size.
 TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
-  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  WindowState* window_state = WindowState::Get(window_.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(96, 112, 320, 160));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -1245,7 +1243,7 @@ TEST_F(WorkspaceWindowResizerTest, RevertResizeOperation) {
   const gfx::Rect initial_bounds(0, 0, 200, 400);
   window_->SetBounds(initial_bounds);
 
-  wm::WindowState* window_state = wm::GetWindowState(window_.get());
+  WindowState* window_state = WindowState::Get(window_.get());
   window_state->SetRestoreBoundsInScreen(gfx::Rect(96, 112, 320, 160));
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -1455,7 +1453,7 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->RevertDrag();
 
-    EXPECT_FALSE(wm::GetWindowState(window_.get())->bounds_changed_by_user());
+    EXPECT_FALSE(WindowState::Get(window_.get())->bounds_changed_by_user());
   }
 
   // Check that a completed move / size does change the user coordinates.
@@ -1467,7 +1465,7 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
     resizer->Drag(CalculateDragPoint(*resizer, 0, 100), 0);
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
     resizer->CompleteDrag();
-    EXPECT_TRUE(wm::GetWindowState(window_.get())->bounds_changed_by_user());
+    EXPECT_TRUE(WindowState::Get(window_.get())->bounds_changed_by_user());
   }
 }
 

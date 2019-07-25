@@ -33,6 +33,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
+#include "base/sequence_checker.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -399,6 +400,36 @@ class KioskAppsButton : public views::MenuButton,
   DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);
 };
 
+// Class that temporarily disables Guest login buttin on shelf.
+class LoginShelfView::ScopedGuestButtonBlockerImpl
+    : public ScopedGuestButtonBlocker {
+ public:
+  ScopedGuestButtonBlockerImpl(base::WeakPtr<LoginShelfView> shelf_view)
+      : shelf_view_(shelf_view) {
+    ++(shelf_view_->scoped_guest_button_blockers_);
+    if (shelf_view_->scoped_guest_button_blockers_ == 1)
+      shelf_view_->UpdateUi();
+  }
+
+  ~ScopedGuestButtonBlockerImpl() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (!shelf_view_)
+      return;
+
+    DCHECK_GT(shelf_view_->scoped_guest_button_blockers_, 0);
+    --(shelf_view_->scoped_guest_button_blockers_);
+    if (!shelf_view_->scoped_guest_button_blockers_)
+      shelf_view_->UpdateUi();
+  }
+
+ private:
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  // ScopedGuestButtonBlockerImpl is not owned by the LoginShelfView,
+  // so they could be independently destroyed.
+  base::WeakPtr<LoginShelfView> shelf_view_;
+};
+
 LoginShelfView::TestUiUpdateDelegate::~TestUiUpdateDelegate() = default;
 
 LoginShelfView::LoginShelfView(
@@ -590,6 +621,12 @@ void LoginShelfView::SetShutdownButtonEnabled(bool enable_shutdown_button) {
   GetViewByID(kShutdown)->SetEnabled(enable_shutdown_button);
 }
 
+std::unique_ptr<ScopedGuestButtonBlocker>
+LoginShelfView::GetScopedGuestButtonBlocker() {
+  return std::make_unique<LoginShelfView::ScopedGuestButtonBlockerImpl>(
+      weak_ptr_factory_.GetWeakPtr());
+}
+
 void LoginShelfView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   UpdateUi();
@@ -743,8 +780,12 @@ void LoginShelfView::UpdateButtonUnionBounds() {
 // are no user views available. If there are no user pods (i.e. Gaia is the
 // only signin option), the guest button should be shown if allowed by policy
 // and OOBE.
+// 6. There are no scoped guest buttons blockers active.
 bool LoginShelfView::ShouldShowGuestButton() const {
   if (!allow_guest_)
+    return false;
+
+  if (scoped_guest_button_blockers_ > 0)
     return false;
 
   if (!DialogStateGuestAllowed(dialog_state_))

@@ -47,7 +47,7 @@ enum ActiveWindowStateType {
 ActiveWindowStateType GetActiveWindowState() {
   ActiveWindowStateType active_window_state_type =
       ACTIVE_WINDOW_STATE_TYPE_NO_ACTIVE_WINDOW;
-  wm::WindowState* active_window_state = ash::wm::GetActiveWindowState();
+  WindowState* active_window_state = WindowState::ForActiveWindow();
   if (active_window_state) {
     switch (active_window_state->GetStateType()) {
       case WindowStateType::kMaximized:
@@ -132,8 +132,7 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
                                                        rend = children.rend();
          it != rend; ++it) {
       const aura::Window* child_window = *it;
-      const wm::WindowState* child_window_state =
-          wm::GetWindowState(child_window);
+      const WindowState* child_window_state = WindowState::Get(child_window);
 
       if (!child_window->IsVisible() || child_window_state->IsMinimized())
         continue;

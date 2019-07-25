@@ -82,7 +82,7 @@ void ShelfWindowWatcherItemDelegate::ExecuteCommand(bool from_context_menu,
 }
 
 void ShelfWindowWatcherItemDelegate::Close() {
-  wm::CloseWidgetForWindow(window_);
+  window_util::CloseWidgetForWindow(window_);
 }
 
 }  // namespace ash

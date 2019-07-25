@@ -16,6 +16,7 @@ function onPinRequested(responseDetails) {
   if (chrome.runtime.lastError) {
     // Should end up here only when quota is exceeded.
     lastError = chrome.runtime.lastError.message;
+    chrome.test.sendMessage(lastError);
     return;
   }
 

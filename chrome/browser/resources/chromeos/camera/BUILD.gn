@@ -24,6 +24,7 @@ group("chrome_camera_app") {
     ":chrome_camera_app_images",
     ":chrome_camera_app_js",
     ":chrome_camera_app_js_browser_proxy",
+    ":chrome_camera_app_js_device",
     ":chrome_camera_app_js_models",
     ":chrome_camera_app_js_mojo",
     ":chrome_camera_app_js_views",
@@ -140,6 +141,18 @@ copy("chrome_camera_app_js_browser_proxy") {
   ]
 }
 
+copy("chrome_camera_app_js_device") {
+  sources = [
+    "src/js/device/camera3_device_info.js",
+    "src/js/device/constraints_preferrer.js",
+    "src/js/device/device_info_updater.js",
+  ]
+
+  outputs = [
+    "$chrome_camera_app_dir/js/device/{{source_file_part}}",
+  ]
+}
+
 copy("chrome_camera_app_js_models") {
   sources = [
     "src/js/models/filenamer.js",
@@ -180,7 +193,6 @@ copy("chrome_camera_app_js_views") {
 
 copy("chrome_camera_app_js_views_camera") {
   sources = [
-    "src/js/views/camera/constraints_preferrer.js",
     "src/js/views/camera/layout.js",
     "src/js/views/camera/modes.js",
     "src/js/views/camera/options.js",

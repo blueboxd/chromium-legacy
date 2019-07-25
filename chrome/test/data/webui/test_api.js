@@ -704,9 +704,9 @@ function testDone(result) {
         Mojo.bindInterface(
             webUiTest.mojom.TestRunner.name,
             mojo.makeRequest(testRunner).handle);
-      } else if (webUiTest.mojom.TestRunnerProxy) {
+      } else if (webUiTest.mojom.TestRunnerRemote) {
         // For mojo-lite WebUI tests.
-        testRunner = webUiTest.mojom.TestRunner.getProxy();
+        testRunner = webUiTest.mojom.TestRunner.getRemote();
       } else {
         assertNotReached(
             'Mojo bindings found, but no valid test interface loaded');

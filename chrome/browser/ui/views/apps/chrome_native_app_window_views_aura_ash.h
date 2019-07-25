@@ -39,7 +39,7 @@ class ChromeNativeAppWindowViewsAuraAsh
       public ui::AcceleratorProvider,
       public ExclusiveAccessContext,
       public ExclusiveAccessBubbleViewsContext,
-      public ash::wm::WindowStateObserver,
+      public ash::WindowStateObserver,
       public aura::WindowObserver {
  public:
   ChromeNativeAppWindowViewsAuraAsh();
@@ -117,8 +117,8 @@ class ChromeNativeAppWindowViewsAuraAsh
   // WidgetObserver:
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
-  // ash::wm::WindowStateObserver
-  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+  // ash::WindowStateObserver:
+  void OnPostWindowStateTypeChange(ash::WindowState* window_state,
                                    ash::WindowStateType old_type) override;
 
   // aura::WindowObserver:
@@ -171,7 +171,7 @@ class ChromeNativeAppWindowViewsAuraAsh
   bool draggable_regions_sent_ = false;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observed_window_{this};
-  ScopedObserver<ash::wm::WindowState, ash::wm::WindowStateObserver>
+  ScopedObserver<ash::WindowState, ash::WindowStateObserver>
       observed_window_state_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNativeAppWindowViewsAuraAsh);

@@ -253,7 +253,7 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
         Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
             kActiveDesk);
     for (aura::Window* window : windows) {
-      switch (wm::GetWindowState(window)->GetStateType()) {
+      switch (WindowState::Get(window)->GetStateType()) {
         case WindowStateType::kLeftSnapped:
           if (!split_view_controller->left_window()) {
             split_view_controller->SnapWindow(window,
@@ -321,10 +321,10 @@ bool CanSnapInSplitview(aura::Window* window) {
   if (!ShouldAllowSplitView())
     return false;
 
-  if (!::wm::CanActivateWindow(window))
+  if (!wm::CanActivateWindow(window))
     return false;
 
-  if (!wm::GetWindowState(window)->CanSnap())
+  if (!WindowState::Get(window)->CanSnap())
     return false;
 
   if (window->delegate()) {

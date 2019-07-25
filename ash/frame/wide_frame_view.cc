@@ -145,8 +145,8 @@ void WideFrameView::OnMouseEvent(ui::MouseEvent* event) {
     if ((event->flags() & ui::EF_IS_DOUBLE_CLICK)) {
       base::RecordAction(
           base::UserMetricsAction("Caption_ClickTogglesMaximize"));
-      const wm::WMEvent wm_event(wm::WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
-      wm::GetWindowState(target_->GetNativeWindow())->OnWMEvent(&wm_event);
+      const WMEvent wm_event(WM_EVENT_TOGGLE_MAXIMIZE_CAPTION);
+      WindowState::Get(target_->GetNativeWindow())->OnWMEvent(&wm_event);
     }
     event->SetHandled();
   }

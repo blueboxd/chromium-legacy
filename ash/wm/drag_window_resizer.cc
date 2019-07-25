@@ -87,7 +87,7 @@ void DragWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
 
 DragWindowResizer::DragWindowResizer(
     std::unique_ptr<WindowResizer> next_window_resizer,
-    wm::WindowState* window_state)
+    WindowState* window_state)
     : WindowResizer(window_state),
       next_window_resizer_(std::move(next_window_resizer)),
       weak_ptr_factory_(this) {
@@ -120,7 +120,7 @@ void DragWindowResizer::UpdateDragWindow(
 bool DragWindowResizer::ShouldAllowMouseWarp() {
   return details().window_component == HTCAPTION &&
          !::wm::GetTransientParent(GetTarget()) &&
-         wm::IsWindowUserPositionable(GetTarget());
+         window_util::IsWindowUserPositionable(GetTarget());
 }
 
 void DragWindowResizer::EndDragImpl() {
@@ -164,8 +164,8 @@ void DragWindowResizer::EndDragImpl() {
         dst_bounds.set_x(last_mouse_location_in_screen.x() -
                          dst_bounds.width());
     }
-    ash::wm::AdjustBoundsToEnsureMinimumWindowVisibility(dst_display.bounds(),
-                                                         &dst_bounds);
+    AdjustBoundsToEnsureMinimumWindowVisibility(dst_display.bounds(),
+                                                &dst_bounds);
 
     GetTarget()->SetBoundsInScreen(dst_bounds, dst_display);
   }

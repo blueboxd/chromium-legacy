@@ -10,6 +10,7 @@
 
 #include "ash/ash_export.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/wm/core/window_util.h"
 
 namespace aura {
 class Window;
@@ -17,31 +18,17 @@ class Window;
 
 namespace gfx {
 class Point;
-}
-
-namespace ui {
-class Event;
+class Rect;
 }
 
 namespace ash {
 
-namespace wm {
+namespace window_util {
 
-// Utility functions for window activation.
-// DEPRECATED: Prefer the functions in ui/wm/core/window_util.h.
-ASH_EXPORT void ActivateWindow(aura::Window* window);
-ASH_EXPORT void DeactivateWindow(aura::Window* window);
-ASH_EXPORT bool IsActiveWindow(aura::Window* window);
+// See ui/wm/core/window_util.h for ActivateWindow(), DeactivateWindow(),
+// IsActiveWindow() and CanActivateWindow().
 ASH_EXPORT aura::Window* GetActiveWindow();
-ASH_EXPORT bool CanActivateWindow(aura::Window* window);
 ASH_EXPORT aura::Window* GetFocusedWindow();
-
-// Retrieves the activatable window for |window|. If |window| is activatable,
-// this will just return it, otherwise it will climb the parent/transient parent
-// chain looking for a window that is activatable, per the ActivationController.
-// If you're looking for a function to get the activatable "top level" window,
-// this is probably what you're looking for.
-ASH_EXPORT aura::Window* GetActivatableWindow(aura::Window* window);
 
 // Returns the window with capture, null if no window currently has capture.
 ASH_EXPORT aura::Window* GetCaptureWindow();
@@ -71,11 +58,6 @@ ASH_EXPORT void SetAutoHideShelf(aura::Window* window, bool autohide);
 // Moves |window| to the root window for the given |display_id|, if it is not
 // already in the same root window. Returns true if |window| was moved.
 ASH_EXPORT bool MoveWindowToDisplay(aura::Window* window, int64_t display_id);
-
-// Moves |window| to the root window where the |event| occurred, if it is not
-// already in the same root window. Returns true if |window| was moved.
-ASH_EXPORT bool MoveWindowToEventRoot(aura::Window* window,
-                                      const ui::Event& event);
 
 // Convenience for window->delegate()->GetNonClientComponent(location) that
 // returns HTNOWHERE if window->delegate() is null.
@@ -116,7 +98,15 @@ ASH_EXPORT void HideAndMaybeMinimizeWithoutAnimation(
     std::vector<aura::Window*> windows,
     bool minimize);
 
-}  // namespace wm
+// Returns the RootWindow at |point_in_screen| in virtual screen coordinates.
+// Returns nullptr if the root window does not exist at the given point.
+ASH_EXPORT aura::Window* GetRootWindowAt(const gfx::Point& point_in_screen);
+
+// Returns the RootWindow that shares the most area with |rect_in_screen| in
+// virtual screen coordinates.
+ASH_EXPORT aura::Window* GetRootWindowMatching(const gfx::Rect& rect_in_screen);
+
+}  // namespace window_util
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_UTIL_H_

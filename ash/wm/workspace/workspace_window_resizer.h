@@ -21,10 +21,7 @@ namespace ash {
 class PhantomWindowController;
 class TwoStepEdgeCycler;
 class WindowSize;
-
-namespace wm {
 class WindowState;
-}
 
 // WindowResizer implementation for workspaces. This enforces that windows are
 // not allowed to vertically move or resize outside of the work area. As windows
@@ -53,7 +50,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   ~WorkspaceWindowResizer() override;
 
   static WorkspaceWindowResizer* Create(
-      wm::WindowState* window_state,
+      WindowState* window_state,
       const std::vector<aura::Window*>& attached_windows);
 
   // WindowResizer:
@@ -68,7 +65,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // The edge to which the window should be snapped at the end of the drag.
   enum SnapType { SNAP_LEFT, SNAP_RIGHT, SNAP_NONE };
 
-  WorkspaceWindowResizer(wm::WindowState* window_state,
+  WorkspaceWindowResizer(WindowState* window_state,
                          const std::vector<aura::Window*>& attached_windows);
 
   // Lays out the attached windows. |bounds| is the bounds of the main window.
@@ -170,7 +167,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   void StartDragForAttachedWindows();
   void EndDragForAttachedWindows(bool revert_drag);
 
-  wm::WindowState* window_state() { return window_state_; }
+  WindowState* window_state() { return window_state_; }
 
   const std::vector<aura::Window*> attached_windows_;
 

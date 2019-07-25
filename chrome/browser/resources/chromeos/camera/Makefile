@@ -118,6 +118,9 @@ RESOURCES = \
 	src/images/spinner.svg \
 	src/js/background.js \
 	src/js/browser_proxy/browser_proxy.js \
+	src/js/device/camera3_device_info.js \
+	src/js/device/constraints_preferrer.js \
+	src/js/device/device_info_updater.js \
 	src/js/gallerybutton.js \
 	src/js/google-analytics-bundle.js \
 	src/js/main.js \
@@ -136,7 +139,6 @@ RESOURCES = \
 	src/js/util.js \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
-	src/js/views/camera/constraints_preferrer.js \
 	src/js/views/camera/layout.js \
 	src/js/views/camera/modes.js \
 	src/js/views/camera/options.js \

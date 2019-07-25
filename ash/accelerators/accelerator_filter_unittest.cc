@@ -115,7 +115,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
 
   // Setting a window property on the target allows system keys to pass through.
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(1));
-  wm::GetWindowState(window.get())->SetCanConsumeSystemKeys(true);
+  WindowState::Get(window.get())->SetCanConsumeSystemKeys(true);
   ui::KeyEvent press_volume_up(ui::ET_KEY_PRESSED, ui::VKEY_VOLUME_UP,
                                ui::EF_NONE);
   ui::Event::DispatcherApi dispatch_helper(&press_volume_up);

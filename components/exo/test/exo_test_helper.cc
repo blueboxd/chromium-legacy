@@ -63,7 +63,7 @@ void HandleBoundsChangedRequest(ClientControlledShellSurface* shell_surface,
   ASSERT_TRUE(display_id != display::kInvalidDisplayId);
 
   auto* window_state =
-      ash::wm::GetWindowState(shell_surface->GetWidget()->GetNativeWindow());
+      ash::WindowState::Get(shell_surface->GetWidget()->GetNativeWindow());
 
   if (!shell_surface->host_window()->GetRootWindow())
     return;
@@ -107,7 +107,7 @@ ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
   surface_->Attach(buffer_.get());
   surface_->Commit();
 
-  ash::wm::CenterWindow(shell_surface_->GetWidget()->GetNativeWindow());
+  ash::CenterWindow(shell_surface_->GetWidget()->GetNativeWindow());
 }
 
 ExoTestWindow::ExoTestWindow(ExoTestWindow&& other) {

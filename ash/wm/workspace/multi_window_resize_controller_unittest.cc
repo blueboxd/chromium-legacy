@@ -321,23 +321,23 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   generator->PressLeftButton();
 
   // Test that when drag starts, drag details are created for each window.
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->is_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w3.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w2.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w3.get())->is_dragged());
   // Test the window components for each window.
-  EXPECT_EQ(wm::GetWindowState(w1.get())->drag_details()->window_component,
+  EXPECT_EQ(WindowState::Get(w1.get())->drag_details()->window_component,
             HTRIGHT);
-  EXPECT_EQ(wm::GetWindowState(w2.get())->drag_details()->window_component,
+  EXPECT_EQ(WindowState::Get(w2.get())->drag_details()->window_component,
             HTLEFT);
-  EXPECT_EQ(wm::GetWindowState(w3.get())->drag_details()->window_component,
+  EXPECT_EQ(WindowState::Get(w3.get())->drag_details()->window_component,
             HTLEFT);
 
   generator->MoveMouseTo(bounds.x() + 11, bounds.y() + 10);
 
   // Drag details should exist during dragging.
-  EXPECT_TRUE(wm::GetWindowState(w1.get())->is_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w2.get())->is_dragged());
-  EXPECT_TRUE(wm::GetWindowState(w3.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w2.get())->is_dragged());
+  EXPECT_TRUE(WindowState::Get(w3.get())->is_dragged());
 
   EXPECT_TRUE(HasTarget(w3.get()));
 
@@ -347,9 +347,9 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   EXPECT_TRUE(IsShowing());
 
   // Test that drag details are correctly deleted after dragging.
-  EXPECT_FALSE(wm::GetWindowState(w1.get())->is_dragged());
-  EXPECT_FALSE(wm::GetWindowState(w2.get())->is_dragged());
-  EXPECT_FALSE(wm::GetWindowState(w3.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(w1.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(w2.get())->is_dragged());
+  EXPECT_FALSE(WindowState::Get(w3.get())->is_dragged());
 
   generator->PressLeftButton();
 }
@@ -553,12 +553,12 @@ TEST_F(MultiWindowResizeControllerTest, MakeWindowNonResizeable) {
 
 namespace {
 
-class TestWindowStateDelegate : public wm::WindowStateDelegate {
+class TestWindowStateDelegate : public WindowStateDelegate {
  public:
   TestWindowStateDelegate() = default;
   ~TestWindowStateDelegate() override = default;
 
-  // wm::WindowStateDelegate:
+  // WindowStateDelegate:
   void OnDragStarted(int component) override { component_ = component; }
   void OnDragFinished(bool cancel, const gfx::Point& location) override {
     location_ = location;
@@ -593,16 +593,16 @@ TEST_F(MultiWindowResizeControllerTest, TwoSnappedWindows) {
   std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegate(
       &delegate1, -1, gfx::Rect(100, 100, 100, 100)));
   delegate1.set_window_component(HTRIGHT);
-  wm::WindowState* w1_state = wm::GetWindowState(w1.get());
-  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  WindowState* w1_state = WindowState::Get(w1.get());
+  const WMEvent snap_left(WM_EVENT_SNAP_LEFT);
   w1_state->OnWMEvent(&snap_left);
   EXPECT_EQ(WindowStateType::kLeftSnapped, w1_state->GetStateType());
   aura::test::TestWindowDelegate delegate2;
   std::unique_ptr<aura::Window> w2(CreateTestWindowInShellWithDelegate(
       &delegate2, -2, gfx::Rect(100, 100, 100, 100)));
   delegate2.set_window_component(HTRIGHT);
-  wm::WindowState* w2_state = wm::GetWindowState(w2.get());
-  const wm::WMEvent snap_right(wm::WM_EVENT_SNAP_RIGHT);
+  WindowState* w2_state = WindowState::Get(w2.get());
+  const WMEvent snap_right(WM_EVENT_SNAP_RIGHT);
   w2_state->OnWMEvent(&snap_right);
   EXPECT_EQ(WindowStateType::kRightSnapped, w2_state->GetStateType());
   EXPECT_EQ(0.5f, *w1_state->snapped_width_ratio());

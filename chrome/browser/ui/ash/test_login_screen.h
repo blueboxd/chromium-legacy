@@ -13,6 +13,10 @@
 #include "chrome/browser/ui/ash/test_login_screen_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace ash {
+class ScopedGuestButtonBlocker;
+}
+
 // Test implementation of ash's mojo LoginScreen interface.
 //
 // Registers itself to ServiceManager on construction and deregisters
@@ -43,6 +47,8 @@ class TestLoginScreen : public ash::LoginScreen {
       ash::ParentAccessRequestReason reason,
       bool extra_dimmer) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
+  std::unique_ptr<ash::ScopedGuestButtonBlocker> GetScopedGuestButtonBlocker()
+      override;
 
  private:
   TestLoginScreenModel test_screen_model_;

@@ -7,11 +7,11 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/bind.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_service_app_item.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
-#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "extensions/common/extension.h"
 
 namespace app_list {

@@ -11,6 +11,7 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
+#include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
 namespace tracing {
@@ -37,6 +38,7 @@ void EnableStartupTracingIfNeeded() {
 
   if (startup_config->IsEnabled()) {
     if (TracingUsesPerfettoBackend()) {
+      TracingSamplerProfiler::SetupStartupTracing();
       TraceEventDataSource::GetInstance()->SetupStartupTracing(
           startup_config->GetSessionOwner() ==
           TraceStartupConfig::SessionOwner::kBackgroundTracing);

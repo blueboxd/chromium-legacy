@@ -311,7 +311,7 @@ class OverviewSessionTest : public AshTestBase {
     return item->caption_container_view_->backdrop_view();
   }
 
-  wm::WindowPreviewView* GetPreviewView(OverviewItem* item) {
+  WindowPreviewView* GetPreviewView(OverviewItem* item) {
     return item->caption_container_view_->preview_view();
   }
 
@@ -428,10 +428,10 @@ TEST_F(OverviewSessionTest, Basic) {
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
   EXPECT_TRUE(WindowsOverlapping(window1.get(), window2.get()));
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
-  EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
+  EXPECT_EQ(window2.get(), window_util::GetFocusedWindow());
 
   // Hide the cursor before entering overview to test that it will be shown.
   aura::client::GetCursorClient(root_window)->HideCursor();
@@ -441,7 +441,7 @@ TEST_F(OverviewSessionTest, Basic) {
   // focus window should be focused.
   ToggleOverview();
   EXPECT_EQ(overview_session()->GetOverviewFocusWindow(),
-            wm::GetFocusedWindow());
+            window_util::GetFocusedWindow());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
   CheckOverviewEnterExitHistogram("Enter", {1, 0, 0}, {0, 0, 0});
 
@@ -449,7 +449,7 @@ TEST_F(OverviewSessionTest, Basic) {
   ClickWindow(window1.get());
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
-  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
+  EXPECT_EQ(window1.get(), window_util::GetFocusedWindow());
 
   // Cursor should have been unlocked.
   EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
@@ -461,20 +461,20 @@ TEST_F(OverviewSessionTest, Basic) {
 TEST_F(OverviewSessionTest, ActivateMinimized) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
+  WindowState* window_state = WindowState::Get(window.get());
+  WMEvent minimize_event(WM_EVENT_MINIMIZE);
   window_state->OnWMEvent(&minimize_event);
   EXPECT_FALSE(window->IsVisible());
   EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(WindowStateType::kMinimized,
-            wm::GetWindowState(window.get())->GetStateType());
+            WindowState::Get(window.get())->GetStateType());
 
   ToggleOverview();
 
   EXPECT_FALSE(window->IsVisible());
   EXPECT_EQ(0.f, window->layer()->GetTargetOpacity());
   EXPECT_EQ(WindowStateType::kMinimized, window_state->GetStateType());
-  wm::WindowPreviewView* preview_view =
+  WindowPreviewView* preview_view =
       GetPreviewView(GetWindowItemForWindow(0, window.get()));
   EXPECT_TRUE(preview_view);
 
@@ -497,7 +497,7 @@ TEST_F(OverviewSessionTest, WindowsOrder) {
   std::unique_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
 
   // The order of windows in overview mode is MRU.
-  wm::GetWindowState(window1.get())->Activate();
+  WindowState::Get(window1.get())->Activate();
   ToggleOverview();
   const std::vector<std::unique_ptr<OverviewItem>>& overview1 =
       GetWindowItemsForRoot(0);
@@ -507,7 +507,7 @@ TEST_F(OverviewSessionTest, WindowsOrder) {
   ToggleOverview();
 
   // Activate the second window.
-  wm::GetWindowState(window2.get())->Activate();
+  WindowState::Get(window2.get())->Activate();
   ToggleOverview();
   const std::vector<std::unique_ptr<OverviewItem>>& overview2 =
       GetWindowItemsForRoot(0);
@@ -523,14 +523,14 @@ TEST_F(OverviewSessionTest, WindowsOrder) {
 TEST_F(OverviewSessionTest, BasicGesture) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window1.get());
-  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
+  wm::ActivateWindow(window1.get());
+  EXPECT_EQ(window1.get(), window_util::GetFocusedWindow());
   ToggleOverview();
   EXPECT_EQ(overview_session()->GetOverviewFocusWindow(),
-            wm::GetFocusedWindow());
+            window_util::GetFocusedWindow());
   GetEventGenerator()->GestureTapAt(
       GetTransformedTargetBounds(window2.get()).CenterPoint());
-  EXPECT_EQ(window2.get(), wm::GetFocusedWindow());
+  EXPECT_EQ(window2.get(), window_util::GetFocusedWindow());
 }
 
 // Tests that the user action WindowSelector_ActiveWindowChanged is
@@ -540,7 +540,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionRecorded) {
   base::UserActionTester user_action_tester;
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   ToggleOverview();
 
   // Tap on |window2| to activate it and exit overview.
@@ -550,7 +550,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionRecorded) {
       1, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 
   // Click on |window2| to activate it and exit overview.
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   ToggleOverview();
   ClickWindow(window2.get());
   EXPECT_EQ(
@@ -558,7 +558,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionRecorded) {
 
   // Highlight |window2| using the arrow keys. Activate it (and exit overview)
   // by pressing the return key.
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   ToggleOverview();
   ASSERT_TRUE(HighlightWindow(window2.get()));
   SendKey(ui::VKEY_RETURN);
@@ -574,7 +574,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionNotRecorded) {
   base::UserActionTester user_action_tester;
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   ToggleOverview();
 
   // Tap on |window1| to exit overview.
@@ -584,14 +584,14 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionNotRecorded) {
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 
   // |window1| remains active. Click on it to exit overview.
-  ASSERT_EQ(window1.get(), wm::GetFocusedWindow());
+  ASSERT_EQ(window1.get(), window_util::GetFocusedWindow());
   ToggleOverview();
   ClickWindow(window1.get());
   EXPECT_EQ(
       0, user_action_tester.GetActionCount(kActiveWindowChangedFromOverview));
 
   // |window1| remains active. Select using the keyboard.
-  ASSERT_EQ(window1.get(), wm::GetFocusedWindow());
+  ASSERT_EQ(window1.get(), window_util::GetFocusedWindow());
   ToggleOverview();
   ASSERT_TRUE(HighlightWindow(window1.get()));
   SendKey(ui::VKEY_RETURN);
@@ -654,7 +654,7 @@ TEST_F(OverviewSessionTest, NoCrashWithDesktopTap) {
 TEST_F(OverviewSessionTest, ClickOnWindowDuringTouch) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
 
@@ -731,7 +731,7 @@ TEST_F(OverviewSessionTest, CloseButton) {
   ASSERT_TRUE(InOverviewSession());
 
   aura::Window* minimized_window = minimized_widget->GetNativeWindow();
-  wm::WindowPreviewView* preview_view =
+  WindowPreviewView* preview_view =
       GetPreviewView(GetWindowItemForWindow(0, minimized_window));
   EXPECT_TRUE(preview_view);
   const gfx::Point point2 =
@@ -799,18 +799,18 @@ TEST_F(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
 TEST_F(OverviewSessionTest, FullscreenWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
 
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window1.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window1.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsFullscreen());
 
   // Enter overview and select the fullscreen window.
   ToggleOverview();
   CheckOverviewEnterExitHistogram("FullscreenWindowEnter1", {0, 1, 0},
                                   {0, 0, 0});
   ClickWindow(window1.get());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsFullscreen());
   CheckOverviewEnterExitHistogram("FullscreenWindowExit1", {0, 1, 0},
                                   {0, 1, 0});
 
@@ -820,7 +820,7 @@ TEST_F(OverviewSessionTest, FullscreenWindow) {
   CheckOverviewEnterExitHistogram("FullscreenWindowEnter2", {0, 2, 0},
                                   {0, 1, 0});
   ClickWindow(window2.get());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsFullscreen());
   CheckOverviewEnterExitHistogram("FullscreenWindowExit2", {0, 2, 0},
                                   {1, 1, 0});
 }
@@ -829,25 +829,25 @@ TEST_F(OverviewSessionTest, FullscreenWindow) {
 TEST_F(OverviewSessionTest, MaximizedWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
 
-  const wm::WMEvent maximize_event(wm::WM_EVENT_MAXIMIZE);
-  wm::GetWindowState(window1.get())->OnWMEvent(&maximize_event);
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  const WMEvent maximize_event(WM_EVENT_MAXIMIZE);
+  WindowState::Get(window1.get())->OnWMEvent(&maximize_event);
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMaximized());
 
   // Enter overview and select the fullscreen window.
   ToggleOverview();
   CheckOverviewEnterExitHistogram("MaximizedWindowEnter1", {0, 1, 0},
                                   {0, 0, 0});
   ClickWindow(window1.get());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMaximized());
   CheckOverviewEnterExitHistogram("MaximizedWindowExit1", {0, 1, 0}, {0, 1, 0});
 
   ToggleOverview();
   CheckOverviewEnterExitHistogram("MaximizedWindowEnter2", {0, 2, 0},
                                   {0, 1, 0});
   ClickWindow(window2.get());
-  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window1.get())->IsMaximized());
   CheckOverviewEnterExitHistogram("MaximizedWindowExit2", {0, 2, 0}, {1, 1, 0});
 }
 
@@ -859,13 +859,13 @@ TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   EnterTabletMode();
   gfx::Rect normal_window_bounds(window1->bounds());
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window1.get())->OnWMEvent(&toggle_fullscreen_event);
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window1.get())->OnWMEvent(&toggle_fullscreen_event);
   gfx::Rect fullscreen_window_bounds(window1->bounds());
   EXPECT_NE(normal_window_bounds, fullscreen_window_bounds);
   EXPECT_EQ(fullscreen_window_bounds, window2->GetTargetBounds());
@@ -944,7 +944,7 @@ TEST_F(OverviewSessionTest, SkipOverviewWindow) {
 // stay invisible (A minimized window is cloned during overview).
 TEST_F(OverviewSessionTest, MinimizedWindowState) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
-  wm::GetWindowState(window1.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
   EXPECT_FALSE(window1->IsVisible());
   EXPECT_FALSE(window1->layer()->GetTargetVisibility());
 
@@ -1009,7 +1009,7 @@ TEST_F(OverviewSessionTest, ActivationCancelsOverview) {
 
   // window1 should be focused after exiting even though window2 was focused on
   // entering overview because we exited due to an activation.
-  EXPECT_EQ(window1.get(), wm::GetFocusedWindow());
+  EXPECT_EQ(window1.get(), window_util::GetFocusedWindow());
 }
 
 // Tests that if a window is dragged while overview is open, the activation
@@ -1050,14 +1050,14 @@ TEST_F(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
   EXPECT_FALSE(InOverviewSession());
 
   // Start drag on |window1|.
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window1.get());
   std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
       window1.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_TOUCH));
   EXPECT_TRUE(InOverviewSession());
 
   // Activate |window2| should not cancel overview mode.
-  ::wm::ActivateWindow(window2.get());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->is_dragged());
+  wm::ActivateWindow(window2.get());
+  EXPECT_FALSE(WindowState::Get(window2.get())->is_dragged());
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
   EXPECT_TRUE(InOverviewSession());
 }
@@ -1075,7 +1075,7 @@ TEST_F(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
                                    /*allow_drag_to_close=*/false);
   drag_point.Offset(5.f, 0.f);
   overview_session()->Drag(item, drag_point);
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   EXPECT_TRUE(InOverviewSession());
 }
 
@@ -1094,7 +1094,7 @@ TEST_F(OverviewSessionTest,
                                    /*allow_drag_to_close=*/false);
   drag_point.Offset(5.f, 0.f);
   overview_session()->Drag(item1, drag_point);
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_TRUE(InOverviewSession());
 }
 
@@ -1107,7 +1107,7 @@ TEST_F(OverviewSessionTest,
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(
       CreateTestWindow(gfx::Rect(), aura::client::WINDOW_TYPE_POPUP));
-  EXPECT_TRUE(wm::ShouldExcludeForOverview(window2.get()));
+  EXPECT_TRUE(window_util::ShouldExcludeForOverview(window2.get()));
   ToggleOverview();
   OverviewItem* item1 = GetWindowItemForWindow(0, window1.get());
   gfx::PointF drag_point = item1->target_bounds().CenterPoint();
@@ -1115,7 +1115,7 @@ TEST_F(OverviewSessionTest,
                                    /*allow_drag_to_close=*/false);
   drag_point.Offset(5.f, 0.f);
   overview_session()->Drag(item1, drag_point);
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_TRUE(InOverviewSession());
 }
 
@@ -1123,17 +1123,17 @@ TEST_F(OverviewSessionTest,
 // to the previously focused window.
 TEST_F(OverviewSessionTest, CancelRestoresFocus) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
-  ::wm::ActivateWindow(window.get());
-  EXPECT_EQ(window.get(), wm::GetFocusedWindow());
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(window.get(), window_util::GetFocusedWindow());
 
   // In overview mode, the overview focus window should be focused.
   ToggleOverview();
   EXPECT_EQ(overview_session()->GetOverviewFocusWindow(),
-            wm::GetFocusedWindow());
+            window_util::GetFocusedWindow());
 
   // If canceling overview mode, focus should be restored.
   ToggleOverview();
-  EXPECT_EQ(window.get(), wm::GetFocusedWindow());
+  EXPECT_EQ(window.get(), window_util::GetFocusedWindow());
 }
 
 // Tests that overview mode is exited if the last remaining window is destroyed.
@@ -1271,8 +1271,8 @@ TEST_F(OverviewSessionTest, Shutdown) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   ToggleOverview();
 }
@@ -1288,8 +1288,8 @@ TEST_F(OverviewSessionTest, RemoveDisplay) {
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   ToggleOverview();
   EXPECT_TRUE(InOverviewSession());
@@ -1308,8 +1308,8 @@ TEST_F(OverviewSessionTest, RemoveDisplayWithAnimation) {
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
 
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   ToggleOverview();
   EXPECT_TRUE(InOverviewSession());
@@ -1472,7 +1472,7 @@ TEST_F(OverviewSessionTest, DragDropInProgress) {
 // present.
 TEST_F(OverviewSessionTest, DragWindowShadow) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
-  ::wm::ActivateWindow(window.get());
+  wm::ActivateWindow(window.get());
   Shell::Get()->resize_shadow_controller()->ShowShadow(window.get(), HTTOP);
 
   ToggleOverview();
@@ -1954,7 +1954,8 @@ TEST_F(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   std::unique_ptr<views::Widget> widget2(CreateTestWidget());
   aura::Window* window1 = widget1->GetNativeWindow();
   aura::Window* window2 = widget2->GetNativeWindow();
-  ASSERT_TRUE(wm::MoveWindowToDisplay(window2, GetSecondaryDisplay().id()));
+  ASSERT_TRUE(
+      window_util::MoveWindowToDisplay(window2, GetSecondaryDisplay().id()));
   ASSERT_EQ(root_windows[0], window1->GetRootWindow());
   ASSERT_EQ(root_windows[1], window2->GetRootWindow());
 
@@ -1993,20 +1994,20 @@ TEST_F(OverviewSessionTest, SetWindowListAnimationStates) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window3.get())->IsFullscreen());
 
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsFullscreen());
 
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -2025,20 +2026,20 @@ TEST_F(OverviewSessionTest, SetWindowListAnimationStatesWithSelectedWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window3.get())->IsFullscreen());
 
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsFullscreen());
 
   // Enter overview.
   ToggleOverview();
@@ -2063,20 +2064,20 @@ TEST_F(OverviewSessionTest,
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window3.get())->IsFullscreen());
 
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsFullscreen());
 
   // Enter overview.
   ToggleOverview();
@@ -2106,20 +2107,20 @@ TEST_F(OverviewSessionTest, HandleOverviewWindowAnimationObserverWasDeleted) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window3.get())->IsFullscreen());
 
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsFullscreen());
 
   // Enter overview.
   ToggleOverview();
@@ -2141,20 +2142,20 @@ TEST_F(OverviewSessionTest, HandleActiveWindowNotInOverviewGrid) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window3.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window3.get())->IsFullscreen());
 
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window3.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window3.get())->IsFullscreen());
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window3.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_FALSE(WindowState::Get(window1.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window3.get())->IsFullscreen());
 
   // Enter overview.
   ToggleOverview();
@@ -2195,27 +2196,27 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
                        ui::ZOrderLevel::kFloatingWindow);
 
   // Control z order and MRU order.
-  ::wm::ActivateWindow(window8.get());
-  ::wm::ActivateWindow(window7.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window6.get());  // Will be maximized.
-  ::wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window4.get());
-  ::wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window2.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window8.get());
+  wm::ActivateWindow(window7.get());  // Will be fullscreen.
+  wm::ActivateWindow(window6.get());  // Will be maximized.
+  wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window2.get());  // Will be fullscreen.
+  wm::ActivateWindow(window1.get());
 
-  EXPECT_FALSE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window6.get())->IsFullscreen());
-  EXPECT_FALSE(wm::GetWindowState(window7.get())->IsMaximized());
+  EXPECT_FALSE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window6.get())->IsFullscreen());
+  EXPECT_FALSE(WindowState::Get(window7.get())->IsMaximized());
 
-  const wm::WMEvent toggle_maximize_event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
-  wm::GetWindowState(window6.get())->OnWMEvent(&toggle_maximize_event);
-  const wm::WMEvent toggle_fullscreen_event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_TRUE(wm::GetWindowState(window2.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window7.get())->IsFullscreen());
-  EXPECT_TRUE(wm::GetWindowState(window6.get())->IsMaximized());
+  const WMEvent toggle_maximize_event(WM_EVENT_TOGGLE_MAXIMIZE);
+  WindowState::Get(window6.get())->OnWMEvent(&toggle_maximize_event);
+  const WMEvent toggle_fullscreen_event(WM_EVENT_TOGGLE_FULLSCREEN);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  EXPECT_TRUE(WindowState::Get(window2.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window7.get())->IsFullscreen());
+  EXPECT_TRUE(WindowState::Get(window6.get())->IsMaximized());
 
   // Case 1: Click on |window1| to activate it and exit overview.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> test_duration_mode =
@@ -2254,18 +2255,18 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
   // Should animate |window1|, |window2|, |window3| and |window5|.
   // Reset window z-order. Need to toggle fullscreen first to workaround
   // https://crbug.com/816224.
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
-  ::wm::ActivateWindow(window8.get());
-  ::wm::ActivateWindow(window7.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window6.get());  // Maximized.
-  ::wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window4.get());
-  ::wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window2.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window1.get());
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::ActivateWindow(window8.get());
+  wm::ActivateWindow(window7.get());  // Will be fullscreen.
+  wm::ActivateWindow(window6.get());  // Maximized.
+  wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window2.get());  // Will be fullscreen.
+  wm::ActivateWindow(window1.get());
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
   // Enter overview.
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -2290,18 +2291,18 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
   // |window5| are AlwaysOnTop windows. |window6| is maximized.
   // Reset window z-order. Need to toggle fullscreen first to workaround
   // https://crbug.com/816224.
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
-  ::wm::ActivateWindow(window8.get());
-  ::wm::ActivateWindow(window7.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window6.get());  // Maximized.
-  ::wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window4.get());
-  ::wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window2.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window1.get());
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::ActivateWindow(window8.get());
+  wm::ActivateWindow(window7.get());  // Will be fullscreen.
+  wm::ActivateWindow(window6.get());  // Maximized.
+  wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window2.get());  // Will be fullscreen.
+  wm::ActivateWindow(window1.get());
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
   // Enter overview.
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -2327,18 +2328,18 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
   // fullscreen.
   // Reset window z-order. Need to toggle fullscreen first to workaround
   // https://crbug.com/816224.
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
-  ::wm::ActivateWindow(window8.get());
-  ::wm::ActivateWindow(window7.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window6.get());  // Maximized.
-  ::wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window4.get());
-  ::wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
-  ::wm::ActivateWindow(window2.get());  // Will be fullscreen.
-  ::wm::ActivateWindow(window1.get());
-  wm::GetWindowState(window2.get())->OnWMEvent(&toggle_fullscreen_event);
-  wm::GetWindowState(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
+  wm::ActivateWindow(window8.get());
+  wm::ActivateWindow(window7.get());  // Will be fullscreen.
+  wm::ActivateWindow(window6.get());  // Maximized.
+  wm::ActivateWindow(window5.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());  // AlwaysOnTop window.
+  wm::ActivateWindow(window2.get());  // Will be fullscreen.
+  wm::ActivateWindow(window1.get());
+  WindowState::Get(window2.get())->OnWMEvent(&toggle_fullscreen_event);
+  WindowState::Get(window7.get())->OnWMEvent(&toggle_fullscreen_event);
   // Enter overview.
   test_duration_mode = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -2366,8 +2367,8 @@ TEST_F(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
   UpdateDisplay("400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   EnterTabletMode();
   ToggleOverview();
@@ -2449,7 +2450,7 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
   base::HistogramTester histogram_tester;
   // Create three windows, including one minimized.
   std::unique_ptr<aura::Window> minimized(CreateTestWindow());
-  wm::GetWindowState(minimized.get())->Minimize();
+  WindowState::Get(minimized.get())->Minimize();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
 
@@ -2636,8 +2637,8 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
@@ -2664,8 +2665,8 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   // button pressed) will still disable all the masks until the animation is
   // complete.
   ToggleOverview();
-  wm::GetWindowState(window1.get())->Minimize();
-  wm::GetWindowState(window2.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
+  WindowState::Get(window2.get())->Minimize();
   ToggleOverview();
   item1 = GetWindowItemForWindow(0, window1.get());
   item2 = GetWindowItemForWindow(0, window2.get());
@@ -2697,8 +2698,8 @@ TEST_F(OverviewSessionRoundedCornerTest, ShadowVisibilityDragging) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
-  ::wm::ActivateWindow(window2.get());
-  ::wm::ActivateWindow(window1.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   EnterTabletMode();
   ToggleOverview();
@@ -2905,8 +2906,8 @@ TEST_F(OverviewSessionTest, ShadowDisappearsInOverview) {
 TEST_F(OverviewSessionTest, PipWindowShownButExcludedFromOverview) {
   std::unique_ptr<aura::Window> pip_window(
       CreateTestWindow(gfx::Rect(200, 200)));
-  wm::WindowState* window_state = wm::GetWindowState(pip_window.get());
-  const wm::WMEvent enter_pip(wm::WM_EVENT_PIP);
+  WindowState* window_state = WindowState::Get(pip_window.get());
+  const WMEvent enter_pip(WM_EVENT_PIP);
   window_state->OnWMEvent(&enter_pip);
 
   // Enter overview.
@@ -2969,7 +2970,7 @@ TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
   // Drag from the the top of the app to enter overview.
   ui::GestureEvent event(0, 0, 0, base::TimeTicks(),
                          ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
-  wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeWindow());
+  WindowState* window_state = WindowState::Get(widget->GetNativeWindow());
   window_state->CreateDragDetails(event.location(), HTCAPTION,
                                   ::wm::WINDOW_MOVE_SOURCE_TOUCH);
   auto drag_controller = std::make_unique<TabletModeWindowDragController>(
@@ -3600,7 +3601,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
 
   // Create a new window should exit the overview mode.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   // If there are only 2 snapped windows, close one of them should enter
@@ -3611,8 +3612,8 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   // If there are more than 2 windows in overview
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
-  ::wm::ActivateWindow(window3.get());
-  ::wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window4.get());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   ToggleOverview();
@@ -3864,7 +3865,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
   // window is the unsnappable window.
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(unsnappable_window.get(), window_util::GetActiveWindow());
 
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   ToggleOverview();
@@ -3892,7 +3893,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
   // active window now.
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
+  EXPECT_EQ(unsnappable_window.get(), window_util::GetActiveWindow());
 }
 
 // Verify that when in overview mode, the selector items unsnappable indicator
@@ -3991,7 +3992,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   // should be activated.
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
-  EXPECT_EQ(window2.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
 }
 
 TEST_F(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
@@ -4020,7 +4021,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
                                    /*allow_drag_to_close=*/true);
   overview_session()->ActivateDraggedWindow();
   EXPECT_FALSE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(window1.get(), wm::GetActiveWindow());
+  EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 }
 
 TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
@@ -4212,7 +4213,7 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
   EXPECT_TRUE(InOverviewSession());
 
   // Minimize |window1| will put |window1| back to overview grid.
-  wm::GetWindowState(window1.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(InOverviewSession());
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
@@ -4220,21 +4221,21 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
   // Now snap both |window1| and |window2|.
   overview_item1 = GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(overview_item1, gfx::PointF());
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_FALSE(InOverviewSession());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 
   // Minimize |window1| will open overview and put |window1| to overview grid.
-  wm::GetWindowState(window1.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kRightSnapped);
   EXPECT_TRUE(InOverviewSession());
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
 
   // Minimize |window2| also put |window2| to overview grid.
-  wm::GetWindowState(window2.get())->Minimize();
+  WindowState::Get(window2.get())->Minimize();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(InOverviewSession());
   EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
@@ -4301,7 +4302,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
   EXPECT_FALSE(window2->layer()->GetTargetTransform().IsIdentity());
   EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
-  ::wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window2.get());
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller()->state());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
@@ -4315,7 +4316,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
   EXPECT_FALSE(window3->layer()->GetTargetTransform().IsIdentity());
   EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
   std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
-  ::wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window4.get());
   EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller()->state());
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(window1->layer()->GetTargetTransform().IsIdentity());
@@ -4442,7 +4443,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   // 1. Test the 1 window scenario.
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  wm::WindowState* window_state1 = wm::GetWindowState(window1.get());
+  WindowState* window_state1 = WindowState::Get(window1.get());
   EXPECT_FALSE(window_state1->IsSnapped());
   ToggleOverview();
   EXPECT_TRUE(overview_controller()->InOverviewSession());
@@ -4488,7 +4489,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
       GetWindowItemForWindow(grid_index, window3.get());
   DragWindowTo(overview_item3, gfx::PointF(600, 300));
   EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
-  EXPECT_EQ(wm::GetWindowState(window3.get())->GetStateType(),
+  EXPECT_EQ(WindowState::Get(window3.get())->GetStateType(),
             WindowStateType::kRightSnapped);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -4509,12 +4510,12 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   EXPECT_FALSE(overview_controller()->overview_session()->IsWindowInOverview(
       window1.get()));
   EXPECT_EQ(window_state1->GetStateType(), WindowStateType::kLeftSnapped);
-  EXPECT_EQ(wm::GetWindowState(window3.get())->GetStateType(),
+  EXPECT_EQ(WindowState::Get(window3.get())->GetStateType(),
             WindowStateType::kLeftSnapped);
   EXPECT_TRUE(overview_controller()->InOverviewSession());
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   ToggleOverview();
-  EXPECT_EQ(wm::GetWindowState(window4.get())->GetStateType(),
+  EXPECT_EQ(WindowState::Get(window4.get())->GetStateType(),
             WindowStateType::kRightSnapped);
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -4712,7 +4713,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
   // Now minimize the snapped |window1|.
-  wm::GetWindowState(window1.get())->Minimize();
+  WindowState::Get(window1.get())->Minimize();
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }

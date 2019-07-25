@@ -50,7 +50,7 @@ class OverviewItem;
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
 class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
-                                public wm::WindowStateObserver,
+                                public WindowStateObserver,
                                 public ScreenRotationAnimatorObserver {
  public:
   OverviewGrid(aura::Window* root_window,
@@ -171,8 +171,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
                                const void* key,
                                intptr_t old) override;
 
-  // wm::WindowStateObserver:
-  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
   // ScreenRotationAnimatorObserver:
@@ -360,7 +360,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
 
   ScopedObserver<aura::Window, OverviewGrid> window_observer_;
-  ScopedObserver<wm::WindowState, OverviewGrid> window_state_observer_;
+  ScopedObserver<WindowState, OverviewGrid> window_state_observer_;
 
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.

@@ -84,7 +84,7 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
 
   // Minimized windows are hidden in their minimized state, but they can always
   // be activated.
-  if (wm::GetWindowState(window)->IsMinimized())
+  if (WindowState::Get(window)->IsMinimized())
     return true;
 
   if (!window->TargetVisibility())
@@ -192,7 +192,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
   aura::Window* window = nullptr;
   aura::Window* root = ignore ? ignore->GetRootWindow() : nullptr;
   aura::Window::Windows containers =
-      wm::GetContainersFromAllRootWindows(container_id, root);
+      GetContainersForAllRootWindows(container_id, root);
   for (aura::Window* container : containers) {
     window = GetTopmostWindowToActivateInContainer(container, ignore);
     if (window)
@@ -207,7 +207,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateInContainer(
   for (aura::Window::Windows::const_reverse_iterator i =
            container->children().rbegin();
        i != container->children().rend(); ++i) {
-    wm::WindowState* window_state = wm::GetWindowState(*i);
+    WindowState* window_state = WindowState::Get(*i);
     if (*i != ignore && window_state->CanActivate() &&
         !window_state->IsMinimized())
       return *i;

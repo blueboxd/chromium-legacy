@@ -19,7 +19,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace wm {
 namespace {
 
 void EnsureAllChildrenAreVisible(ui::Layer* layer) {
@@ -130,7 +129,7 @@ void WindowMirrorView::InitLayerOwner() {
 
   // Some extra work is needed when the source window is minimized or is on an
   // inactive desk.
-  if (wm::GetWindowState(source_)->IsMinimized() ||
+  if (WindowState::Get(source_)->IsMinimized() ||
       !desks_util::BelongsToActiveDesk(source_)) {
     EnsureAllChildrenAreVisible(mirror_layer);
   }
@@ -162,5 +161,4 @@ gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
   return client_view->ConvertRectToWidget(client_view->GetLocalBounds());
 }
 
-}  // namespace wm
 }  // namespace ash

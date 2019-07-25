@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/app_list/app_service_app_model_builder.h"
 
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_service_app_item.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/app_service/public/cpp/app_service_proxy.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static

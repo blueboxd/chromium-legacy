@@ -29,7 +29,7 @@ void FocusRingController::SetVisible(bool visible) {
 
   if (visible_) {
     views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-    aura::Window* active_window = wm::GetActiveWindow();
+    aura::Window* active_window = window_util::GetActiveWindow();
     if (active_window)
       SetWidget(views::Widget::GetWidgetForNativeWindow(active_window));
   } else {

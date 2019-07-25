@@ -339,11 +339,14 @@ TEST_F(PreviewsHintsTest, ParseConfigWithInsufficientConfigDetails) {
 
   EXPECT_FALSE(HasLitePageRedirectBlacklist());
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      0 /* FOUND_SERVER_BLACKLIST_CONFIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      2 /* FAILED_SERVER_BLACKLIST_BAD_CONFIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::
+          kFailedServerBlacklistBadConfig,
+      1);
 
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));
@@ -371,11 +374,14 @@ TEST_F(PreviewsHintsTest, ParseConfigWithTooLargeBlacklist) {
 
   EXPECT_FALSE(HasLitePageRedirectBlacklist());
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      0 /* FOUND_SERVER_BLACKLIST_CONFIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      1);
   histogram_tester.ExpectBucketCount(
-      "Previews.OptimizationFilterStatus.LitePageRedirect",
-      3 /* FAILED_SERVER_BLACKLIST_TOO_BIG */, 1);
+      "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
+      optimization_guide::OptimizationFilterStatus::
+          kFailedServerBlacklistTooBig,
+      1);
 
   EXPECT_TRUE(previews_hints()->IsBlacklisted(
       GURL("https://black.com/path"), PreviewsType::LITE_PAGE_REDIRECT));

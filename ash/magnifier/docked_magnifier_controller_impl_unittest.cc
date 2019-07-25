@@ -340,7 +340,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreas) {
 TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
-  wm::GetWindowState(window.get())->Maximize();
+  WindowState::Get(window.get())->Maximize();
 
   // Enable overview mode followed by the magnifier.
   auto* overview_controller = Shell::Get()->overview_controller();
@@ -359,7 +359,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   workarea.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
   EXPECT_EQ(workarea, display.work_area());
   EXPECT_EQ(workarea, window->bounds());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
 // Test that we exist split view and over view modes when a single window is
@@ -371,7 +371,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
 
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShell(SK_ColorWHITE, 100, gfx::Rect(0, 0, 200, 200)));
-  wm::GetWindowState(window.get())->Maximize();
+  WindowState::Get(window.get())->Maximize();
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
   EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
@@ -401,7 +401,7 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   work_area.Inset(0, magnifier_height, 0, ShelfConstants::shelf_size());
   EXPECT_EQ(work_area, display.work_area());
   EXPECT_EQ(work_area, window->bounds());
-  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
 // Test that we don't exit split view with two windows snapped on both sides

@@ -256,7 +256,7 @@ class XCode11LogParserTest(test_runner_test.TestCase):
     mock_path_exists.side_effect = [True, False]
     output = [
         '[09:03:42:INFO] Test case \'-[TestCase1 method1]\' passed on device.',
-        '[09:06:40:INFO] Test case \'-[TestCase2 method1]\' passed on device.',
+        '[09:06:40:INFO] Test Case \'-[TestCase2 method1]\' passed on device.',
         '[09:09:00:INFO] Test case \'-[TestCase2 method1]\' failed on device.',
         '** BUILD INTERRUPTED **',
     ]

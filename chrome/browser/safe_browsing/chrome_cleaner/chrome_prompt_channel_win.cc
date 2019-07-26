@@ -159,7 +159,14 @@ void AppendHandleToCommandLine(base::CommandLine* command_line,
 }
 
 // Reads |buffer_size| bytes from a pipe of PIPE_TYPE_MESSAGE.
-bool ReadMessageFromPipe(HANDLE handle, LPVOID buffer, DWORD buffer_size) {
+// Uses |error_category| to report WinAPI errors if needed.
+// Uses |custom_error| to report short reads if needed.
+bool ReadMessageFromPipe(
+    HANDLE handle,
+    LPVOID buffer,
+    DWORD buffer_size,
+    ChromePromptChannelProtobuf::ErrorCategory error_category,
+    ChromePromptChannelProtobuf::CustomErrors short_read_error) {
   // If the process at the other end of the pipe is behaving correctly it will
   // write exactly |buffer_size| bytes to the pipe and PIPE_TYPE_MESSAGE
   // ensures that we read all of them at once. If the process writes more bytes
@@ -167,13 +174,20 @@ bool ReadMessageFromPipe(HANDLE handle, LPVOID buffer, DWORD buffer_size) {
   // we treat that as an error.
   DWORD bytes_read = 0;
   if (!::ReadFile(handle, buffer, buffer_size, &bytes_read, nullptr)) {
+    WriteStatusErrorCodeToHistogram(error_category,
+                                    logging::GetLastSystemErrorCode());
     PLOG(ERROR) << "ReadFile failed";
     return false;
   }
+
   CHECK_LE(bytes_read, buffer_size);
   if (bytes_read != buffer_size) {
-    PLOG(ERROR) << "Short read (read " << bytes_read << " of " << buffer_size
-                << ")";
+    LOG(ERROR) << "Short read (read " << bytes_read << " of " << buffer_size
+               << ")";
+
+    WriteStatusErrorCodeToHistogram(
+        ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+        short_read_error);
     return false;
   }
   return true;
@@ -209,7 +223,6 @@ void ServiceChromePromptRequests(
     HANDLE request_read_handle,
     std::unique_ptr<CleanerProcessDelegate> cleaner_process,
     base::OnceClosure on_connection_closed) {
-  static constexpr uint32_t kMaxMessageLength = 1 * 1024 * 1024;  // 1M bytes
 
   // Always call OnConnectionClosed when finished whether it's with an error or
   // because a CloseConnectionRequest was received.
@@ -253,18 +266,29 @@ void ServiceChromePromptRequests(
     // Read the request length followed by a request.
     uint32_t request_length = 0;
     if (!ReadMessageFromPipe(request_read_handle, &request_length,
-                             sizeof(request_length))) {
+                             sizeof(request_length),
+                             ChromePromptChannelProtobuf::ErrorCategory::
+                                 kReadRequestLengthWinError,
+                             ChromePromptChannelProtobuf::CustomErrors::
+                                 kRequestLengthShortRead)) {
       return;
     }
-    if (request_length < 1 || request_length > kMaxMessageLength) {
-      PLOG(ERROR) << "Bad request length: " << request_length;
+
+    if (request_length < 1 ||
+        request_length > ChromePromptChannelProtobuf::kMaxMessageLength) {
+      WriteStatusErrorCodeToHistogram(
+          ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+          ChromePromptChannelProtobuf::CustomErrors::kRequestInvalidSize);
+
+      LOG(ERROR) << "Bad request length: " << request_length;
       return;
     }
     std::string request;
-    // Include space for the null terminator in the WriteInto call.
-    if (!ReadMessageFromPipe(request_read_handle,
-                             base::WriteInto(&request, request_length + 1),
-                             request_length)) {
+    if (!ReadMessageFromPipe(
+            request_read_handle, base::WriteInto(&request, request_length + 1),
+            request_length,
+            ChromePromptChannelProtobuf::ErrorCategory::kReadRequestWinError,
+            ChromePromptChannelProtobuf::CustomErrors::kRequestShortRead)) {
       return;
     }
 

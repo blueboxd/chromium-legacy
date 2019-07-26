@@ -47,6 +47,7 @@ message WebApk {
     DISPLAY_MODE_DIFFERS = 12;
     WEB_SHARE_TARGET_DIFFERS = 13;
     MANUALLY_TRIGGERED = 14;
+    PRIMARY_ICON_MASKABLE_DIFFERS = 15;
   }
 
   // Package name of the WebAPK.
@@ -115,6 +116,8 @@ message Image {
 
   // Specifies Chrome's intended usages for the image.
   repeated Usage usages = 8;
+
+  optional bool is_primay_icon_maskable = 9;
 
   reserved 2, 3, 4, 7;
 }

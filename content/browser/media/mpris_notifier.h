@@ -46,6 +46,8 @@ class CONTENT_EXPORT MprisNotifier
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   void SetMprisServiceForTesting(mpris::MprisService* service) {
     service_ = service;

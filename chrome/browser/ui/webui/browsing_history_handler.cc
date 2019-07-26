@@ -153,7 +153,7 @@ bool IsEntryInRemoteUserData(
 std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     const BrowsingHistoryService::HistoryEntry& entry,
     BookmarkModel* bookmark_model,
-    SupervisedUserService* supervised_user_service,
+    Profile* profile,
     const syncer::DeviceInfoTracker* tracker,
     base::Clock* clock) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
@@ -223,6 +223,11 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   result->SetString("deviceType", device_type);
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserService* supervised_user_service = nullptr;
+  if (profile->IsSupervised()) {
+    supervised_user_service =
+        SupervisedUserServiceFactory::GetForProfile(profile);
+  }
   if (supervised_user_service) {
     const SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
@@ -375,12 +380,6 @@ void BrowsingHistoryHandler::OnQueryComplete(
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
-  SupervisedUserService* supervised_user_service = NULL;
-#if defined(ENABLE_SUPERVISED_USERS)
-  if (profile->IsSupervised())
-    supervised_user_service =
-        SupervisedUserServiceFactory::GetForProfile(profile);
-#endif
 
   const syncer::DeviceInfoTracker* tracker =
       DeviceInfoSyncServiceFactory::GetForProfile(profile)
@@ -390,8 +389,8 @@ void BrowsingHistoryHandler::OnQueryComplete(
   DCHECK(tracker);
   base::ListValue results_value;
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-    std::unique_ptr<base::Value> value(HistoryEntryToValue(
-        entry, bookmark_model, supervised_user_service, tracker, clock_));
+    std::unique_ptr<base::Value> value(
+        HistoryEntryToValue(entry, bookmark_model, profile, tracker, clock_));
     results_value.Append(std::move(value));
   }
 

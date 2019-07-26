@@ -657,7 +657,9 @@ enum class BackForwardNavigationType {
 
     if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
         self.navigationManagerImpl->IsRestoreSessionInProgress()) {
-      [_delegate webRequestControllerDisconnectScrollViewProxy:self];
+      [_delegate
+          webRequestControllerDisableNavigationGesturesUntilFinishNavigation:
+              self];
     }
 
     WKNavigation* navigation = nil;

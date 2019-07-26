@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_UNSET_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -19,9 +20,7 @@ class CORE_EXPORT CSSUnsetValue : public CSSValue {
  public:
   static CSSUnsetValue* Create();
 
-  // Only construct through MakeGarbageCollected for the initial value. Use
-  // Create() to get the pooled value.
-  CSSUnsetValue() : CSSValue(kUnsetClass) {}
+  explicit CSSUnsetValue(util::PassKey<CSSValuePool>) : CSSValue(kUnsetClass) {}
 
   String CustomCSSText() const;
 
@@ -30,9 +29,6 @@ class CORE_EXPORT CSSUnsetValue : public CSSValue {
   void TraceAfterDispatch(blink::Visitor* visitor) {
     CSSValue::TraceAfterDispatch(visitor);
   }
-
- private:
-  friend class ::blink::CSSValuePool;
 };
 
 }  // namespace cssvalue

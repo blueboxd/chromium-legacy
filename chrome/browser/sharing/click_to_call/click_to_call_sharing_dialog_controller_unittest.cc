@@ -49,6 +49,7 @@ class MockSharingService : public SharingService {
                        /* sharing_device_registration= */ nullptr,
                        /* fcm_sender= */ nullptr,
                        std::move(fcm_handler),
+                       /* gcm_driver= */ nullptr,
                        /* device_info_tracker= */ nullptr,
                        /* local_device_info_provider= */ nullptr,
                        /* sync_service */ nullptr) {}

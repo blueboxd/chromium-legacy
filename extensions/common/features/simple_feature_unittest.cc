@@ -999,12 +999,10 @@ TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
   feature.set_contexts({Feature::BLESSED_EXTENSION_CONTEXT});
   feature.set_extension_types({Manifest::TYPE_EXTENSION});
 
-  constexpr char script_file[] = "script.js";
-
-  auto extension =
-      ExtensionBuilder("test")
-          .SetManifestPath({"background", "service_worker"}, script_file)
-          .Build();
+  auto extension = ExtensionBuilder("test")
+                       .SetBackgroundContext(
+                           ExtensionBuilder::BackgroundContext::SERVICE_WORKER)
+                       .Build();
   ASSERT_TRUE(extension.get());
   EXPECT_TRUE(BackgroundInfo::IsServiceWorkerBased(extension.get()));
 
@@ -1014,10 +1012,11 @@ TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
   // these two EXPECTs.
   EXPECT_EQ(Feature::INVALID_CONTEXT,
             feature
-                .IsAvailableToContext(extension.get(),
-                                      Feature::BLESSED_EXTENSION_CONTEXT,
-                                      extension->GetResourceURL(script_file),
-                                      Feature::CHROMEOS_PLATFORM)
+                .IsAvailableToContext(
+                    extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
+                    extension->GetResourceURL(
+                        ExtensionBuilder::kServiceWorkerScriptFile),
+                    Feature::CHROMEOS_PLATFORM)
                 .result());
 
   // Check with a different script file, which should return available,
@@ -1034,10 +1033,11 @@ TEST(SimpleFeatureUnitTest, DisallowForServiceWorkers) {
   feature.set_disallow_for_service_workers(false);
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
-                .IsAvailableToContext(extension.get(),
-                                      Feature::BLESSED_EXTENSION_CONTEXT,
-                                      extension->GetResourceURL(script_file),
-                                      Feature::CHROMEOS_PLATFORM)
+                .IsAvailableToContext(
+                    extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
+                    extension->GetResourceURL(
+                        ExtensionBuilder::kServiceWorkerScriptFile),
+                    Feature::CHROMEOS_PLATFORM)
                 .result());
 }
 

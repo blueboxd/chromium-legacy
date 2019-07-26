@@ -1,0 +1,38 @@
+<!doctype HTML>
+<html>
+<meta charset="utf8">
+<title>Display Locking: commit in beforeactivate</title>
+<link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
+<link rel="help" href="https://github.com/WICG/display-locking">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<style>
+div {
+  contain: style layout;
+}
+</style>
+<div id="target"></div>
+
+<script>
+'use strict';
+
+async_test((t) => {
+  async function commit(target) {
+    target.displayLock.commit();
+    t.done();
+  }
+
+  async function runTest() {
+    const target = document.getElementById("target");
+    await target.displayLock.acquire({ timeout: Infinity, activatable: true });
+    t.step(() => assert_true(target.displayLock.locked));
+
+    target.addEventListener("beforeactivate", () => commit(target));
+    target.scrollIntoView();
+  }
+
+  window.onload = () => requestAnimationFrame(() => requestAnimationFrame(runTest));
+}, "Commit in beforeactivate");
+</script>

@@ -85,8 +85,8 @@ cca.views.camera.PhotoResult = function(width, height, blob) {
 
 /**
  * Mode controller managing capture sequence of different camera mode.
- * @param {cca.camera.PhotoResolPreferrer} photoResolPreferrer
- * @param {cca.camera.VideoConstraintsPreferrer} videoPreferrer
+ * @param {cca.device.PhotoResolPreferrer} photoResolPreferrer
+ * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @param {function()} doSwitchMode Callback to trigger mode switching.
  * @param {DoSavePhoto} doSavePhoto
  * @param {DoSaveVideo} doSaveVideo

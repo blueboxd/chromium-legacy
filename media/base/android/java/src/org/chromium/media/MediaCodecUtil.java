@@ -202,43 +202,7 @@ class MediaCodecUtil {
       */
     @CalledByNative
     private static boolean canDecode(String mime, boolean isSecure) {
-        // Not supported on blacklisted devices.
-        if (!isDecoderSupportedForDevice(mime)) {
-            Log.e(TAG, "Decoder for type %s is not supported on this device", mime);
-            return false;
-        }
-
-        // MediaCodecInfo.CodecCapabilities.FEATURE_SecurePlayback is available as of
-        // API 21 (LOLLIPOP), which is the same as NewMediaCodecList.
-        MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
-        if (codecListHelper.hasNewMediaCodecList()) {
-            for (MediaCodecInfo info : codecListHelper) {
-                if (info.isEncoder()) continue;
-
-                try {
-                    CodecCapabilities caps = info.getCapabilitiesForType(mime);
-                    if (caps != null) {
-                        // If a secure decoder is required, then FEATURE_SecurePlayback must be
-                        // supported.
-                        if (isSecure) {
-                            return caps.isFeatureSupported(
-                                    CodecCapabilities.FEATURE_SecurePlayback);
-                        }
-
-                        // If a secure decoder is not required, then make sure that
-                        // FEATURE_SecurePlayback is not required.
-                        return !caps.isFeatureRequired(CodecCapabilities.FEATURE_SecurePlayback);
-                    }
-                } catch (IllegalArgumentException e) {
-                    // Type is not supported.
-                }
-            }
-
-            // Unable to find a match for |mime|, so not supported.
-            return false;
-        }
-
-        // On older versions of Android attempt to create a decoder for the specified MIME type.
+        // TODO(crbug.com/846120): Investigate if FEATURE_SecurePlayback will work here.
         // TODO(liberato): Should we insist on software here?
         CodecCreationInfo info = createDecoder(mime, isSecure ? CodecType.SECURE : CodecType.ANY);
         if (info == null || info.mediaCodec == null) return false;

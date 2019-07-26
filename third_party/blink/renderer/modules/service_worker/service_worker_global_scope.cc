@@ -380,7 +380,7 @@ void ServiceWorkerGlobalScope::RunInstalledModuleScript(
 
 void ServiceWorkerGlobalScope::Dispose() {
   DCHECK(IsContextThread());
-  controller_bindings_.CloseAllBindings();
+  controller_receivers_.Clear();
   timeout_timer_.reset();
   service_worker_host_.reset();
   binding_.Close();
@@ -626,14 +626,14 @@ void ServiceWorkerGlobalScope::BindServiceWorker(
 }
 
 void ServiceWorkerGlobalScope::BindControllerServiceWorker(
-    mojom::blink::ControllerServiceWorkerRequest request) {
+    mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver) {
   DCHECK(IsContextThread());
-  DCHECK(controller_bindings_.empty());
+  DCHECK(controller_receivers_.empty());
   // TODO(falken): Consider adding task types for "the handle fetch task source"
   // and "handle functional event task source" defined in the service worker
   // spec and use them when dispatching events.
-  controller_bindings_.AddBinding(
-      this, std::move(request),
+  controller_receivers_.Add(
+      this, std::move(receiver),
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 
@@ -1440,10 +1440,10 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
 }
 
 void ServiceWorkerGlobalScope::Clone(
-    mojom::blink::ControllerServiceWorkerRequest request) {
+    mojo::PendingReceiver<mojom::blink::ControllerServiceWorker> receiver) {
   DCHECK(IsContextThread());
-  controller_bindings_.AddBinding(
-      this, std::move(request),
+  controller_receivers_.Add(
+      this, std::move(receiver),
       GetThread()->GetTaskRunner(TaskType::kInternalDefault));
 }
 

@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/aura/client/aura_constants.h"
@@ -120,6 +118,8 @@ MultiProfileSupport::~MultiProfileSupport() {
   DCHECK_EQ(instance_, this);
   instance_ = nullptr;
 
+  BrowserList::RemoveObserver(this);
+
   // This may trigger callbacks to us, delete it early on.
   multi_user_window_manager_.reset();
 
@@ -150,10 +150,7 @@ void MultiProfileSupport::Init() {
   DCHECK(account_id_to_app_observer_.find(current_account_id) ==
          account_id_to_app_observer_.end());
 
-  // The BrowserListObserver would have been better to use then the old
-  // notification system, but that observer fires before the window got created.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllSources());
+  BrowserList::AddObserver(this);
 
   // Add an app window observer & all already running apps.
   Profile* profile =
@@ -184,19 +181,20 @@ void MultiProfileSupport::AddUser(content::BrowserContext* context) {
     account_id_to_app_observer_[account_id]->OnAppWindowAdded(*it);
 
   // Account all existing browser windows of this user accordingly.
-  BrowserList* browser_list = BrowserList::GetInstance();
-  BrowserList::const_iterator browser_it = browser_list->begin();
-  for (; browser_it != browser_list->end(); ++browser_it) {
-    if ((*browser_it)->profile()->GetOriginalProfile() == profile)
-      AddBrowserWindow(*browser_it);
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->IsSameProfile(profile))
+      OnBrowserAdded(browser);
   }
 }
 
-void MultiProfileSupport::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
-  AddBrowserWindow(content::Source<Browser>(source).ptr());
+void MultiProfileSupport::OnBrowserAdded(Browser* browser) {
+  // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
+  // come here with no valid window.
+  if (!browser->window() || !browser->window()->GetNativeWindow())
+    return;
+  multi_user_window_manager_->SetWindowOwner(
+      browser->window()->GetNativeWindow(),
+      multi_user_util::GetAccountIdFromProfile(browser->profile()));
 }
 
 void MultiProfileSupport::OnWindowOwnerEntryChanged(aura::Window* window,
@@ -232,14 +230,4 @@ void MultiProfileSupport::OnTransitionUserShelfToNewAccount() {
     return;
   chrome_launcher_controller->ActiveUserChanged(
       multi_user_window_manager_->CurrentAccountId());
-}
-
-void MultiProfileSupport::AddBrowserWindow(Browser* browser) {
-  // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
-  // come here with no valid window.
-  if (!browser->window() || !browser->window()->GetNativeWindow())
-    return;
-  multi_user_window_manager_->SetWindowOwner(
-      browser->window()->GetNativeWindow(),
-      multi_user_util::GetAccountIdFromProfile(browser->profile()));
 }

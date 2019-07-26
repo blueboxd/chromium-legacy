@@ -26,11 +26,6 @@ import android.support.v7.preference.Preference;
  *
  *   ChromeSwitchPreference enableRocketsPref = ...;
  *   enableRocketsPref.setManagedPreferenceDelegate(new RocketManagedPreferenceDelegate());
- *
- * TODO(crbug.com/967022): This class is analogous to {@link ManagedPreferenceDelegate}, but is
- * implemented for Support Library preferences rather than the deprecated Framework preferences.
- * Once all managed preferences have been migrated to the Support Library, {@link
- * ManagedPreferenceDelegate} will be removed in favor of this class.
  */
 public interface ManagedPreferenceDelegateCompat {
     /**

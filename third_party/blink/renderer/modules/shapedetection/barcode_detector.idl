@@ -8,6 +8,7 @@
     Constructor(optional BarcodeDetectorOptions barcodeDetectorOptions),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,Worker),
+    SecureContext,
     MeasureAs=ShapeDetection_BarcodeDetectorConstructor,
     RaisesException=Constructor,
     RuntimeEnabled=ShapeDetection

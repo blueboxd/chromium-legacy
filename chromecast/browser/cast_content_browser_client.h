@@ -76,6 +76,11 @@ class CastContentBrowserClient
   static std::unique_ptr<CastContentBrowserClient> Create(
       CastFeatureListCreator* cast_feature_list_creator);
 
+  // Returns a list of headers that will be exempt from CORS preflight checks.
+  // This is needed since currently servers don't have the correct response to
+  // preflight checks.
+  static std::vector<std::string> GetCorsExemptHeadersList();
+
   ~CastContentBrowserClient() override;
 
   // Creates and returns the CastService instance for the current process.

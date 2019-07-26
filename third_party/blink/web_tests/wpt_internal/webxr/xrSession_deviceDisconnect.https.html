@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>let additionalChromiumResources = ["resources/xr-internal-device-mocking.js"];</script>
+<script src="/webxr/resources/webxr_util.js"></script>
+<script src="/webxr/resources/webxr_test_constants.js"></script>
+<canvas />
+
+<script>
+
+// This test manipulates mojo directly to simulate some behavior, and as such is
+// chromium specific.
+let testName = "Outstanding promises resolve appropriately if device disconencts";
+
+let testFunction = function(t) {
+  // Expose the ability to get get the VRService and close the device on that VRService.
+  ChromeXRTest.prototype.getService = function() {
+    return this.mockVRService_;
+  }
+
+  MockVRService.prototype.closeDevice = function() {
+    this.deviceBinding_.close();
+    this.devicePtr_ = null;
+  }
+
+  // Override the default implementations of requestSession and supportsSession
+  // from XRDevice so that we can choose to either return an answer immediately or
+  // return a promise that will never resolve to guarantee we have an outstanding
+  // promise on device disconnect.
+  MockVRService.prototype.requestSession = function(sessionOptions, was_activation) {
+    return new Promise((resolve,reject) => { });
+  }
+
+  let immediatelyResolveSupportsSession = true;
+  MockVRService.prototype.supportsSession = function(sessionOptions) {
+    if (immediatelyResolveSupportsSession) {
+      return Promise.resolve({ supportsSession: true });
+    }
+
+    return new Promise((resolve, reject) => { });
+  }
+
+  // Override the default requestDevice implementation so that we can fail if it's
+  // called when we don't expect it to be called (typically this would be because
+  // we aren't planning to force another device closure and would leave any
+  // outstanding promises unresolved, and thus cause the test to timeout), and so
+  // that we can store the device binding so that we can force it to be closed.
+  let failIfRequestDeviceCalled = false;
+  MockVRService.prototype.requestDevice = function() {
+    if (failIfRequestDeviceCalled) {
+      assert_unreached("requestDevice shouldn't be called at this time");
+    }
+
+    if (!this.devicePtr_) {
+      this.devicePtr_ = new device.mojom.XRDevicePtr();
+      this.deviceBinding_ = new mojo.Binding(
+          device.mojom.XRDevice, this, mojo.makeRequest(this.devicePtr_));
+    }
+
+    return Promise.resolve({device: this.devicePtr_});
+  }
+
+  // Convenience methods to turn a resolve/reject into an appropraite string
+  // which Promise.All can check to tell us which methods failed.
+  // If we just let the promises assert, then Promise.all would only fail on the
+  // first assert.
+  let successMessage = "PASS";
+  let failMessageStart = "FAIL: "
+  function WrapResolve(promise, name, errorMsg) {
+    return promise.then(() => {
+      return successMessage;
+    }, () => {
+      return failMessageStart + name + ": " + errorMsg;
+    });
+  }
+
+  function WrapReject(promise, name, errorMsg, errorType) {
+    return promise.then(() => {
+      return failMessageStart + name + ": " + errorMsg;
+    }, (err) => {
+      if (err.name === errorType) {
+        return successMessage;
+      }
+
+      return failMessageStart + name + ": expected: " + errorType + " but got: " + err.name;
+    });
+  }
+
+  let validateDeviceDisconnectPromise = function() {
+    // Ensure that the state is properly set-up for our helper functions so that
+    // we can be called multiple times.
+    failIfRequestDeviceCalled = false;
+    immediatelyResolveSupportsSession = true;
+
+    // Make a supports session call so that we can ensure that the underlying code
+    // has gotten a devicePtr set up.  Note that inline, since it's always
+    // guaranteed doesn't ensure that the device is set up, where-as a call to see
+    // if we support immersive does require a device
+    return navigator.xr.supportsSession('immersive-vr').then(() => {
+
+      // Cause supportsSession to stop returning and make future calls "hang"/
+      immediatelyResolveSupportsSession = false;
+
+      // We don't expect a new device to be requested, and if it is we aren't
+      // going to close it during this test, so any of our mocked calls will cause
+      //  a timeout.
+      failIfRequestDeviceCalled = true;
+      let promises = [];
+
+      // Note that inline session requests still call out through the device.
+      promises.push(WrapResolve(navigator.xr.requestSession('inline'), "Request Inline",
+        "Inline should always be available"));
+      promises.push(WrapReject(navigator.xr.requestSession('immersive-vr'), "Request Immersive",
+        "Immersive should be rejected once device is disconnected", "NotSupportedError"));
+      promises.push(WrapReject(navigator.xr.supportsSession('immersive-vr'), "Supports Immersive",
+        "Immersive should not be supported once device is disconnected", "NotSupportedError"));
+
+      // Force the device disconnect, which should cause the promises to resolve.
+      navigator.xr.test.getService().closeDevice();
+
+      // Call this after we close the device, because we don't expect this to rely
+      // on (or request) the presence of a device.
+      promises.push(WrapResolve(navigator.xr.supportsSession('inline'), "Supports Inline",
+        "Inline support should be available without calling to a device"));
+
+      return Promise.all(promises).then((results) => {
+        let error_messages = [];
+        for (let i = 0; i < results.length; i++) {
+          if (results[i] !== successMessage) {
+            error_messages.push(results[i]);
+          }
+        }
+
+        if (error_messages.length !== 0) {
+          assert_unreached(error_messages);
+        }
+      })
+    });
+  }
+
+  return new Promise((resolve) => {
+    // Give a user activation so that immersive requets don't get a security error.
+    navigator.xr.test.simulateUserActivation(() => { resolve(); });
+  })
+  .then(() => {
+    return validateDeviceDisconnectPromise()
+  })
+  .then(() => {
+
+    // Validate that even after disconnecting and resolving the promises,
+    // we can still request a new device, and that it will resolve any promises
+    // on it's disconnect.
+    return validateDeviceDisconnectPromise();
+  });
+}
+
+xr_promise_test(testName, testFunction);
+
+</script>

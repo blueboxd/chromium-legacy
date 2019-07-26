@@ -85,7 +85,7 @@ class Controller : public ScriptExecutorDelegate,
              std::unique_ptr<TriggerContext> trigger_context);
 
   // Returns true if the controller is in a state where UI is necessary.
-  bool NeedsUI() const;
+  bool NeedsUI() const { return needs_ui_; }
 
   // Overrides ScriptExecutorDelegate:
   const ClientSettings& GetSettings() override;
@@ -116,6 +116,11 @@ class Controller : public ScriptExecutorDelegate,
       override;
   bool IsNavigatingToNewDocument() override;
   bool HasNavigationError() override;
+
+  // Show the UI if it's not already shown. This is only meaningful while in
+  // states where showing the UI is optional, such as RUNNING, in tracking mode.
+  void RequireUI() override;
+
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
 
@@ -150,6 +155,7 @@ class Controller : public ScriptExecutorDelegate,
   void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;
+  void OnTermsAndConditionsLinkClicked(int link) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;
@@ -189,6 +195,8 @@ class Controller : public ScriptExecutorDelegate,
   // Execute |script_path| and, if execution succeeds, enter |end_state| and
   // call |on_success|.
   void ExecuteScript(const std::string& script_path,
+                     const std::string& start_message,
+                     bool needs_ui,
                      std::unique_ptr<TriggerContext> context,
                      AutofillAssistantState end_state);
   void OnScriptExecuted(const std::string& script_path,
@@ -213,7 +221,7 @@ class Controller : public ScriptExecutorDelegate,
   void InitFromParameters();
 
   // Called when a script is selected.
-  void OnScriptSelected(const std::string& script_path,
+  void OnScriptSelected(const ScriptHandle& handle,
                         std::unique_ptr<TriggerContext> context);
 
   void UpdatePaymentRequestActions();
@@ -363,6 +371,9 @@ class Controller : public ScriptExecutorDelegate,
   //
   // This is set by Track().
   bool tracking_ = false;
+
+  // Whether the controller is in a state in which a UI should be shown.
+  bool needs_ui_ = false;
 
   // True once the controller has run the first set of scripts and have either
   // declared it invalid - and entered stopped state - or have processed its

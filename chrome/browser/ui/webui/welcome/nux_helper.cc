@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/ui/webui/welcome/nux/constants.h"
+#include "chrome/browser/ui/webui/welcome/constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"

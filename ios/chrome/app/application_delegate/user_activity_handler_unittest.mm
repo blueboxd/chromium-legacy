@@ -385,7 +385,7 @@ TEST_F(UserActivityHandlerTest, ContinueUserActivityBrowsingWeb) {
   GURL newTabURL(kChromeUINewTabURL);
   EXPECT_EQ(newTabURL, tabOpener.urlLoadParams.web_params.url);
   // AppStartupParameters default to opening pages in non-Incognito mode.
-  EXPECT_EQ(ApplicationMode::NORMAL, [tabOpener applicationMode]);
+  EXPECT_EQ(ApplicationModeForTabOpening::NORMAL, [tabOpener applicationMode]);
   EXPECT_TRUE(result);
   // Verifies that a new tab is being requested.
   EXPECT_EQ(newTabURL,
@@ -493,7 +493,8 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsWithExternalFile) {
   // and omnibox shows virtual URL.
   EXPECT_EQ(completeURL, tabOpener.urlLoadParams.web_params.url);
   EXPECT_EQ(externalURL, tabOpener.urlLoadParams.web_params.virtual_url);
-  EXPECT_EQ(ApplicationMode::INCOGNITO, [tabOpener applicationMode]);
+  EXPECT_EQ(ApplicationModeForTabOpening::INCOGNITO,
+            [tabOpener applicationMode]);
 }
 
 // Tests that handleStartupParameters with a non-U2F url opens a new tab.
@@ -528,7 +529,8 @@ TEST_F(UserActivityHandlerTest, HandleStartupParamsNonU2F) {
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
   EXPECT_EQ(gurl, tabOpener.urlLoadParams.web_params.url);
   EXPECT_TRUE(tabOpener.urlLoadParams.web_params.virtual_url.is_empty());
-  EXPECT_EQ(ApplicationMode::INCOGNITO, [tabOpener applicationMode]);
+  EXPECT_EQ(ApplicationModeForTabOpening::INCOGNITO,
+            [tabOpener applicationMode]);
 }
 
 // Tests that handleStartupParameters with a U2F url opens in the correct tab.

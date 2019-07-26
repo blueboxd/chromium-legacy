@@ -42,6 +42,31 @@ class KeyframeEffectTest : public PageTestBase {
         StringKeyframeVector());
   }
 
+  // Returns a two-frame effect updated styles.
+  KeyframeEffect* GetTwoFrameEffect(const CSSPropertyID& property,
+                                    const String& value_a,
+                                    const String& value_b) {
+    StringKeyframeVector keyframes(2);
+    keyframes[0] = MakeGarbageCollected<StringKeyframe>();
+    keyframes[0]->SetOffset(0.0);
+    keyframes[0]->SetCSSPropertyValue(
+        property, value_a, SecureContextMode::kInsecureContext, nullptr);
+    keyframes[1] = MakeGarbageCollected<StringKeyframe>();
+    keyframes[1]->SetOffset(1.0);
+    keyframes[1]->SetCSSPropertyValue(
+        property, value_b, SecureContextMode::kInsecureContext, nullptr);
+    auto* model = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
+    Timing timing;
+    auto* effect = MakeGarbageCollected<KeyframeEffect>(element, model, timing);
+    // Ensure GetCompositorKeyframeValue is updated which would normally happen
+    // when applying the animation styles.
+    UpdateAllLifecyclePhasesForTest();
+    model->SnapshotAllCompositorKeyframesIfNecessary(
+        *element, *element->GetComputedStyle(), nullptr);
+
+    return effect;
+  }
+
   Persistent<Element> element;
 };
 
@@ -188,7 +213,7 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
 
   PropertyHandle property(GetCSSPropertyWidth());
   const PropertySpecificKeyframeVector& keyframes =
-      effect->Model()->GetPropertySpecificKeyframes(property);
+      *effect->Model()->GetPropertySpecificKeyframes(property);
 
   EXPECT_EQ(EffectModel::kCompositeReplace, keyframes[0]->Composite());
   EXPECT_EQ(EffectModel::kCompositeAdd, keyframes[1]->Composite());
@@ -467,6 +492,31 @@ TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorBadTarget) {
   EXPECT_TRUE(keyframe_effect->CheckCanStartAnimationOnCompositor(
                   nullptr, animation_playback_rate) &
               CompositorAnimations::kTargetHasMultipleTransformProperties);
+}
+
+TEST_F(KeyframeEffectTest, TranslationTransformsPreserveAxisAlignment) {
+  auto* effect =
+      GetTwoFrameEffect(CSSPropertyID::kTransform, "translate(10px, 10px)",
+                        "translate(20px, 20px)");
+  EXPECT_TRUE(effect->AnimationsPreserveAxisAlignment());
+}
+
+TEST_F(KeyframeEffectTest, ScaleTransformsPreserveAxisAlignment) {
+  auto* effect =
+      GetTwoFrameEffect(CSSPropertyID::kTransform, "scale(2)", "scale(3)");
+  EXPECT_TRUE(effect->AnimationsPreserveAxisAlignment());
+}
+
+TEST_F(KeyframeEffectTest, RotationTransformsDoNotPreserveAxisAlignment) {
+  auto* effect = GetTwoFrameEffect(CSSPropertyID::kTransform, "rotate(10deg)",
+                                   "rotate(20deg)");
+
+  EXPECT_FALSE(effect->AnimationsPreserveAxisAlignment());
+}
+
+TEST_F(KeyframeEffectTest, RotationsDoNotPreserveAxisAlignment) {
+  auto* effect = GetTwoFrameEffect(CSSPropertyID::kRotate, "10deg", "20deg");
+  EXPECT_FALSE(effect->AnimationsPreserveAxisAlignment());
 }
 
 }  // namespace blink

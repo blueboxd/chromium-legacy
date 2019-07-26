@@ -68,6 +68,7 @@ source_set("browser") {
   deps = [
     ":settings_resources",
     "//base",
+    "//build:branding_buildflags",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",

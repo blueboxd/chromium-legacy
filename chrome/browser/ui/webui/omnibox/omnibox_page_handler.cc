@@ -254,6 +254,7 @@ void OmniboxPageHandler::OnOmniboxResultChanged(
   if (!LookupIsTypedHost(host, &is_typed_host))
     is_typed_host = false;
   response->is_typed_host = is_typed_host;
+  response->input_text = base::UTF16ToUTF8(input_.text());
 
   {
     // Copy to an ACMatches to make conversion easier. Since this isn't

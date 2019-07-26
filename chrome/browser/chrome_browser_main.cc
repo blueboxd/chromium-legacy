@@ -61,9 +61,9 @@
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
+#include "chrome/browser/component_updater/safety_tips_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_remover.h"
 #include "chrome/browser/component_updater/subresource_filter_component_installer.h"
-#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -341,6 +341,10 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -485,9 +489,11 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     RegisterPnaclComponent(cus);
 #endif  // BUILDFLAG(ENABLE_NACL) && !defined(OS_ANDROID)
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   component_updater::SupervisedUserWhitelistInstaller* whitelist_installer =
       g_browser_process->supervised_user_whitelist_installer();
   whitelist_installer->RegisterComponents();
+#endif
 
   RegisterSubresourceFilterComponent(cus);
   RegisterOnDeviceHeadSuggestComponent(cus);
@@ -547,6 +553,8 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
     component_updater::RegisterVrAssetsComponent(cus);
   }
 #endif
+
+  RegisterSafetyTipsComponent(cus, path);
 }
 
 #if !defined(OS_ANDROID)

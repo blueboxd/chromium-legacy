@@ -4487,9 +4487,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
       {"email_id", "email_name", "Email:", "Please enter your email address",
        "Type your email address", "You can type your email address here",
        "blah"},
+      {"id_only", "", "", "", "", "", ""},
+      {"", "name_only", "", "", "", "", ""},
   };
 
   FormData form;
+  form.id_attribute = ASCIIToUTF16("form-id");
   form.url = GURL("http://www.foo.com/");
   for (const auto& f : kFieldMetadata) {
     FormFieldData field;
@@ -4518,49 +4521,91 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
       &upload));
 
   const auto form_signature = form_structure.form_signature();
-  EXPECT_EQ(upload.randomized_form_metadata().id().encoded_bits(),
-            encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_ID,
-                           form_structure.id_attribute()));
-  EXPECT_EQ(upload.randomized_form_metadata().name().encoded_bits(),
-            encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_NAME,
-                           form_structure.name_attribute()));
 
+  if (form.id_attribute.empty()) {
+    EXPECT_FALSE(upload.randomized_form_metadata().has_id());
+  } else {
+    EXPECT_EQ(upload.randomized_form_metadata().id().encoded_bits(),
+              encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_ID,
+                             form_structure.id_attribute()));
+  }
+
+  if (form.name_attribute.empty()) {
+    EXPECT_FALSE(upload.randomized_form_metadata().has_name());
+  } else {
+    EXPECT_EQ(upload.randomized_form_metadata().name().encoded_bits(),
+              encoder.Encode(form_signature, 0, RandomizedEncoder::FORM_NAME,
+                             form_structure.name_attribute()));
+  }
   ASSERT_EQ(static_cast<size_t>(upload.field_size()),
             base::size(kFieldMetadata));
   for (int i = 0; i < upload.field_size(); ++i) {
     const auto& metadata = upload.field(i).randomized_field_metadata();
     const auto& field = *form_structure.field(i);
     const auto field_signature = field.GetFieldSignature();
-    EXPECT_EQ(metadata.id().encoded_bits(),
-              encoder.Encode(form_signature, field_signature,
-                             RandomizedEncoder::FIELD_ID, field.id_attribute));
-    EXPECT_EQ(
-        metadata.name().encoded_bits(),
-        encoder.Encode(form_signature, field_signature,
-                       RandomizedEncoder::FIELD_NAME, field.name_attribute));
-    EXPECT_EQ(metadata.type().encoded_bits(),
-              encoder.Encode(form_signature, field_signature,
-                             RandomizedEncoder::FIELD_CONTROL_TYPE,
-                             field.form_control_type));
-    EXPECT_EQ(metadata.label().encoded_bits(),
-              encoder.Encode(form_signature, field_signature,
-                             RandomizedEncoder::FIELD_LABEL, field.label));
-    EXPECT_EQ(
-        metadata.aria_label().encoded_bits(),
-        encoder.Encode(form_signature, field_signature,
-                       RandomizedEncoder::FIELD_ARIA_LABEL, field.aria_label));
-    EXPECT_EQ(metadata.aria_description().encoded_bits(),
-              encoder.Encode(form_signature, field_signature,
-                             RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
-                             field.aria_description));
-    EXPECT_EQ(
-        metadata.css_class().encoded_bits(),
-        encoder.Encode(form_signature, field_signature,
-                       RandomizedEncoder::FIELD_CSS_CLASS, field.css_classes));
-    EXPECT_EQ(metadata.placeholder().encoded_bits(),
-              encoder.Encode(form_signature, field_signature,
-                             RandomizedEncoder::FIELD_PLACEHOLDER,
-                             field.placeholder));
+    if (field.id_attribute.empty()) {
+      EXPECT_FALSE(metadata.has_id());
+    } else {
+      EXPECT_EQ(
+          metadata.id().encoded_bits(),
+          encoder.Encode(form_signature, field_signature,
+                         RandomizedEncoder::FIELD_ID, field.id_attribute));
+    }
+    if (field.name.empty()) {
+      EXPECT_FALSE(metadata.has_name());
+    } else {
+      EXPECT_EQ(
+          metadata.name().encoded_bits(),
+          encoder.Encode(form_signature, field_signature,
+                         RandomizedEncoder::FIELD_NAME, field.name_attribute));
+    }
+    if (field.form_control_type.empty()) {
+      EXPECT_FALSE(metadata.has_type());
+    } else {
+      EXPECT_EQ(metadata.type().encoded_bits(),
+                encoder.Encode(form_signature, field_signature,
+                               RandomizedEncoder::FIELD_CONTROL_TYPE,
+                               field.form_control_type));
+    }
+    if (field.label.empty()) {
+      EXPECT_FALSE(metadata.has_label());
+    } else {
+      EXPECT_EQ(metadata.label().encoded_bits(),
+                encoder.Encode(form_signature, field_signature,
+                               RandomizedEncoder::FIELD_LABEL, field.label));
+    }
+    if (field.aria_label.empty()) {
+      EXPECT_FALSE(metadata.has_aria_label());
+    } else {
+      EXPECT_EQ(metadata.aria_label().encoded_bits(),
+                encoder.Encode(form_signature, field_signature,
+                               RandomizedEncoder::FIELD_ARIA_LABEL,
+                               field.aria_label));
+    }
+    if (field.aria_description.empty()) {
+      EXPECT_FALSE(metadata.has_aria_description());
+    } else {
+      EXPECT_EQ(metadata.aria_description().encoded_bits(),
+                encoder.Encode(form_signature, field_signature,
+                               RandomizedEncoder::FIELD_ARIA_DESCRIPTION,
+                               field.aria_description));
+    }
+    if (field.css_classes.empty()) {
+      EXPECT_FALSE(metadata.has_css_class());
+    } else {
+      EXPECT_EQ(metadata.css_class().encoded_bits(),
+                encoder.Encode(form_signature, field_signature,
+                               RandomizedEncoder::FIELD_CSS_CLASS,
+                               field.css_classes));
+    }
+    if (field.placeholder.empty()) {
+      EXPECT_FALSE(metadata.has_placeholder());
+    } else {
+      EXPECT_EQ(metadata.placeholder().encoded_bits(),
+                encoder.Encode(form_signature, field_signature,
+                               RandomizedEncoder::FIELD_PLACEHOLDER,
+                               field.placeholder));
+    }
   }
 }
 

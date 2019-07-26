@@ -47,7 +47,6 @@ generated_json_strings("generated_api_json_strings") {
   schema_include_rules = chrome_extensions_api_schema_include_rules
 
   sources += [
-    "action.json",
     "app.json",
     "commands.json",
     "declarative_content.json",

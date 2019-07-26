@@ -73,6 +73,9 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   // Returns the default Kerberos configuration (krb5.conf).
   static const char* GetDefaultKerberosConfig();
 
+  // Returns true if the Kerberos feature is enabled.
+  bool IsKerberosEnabled();
+
   // PolicyService:
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
                        const policy::PolicyMap& previous,
@@ -160,7 +163,8 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
                        const kerberos::RemoveAccountResponse& response);
 
   // Callback for ClearAccounts().
-  void OnClearAccounts(ResultCallback callback,
+  void OnClearAccounts(kerberos::ClearMode mode,
+                       ResultCallback callback,
                        const kerberos::ClearAccountsResponse& response);
 
   // Callback for RemoveAccount().
@@ -201,11 +205,15 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   void SetActivePrincipalName(const std::string& principal_name);
   void ClearActivePrincipalName();
 
+  // Gets the current account list and calls DoValidateActivePrincipal().
+  void ValidateActivePrincipal();
+
   // Checks whether the active principal is contained in the given |response|.
   // If not, resets it to the first principal or clears it if the list is empty.
   // It's not expected that this ever triggers, but it provides a fail safe if
   // the active principal should ever break for whatever reason.
-  void ValidateActivePrincipal(const kerberos::ListAccountsResponse& response);
+  void DoValidateActivePrincipal(
+      const kerberos::ListAccountsResponse& response);
 
   // Notification shown when the Kerberos ticket is about to expire.
   void ShowTicketExpiryNotification();
@@ -215,6 +223,12 @@ class KerberosCredentialsManager : public policy::PolicyService::Observer {
   void UpdateRememberPasswordEnabledFromPref();
   void UpdateAddAccountsAllowedFromPref();
   void UpdateAccountsFromPref();
+
+  // Does the main work for UpdateAccountsFromPref(). To clean up stale managed
+  // accounts, an up-to-date accounts list is needed. UpdateAccountsFromPref()
+  // first gets a list of accounts (asynchronously) and calls into this method
+  // to set new accounts and clean up old ones.
+  void RemoveAllManagedAccountsExcept(std::vector<std::string> keep_list);
 
   // Informs session manager whether it needs to store the login password in the
   // kernel keyring. That's the case when '${PASSWORD}' is used as password in

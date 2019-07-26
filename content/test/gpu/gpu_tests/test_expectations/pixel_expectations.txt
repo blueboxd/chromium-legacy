@@ -179,7 +179,6 @@ crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]
 
 # Fails when the browser features SkiaRenderer & Vulkan are enabled on Linux
-crbug.com/984954 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]

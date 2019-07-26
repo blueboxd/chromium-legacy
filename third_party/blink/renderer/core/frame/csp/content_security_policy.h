@@ -340,7 +340,8 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // Determine whether to enforce the assignment failure. Also handle reporting.
   // Returns whether enforcing Trusted Types CSP directives are present.
-  bool AllowTrustedTypeAssignmentFailure(const String& message) const;
+  bool AllowTrustedTypeAssignmentFailure(const String& message,
+                                         const String& sample = String()) const;
 
   void UsesScriptHashAlgorithms(uint8_t content_security_policy_hash_algorithm);
   void UsesStyleHashAlgorithms(uint8_t content_security_policy_hash_algorithm);

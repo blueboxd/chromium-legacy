@@ -77,6 +77,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
         FROM_HERE, base::BindOnce(&IOThreadContext::StartOnIOThread, this));
   }
 
+  void Stop() {
+    io_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&IOThreadContext::StopOnIOThread, this));
+  }
+
   // Safe to call from whichever thread called Start() (or may have called
   // Start()). Must be called before IO thread shutdown.
   void ShutDown() {
@@ -189,6 +194,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
         new MessageLoopObserver(weak_factory_.GetWeakPtr());
   }
 
+  void StopOnIOThread() {
+    ClearConnectionFiltersOnIOThread();
+    request_handlers_.clear();
+  }
+
   void ShutDownOnIOThread() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
@@ -209,9 +219,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
     service_binding_.reset();
 
-    ClearConnectionFiltersOnIOThread();
-
-    request_handlers_.clear();
+    StopOnIOThread();
   }
 
   void ClearConnectionFiltersOnIOThread() {
@@ -397,6 +405,10 @@ void ServiceManagerConnectionImpl::Start() {
   context_->Start(
       base::Bind(&ServiceManagerConnectionImpl::OnConnectionLost,
                  weak_factory_.GetWeakPtr()));
+}
+
+void ServiceManagerConnectionImpl::Stop() {
+  context_->Stop();
 }
 
 service_manager::Connector* ServiceManagerConnectionImpl::GetConnector() {

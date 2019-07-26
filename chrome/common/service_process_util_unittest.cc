@@ -142,7 +142,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
 #if defined(GOOGLE_CHROME_BUILD)
   std::string base_desktop_name = "google-chrome-service.desktop";
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
   std::string base_desktop_name = "chromium-service.desktop";
 #endif
   std::string exec_value;

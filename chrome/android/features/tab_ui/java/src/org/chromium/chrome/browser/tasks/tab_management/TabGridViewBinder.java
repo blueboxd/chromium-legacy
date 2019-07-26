@@ -45,13 +45,11 @@ class TabGridViewBinder {
             Resources res = holder.itemView.getResources();
             Resources.Theme theme = holder.itemView.getContext().getTheme();
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                Drawable selectedDrawable = new InsetDrawable(
-                        ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),
-                        (int) res.getDimension(R.dimen.tab_list_selected_inset_kitkat));
-                Drawable elevationDrawable =
-                        ResourcesCompat.getDrawable(res, R.drawable.popup_bg, theme);
-                holder.backgroundView.setBackground(
-                        item.get(TabProperties.IS_SELECTED) ? selectedDrawable : elevationDrawable);
+                if (item.get(TabProperties.IS_SELECTED)) {
+                    holder.selectedViewBelowLollipop.setVisibility(View.VISIBLE);
+                } else {
+                    holder.selectedViewBelowLollipop.setVisibility(View.GONE);
+                }
             } else {
                 Drawable drawable = new InsetDrawable(
                         ResourcesCompat.getDrawable(res, R.drawable.selected_tab_background, theme),

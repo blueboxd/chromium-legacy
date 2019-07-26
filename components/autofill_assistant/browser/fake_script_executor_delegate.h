@@ -58,6 +58,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       override;
   bool HasNavigationError() override;
   bool IsNavigatingToNewDocument() override;
+  void RequireUI() override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
 
@@ -96,6 +97,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   bool HasListeners() { return !listeners_.empty(); }
 
+  bool IsUIRequired() { return require_ui_; }
+
  private:
   ClientSettings client_settings_;
   GURL current_url_;
@@ -115,6 +118,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool resize_viewport_ = false;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
+  bool require_ui_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScriptExecutorDelegate);
 };

@@ -1313,7 +1313,10 @@ void OmniboxViewViews::OnBlur() {
   // Also revert if the text has been edited but currently exactly matches
   // the permanent text. An example of this scenario is someone typing on the
   // new tab page and then deleting everything using backspace/delete.
+  //
+  // This should never exit keyword mode.
   if (GetWidget() && GetWidget()->IsActive() && popup_closes_on_blur &&
+      !model()->is_keyword_selected() &&
       ((!model()->user_input_in_progress() &&
         text() != model()->GetPermanentDisplayText()) ||
        (model()->user_input_in_progress() &&

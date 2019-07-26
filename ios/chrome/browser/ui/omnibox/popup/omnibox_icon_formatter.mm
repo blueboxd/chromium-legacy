@@ -64,7 +64,6 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
       return DEFAULT_FAVICON;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
-    case AutocompleteMatchType::SEARCH_HISTORY:
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::SEARCH_SUGGEST:
     case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
@@ -76,6 +75,8 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     case AutocompleteMatchType::CLIPBOARD_TEXT:
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
+    case AutocompleteMatchType::SEARCH_HISTORY:
+      return HISTORY;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:

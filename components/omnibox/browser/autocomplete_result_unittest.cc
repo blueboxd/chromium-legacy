@@ -1480,3 +1480,43 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
   EXPECT_EQ(result.match_at(4)->relevance, 500);
   EXPECT_EQ(result.match_at(4)->pedal, nullptr);
 }
+
+TEST_F(AutocompleteResultTest, TestGroupSuggestionsBySearchVsURL) {
+  ACMatches matches;
+  matches.resize(10);
+  // A search-type to stay.
+  matches[0].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  // A non-search-type to move down.
+  matches[1].type = AutocompleteMatchType::HISTORY_URL;
+  // A search-type to move up.
+  matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  // It's submatch to move up with it.
+  matches[3].type = AutocompleteMatchType::HISTORY_URL;
+  matches[3].subrelevance = 4 + 1;
+  // A non-search-type to move down.
+  matches[4].type = AutocompleteMatchType::HISTORY_URL;
+  // It's submatch to move down with it.
+  matches[5].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[5].subrelevance = 8 + 1;
+  // A search-type to move up.
+  matches[6].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  // It's submatch to move up with it.
+  matches[7].type = AutocompleteMatchType::HISTORY_URL;
+  matches[7].subrelevance = 12 + 1;
+  // A non-search-type to "move down" (really, to stay).
+  matches[8].type = AutocompleteMatchType::HISTORY_URL;
+  // It's submatch to move down with it.
+  matches[9].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[9].subrelevance = 16 + 1;
+
+  AutocompleteResult::GroupSuggestionsBySearchVsURL(matches.begin(),
+                                                    matches.end());
+  for (size_t i = 0; i < 5; ++i) {
+    EXPECT_TRUE(AutocompleteMatch::IsSearchType(matches[i].type) ||
+                matches[i].IsSubMatch());
+  }
+  for (size_t i = 5; i < 10; ++i) {
+    EXPECT_TRUE(!AutocompleteMatch::IsSearchType(matches[i].type) ||
+                matches[i].IsSubMatch());
+  }
+}

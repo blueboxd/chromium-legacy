@@ -17,7 +17,6 @@ namespace features {
 extern const base::Feature kWebViewBrotliSupport;
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
 extern const base::Feature kWebViewPageStartedOnCommit;
-extern const base::Feature kWebViewUmaLogAppPackageName;
 extern const base::Feature kWebViewWideColorGamutSupport;
 
 }  // namespace features

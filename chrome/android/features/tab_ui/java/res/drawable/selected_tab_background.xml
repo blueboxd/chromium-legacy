@@ -7,5 +7,5 @@
     <stroke
         android:width="2dp"
         android:color="@color/light_active_color" />
-    <corners android:radius="@dimen/default_rounded_corner_radius" />
+    <corners android:radius="@dimen/tab_list_card_radius" />
 </shape>

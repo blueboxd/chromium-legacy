@@ -45,7 +45,7 @@ interface ControllerServiceWorker {
   // TODO(kinuko): Add DispatchExtendableMessageEvent() as well.
 
   // Connects a new pipe to this controller instance.
-  Clone(ControllerServiceWorker& controller);
+  Clone(pending_receiver<ControllerServiceWorker> receiver);
 };
 
 // A convenient struct that packs necessary information for a service worker
@@ -58,7 +58,7 @@ struct ControllerServiceWorkerInfo {
       blink.mojom.ControllerServiceWorkerMode.kNoController;
 
   // Non-null iff there is a controller and it has a fetch event handler.
-  ControllerServiceWorker? endpoint;
+  pending_remote<ControllerServiceWorker>? remote_controller;
 
   // The client being controlled, used for FetchEvent#clientId. The ID is
   // issued by the browser process for this receiving client, and would
@@ -89,5 +89,5 @@ interface ControllerServiceWorkerConnector {
   // Resets the controller connection with the given |controller|, this
   // can be called when a new controller is given, e.g. due to claim().
   // |controller| can be null if it gets no controller.
-  UpdateController(ControllerServiceWorker? controller);
+  UpdateController(pending_remote<ControllerServiceWorker>? controller);
 };

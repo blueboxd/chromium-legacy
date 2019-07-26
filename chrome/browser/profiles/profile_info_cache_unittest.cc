@@ -167,8 +167,13 @@ TEST_F(ProfileInfoCacheTest, AddProfiles) {
     EXPECT_EQ(icon->width(), actual_icon->width());
     EXPECT_EQ(icon->height(), actual_icon->height());
 #endif
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
     EXPECT_EQ(i == 3, GetCache()->ProfileIsSupervisedAtIndex(i));
     EXPECT_EQ(i == 3, GetCache()->IsOmittedProfileAtIndex(i));
+#else
+    EXPECT_FALSE(GetCache()->ProfileIsSupervisedAtIndex(i));
+    EXPECT_FALSE(GetCache()->IsOmittedProfileAtIndex(i));
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     EXPECT_EQ(supervised_user_id,
               GetCache()->GetSupervisedUserIdOfProfileAtIndex(i));
   }

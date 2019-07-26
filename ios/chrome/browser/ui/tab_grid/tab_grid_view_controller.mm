@@ -99,8 +99,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 }  // namespace
 
-@interface TabGridViewController ()<GridViewControllerDelegate,
-                                    UIScrollViewAccessibilityDelegate>
+@interface TabGridViewController () <GridViewControllerDelegate,
+                                     UIScrollViewAccessibilityDelegate>
 // It is programmer error to broadcast incognito content visibility when the
 // view is not visible. Bookkeeping is based on |-viewWillAppear:| and
 // |-viewWillDisappear methods. Note that the |Did| methods are not reliably
@@ -744,9 +744,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Adds the bottom toolbar and sets constraints.
 - (void)setupBottomToolbar {
   TabGridBottomToolbar* bottomToolbar = [[TabGridBottomToolbar alloc] init];
+  self.bottomToolbar = bottomToolbar;
   bottomToolbar.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:bottomToolbar];
-  self.bottomToolbar = bottomToolbar;
+  [NSLayoutConstraint activateConstraints:@[
+    [bottomToolbar.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    [bottomToolbar.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [bottomToolbar.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+  ]];
 
   bottomToolbar.leadingButton.target = self;
   bottomToolbar.leadingButton.action = @selector(closeAllButtonTapped:);
@@ -757,18 +764,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   bottomToolbar.trailingButton.target = self;
   bottomToolbar.trailingButton.action = @selector(doneButtonTapped:);
 
-  [bottomToolbar.newTabButton.button addTarget:self
-                                        action:@selector(newTabButtonTapped:)
-                              forControlEvents:UIControlEventTouchUpInside];
-
-  [NSLayoutConstraint activateConstraints:@[
-    [bottomToolbar.bottomAnchor
-        constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor],
-    [bottomToolbar.leadingAnchor
-        constraintEqualToAnchor:self.view.leadingAnchor],
-    [bottomToolbar.trailingAnchor
-        constraintEqualToAnchor:self.view.trailingAnchor],
-  ]];
+  [bottomToolbar setNewTabButtonTarget:self
+                                action:@selector(newTabButtonTapped:)];
 }
 
 - (void)configureViewControllerForCurrentSizeClassesAndPage {

@@ -124,7 +124,8 @@ RTCQuicTransport* RTCQuicTransport::Create(
     return nullptr;
   }
   for (const auto& certificate : certificates) {
-    if (certificate->expires() < ConvertSecondsToDOMTimeStamp(CurrentTime())) {
+    if (certificate->expires() <
+        ConvertSecondsToDOMTimeStamp(base::Time::Now().ToDoubleT())) {
       exception_state.ThrowTypeError(
           "Cannot construct an RTCQuicTransport with an expired "
           "certificate.");

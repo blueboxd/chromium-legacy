@@ -67,7 +67,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
   void DidPlayerMediaPositionStateChange(
       int delegate_id,
-      const media_session::MediaPosition& position) override {}
+      const media_session::MediaPosition& position) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;

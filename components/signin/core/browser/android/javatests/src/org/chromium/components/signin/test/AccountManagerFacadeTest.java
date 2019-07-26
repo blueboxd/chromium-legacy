@@ -27,11 +27,7 @@ import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
-import org.chromium.components.signin.CoreAccountId;
-import org.chromium.components.signin.CoreAccountInfo;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -53,15 +49,14 @@ public class AccountManagerFacadeTest {
         public void removeObserver(AccountsChangeObserver observer) {}
 
         @Override
-        public List<CoreAccountInfo> getAccountInfosSync() {
+        public Account[] getAccountsSync() {
             // Block background thread that's trying to get accounts from the delegate.
             try {
                 mBlockGetAccounts.await();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-            return Arrays.asList(new CoreAccountInfo(new CoreAccountId("testid"),
-                    AccountManagerFacade.createAccountFromName("test@gmail.com")));
+            return new Account[] {AccountManagerFacade.createAccountFromName("test@gmail.com")};
         }
 
         void unblockGetAccounts() {

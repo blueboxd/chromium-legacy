@@ -15,8 +15,6 @@ namespace base {
 
 namespace internal {
 
-const Feature kNoPartitionAllocDecommit{"NoPartitionAllocDecommit",
-                                        FEATURE_DISABLED_BY_DEFAULT};
 // TODO(crbug.com/942512): Remove the feature after the M77 branch.
 const Feature kPartitionAllocPeriodicDecommit{"PartitionAllocPeriodicDecommit",
                                               FEATURE_ENABLED_BY_DEFAULT};
@@ -26,8 +24,7 @@ const Feature kPartitionAllocPeriodicDecommit{"PartitionAllocPeriodicDecommit",
 namespace {
 
 bool IsDeprecatedDecommitEnabled() {
-  return !(FeatureList::IsEnabled(internal::kNoPartitionAllocDecommit) ||
-           FeatureList::IsEnabled(internal::kPartitionAllocPeriodicDecommit));
+  return !FeatureList::IsEnabled(internal::kPartitionAllocPeriodicDecommit);
 }
 
 }  // namespace

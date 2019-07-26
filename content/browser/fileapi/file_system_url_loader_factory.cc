@@ -650,19 +650,12 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
 std::unique_ptr<network::mojom::URLLoaderFactory>
 CreateFileSystemURLLoaderFactory(
-    RenderFrameHost* render_frame_host,
-    bool is_navigation,
+    int render_process_host_id,
+    int frame_tree_node_id,
     scoped_refptr<FileSystemContext> file_system_context,
     const std::string& storage_domain) {
-  // Get the RPH ID for security checks for non-navigation resource requests.
-  int render_process_host_id = is_navigation
-                                   ? ChildProcessHost::kInvalidUniqueID
-                                   : render_frame_host->GetProcess()->GetID();
-
-  FactoryParams params = {render_process_host_id,
-                          render_frame_host->GetFrameTreeNodeId(),
+  FactoryParams params = {render_process_host_id, frame_tree_node_id,
                           file_system_context, storage_domain};
-
   return std::make_unique<FileSystemURLLoaderFactory>(
       std::move(params),
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));

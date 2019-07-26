@@ -127,7 +127,7 @@ struct MediaSessionDebugInfo {
 };
 
 // The observer for observing media session events.
-// Next Method ID: 4
+// Next Method ID: 5
 interface MediaSessionObserver {
   // Call when the info associated with the session changed.
   MediaSessionInfoChanged@0(MediaSessionInfo info);
@@ -144,6 +144,9 @@ interface MediaSessionObserver {
   // Called when the images associated with a media session change.
   MediaSessionImagesChanged@3(
       map<MediaSessionImageType, array<MediaImage>> images);
+
+  // Called when the position associated with the session has changed.
+  MediaSessionPositionChanged@4(MediaPosition? position);
 };
 
 // A MediaSession manages the media session and audio focus for a given

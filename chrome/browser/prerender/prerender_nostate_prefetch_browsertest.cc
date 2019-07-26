@@ -130,10 +130,16 @@ class NoStatePrefetchBrowserTest
             ->GetAppCacheService();
     do {
       base::RunLoop wait_loop;
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(WaitForAppcacheOnIO, manifest_url, appcache_service,
-                         wait_loop.QuitClosure(), &found_manifest));
+      if (base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)) {
+        WaitForAppcacheOnLoaderThread(manifest_url, appcache_service,
+                                      base::DoNothing(), &found_manifest);
+      } else {
+        base::PostTaskWithTraits(
+            FROM_HERE, {content::BrowserThread::IO},
+            base::BindOnce(WaitForAppcacheOnLoaderThread, manifest_url,
+                           appcache_service, wait_loop.QuitClosure(),
+                           &found_manifest));
+      }
       // There seems to be some flakiness in the appcache getting back to us, so
       // use a timeout task to try the appcache query again.
       base::PostDelayedTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
@@ -179,10 +185,11 @@ class NoStatePrefetchBrowserTest
   // |found_manifest| if an appcache exists for |manifest_url|. |callback| will
   // be called on the UI thread after the info is retrieved, whether or not the
   // manifest exists.
-  static void WaitForAppcacheOnIO(const GURL& manifest_url,
-                                  content::AppCacheService* appcache_service,
-                                  base::Closure callback,
-                                  bool* found_manifest) {
+  static void WaitForAppcacheOnLoaderThread(
+      const GURL& manifest_url,
+      content::AppCacheService* appcache_service,
+      base::Closure callback,
+      bool* found_manifest) {
     scoped_refptr<content::AppCacheInfoCollection> info_collection =
         new content::AppCacheInfoCollection();
     appcache_service->GetAllAppCacheInfo(

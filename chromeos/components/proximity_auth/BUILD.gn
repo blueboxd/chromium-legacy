@@ -121,6 +121,8 @@ source_set("unit_tests") {
     "//chromeos/components/multidevice:test_support",
     "//chromeos/components/multidevice/logging",
     "//chromeos/constants",
+    "//chromeos/dbus/power",
+    "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/secure_channel:test_support",

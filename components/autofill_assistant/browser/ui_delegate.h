@@ -118,6 +118,9 @@ class UiDelegate {
   virtual void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) = 0;
 
+  // Called when the user clicks a link on the terms & conditions message.
+  virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
+
   // Adds the rectangles that correspond to the current touchable area to the
   // given vector.
   //

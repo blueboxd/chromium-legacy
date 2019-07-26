@@ -86,6 +86,14 @@ cast_test_group("cast_tests") {
     }
   }
 
+  if (use_v4l2_codec && enable_video_capture_service) {
+    tests += [ "//media/gpu:video_encode_accelerator_unittest" ]
+  }
+
+  if (use_v4l2_codec) {
+    tests += [ "//media/gpu:video_decode_accelerator_unittest" ]
+  }
+
   if (is_linux) {
     tests += [
       "//chromecast/crash:cast_crash_unittests",

@@ -52,6 +52,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // --enable-direct-composition-layers and --disable-direct-composition-layers.
   static bool AreOverlaysSupported();
 
+  // Returns true if zero copy decode swap chain is supported.
+  static bool IsDecodeSwapChainSupported();
+
   // After this is called, hardware overlay support is disabled during the
   // current GPU process' lifetime.
   static void DisableOverlays();

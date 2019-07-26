@@ -40,7 +40,7 @@ public class ChromeUiApplicationTestRule extends ExternalResource {
                 return instance;
             }
         }
-        throw UiLocationException.newInstance("Could not detect current Page");
+        throw new UiLocationException("Could not detect current Page.");
     }
 
     /** Launch the chrome application */
@@ -71,8 +71,8 @@ public class ChromeUiApplicationTestRule extends ExternalResource {
         if (controller instanceof NewTabPageController) {
             return (NewTabPageController) controller;
         } else {
-            throw UiLocationException.newInstance(
-                    "Could not navigate to new tab page from " + controller.getClass().getName());
+            throw new UiLocationException("Could not navigate to new tab page from "
+                    + controller.getClass().getName() + ".");
         }
     }
 

@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/fido_cable_discovery.h"
@@ -23,6 +24,10 @@
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/pin.h"
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
+#endif  // defined(OS_MACOSX)
 
 namespace device {
 
@@ -302,6 +307,23 @@ void GetAssertionRequestHandler::DispatchRequest(
       std::move(request),
       base::BindOnce(&GetAssertionRequestHandler::HandleResponse,
                      weak_factory_.GetWeakPtr(), authenticator));
+}
+
+void GetAssertionRequestHandler::AuthenticatorAdded(
+    FidoDiscoveryBase* discovery,
+    FidoAuthenticator* authenticator) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
+
+#if defined(OS_MACOSX)
+  if (authenticator->AuthenticatorTransport() ==
+      FidoTransportProtocol::kInternal) {
+    transport_availability_info().has_recognized_mac_touch_id_credential =
+        static_cast<fido::mac::TouchIdAuthenticator*>(authenticator)
+            ->HasCredentialForGetAssertionRequest(request_);
+  }
+#endif  // defined(OS_MACOSX)
+
+  FidoRequestHandlerBase::AuthenticatorAdded(discovery, authenticator);
 }
 
 void GetAssertionRequestHandler::AuthenticatorRemoved(

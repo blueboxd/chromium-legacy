@@ -34,6 +34,8 @@ IPC_MESSAGE_ROUTED3(WebTestHostMsg_SimulateWebNotificationClick,
 IPC_MESSAGE_ROUTED2(WebTestHostMsg_SimulateWebNotificationClose,
                     std::string /* title */,
                     bool /* by_user */)
+IPC_MESSAGE_ROUTED1(WebTestHostMsg_SimulateWebContentIndexDelete,
+                    std::string /* id */)
 IPC_MESSAGE_ROUTED1(WebTestHostMsg_BlockThirdPartyCookies, bool /* block */)
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_DeleteAllCookies)
 IPC_MESSAGE_ROUTED4(WebTestHostMsg_SetPermission,

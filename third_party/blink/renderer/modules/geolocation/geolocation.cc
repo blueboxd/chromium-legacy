@@ -297,7 +297,7 @@ bool Geolocation::HaveSuitableCachedPosition(const PositionOptions* options) {
   if (!options->maximumAge())
     return false;
   DOMTimeStamp current_time_millis =
-      ConvertSecondsToDOMTimeStamp(CurrentTime());
+      ConvertSecondsToDOMTimeStamp(base::Time::Now().ToDoubleT());
   return last_position_->timestamp() >
          current_time_millis - options->maximumAge();
 }

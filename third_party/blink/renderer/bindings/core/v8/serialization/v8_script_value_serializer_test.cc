@@ -1474,10 +1474,10 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
 // when the checker was constructed, according to WTF::currentTime.
 class TimeIntervalChecker {
  public:
-  TimeIntervalChecker() : start_time_(WTF::CurrentTime()) {}
+  TimeIntervalChecker() : start_time_(base::Time::Now().ToDoubleT()) {}
   bool WasAliveAt(double time_in_milliseconds) {
     double time = time_in_milliseconds / kMsPerSecond;
-    return start_time_ <= time && time <= WTF::CurrentTime();
+    return start_time_ <= time && time <= base::Time::Now().ToDoubleT();
   }
 
  private:

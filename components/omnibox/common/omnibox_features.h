@@ -20,7 +20,6 @@ extern const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl;
 extern const base::Feature kOmniboxLocalEntitySuggestions;
 extern const base::Feature kOmniboxMaxURLMatches;
 extern const base::Feature kOmniboxRichEntitySuggestions;
-extern const base::Feature kOmniboxNewAnswerLayout;
 extern const base::Feature kOmniboxReverseAnswers;
 extern const base::Feature kOmniboxShortBookmarkSuggestions;
 extern const base::Feature kOmniboxTailSuggestions;

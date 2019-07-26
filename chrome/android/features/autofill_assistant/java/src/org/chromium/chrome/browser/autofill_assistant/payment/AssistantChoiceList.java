@@ -198,7 +198,11 @@ public class AssistantChoiceList extends GridLayout {
         View.OnClickListener clickListener = unusedView
                 -> setChecked(
                         view, mAllowMultipleChoices ? !item.mCompoundButton.isChecked() : true);
-        radioButton.setOnClickListener(clickListener);
+        radioButton.setOnCheckedChangeListener((unusedView, isChecked) -> {
+            if (item.mOnSelectedListener != null) {
+                item.mOnSelectedListener.onResult(isChecked);
+            }
+        });
         view.setOnClickListener(clickListener);
         mItems.add(item);
     }
@@ -262,19 +266,22 @@ public class AssistantChoiceList extends GridLayout {
      */
     public void setChecked(View content, boolean checked) {
         for (Item item : mItems) {
-            boolean notifyListener = false;
             if (item.mContent == content) {
                 item.mCompoundButton.setChecked(checked);
-                notifyListener = true;
             } else if (checked && !mAllowMultipleChoices) {
                 item.mCompoundButton.setChecked(false);
-                notifyListener = true;
-            }
-
-            if (notifyListener && item.mOnSelectedListener != null) {
-                item.mOnSelectedListener.onResult(item.mCompoundButton.isChecked());
             }
         }
+    }
+
+    /** Returns whether {@code content} is checked or not. */
+    public boolean isChecked(View content) {
+        for (Item mItem : mItems) {
+            if (mItem.mContent == content) {
+                return mItem.mCompoundButton.isChecked();
+            }
+        }
+        return false;
     }
 
     /**

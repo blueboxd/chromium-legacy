@@ -9,7 +9,10 @@ import android.content.Context;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.tab_ui.R;
 
@@ -27,6 +30,7 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
     private final TabModelSelector mTabModelSelector;
     private final SnackbarManager.SnackbarManageable mSnackbarManageable;
     private final TabGroupModelFilter.Observer mTabGroupModelFilterObserver;
+    private final TabModelSelectorObserver mTabModelSelectorObserver;
 
     private class TabUndoInfo {
         public final Tab tab;
@@ -82,6 +86,32 @@ public class UndoGroupSnackbarController implements SnackbarManager.SnackbarCont
         ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
                  true))
                 .addTabGroupObserver(mTabGroupModelFilterObserver);
+
+        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+            @Override
+            public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
+                mSnackbarManageable.getSnackbarManager().dismissSnackbars(
+                        UndoGroupSnackbarController.this);
+            }
+        };
+
+        mTabModelSelector.addObserver(mTabModelSelectorObserver);
+    }
+
+    /**
+     * Cleans up this class, removes {@link TabModelSelectorObserver} from {@link TabModelSelector}
+     * and {@link TabGroupModelFilter.Observer} from {@link TabGroupModelFilter}.
+     */
+    public void destroy() {
+        if (mTabModelSelector != null) {
+            mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     false))
+                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
+            ((TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider().getTabModelFilter(
+                     true))
+                    .removeTabGroupObserver(mTabGroupModelFilterObserver);
+        }
     }
 
     private void showUndoGroupSnackbar(List<TabUndoInfo> tabUndoInfo) {

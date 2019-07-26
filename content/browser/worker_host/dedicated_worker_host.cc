@@ -83,6 +83,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     DCHECK(client);
     client_ = std::move(client);
 
+    // Get a storage partition.
     auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
     if (!worker_process_host) {
       client_->OnScriptLoadStartFailed();
@@ -90,6 +91,25 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     }
     auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
         worker_process_host->GetStoragePartition());
+
+    // Get a storage domain.
+    RenderFrameHostImpl* ancestor_render_frame_host =
+        GetAncestorRenderFrameHost();
+    if (!ancestor_render_frame_host) {
+      client_->OnScriptLoadStartFailed();
+      return;
+    }
+    SiteInstance* site_instance = ancestor_render_frame_host->GetSiteInstance();
+    if (!site_instance) {
+      client_->OnScriptLoadStartFailed();
+      return;
+    }
+    std::string storage_domain;
+    std::string partition_name;
+    bool in_memory;
+    GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+        storage_partition_impl->browser_context(), site_instance->GetSiteURL(),
+        /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
 
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
     if (script_url.SchemeIsBlob()) {
@@ -119,6 +139,7 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         storage_partition_impl->GetServiceWorkerContext(),
         service_worker_handle_.get(), appcache_handle_->core(),
         std::move(blob_url_loader_factory), nullptr, storage_partition_impl,
+        storage_domain,
         base::BindOnce(&DedicatedWorkerHost::DidStartScriptLoad,
                        weak_factory_.GetWeakPtr()));
   }
@@ -167,6 +188,9 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       client_->OnScriptLoadStartFailed();
       return;
     }
+
+    // TODO(https://crbug.com/986188): Check if the main script's final response
+    // URL is commitable.
 
     // TODO(cammie): Change this approach when we support shared workers
     // creating dedicated workers, as there might be no ancestor frame.

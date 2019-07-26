@@ -215,7 +215,6 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
         base::BindRepeating(&ServiceWorkerContextWrapper::OnRegistrationUpdated,
                             base::Unretained(this)),
         base::DoNothing(), base::DoNothing());
-    watcher_->Start();
   }
 }
 
@@ -227,6 +226,8 @@ void ServiceWorkerContextWrapper::Init(
     URLLoaderFactoryGetter* loader_factory_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(storage_partition_);
+  if (watcher_)
+    watcher_->Start();
 
   is_incognito_ = user_data_directory.empty();
   // The database task runner is BLOCK_SHUTDOWN in order to support
@@ -251,7 +252,7 @@ void ServiceWorkerContextWrapper::Shutdown() {
 
   storage_partition_ = nullptr;
   process_manager_->Shutdown();
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+  if (watcher_) {
     watcher_->Stop();
     watcher_ = nullptr;
   }

@@ -9,6 +9,8 @@
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -19,11 +21,9 @@ FileSystemDownloadURLLoaderFactoryGetter::
     FileSystemDownloadURLLoaderFactoryGetter(
         const GURL& url,
         RenderFrameHost* rfh,
-        bool is_navigation,
         scoped_refptr<storage::FileSystemContext> file_system_context,
         const std::string& storage_domain)
     : rfh_(rfh),
-      is_navigation_(is_navigation),
       file_system_context_(file_system_context),
       storage_domain_(storage_domain) {
   DCHECK(url.SchemeIs(url::kFileSystemScheme));
@@ -38,7 +38,8 @@ FileSystemDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   DCHECK(download::GetIOTaskRunner()->BelongsToCurrentThread());
 
   std::unique_ptr<network::mojom::URLLoaderFactory> factory =
-      CreateFileSystemURLLoaderFactory(rfh_, is_navigation_,
+      CreateFileSystemURLLoaderFactory(rfh_->GetProcess()->GetID(),
+                                       rfh_->GetFrameTreeNodeId(),
                                        file_system_context_, storage_domain_);
 
   network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;

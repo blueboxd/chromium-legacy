@@ -133,6 +133,8 @@ jumbo_split_static_library("browser") {
     "autofill/strike_database_factory.h",
     "autofill/validation_rules_storage_factory.cc",
     "autofill/validation_rules_storage_factory.h",
+    "availability/availability_prober.cc",
+    "availability/availability_prober.h",
     "background_fetch/background_fetch_delegate_factory.cc",
     "background_fetch/background_fetch_delegate_factory.h",
     "background_fetch/background_fetch_delegate_impl.cc",
@@ -325,12 +327,12 @@ jumbo_split_static_library("browser") {
     "component_updater/recovery_component_installer.h",
     "component_updater/recovery_improved_component_installer.cc",
     "component_updater/recovery_improved_component_installer.h",
+    "component_updater/safety_tips_component_installer.cc",
+    "component_updater/safety_tips_component_installer.h",
     "component_updater/sth_set_component_remover.cc",
     "component_updater/sth_set_component_remover.h",
     "component_updater/subresource_filter_component_installer.cc",
     "component_updater/subresource_filter_component_installer.h",
-    "component_updater/supervised_user_whitelist_installer.cc",
-    "component_updater/supervised_user_whitelist_installer.h",
     "component_updater/sw_reporter_installer_win.cc",
     "component_updater/sw_reporter_installer_win.h",
     "consent_auditor/consent_auditor_factory.cc",
@@ -629,6 +631,8 @@ jumbo_split_static_library("browser") {
     "lookalikes/lookalike_url_service.cc",
     "lookalikes/lookalike_url_service.h",
     "lookalikes/safety_tips/safety_tip_ui.h",
+    "lookalikes/safety_tips/safety_tips_config.cc",
+    "lookalikes/safety_tips/safety_tips_config.h",
     "mac/bluetooth_utility.h",
     "mac/bluetooth_utility.mm",
     "mac/dock.h",
@@ -1340,8 +1344,6 @@ jumbo_split_static_library("browser") {
     "previews/previews_lite_page_url_loader_interceptor.h",
     "previews/previews_offline_helper.cc",
     "previews/previews_offline_helper.h",
-    "previews/previews_prober.cc",
-    "previews/previews_prober.h",
     "previews/previews_service.cc",
     "previews/previews_service.h",
     "previews/previews_service_factory.cc",
@@ -1879,12 +1881,13 @@ jumbo_split_static_library("browser") {
   ]
   deps = [
     ":active_use_util",
+    ":availability_protos",
     ":ntp_background_proto",
-    ":previews_protos",
     ":resource_prefetch_predictor_proto",
     "//base:i18n",
     "//base/allocator:buildflags",
     "//base/util/values:values_util",
+    "//build:branding_buildflags",
     "//cc",
     "//chrome:extra_resources",
     "//chrome:resources",
@@ -1963,7 +1966,6 @@ jumbo_split_static_library("browser") {
     "//components/history/content/browser",
     "//components/history/core/browser",
     "//components/history/core/common",
-    "//components/image_fetcher/core",
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/keyed_service/content",
@@ -1990,7 +1992,6 @@ jumbo_split_static_library("browser") {
     "//components/network_hints/common",
     "//components/network_session_configurator/browser",
     "//components/network_time",
-    "//components/ntp_snippets",
     "//components/ntp_tiles",
     "//components/offline_items_collection/core",
     "//components/offline_pages/buildflags",
@@ -2668,6 +2669,8 @@ jumbo_split_static_library("browser") {
       "android/webapps/add_to_homescreen_manager.h",
       "android/webapps/single_tab_mode_tab_helper.cc",
       "android/webapps/single_tab_mode_tab_helper.h",
+      "android/webapps/webapk_ukm_recorder.cc",
+      "android/webapps/webapk_ukm_recorder.h",
       "android/webapps/webapp_registry.cc",
       "android/webapps/webapp_registry.h",
       "android/widget/thumbnail_generator.cc",
@@ -2824,6 +2827,10 @@ jumbo_split_static_library("browser") {
       "sync/profile_sync_service_android.cc",
       "sync/profile_sync_service_android.h",
       "translate/android/translate_bridge.cc",
+    ]
+    public_deps += [
+      "//components/image_fetcher/core",
+      "//components/ntp_snippets",
     ]
     deps += [
       ":client_discourse_context_proto",
@@ -3327,6 +3334,8 @@ jumbo_split_static_library("browser") {
       "search/promos/promo_service_observer.h",
       "search/search_engine_base_url_tracker.cc",
       "search/search_engine_base_url_tracker.h",
+      "search/search_provider_observer.cc",
+      "search/search_provider_observer.h",
       "search/search_suggest/search_suggest_data.cc",
       "search/search_suggest/search_suggest_data.h",
       "search/search_suggest/search_suggest_loader.h",
@@ -3487,7 +3496,9 @@ jumbo_split_static_library("browser") {
       "//chrome/services/app_service/public/cpp:app_update",
       "//chrome/services/app_service/public/cpp:icon_loader",
       "//components/feedback",
+      "//components/image_fetcher/core",
       "//components/keep_alive_registry",
+      "//components/ntp_snippets",
       "//components/vector_icons",
       "//components/web_modal",
       "//components/zoom",
@@ -3840,8 +3851,6 @@ jumbo_split_static_library("browser") {
       "first_run/upgrade_util_linux.cc",
       "first_run/upgrade_util_linux.h",
       "icon_loader_auralinux.cc",
-      "password_manager/native_backend_kwallet_x.cc",
-      "password_manager/native_backend_kwallet_x.h",
       "platform_util_linux.cc",
       "shell_integration_linux.cc",
       "shell_integration_linux.h",
@@ -3871,16 +3880,6 @@ jumbo_split_static_library("browser") {
         "themes/theme_service_aurax11.cc",
         "themes/theme_service_aurax11.h",
       ]
-    }
-
-    # libsecret hard depends on GLib.
-    if (use_glib) {
-      sources += [
-        "password_manager/native_backend_libsecret.cc",
-        "password_manager/native_backend_libsecret.h",
-      ]
-      defines += [ "USE_LIBSECRET" ]
-      deps += [ "//third_party/libsecret" ]
     }
 
     if (use_ozone) {
@@ -4682,14 +4681,18 @@ jumbo_split_static_library("browser") {
         "offline_pages/android/request_coordinator_factory.cc",
       ]
     }
+
+    public_deps += [
+      "//components/offline_pages/core",
+      "//components/offline_pages/core/background:background_offliner",
+      "//components/offline_pages/core/prefetch",
+    ]
+
     deps += [
       "//chrome/common:offline_page_auto_fetcher_mojom",
       "//components/offline_pages/content/background_loader",
       "//components/offline_pages/content/renovations",
-      "//components/offline_pages/core",
-      "//components/offline_pages/core/background:background_offliner",
       "//components/offline_pages/core/downloads:offline_pages_ui_adapter",
-      "//components/offline_pages/core/prefetch",
       "//components/offline_pages/core/renovations",
       "//components/offline_pages/core/request_header:request_header",
     ]
@@ -4956,6 +4959,8 @@ jumbo_split_static_library("browser") {
 
   if (enable_supervised_users) {
     sources += [
+      "component_updater/supervised_user_whitelist_installer.cc",
+      "component_updater/supervised_user_whitelist_installer.h",
       "content_settings/content_settings_supervised_provider.cc",
       "content_settings/content_settings_supervised_provider.h",
       "supervised_user/child_accounts/child_account_service.cc",
@@ -5030,7 +5035,7 @@ jumbo_split_static_library("browser") {
 
   if (enable_vr) {
     if (enable_gvr_services) {
-      deps += [ "android/vr:vr_android" ]
+      public_deps += [ "android/vr:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
       allow_circular_includes_from += [ "android/vr:vr_android" ]
     }
@@ -5067,14 +5072,6 @@ jumbo_split_static_library("browser") {
 
   if (use_cups) {
     configs += [ "//printing:cups" ]
-  }
-
-  if (use_gnome_keyring) {
-    sources += [
-      "password_manager/native_backend_gnome_x.cc",
-      "password_manager/native_backend_gnome_x.h",
-    ]
-    configs += [ "//components/os_crypt:gnome_keyring" ]
   }
 
   if (use_nss_certs) {
@@ -5179,9 +5176,9 @@ source_set("theme_properties") {
   ]
 }
 
-proto_library("previews_protos") {
+proto_library("availability_protos") {
   sources = [
-    "previews/proto/previews_prober_cache_entry.proto",
+    "availability/proto/availability_prober_cache_entry.proto",
   ]
 }
 

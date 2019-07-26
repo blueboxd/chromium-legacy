@@ -117,7 +117,7 @@ base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
   static const base::FilePath::CharType kLogFilename[] =
 #if defined(GOOGLE_CHROME_BUILD)
       FILE_PATH_LITERAL("chrome_installer.log");
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
       FILE_PATH_LITERAL("chromium_installer.log");
 #endif
 

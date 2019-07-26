@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_repeating_callback.h"
@@ -58,7 +59,7 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   friend class AppCacheStorageImpl;  // for NotifyAppCacheIsReady
 
   CONTENT_EXPORT
-      explicit AppCacheQuotaClient(AppCacheServiceImpl* service);
+  explicit AppCacheQuotaClient(base::WeakPtr<AppCacheServiceImpl> service);
 
   void DidDeleteAppCachesForOrigin(int rv);
   void GetOriginsHelper(blink::mojom::StorageType type,
@@ -66,7 +67,6 @@ class AppCacheQuotaClient : public storage::QuotaClient {
                         GetOriginsCallback callback);
   void ProcessPendingRequests();
   void DeletePendingRequests();
-  const std::map<url::Origin, int64_t>& GetUsageMap() const;
   net::CancelableCompletionRepeatingCallback* GetServiceDeleteCallback();
 
   // For use by appcache internals during initialization and shutdown.
@@ -84,9 +84,11 @@ class AppCacheQuotaClient : public storage::QuotaClient {
   std::unique_ptr<net::CancelableCompletionRepeatingCallback>
       service_delete_callback_;
 
-  AppCacheServiceImpl* service_;
-  bool appcache_is_ready_;
-  bool quota_manager_is_destroyed_;
+  base::WeakPtr<AppCacheServiceImpl> service_;
+  bool appcache_is_ready_ = false;
+  bool quota_manager_is_destroyed_ = false;
+  bool service_is_destroyed_ = false;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheQuotaClient);
 };

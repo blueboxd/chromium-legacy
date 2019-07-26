@@ -13,6 +13,10 @@ namespace optimization_guide {
 
 struct HintsComponentInfo;
 
+// The local histogram used to record that the component hints are stored in
+// the cache and are ready for use.
+extern const char kComponentHintsUpdatedResultHistogramString[];
+
 // Enumerates the possible outcomes of processing the hints component.
 //
 // Used in UMA histograms, so the order of enumerators should not be changed.

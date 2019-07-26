@@ -26,11 +26,17 @@ MarkingVisitorBase::MarkingVisitorBase(ThreadState* state,
                                       WorklistTaskId::MainThread),
       weak_callback_worklist_(Heap().GetWeakCallbackWorklist(),
                               WorklistTaskId::MainThread),
+      movable_reference_worklist_(Heap().GetMovableReferenceWorklist(),
+                                  WorklistTaskId::MainThread),
       marking_mode_(marking_mode) {
   DCHECK(state->InAtomicMarkingPause());
 #if DCHECK_IS_ON()
   DCHECK(state->CheckThread());
 #endif  // DCHECK_IS_ON
+}
+
+void MarkingVisitorBase::FlushCompactionWorklists() {
+  movable_reference_worklist_.FlushToGlobal();
 }
 
 void MarkingVisitorBase::RegisterWeakCallback(void* object,
@@ -44,10 +50,11 @@ void MarkingVisitorBase::RegisterWeakCallback(void* object,
 void MarkingVisitorBase::RegisterBackingStoreReference(void** slot) {
   if (marking_mode_ != kGlobalMarkingWithCompaction)
     return;
-  // TODO(mlippautz): Do not call into heap directly but rather use a Worklist
-  // as temporary storage.
-  Heap().RegisterMovingObjectReference(
-      reinterpret_cast<MovableReference*>(slot));
+  MovableReference* movable_reference =
+      reinterpret_cast<MovableReference*>(slot);
+  if (Heap().ShouldRegisterMovingObjectReference(movable_reference)) {
+    movable_reference_worklist_.Push(movable_reference);
+  }
 }
 
 void MarkingVisitorBase::RegisterBackingStoreCallback(

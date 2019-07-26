@@ -105,6 +105,11 @@ class ScriptExecutorDelegate {
   // Changes to this value is reported to Listener::OnNavigationStateChanged()
   virtual bool HasNavigationError() = 0;
 
+  // Force showing the UI, if necessary. This is useful when executing a direct
+  // action which realizes it needs to interact with the user. The UI stays up
+  // until the end of the flow.
+  virtual void RequireUI() = 0;
+
   // Register a listener that can be told about changes. Duplicate calls are
   // ignored.
   virtual void AddListener(Listener* listener) = 0;

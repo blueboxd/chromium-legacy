@@ -14,7 +14,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -47,7 +47,7 @@ class TabGridContainerViewBinder {
         } else if (INITIAL_SCROLL_INDEX == propertyKey) {
             // RecyclerView#scrollToPosition(int) behaves incorrectly first time after cold start.
             int index = (Integer) model.get(INITIAL_SCROLL_INDEX);
-            ((GridLayoutManager) view.getLayoutManager()).scrollToPositionWithOffset(index, 0);
+            ((LinearLayoutManager) view.getLayoutManager()).scrollToPositionWithOffset(index, 0);
         } else if (TOP_CONTROLS_HEIGHT == propertyKey) {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) view.getLayoutParams();
             params.topMargin = model.get(TOP_CONTROLS_HEIGHT);

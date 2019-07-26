@@ -187,7 +187,7 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
   });
   bool display_arrow = !passwords.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(passwords),
+      std::make_unique<ui::SimpleComboboxModel>(std::move(passwords)),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kPassword, views::style::CONTEXT_BUTTON,
       STYLE_PRIMARY_MONOSPACED, display_arrow);

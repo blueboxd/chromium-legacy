@@ -13,10 +13,12 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
 #include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
+#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 
 namespace blink {
 
@@ -81,8 +83,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
           return nullptr;
         corner_points.push_back(point);
       }
-      return DetectedBarcode::Create(raw_value, bounding_box, format,
-                                     corner_points);
+      return MakeGarbageCollected<DetectedBarcode>(raw_value, bounding_box,
+                                                   format, corner_points);
     }
     case kDetectedFaceTag: {
       DOMRectReadOnly* bounding_box = ReadDOMRectReadOnly();
@@ -98,7 +100,7 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
           return nullptr;
         landmarks.push_back(landmark);
       }
-      return DetectedFace::Create(bounding_box, landmarks);
+      return MakeGarbageCollected<DetectedFace>(bounding_box, landmarks);
     }
     case kDetectedTextTag: {
       String raw_value;
@@ -117,7 +119,8 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
           return nullptr;
         corner_points.push_back(point);
       }
-      return DetectedText::Create(raw_value, bounding_box, corner_points);
+      return MakeGarbageCollected<DetectedText>(raw_value, bounding_box,
+                                                corner_points);
     }
     default:
       break;

@@ -3798,7 +3798,7 @@
           "--additional-expectations",
           "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",
@@ -3909,7 +3909,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",
@@ -7244,7 +7244,7 @@
           "--additional-expectations",
           "src/third_party/blink/web_tests/FlagExpectations/disable-site-isolation-trials",
           "--num-retries=3",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",
@@ -7355,7 +7355,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",

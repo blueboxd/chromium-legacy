@@ -119,7 +119,6 @@
 
 #if BUILDFLAG(ENABLE_CAST_WAYLAND_SERVER)
 #include "chromecast/browser/exo/wayland_server_controller.h"
-#include "chromecast/browser/exo/wm_helper_cast_shell.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
@@ -577,7 +576,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   extensions_browser_client_ =
       std::make_unique<extensions::CastExtensionsBrowserClient>(
-          cast_browser_process_->browser_context(), user_pref_service_.get());
+          cast_browser_process_->browser_context(), user_pref_service_.get(),
+          cast_content_browser_client_->cast_network_contexts());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();

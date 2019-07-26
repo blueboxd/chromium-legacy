@@ -632,18 +632,20 @@ void GuestOsSharePath::CheckIfPathDeleted(const base::FilePath& path) {
     return;
   }
 
+  // VolumeManager will be nullptr if running inside a test.
+  auto* vmgr = file_manager::VolumeManager::Get(profile_);
+  if (!vmgr) {
+    return;
+  }
   // If we can't find the path, check if the volume was unmounted.
   // FileWatchers may fire before VolumeManager::OnVolumeUnmounted.
-  bool volume_still_mounted = false;
-  const std::vector<base::WeakPtr<file_manager::Volume>>& volume_list =
-      file_manager::VolumeManager::Get(profile_)->GetVolumeList();
-  for (const auto& volume : volume_list) {
-    if ((path == volume->mount_path() || volume->mount_path().IsParent(path)) &&
-        base::PathExists(volume->mount_path())) {
-      volume_still_mounted = true;
-      break;
-    }
-  }
+  const auto volume_list = vmgr->GetVolumeList();
+  const bool volume_still_mounted = std::any_of(
+      volume_list.begin(), volume_list.end(), [&path](const auto& volume) {
+        return (path == volume->mount_path() ||
+                volume->mount_path().IsParent(path)) &&
+               base::PathExists(volume->mount_path());
+      });
   if (!volume_still_mounted) {
     return;
   }

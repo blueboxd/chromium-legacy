@@ -11,9 +11,8 @@
 #include "ash/public/cpp/multi_user_window_manager_delegate.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "components/account_id/account_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class AppObserver;
 class Browser;
@@ -36,7 +35,7 @@ class Window;
 // to MultiUserWindowManager as well as all app windows. This class is only
 // created if SessionControllerClient::IsMultiProfileAvailable() returns true.
 class MultiProfileSupport : public ash::MultiUserWindowManagerDelegate,
-                            public content::NotificationObserver {
+                            public BrowserListObserver {
  public:
   // Create the manager and use |active_account_id| as the active user.
   explicit MultiProfileSupport(const AccountId& active_account_id);
@@ -55,10 +54,8 @@ class MultiProfileSupport : public ash::MultiUserWindowManagerDelegate,
     return multi_user_window_manager_.get();
   }
 
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override;
 
  private:
   friend class ash::MultiProfileSupportTest;
@@ -70,9 +67,6 @@ class MultiProfileSupport : public ash::MultiUserWindowManagerDelegate,
                                  bool teleported) override;
   void OnTransitionUserShelfToNewAccount() override;
 
-  // Add a browser window to the system so that the owner can be remembered.
-  void AddBrowserWindow(Browser* browser);
-
   // The single instance of MultiProfileSupport, tracked solely for
   // tests.
   static MultiProfileSupport* instance_;
@@ -81,9 +75,6 @@ class MultiProfileSupport : public ash::MultiUserWindowManagerDelegate,
 
   // A list of all known users and their app window observers.
   AccountIdToAppWindowObserver account_id_to_app_observer_;
-
-  // The notification registrar to track the creation of browser windows.
-  content::NotificationRegistrar registrar_;
 
   std::unique_ptr<ash::MultiUserWindowManager> multi_user_window_manager_;
 

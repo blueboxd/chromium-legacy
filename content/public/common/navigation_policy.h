@@ -45,11 +45,17 @@ enum class NavigationDownloadType {
   // activation.
   kAdFrameNoGesture = 8,
 
-  // The navigation was initiated from or occurred in an ad frame with user
-  // activation.
-  kAdFrameGesture = 9,
+  // The navigation was initiated from or occurred in an ad frame.
+  kAdFrame = 10,
 
-  kMaxValue = kAdFrameGesture
+  // The navigation was initiated from or occurred in an iframe with
+  // |WebSandboxFlags::kDownloads| flag set.
+  kSandbox = 11,
+
+  // The navigation was initiated without user activation.
+  kNoGesture = 12,
+
+  kMaxValue = kNoGesture
 };
 
 // Stores the navigation types that may be of interest to the download-related

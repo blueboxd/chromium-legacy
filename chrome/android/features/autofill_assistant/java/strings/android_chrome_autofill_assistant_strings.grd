@@ -124,9 +124,6 @@
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
         http://support.google.com/assistant?p=fast_checkout
       </message>
-      <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_TERMS_ACCEPT" desc="Message that indicates that the user agrees to the terms and conditions of a 3rd party's domain, e.g., 'odeon.co.uk'.">
-        I agree to the terms &amp; conditions, privacy policy, and right of withdrawal of <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph>
-      </message>
       <message name="IDS_AUTOFILL_ASSISTANT_3RD_PARTY_TERMS_REVIEW" desc="Message that indicates that the user wants to review the terms and conditions of a 3rd party's domain, e.g., 'odeon.co.uk'.">
         Read and agree to the terms &amp; conditions on <ph name="BEGIN_BOLD">&lt;b&gt;</ph><ph name="DOMAIN">%1$s<ex>google.com</ex></ph><ph name="END_BOLD">&lt;/b&gt;</ph> later
       </message>

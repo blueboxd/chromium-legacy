@@ -93,7 +93,7 @@ void FaceDetector::OnDetectFaces(
       landmarks.push_back(web_landmark);
     }
 
-    detected_faces.push_back(DetectedFace::Create(
+    detected_faces.push_back(MakeGarbageCollected<DetectedFace>(
         DOMRectReadOnly::Create(face->bounding_box.x, face->bounding_box.y,
                                 face->bounding_box.width,
                                 face->bounding_box.height),

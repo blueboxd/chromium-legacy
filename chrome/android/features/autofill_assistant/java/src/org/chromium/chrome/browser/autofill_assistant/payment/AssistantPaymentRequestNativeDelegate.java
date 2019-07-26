@@ -68,6 +68,13 @@ public class AssistantPaymentRequestNativeDelegate implements AssistantPaymentRe
         }
     }
 
+    @Override
+    public void onTermsAndConditionsLinkClicked(int link) {
+        if (mNativeAssistantPaymentRequestDelegate != 0) {
+            nativeOnTermsAndConditionsLinkClicked(mNativeAssistantPaymentRequestDelegate, link);
+        }
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantPaymentRequestDelegate = 0;
@@ -81,4 +88,6 @@ public class AssistantPaymentRequestNativeDelegate implements AssistantPaymentRe
             @Nullable PersonalDataManager.CreditCard card);
     private native void nativeOnTermsAndConditionsChanged(
             long nativeAssistantPaymentRequestDelegate, int state);
+    private native void nativeOnTermsAndConditionsLinkClicked(
+            long nativeAssistantPaymentRequestDelegate, int link);
 }

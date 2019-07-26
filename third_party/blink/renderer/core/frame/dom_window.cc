@@ -465,15 +465,26 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   if (options->includeUserActivation())
     user_activation = UserActivation::CreateSnapshot(source);
 
+  LocalFrame* source_frame = source->GetFrame();
+
+  bool allow_autoplay = false;
+  if (RuntimeEnabledFeatures::ExperimentalAutoplayDynamicDelegationEnabled(
+          GetExecutionContext()) &&
+      LocalFrame::HasTransientUserActivation(source_frame) &&
+      options->hasAllow()) {
+    Vector<String> policy_entry_list;
+    options->allow().Split(' ', policy_entry_list);
+    allow_autoplay = policy_entry_list.Contains("autoplay");
+  }
+
   MessageEvent* event = MessageEvent::Create(
       std::move(channels), std::move(message), source_origin, String(), source,
-      user_activation, options->transferUserActivation());
+      user_activation, options->transferUserActivation(), allow_autoplay);
 
   // Transfer user activation state in the source's renderer when
   // |transferUserActivation| is true.
   // TODO(lanwei): we should execute the below code after the post task fires
   // (for both local and remote posting messages).
-  LocalFrame* source_frame = source->GetFrame();
   if (RuntimeEnabledFeatures::UserActivationPostMessageTransferEnabled() &&
       options->transferUserActivation() &&
       LocalFrame::HasTransientUserActivation(source_frame)) {

@@ -18,6 +18,7 @@
 #include "url/gurl.h"
 
 class PermissionUmaUtil;
+class WebApkUkmRecorder;
 
 namespace blink {
 class Document;
@@ -74,6 +75,13 @@ class METRICS_EXPORT UkmRecorder {
   friend blink::Document;
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;
+
+  // WebApkUkmRecorder records metrics about installed Webapps. Instead of using
+  // the current main frame URL, we want to record the URL of the Webapp
+  // manifest which identifies the current app. Therefore, WebApkUkmRecorder
+  // needs to be a friend so that it can access the private UpdateSourceURL()
+  // method.
+  friend WebApkUkmRecorder;
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer
   // to use a shared SourceId that is already associated with a URL, rather

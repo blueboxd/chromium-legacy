@@ -220,9 +220,11 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
 
   // Set up the producer to talk to the system.
   base::RunLoop system_data_source_enabled_runloop;
+  base::RunLoop system_data_source_disabled_runloop;
   auto system_producer = CreateMockAndroidSystemProducer(
       system_service.get(),
-      /* num_data_sources = */ 1, &system_data_source_enabled_runloop);
+      /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
+      &system_data_source_disabled_runloop);
 
   // Start a system trace, and wait on the Data Source being started.
   base::RunLoop system_no_more_packets_runloop;
@@ -236,9 +238,15 @@ TEST_F(SystemPerfettoTest, SystemTraceEndToEnd) {
   system_data_source_enabled_runloop.Run();
 
   // Post a task to ensure we stop the trace after the data is written.
+  base::RunLoop stop_tracing;
   PerfettoTracedProcess::GetTaskRunner()->PostTask(
-      [&]() { system_consumer.StopTracing(); });
+      [&system_consumer, &stop_tracing]() {
+        system_consumer.StopTracing();
+        stop_tracing.Quit();
+      });
+  stop_tracing.Run();
 
+  system_data_source_disabled_runloop.Run();
   system_no_more_packets_runloop.Run();
 
   EXPECT_EQ(1u, system_consumer.received_packets());
@@ -447,9 +455,9 @@ TEST_F(SystemPerfettoTest, MultipleSystemSourceWithOneLocalSourcesLocalFirst) {
   system_data_source_disabled_runloop.Run();
   system_no_more_packets_runloop.Run();
 
-  // Once we StopTracing() on the local trace the system tracing system will
-  // come back. So set new enabled and disabled RunLoops for the system
-  // producer.
+  // Once we StopTracing() on the system trace the we want to make sure a new
+  // local trace can start smoothly. So set new enabled and disabled RunLoops
+  // for the system producer.
   base::RunLoop local_data_source_reenabled_runloop;
   base::RunLoop local_data_source_redisabled_runloop;
   local_producer_client->SetAgentEnabledCallback(
@@ -678,10 +686,11 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
         });
 
     base::RunLoop system_data_source_enabled_runloop;
+    base::RunLoop system_data_source_disabled_runloop;
     auto system_producer = CreateMockAndroidSystemProducer(
         system_ptr,
         /* num_data_sources = */ 1, &system_data_source_enabled_runloop,
-        /* system_data_source_disabled_runloop = */ nullptr, check_sdk_level);
+        &system_data_source_disabled_runloop, check_sdk_level);
 
     if (!check_sdk_level) {
       system_data_source_enabled_runloop.Run();
@@ -689,9 +698,19 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
 
     // Post the task to ensure that the data will have been written and
     // committed if any tracing is being done.
+    base::RunLoop stop_tracing;
     PerfettoTracedProcess::GetTaskRunner()->PostTask(
-        [&system_consumer]() { system_consumer.StopTracing(); });
+        [&system_consumer, &stop_tracing]() {
+          system_consumer.StopTracing();
+          stop_tracing.Quit();
+        });
+    stop_tracing.Run();
+
+    if (!check_sdk_level) {
+      system_data_source_disabled_runloop.Run();
+    }
     system_no_more_packets_runloop.Run();
+
     PerfettoProducer::DeleteSoonForTesting(std::move(system_producer));
     return system_consumer.received_packets();
   };

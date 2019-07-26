@@ -69,6 +69,10 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
                   progress_);
   }
 
+  bool PreservesAxisAlignment() const final {
+    return from_.PreservesAxisAlignment() && to_.PreservesAxisAlignment();
+  }
+
   bool DependsOnBoxSize() const override {
     return from_.DependsOnBoxSize() || to_.DependsOnBoxSize();
   }

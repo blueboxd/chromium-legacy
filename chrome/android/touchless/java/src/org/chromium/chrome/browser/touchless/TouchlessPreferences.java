@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
-import android.widget.ListView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
@@ -36,33 +35,11 @@ public class TouchlessPreferences extends Preferences {
     }
 
     /**
-     * Adds paddings for the main list in the current android.app.Fragment.
-     * Support library fragments are handled in {@link #onAttachedToWindowCompat()}.
-     * TODO(crbug.com/967022): Once all fragments are migrated to the support library, this should
-     * be deleted.
+     * Adds paddings for the main list in the current support library Fragment.
      */
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        android.app.Fragment fragment = getMainFragment();
-        if (fragment == null || fragment.getView() == null
-                || fragment.getView().findViewById(android.R.id.list) == null) {
-            return;
-        }
-
-        int padding = getResources().getDimensionPixelSize(
-                org.chromium.chrome.touchless.R.dimen.touchless_preferences_highlight_padding);
-        ListView listView = fragment.getView().findViewById(android.R.id.list);
-        listView.setPadding(padding, 0, padding, 0);
-        listView.setDividerHeight(padding);
-    }
-
-    /**
-     * Adds paddings for the main list in the current support library Fragment.
-     */
-    @Override
-    public void onAttachedToWindowCompat() {
-        super.onAttachedToWindowCompat();
         Fragment fragment = getMainFragmentCompat();
         if (fragment == null || fragment.getView() == null
                 || fragment.getView().findViewById(R.id.list) == null) {

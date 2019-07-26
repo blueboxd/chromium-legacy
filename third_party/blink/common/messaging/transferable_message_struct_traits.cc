@@ -28,6 +28,7 @@ bool StructTraits<blink::mojom::TransferableMessage::DataView,
       blink::MessagePortChannel::CreateFromHandles(std::move(stream_channels));
   out->has_user_gesture = data.has_user_gesture();
   out->transfer_user_activation = data.transfer_user_activation();
+  out->allow_autoplay = data.allow_autoplay();
   return true;
 }
 

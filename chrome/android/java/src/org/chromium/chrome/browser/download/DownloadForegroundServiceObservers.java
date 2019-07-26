@@ -136,28 +136,11 @@ public final class DownloadForegroundServiceObservers {
 
     @Nullable
     private static Observer getObserverFromClassName(String observerClassName) {
-        if (observerClassName == null) return null;
-
-        Class<?> observerClass;
         try {
-            observerClass = Class.forName(observerClassName);
-        } catch (ClassNotFoundException e) {
-            Log.w(TAG, "Unable to find observer class with name " + observerClassName);
-            return null;
-        }
-
-        if (!Observer.class.isAssignableFrom(observerClass)) {
-            Log.w(TAG, "Class " + observerClass + " is not an observer");
-            return null;
-        }
-
-        try {
+            Class<?> observerClass = Class.forName(observerClassName);
             return (Observer) observerClass.newInstance();
-        } catch (InstantiationException e) {
-            Log.w(TAG, "Unable to instantiate class (InstExc) " + observerClass);
-            return null;
-        } catch (IllegalAccessException e) {
-            Log.w(TAG, "Unable to instantiate class (IllAccExc) " + observerClass);
+        } catch (Throwable e) {
+            Log.w(TAG, "getObserverFromClassName(): %s", observerClassName, e);
             return null;
         }
     }

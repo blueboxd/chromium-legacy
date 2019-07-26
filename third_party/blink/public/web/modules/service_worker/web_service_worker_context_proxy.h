@@ -52,7 +52,7 @@ class WebServiceWorkerContextProxy {
       // A handle for mojom::ServiceWorkerRequest.
       mojo::ScopedMessagePipeHandle request) = 0;
   virtual void BindControllerServiceWorker(
-      // A handle for mojom::ControllerServiceWorkerRequest.
+      // A handle for mojo::PendingReceiver<mojom::ControllerServiceWorker>.
       mojo::ScopedMessagePipeHandle request) = 0;
 
   virtual void OnNavigationPreloadResponse(

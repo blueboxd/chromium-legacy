@@ -33,6 +33,9 @@ constexpr int kUserDemographicsBirthYearNoiseOffsetRange = 2;
 // Minimal user age in years to provide demographics for.
 constexpr int kUserDemographicsMinAgeInYears = 20;
 
+// Max user age to provide demopgrahics for.
+constexpr int kUserDemographicsMaxAgeInYears = 85;
+
 // Container of user demographics.
 struct UserDemographics {
   int birth_year = 0;

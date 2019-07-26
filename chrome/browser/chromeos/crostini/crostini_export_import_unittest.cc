@@ -174,6 +174,9 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::DONE);
+  // CrostiniExportImport should've created the exported file.
+  thread_bundle_.RunUntilIdle();
+  EXPECT_TRUE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestExportSuccess) {
@@ -229,6 +232,9 @@ TEST_F(CrostiniExportImportTest, TestExportSuccess) {
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::DONE);
+  // CrostiniExportImport should've created the exported file.
+  thread_bundle_.RunUntilIdle();
+  EXPECT_TRUE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestExportFail) {
@@ -243,6 +249,9 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
       vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_FAILED);
   EXPECT_EQ(notification->status(),
             CrostiniExportImportNotification::Status::FAILED);
+  // CrostiniExportImport should cleanup the file if an export fails.
+  thread_bundle_.RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(tarball_));
 }
 
 TEST_F(CrostiniExportImportTest, TestImportSuccess) {

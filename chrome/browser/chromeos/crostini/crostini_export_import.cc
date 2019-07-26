@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -175,12 +177,26 @@ void CrostiniExportImport::Start(
 
   switch (type) {
     case ExportImportType::EXPORT:
-      guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
-          kCrostiniDefaultVmName, path.DirName(), false,
-          base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         std::move(container_id), path.BaseName(),
-                         std::move(callback)));
+      base::PostTaskWithTraitsAndReply(
+          FROM_HERE, {base::MayBlock()},
+          // Ensure file exists so that it can be shared.
+          base::BindOnce(
+              [](const base::FilePath& path) {
+                base::File file(path, base::File::FLAG_CREATE_ALWAYS |
+                                          base::File::FLAG_WRITE);
+                DCHECK(file.IsValid()) << path << " is invalid";
+              },
+              path),
+          base::BindOnce(
+              &guest_os::GuestOsSharePath::SharePath,
+              base::Unretained(
+                  guest_os::GuestOsSharePath::GetForProfile(profile_)),
+              kCrostiniDefaultVmName, path, false,
+              base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             std::move(container_id), std::move(callback))
+
+                  ));
       break;
     case ExportImportType::IMPORT:
       guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
@@ -194,7 +210,6 @@ void CrostiniExportImport::Start(
 
 void CrostiniExportImport::ExportAfterSharing(
     const ContainerId& container_id,
-    const base::FilePath& filename,
     CrostiniManager::CrostiniResultCallback callback,
     const base::FilePath& container_path,
     bool result,
@@ -209,8 +224,7 @@ void CrostiniExportImport::ExportAfterSharing(
     return;
   }
   CrostiniManager::GetForProfile(profile_)->ExportLxdContainer(
-      kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
-      container_path.Append(filename),
+      kCrostiniDefaultVmName, kCrostiniDefaultContainerName, container_path,
       base::BindOnce(&CrostiniExportImport::OnExportComplete,
                      weak_ptr_factory_.GetWeakPtr(), base::Time::Now(),
                      container_id, std::move(callback)));
@@ -238,6 +252,10 @@ void CrostiniExportImport::OnExportComplete(
     }
   } else {
     LOG(ERROR) << "Error exporting " << int(result);
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                       it->second->path(), false));
     switch (result) {
       case CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED:
         enum_hist_result = ExportContainerResult::kFailedVmStopped;

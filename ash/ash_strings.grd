@@ -1990,6 +1990,23 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_ACCESSIBLE_NAME" desc="The accessible name for the lock screen media controls view.">
         Media Controls
       </message>
+      <message name="IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_CLOSE" desc="The button to dismiss the media controls and pause playback.">
+        Close
+      </message>
+
+      <!-- Virtual desks -->
+      <message name="IDS_ASH_VIRTUAL_DESKS_ALERT_NEW_DESK_CREATED" desc="A new desk is created in virtual desks.">
+        Desk <ph name="DESK_TITILE">$1<ex>1</ex></ph> created
+      </message>
+      <message name="IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_REMOVED" desc="A desk is removed in virtual desks.">
+        Desk <ph name="REMOVED_DESK">$1</ph> removed and merged with Desk <ph  name="RECEIVE_DESK">$2</ph>
+      </message>
+      <message name="IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_ACTIVATED" desc="A desk in virtual desks is activated.">
+        Desk <ph name="DESK_TITILE">$1<ex>1</ex></ph> activated
+      </message>
+      <message name="IDS_ASH_VIRTUAL_DESKS_ALERT_WINDOW_MOVED_FROM_ACTIVE_DESK" desc="A window in active desk got be moved to another virtual desk.">
+        Window <ph name="WINDOW_TITLE">$1<ex>Files</ex></ph> moved from Desk <ph name="ACTIVE_DESK">$2</ph> to Desk <ph name="TARGET_DESK">$3</ph>
+      </message>
     </messages>
   </release>
 </grit>

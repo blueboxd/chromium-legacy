@@ -229,16 +229,7 @@ class SharedImageRepresentationGLTextureVideo
               static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
 
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
-    DCHECK(video_backing);
-    auto* codec_image = video_backing->codec_image_.get();
-    auto* texture_owner = codec_image->texture_owner().get();
-
-    // Render the codec image.
-    codec_image->RenderToFrontBuffer();
-
-    // Bind the tex image if it's not already bound.
-    if (!texture_owner->binds_texture_on_update())
-      texture_owner->EnsureTexImageBound();
+    video_backing->BeginGLReadAccess();
     return true;
   }
 
@@ -248,6 +239,43 @@ class SharedImageRepresentationGLTextureVideo
   gpu::gles2::Texture* texture_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTextureVideo);
+};
+
+// Representation of SharedImageVideo as a GL Texture.
+class SharedImageRepresentationGLTexturePassthroughVideo
+    : public gpu::SharedImageRepresentationGLTexturePassthrough {
+ public:
+  SharedImageRepresentationGLTexturePassthroughVideo(
+      gpu::SharedImageManager* manager,
+      SharedImageVideo* backing,
+      gpu::MemoryTypeTracker* tracker,
+      scoped_refptr<gpu::gles2::TexturePassthrough> texture)
+      : gpu::SharedImageRepresentationGLTexturePassthrough(manager,
+                                                           backing,
+                                                           tracker),
+        texture_(std::move(texture)) {}
+
+  const scoped_refptr<gpu::gles2::TexturePassthrough>& GetTexturePassthrough()
+      override {
+    return texture_;
+  }
+
+  bool BeginAccess(GLenum mode) override {
+    // This representation should only be called for read.
+    DCHECK_EQ(mode,
+              static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
+
+    auto* video_backing = static_cast<SharedImageVideo*>(backing());
+    video_backing->BeginGLReadAccess();
+    return true;
+  }
+
+  void EndAccess() override {}
+
+ private:
+  scoped_refptr<gpu::gles2::TexturePassthrough> texture_;
+
+  DISALLOW_COPY_AND_ASSIGN(SharedImageRepresentationGLTexturePassthroughVideo);
 };
 
 // Vulkan backed Skia representation of SharedImageVideo.
@@ -427,6 +455,29 @@ SharedImageVideo::ProduceGLTexture(gpu::SharedImageManager* manager,
       manager, this, tracker, texture);
 }
 
+// TODO(vikassoni): Currently GLRenderer doesn't support overlays with shared
+// image. Add support for overlays in GLRenderer as well as overlay
+// representations of shared image.
+std::unique_ptr<gpu::SharedImageRepresentationGLTexturePassthrough>
+SharedImageVideo::ProduceGLTexturePassthrough(gpu::SharedImageManager* manager,
+                                              gpu::MemoryTypeTracker* tracker) {
+  // For (old) overlays, we don't have a texture owner, but overlay promotion
+  // might not happen for some reasons. In that case, it will try to draw
+  // which should result in no image.
+  if (!codec_image_->texture_owner())
+    return nullptr;
+  // TODO(vikassoni): We would want to give the TextureOwner's underlying
+  // Texture, but it was not set with the correct size. The AbstractTexture,
+  // that we use for legacy mailbox, is correctly set.
+  scoped_refptr<gpu::gles2::TexturePassthrough> texture =
+      gpu::gles2::TexturePassthrough::CheckedCast(
+          abstract_texture_->GetTextureBase());
+  DCHECK(texture);
+
+  return std::make_unique<SharedImageRepresentationGLTexturePassthroughVideo>(
+      manager, this, tracker, std::move(texture));
+}
+
 // Currently SkiaRenderer doesn't support overlays.
 std::unique_ptr<gpu::SharedImageRepresentationSkia>
 SharedImageVideo::ProduceSkia(
@@ -458,6 +509,16 @@ SharedImageVideo::ProduceSkia(
           manager, this, tracker, texture);
   return gpu::SharedImageRepresentationSkiaGL::Create(
       std::move(gl_representation), nullptr, manager, this, tracker);
+}
+
+void SharedImageVideo::BeginGLReadAccess() {
+  // Render the codec image.
+  codec_image_->RenderToFrontBuffer();
+
+  // Bind the tex image if it's not already bound.
+  auto* texture_owner = codec_image_->texture_owner().get();
+  if (!texture_owner->binds_texture_on_update())
+    texture_owner->EnsureTexImageBound();
 }
 
 }  // namespace media

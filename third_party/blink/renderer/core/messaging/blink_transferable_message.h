@@ -34,6 +34,7 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
   mojom::blink::UserActivationSnapshotPtr user_activation;
 
   bool transfer_user_activation = false;
+  bool allow_autoplay = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BlinkTransferableMessage);

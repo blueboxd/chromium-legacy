@@ -15,14 +15,22 @@ FragmentAnchor* FragmentAnchor::TryCreate(const KURL& url,
                                           LocalFrame& frame,
                                           bool same_document_navigation) {
   FragmentAnchor* anchor = nullptr;
+  const bool text_fragment_identifiers_enabled =
+      RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
+          frame.GetDocument());
 
-  anchor = ElementFragmentAnchor::TryCreate(url, frame);
+  if (text_fragment_identifiers_enabled) {
+    anchor = TextFragmentAnchor::TryCreateFragmentDirective(
+        url, frame, same_document_navigation);
+  }
+
   if (!anchor) {
-    if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
-            frame.GetDocument())) {
-      anchor =
-          TextFragmentAnchor::TryCreate(url, frame, same_document_navigation);
-    }
+    anchor = ElementFragmentAnchor::TryCreate(url, frame);
+  }
+
+  if (!anchor && text_fragment_identifiers_enabled) {
+    anchor =
+        TextFragmentAnchor::TryCreate(url, frame, same_document_navigation);
   }
 
   return anchor;

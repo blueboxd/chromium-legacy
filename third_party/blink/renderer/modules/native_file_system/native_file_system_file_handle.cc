@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
-#include "third_party/blink/renderer/modules/native_file_system/native_file_system_writable_file_stream.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -49,32 +48,6 @@ ScriptPromise NativeFileSystemFileHandle::createWriter(
       },
       WrapPersistent(resolver)));
 
-  return result;
-}
-
-ScriptPromise NativeFileSystemFileHandle::createWritable(
-    ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  mojo_ptr_->CreateFileWriter(WTF::Bind(
-      [](ScriptPromiseResolver* resolver,
-         mojom::blink::NativeFileSystemErrorPtr result,
-         mojom::blink::NativeFileSystemFileWriterPtr writer) {
-        ExecutionContext* context = resolver->GetExecutionContext();
-        if (!context)
-          return;
-        if (result->error_code == base::File::FILE_OK) {
-          resolver->Resolve(MakeGarbageCollected<
-                            NativeFileSystemWritableFileStream>(
-              RevocableInterfacePtr<mojom::blink::NativeFileSystemFileWriter>(
-                  writer.PassInterface(), context->GetInterfaceInvalidator(),
-                  context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
-        } else {
-          resolver->Reject(file_error::CreateDOMException(result->error_code));
-        }
-      },
-      WrapPersistent(resolver)));
   return result;
 }
 

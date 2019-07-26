@@ -18,7 +18,8 @@ FeaturePodsContainerView::FeaturePodsContainerView(
     bool initially_expanded)
     : controller_(controller),
       pagination_model_(controller->model()->pagination_model()),
-      expanded_amount_(initially_expanded ? 1.0 : 0.0) {
+      expanded_amount_(initially_expanded ? 1.0 : 0.0),
+      feature_pod_rows_(kUnifiedFeaturePodMaxRows) {
   pagination_model_->AddObserver(this);
 }
 
@@ -46,13 +47,12 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
       button->SetExpandedAmount(1.0 - expanded_amount,
                                 true /* fade_icon_button */);
     } else if (visible_index > kUnifiedFeaturePodMaxItemsInCollapsed) {
-      int row = (visible_index / kUnifiedFeaturePodItemsInRow) %
-                kUnifiedFeaturePodItemsRows;
+      int row =
+          (visible_index / kUnifiedFeaturePodItemsInRow) % feature_pod_rows_;
       double button_expanded_amount =
           expanded_amount
-              ? std::min(1.0,
-                         expanded_amount +
-                             (0.25 * (kUnifiedFeaturePodItemsRows - row - 1)))
+              ? std::min(1.0, expanded_amount +
+                                  (0.25 * (feature_pod_rows_ - row - 1)))
               : expanded_amount;
       button->SetExpandedAmount(button_expanded_amount,
                                 true /* fade_icon_button */);
@@ -75,7 +75,7 @@ int FeaturePodsContainerView::GetExpandedHeight() const {
                         kUnifiedFeaturePodItemsInRow;
 
   if (features::IsSystemTrayFeaturePodsPaginationEnabled())
-    number_of_lines = std::min(number_of_lines, kUnifiedFeaturePodItemsRows);
+    number_of_lines = std::min(number_of_lines, feature_pod_rows_);
 
   return kUnifiedFeaturePodBottomPadding +
          (kUnifiedFeaturePodVerticalPadding + kUnifiedFeaturePodSize.height()) *
@@ -208,6 +208,26 @@ gfx::Point FeaturePodsContainerView::GetButtonPosition(
       y * expanded_amount_ + collapsed_y * (1.0 - expanded_amount_));
 }
 
+void FeaturePodsContainerView::SetMaxHeight(int max_height) {
+  int feature_pod_rows =
+      (max_height - kUnifiedFeaturePodBottomPadding -
+       kUnifiedFeaturePodTopPadding) /
+      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding);
+
+  std::cout << (max_height - kUnifiedFeaturePodBottomPadding -
+                kUnifiedFeaturePodTopPadding) /
+                   (kUnifiedFeaturePodSize.height() +
+                    kUnifiedFeaturePodVerticalPadding)
+            << std::endl;
+  feature_pod_rows = std::min(feature_pod_rows, kUnifiedFeaturePodMaxRows);
+  feature_pod_rows = std::max(feature_pod_rows, kUnifiedFeaturePodMinRows);
+
+  if (feature_pod_rows_ != feature_pod_rows) {
+    feature_pod_rows_ = feature_pod_rows;
+    UpdateTotalPages();
+  }
+}
+
 void FeaturePodsContainerView::UpdateCollapsedSidePadding() {
   const int visible_count =
       std::min(GetVisibleCount(), kUnifiedFeaturePodMaxItemsInCollapsed);
@@ -301,7 +321,7 @@ void FeaturePodsContainerView::CalculateIdealBoundsForFeaturePods() {
 
 int FeaturePodsContainerView::GetTilesPerPage() const {
   if (features::IsSystemTrayFeaturePodsPaginationEnabled())
-    return kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows;
+    return kUnifiedFeaturePodItemsInRow * feature_pod_rows_;
   else
     return children().size();
 }

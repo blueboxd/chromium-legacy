@@ -57,9 +57,9 @@ HandleResourceRequestWithPlaintextMimeType(
 
 }  // namespace
 
-class DataSaverSiteBreakdownMetricsObserverBrowserTest
+// Browser tests with Lite mode not enabled.
+class DataSaverSiteBreakdownMetricsObserverBrowserTestBase
     : public InProcessBrowserTest {
- protected:
   void SetUp() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
@@ -69,30 +69,7 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     InProcessBrowserTest::SetUp();
   }
 
-  void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-
-    PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
-                      true);
-  }
-
-  void WaitForDBToInitialize() {
-    base::RunLoop run_loop;
-    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-        browser()->profile())
-        ->data_reduction_proxy_service()
-        ->GetDBTaskRunnerForTesting()
-        ->PostTask(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(
-        data_reduction_proxy::switches::kEnableDataReductionProxy);
-    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
-  }
-
+ protected:
   // Gets the data usage recorded against the host the embedded server runs on.
   uint64_t GetDataUsage(const std::string& host) {
     const auto& data_usage_map =
@@ -120,6 +97,38 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     if (it != data_usage_map.end())
       return it->second->original_size() - it->second->data_used();
     return 0;
+  }
+
+  void WaitForDBToInitialize() {
+    base::RunLoop run_loop;
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+        browser()->profile())
+        ->data_reduction_proxy_service()
+        ->GetDBTaskRunnerForTesting()
+        ->PostTask(FROM_HERE, run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Browser tests with Lite mode enabled.
+class DataSaverSiteBreakdownMetricsObserverBrowserTest
+    : public DataSaverSiteBreakdownMetricsObserverBrowserTestBase {
+ protected:
+  void SetUpOnMainThread() override {
+    DataSaverSiteBreakdownMetricsObserverBrowserTestBase::SetUpOnMainThread();
+
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(data_reduction_proxy::prefs::kDataUsageReportingEnabled,
+                      true);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(
+        data_reduction_proxy::switches::kEnableDataReductionProxy);
+    command_line->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
   }
 
   void ScrollToAndWaitForScroll(unsigned int scroll_offset) {
@@ -195,9 +204,6 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTest
     return GetDataSavings(test_url.HostNoBrackets()) -
            data_savings_before_navigation;
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
@@ -313,4 +319,28 @@ IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTest,
   EXPECT_EQ(0u, NavigateAndGetDataSavingsAfterScroll(
                     "/lazyload/img-with-dimension.html", 3,
                     1 /* lazyloaded image */));
+}
+
+IN_PROC_BROWSER_TEST_F(DataSaverSiteBreakdownMetricsObserverBrowserTestBase,
+                       NoSavingsRecordedWithoutLiteMode) {
+  std::vector<std::string> test_urls = {
+      "/google/google.html",
+      "/simple.html",
+      "/media/youtube.html",
+      "/lazyload/img.html",
+      "/lazyload/img-with-dimension.html",
+  };
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WaitForDBToInitialize();
+  for (const auto& url : test_urls) {
+    GURL test_url(embedded_test_server()->GetURL(url));
+    ui_test_utils::NavigateToURL(browser(), test_url);
+
+    base::RunLoop().RunUntilIdle();
+    // Navigate away to force the histogram recording.
+    ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+    EXPECT_EQ(0U, GetDataUsage(test_url.HostNoBrackets()));
+    EXPECT_EQ(0U, GetDataUsage(test_url.HostNoBrackets()));
+  }
 }

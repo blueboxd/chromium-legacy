@@ -7,14 +7,14 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":os_powerwash_dialog",
+    ":os_reset_browser_proxy",
     ":os_reset_page",
-    ":reset_os_proxy",
   ]
 }
 
 js_library("os_powerwash_dialog") {
   deps = [
-    ":reset_os_proxy",
+    ":os_reset_browser_proxy",
     "../..:lifetime_browser_proxy",
   ]
 }
@@ -28,7 +28,7 @@ js_library("os_reset_page") {
   ]
 }
 
-js_library("reset_os_proxy") {
+js_library("os_reset_browser_proxy") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]

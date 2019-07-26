@@ -27,7 +27,7 @@ public class WebApkActivity extends WebappActivity {
     /** Manages whether to check update for the WebAPK, and starts update check if needed. */
     private WebApkUpdateManager mUpdateManager;
 
-    /** The start time that the activity becomes focused. */
+    /** The start time that the activity becomes focused in milliseconds since boot. */
     private long mStartTime;
 
     private static final String TAG = "cr_WebApkActivity";
@@ -110,8 +110,10 @@ public class WebApkActivity extends WebappActivity {
     @Override
     public void onPauseWithNative() {
         WebApkInfo info = (WebApkInfo) getWebappInfo();
-        WebApkUma.recordWebApkSessionDuration(
-                info.distributor(), SystemClock.elapsedRealtime() - mStartTime);
+        long sessionDuration = SystemClock.elapsedRealtime() - mStartTime;
+        WebApkUma.recordWebApkSessionDuration(info.distributor(), sessionDuration);
+        WebApkUkmRecorder.recordWebApkSessionDuration(
+                info.manifestUrl(), info.distributor(), info.webApkVersionCode(), sessionDuration);
         super.onPauseWithNative();
     }
 

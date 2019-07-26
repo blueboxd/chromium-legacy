@@ -214,7 +214,7 @@ bool ScreenOrientationControllerImpl::MaybeHasActiveLock() const {
 }
 
 void ScreenOrientationControllerImpl::ContextDestroyed(ExecutionContext*) {
-  screen_orientation_service_ = nullptr;
+  screen_orientation_service_.reset();
   active_lock_ = false;
 }
 
@@ -225,9 +225,11 @@ void ScreenOrientationControllerImpl::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
 }
 
-void ScreenOrientationControllerImpl::SetScreenOrientationAssociatedPtrForTests(
-    ScreenOrientationAssociatedPtr screen_orientation_associated_ptr) {
-  screen_orientation_service_ = std::move(screen_orientation_associated_ptr);
+void ScreenOrientationControllerImpl::
+    SetScreenOrientationAssociatedRemoteForTests(
+        mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
+            remote) {
+  screen_orientation_service_ = std::move(remote);
 }
 
 void ScreenOrientationControllerImpl::OnLockOrientationResult(

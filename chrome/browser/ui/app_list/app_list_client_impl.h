@@ -191,7 +191,8 @@ class AppListClientImpl
   bool app_list_target_visibility_ = false;
   bool app_list_visible_ = false;
 
-  app_list::SearchRankingEventLogger search_ranking_event_logger_;
+  std::unique_ptr<app_list::SearchRankingEventLogger>
+      search_ranking_event_logger_;
 
   base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_{this};
 

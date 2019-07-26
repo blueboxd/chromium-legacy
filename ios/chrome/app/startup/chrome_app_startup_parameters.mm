@@ -389,6 +389,9 @@ enum SearchExtensionAction {
 
   if (![_declaredSourceApp length])
     return CALLER_APP_NOT_AVAILABLE;
+  if ([_declaredSourceApp
+          isEqualToString:[[NSBundle mainBundle] bundleIdentifier]])
+    return CALLER_APP_GOOGLE_CHROME;
   if ([_declaredSourceApp isEqualToString:@"com.google.GoogleMobile"])
     return CALLER_APP_GOOGLE_SEARCH;
   if ([_declaredSourceApp isEqualToString:@"com.google.Gmail"])

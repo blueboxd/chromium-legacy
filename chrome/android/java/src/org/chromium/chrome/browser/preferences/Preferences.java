@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Fragment;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
@@ -14,13 +13,11 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.nfc.NfcAdapter;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceFragment.OnPreferenceStartFragmentCallback;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.app.Fragment;
+import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -29,7 +26,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -55,8 +51,7 @@ import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
  *    PreferenceUtils.getShowShadowOnScrollListener(...).
  */
 public class Preferences extends ChromeBaseAppCompatActivity
-        implements OnPreferenceStartFragmentCallback,
-                   PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+        implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     /**
      * Preference fragments may implement this interface to intercept "Back" button taps in this
      * activity.
@@ -119,21 +114,11 @@ public class Preferences extends ChromeBaseAppCompatActivity
         if (savedInstanceState == null) {
             if (initialFragment == null) initialFragment = MainPreferences.class.getName();
 
-            if (isCompat(initialFragment)) {
-                android.support.v4.app.Fragment fragment =
-                        android.support.v4.app.Fragment.instantiate(
-                                this, initialFragment, initialArguments);
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(android.R.id.content, fragment)
-                        .commit();
-            } else {
-                Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
-                getFragmentManager()
-                        .beginTransaction()
-                        .replace(android.R.id.content, fragment)
-                        .commit();
-            }
+            Fragment fragment = Fragment.instantiate(this, initialFragment, initialArguments);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, fragment)
+                    .commit();
         }
 
         if (ApiCompatibilityUtils.checkPermission(
@@ -151,39 +136,11 @@ public class Preferences extends ChromeBaseAppCompatActivity
                 ApiCompatibilityUtils.getColor(res, R.color.default_primary_color));
     }
 
-    /**
-     * Given a Fragment class name (as a string), determine whether it is a Support Library Fragment
-     * class, as opposed to a Framework Fragment.
-     *
-     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-     * Library.
-     *
-     * @param fragmentClass The fully qualified class name of a Fragment.
-     * @return Whether the class represents a Support Library Fragment.
-     */
-    private boolean isCompat(String fragmentClass) {
-        try {
-            return android.support.v4.app.Fragment.class.isAssignableFrom(
-                    Class.forName(fragmentClass));
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
     // OnPreferenceStartFragmentCallback:
 
     @Override
-    // TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-    // Library.
     public boolean onPreferenceStartFragment(
-            PreferenceFragment preferenceFragment, Preference preference) {
-        startFragment(preference.getFragment(), preference.getExtras());
-        return true;
-    }
-
-    @Override
-    public boolean onPreferenceStartFragment(
-            PreferenceFragmentCompat caller, android.support.v7.preference.Preference preference) {
+            PreferenceFragmentCompat caller, Preference preference) {
         startFragment(preference.getFragment(), preference.getExtras());
         return true;
     }
@@ -205,48 +162,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        Fragment fragment = getMainFragment();
-        if (fragment == null) {
-            onAttachedToWindowCompat();
-            return;
-        }
-        if (fragment.getView() == null
-                || fragment.getView().findViewById(android.R.id.list) == null) {
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (fragment instanceof PreferenceFragment && fragment.getView() != null) {
-                // Set list view padding to 0 so dividers are the full width of the screen.
-                fragment.getView().findViewById(android.R.id.list).setPadding(0, 0, 0, 0);
-            }
-        }
-        View contentView = fragment.getActivity().findViewById(android.R.id.content);
-        if (contentView == null || !(contentView instanceof FrameLayout)) {
-            return;
-        }
-
-        View inflatedView = View.inflate(getApplicationContext(),
-                R.layout.preferences_action_bar_shadow, (ViewGroup) contentView);
-        ListView listView = fragment.getView().findViewById(android.R.id.list);
-        listView.getViewTreeObserver().addOnScrollChangedListener(
-                PreferenceUtils.getShowShadowOnScrollListener(
-                        listView, inflatedView.findViewById(R.id.shadow)));
-    }
-
-    /**
-     * This method performs similar actions to {@link #onAttachedToWindow()}, but modified for the
-     * case where the main fragment is a Support Library fragment.
-     *
-     * Differences include:
-     *   * List ID reference is R.id.list instead of android.R.id.list.
-     *   * The {@link ListView} is now a {@link RecyclerView}.
-     *
-     * TODO(crbug.com/967022): Once all fragments are migrated to the Support Library, replace
-     * {@link #onAttachedToWindow()} with this method body.
-     */
-    public void onAttachedToWindowCompat() {
-        super.onAttachedToWindow();
-        android.support.v4.app.Fragment fragment = getMainFragmentCompat();
+        Fragment fragment = getMainFragmentCompat();
         if (fragment == null || fragment.getView() == null
                 || fragment.getView().findViewById(R.id.list) == null) {
             return;
@@ -299,27 +215,11 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     /**
      * Returns the fragment showing as this activity's main content, typically a {@link
-     * PreferenceFragment}. This does not include {@link android.app.DialogFragment}s or other
-     * {@link Fragment}s shown on top of the main content.
-     *
-     * This method only returns Framework {@link Fragment}s. If the main fragment is a Support
-     * Library fragment (of type {@link android.support.v4.app.Fragment}), this method returns null.
-     *
-     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-     * Library.
+     * PreferenceFragmentCompat}. This does not include dialogs or other {@link Fragment}s shown on
+     * top of the main content.
      */
     @VisibleForTesting
-    public Fragment getMainFragment() {
-        return getFragmentManager().findFragmentById(android.R.id.content);
-    }
-
-    /**
-     * This method should be called to retrieve the activity's main content if {@link
-     * #getMainFragment()} returned null, which may indicate that the main fragment is a Support
-     * Library fragment.
-     */
-    @VisibleForTesting
-    public android.support.v4.app.Fragment getMainFragmentCompat() {
+    public Fragment getMainFragmentCompat() {
         return getSupportFragmentManager().findFragmentById(android.R.id.content);
     }
 
@@ -345,9 +245,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Fragment mainFragment = getMainFragment();
-        if (mainFragment != null && mainFragment.onOptionsItemSelected(item)) return true;
-        android.support.v4.app.Fragment mainFragmentCompat = getMainFragmentCompat();
+        Fragment mainFragmentCompat = getMainFragmentCompat();
         if (mainFragmentCompat != null && mainFragmentCompat.onOptionsItemSelected(item)) {
             return true;
         }
@@ -365,7 +263,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
 
     @Override
     public void onBackPressed() {
-        android.support.v4.app.Fragment activeFragment = getMainFragmentCompat();
+        Fragment activeFragment = getMainFragmentCompat();
         if (!(activeFragment instanceof OnBackPressedListener)) {
             super.onBackPressed();
             return;

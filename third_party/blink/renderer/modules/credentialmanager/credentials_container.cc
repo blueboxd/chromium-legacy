@@ -405,14 +405,6 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_hmac_create_secret) {
       extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
     }
-#if defined(OS_ANDROID)
-    if (credential->echo_user_verification_methods) {
-      extension_outputs->setUvm(
-          UvmEntryToArray(std::move(*credential->user_verification_methods)));
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kCredentialManagerCreateSuccessWithUVM);
-    }
-#endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id, raw_id, authenticator_response,
         extension_outputs));
@@ -708,13 +700,6 @@ ScriptPromise CredentialsContainer::create(
           resolver->GetExecutionContext(),
           WebFeature::kCredentialManagerCreatePublicKeyCredential);
     }
-#if defined(OS_ANDROID)
-    if (options->publicKey()->hasExtensions() &&
-        options->publicKey()->extensions()->hasUvm()) {
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kCredentialManagerCreateWithUVM);
-    }
-#endif
 
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))

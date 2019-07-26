@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,6 +12,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.Preference;
 import android.widget.Button;
 
@@ -406,9 +406,9 @@ public class SigninTest {
         signOutPref.getOnPreferenceClickListener().onPreferenceClick(signOutPref);
     }
 
-    private void acceptAlertDialogWithTag(Activity activity, String tag) {
+    private void acceptAlertDialogWithTag(AppCompatActivity activity, String tag) {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        DialogFragment fragment = ActivityUtils.waitForFragment(activity, tag);
+        DialogFragment fragment = ActivityUtils.waitForFragmentCompat(activity, tag);
         AlertDialog dialog = (AlertDialog) fragment.getDialog();
         Assert.assertTrue(dialog != null);
         Assert.assertTrue(dialog.isShowing());

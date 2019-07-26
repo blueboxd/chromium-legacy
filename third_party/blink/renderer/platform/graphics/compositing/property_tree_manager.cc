@@ -333,14 +333,16 @@ void PropertyTreeManager::SetupRootScrollNode() {
   root_layer_.SetScrollTreeIndex(scroll_node.id);
 }
 
-static bool TransformsToAncestorHaveActiveAnimation(
+static bool TransformsToAncestorHaveNonAxisAlignedActiveAnimation(
     const TransformPaintPropertyNode& descendant,
     const TransformPaintPropertyNode& ancestor) {
   if (&descendant == &ancestor)
     return false;
   for (const auto* n = &descendant; n != &ancestor; n = n->Parent()) {
-    if (n->HasActiveTransformAnimation())
+    if (n->HasActiveTransformAnimation() &&
+        !n->TransformAnimationIsAxisAligned()) {
       return true;
+    }
   }
   return false;
 }
@@ -354,10 +356,9 @@ bool TransformsMayBe2dAxisMisaligned(const TransformPaintPropertyNode& a,
   if (!translation_2d_or_matrix.IsIdentityOr2DTranslation() &&
       !translation_2d_or_matrix.Matrix().Preserves2dAxisAlignment())
     return true;
-  // Assume any animation can cause 2d axis misalignment.
   const auto& lca = LowestCommonAncestor(a, b);
-  if (TransformsToAncestorHaveActiveAnimation(a, lca) ||
-      TransformsToAncestorHaveActiveAnimation(b, lca))
+  if (TransformsToAncestorHaveNonAxisAlignedActiveAnimation(a, lca) ||
+      TransformsToAncestorHaveNonAxisAlignedActiveAnimation(b, lca))
     return true;
   return false;
 }

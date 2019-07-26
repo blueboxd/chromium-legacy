@@ -122,6 +122,9 @@ void ShowItemInFolder(Profile* profile, const base::FilePath& full_path) {
 namespace internal {
 
 void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
+  // May result in an interactive dialog.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   switch (type) {
     case OPEN_FILE:
       ui::win::OpenFileViaShell(path);

@@ -22,7 +22,6 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
   bool isFile() const override { return true; }
 
   ScriptPromise createWriter(ScriptState*);
-  ScriptPromise createWritable(ScriptState*);
   ScriptPromise getFile(ScriptState*);
 
   mojom::blink::NativeFileSystemTransferTokenPtr Transfer() override;

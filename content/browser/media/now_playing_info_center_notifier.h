@@ -45,6 +45,8 @@ class CONTENT_EXPORT NowPlayingInfoCenterNotifier
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
  private:
   // Our connection to the underlying OS API for MPNowPlayingInfoCenter.

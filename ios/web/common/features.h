@@ -23,10 +23,6 @@ extern const base::Feature kWKHTTPSystemCookieStore;
 // https://crbug.com/841105.
 extern const base::Feature kCrashOnUnexpectedURLChange;
 
-// Used to disconnect the scroll proxy during slimnav restore. This is a
-// speculative change to mitigate the crashes in https://crbug.com/959499.
-extern const base::Feature kDisconnectScrollProxyDuringRestore;
-
 // Used to enable the workaround for WKWebView history clobber bug
 // (crbug.com/887497).
 extern const base::Feature kHistoryClobberWorkaround;

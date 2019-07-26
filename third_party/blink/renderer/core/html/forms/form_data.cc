@@ -359,7 +359,7 @@ File* FormData::Entry::GetFile() const {
   String filename = filename_;
   if (filename.IsNull())
     filename = "blob";
-  return File::Create(filename, CurrentTimeMS(),
+  return File::Create(filename, base::Time::Now().ToDoubleT() * 1000.0,
                       GetBlob()->GetBlobDataHandle());
 }
 

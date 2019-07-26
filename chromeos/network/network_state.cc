@@ -216,6 +216,12 @@ bool NetworkState::PropertyChanged(const std::string& key,
       return false;
     onc_source_ = ui_data->onc_source();
     return true;
+  } else if (key == shill::kProbeUrlProperty) {
+    std::string probe_url_string;
+    if (!GetStringValue(key, value, &probe_url_string))
+      return false;
+    probe_url_ = GURL(probe_url_string);
+    return true;
   }
   return false;
 }

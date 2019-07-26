@@ -231,6 +231,10 @@ SearchResultType OmniboxResult::GetSearchResultType() const {
   }
 }
 
+GURL OmniboxResult::DestinationURL() const {
+  return match_.destination_url;
+}
+
 void OmniboxResult::UpdateIcon() {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile_);

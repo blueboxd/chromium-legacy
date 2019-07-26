@@ -210,7 +210,8 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
         weak_factory_.GetWeakPtr(),
         ShortcutHelper::CreateShortcutInfo(manifest_url_, manifest_,
                                            primary_icon_url_, badge_icon_url_),
-        primary_icon_, badge_icon_, install_source, can_install_webapk_);
+        primary_icon_, badge_icon_, install_source, can_install_webapk_,
+        has_maskable_primary_icon_);
   } else {
     ui_delegate_ = AppBannerUiDelegateAndroid::Create(
         weak_factory_.GetWeakPtr(), native_app_title_,

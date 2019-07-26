@@ -1527,6 +1527,12 @@ void RTCPeerConnectionHandler::OnaddICECandidateResult(
   return webkit_request.RequestSucceeded();
 }
 
+void RTCPeerConnectionHandler::RestartIce() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  // The proxy invokes RestartIce() on the signaling thread.
+  native_peer_connection_->RestartIce();
+}
+
 void RTCPeerConnectionHandler::GetStandardStatsForTracker(
     scoped_refptr<webrtc::RTCStatsCollectorCallback> observer) {
   native_peer_connection_->GetStats(observer.get());

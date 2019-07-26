@@ -86,8 +86,8 @@ public class SuggestionTileController extends ElementController {
                             // called again if we throw an exception.  This
                             // gives a chance for the title UI of the tile to
                             // load.
-                            throw UiLocationException.newInstance(
-                                    "Title is null", LOCATOR_TILE_TITLES, root);
+                            throw new UiLocationException(
+                                    "Title not found.", LOCATOR_TILE_TITLES, root);
                         } else {
                             // This is the last attempt.  It is possible that
                             // no complete tiles are found on the screen, just

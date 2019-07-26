@@ -23,8 +23,10 @@ class TestAccessibilityControllerClient : public AccessibilityControllerClient {
   static constexpr base::TimeDelta kShutdownSoundDuration =
       base::TimeDelta::FromMilliseconds(1000);
 
-  // mojom::AccessibilityControllerClient:
+  // AccessibilityControllerClient:
   void TriggerAccessibilityAlert(AccessibilityAlert alert) override;
+  void TriggerAccessibilityAlertWithMessage(
+      const std::string& message) override;
   void PlayEarcon(int32_t sound_key) override;
   base::TimeDelta PlayShutdownSound() override;
   void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;

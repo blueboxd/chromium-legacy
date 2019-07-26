@@ -1059,6 +1059,10 @@ const IDNTestCase kIdnCases[] = {
     // This is allowed because the ideographs are not immediately next to
     // non-CJK.
     {"xn--oiqsace.com", L"丶乀乁丿.com", true},
+
+    // Kana voiced sound marks are not allowed.
+    {"xn--google-1m4e.com", L"google\x3099.com", false},
+    {"xn--google-8m4e.com", L"google\x309A.com", false},
 };
 
 namespace test {

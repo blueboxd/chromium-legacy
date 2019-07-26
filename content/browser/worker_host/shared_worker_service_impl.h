@@ -87,6 +87,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       blink::mojom::SharedWorkerClientPtr client,
       int client_process_id,
       int frame_id,
+      const std::string& storage_domain,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
   void DidCreateScriptLoader(

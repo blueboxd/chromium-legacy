@@ -137,6 +137,7 @@ class ChromePromptChannelMojo : public ChromePromptChannel {
 class ChromePromptChannelProtobuf : public ChromePromptChannel {
  public:
   static const char kErrorHistogramName[];
+  static constexpr uint32_t kMaxMessageLength = 1 * 1024 * 1024;  // 1M bytes
 
   // Values from this enum will serve as the high bits of the histogram values.
   // We will be able to use them to separate the errors by category if we ever
@@ -153,6 +154,7 @@ class ChromePromptChannelProtobuf : public ChromePromptChannel {
     kWrongHandshakeVersion = 1,
     kRequestLengthShortRead = 2,
     kRequestShortRead = 3,
+    kRequestInvalidSize = 4,
   };
 
   static int32_t GetErrorCodeInt(ErrorCategory category,

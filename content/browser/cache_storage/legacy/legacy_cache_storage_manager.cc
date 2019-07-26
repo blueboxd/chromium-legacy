@@ -167,7 +167,16 @@ void ListOriginsAndLastModifiedOnTaskRunner(
     auto origin_path = LegacyCacheStorageManager::ConstructOriginPath(
         root_path, origin, owner);
     if (path != origin_path) {
-      RecordIndexValidationResult(IndexResult::kPathMismatch);
+      CacheStorageOwner other_owner = owner == CacheStorageOwner::kCacheAPI
+                                          ? CacheStorageOwner::kBackgroundFetch
+                                          : CacheStorageOwner::kCacheAPI;
+      auto other_owner_path = LegacyCacheStorageManager::ConstructOriginPath(
+          root_path, origin, other_owner);
+      // Some of the paths in the |root_path| directory are for a different
+      // |owner|.  That is valid and expected, but if the path doesn't match
+      // the calculated path for either |owner|, then it is invalid.
+      if (path != other_owner_path)
+        RecordIndexValidationResult(IndexResult::kPathMismatch);
       continue;
     }
 

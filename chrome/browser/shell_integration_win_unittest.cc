@@ -43,7 +43,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
+    ASSERT_TRUE(
+        temp_dir_sub_dir_.CreateUniqueTempDirUnderPath(temp_dir_.GetPath()));
     // A path to a random target.
     base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &other_target_);
 
@@ -83,9 +84,10 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
   // |shortcut_properties| after copying it to an internal structure for later
   // verification.
   void AddTestShortcutAndResetProperties(
+      const base::FilePath& shortcut_dir,
       base::win::ShortcutProperties* shortcut_properties) {
     ShortcutTestObject shortcut_test_object;
-    base::FilePath shortcut_path = temp_dir_.GetPath().Append(
+    base::FilePath shortcut_path = shortcut_dir.Append(
         L"Shortcut " + base::NumberToString16(shortcuts_.size()) +
         installer::kLnkExt);
     shortcut_test_object.path = shortcut_path;
@@ -105,22 +107,22 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     // Shortcut 0 doesn't point to chrome.exe and thus should never be migrated.
     temp_properties.set_target(other_target_);
     temp_properties.set_app_id(L"Dumbo");
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 1 points to chrome.exe and thus should be migrated.
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(L"Dumbo");
     temp_properties.set_dual_mode(false);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 2 points to chrome.exe, but already has the right appid and thus
     // should only be migrated if dual_mode is desired.
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(default_profile_chrome_app_id_);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 3 is like shortcut 1, but it's appid is a prefix of the expected
     // appid instead of being totally different.
@@ -128,8 +130,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     chrome_app_id_is_prefix.push_back(L'1');
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(chrome_app_id_is_prefix);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 4 is like shortcut 1, but it's appid is of the same size as the
     // expected appid.
@@ -137,14 +139,14 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
         default_profile_chrome_app_id_.size(), L'1');
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(same_size_as_chrome_app_id);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 5 doesn't have an app_id, nor is dual_mode even set; they should
     // be set as expected upon migration.
     temp_properties.set_target(chrome_exe_);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 6 has a non-default profile directory and so should get a non-
     // default app id.
@@ -152,8 +154,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     temp_properties.set_app_id(L"Dumbo");
     temp_properties.set_arguments(
         L"--profile-directory=" + non_default_profile_);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 7 has a non-default user data directory and so should get a non-
     // default app id.
@@ -161,8 +163,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     temp_properties.set_app_id(L"Dumbo");
     temp_properties.set_arguments(
         L"--user-data-dir=\"" + non_default_user_data_dir_.value() + L"\"");
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 8 has a non-default user data directory as well as a non-default
     // profile directory and so should get a non-default app id.
@@ -171,8 +173,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     temp_properties.set_arguments(
         L"--user-data-dir=\"" + non_default_user_data_dir_.value() + L"\" " +
         L"--profile-directory=" + non_default_profile_);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 9 is a shortcut to an app and should get an app id for that app
     // rather than the chrome app id.
@@ -180,8 +182,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     temp_properties.set_app_id(L"Dumbo");
     temp_properties.set_arguments(
         L"--app-id=" + extension_id_);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 10 is a shortcut to an app with a non-default profile and should
     // get an app id for that app with a non-default app id rather than the
@@ -191,8 +193,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     temp_properties.set_arguments(
         L"--app-id=" + extension_id_ +
         L" --profile-directory=" + non_default_profile_);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 11 points to chrome.exe, has the chrome appid, and has
     // dual_mode set and thus should be migrated to the
@@ -200,20 +202,23 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(chrome_app_id_);
     temp_properties.set_dual_mode(true);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
 
     // Shortcut 12 is similar to 11 but with dual_mode explicitly set to false.
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(chrome_app_id_);
     temp_properties.set_dual_mode(false);
-    ASSERT_NO_FATAL_FAILURE(
-        AddTestShortcutAndResetProperties(&temp_properties));
+    ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+        temp_dir_.GetPath(), &temp_properties));
   }
 
   base::win::ScopedCOMInitializer com_initializer_;
 
   base::ScopedTempDir temp_dir_;
+
+  // Used to test migration of shortcuts in ImplicitApps sub-directories.
+  base::ScopedTempDir temp_dir_sub_dir_;
 
   // Test shortcuts.
   std::vector<ShortcutTestObject> shortcuts_;
@@ -300,8 +305,9 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, ClearDualModeAndAdjustAppIds) {
             MigrateShortcutsInPathInternal(chrome_exe_, temp_dir_.GetPath()));
 }
 
-// Test that a chrome_proxy.exe shortcut (PWA) has its app_id migrated
-// to include the default profile name.
+// Test that chrome_proxy.exe shortcuts (PWA) have their app_id migrated
+// to include the default profile name. This tests both shortcuts in the
+// DIR_TASKBAR_PINS and sub-directories of DIR_IMPLICIT_APP_SHORTCUTS.
 TEST_F(ShellIntegrationWinMigrateShortcutTest, MigrateChromeProxyTest) {
   // Create shortcut to chrome_proxy_exe in executable directory,
   // using the default profile, with the AppModelId not containing the
@@ -310,12 +316,22 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, MigrateChromeProxyTest) {
   base::win::ShortcutProperties temp_properties;
   temp_properties.set_target(web_app::GetChromeProxyPath());
   temp_properties.set_app_id(L"Dumbo");
-  ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(&temp_properties));
+  ASSERT_NO_FATAL_FAILURE(
+      AddTestShortcutAndResetProperties(temp_dir_.GetPath(), &temp_properties));
+  temp_properties.set_target(web_app::GetChromeProxyPath());
+  temp_properties.set_app_id(L"Dumbo2");
+  ASSERT_NO_FATAL_FAILURE(AddTestShortcutAndResetProperties(
+      temp_dir_sub_dir_.GetPath(), &temp_properties));
 
-  MigrateTaskbarPinsCallback(temp_dir_.GetPath());
-  // Verify that the migrated shortcut now contains the default profile name.
+  MigrateTaskbarPinsCallback(temp_dir_.GetPath(), temp_dir_.GetPath());
+  // Verify that the migrated shortcut in temp_dir_ now contains the default
+  // profile name.
   shortcuts_[0].properties.set_app_id(default_profile_chrome_app_id_);
   base::win::ValidateShortcut(shortcuts_[0].path, shortcuts_[0].properties);
+  // Verify that the migrated shortcut in temp_dir_sub now contains the default
+  // profile name.
+  shortcuts_[1].properties.set_app_id(default_profile_chrome_app_id_);
+  base::win::ValidateShortcut(shortcuts_[1].path, shortcuts_[1].properties);
 }
 
 TEST(ShellIntegrationWinTest, GetAppModelIdForProfileTest) {

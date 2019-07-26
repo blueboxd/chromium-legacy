@@ -119,6 +119,12 @@ void ContentIndexDatabase::AddEntry(
     const SkBitmap& icon,
     const GURL& launch_url,
     blink::mojom::ContentIndexService::AddCallback callback) {
+  if (blocked_origins_.count(origin)) {
+    // TODO(crbug.com/973844): Does this need a more specific error?
+    std::move(callback).Run(blink::mojom::ContentIndexError::STORAGE_ERROR);
+    return;
+  }
+
   SerializeIcon(icon, base::BindOnce(&ContentIndexDatabase::DidSerializeIcon,
                                      weak_ptr_factory_io_.GetWeakPtr(),
                                      service_worker_registration_id, origin,
@@ -354,6 +360,19 @@ void ContentIndexDatabase::DidGetEntry(
   DCHECK_EQ(data.size(), 1u);
   std::move(callback).Run(
       EntryFromSerializedProto(service_worker_registration_id, data.front()));
+}
+
+void ContentIndexDatabase::BlockOrigin(const url::Origin& origin) {
+  blocked_origins_[origin]++;
+}
+
+void ContentIndexDatabase::UnblockOrigin(const url::Origin& origin) {
+  DCHECK(blocked_origins_.count(origin));
+  auto it = blocked_origins_.find(origin);
+  if (it->second == 1)
+    blocked_origins_.erase(it);
+  else
+    it->second--;
 }
 
 void ContentIndexDatabase::Shutdown() {

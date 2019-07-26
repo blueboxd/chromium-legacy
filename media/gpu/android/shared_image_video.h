@@ -64,6 +64,10 @@ class MEDIA_GPU_EXPORT SharedImageVideo
       gpu::SharedImageManager* manager,
       gpu::MemoryTypeTracker* tracker) override;
 
+  std::unique_ptr<gpu::SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(gpu::SharedImageManager* manager,
+                              gpu::MemoryTypeTracker* tracker) override;
+
   std::unique_ptr<gpu::SharedImageRepresentationSkia> ProduceSkia(
       gpu::SharedImageManager* manager,
       gpu::MemoryTypeTracker* tracker,
@@ -74,8 +78,11 @@ class MEDIA_GPU_EXPORT SharedImageVideo
 
  private:
   friend class SharedImageRepresentationGLTextureVideo;
+  friend class SharedImageRepresentationGLTexturePassthroughVideo;
   friend class SharedImageRepresentationVideoSkiaGL;
   friend class SharedImageRepresentationVideoSkiaVk;
+
+  void BeginGLReadAccess();
 
   scoped_refptr<CodecImage> codec_image_;
 

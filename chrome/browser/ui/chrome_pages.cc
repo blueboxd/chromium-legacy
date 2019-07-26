@@ -124,8 +124,8 @@ const std::string BuildQueryString(Profile* profile) {
   }
 
   const std::string query_string = base::StrCat(
-      {kChromeReleaseNotesURL, "version=", milestone, "&tags=", board_name, ",",
-       region, ",", language, ",", channel_name, ",", user_type});
+      {kChromeReleaseNotesURL, "?version=", milestone, "&tags=", board_name,
+       ",", region, ",", language, ",", channel_name, ",", user_type});
   return query_string;
 }
 #endif

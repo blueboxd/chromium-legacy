@@ -55,6 +55,7 @@ class CrostiniExportImportNotification
 
   Status status() const { return status_; }
   ExportImportType type() const { return type_; }
+  const base::FilePath& path() const { return path_; }
   // Getters for testing.
   message_center::Notification* get_notification() {
     return notification_.get();

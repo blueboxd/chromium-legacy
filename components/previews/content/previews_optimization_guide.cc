@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -15,6 +16,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/hint_cache_store.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
 #include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
@@ -328,6 +330,13 @@ void PreviewsOptimizationGuide::OnHintsUpdated(
     base::OnceClosure update_closure) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(pref_service_);
+
+  // Record the result of updating the hints. This is used as a signal for the
+  // hints being fully processed in release tools and testing.
+  LOCAL_HISTOGRAM_BOOLEAN(
+      optimization_guide::kComponentHintsUpdatedResultHistogramString,
+      hints_ != nullptr);
+
   if (!update_closure.is_null())
     std::move(update_closure).Run();
 

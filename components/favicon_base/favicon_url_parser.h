@@ -12,11 +12,15 @@
 namespace chrome {
 
 struct ParsedFaviconPath {
-  // Whether the URL has the "iconurl" parameter.
-  bool is_icon_url;
+  ParsedFaviconPath();
 
-  // The URL from which the favicon is being requested.
-  std::string url;
+  // URL pointing to the page whose favicon we want.
+  std::string page_url;
+
+  // URL pointing directly to favicon image. If both |page_url| and |icon_url|
+  // are specified, |page_url| will have precedence. At least one between
+  // |page_url| and |icon_url| must be non-empty.
+  std::string icon_url;
 
   // The size of the requested favicon in dip.
   int size_in_dip;
@@ -64,14 +68,18 @@ struct ParsedFaviconPath {
 //   chrome://favicon2/?query_parameters
 // Standard URL query parameters are used as described below.
 //
-// Parameter:
-//  'url' Required
-//    The url whose favicon we want.
-//  'url_type' Optional
-//   Values: ['icon_url', 'page_url']
-//    Specifies whether the |url| parameter refers to the URL of the favicon
-//    image directly or to the page whose favicon we want (respectively). If
-//    unspecified, defaults to 'page_url'.
+// URL Parameters:
+//  'page_url'
+//    URL pointing to the page whose favicon we want.
+//  'icon_url'
+//    URL pointing directly to favicon image associated with |page_url|.
+//    Pointed image will not necessarily have the most appropriate resolution
+//    to the user's device.
+//
+// At least one of the two must be provided and non-empty. If both |page_url|
+// and |icon_url| are passed, |page_url| will have precedence.
+//
+// Other parameters:
 //  'size'  Optional
 //      Specifies the requested favicon's size in DIP. If unspecified, defaults
 //      to 16.
@@ -83,11 +91,12 @@ struct ParsedFaviconPath {
 //      to 1x.
 //    Example: chrome://favicon2/?scale_factor=1.2x
 //
-//  In case |url_type| == 'page_url', we can specify an additional parameter:
 //  'allow_google_server_fallback' Optional
 //      Values: ['1', '0']
 //      Specifies whether we are allowed to fall back to an external server
-//      request in case the icon is not found locally.
+//      request (by page url) in case the icon is not found locally.
+//      Setting this to 1 while not providing a non-empty page url will cause
+//      parsing to fail.
 enum class FaviconUrlFormat {
   // Legacy chrome://favicon format.
   kFaviconLegacy,

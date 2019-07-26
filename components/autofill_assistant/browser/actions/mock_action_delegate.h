@@ -186,6 +186,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(OnWaitForWindowHeightChange,
                void(base::OnceCallback<void(const ClientStatus&)>& callback));
 
+  MOCK_METHOD0(RequireUI, void());
+
   const ClientSettings& GetSettings() override { return client_settings_; }
 
   ClientSettings client_settings_;

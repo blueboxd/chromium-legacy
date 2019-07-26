@@ -252,7 +252,7 @@ const char kXdgOpenShebang[] = "#!/usr/bin/env xdg-open";
 #if BUILDFLAG(ENABLE_APP_LIST)
 #if defined(GOOGLE_CHROME_BUILD)
 const char kAppListDesktopName[] = "chrome-app-list";
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
 const char kAppListDesktopName[] = "chromium-app-list";
 #endif
 #endif
@@ -426,7 +426,7 @@ std::string GetDesktopName(base::Environment* env) {
     default:
       return "google-chrome.desktop";
   }
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
   // Allow $CHROME_DESKTOP to override the built-in value, so that development
   // versions can set themselves as the default without interfering with
   // non-official, packaged versions using the built-in value.
@@ -440,7 +440,7 @@ std::string GetDesktopName(base::Environment* env) {
 std::string GetIconName() {
 #if defined(GOOGLE_CHROME_BUILD)
   return "google-chrome";
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
   return "chromium-browser";
 #endif
 }

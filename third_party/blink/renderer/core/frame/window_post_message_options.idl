@@ -9,4 +9,6 @@ dictionary WindowPostMessageOptions : PostMessageOptions {
     [RuntimeEnabled =
         UserActivationPostMessageTransfer] boolean transferUserActivation =
         false;
+    [OriginTrialEnabled =
+        ExperimentalAutoplayDynamicDelegation] DOMString allow = "";
 };

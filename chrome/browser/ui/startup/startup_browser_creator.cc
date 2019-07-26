@@ -45,6 +45,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/common/buildflags.h"
@@ -108,43 +110,36 @@ using content::ChildProcessSecurityPolicy;
 namespace {
 
 // Keeps track on which profiles have been launched.
-class ProfileLaunchObserver : public content::NotificationObserver {
+class ProfileLaunchObserver : public content::NotificationObserver,
+                              public BrowserListObserver {
  public:
-  ProfileLaunchObserver()
-      : profile_to_activate_(NULL),
-        activated_profile_(false) {
+  ProfileLaunchObserver() {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                   content::NotificationService::AllSources());
+    BrowserList::AddObserver(this);
   }
-  ~ProfileLaunchObserver() override {}
 
+  ~ProfileLaunchObserver() override { BrowserList::RemoveObserver(this); }
+
+  // BrowserListObserver:
+  void OnBrowserAdded(Browser* browser) override {
+    opened_profiles_.insert(browser->profile());
+    MaybeActivateProfile();
+  }
+
+  // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
-    switch (type) {
-      case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-        Profile* profile = content::Source<Profile>(source).ptr();
-        launched_profiles_.erase(profile);
-        opened_profiles_.erase(profile);
-        if (profile == profile_to_activate_)
-          profile_to_activate_ = NULL;
-        // If this profile was the last launched one without an opened window,
-        // then we may be ready to activate |profile_to_activate_|.
-        MaybeActivateProfile();
-        break;
-      }
-      case chrome::NOTIFICATION_BROWSER_OPENED: {
-        Browser* browser = content::Source<Browser>(source).ptr();
-        DCHECK(browser);
-        opened_profiles_.insert(browser->profile());
-        MaybeActivateProfile();
-        break;
-      }
-      default:
-        NOTREACHED();
-    }
+    DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_DESTROYED);
+    Profile* profile = content::Source<Profile>(source).ptr();
+    launched_profiles_.erase(profile);
+    opened_profiles_.erase(profile);
+    if (profile == profile_to_activate_)
+      profile_to_activate_ = nullptr;
+    // If this profile was the last launched one without an opened window,
+    // then we may be ready to activate |profile_to_activate_|.
+    MaybeActivateProfile();
   }
 
   bool HasBeenLaunched(const Profile* profile) const {
@@ -155,7 +150,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     launched_profiles_.insert(profile);
     if (chrome::FindBrowserWithProfile(profile)) {
       // A browser may get opened before we get initialized (e.g., in tests),
-      // so we never see the NOTIFICATION_BROWSER_OPENED for it.
+      // so we never see the OnBrowserAdded() for it.
       opened_profiles_.insert(profile);
     }
   }
@@ -191,10 +186,8 @@ class ProfileLaunchObserver : public content::NotificationObserver {
         base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
                        base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.
-    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                      content::NotificationService::AllSources());
-    registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                      content::NotificationService::AllSources());
+    registrar_.RemoveAll();
+    BrowserList::RemoveObserver(this);
   }
 
   void ActivateProfile() {
@@ -207,7 +200,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
       if (browser)
         browser->window()->Activate();
       // No need try to activate this profile again.
-      profile_to_activate_ = NULL;
+      profile_to_activate_ = nullptr;
     }
     // Assign true here, even if no browser was actually activated, so that
     // the test can stop waiting, and fail gracefully when needed.
@@ -223,12 +216,12 @@ class ProfileLaunchObserver : public content::NotificationObserver {
   // be activated on top of it.
   std::set<const Profile*> opened_profiles_;
   content::NotificationRegistrar registrar_;
-  // This is NULL until the profile to activate has been chosen. This value,
+  // This is null until the profile to activate has been chosen. This value
   // should only be set once all profiles have been launched, otherwise,
   // activation may not happen after the launch of newer profiles.
-  Profile* profile_to_activate_;
+  Profile* profile_to_activate_ = nullptr;
   // Set once we attempted to activate a profile. We only get one shot at this.
-  bool activated_profile_;
+  bool activated_profile_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileLaunchObserver);
 };

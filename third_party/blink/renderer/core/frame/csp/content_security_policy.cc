@@ -843,10 +843,11 @@ bool ContentSecurityPolicy::IsFrameAncestorsEnforced() const {
 }
 
 bool ContentSecurityPolicy::AllowTrustedTypeAssignmentFailure(
-    const String& message) const {
+    const String& message,
+    const String& sample) const {
   bool allow = true;
   for (const auto& policy : policies_) {
-    allow &= policy->AllowTrustedTypeAssignmentFailure(message);
+    allow &= policy->AllowTrustedTypeAssignmentFailure(message, sample);
   }
   return allow;
 }

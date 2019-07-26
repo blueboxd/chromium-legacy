@@ -124,6 +124,10 @@ bool FakeScriptExecutorDelegate::IsNavigatingToNewDocument() {
   return navigating_to_new_document_;
 }
 
+void FakeScriptExecutorDelegate::RequireUI() {
+  require_ui_ = true;
+}
+
 void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
   listeners_.insert(listener);
 }

@@ -498,20 +498,18 @@ class DefinitionType(IdlType, WithIdentifier):
     """
 
     def __init__(self,
-                 user_def_type,
+                 user_defined_type,
                  code_generator_info=None,
                  debug_info=None,
                  pass_key=None):
-        assert isinstance(user_def_type, UserDefinedType)
+        assert isinstance(user_defined_type, UserDefinedType)
         IdlType.__init__(
             self,
             code_generator_info=code_generator_info,
             debug_info=debug_info,
             pass_key=pass_key)
-        WithIdentifier.__init__(self, user_def_type.identifier)
-        self._definition = user_def_type
-
-    # TODO(peria): Consider exposing access of |_definition|
+        WithIdentifier.__init__(self, user_defined_type.identifier)
+        self._definition = user_defined_type
 
     # IdlType overrides
     @property

@@ -60,6 +60,7 @@ class WebApkInstaller {
   static void InstallAsync(content::BrowserContext* context,
                            const ShortcutInfo& shortcut_info,
                            const SkBitmap& primary_icon,
+                           bool is_primary_icon_maskable,
                            const SkBitmap& badge_icon,
                            FinishCallback finish_callback);
 
@@ -76,6 +77,7 @@ class WebApkInstaller {
   static void InstallAsyncForTesting(WebApkInstaller* installer,
                                      const ShortcutInfo& shortcut_info,
                                      const SkBitmap& primary_icon,
+                                     bool is_primary_icon_maskable,
                                      const SkBitmap& badge_icon,
                                      FinishCallback callback);
 
@@ -106,6 +108,8 @@ class WebApkInstaller {
   static void BuildProto(
       const ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
+      bool is_primary_icon_maskable,
+
       const SkBitmap& badge_icon,
       const std::string& package_name,
       const std::string& version,
@@ -120,6 +124,7 @@ class WebApkInstaller {
       const base::FilePath& update_request_path,
       const ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
+      bool is_primary_icon_maskable,
       const SkBitmap& badge_icon,
       const std::string& package_name,
       const std::string& version,
@@ -158,6 +163,7 @@ class WebApkInstaller {
   // install completed or failed.
   void InstallAsync(const ShortcutInfo& shortcut_info,
                     const SkBitmap& primary_icon,
+                    bool is_primary_icon_maskable,
                     const SkBitmap& badge_icon,
                     FinishCallback finish_callback);
 
@@ -213,6 +219,8 @@ class WebApkInstaller {
   std::unique_ptr<ShortcutInfo> install_shortcut_info_;
   SkBitmap install_primary_icon_;
   SkBitmap install_badge_icon_;
+
+  bool is_primary_icon_maskable_;
 
   base::string16 short_name_;
 

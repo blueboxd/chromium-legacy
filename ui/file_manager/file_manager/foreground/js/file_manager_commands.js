@@ -631,7 +631,15 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
 CommandHandler.COMMANDS_['format'] = new class extends Command {
   execute(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
-    let root = CommandUtil.getCommandEntry(fileManager, event.target);
+    let root;
+    if (event.target instanceof DirectoryItem ||
+        event.target instanceof DirectoryTree) {
+      // The command is executed from the directory tree context menu.
+      root = CommandUtil.getCommandEntry(fileManager, event.target);
+    } else {
+      // The command is executed from the gear menu.
+      root = directoryModel.getCurrentDirEntry();
+    }
     // If an entry is not found from the event target, use the current
     // directory. This can happen for the format button for unsupported and
     // unrecognized volumes.
@@ -658,7 +666,15 @@ CommandHandler.COMMANDS_['format'] = new class extends Command {
   /** @override */
   canExecute(event, fileManager) {
     const directoryModel = fileManager.directoryModel;
-    let root = CommandUtil.getCommandEntry(fileManager, event.target);
+    let root;
+    if (event.target instanceof DirectoryItem ||
+        event.target instanceof DirectoryTree) {
+      // The command is executed from the directory tree context menu.
+      root = CommandUtil.getCommandEntry(fileManager, event.target);
+    } else {
+      // The command is executed from the gear menu.
+      root = directoryModel.getCurrentDirEntry();
+    }
     // |root| is null for unrecognized volumes. Enable format command for such
     // volumes.
     const isUnrecognizedVolume = (root == null);

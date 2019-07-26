@@ -44,13 +44,6 @@ constexpr base::TimeDelta kDefaultCommitTimeout =
 // Overrideable via SetCommitTimeoutForTesting.
 base::TimeDelta g_commit_timeout = kDefaultCommitTimeout;
 
-// Use this to get a new unique ID for a NavigationHandle during construction.
-// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
-int64_t CreateUniqueHandleID() {
-  static int64_t unique_id_counter = 0;
-  return ++unique_id_counter;
-}
-
 }  // namespace
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -60,7 +53,6 @@ NavigationHandleImpl::NavigationHandleImpl(
     : navigation_request_(navigation_request),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
-      navigation_id_(CreateUniqueHandleID()),
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE) {
   const GURL& url = navigation_request_->common_params().url;
@@ -125,7 +117,7 @@ NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
 }
 
 int64_t NavigationHandleImpl::GetNavigationId() {
-  return navigation_id_;
+  return navigation_request_->navigation_handle_id();
 }
 
 const GURL& NavigationHandleImpl::GetURL() {
@@ -401,7 +393,7 @@ bool NavigationHandleImpl::WasResponseCached() {
 }
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
-  return proxy_server_;
+  return navigation_request_->proxy_server();
 }
 
 void NavigationHandleImpl::InitServiceWorkerHandle(

@@ -385,6 +385,11 @@ bool FeatureStateManagerImpl::RequiresFurtherSetup(mojom::Feature feature) {
   if (feature != mojom::Feature::kMessages)
     return false;
 
+  if (GetEnabledOrDisabledState(feature) ==
+      mojom::FeatureState::kDisabledByUser) {
+    return false;
+  }
+
   return !android_sms_pairing_state_tracker_->IsAndroidSmsPairingComplete();
 }
 

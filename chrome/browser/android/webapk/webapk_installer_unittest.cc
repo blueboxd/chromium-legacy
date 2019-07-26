@@ -114,7 +114,7 @@ class WebApkInstallerRunner {
 
     // WebApkInstaller owns itself.
     WebApkInstaller::InstallAsyncForTesting(
-        installer.release(), info, SkBitmap(), SkBitmap(),
+        installer.release(), info, SkBitmap(), false, SkBitmap(),
         base::BindOnce(&WebApkInstallerRunner::OnCompleted,
                        base::Unretained(this)));
 
@@ -164,8 +164,8 @@ class UpdateRequestStorer {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     WebApkInstaller::StoreUpdateRequestToFile(
-        update_request_path, ShortcutInfo((GURL())), SkBitmap(), SkBitmap(), "",
-        "", std::map<std::string, std::string>(), false,
+        update_request_path, ShortcutInfo((GURL())), SkBitmap(), false,
+        SkBitmap(), "", "", std::map<std::string, std::string>(), false,
         WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS,
         base::BindOnce(&UpdateRequestStorer::OnComplete,
                        base::Unretained(this)));
@@ -216,8 +216,9 @@ class BuildProtoRunner {
     SkBitmap primary_icon(gfx::test::CreateBitmap(144, 144));
     SkBitmap badge_icon(gfx::test::CreateBitmap(72, 72));
     WebApkInstaller::BuildProto(
-        info, primary_icon, badge_icon, "" /* package_name */, "" /* version */,
-        icon_url_to_murmur2_hash, is_manifest_stale,
+        info, primary_icon, false /* is_primary_icon_maskable */, badge_icon,
+        "" /* package_name */, "" /* version */, icon_url_to_murmur2_hash,
+        is_manifest_stale,
         base::BindOnce(&BuildProtoRunner::OnBuiltWebApkProto,
                        base::Unretained(this)));
 

@@ -1,16 +1,16 @@
 This is a testharness.js-based test.
-FAIL restartIce() does not trigger negotiation ahead of initial negotiation promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() has no effect on initial negotiation promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() fires negotiationneeded after initial negotiation promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() causes fresh ufrags promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() works in have-local-offer promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() works in initial have-local-offer promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() works in have-remote-offer promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() does nothing in initial have-remote-offer promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() survives remote offer promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() is satisfied by remote ICE restart promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() trumps {iceRestart: false} promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() survives rollback promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
-FAIL restartIce() survives remote offer containing partial restart promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
+FAIL restartIce() does not trigger negotiation ahead of initial negotiation assert_equals: No negotiationneeded event expected (undefined) undefined but got (object) object "[object Event]"
+PASS restartIce() has no effect on initial negotiation
+PASS restartIce() fires negotiationneeded after initial negotiation
+PASS restartIce() causes fresh ufrags
+PASS restartIce() works in have-local-offer
+PASS restartIce() works in initial have-local-offer
+PASS restartIce() works in have-remote-offer
+PASS restartIce() does nothing in initial have-remote-offer
+PASS restartIce() survives remote offer
+PASS restartIce() is satisfied by remote ICE restart
+PASS restartIce() trumps {iceRestart: false}
+FAIL restartIce() survives rollback promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'setLocalDescription' on 'RTCPeerConnection': The provided value 'rollback' is not a valid enum value of type RTCSdpType."
+FAIL restartIce() survives remote offer containing partial restart assert_false: Restarted 2 expected false got true
 Harness: the test ran to completion.
 

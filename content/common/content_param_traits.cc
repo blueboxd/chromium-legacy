@@ -294,6 +294,7 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
   WriteParam(m, p->data.transfer_user_activation);
+  WriteParam(m, p->data.allow_autoplay);
   if (p->data.user_activation) {
     WriteParam(m, p->data.user_activation->has_been_active);
     WriteParam(m, p->data.user_activation->was_active);
@@ -325,7 +326,8 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
       !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
       !ReadParam(m, iter, &has_activation) ||
-      !ReadParam(m, iter, &(*r)->data.transfer_user_activation)) {
+      !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
+      !ReadParam(m, iter, &(*r)->data.allow_autoplay)) {
     return false;
   }
 

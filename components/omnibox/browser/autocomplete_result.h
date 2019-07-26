@@ -145,6 +145,8 @@ class AutocompleteResult {
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
                            PedalSuggestionsRemainUnique);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           TestGroupSuggestionsBySearchVsURL);
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
@@ -202,6 +204,12 @@ class AutocompleteResult {
   void LimitNumberOfURLsShown(
       size_t max_url_count,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
+
+  // This method implements a stateful stable partition. Matches which are
+  // search types, and their submatches regardless of type, are shifted
+  // earlier in the range, while non-search types and their submatches
+  // are shifted later.
+  static void GroupSuggestionsBySearchVsURL(iterator begin, iterator end);
 
   ACMatches matches_;
 

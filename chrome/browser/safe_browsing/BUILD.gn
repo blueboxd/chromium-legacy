@@ -142,6 +142,8 @@ jumbo_static_library("safe_browsing") {
         "download_protection/download_url_sb_client.h",
         "download_protection/file_analyzer.cc",
         "download_protection/file_analyzer.h",
+        "download_protection/multipart_uploader.cc",
+        "download_protection/multipart_uploader.h",
         "download_protection/path_sanitizer.cc",
         "download_protection/path_sanitizer.h",
         "download_protection/ppapi_download_request.cc",

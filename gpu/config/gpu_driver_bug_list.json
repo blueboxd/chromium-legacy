@@ -3280,6 +3280,19 @@
       "features": [
         "force_gl_flush_on_swap_buffers"
       ]
+    },
+    {
+      "id": 308,
+      "cr_bugs": [983787],
+      "description": "D3D11 and GPU video decode cause crashes on AMD Radeon Vega 8",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x15dd"],
+      "features": [
+        "disable_d3d11"
+      ]
     }
   ]
 }

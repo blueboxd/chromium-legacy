@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.preference.Preference;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
+import android.support.v7.preference.Preference;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -81,7 +81,7 @@ public class ManagedPreferencesUtils {
      *      a custodian.
      */
     public static Drawable getManagedIconDrawable(
-            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
+            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference) {
         if (delegate == null) return preference.getIcon();
 
         if (delegate.isPreferenceControlledByPolicy(preference)) {
@@ -93,67 +93,6 @@ public class ManagedPreferencesUtils {
         }
 
         return preference.getIcon();
-    }
-
-    /**
-     * TODO(crbug.com/967022): This method is a duplicate of {@link
-     * #getManagedIconDrawable(ManagedPreferenceDelegate, Preference)}, but with Support Library
-     * classes replacing deprecated Framework classes. When Preference Support Library migration is
-     * complete remove {@link #getManagedIconDrawable(ManagedPreferenceDelegate, Preference)} in
-     * favor of this method.
-     *
-     * @return The appropriate Drawable based on whether the preference is controlled by a policy or
-     *      a custodian.
-     */
-    public static Drawable getManagedIconDrawable(
-            @Nullable ManagedPreferenceDelegateCompat delegate,
-            android.support.v7.preference.Preference preference) {
-        if (delegate == null) return preference.getIcon();
-
-        if (delegate.isPreferenceControlledByPolicy(preference)) {
-            return PreferenceUtils.getTintedIcon(
-                    preference.getContext(), getManagedByEnterpriseIconId());
-        } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            return PreferenceUtils.getTintedIcon(
-                    preference.getContext(), getManagedByCustodianIconId());
-        }
-
-        return preference.getIcon();
-    }
-
-    /**
-     * Initializes the Preference based on the state of any policies that may affect it,
-     * e.g. by showing a managed icon or disabling clicks on the preference. If |preference| is an
-     * instance of ChromeImageViewPreference, the icon is not set since the ImageView widget will
-     * display the managed icons.
-     *
-     * This should be called once, before the preference is displayed.
-     *
-     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-     * Library in favor of {@link #initPreference(ManagedPreferenceDelegateCompat,
-     * android.support.v7.preference.Preference)}.
-     *
-     * @param delegate The delegate that controls whether the preference is managed. May be null,
-     *         then this method does nothing.
-     * @param preference The Preference that is being initialized
-     */
-    public static void initPreference(
-            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
-        if (delegate == null) return;
-
-        if (!(preference instanceof ChromeImageViewPreference)) {
-            preference.setIcon(getManagedIconDrawable(delegate, preference));
-        }
-
-        if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
-            // Disable the views and prevent the Preference from mucking with the enabled state.
-            preference.setShouldDisableView(false);
-
-            // Prevent default click behavior.
-            preference.setFragment(null);
-            preference.setIntent(null);
-            preference.setOnPreferenceClickListener(null);
-        }
     }
 
     /**
@@ -168,8 +107,8 @@ public class ManagedPreferencesUtils {
      *         then this method does nothing.
      * @param preference The Preference that is being initialized
      */
-    public static void initPreference(@Nullable ManagedPreferenceDelegateCompat delegate,
-            android.support.v7.preference.Preference preference) {
+    public static void initPreference(
+            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference) {
         if (delegate == null) return;
 
         if (!(preference instanceof ChromeImageViewPreferenceCompat)) {
@@ -195,17 +134,13 @@ public class ManagedPreferencesUtils {
      *
      * This should be called from the Preference's onBindView() method.
      *
-     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-     * Library in favor of {@link #onBindViewToPreference(ManagedPreferenceDelegateCompat,
-     * android.support.v7.preference.Preference, View)}.
-     *
      * @param delegate The delegate that controls whether the preference is managed. May be null,
      *         then this method does nothing.
      * @param preference The Preference that owns the view
      * @param view The View that was bound to the Preference
      */
     public static void onBindViewToPreference(
-            @Nullable ManagedPreferenceDelegate delegate, Preference preference, View view) {
+            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference, View view) {
         if (delegate == null) return;
 
         if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
@@ -224,78 +159,6 @@ public class ManagedPreferencesUtils {
     }
 
     /**
-     * Disables the Preference's views if the preference is not clickable.
-     *
-     * Note: this disables the View instead of disabling the Preference, so that the Preference
-     * still receives click events, which will trigger a "Managed by your administrator" toast.
-     *
-     * This should be called from the Preference's onBindView() method.
-     *
-     * @param delegate The delegate that controls whether the preference is managed. May be null,
-     *         then this method does nothing.
-     * @param preference The Preference that owns the view
-     * @param view The View that was bound to the Preference
-     */
-    public static void onBindViewToPreference(@Nullable ManagedPreferenceDelegateCompat delegate,
-            android.support.v7.preference.Preference preference, View view) {
-        if (delegate == null) return;
-
-        if (delegate.isPreferenceClickDisabledByPolicy(preference)) {
-            ViewUtils.setEnabledRecursive(view, false);
-        }
-
-        // Append managed information to summary if necessary.
-        TextView summaryView = view.findViewById(android.R.id.summary);
-        CharSequence summary =
-                ManagedPreferencesUtils.getSummaryWithManagedInfo(delegate, preference,
-                        summaryView.getVisibility() == View.VISIBLE ? summaryView.getText() : null);
-        if (!TextUtils.isEmpty(summary)) {
-            summaryView.setText(summary);
-            summaryView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    /**
-     * Calls onBindViewToPreference() above. Then, if the ChromeImageViewPreference is managed, the
-     * widget ImageView is set to the appropriate managed icon, and its onClick listener is set to
-     * show the appropriate managed message toast.
-     *
-     * This should be called from the Preference's onBindView() method.
-     *
-     * @param delegate The delegate that controls whether the preference is managed. May be null,
-     *                 then this method does nothing.
-     * @param preference The ChromeImageViewPreference that owns the view.
-     * @param view The View that was bound to the ChromeImageViewPreference.
-     */
-    public static void onBindViewToImageViewPreference(@Nullable ManagedPreferenceDelegate delegate,
-            ChromeImageViewPreference preference, View view) {
-        if (delegate == null) return;
-
-        onBindViewToPreference(delegate, preference, view);
-
-        if (!delegate.isPreferenceControlledByPolicy(preference)
-                && !delegate.isPreferenceControlledByCustodian(preference)) {
-            return;
-        }
-
-        ImageView button = view.findViewById(R.id.image_view_widget);
-        button.setImageDrawable(getManagedIconDrawable(delegate, preference));
-        button.setOnClickListener((View v) -> {
-            if (delegate.isPreferenceControlledByPolicy(preference)) {
-                showManagedByAdministratorToast(preference.getContext());
-            } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-                showManagedByParentToast(preference.getContext());
-            }
-        });
-    }
-
-    /**
-     * TODO(crbug.com/967022): This method is a duplicate of {@link
-     * #onBindViewToPreference(ManagedPreferenceDelegate, Preference, View)}, but with Support
-     * Library classes replacing deprecated Framework classes. When Preference Support Library
-     * migration is complete remove {@link #onBindViewToPreference(ManagedPreferenceDelegate,
-     * Preference, View)} in favor of this method.
-     *
      * Calls onBindViewToPreference() above. Then, if the ChromeImageViewPreference is managed, the
      * widget ImageView is set to the appropriate managed icon, and its onClick listener is set to
      * show the appropriate managed message toast.
@@ -335,10 +198,6 @@ public class ManagedPreferencesUtils {
      *
      * This should be called from the Preference's onClick() method.
      *
-     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-     * Library in favor of {@link #onClickPreference(ManagedPreferenceDelegateCompat,
-     * android.support.v7.preference.Preference)}.
-     *
      * @param delegate The delegate that controls whether the preference is managed. May be null,
      *         then this method does nothing and returns false.
      * @param preference The Preference that was clicked.
@@ -346,7 +205,7 @@ public class ManagedPreferencesUtils {
      *         propagated; false otherwise.
      */
     public static boolean onClickPreference(
-            @Nullable ManagedPreferenceDelegate delegate, Preference preference) {
+            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference) {
         if (delegate == null || !delegate.isPreferenceClickDisabledByPolicy(preference)) {
             return false;
         }
@@ -361,79 +220,21 @@ public class ManagedPreferencesUtils {
             assert false;
         }
         return true;
-    }
-
-    /**
-     * Intercepts the click event if the given Preference is managed and shows a toast in that case.
-     *
-     * This should be called from the Preference's onClick() method.
-     *
-     * @param delegate The delegate that controls whether the preference is managed. May be null,
-     *         then this method does nothing and returns false.
-     * @param preference The Preference that was clicked.
-     * @return true if the click event was handled by this helper and shouldn't be further
-     *         propagated; false otherwise.
-     */
-    public static boolean onClickPreference(@Nullable ManagedPreferenceDelegateCompat delegate,
-            android.support.v7.preference.Preference preference) {
-        if (delegate == null || !delegate.isPreferenceClickDisabledByPolicy(preference)) {
-            return false;
-        }
-
-        if (delegate.isPreferenceControlledByPolicy(preference)) {
-            showManagedByAdministratorToast(preference.getContext());
-        } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            showManagedByParentToast(preference.getContext());
-        } else {
-            // If the preference is disabled, it should be either because it's managed by enterprise
-            // policy or by the custodian.
-            assert false;
-        }
-        return true;
-    }
-
-    /**
-     * TODO(crbug.com/967022): Remove this method once all fragments are migrated to the Support
-     * Library in favor of {@link #getSummaryWithManagedInfo(ManagedPreferenceDelegateCompat,
-     * android.support.v7.preference.Preference, CharSequence)}.
-     *
-     * @param delegate The {@link ManagedPreferenceDelegate} that controls whether the preference is
-     *        managed.
-     * @param preference The {@link Preference} that the summary should be used for.
-     * @param summary The original summary without the managed information.
-     * @return The summary appended with information about whether the specified preference is
-     *         managed.
-     */
-    private static CharSequence getSummaryWithManagedInfo(
-            @Nullable ManagedPreferenceDelegate delegate, Preference preference,
-            @Nullable CharSequence summary) {
-        if (delegate == null) return summary;
-
-        String extraSummary = null;
-        if (delegate.isPreferenceControlledByPolicy(preference)) {
-            extraSummary = preference.getContext().getString(R.string.managed_by_your_organization);
-        } else if (delegate.isPreferenceControlledByCustodian(preference)) {
-            extraSummary = preference.getContext().getString(getManagedByParentStringRes());
-        }
-
-        if (TextUtils.isEmpty(extraSummary)) return summary;
-        if (TextUtils.isEmpty(summary)) return extraSummary;
-        return String.format(Locale.getDefault(), "%s\n%s", summary, extraSummary);
     }
 
     /**
      * @param delegate The {@link ManagedPreferenceDelegateCompat} that controls whether the
      *         preference is
      *        managed.
-     * @param preference The {@link android.support.v7.preference.Preference} that the summary
+     * @param preference The {@link Preference} that the summary
      *         should be used for.
      * @param summary The original summary without the managed information.
      * @return The summary appended with information about whether the specified preference is
      *         managed.
      */
     private static CharSequence getSummaryWithManagedInfo(
-            @Nullable ManagedPreferenceDelegateCompat delegate,
-            android.support.v7.preference.Preference preference, @Nullable CharSequence summary) {
+            @Nullable ManagedPreferenceDelegateCompat delegate, Preference preference,
+            @Nullable CharSequence summary) {
         if (delegate == null) return summary;
 
         String extraSummary = null;

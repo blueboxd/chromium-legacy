@@ -5,7 +5,6 @@
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -127,26 +126,33 @@ void FakeKerberosClient::RemoveAccount(
 void FakeKerberosClient::ClearAccounts(
     const kerberos::ClearAccountsRequest& request,
     ClearAccountsCallback callback) {
-  switch (request.mode()) {
-    case kerberos::CLEAR_ALL:
-      accounts_.clear();
-      break;
+  std::unordered_set<std::string> keep_list(
+      request.principal_names_to_ignore_size());
+  for (int n = 0; n < request.principal_names_to_ignore_size(); ++n)
+    keep_list.insert(request.principal_names_to_ignore(n));
 
-    case kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS:
-      accounts_.erase(std::remove_if(accounts_.begin(), accounts_.end(),
-                                     [](const AccountData& account) {
-                                       return !account.is_managed;
-                                     }),
-                      accounts_.end());
-      break;
+  for (auto it = accounts_.begin(); it != accounts_.end(); /* empty */) {
+    if (base::Contains(keep_list, it->principal_name)) {
+      ++it;
+      continue;
+    }
 
-    case kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS:
-      for (auto& account : accounts_) {
-        if (!account.is_managed)
-          account.password.clear();
-      }
-      break;
+    switch (DetermineWhatToRemove(request.mode(), *it)) {
+      case WhatToRemove::kNothing:
+        ++it;
+        continue;
+
+      case WhatToRemove::kPassword:
+        it->password.clear();
+        ++it;
+        continue;
+
+      case WhatToRemove::kAccount:
+        it = accounts_.erase(it);
+        continue;
+    }
   }
+
   PostResponse(std::move(callback), kerberos::ERROR_NONE);
 }
 
@@ -303,6 +309,27 @@ bool FakeKerberosClient::AccountData::operator==(
 bool FakeKerberosClient::AccountData::operator!=(
     const AccountData& other) const {
   return !(*this == other);
+}
+
+// static
+FakeKerberosClient::WhatToRemove FakeKerberosClient::DetermineWhatToRemove(
+    kerberos::ClearMode mode,
+    const AccountData& data) {
+  switch (mode) {
+    case kerberos::CLEAR_ALL:
+      return WhatToRemove::kAccount;
+
+    case kerberos::CLEAR_ONLY_MANAGED_ACCOUNTS:
+      return data.is_managed ? WhatToRemove::kAccount : WhatToRemove::kNothing;
+
+    case kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS:
+      return !data.is_managed ? WhatToRemove::kAccount : WhatToRemove::kNothing;
+
+    case kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS:
+      return !data.is_managed ? WhatToRemove::kPassword
+                              : WhatToRemove::kNothing;
+  }
+  return WhatToRemove::kNothing;
 }
 
 }  // namespace chromeos

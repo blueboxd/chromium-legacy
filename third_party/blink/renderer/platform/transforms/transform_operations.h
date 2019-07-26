@@ -72,6 +72,14 @@ class PLATFORM_EXPORT TransformOperations {
     return false;
   }
 
+  bool PreservesAxisAlignment() const {
+    for (auto& operation : operations_) {
+      if (!operation->PreservesAxisAlignment())
+        return false;
+    }
+    return true;
+  }
+
   // Returns true if any operation has a non-trivial component in the Z
   // axis.
   bool HasNonTrivial3DComponent() const {

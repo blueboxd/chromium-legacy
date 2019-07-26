@@ -14,7 +14,6 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
@@ -28,7 +27,6 @@ import java.util.List;
  */
 public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter<ViewHolder> {
     private static final int ANIMATION_DELAY_MS = 100;
-    private static final String TAG = "DragAdapter";
 
     protected final Context mContext;
 
@@ -237,12 +235,10 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
         int increment = start < end ? 1 : -1;
         int i = start;
         while (i != end) {
-            Log.i(TAG, "Moving ViewHolder %s from %d to %d", viewHolder, i, i + increment);
             i += increment;
             mTouchHelperCallback.onMove(
                     mRecyclerView, viewHolder, mRecyclerView.findViewHolderForAdapterPosition(i));
         }
-        Log.i(TAG, "Letting go of ViewHolder %s", viewHolder);
         mTouchHelperCallback.onSelectedChanged(viewHolder, ItemTouchHelper.ACTION_STATE_IDLE);
         mTouchHelperCallback.clearView(mRecyclerView, viewHolder);
     }

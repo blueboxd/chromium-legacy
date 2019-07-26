@@ -27,10 +27,6 @@
 #error Windows 10.0.18362.0 SDK or higher required.
 #endif
 
-namespace {
-typedef BOOL(WINAPI* GetProductInfoPtr)(DWORD, DWORD, DWORD, DWORD, PDWORD);
-}  // namespace
-
 namespace base {
 namespace win {
 
@@ -79,14 +75,8 @@ OSInfo** OSInfo::GetInstanceStorage() {
     ::GetVersionEx(reinterpret_cast<_OSVERSIONINFOW*>(&version_info));
 
     DWORD os_type = 0;
-    if (version_info.dwMajorVersion == 6 || version_info.dwMajorVersion == 10) {
-      // Only present on Vista+.
-      GetProductInfoPtr get_product_info =
-          reinterpret_cast<GetProductInfoPtr>(::GetProcAddress(
-              ::GetModuleHandle(L"kernel32.dll"), "GetProductInfo"));
-      get_product_info(version_info.dwMajorVersion, version_info.dwMinorVersion,
-                       0, 0, &os_type);
-    }
+    ::GetProductInfo(version_info.dwMajorVersion, version_info.dwMinorVersion,
+                     0, 0, &os_type);
 
     return new OSInfo(version_info, GetSystemInfoStorage(), os_type);
   }();
@@ -252,13 +242,8 @@ std::string OSInfo::processor_model_name() {
 
 // static
 OSInfo::WOW64Status OSInfo::GetWOW64StatusForProcess(HANDLE process_handle) {
-  typedef BOOL(WINAPI * IsWow64ProcessFunc)(HANDLE, PBOOL);
-  IsWow64ProcessFunc is_wow64_process = reinterpret_cast<IsWow64ProcessFunc>(
-      GetProcAddress(GetModuleHandle(L"kernel32.dll"), "IsWow64Process"));
-  if (!is_wow64_process)
-    return WOW64_DISABLED;
   BOOL is_wow64 = FALSE;
-  if (!(*is_wow64_process)(process_handle, &is_wow64))
+  if (!::IsWow64Process(process_handle, &is_wow64))
     return WOW64_UNKNOWN;
   return is_wow64 ? WOW64_ENABLED : WOW64_DISABLED;
 }

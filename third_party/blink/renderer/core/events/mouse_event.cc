@@ -520,6 +520,8 @@ void MouseEvent::ComputeRelativePosition() {
     PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer();
     while (layer) {
       PhysicalOffset physical_offset = layer->Location();
+      if (layer->GetLayoutObject().IsInFlowPositioned())
+        physical_offset += layer->GetLayoutObject().OffsetForInFlowPosition();
       PaintLayer* containing_layer = layer->ContainingLayer();
       if (containing_layer) {
         physical_offset -=

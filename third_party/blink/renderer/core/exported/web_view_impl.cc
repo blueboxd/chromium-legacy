@@ -3286,13 +3286,17 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     root_graphics_layer_ = nullptr;
     visual_viewport_container_layer_ = nullptr;
     root_layer_ = nullptr;
-
-    // This path is called when the local main frame is being detached, which
-    // will destroy the WebWidgetClient in the future, but does not right now.
-    // TODO(crbug.com/419087): There should be no need to clean up the
-    // WebWidgetClient once the RenderWidget is destroyed with the main frame.
     AsWidget().client->SetRootLayer(nullptr);
     AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
+
+    // When the document in an already-attached main frame is being replaced by
+    // a navigation then SetRootGraphicsLayer(nullptr) will be called. Since we
+    // are navigating, defer BeginMainFrames until the new document is ready for
+    // them.
+    //
+    // TODO(crbug.com/936696): This should not be needed once we always swap
+    // frames when swapping documents.
+    scoped_defer_main_frame_update_ = AsWidget().client->DeferMainFrameUpdate();
   }
 }
 

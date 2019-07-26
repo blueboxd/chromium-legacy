@@ -9,13 +9,14 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #define PRODUCT_NAME L"Google\\Chrome"
-#elif defined(CHROMIUM_BUILD)
+#elif BUILDFLAG(CHROMIUM_BRANDING)
 #define PRODUCT_NAME L"Chromium"
 #else
 #error Unknown branding

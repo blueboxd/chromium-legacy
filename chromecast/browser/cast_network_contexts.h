@@ -6,6 +6,8 @@
 #define CHROMECAST_BROWSER_CAST_NETWORK_CONTEXTS_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/memory/scoped_refptr.h"
 #include "content/public/browser/browser_thread.h"
@@ -44,7 +46,8 @@ namespace shell {
 class CastNetworkContexts : public net::ProxyConfigService::Observer,
                             public network::mojom::ProxyConfigPollerClient {
  public:
-  CastNetworkContexts();
+  explicit CastNetworkContexts(
+      std::vector<std::string> cors_exempt_headers_list);
   ~CastNetworkContexts() override;
 
   // Returns the System NetworkContext. Does any initialization of the
@@ -102,6 +105,8 @@ class CastNetworkContexts : public net::ProxyConfigService::Observer,
 
   // network::mojom::ProxyConfigPollerClient implementation:
   void OnLazyProxyConfigPoll() override;
+
+  const std::vector<std::string> cors_exempt_headers_list_;
 
   // The system NetworkContext.
   network::mojom::NetworkContextPtr system_network_context_;

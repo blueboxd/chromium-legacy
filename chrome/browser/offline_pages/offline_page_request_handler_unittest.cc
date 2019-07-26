@@ -41,6 +41,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -96,6 +97,14 @@ const char kPageSizeAccessOnlineHistogramBase[] =
     "OfflinePages.PageSizeOnAccess.Online.";
 
 const int64_t kDownloadId = 42LL;
+
+// Returns the thread the navigation URL loader will run on. This determines
+// where the OfflinePageURLLoader should be created.
+content::BrowserThread::ID GetNavigationLoaderThreadID() {
+  return base::FeatureList::IsEnabled(features::kNavigationLoaderOnUI)
+             ? content::BrowserThread::UI
+             : content::BrowserThread::IO;
+}
 
 struct ResponseInfo {
   explicit ResponseInfo(int request_status) : request_status(request_status) {
@@ -262,15 +271,16 @@ class OfflinePageURLLoaderBuilder : public TestURLLoaderClient::Observer {
 
  private:
   void OnHandleReady(MojoResult result, const mojo::HandleSignalsState& state);
-  void InterceptRequestOnIO(const GURL& url,
-                            const std::string& method,
-                            const net::HttpRequestHeaders& extra_headers,
-                            bool is_main_frame);
+  void InterceptRequestOnLoaderThread(
+      const GURL& url,
+      const std::string& method,
+      const net::HttpRequestHeaders& extra_headers,
+      bool is_main_frame);
   void MaybeStartLoader(
       const network::ResourceRequest& request,
       content::URLLoaderRequestInterceptor::RequestHandler request_handler);
   void ReadBody();
-  void ReadCompletedOnIO(const ResponseInfo& response);
+  void ReadCompletedOnLoaderThread(const ResponseInfo& response);
 
   OfflinePageRequestHandlerTest* test_;
   std::unique_ptr<ChromeNavigationUIData> navigation_ui_data_;
@@ -941,7 +951,8 @@ OfflinePageURLLoaderBuilder::OfflinePageURLLoaderBuilder(
 
 void OfflinePageURLLoaderBuilder::OnReceiveRedirect(
     const GURL& redirected_url) {
-  InterceptRequestOnIO(redirected_url, "GET", net::HttpRequestHeaders(), true);
+  InterceptRequestOnLoaderThread(redirected_url, "GET",
+                                 net::HttpRequestHeaders(), true);
 }
 
 void OfflinePageURLLoaderBuilder::OnReceiveResponse(
@@ -958,19 +969,19 @@ void OfflinePageURLLoaderBuilder::OnComplete() {
     mime_type_.clear();
     body_.clear();
   }
-  ReadCompletedOnIO(
+  ReadCompletedOnLoaderThread(
       ResponseInfo(client_->completion_status().error_code, mime_type_, body_));
   // Clear intermediate data in preparation for next potential page loading.
   mime_type_.clear();
   body_.clear();
 }
 
-void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
+void OfflinePageURLLoaderBuilder::InterceptRequestOnLoaderThread(
     const GURL& url,
     const std::string& method,
     const net::HttpRequestHeaders& extra_headers,
     bool is_main_frame) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(GetNavigationLoaderThreadID());
 
   client_ = std::make_unique<TestURLLoaderClient>(this);
 
@@ -1000,21 +1011,25 @@ void OfflinePageURLLoaderBuilder::InterceptRequest(
     bool is_main_frame) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&OfflinePageURLLoaderBuilder::InterceptRequestOnIO,
-                     base::Unretained(this), url, method, extra_headers,
-                     is_main_frame));
+  if (GetNavigationLoaderThreadID() == content::BrowserThread::UI) {
+    InterceptRequestOnLoaderThread(url, method, extra_headers, is_main_frame);
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(
+            &OfflinePageURLLoaderBuilder::InterceptRequestOnLoaderThread,
+            base::Unretained(this), url, method, extra_headers, is_main_frame));
+  }
   base::RunLoop().Run();
 }
 
 void OfflinePageURLLoaderBuilder::MaybeStartLoader(
     const network::ResourceRequest& request,
     content::URLLoaderRequestInterceptor::RequestHandler request_handler) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(GetNavigationLoaderThreadID());
 
   if (!request_handler) {
-    ReadCompletedOnIO(ResponseInfo(net::ERR_FAILED));
+    ReadCompletedOnLoaderThread(ResponseInfo(net::ERR_FAILED));
     return;
   }
 
@@ -1049,7 +1064,7 @@ void OfflinePageURLLoaderBuilder::ReadBody() {
 
     // The pipe was closed.
     if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
-      ReadCompletedOnIO(ResponseInfo(net::ERR_FAILED));
+      ReadCompletedOnLoaderThread(ResponseInfo(net::ERR_FAILED));
       return;
     }
 
@@ -1064,15 +1079,15 @@ void OfflinePageURLLoaderBuilder::OnHandleReady(
     MojoResult result,
     const mojo::HandleSignalsState& state) {
   if (result != MOJO_RESULT_OK) {
-    ReadCompletedOnIO(ResponseInfo(net::ERR_FAILED));
+    ReadCompletedOnLoaderThread(ResponseInfo(net::ERR_FAILED));
     return;
   }
   ReadBody();
 }
 
-void OfflinePageURLLoaderBuilder::ReadCompletedOnIO(
+void OfflinePageURLLoaderBuilder::ReadCompletedOnLoaderThread(
     const ResponseInfo& response) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(GetNavigationLoaderThreadID());
 
   handle_watcher_.reset();
   client_.reset();
@@ -1085,11 +1100,15 @@ void OfflinePageURLLoaderBuilder::ReadCompletedOnIO(
   if (offline_page_data && offline_page_data->is_offline_page())
     is_offline_page_set_in_navigation_data = true;
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&OfflinePageRequestHandlerTest::ReadCompleted,
-                     base::Unretained(test()), response,
-                     is_offline_page_set_in_navigation_data));
+  if (GetNavigationLoaderThreadID() == content::BrowserThread::UI) {
+    test()->ReadCompleted(response, is_offline_page_set_in_navigation_data);
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&OfflinePageRequestHandlerTest::ReadCompleted,
+                       base::Unretained(test()), response,
+                       is_offline_page_set_in_navigation_data));
+  }
 }
 
 TEST_F(OfflinePageRequestHandlerTest, FailedToCreateRequestJob) {

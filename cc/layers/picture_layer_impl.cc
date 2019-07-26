@@ -233,7 +233,11 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   }
 
   float device_scale_factor = layer_tree_impl()->device_scale_factor();
-  float max_contents_scale = MaximumTilingContentsScale();
+  // If we don't have tilings, we're likely going to append a checkerboard quad
+  // the size of the layer. In that case, use scale 1 for more stable
+  // to-screen-space mapping.
+  float max_contents_scale =
+      tilings_->num_tilings() ? MaximumTilingContentsScale() : 1.f;
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                 contents_opaque());
   Occlusion scaled_occlusion;

@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,17 +20,15 @@
 namespace chromeos {
 
 ConfirmPasswordChangeHandler::ConfirmPasswordChangeHandler() {
-  auto* in_session_password_change_manager =
-      g_browser_process->platform_part()->in_session_password_change_manager();
-  CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->AddObserver(this);
+  if (InSessionPasswordChangeManager::IsInitialized()) {
+    InSessionPasswordChangeManager::Get()->AddObserver(this);
+  }
 }
 
 ConfirmPasswordChangeHandler::~ConfirmPasswordChangeHandler() {
-  auto* in_session_password_change_manager =
-      g_browser_process->platform_part()->in_session_password_change_manager();
-  CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->RemoveObserver(this);
+  if (InSessionPasswordChangeManager::IsInitialized()) {
+    InSessionPasswordChangeManager::Get()->RemoveObserver(this);
+  }
 }
 
 void ConfirmPasswordChangeHandler::OnEvent(
@@ -48,11 +44,8 @@ void ConfirmPasswordChangeHandler::HandleChangePassword(
     const base::ListValue* params) {
   const std::string old_password = params->GetList()[0].GetString();
   const std::string new_password = params->GetList()[1].GetString();
-  auto* in_session_password_change_manager =
-      g_browser_process->platform_part()->in_session_password_change_manager();
-  CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->ChangePassword(old_password,
-                                                     new_password);
+  InSessionPasswordChangeManager::Get()->ChangePassword(old_password,
+                                                        new_password);
 }
 
 void ConfirmPasswordChangeHandler::RegisterMessages() {

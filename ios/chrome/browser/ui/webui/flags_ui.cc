@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "components/flags_ui/flags_ui_constants.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -170,9 +171,9 @@ void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
-#if CHROMIUM_BUILD
+#if BUILDFLAG(CHROMIUM_BRANDING)
   CHECK(false);
-#endif  // CHROMIUM_BUILD
+#endif  // BUILDFLAG(CHROMIUM_BRANDING)
 }
 
 void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {

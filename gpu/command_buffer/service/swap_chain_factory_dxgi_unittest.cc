@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/shared_image_manager.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_dxgi_swap_chain.h"
 #include "ui/gl/gl_surface.h"
@@ -78,9 +79,9 @@ void SwapChainFactoryDXGITest::CreateAndPresentSwapChain(
   GLenum expected_target = GL_TEXTURE_2D;
   Microsoft::WRL::ComPtr<ID3D11Texture2D> d3d11_texture;
   scoped_refptr<gles2::TexturePassthrough> back_passthrough_texture;
-  gles2::Texture* back_texture;
-  gl::GLImageDXGISwapChain* back_image;
-  gl::GLImageDXGISwapChain* front_image;
+  gles2::Texture* back_texture = nullptr;
+  gl::GLImageDXGISwapChain* back_image = nullptr;
+  gl::GLImageDXGISwapChain* front_image = nullptr;
 
   std::unique_ptr<SharedImageRepresentationFactoryRef> back_factory_ref =
       shared_image_manager_.Register(std::move(backings.back_buffer),
@@ -217,7 +218,6 @@ void SwapChainFactoryDXGITest::CreateAndPresentSwapChain(
 
   back_factory_ref->PresentSwapChain();
 
-  // TODO(ashithasantosh): Check contents of front buffer.
   {
     GLubyte pixel_color[4];
     const uint8_t expected_color[4] = {0, 0, 0, 255};
@@ -228,6 +228,49 @@ void SwapChainFactoryDXGITest::CreateAndPresentSwapChain(
     EXPECT_EQ(expected_color[2], pixel_color[2]);
     EXPECT_EQ(expected_color[3], pixel_color[3]);
   }
+
+  {
+    // A staging texture must be used to check front buffer since it cannot be
+    // bound to an FBO or use ReadPixels.
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = 1;
+    desc.Height = 1;
+    desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Usage = D3D11_USAGE_STAGING;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    desc.SampleDesc.Count = 1;
+
+    auto d3d11_device = gl::QueryD3D11DeviceObjectFromANGLE();
+    ASSERT_TRUE(d3d11_device);
+
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture;
+    ASSERT_TRUE(SUCCEEDED(
+        d3d11_device->CreateTexture2D(&desc, nullptr, &staging_texture)));
+
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
+    d3d11_device->GetImmediateContext(&context);
+    ASSERT_TRUE(context);
+
+    context->CopyResource(staging_texture.Get(), front_image->texture().Get());
+
+    D3D11_MAPPED_SUBRESOURCE mapped_resource;
+    ASSERT_TRUE(SUCCEEDED(context->Map(staging_texture.Get(), 0, D3D11_MAP_READ,
+                                       0, &mapped_resource)));
+    ASSERT_GE(mapped_resource.RowPitch, 4u);
+    // After present, front buffer should have color rendered to back buffer.
+    const uint8_t* pixel_color =
+        static_cast<const uint8_t*>(mapped_resource.pData);
+    const uint8_t expected_color[4] = {0, 255, 0, 255};
+    EXPECT_EQ(expected_color[0], pixel_color[0]);
+    EXPECT_EQ(expected_color[1], pixel_color[1]);
+    EXPECT_EQ(expected_color[2], pixel_color[2]);
+    EXPECT_EQ(expected_color[3], pixel_color[3]);
+
+    context->Unmap(staging_texture.Get(), 0);
+  }
+
   api->glDeleteFramebuffersEXTFn(1, &fbo);
 }
 

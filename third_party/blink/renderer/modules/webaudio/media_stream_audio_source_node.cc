@@ -142,8 +142,14 @@ MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::Create(
     return nullptr;
   }
 
-  // Use the first audio track in the media stream.
+  // Find the first track, which is the track whose id comes first given a
+  // lexicographic ordering of the code units of the track id.
   MediaStreamTrack* audio_track = audio_tracks[0];
+  for (auto track : audio_tracks) {
+    if (CodeUnitCompareLessThan(track->id(), audio_track->id())) {
+      audio_track = track;
+    }
+  }
   std::unique_ptr<AudioSourceProvider> provider =
       audio_track->CreateWebAudioSource(context.sampleRate());
 

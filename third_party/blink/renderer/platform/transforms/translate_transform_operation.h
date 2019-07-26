@@ -99,6 +99,8 @@ class PLATFORM_EXPORT TranslateTransformOperation final
     return ZoomTranslate(factor);
   }
 
+  bool PreservesAxisAlignment() const final { return true; }
+
   TranslateTransformOperation(const Length& tx,
                               const Length& ty,
                               double tz,

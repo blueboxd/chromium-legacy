@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import <EarlGrey/EarlGrey.h>
+#import <EarlGrey/GREYKeyboard.h>
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -75,6 +76,9 @@ void TapOnWebElementWithID(const std::string& elementID) {
 // Observer to be tested.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
+// Token to register a NSNotificationCenter observer.
+@property(nonatomic, strong) id<NSObject> notificationToken;
+
 // Delegate mock to confirm the observer callbacks.
 @property(nonatomic, strong)
     OCMockObject<KeyboardObserverHelperConsumer>* keyboardObserverDelegateMock;
@@ -103,6 +107,7 @@ void TapOnWebElementWithID(const std::string& elementID) {
 }
 
 - (void)tearDown {
+  self.notificationToken = nil;
   self.keyboardObserverDelegateMock = nil;
   self.keyboardObserver = nil;
 
@@ -118,29 +123,41 @@ void TapOnWebElementWithID(const std::string& elementID) {
   // Brings up the keyboard by tapping on one of the form's field.
   TapOnWebElementWithID(kFormElementID1);
 
+  // Wait for keyboard to finish animating.
+  __block BOOL keyboardDidAppear = NO;
+  self.notificationToken = [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIKeyboardDidShowNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                keyboardDidAppear = YES;
+              }];
+  ConditionBlock condition = ^{
+    return keyboardDidAppear;
+  };
+  using base::test::ios::WaitUntilConditionOrTimeout;
+  using base::test::ios::kWaitForUIElementTimeout;
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+             @"Wait for keyboard did show notification");
+
   // Verifies that the taped element is focused.
   AssertElementIsFocused(kFormElementID1);
 
-  // Create the callback expectation.
+  // Create a new callback expectation.
   OCMExpect([self.keyboardObserverDelegateMock keyboardDidStayOnScreen]);
+
+  // Reset our keyboard boolean.
+  keyboardDidAppear = NO;
 
   // Tap the second field.
   TapOnWebElementWithID(kFormElementID2);
 
+  // Wait for keyboard to finish animating.
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+             @"Wait for keyboard did show notification");
+
   // Verifies that the taped element is focused.
   AssertElementIsFocused(kFormElementID2);
-
-  // Verify the delegate call was made.
-  [self.keyboardObserverDelegateMock verify];
-
-  // Add another callback expectation.
-  OCMExpect([self.keyboardObserverDelegateMock keyboardDidStayOnScreen]);
-
-  // Tap the first field.
-  TapOnWebElementWithID(kFormElementID1);
-
-  // Verifies that the taped element is focused.
-  AssertElementIsFocused(kFormElementID1);
 
   // Verify the delegate call was made.
   [self.keyboardObserverDelegateMock verify];

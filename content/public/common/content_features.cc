@@ -82,6 +82,11 @@ const base::Feature kBundledHTTPExchanges{"BundledHTTPExchanges",
 const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables support for parallel cache_storage operations via the
+// "max_shared_ops" fieldtrial parameter.
+const base::Feature kCacheStorageParallelOps{"CacheStorageParallelOps",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kCanvas2DImageChromium {
@@ -270,7 +275,7 @@ const base::Feature kMouseSubframeNoImplicitCapture{
 
 // If enabled, the URLLoaderRequestController lives on the UI thread.
 const base::Feature kNavigationLoaderOnUI{"NavigationLoaderOnUI",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Transmit the response body datapipe to the renderer process in
 // CommitNavigation() so that it can start reading earlier.

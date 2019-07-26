@@ -26,7 +26,6 @@ class FileSystemDownloadURLLoaderFactoryGetter
   FileSystemDownloadURLLoaderFactoryGetter(
       const GURL& url,
       RenderFrameHost* rfh,
-      bool is_navigation,
       scoped_refptr<storage::FileSystemContext> file_system_context,
       const std::string& storage_domain);
 
@@ -38,7 +37,6 @@ class FileSystemDownloadURLLoaderFactoryGetter
 
  private:
   RenderFrameHost* rfh_;
-  const bool is_navigation_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   const std::string storage_domain_;
 

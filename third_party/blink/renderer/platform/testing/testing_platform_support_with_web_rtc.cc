@@ -316,6 +316,8 @@ webrtc::RTCErrorType MockWebRTCPeerConnectionHandler::SetConfiguration(
   return webrtc::RTCErrorType::NONE;
 }
 
+void MockWebRTCPeerConnectionHandler::RestartIce() {}
+
 void MockWebRTCPeerConnectionHandler::GetStats(const WebRTCStatsRequest&) {}
 
 void MockWebRTCPeerConnectionHandler::GetStats(

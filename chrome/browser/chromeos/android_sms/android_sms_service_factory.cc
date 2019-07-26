@@ -102,6 +102,7 @@ bool AndroidSmsServiceFactory::ServiceIsNULLWhileTesting() const {
 void AndroidSmsServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   PairingLostNotifier::RegisterProfilePrefs(registry);
+  AndroidSmsAppManagerImpl::RegisterProfilePrefs(registry);
 }
 
 }  // namespace android_sms

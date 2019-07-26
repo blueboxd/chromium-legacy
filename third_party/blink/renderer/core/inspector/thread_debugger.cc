@@ -190,7 +190,7 @@ bool ThreadDebugger::formatAccessorsAsProperties(v8::Local<v8::Value> value) {
 }
 
 double ThreadDebugger::currentTimeMS() {
-  return WTF::CurrentTimeMS();
+  return base::Time::Now().ToDoubleT() * 1000.0;
 }
 
 bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object) {

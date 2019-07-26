@@ -122,19 +122,19 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   Widget* drag_widget() { return drag_widget_.get(); }
 
  private:
-  enum SourceState {
+  enum class SourceState {
     // |source_current_window_| will receive a drop once we receive an
     // XdndStatus from it.
-    SOURCE_STATE_PENDING_DROP,
+    kPendingDrop,
 
     // The move looped will be ended once we receive XdndFinished from
     // |source_current_window_|. We should not send XdndPosition to
     // |source_current_window_| while in this state.
-    SOURCE_STATE_DROPPED,
+    kDropped,
 
     // There is no drag in progress or there is a drag in progress and the
     // user has not yet released the mouse.
-    SOURCE_STATE_OTHER,
+    kOther,
   };
 
   // Processes a mouse move at |screen_point|.
@@ -255,7 +255,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Source side information.
   ui::OSExchangeDataProviderAuraX11 const* source_provider_ = nullptr;
   ::Window source_current_window_ = x11::None;
-  SourceState source_state_ = SOURCE_STATE_OTHER;
+  SourceState source_state_ = SourceState::kOther;
 
   // The current drag-drop client that has an active operation. Since we have
   // multiple root windows and multiple DesktopDragDropClientAuraX11 instances

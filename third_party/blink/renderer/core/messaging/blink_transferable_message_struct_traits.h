@@ -66,6 +66,10 @@ struct CORE_EXPORT
     return input.transfer_user_activation;
   }
 
+  static bool allow_autoplay(const blink::BlinkTransferableMessage& input) {
+    return input.allow_autoplay;
+  }
+
   static bool Read(blink::mojom::blink::TransferableMessage::DataView,
                    blink::BlinkTransferableMessage* out);
 };

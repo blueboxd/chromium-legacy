@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/search/search_provider_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -180,8 +181,6 @@ class InstantService : public KeyedService,
   void FetchCustomBackground(base::TimeTicks timestamp, const GURL& fetch_url);
 
  private:
-  class SearchProviderObserver;
-
   friend class InstantExtendedTest;
   friend class InstantUnitTestBase;
   friend class LocalNTPBackgroundsAndDarkModeTest;

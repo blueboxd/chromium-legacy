@@ -27,9 +27,9 @@ from .values import ConstantValue
 from .values import DefaultValue
 
 
-def load_and_register_idl_definitions(filepaths, register_ir,
-                                      create_ref_to_idl_type,
-                                      create_ref_to_idl_def, idl_type_factory):
+def load_and_register_idl_definitions(
+        filepaths, register_ir, create_ref_to_idl_def, create_ref_to_idl_type,
+        idl_type_factory):
     """
     Reads ASTs from |filepaths| and builds IRs from ASTs.
 
@@ -37,10 +37,10 @@ def load_and_register_idl_definitions(filepaths, register_ir,
         filepaths: Paths to pickle files that store AST nodes.
         register_ir: A callback function that registers the argument as an
             IR.
-        create_ref_to_idl_type: A callback function that creates a reference
-            to an IdlType from the given identifier.
         create_ref_to_idl_def: A callback function that creates a reference
             to an IDL definition from the given identifier.
+        create_ref_to_idl_type: A callback function that creates a reference
+            to an IdlType from the given identifier.
         idl_type_factory: All IdlType instances will be created through this
             factory.
     """
@@ -49,8 +49,11 @@ def load_and_register_idl_definitions(filepaths, register_ir,
     for filepath in filepaths:
         asts_per_component = AstGroup.read_from_file(filepath)
         component = asts_per_component.component
-        builder = _IRBuilder(component, create_ref_to_idl_type,
-                             create_ref_to_idl_def, idl_type_factory)
+        builder = _IRBuilder(
+            component=component,
+            create_ref_to_idl_def=create_ref_to_idl_def,
+            create_ref_to_idl_type=create_ref_to_idl_type,
+            idl_type_factory=idl_type_factory)
 
         for file_node in asts_per_component:
             assert file_node.GetClass() == 'File'
@@ -59,25 +62,25 @@ def load_and_register_idl_definitions(filepaths, register_ir,
 
 
 class _IRBuilder(object):
-    def __init__(self, component, create_ref_to_idl_type,
-                 create_ref_to_idl_def, idl_type_factory):
+    def __init__(self, component, create_ref_to_idl_def,
+                 create_ref_to_idl_type, idl_type_factory):
         """
         Args:
             component: A Component to which the built IRs are associated.
-            create_ref_to_idl_type: A callback function that creates a reference
-                to an IdlType from the given identifier.
             create_ref_to_idl_def: A callback function that creates a reference
                 to an IDL definition from the given identifier.
+            create_ref_to_idl_type: A callback function that creates a reference
+                to an IdlType from the given identifier.
             idl_type_factory: All IdlType instances will be created through this
                 factory.
         """
-        assert callable(create_ref_to_idl_type)
         assert callable(create_ref_to_idl_def)
+        assert callable(create_ref_to_idl_type)
         assert isinstance(idl_type_factory, IdlTypeFactory)
 
         self._component = component
-        self._create_ref_to_idl_type = create_ref_to_idl_type
         self._create_ref_to_idl_def = create_ref_to_idl_def
+        self._create_ref_to_idl_type = create_ref_to_idl_type
         self._idl_type_factory = idl_type_factory
 
     def build_top_level_def(self, node):
@@ -111,16 +114,12 @@ class _IRBuilder(object):
         attributes = []
         constants = []
         operations = []
-        property_handlers = []
         for member in members:
             if isinstance(member, Attribute.IR):
                 attributes.append(member)
             elif isinstance(member, Operation.IR):
-                assert member.identifier or member.is_property_handler
                 if member.identifier:
                     operations.append(member)
-                if member.is_property_handler:
-                    property_handlers.append(member)
             elif isinstance(member, Constant.IR):
                 constants.append(member)
             else:
@@ -195,9 +194,6 @@ class _IRBuilder(object):
                 arguments=arguments,
                 return_type=return_type,
                 is_static=bool(node.GetProperty('STATIC')),
-                is_getter=bool(node.GetProperty('GETTER')),
-                is_setter=bool(node.GetProperty('SETTER')),
-                is_deleter=bool(node.GetProperty('DELETER')),
                 extended_attributes=extended_attributes,
                 component=self._component,
                 debug_info=self._build_debug_info(node))
@@ -321,7 +317,7 @@ class _IRBuilder(object):
             location=Location(
                 filepath=node.GetProperty('FILENAME'),
                 line_number=node.GetProperty('LINENO'),
-                column_number=node.GetProperty('POSITION')))
+                position=node.GetProperty('POSITION')))
 
     def _build_default_value(self, node):
         assert node.GetClass() == 'Default'
@@ -333,7 +329,8 @@ class _IRBuilder(object):
 
     def _build_inheritance(self, node):
         assert node.GetClass() == 'Inherit'
-        return self._create_ref_to_idl_def(node.GetName())
+        return self._create_ref_to_idl_def(node.GetName(),
+                                           self._build_debug_info(node))
 
     def _build_is_variadic_argument(self, node):
         # idl_parser produces the following tree to indicate an argument is
@@ -439,7 +436,8 @@ class _IRBuilder(object):
         def build_reference_type(node, extended_attributes):
             identifier = node.GetName()
             return self._idl_type_factory.reference_type(
-                ref_to_idl_type=self._create_ref_to_idl_type(identifier),
+                ref_to_idl_type=self._create_ref_to_idl_type(
+                    identifier, self._build_debug_info(node)),
                 is_optional=is_optional,
                 extended_attributes=extended_attributes,
                 debug_info=self._build_debug_info(node))

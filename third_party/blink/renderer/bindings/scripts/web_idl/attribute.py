@@ -28,6 +28,7 @@ class Attribute(IdlMember):
                      exposures=None,
                      code_generator_info=None,
                      component=None,
+                     components=None,
                      debug_info=None):
             assert isinstance(idl_type, IdlType)
             assert isinstance(is_static, bool)
@@ -38,13 +39,26 @@ class Attribute(IdlMember):
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(self, component)
+            WithComponent.__init__(
+                self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
             self.idl_type = idl_type
             self.is_static = is_static
             self.is_readonly = is_readonly
             self.does_inherit_getter = does_inherit_getter
+
+        def make_copy(self):
+            return Attribute.IR(
+                identifier=self.identifier,
+                idl_type=self.idl_type,
+                is_static=self.is_static,
+                is_readonly=self.is_readonly,
+                does_inherit_getter=self.does_inherit_getter,
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy(),
+                components=self.components,
+                debug_info=self.debug_info.make_copy())
 
     @property
     def idl_type(self):

@@ -23,9 +23,6 @@ const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
 const base::Feature kCrashOnUnexpectedURLChange{
     "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDisconnectScrollProxyDuringRestore{
-    "DisconnectScrollProxyDuringRestore", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kHistoryClobberWorkaround{
     "WKWebViewHistoryClobberWorkaround", base::FEATURE_ENABLED_BY_DEFAULT};
 

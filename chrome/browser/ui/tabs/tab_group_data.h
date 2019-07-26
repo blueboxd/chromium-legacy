@@ -15,6 +15,8 @@ class TabGroupData {
  public:
   // Construct a TabGroupData with placeholder name and random color.
   TabGroupData();
+  TabGroupData(const TabGroupData& other) = default;
+  TabGroupData(TabGroupData&& other) = default;
   ~TabGroupData() = default;
 
   base::string16 title() const { return title_; }
@@ -30,8 +32,6 @@ class TabGroupData {
   base::string16 title_;
   SkColor color_;
   int tab_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabGroupData);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_GROUP_DATA_H_

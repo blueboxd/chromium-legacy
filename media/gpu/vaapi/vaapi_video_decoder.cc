@@ -468,7 +468,8 @@ void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
   if (visible_rect_ != visible_rect) {
     visible_rect_ = visible_rect;
     gfx::Size natural_size = GetNaturalSize(visible_rect_, pixel_aspect_ratio_);
-    frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
+    frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect_,
+                                      natural_size);
   }
 
   auto it = buffer_id_to_timestamp_.find(buffer_id);
@@ -527,7 +528,8 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   frame_layout_ = VideoFrameLayout::Create(format, pic_size);
   DCHECK(frame_layout_);
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect_, natural_size);
+  frame_pool_->NegotiateFrameFormat(*frame_layout_, visible_rect_,
+                                    natural_size);
   frame_pool_->SetMaxNumFrames(decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a

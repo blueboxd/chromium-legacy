@@ -89,7 +89,8 @@ void ServiceWorkerGlobalScopeProxy::BindControllerServiceWorker(
     mojo::ScopedMessagePipeHandle request) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   WorkerGlobalScope()->BindControllerServiceWorker(
-      mojom::blink::ControllerServiceWorkerRequest(std::move(request)));
+      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>(
+          std::move(request)));
 }
 
 void ServiceWorkerGlobalScopeProxy::OnNavigationPreloadResponse(

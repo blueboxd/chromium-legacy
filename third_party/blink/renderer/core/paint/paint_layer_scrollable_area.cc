@@ -1229,6 +1229,7 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
   UpdateScrollDimensions();
   UpdateScrollbarProportions();
+  UpdateScrollbarEnabledState();
 
   bool needs_horizontal_scrollbar;
   bool needs_vertical_scrollbar;
@@ -1249,6 +1250,7 @@ void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
   }
 
   ClampScrollOffsetAfterOverflowChange();
+  UpdateScrollableAreaSet();
 }
 
 IntRect PaintLayerScrollableArea::RectForHorizontalScrollbar(

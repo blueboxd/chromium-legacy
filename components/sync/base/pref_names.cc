@@ -101,12 +101,6 @@ const char kSyncBagOfChips[] = "sync.bag_of_chips";
 // that we only want to use once.
 const char kSyncPassphrasePrompted[] = "sync.passphrase_prompted";
 
-// Stores how many times received MEMORY_PRESSURE_LEVEL_CRITICAL.
-const char kSyncMemoryPressureWarningCount[] = "sync.memory_warning_count";
-
-// Stores if sync shutdown cleanly.
-const char kSyncShutdownCleanly[] = "sync.shutdown_cleanly";
-
 // Dictionary of last seen invalidation versions for each model type.
 const char kSyncInvalidationVersions[] = "sync.invalidation_versions";
 
@@ -121,20 +115,32 @@ const char kEnableLocalSyncBackend[] = "sync.enable_local_sync_backend";
 // flag is present.
 const char kLocalSyncBackendDir[] = "sync.local_sync_backend_dir";
 
-// Stores birth year of the syncing user that is provided by the sync server.
-// Should not be logged to UMA directly.
-const char kSyncDemographicsBirthYear[] = "sync.demographics.birth_year";
+// Root dictionary pref to store user demographics provided by the sync server.
+// This is a read-only syncable priority pref, sent from the sync server to the
+// client.
+const char kSyncDemographics[] = "sync.demographics";
 
-// Stores offset that is used to randomize the birth year for metrics reporting.
-// Should not be logged to UMA directly.
-const char kSyncDemographicsBirthYearNoiseOffset[] =
-    "sync.demographics.birth_year_offset";
+// This pref value is subordinate to the kSyncDemographics dictionary pref and
+// is synced to the client. It stores the self-reported birth year of the
+// syncing user. as provided by the sync server. This value should not be logged
+// to UMA directly; instead, it should be summed with the
+// kSyncDemographicsBirthYearNoiseOffset.
+const char kSyncDemographics_BirthYearPath[] = "birth_year";
 
-// Stores the encoded gender of the syncing user that is provided by the sync
-// server. The gender is encoded using the Gender enum defined in
-// metrics::UserDemographicsProto
-// (third_party/metrics_proto/user_demographics.proto).
-const char kSyncDemographicsGender[] = "sync.demographics.gender";
+// This pref value is subordinate to the kSyncDemographics dictionary pref and
+// is synced to the client. It stores the self-reported gender of the syncing
+// user, as provided by the sync server. The gender is encoded using the Gender
+// enum defined in metrics::UserDemographicsProto
+// (see third_party/metrics_proto/user_demographics.proto).
+const char kSyncDemographics_GenderPath[] = "gender";
+
+// Stores a "secret" offset that is used to randomize the birth year for metrics
+// reporting. This value should not be logged to UMA directly; instead, it
+// should be summed with the kSyncDemographicsBirthYear. This value is both
+// generated and stored locally on the client and is not known outside of the
+// client. It is not synced.
+const char kSyncDemographicsBirthYearOffset[] =
+    "sync.demographics_birth_year_offset";
 
 }  // namespace prefs
 

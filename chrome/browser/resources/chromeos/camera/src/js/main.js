@@ -27,24 +27,24 @@ cca.App = function() {
   this.resolBroker_ = new cca.ResolutionEventBroker();
 
   /**
-   * @type {cca.camera.PhotoResolPreferrer}
+   * @type {cca.device.PhotoResolPreferrer}
    * @private
    */
-  this.photoPreferrer_ = new cca.camera.PhotoResolPreferrer(
+  this.photoPreferrer_ = new cca.device.PhotoResolPreferrer(
       this.resolBroker_, () => this.cameraView_.restart());
 
   /**
-   * @type {cca.camera.VideoConstraintsPreferrer}
+   * @type {cca.device.VideoConstraintsPreferrer}
    * @private
    */
-  this.videoPreferrer_ = new cca.camera.VideoConstraintsPreferrer(
+  this.videoPreferrer_ = new cca.device.VideoConstraintsPreferrer(
       this.resolBroker_, () => this.cameraView_.restart());
 
   /**
-   * @type {cca.camera.DeviceInfoUpdater}
+   * @type {cca.device.DeviceInfoUpdater}
    * @private
    */
-  this.infoUpdater_ = new cca.camera.DeviceInfoUpdater(
+  this.infoUpdater_ = new cca.device.DeviceInfoUpdater(
       this.photoPreferrer_, this.videoPreferrer_);
 
   /**

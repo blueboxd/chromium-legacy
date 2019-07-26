@@ -26,7 +26,9 @@
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/browser/fileapi/obfuscated_file_util.h"
+#include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/fileapi/quota/quota_reservation.h"
+#include "storage/browser/fileapi/sandbox_file_stream_writer.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 namespace storage {
@@ -187,12 +189,15 @@ FileSystemOperation* PluginPrivateFileSystemBackend::CreateFileSystemOperation(
 }
 
 bool PluginPrivateFileSystemBackend::SupportsStreaming(
-    const storage::FileSystemURL& url) const {
-  return false;
+    const FileSystemURL& url) const {
+  // Streaming is required for incognito file systems in order to access
+  // memory-backed files.
+  DCHECK(CanHandleType(url.type()));
+  return file_system_options_.is_incognito();
 }
 
 bool PluginPrivateFileSystemBackend::HasInplaceCopyImplementation(
-    storage::FileSystemType type) const {
+    FileSystemType type) const {
   return false;
 }
 
@@ -203,6 +208,7 @@ PluginPrivateFileSystemBackend::CreateFileStreamReader(
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
+  DCHECK(CanHandleType(url.type()));
   return FileStreamReader::CreateForFileSystemFile(context, url, offset,
                                                    expected_modification_time);
 }
@@ -212,7 +218,11 @@ PluginPrivateFileSystemBackend::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64_t offset,
     FileSystemContext* context) const {
-  return std::unique_ptr<FileStreamWriter>();
+  DCHECK(CanHandleType(url.type()));
+
+  // Observers not supported by PluginPrivateFileSystemBackend.
+  return std::make_unique<SandboxFileStreamWriter>(context, url, offset,
+                                                   UpdateObserverList());
 }
 
 FileSystemQuotaUtil* PluginPrivateFileSystemBackend::GetQuotaUtil() {
@@ -372,6 +382,13 @@ const AccessObserverList* PluginPrivateFileSystemBackend::GetAccessObservers(
 ObfuscatedFileUtil* PluginPrivateFileSystemBackend::obfuscated_file_util() {
   return static_cast<ObfuscatedFileUtil*>(
       static_cast<AsyncFileUtilAdapter*>(file_util_.get())->sync_file_util());
+}
+
+ObfuscatedFileUtilMemoryDelegate*
+PluginPrivateFileSystemBackend::obfuscated_file_util_memory_delegate() {
+  auto* file_util = obfuscated_file_util();
+  DCHECK(file_util->is_incognito());
+  return static_cast<ObfuscatedFileUtilMemoryDelegate*>(file_util->delegate());
 }
 
 }  // namespace storage

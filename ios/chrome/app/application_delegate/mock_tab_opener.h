@@ -19,7 +19,7 @@ struct UrlLoadParams;
 // -dismissModalsAndOpenSelectedTabInMode:withUrlLoadParams:dismissOmnibox:
 //  completion:.
 @property(nonatomic, readonly) UrlLoadParams urlLoadParams;
-@property(nonatomic, readonly) ApplicationMode applicationMode;
+@property(nonatomic, readonly) ApplicationModeForTabOpening applicationMode;
 @property(nonatomic, strong, readonly) void (^completionBlock)(void);
 
 // Clear the URL.

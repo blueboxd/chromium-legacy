@@ -44,11 +44,6 @@ enum NotificationType {
   // DEPRECATED: Use BrowserListObserver::OnBrowserAdded()
   NOTIFICATION_BROWSER_OPENED = NOTIFICATION_CHROME_START,
 
-  // This message is sent after a window has been closed.  The source is a
-  // Source<Browser> containing the affected Browser.  No details are expected.
-  // DEPRECATED: Use BrowserListObserver::OnBrowserRemoved()
-  NOTIFICATION_BROWSER_CLOSED,
-
   // This message is sent when closing a browser has been cancelled, either by
   // the user cancelling a beforeunload dialog, or IsClosingPermitted()
   // disallowing closing. This notification implies that no BROWSER_CLOSING or

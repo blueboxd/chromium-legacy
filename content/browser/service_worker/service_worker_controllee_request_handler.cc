@@ -169,13 +169,17 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
   SubresourceLoaderParams params;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
   controller_info->mode = provider_host_->GetControllerMode();
-  // Note that |controller_info->endpoint| is null if the controller has no
-  // fetch event handler. In that case the renderer frame won't get the
+  // Note that |controller_info->remote_controller| is null if the controller
+  // has no fetch event handler. In that case the renderer frame won't get the
   // controller pointer upon the navigation commit, and subresource loading will
   // not be intercepted. (It might get intercepted later if the controller
   // changes due to skipWaiting() so SetController is sent.)
-  controller_info->endpoint =
-      provider_host_->GetControllerServiceWorkerPtr().PassInterface();
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
+      provider_host_->GetRemoteControllerServiceWorker();
+  if (remote.is_bound()) {
+    controller_info->remote_controller = remote.Unbind();
+  }
+
   controller_info->client_id = provider_host_->client_uuid();
   if (provider_host_->fetch_request_window_id()) {
     controller_info->fetch_request_window_id =

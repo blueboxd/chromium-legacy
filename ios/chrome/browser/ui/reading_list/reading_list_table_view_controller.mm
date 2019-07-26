@@ -584,6 +584,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
       self.selectedUnreadItemCount, self.selectedReadItemCount);
   if (self.toolbarManager.buttonItemsUpdated)
     [self setToolbarItems:[self.toolbarManager buttonItems] animated:YES];
+  [self.toolbarManager updateMarkButtonTitle];
 }
 
 #pragma mark - Item Editing Helpers

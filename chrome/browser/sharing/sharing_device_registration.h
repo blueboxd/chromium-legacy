@@ -18,10 +18,6 @@ namespace instance_id {
 class InstanceIDDriver;
 }
 
-namespace gcm {
-class GCMDriver;
-}
-
 namespace syncer {
 class LocalDeviceInfoProvider;
 }
@@ -41,7 +37,6 @@ class SharingDeviceRegistration {
       SharingSyncPreference* prefs,
       instance_id::InstanceIDDriver* instance_id_driver,
       VapidKeyManager* vapid_key_manager,
-      gcm::GCMDriver* gcm_driver,
       syncer::LocalDeviceInfoProvider* device_info_tracker);
   virtual ~SharingDeviceRegistration();
 
@@ -71,8 +66,9 @@ class SharingDeviceRegistration {
   void OnFCMTokenDeleted(RegistrationCallback callback,
                          instance_id::InstanceID::Result result);
 
-  // Retrieve encryption info from GCMDriver.
-  void RetrieveEncrpytionInfo(RegistrationCallback callback,
+  // Retrieve encryption info from InstanceID.
+  void RetrieveEncryptionInfo(RegistrationCallback callback,
+                              const std::string& authorized_entity,
                               const std::string& fcm_registration_token);
 
   // Callback function responsible for saving device registration information in
@@ -94,7 +90,6 @@ class SharingDeviceRegistration {
   SharingSyncPreference* sharing_sync_preference_;
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
-  gcm::GCMDriver* gcm_driver_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};

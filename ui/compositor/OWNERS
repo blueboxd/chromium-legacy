@@ -11,3 +11,4 @@ per-file *animat*=ajuma@chromium.org
 per-file *animat*=loyso@chromium.org
 
 # COMPONENT: Internals>Compositing
+# TEAM: graphics-dev@chromium.org

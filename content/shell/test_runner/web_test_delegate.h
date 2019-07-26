@@ -22,7 +22,7 @@
 
 namespace base {
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace blink {
 struct Manifest;
@@ -32,7 +32,7 @@ class WebPlugin;
 struct WebPluginParams;
 struct WebSize;
 class WebView;
-}
+}  // namespace blink
 
 namespace test_runner {
 
@@ -120,6 +120,9 @@ class WebTestDelegate {
       const base::Optional<base::string16>& reply) = 0;
   virtual void SimulateWebNotificationClose(const std::string& title,
                                             bool by_user) = 0;
+
+  // Controls Content Index entries.
+  virtual void SimulateWebContentIndexDelete(const std::string& id) = 0;
 
   // Controls the device scale factor of the main WebView for hidpi tests.
   virtual void SetDeviceScaleFactor(float factor) = 0;

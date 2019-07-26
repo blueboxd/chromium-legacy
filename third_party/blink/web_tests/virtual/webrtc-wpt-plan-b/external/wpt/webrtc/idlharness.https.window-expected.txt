@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 508 tests; 399 PASS, 109 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 508 tests; 401 PASS, 107 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: Error: assert_true: Expect pc.sctp to be instance of RTCSctpTransport expected true got false Reached unreachable code
@@ -33,7 +33,7 @@ PASS RTCPeerConnection interface: attribute iceGatheringState
 PASS RTCPeerConnection interface: attribute iceConnectionState
 PASS RTCPeerConnection interface: attribute connectionState
 FAIL RTCPeerConnection interface: attribute canTrickleIceCandidates assert_true: The prototype object must have a property "canTrickleIceCandidates" expected true got false
-FAIL RTCPeerConnection interface: operation restartIce() assert_own_property: interface prototype object missing non-static operation expected property "restartIce" missing
+PASS RTCPeerConnection interface: operation restartIce()
 FAIL RTCPeerConnection interface: operation getDefaultIceServers() assert_own_property: interface object missing static operation expected property "getDefaultIceServers" missing
 PASS RTCPeerConnection interface: operation getConfiguration()
 PASS RTCPeerConnection interface: operation setConfiguration(RTCConfiguration)
@@ -86,7 +86,7 @@ PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property 
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "iceConnectionState" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "connectionState" with the proper type
 FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "canTrickleIceCandidates" with the proper type assert_inherits: property "canTrickleIceCandidates" not found in prototype chain
-FAIL RTCPeerConnection interface: new RTCPeerConnection() must inherit property "restartIce()" with the proper type assert_inherits: property "restartIce" not found in prototype chain
+PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "restartIce()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getDefaultIceServers()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "getConfiguration()" with the proper type
 PASS RTCPeerConnection interface: new RTCPeerConnection() must inherit property "setConfiguration(RTCConfiguration)" with the proper type

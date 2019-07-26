@@ -34,18 +34,14 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   base::flat_set<AuthenticatorTransport> candidate_transports(
       transport_availability.available_transports);
 
-  // As an exception, we can tell in advance if using Touch Id will succeed. If
-  // yes, always auto-select that transport over all other considerations for
-  // GetAssertion operations; and de-select it if it will not work.
+  // For GetAssertion requests, auto advance to Touch ID if the authenticator
+  // has a matching credential for the (possibly empty) allow list.
   if (transport_availability.request_type ==
           device::FidoRequestHandlerBase::RequestType::kGetAssertion &&
-      !transport_availability.has_empty_allow_list &&
       base::Contains(candidate_transports,
-                     device::FidoTransportProtocol::kInternal)) {
-    // For GetAssertion requests, auto advance to Touch ID if the keychain
-    // contains one of the allowedCredentials.
-    if (transport_availability.has_recognized_mac_touch_id_credential)
-      return device::FidoTransportProtocol::kInternal;
+                     device::FidoTransportProtocol::kInternal) &&
+      transport_availability.has_recognized_mac_touch_id_credential) {
+    return device::FidoTransportProtocol::kInternal;
   }
 
   // If caBLE is listed as one of the allowed transports, it indicates that the

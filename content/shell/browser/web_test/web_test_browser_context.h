@@ -11,21 +11,22 @@
 
 namespace device {
 class ScopedGeolocationOverrider;
-}
+}  // namespace device
 
 namespace content {
 
 class BackgroundSyncController;
+class ContentIndexProvider;
 class DownloadManagerDelegate;
+class PermissionControllerDelegate;
+class PushMessagingService;
 class WebTestBackgroundFetchDelegate;
 class WebTestPermissionManager;
 class WebTestPushMessagingService;
-class PermissionControllerDelegate;
-class PushMessagingService;
 
 class WebTestBrowserContext final : public ShellBrowserContext {
  public:
-  WebTestBrowserContext(bool off_the_record);
+  explicit WebTestBrowserContext(bool off_the_record);
   ~WebTestBrowserContext() override;
 
   // BrowserContext implementation.
@@ -34,6 +35,7 @@ class WebTestBrowserContext final : public ShellBrowserContext {
   PermissionControllerDelegate* GetPermissionControllerDelegate() override;
   BackgroundFetchDelegate* GetBackgroundFetchDelegate() override;
   BackgroundSyncController* GetBackgroundSyncController() override;
+  ContentIndexProvider* GetContentIndexProvider() override;
 
   WebTestPermissionManager* GetWebTestPermissionManager();
 
@@ -48,6 +50,7 @@ class WebTestBrowserContext final : public ShellBrowserContext {
   std::unique_ptr<WebTestBackgroundFetchDelegate> background_fetch_delegate_;
   std::unique_ptr<BackgroundSyncController> background_sync_controller_;
   std::unique_ptr<device::ScopedGeolocationOverrider> geolocation_overrider_;
+  std::unique_ptr<ContentIndexProvider> content_index_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestBrowserContext);
 };

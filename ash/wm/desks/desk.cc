@@ -170,12 +170,16 @@ void Desk::OnRootWindowClosing(aura::Window* root) {
   // The windows on this root are about to be destroyed. We already stopped
   // observing the container above, so we won't get a call to
   // DeskContainerObserver::OnWindowRemoved(). Therefore, we must remove those
-  // windows manually. This happens when the last root window is destroyed (i.e.
-  // there are no more roots to move those windows to). This typically happen
-  // when shutting down.
-  const auto roots = Shell::GetAllRootWindows();
-  if (roots.size() == 1u && roots[0] == root)
-    windows_.clear();
+  // windows manually. If this is part of shutdown (i.e. when the
+  // RootWindowController is being destroyed), then we're done with those
+  // windows. If this is due to a display being removed, then the
+  // WindowTreeHostManager will move those windows to another host/root, and
+  // they will be added again to the desk container on the new root.
+  const auto windows = windows_;
+  for (auto* window : windows) {
+    if (window->GetRootWindow() == root)
+      base::Erase(windows_, window);
+  }
 }
 
 void Desk::AddWindowToDesk(aura::Window* window) {

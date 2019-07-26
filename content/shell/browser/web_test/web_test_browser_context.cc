@@ -18,6 +18,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/shell/browser/web_test/web_test_background_fetch_delegate.h"
+#include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/browser/web_test/web_test_download_manager_delegate.h"
 #include "content/shell/browser/web_test/web_test_permission_manager.h"
 #include "content/shell/browser/web_test/web_test_push_messaging_service.h"
@@ -70,9 +71,8 @@ DownloadManagerDelegate* WebTestBrowserContext::GetDownloadManagerDelegate() {
 }
 
 PushMessagingService* WebTestBrowserContext::GetPushMessagingService() {
-  if (!push_messaging_service_) {
+  if (!push_messaging_service_)
     push_messaging_service_ = std::make_unique<WebTestPushMessagingService>();
-  }
   return push_messaging_service_.get();
 }
 
@@ -102,6 +102,12 @@ BackgroundSyncController* WebTestBrowserContext::GetBackgroundSyncController() {
 WebTestPermissionManager* WebTestBrowserContext::GetWebTestPermissionManager() {
   return static_cast<WebTestPermissionManager*>(
       GetPermissionControllerDelegate());
+}
+
+ContentIndexProvider* WebTestBrowserContext::GetContentIndexProvider() {
+  if (!content_index_provider_)
+    content_index_provider_ = std::make_unique<WebTestContentIndexProvider>();
+  return content_index_provider_.get();
 }
 
 }  // namespace content

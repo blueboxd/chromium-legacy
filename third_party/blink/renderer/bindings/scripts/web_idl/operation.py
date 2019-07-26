@@ -26,37 +26,39 @@ class Operation(IdlMember):
                      arguments,
                      return_type,
                      is_static=False,
-                     is_getter=False,
-                     is_setter=False,
-                     is_deleter=False,
                      extended_attributes=None,
                      exposures=None,
                      code_generator_info=None,
                      component=None,
+                     components=None,
                      debug_info=None):
             assert isinstance(arguments, (list, tuple)) and all(
                 isinstance(arg, Argument.IR) for arg in arguments)
             assert isinstance(return_type, IdlType)
             assert isinstance(is_static, bool)
-            assert isinstance(is_getter, bool)
-            assert isinstance(is_setter, bool)
-            assert isinstance(is_deleter, bool)
-            assert int(is_getter) + int(is_setter) + int(is_deleter) <= 1
 
             WithIdentifier.__init__(self, identifier)
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(self, component)
+            WithComponent.__init__(
+                self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
             self.arguments = list(arguments)
             self.return_type = return_type
             self.is_static = is_static
-            self.is_getter = is_getter
-            self.is_setter = is_setter
-            self.is_deleter = is_deleter
-            self.is_property_handler = is_getter or is_setter or is_deleter
+
+        def make_copy(self):
+            return Operation.IR(
+                identifier=self.identifier,
+                arguments=map(Argument.IR.make_copy, self.arguments),
+                return_type=self.return_type,
+                is_static=self.is_static,
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy(),
+                components=self.components,
+                debug_info=self.debug_info.make_copy())
 
     @property
     def is_static(self):

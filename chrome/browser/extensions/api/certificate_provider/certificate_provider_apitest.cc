@@ -569,6 +569,16 @@ IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, ZeroAttemptsAtStart) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
+// Extension erroneously passes a negative attempts left count.
+IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, NegativeAttempts) {
+  AddFakeSignRequest();
+  NavigateTo("operated.html");
+
+  EXPECT_TRUE(SendCommandAndWaitForMessage(
+      "RequestWithNegativeAttempts", "request1:error:Invalid attemptsLeft"));
+  EXPECT_FALSE(GetActivePinDialogView());
+}
+
 // Extension erroneously attempts to close a non-existing dialog.
 IN_PROC_BROWSER_TEST_F(CertificateProviderRequestPinTest, CloseNonExisting) {
   AddFakeSignRequest();

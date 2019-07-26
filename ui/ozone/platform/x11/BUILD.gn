@@ -88,6 +88,7 @@ source_set("x11_unittests") {
     ":x11",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/base/x",
     "//ui/events:test_support",
     "//ui/events/devices/x11",
     "//ui/events/platform/x11",

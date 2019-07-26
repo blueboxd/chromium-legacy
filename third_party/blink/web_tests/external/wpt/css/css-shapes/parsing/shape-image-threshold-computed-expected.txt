@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS Property shape-image-threshold value '-7' computes to '0'
+PASS Property shape-image-threshold value '0.5' computes to '0.5'
+PASS Property shape-image-threshold value '12.5' computes to '1'
+PASS Property shape-image-threshold value '-100%' computes to '0'
+FAIL Property shape-image-threshold value '50%' computes to '0.5' assert_equals: expected "0.5" but got "0"
+FAIL Property shape-image-threshold value '300%' computes to '1' assert_equals: expected "1" but got "0"
+Harness: the test ran to completion.
+

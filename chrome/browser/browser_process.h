@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/buildflags.h"
 #include "media/media_buildflags.h"
 
 class BackgroundModeManager;
@@ -248,8 +249,10 @@ class BrowserProcess {
 
   virtual component_updater::ComponentUpdateService* component_updater() = 0;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   virtual component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() = 0;
+#endif
 
   virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 

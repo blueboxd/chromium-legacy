@@ -105,7 +105,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
     }
   }
 
-  logging::SetEventSource("GCP", GCP_CATEGORY, MSG_LOG_MESSAGE);
+  logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
 
   // Make sure the process exits cleanly on unexpected errors.
   base::EnableTerminationOnHeapCorruption();

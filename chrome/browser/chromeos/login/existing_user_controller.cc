@@ -1026,8 +1026,9 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_BUTTON)));
   const base::string16 title =
       l10n_util::GetStringUTF16(IDS_AUTO_LAUNCH_NOTIFICATION_TITLE);
-  const base::string16 message = l10n_util::GetStringUTF16(
-      IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
+  const base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING,
+      base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain()));
   auto delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating([](base::Optional<int> button_index) {

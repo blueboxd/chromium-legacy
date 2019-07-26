@@ -100,7 +100,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     bool is_starting_installed_worker,
     blink::mojom::RendererPreferencesPtr renderer_preferences,
     blink::mojom::ServiceWorkerRequest service_worker_request,
-    blink::mojom::ControllerServiceWorkerRequest controller_request,
+    mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+        controller_receiver,
     blink::mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     blink::mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     EmbeddedWorkerInstanceClientImpl* owner,
@@ -119,7 +120,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       proxy_(nullptr),
       pending_service_worker_request_(std::move(service_worker_request)),
-      pending_controller_request_(std::move(controller_request)),
+      controller_receiver_(std::move(controller_receiver)),
       pending_subresource_loader_updater_(
           std::move(subresource_loader_updater)),
       owner_(owner),
@@ -253,9 +254,8 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   DCHECK(pending_service_worker_request_.is_pending());
   proxy_->BindServiceWorker(pending_service_worker_request_.PassMessagePipe());
 
-  DCHECK(pending_controller_request_.is_pending());
-  proxy_->BindControllerServiceWorker(
-      pending_controller_request_.PassMessagePipe());
+  DCHECK(controller_receiver_.is_valid());
+  proxy_->BindControllerServiceWorker(controller_receiver_.PassPipe());
 }
 
 void ServiceWorkerContextClient::WillEvaluateScript() {

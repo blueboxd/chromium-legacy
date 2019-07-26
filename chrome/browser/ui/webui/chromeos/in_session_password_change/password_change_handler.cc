@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -60,11 +58,8 @@ void PasswordChangeHandler::HandleChangePassword(
                                        ? new_passwords.GetList()[0].GetString()
                                        : "";
 
-  auto* in_session_password_change_manager =
-      g_browser_process->platform_part()->in_session_password_change_manager();
-  CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->OnSamlPasswordChanged(old_password,
-                                                            new_password);
+  InSessionPasswordChangeManager::Get()->OnSamlPasswordChanged(old_password,
+                                                               new_password);
 }
 
 void PasswordChangeHandler::RegisterMessages() {

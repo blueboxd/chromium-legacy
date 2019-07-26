@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <color name="tab_list_mini_card_default_background_color">@color/modern_secondary_color</color>
+    <color name="tab_grid_dialog_background_color">@color/default_bg_color_elev_1</color>
+    <color name="favicon_background_color">@color/modern_secondary_color</color>
+</resources>

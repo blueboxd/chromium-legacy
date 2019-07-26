@@ -64,6 +64,9 @@ function processTestCommand(command) {
     case 'RequestWithZeroAttempts':
       requestPin({signRequestId: SIGN_REQUEST_ID, attemptsLeft: 0});
       break;
+    case 'RequestWithNegativeAttempts':
+      requestPin({signRequestId: SIGN_REQUEST_ID, attemptsLeft: -1});
+      break;
     case 'Stop':
       stopPinRequest({signRequestId: SIGN_REQUEST_ID});
       break;

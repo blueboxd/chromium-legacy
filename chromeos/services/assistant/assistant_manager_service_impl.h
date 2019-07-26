@@ -206,6 +206,8 @@ class AssistantManagerServiceImpl
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   void UpdateInternalMediaPlayerStatus(
       media_session::mojom::MediaSessionAction action);

@@ -678,6 +678,237 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AppListNonAppImpression">
+  <owner>jiameng@chromium.org</owner>
+  <owner>thanhdng@chromium.org</owner>
+  <owner>tby@chromium.org</owner>
+  <summary>
+    Records details of impressions and launches of non-apps in the ChromeOS
+    launcher, such as files, omnibox results, and answer cards.
+  </summary>
+  <metric name="Category" enum="AppListNonAppImpressionCategory">
+    <summary>
+      The kind of launcher item. Corresponds to the value of
+      ChromeSearchResult::result_[sub]type.
+    </summary>
+  </metric>
+  <metric name="DayOfWeek">
+    <summary>
+      The day of the week that the event was logged on, in the local time zone.
+      Sunday is 0.
+    </summary>
+  </metric>
+  <metric name="DeviceMode" enum="AppListNonAppImpressionDeviceMode">
+    <summary>
+      The mode of the device.
+    </summary>
+  </metric>
+  <metric name="EventId">
+    <summary>
+      An ID linking together events within a single set of launcher search
+      results. One of these may be a launch, and the rest impressions.
+    </summary>
+  </metric>
+  <metric name="FileExtension" enum="AppListNonAppImpressionFileExtension">
+    <summary>
+      An enum representing the file extension if this event represents a local
+      or DriveFS file.
+    </summary>
+  </metric>
+  <metric name="HourOfDay">
+    <summary>
+      The hour of the day that the event was logged in. Hours measured from
+      midnight in the local timezone.
+    </summary>
+  </metric>
+  <metric name="IsLaunched" enum="Boolean">
+    <summary>
+      True if the item represented by this event was launched, false otherwise.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour00">
+    <summary>
+      The number of launches within the last 24 hours at hour 0. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour01">
+    <summary>
+      The number of launches within the last 24 hours at hour 1. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour02">
+    <summary>
+      The number of launches within the last 24 hours at hour 2. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour03">
+    <summary>
+      The number of launches within the last 24 hours at hour 3. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour04">
+    <summary>
+      The number of launches within the last 24 hours at hour 4. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour05">
+    <summary>
+      The number of launches within the last 24 hours at hour 5. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour06">
+    <summary>
+      The number of launches within the last 24 hours at hour 6. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour07">
+    <summary>
+      The number of launches within the last 24 hours at hour 7. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour08">
+    <summary>
+      The number of launches within the last 24 hours at hour 8. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour09">
+    <summary>
+      The number of launches within the last 24 hours at hour 9. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour10">
+    <summary>
+      The number of launches within the last 24 hours at hour 10. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour11">
+    <summary>
+      The number of launches within the last 24 hours at hour 11. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour12">
+    <summary>
+      The number of launches within the last 24 hours at hour 12. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour13">
+    <summary>
+      The number of launches within the last 24 hours at hour 13. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour14">
+    <summary>
+      The number of launches within the last 24 hours at hour 14. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour15">
+    <summary>
+      The number of launches within the last 24 hours at hour 15. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour16">
+    <summary>
+      The number of launches within the last 24 hours at hour 16. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour17">
+    <summary>
+      The number of launches within the last 24 hours at hour 17. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour18">
+    <summary>
+      The number of launches within the last 24 hours at hour 18. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour19">
+    <summary>
+      The number of launches within the last 24 hours at hour 19. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour20">
+    <summary>
+      The number of launches within the last 24 hours at hour 20. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour21">
+    <summary>
+      The number of launches within the last 24 hours at hour 21. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour22">
+    <summary>
+      The number of launches within the last 24 hours at hour 22. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesAtHour23">
+    <summary>
+      The number of launches within the last 24 hours at hour 23. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="LaunchesThisSession">
+    <summary>
+      How many times this item has been launched during this session. Rounded
+      down to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="Position">
+    <summary>
+      The index of this item in the search results list. Indices start at 0.
+    </summary>
+  </metric>
+  <metric name="QueryLength">
+    <summary>
+      The length of the raw search query with whitespace trimmed. Rounded down
+      to the nearest exponential bucket, with a bucket ratio of 1.15.
+    </summary>
+  </metric>
+  <metric name="RelevanceScore">
+    <summary>
+      The raw relevance score returned by the relevant search provider for this
+      item.
+    </summary>
+  </metric>
+  <metric name="TimeOfLastLaunch">
+    <summary>
+      The hour when the previous launch of this item occurred. Hours measured
+      from midnight in the local timezone. This can be any value 0-23, as the
+      last launch could have been on a previous day.
+    </summary>
+  </metric>
+  <metric name="TimeSinceLastLaunch">
+    <summary>
+      Seconds since this item was last launched in this session. Rounded down to
+      the nearest exponential bucket, with a bucket ratio of 1.045. This makes
+      the bucket at 24 hour mark approximately 1 hour long.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.CardUploadDecision">
   <owner>sebsg@chromium.org</owner>
   <metric name="UploadDecision">

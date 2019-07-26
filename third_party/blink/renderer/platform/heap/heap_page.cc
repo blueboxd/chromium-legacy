@@ -1408,6 +1408,11 @@ void NormalPage::AddToFreeList(Address start,
     unfinalized_freelist_.push_back(std::move(entry));
   } else {
     cached_freelist_.Add(start, size);
+#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+    if (Arena()->GetThreadState()->IsMemoryReducingGC()) {
+      DiscardPages(start + sizeof(FreeListEntry), start + size);
+    }
+#endif
   }
 }
 
@@ -1418,6 +1423,12 @@ void NormalPage::MergeFreeLists() {
 
   for (const FutureFreelistEntry& entry : unfinalized_freelist_) {
     arena->AddToFreeList(entry.start, entry.size);
+#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
+    if (Arena()->GetThreadState()->IsMemoryReducingGC()) {
+      DiscardPages(entry.start + sizeof(FreeListEntry),
+                   entry.start + entry.size);
+    }
+#endif
   }
   unfinalized_freelist_.clear();
 }
@@ -1467,12 +1478,6 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
       AddToFreeList(start_of_gap, header_address - start_of_gap, finalize_type,
                     found_finalizer);
       found_finalizer = false;
-#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-      // Discarding pages increases page faults and may regress performance.
-      // So we enable this only on low-RAM devices.
-      if (MemoryPressureListenerRegistry::IsLowEndDevice())
-        DiscardPages(start_of_gap + sizeof(FreeListEntry), header_address);
-#endif
     }
     object_start_bit_map()->SetBit(header_address);
     header->Unmark<HeapObjectHeader::AccessMode::kAtomic>();
@@ -1485,10 +1490,6 @@ bool NormalPage::Sweep(FinalizeType finalize_type) {
   if (start_of_gap != Payload() && start_of_gap != PayloadEnd()) {
     AddToFreeList(start_of_gap, PayloadEnd() - start_of_gap, finalize_type,
                   found_finalizer);
-#if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
-    if (MemoryPressureListenerRegistry::IsLowEndDevice())
-      DiscardPages(start_of_gap + sizeof(FreeListEntry), PayloadEnd());
-#endif
   }
   return start_of_gap == Payload();
 }

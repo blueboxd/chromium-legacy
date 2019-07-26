@@ -977,7 +977,7 @@ need to be translated for each locale.-->
         Call this number from your phone?
       </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND" desc="The label to be shown as the title of the dialog when user click on a phone number, if sending it to a device failed.">
-        Number failed to send
+        Can't send number
       </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones or apps to choose from.">
         To make a call from your phone, turn on sync.
@@ -985,11 +985,8 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SYNC_HELP_TEXT" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
         Learn how to turn on sync
       </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
-        Looks like something has gone wrong. Try again or <ph name="TROUBLESHOOT_LINK">$1<ex>learn how to troubleshoot Click to Call</ex></ph>.
-      </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
-        learn how to troubleshoot Click to Call
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE" desc="The label to be shown on the dialog when user click on a phone number, if sending it to a device failed.">
+        Check your phone's connection and try again
       </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SEND_SUCCESS" desc="The label to be shown next to the omnibox icon after a phone number got sent to a users device.">
         Sent to device

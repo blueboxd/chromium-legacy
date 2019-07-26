@@ -6,6 +6,8 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../controls/extension_controlled_indicator.html">
 <link rel="import" href="../../google_assistant_page/google_assistant_page.html">
 <link rel="import" href="../../google_assistant_page/google_assistant_browser_proxy.html">
@@ -27,8 +29,20 @@
         min-height: var(--settings-row-min-height);
       }
 
+      /* TODO(jamescook): Style all OS settings tooltips to new spec. */
+      paper-tooltip {
+        --paper-tooltip: {
+          @apply --cr-tooltip;
+          padding: 12px 10px;
+        };
+      }
+
       iron-icon {
-        padding-inline-end: 16px;
+        --iron-icon-fill-color: var(--google-grey-refresh-500);
+      }
+
+      cr-policy-pref-indicator {
+        padding-inline-end: 8px;
       }
     </style>
     <settings-animated-pages id="pages" section="search"
@@ -40,7 +54,14 @@
         <div class="settings-box first block">
           <div id="search-wrapper">
             <div id="searchExplanation" class="start settings-box-text">
-              $i18nRaw{searchExplanation}
+              $i18n{osSearchEngineLabel}
+              <iron-icon id="help-icon" icon="cr:help-outline"
+                  aria-label="$i18n{osSearchEngineTooltip}"
+                  aria-describedby="tooltip"></iron-icon>
+              <paper-tooltip id="tooltip" for="help-icon" position="bottom"
+                  fit-to-visible-bounds>
+                $i18n{osSearchEngineTooltip}
+              </paper-tooltip>
             </div>
             <template is="dom-if" if="[[isDefaultSearchControlledByPolicy_(
                 prefs.default_search_provider_data.template_url_data)]]">

@@ -11,9 +11,6 @@ import android.util.AttributeSet;
 
 /**
  * Contains the basic functionality that should be shared by all ListPreference in Chrome.
- *
- * TODO(crbug.com/967022): Remove {@link ChromeBaseListPreference} when Preference Support Library
- * migration is complete in favor of this class.
  */
 public class ChromeBaseListPreferenceCompat extends ListPreference {
     private ManagedPreferenceDelegateCompat mManagedPrefDelegate;

@@ -462,6 +462,26 @@ TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
   EXPECT_EQ("script3 prompt", controller_->GetStatusMessage());
 }
 
+TEST_F(ControllerTest, ScriptStartMessage) {
+  SupportsScriptResponseProto script_response;
+  auto* script = AddRunnableScript(&script_response, "script");
+  script->mutable_presentation()->set_start_message("Starting Script...");
+  SetNextScriptResponse(script_response);
+
+  ActionsResponseProto script_actions;
+  script_actions.add_actions()->mutable_tell()->set_message("Script running.");
+  SetupActionsForScript("script", script_actions);
+
+  Start("http://a.example.com/path");
+
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(mock_observer_, OnStatusMessageChanged("Starting Script..."));
+    EXPECT_CALL(mock_observer_, OnStatusMessageChanged("Script running."));
+  }
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+}
+
 TEST_F(ControllerTest, Stop) {
   SupportsScriptResponseProto script_response;
   AddRunnableScript(&script_response, "stop");
@@ -1017,6 +1037,100 @@ TEST_F(ControllerTest, Track) {
   // there are no scripts, to c.example.com, which we don't want to check.
   EXPECT_CALL(fake_client_, Shutdown(Metrics::DropOutReason::NO_SCRIPTS));
   SimulateNavigateToUrl(GURL("http://c.example.com/"));
+}
+
+TEST_F(ControllerTest, TrackScriptWithNoUI) {
+  // The UI is never shown during this test.
+  EXPECT_CALL(fake_client_, AttachUI()).Times(0);
+
+  SupportsScriptResponseProto script_response;
+  auto* script = AddRunnableScript(&script_response, "runnable");
+  script->mutable_presentation()->set_needs_ui(false);
+  SetupScripts(script_response);
+
+  // Script does nothing
+  ActionsResponseProto runnable_script;
+  auto* hidden_tell = runnable_script.add_actions()->mutable_tell();
+  hidden_tell->set_message("optional message");
+  hidden_tell->set_needs_ui(false);
+  runnable_script.add_actions()->mutable_stop();
+  SetupActionsForScript("runnable", runnable_script);
+
+  // Start tracking at example.com, with one script matching
+  SetLastCommittedUrl(GURL("http://example.com/"));
+
+  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+
+  // Check the full history of state transitions.
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::TRACKING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::TRACKING));
+}
+
+TEST_F(ControllerTest, TrackScriptShowUIOnTell) {
+  SupportsScriptResponseProto script_response;
+  auto* script = AddRunnableScript(&script_response, "runnable");
+  script->mutable_presentation()->set_needs_ui(false);
+  SetupScripts(script_response);
+
+  ActionsResponseProto runnable_script;
+  runnable_script.add_actions()->mutable_tell()->set_message("error");
+  SetupActionsForScript("runnable", runnable_script);
+
+  // Start tracking at example.com, with one script matching
+  SetLastCommittedUrl(GURL("http://example.com/"));
+
+  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+
+  EXPECT_FALSE(controller_->NeedsUI());
+  EXPECT_CALL(fake_client_, AttachUI());
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+
+  // As the controller is back in tracking mode; A UI is not needed anymore.
+  EXPECT_FALSE(controller_->NeedsUI());
+
+  // Check the full history of state transitions.
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::TRACKING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::TRACKING));
+}
+
+TEST_F(ControllerTest, TrackScriptShowUIOnError) {
+  SupportsScriptResponseProto script_response;
+  auto* script = AddRunnableScript(&script_response, "runnable");
+  script->mutable_presentation()->set_needs_ui(false);
+  SetupScripts(script_response);
+
+  // Running the script fails, due to a backend issue. The error message should
+  // be shown.
+  EXPECT_CALL(*mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(false, ""));
+
+  // Start tracking at example.com, with one script matching
+  SetLastCommittedUrl(GURL("http://example.com/"));
+
+  controller_->Track(TriggerContext::CreateEmpty(), base::DoNothing());
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+
+  EXPECT_FALSE(controller_->NeedsUI());
+  EXPECT_CALL(fake_client_, AttachUI());
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+  EXPECT_EQ(AutofillAssistantState::TRACKING, controller_->GetState());
+
+  // As the controller is back in tracking mode; A UI is not needed anymore.
+  EXPECT_FALSE(controller_->NeedsUI());
+
+  // Check the full history of state transitions.
+  EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::TRACKING,
+                                   AutofillAssistantState::RUNNING,
+                                   AutofillAssistantState::STOPPED,
+                                   AutofillAssistantState::TRACKING));
 }
 
 TEST_F(ControllerTest, TrackContinuesAfterScriptError) {

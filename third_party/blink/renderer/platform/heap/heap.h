@@ -75,6 +75,10 @@ using NotFullyConstructedWorklist =
     Worklist<NotFullyConstructedItem, 16 /* local entries */>;
 using WeakCallbackWorklist =
     Worklist<CustomCallbackItem, 256 /* local entries */>;
+// Using large local segments here (sized 512 entries) to avoid throughput
+// regressions.
+using MovableReferenceWorklist =
+    Worklist<MovableReference*, 512 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -213,17 +217,22 @@ class PLATFORM_EXPORT ThreadHeap {
     return weak_callback_worklist_.get();
   }
 
+  MovableReferenceWorklist* GetMovableReferenceWorklist() const {
+    return movable_reference_worklist_.get();
+  }
+
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
                          EphemeronCallback);
 
   // Heap compaction registration methods:
 
-  // Register |slot| as containing a reference to a movable heap object.
+  // Checks whether we need to register |slot| as containing a reference to
+  // a movable heap object.
   //
   // When compaction moves the object pointed to by |*slot| to |newAddress|,
   // |*slot| must be updated to hold |newAddress| instead.
-  void RegisterMovingObjectReference(MovableReference*);
+  bool ShouldRegisterMovingObjectReference(MovableReference*);
 
   // Register a callback to be invoked upon moving the object starting at
   // |reference|; see |MovingObjectCallback| documentation for details.
@@ -394,8 +403,9 @@ class PLATFORM_EXPORT ThreadHeap {
  private:
   static int ArenaIndexForObjectSize(size_t);
 
-  void CommitCallbackStacks();
-  void DecommitCallbackStacks(BlinkGC::StackState);
+  void SetupWorklists();
+  void DestroyMarkingWorklists(BlinkGC::StackState);
+  void DestroyCompactionWorklists();
 
   void InvokeEphemeronCallbacks(Visitor*);
 
@@ -427,6 +437,11 @@ class PLATFORM_EXPORT ThreadHeap {
   // Worklist of weak callbacks accumulated for objects. Such callbacks are
   // processed after finishing marking objects.
   std::unique_ptr<WeakCallbackWorklist> weak_callback_worklist_;
+
+  // The worklist is to remember slots that are traced during
+  // marking phases. The mapping between the slots and the backing stores are
+  // created at the atomic pause phase.
+  std::unique_ptr<MovableReferenceWorklist> movable_reference_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.

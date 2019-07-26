@@ -3250,6 +3250,37 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     // cases, fall back to painting the first kPixelDistanceToRecord pixels in
     // each direction.
 
+    // Note that since the interest rect mapping above can produce extremely
+    // large numbers in cases of perspective, try our best to "normalize" the
+    // result by ensuring that none of the rect dimensions exceed some large,
+    // but reasonable, limit.
+    const float reasonable_pixel_limit = std::numeric_limits<int>::max() / 2.f;
+    auto unpadded_intersection = local_interest_rect;
+
+    // Note that by clamping X and Y, we are effectively moving the rect right /
+    // down. However, this will at most make us paint more content, which is
+    // better than erroneously deciding that the rect produced here is far
+    // offscreen.
+    if (unpadded_intersection.X() < -reasonable_pixel_limit)
+      unpadded_intersection.SetX(-reasonable_pixel_limit);
+    if (unpadded_intersection.Y() < -reasonable_pixel_limit)
+      unpadded_intersection.SetY(-reasonable_pixel_limit);
+    if (unpadded_intersection.MaxX() > reasonable_pixel_limit) {
+      unpadded_intersection.SetWidth(reasonable_pixel_limit -
+                                     unpadded_intersection.X());
+    }
+    if (unpadded_intersection.MaxY() > reasonable_pixel_limit) {
+      unpadded_intersection.SetHeight(reasonable_pixel_limit -
+                                      unpadded_intersection.Y());
+    }
+
+    unpadded_intersection.Intersect(FloatRect(graphics_layer_bounds));
+    // If our unpadded intersection is not empty, then use that before padding,
+    // since it can produce more stable results, and it would not produce any
+    // smaller area than if we used the original local interest rect.
+    if (!unpadded_intersection.IsEmpty())
+      local_interest_rect = unpadded_intersection;
+
     // Expand by interest rect padding amount, scaled by the approximate scale
     // of the GraphicsLayer relative to screen pixels. If width or height
     // are zero or nearly zero, fall back to kPixelDistanceToRecord.
@@ -3264,7 +3295,10 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
             : 1.0f;
     // Take the max, to account for situations like rotation transforms, which
     // swap x and y.
-    float scale = max(x_scale, y_scale);
+    // Since at this point we can also have an extremely large scale due to
+    // perspective (see the comments above), cap it to something reasonable.
+    float scale = std::min(std::max(x_scale, y_scale),
+                           reasonable_pixel_limit / kPixelDistanceToRecord);
     local_interest_rect.Inflate(kPixelDistanceToRecord * scale);
   } else {
     // Expand by interest rect padding amount.

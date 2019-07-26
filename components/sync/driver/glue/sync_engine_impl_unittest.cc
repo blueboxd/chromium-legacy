@@ -732,66 +732,6 @@ TEST_F(SyncEngineImplTest, DisableThenPurgeType) {
       fake_manager_->GetTypesWithEmptyProgressMarkerToken(error_types).Empty());
 }
 
-// Ensure that redundant invalidations are ignored and that the most recent
-// set of invalidation version is persisted across restarts.
-TEST_F(SyncEngineImplTest, IgnoreOldInvalidations) {
-  // Set up some old persisted invalidations.
-  std::map<ModelType, int64_t> invalidation_versions;
-  invalidation_versions[BOOKMARKS] = 20;
-  sync_prefs_->UpdateInvalidationVersions(invalidation_versions);
-  InitializeBackend(true);
-  EXPECT_EQ(0, fake_manager_->GetInvalidationCount());
-
-  // Receiving an invalidation with an old version should do nothing.
-  ObjectIdInvalidationMap invalidation_map;
-  std::string notification_type;
-  RealModelTypeToNotificationType(BOOKMARKS, &notification_type);
-  invalidation_map.Insert(Invalidation::Init(
-      invalidation::ObjectId(0, notification_type), 10, "payload"));
-  backend_->OnIncomingInvalidation(invalidation_map);
-  fake_manager_->WaitForSyncThread();
-  EXPECT_EQ(0, fake_manager_->GetInvalidationCount());
-
-  // Invalidations with new versions should be acted upon.
-  invalidation_map.Insert(Invalidation::Init(
-      invalidation::ObjectId(0, notification_type), 30, "payload"));
-  backend_->OnIncomingInvalidation(invalidation_map);
-  fake_manager_->WaitForSyncThread();
-  EXPECT_EQ(1, fake_manager_->GetInvalidationCount());
-
-  // Invalidation for new data types should be acted on.
-  RealModelTypeToNotificationType(SESSIONS, &notification_type);
-  invalidation_map.Insert(Invalidation::Init(
-      invalidation::ObjectId(0, notification_type), 10, "payload"));
-  backend_->OnIncomingInvalidation(invalidation_map);
-  fake_manager_->WaitForSyncThread();
-  EXPECT_EQ(2, fake_manager_->GetInvalidationCount());
-
-  // But redelivering that same invalidation should be ignored.
-  backend_->OnIncomingInvalidation(invalidation_map);
-  fake_manager_->WaitForSyncThread();
-  EXPECT_EQ(2, fake_manager_->GetInvalidationCount());
-
-  // If an invalidation with an unknown version is received, it should be
-  // acted on, but should not affect the persisted versions.
-  invalidation_map.Insert(Invalidation::InitUnknownVersion(
-      invalidation::ObjectId(0, notification_type)));
-  backend_->OnIncomingInvalidation(invalidation_map);
-  fake_manager_->WaitForSyncThread();
-  EXPECT_EQ(3, fake_manager_->GetInvalidationCount());
-
-  // Verify that the invalidation versions were updated in the prefs.
-  invalidation_versions[BOOKMARKS] = 30;
-  invalidation_versions[SESSIONS] = 10;
-  std::map<ModelType, int64_t> persisted_invalidation_versions;
-  sync_prefs_->GetInvalidationVersions(&persisted_invalidation_versions);
-  EXPECT_EQ(invalidation_versions.size(),
-            persisted_invalidation_versions.size());
-  for (auto iter : persisted_invalidation_versions) {
-    EXPECT_EQ(invalidation_versions[iter.first], iter.second);
-  }
-}
-
 // Tests that SyncEngineImpl retains ModelTypeConnector after call to
 // StopSyncingForShutdown. This is needed for datatype deactivation during
 // DataTypeManager shutdown.

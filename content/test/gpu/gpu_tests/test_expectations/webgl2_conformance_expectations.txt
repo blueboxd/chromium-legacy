@@ -262,6 +262,7 @@ crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failur
 # Passthrough command decoder / OpenGL / Windows
 crbug.com/835364 [ opengl win passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/835364 [ opengl win passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
+crbug.com/angleproject/3742 [ opengl win passthrough ] conformance2/rendering/clearbuffer-sub-source.html [ Failure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
 crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]

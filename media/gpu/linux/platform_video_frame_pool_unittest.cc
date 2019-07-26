@@ -68,7 +68,7 @@ class PlatformVideoFramePoolTest
     layout_ = VideoFrameLayout::Create(format, coded_size);
     DCHECK(layout_);
 
-    pool_->SetFrameFormat(*layout_, visible_rect_, natural_size_);
+    pool_->NegotiateFrameFormat(*layout_, visible_rect_, natural_size_);
   }
 
   scoped_refptr<VideoFrame> GetFrame(int timestamp_ms) {

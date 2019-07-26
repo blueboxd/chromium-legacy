@@ -15,7 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -184,7 +185,7 @@ using SetExpectationsCallback =
 // determine the failure.
 int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::PlatformThread::SetName("Main Thread");
-  base::MessageLoopForUI main_message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   content::RegisterPathProvider();
 
@@ -200,7 +201,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::FilePath executable_path =
       command_line->GetSwitchValuePath(kTestExecutablePath);
   EXPECT_FALSE(executable_path.empty());
-  MockLaunchd mock_launchd(executable_path, main_message_loop.task_runner(),
+  MockLaunchd mock_launchd(executable_path, executor.task_runner(),
                            run_loop.QuitClosure(), true);
   Launchd::ScopedInstance use_mock(&mock_launchd);
 #endif

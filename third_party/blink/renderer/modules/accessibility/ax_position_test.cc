@@ -1236,6 +1236,135 @@ TEST_F(AccessibilityTest, PositionInCSSContent) {
   EXPECT_EQ(12, position_after.GetPosition().OffsetInContainerNode());
 }
 
+TEST_F(AccessibilityTest, PositionInTableWithCSSContent) {
+  SetBodyInnerHTML(kHTMLTable);
+
+  // Add some CSS content, i.e. a plus symbol before and a colon after each
+  // table header cell.
+  Element* const style_element =
+      GetDocument().CreateRawElement(html_names::kStyleTag);
+  ASSERT_NE(nullptr, style_element);
+  style_element->setTextContent(R"STYLE(
+      th::before {
+        content: "+";
+      }
+      th::after {
+        content: ":";
+      }
+      )STYLE");
+  GetDocument().body()->insertBefore(style_element,
+                                     GetDocument().body()->firstChild());
+  UpdateAllLifecyclePhasesForTest();
+
+  const Node* first_header_cell = GetElementById("firstHeaderCell");
+  ASSERT_NE(nullptr, first_header_cell);
+  const Node* last_header_cell = GetElementById("lastHeaderCell");
+  ASSERT_NE(nullptr, last_header_cell);
+
+  // CSS text nodes are not in the DOM tree.
+  const Node* first_header_cell_text = first_header_cell->firstChild();
+  ASSERT_NE(nullptr, first_header_cell_text);
+  ASSERT_FALSE(first_header_cell_text->IsPseudoElement());
+  ASSERT_TRUE(first_header_cell_text->IsTextNode());
+  const Node* last_header_cell_text = last_header_cell->firstChild();
+  ASSERT_NE(nullptr, last_header_cell_text);
+  ASSERT_FALSE(last_header_cell_text->IsPseudoElement());
+  ASSERT_TRUE(last_header_cell_text->IsTextNode());
+
+  const AXObject* ax_first_header_cell =
+      GetAXObjectByElementId("firstHeaderCell");
+  ASSERT_NE(nullptr, ax_first_header_cell);
+  ASSERT_EQ(ax::mojom::Role::kColumnHeader, ax_first_header_cell->RoleValue());
+  const AXObject* ax_last_header_cell =
+      GetAXObjectByElementId("lastHeaderCell");
+  ASSERT_NE(nullptr, ax_last_header_cell);
+  ASSERT_EQ(ax::mojom::Role::kColumnHeader, ax_last_header_cell->RoleValue());
+
+  ASSERT_EQ(3, ax_first_header_cell->ChildCount());
+  AXObject* const ax_first_cell_css_before = ax_first_header_cell->FirstChild();
+  ASSERT_NE(nullptr, ax_first_cell_css_before);
+  ASSERT_EQ(ax::mojom::Role::kStaticText,
+            ax_first_cell_css_before->RoleValue());
+
+  ASSERT_EQ(3, ax_last_header_cell->ChildCount());
+  AXObject* const ax_last_cell_css_after = ax_last_header_cell->LastChild();
+  ASSERT_NE(nullptr, ax_last_cell_css_after);
+  ASSERT_EQ(ax::mojom::Role::kStaticText, ax_last_cell_css_after->RoleValue());
+
+  // The first position inside the first header cell should be before the plus
+  // symbol inside the CSS content. It should be valid in the accessibility tree
+  // but not valid in the DOM tree.
+  auto ax_position_before =
+      AXPosition::CreateFirstPositionInObject(*ax_first_header_cell);
+  EXPECT_TRUE(ax_position_before.IsTextPosition());
+  EXPECT_EQ(0, ax_position_before.TextOffset());
+  auto position_before = ax_position_before.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveRight);
+  EXPECT_EQ(first_header_cell_text, position_before.AnchorNode());
+  EXPECT_EQ(0, position_before.GetPosition().OffsetInContainerNode());
+
+  // Same situation as above, but explicitly create a text position inside the
+  // CSS content, instead of having it implicitly created by
+  // CreateFirstPositionInObject.
+  ax_position_before =
+      AXPosition::CreateFirstPositionInObject(*ax_first_cell_css_before);
+  EXPECT_TRUE(ax_position_before.IsTextPosition());
+  EXPECT_EQ(0, ax_position_before.TextOffset());
+  position_before = ax_position_before.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveRight);
+  EXPECT_EQ(first_header_cell_text, position_before.AnchorNode());
+  EXPECT_EQ(0, position_before.GetPosition().OffsetInContainerNode());
+
+  // Same situation as above, but now create a text position inside the inline
+  // text box representing the CSS content after the last header cell.
+  ax_first_cell_css_before->LoadInlineTextBoxes();
+  ASSERT_NE(nullptr, ax_first_cell_css_before->FirstChild());
+  ax_position_before = AXPosition::CreateFirstPositionInObject(
+      *ax_first_cell_css_before->FirstChild());
+  EXPECT_TRUE(ax_position_before.IsTextPosition());
+  EXPECT_EQ(0, ax_position_before.TextOffset());
+  position_before = ax_position_before.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveRight);
+  EXPECT_EQ(first_header_cell_text, position_before.AnchorNode());
+  EXPECT_EQ(0, position_before.GetPosition().OffsetInContainerNode());
+
+  // An "after children" position inside the last header cell should be after
+  // the CSS content that displays a colon. It should be valid in the
+  // accessibility tree but not valid in the DOM tree.
+  auto ax_position_after =
+      AXPosition::CreateLastPositionInObject(*ax_last_header_cell);
+  EXPECT_FALSE(ax_position_after.IsTextPosition());
+  EXPECT_EQ(3, ax_position_after.ChildIndex());
+  auto position_after = ax_position_after.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveLeft);
+  EXPECT_EQ(last_header_cell_text, position_after.AnchorNode());
+  EXPECT_EQ(8, position_after.GetPosition().OffsetInContainerNode());
+
+  // Similar to the last case, but explicitly create a text position inside the
+  // CSS content after the last header cell.
+  ax_position_after =
+      AXPosition::CreateLastPositionInObject(*ax_last_cell_css_after);
+  EXPECT_TRUE(ax_position_after.IsTextPosition());
+  EXPECT_EQ(1, ax_position_after.TextOffset());
+  position_after = ax_position_after.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveLeft);
+  EXPECT_EQ(last_header_cell_text, position_after.AnchorNode());
+  EXPECT_EQ(8, position_after.GetPosition().OffsetInContainerNode());
+
+  // Same situation as above, but now create a text position inside the inline
+  // text box representing the CSS content after the last header cell.
+  ax_last_cell_css_after->LoadInlineTextBoxes();
+  ASSERT_NE(nullptr, ax_last_cell_css_after->FirstChild());
+  ax_position_after = AXPosition::CreateLastPositionInObject(
+      *ax_last_cell_css_after->FirstChild());
+  EXPECT_TRUE(ax_position_after.IsTextPosition());
+  EXPECT_EQ(1, ax_position_after.TextOffset());
+  position_after = ax_position_after.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveLeft);
+  EXPECT_EQ(last_header_cell_text, position_after.AnchorNode());
+  EXPECT_EQ(8, position_after.GetPosition().OffsetInContainerNode());
+}
+
 //
 // Objects deriving from |AXMockObject|, e.g. table columns, are in the
 // accessibility tree but are neither in the DOM or layout trees.

@@ -409,4 +409,32 @@ TEST_F(ContentIndexDatabaseTest, GetEntries) {
   }
 }
 
+TEST_F(ContentIndexDatabaseTest, BlockedOriginsCannotRegisterContent) {
+  // Initially adding is fine.
+  EXPECT_EQ(AddEntry(CreateDescription("id1")),
+            blink::mojom::ContentIndexError::NONE);
+
+  // Two delete events were dispatched.
+  database()->BlockOrigin(origin());
+  database()->BlockOrigin(origin());
+
+  // Content can't be registered while the origin is blocked.
+  EXPECT_EQ(AddEntry(CreateDescription("id2")),
+            blink::mojom::ContentIndexError::STORAGE_ERROR);
+
+  // First event dispatch completed.
+  database()->UnblockOrigin(origin());
+
+  // Content still can't be registered.
+  EXPECT_EQ(AddEntry(CreateDescription("id3")),
+            blink::mojom::ContentIndexError::STORAGE_ERROR);
+
+  // Last event dispatch completed.
+  database()->UnblockOrigin(origin());
+
+  // Registering is OK now.
+  EXPECT_EQ(AddEntry(CreateDescription("id4")),
+            blink::mojom::ContentIndexError::NONE);
+}
+
 }  // namespace content

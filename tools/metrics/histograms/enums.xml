@@ -2168,6 +2168,91 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="kLaunchTypeUnspecified"/>
 </enum>
 
+<enum name="AppListNonAppImpressionCategory">
+  <int value="0" label="APPS"/>
+  <int value="1" label="SEARCH_RESULTS"/>
+  <int value="2" label="START"/>
+  <int value="3" label="CUSTOM_LAUNCHER_PAGE_DEPRECATED"/>
+</enum>
+
+<enum name="AppListNonAppImpressionDeviceMode">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="FILE"/>
+  <int value="2" label="HISTORY"/>
+  <int value="3" label="NAV_SUGGEST"/>
+  <int value="4" label="SEARCH"/>
+  <int value="5" label="BOOKMARK"/>
+  <int value="6" label="DOCUMENT"/>
+  <int value="7" label="OMNIBOX_DEPRECATED"/>
+  <int value="8" label="OMNIBOX_GENERIC"/>
+</enum>
+
+<enum name="AppListNonAppImpressionFileExtension">
+  <int value="0" label=".3ga"/>
+  <int value="1" label=".3gp"/>
+  <int value="2" label=".aac"/>
+  <int value="3" label=".alac"/>
+  <int value="4" label=".asf"/>
+  <int value="5" label=".avi"/>
+  <int value="6" label=".bmp"/>
+  <int value="7" label=".csv"/>
+  <int value="8" label=".doc"/>
+  <int value="9" label=".docx"/>
+  <int value="10" label=".flac"/>
+  <int value="11" label=".gif"/>
+  <int value="12" label=".jpeg"/>
+  <int value="13" label=".jpg"/>
+  <int value="14" label=".log"/>
+  <int value="15" label=".m3u"/>
+  <int value="16" label=".m3u8"/>
+  <int value="17" label=".m4a"/>
+  <int value="18" label=".m4v"/>
+  <int value="19" label=".mid"/>
+  <int value="20" label=".mkv"/>
+  <int value="21" label=".mov"/>
+  <int value="22" label=".mp3"/>
+  <int value="23" label=".mp4"/>
+  <int value="24" label=".mpg"/>
+  <int value="25" label=".odf"/>
+  <int value="26" label=".odp"/>
+  <int value="27" label=".ods"/>
+  <int value="28" label=".odt"/>
+  <int value="29" label=".oga"/>
+  <int value="30" label=".ogg"/>
+  <int value="31" label=".ogv"/>
+  <int value="32" label=".pdf"/>
+  <int value="33" label=".png"/>
+  <int value="34" label=".ppt"/>
+  <int value="35" label=".pptx"/>
+  <int value="36" label=".ra"/>
+  <int value="37" label=".ram"/>
+  <int value="38" label=".rar"/>
+  <int value="39" label=".rm"/>
+  <int value="40" label=".rtf"/>
+  <int value="41" label=".wav"/>
+  <int value="42" label=".webm"/>
+  <int value="43" label=".webp"/>
+  <int value="44" label=".wma"/>
+  <int value="45" label=".wmv"/>
+  <int value="46" label=".xls"/>
+  <int value="47" label=".xlsx"/>
+  <int value="48" label=".crdownload"/>
+  <int value="49" label=".crx"/>
+  <int value="50" label=".dmg"/>
+  <int value="51" label=".exe"/>
+  <int value="52" label=".html"/>
+  <int value="53" label=".htm"/>
+  <int value="54" label=".jar"/>
+  <int value="55" label=".ps"/>
+  <int value="56" label=".torrent"/>
+  <int value="57" label=".txt"/>
+  <int value="58" label=".zip"/>
+  <int value="59" label=".mhtml"/>
+  <int value="60" label=".gdoc"/>
+  <int value="61" label=".gsheet"/>
+  <int value="62" label=".gslides"/>
+</enum>
+
 <enum name="AppListOmniboxResult">
   <int value="0" label="QUERY_SUGGESTION"/>
   <int value="1" label="ZERO_STATE_SUGEESTION"/>
@@ -5630,6 +5715,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Checked"/>
 </enum>
 
+<enum name="BooleanChromeColorsChangesConfirmed">
+  <int value="0" label="Reverted"/>
+  <int value="1" label="Confirmed"/>
+</enum>
+
 <enum name="BooleanCleared">
   <int value="0" label="Not cleared"/>
   <int value="1" label="Cleared"/>
@@ -7424,6 +7514,12 @@ histogram as enum -->
   <int value="17" label="NAVY"/>
   <int value="18" label="MIDNIGHT"/>
   <int value="19" label="RASPBERRY"/>
+</enum>
+
+<enum name="ChromeColorsRevertReason">
+  <int value="0" label="User action"/>
+  <int value="1" label="Search provider change"/>
+  <int value="2" label="Tab closed"/>
 </enum>
 
 <enum name="ChromeDownloadCountType">
@@ -23695,7 +23791,7 @@ Called by update_net_error_codes.py.-->
   <int value="2649" label="OpenerNavigationDownloadCrossOrigin"/>
   <int value="2650" label="V8RegExpMatchIsTrueishOnNonJSRegExp"/>
   <int value="2651" label="V8RegExpMatchIsFalseishOnJSRegExp"/>
-  <int value="2652" label="DownloadInAdFrameWithUserGesture"/>
+  <int value="2652" label="OBSOLETE_DownloadInAdFrameWithUserGesture"/>
   <int value="2653" label="DownloadInAdFrameWithoutUserGesture"/>
   <int value="2654" label="NavigatorAppVersion"/>
   <int value="2655" label="NavigatorDoNotTrack"/>
@@ -24015,9 +24111,7 @@ Called by update_net_error_codes.py.-->
   <int value="2946" label="WebkitMarginAfterCollapseSeparate"/>
   <int value="2947"
       label="WebkitMarginAfterCollapseSeparateMaybeDoesSomething"/>
-  <int value="2948" label="CredentialManagerCreateWithUVM"/>
   <int value="2949" label="CredentialManagerGetWithUVM"/>
-  <int value="2950" label="CredentialManagerCreateSuccessWithUVM"/>
   <int value="2951" label="CredentialManagerGetSuccessWithUVM"/>
   <int value="2952" label="DiscardInputEventToMovingIframe"/>
   <int value="2953" label="SignedExchangeSubresourcePrefetch"/>
@@ -24042,6 +24136,10 @@ Called by update_net_error_codes.py.-->
   <int value="2971" label="V8PointerEvent_GetPredictedEvents_Method"/>
   <int value="2972" label="ScrollSnapOnViewportBreaks"/>
   <int value="2973" label="ScrollPaddingOnViewportBreaks"/>
+  <int value="2974" label="DownloadInAdFrame"/>
+  <int value="2975" label="DownloadInSandbox"/>
+  <int value="2976" label="DownloadWithoutUserGesture"/>
+  <int value="2977" label="AutoplayDynamicDelegation"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -24160,6 +24258,10 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Fetch network success"/>
   <int value="2" label="Fetch failure"/>
 </enum>
+
+<!-- Keep elements in sync with components/feed/core/feed_logging_metrics.cc and
+ third_party/feed/src/src/main/java/com/google/android/libraries/feed/api/host/logging/InternalFeedError.java
+ -->
 
 <enum name="FeedInternalError">
   <int value="0" label="SWITCH_TO_EPHEMERAL"/>
@@ -32306,6 +32408,52 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="Del Fail -MaxPathCheck Fail - MoveFileEx Fail - CopyDelDir Fail"/>
 </enum>
 
+<enum name="KerberosConfigErrorCode">
+  <int value="0" label="Valid"/>
+  <int value="1" label="Section nested in group"/>
+  <int value="2" label="Section syntax"/>
+  <int value="3" label="Expected opening curly brace"/>
+  <int value="4" label="Extra curly brace"/>
+  <int value="5" label="Relation syntax"/>
+  <int value="6" label="Key not supported"/>
+  <int value="7" label="Section not supported"/>
+  <int value="8" label="Krb5 failed to parse"/>
+</enum>
+
+<enum name="KerberosErrorType">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unspecified error"/>
+  <int value="2" label="Unspecified D-Bus error"/>
+  <int value="3" label="General network problem"/>
+  <int value="4" label="Unspecified KRB5 error."/>
+  <int value="5" label="Bad principal"/>
+  <int value="6" label="Bad password"/>
+  <int value="7" label="Password expired"/>
+  <int value="8" label="Password rejected while trying to change it"/>
+  <int value="9" label="Kerberos credentials cache not found"/>
+  <int value="10" label="Kerberos ticket expired while renewing credentials"/>
+  <int value="11"
+      label="Key Distribution Center does not support enforced encryption
+             types"/>
+  <int value="12" label="Failed to contact Key Distribution Center"/>
+  <int value="13" label="Parsing D-Bus request message failed"/>
+  <int value="14" label="Local IO operation failed"/>
+  <int value="15" label="Account with given principal name does not exist"/>
+  <int value="16"
+      label="Adding account failed; account with given principal name already
+             exists"/>
+  <int value="17" label="Asynchronous operation in progress"/>
+  <int value="18" label="Badly formatted principal name"/>
+  <int value="19" label="Badly formatted Kerberos configuration"/>
+  <int value="20" label="Failed to run untrusted code in container"/>
+  <int value="21" label="Kerberos feature disabled"/>
+</enum>
+
+<enum name="KerberosUserType">
+  <int value="0" label="Managed"/>
+  <int value="1" label="Unmanaged"/>
+</enum>
+
 <enum name="KeyboardControlEvent">
   <int value="0" label="Keyboard was shown."/>
   <int value="1" label="Keyboard was automatically hidden."/>
@@ -33758,6 +33906,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2118893353" label="WebRtcRemoteEventLog:enabled"/>
   <int value="-2117621241" label="ExperimentalProductivityFeatures:enabled"/>
   <int value="-2117201726" label="disable-gpu-rasterization"/>
+  <int value="-2117169027" label="UpdateHoverAtBeginFrame:enabled"/>
   <int value="-2114831248" label="disable-new-ntp"/>
   <int value="-2113783491" label="ArcFilePickerExperiment:enabled"/>
   <int value="-2113705745"
@@ -34471,6 +34620,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1201183153" label="enable-centered-app-list"/>
   <int value="-1199159971"
       label="ContextualSuggestionsIPHReverseScroll:enabled"/>
+  <int value="-1198304634"
+      label="ProcessSharingWithDefaultSiteInstances:disabled"/>
   <int value="-1197245070" label="CookieDeprecationMessages:disabled"/>
   <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
@@ -34532,6 +34683,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
+  <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
   <int value="-1103099187" label="NotificationStackingBarRedesign:disabled"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
   <int value="-1099618411" label="UpdatedCellularActivationUi:enabled"/>
@@ -34659,6 +34811,8 @@ from previous Chrome versions.
   <int value="-932474660" label="VirtualDesks:enabled"/>
   <int value="-932261921"
       label="enable-defer-all-script-without-optimization-hints"/>
+  <int value="-932164609"
+      label="ProcessSharingWithDefaultSiteInstances:enabled"/>
   <int value="-929944930"
       label="AutofillRationalizeRepeatedServerPredictions:disabled"/>
   <int value="-928138978" label="IPH_DemoMode:disabled"/>
@@ -35132,6 +35286,7 @@ from previous Chrome versions.
   <int value="-250822813" label="PwaImprovedSplashScreen:enabled"/>
   <int value="-250721831" label="AndroidAutofillAccessibility:disabled"/>
   <int value="-250543540" label="DeferAllScript:enabled"/>
+  <int value="-249415830" label="FilteringScrollPrediction:disabled"/>
   <int value="-248223420" label="AutofillKeyboardAccessory:disabled"/>
   <int value="-243323793" label="OmniboxOnDeviceHeadProvider:enabled"/>
   <int value="-241353344" label="MidiManagerWinrt:disabled"/>
@@ -36729,6 +36884,7 @@ from previous Chrome versions.
   <int value="2071229145" label="BloatedRendererDetection:enabled"/>
   <int value="2071340353" label="progress-bar-completion"/>
   <int value="2071461362" label="disable-credit-card-scan"/>
+  <int value="2072057275" label="UpdateHoverAtBeginFrame:disabled"/>
   <int value="2072231406" label="SingleProcessMash:disabled"/>
   <int value="2073113207" label="SensorContentSetting:disabled"/>
   <int value="2075207488" label="AutomaticPasswordGeneration:disabled"/>
@@ -39625,6 +39781,7 @@ Called by update_use_counter_css.py.-->
   <int value="13" label="Chrome Search Extension"/>
   <int value="14" label="Chrome Content Extension"/>
   <int value="15" label="Chrome Share Extension"/>
+  <int value="16" label="Chrome"/>
 </enum>
 
 <enum name="MobileSessionShutdownType">
@@ -40233,7 +40390,9 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Opener x-origin"/>
   <int value="7" label="Sandbox no gesture"/>
   <int value="8" label="Ad frame no gesture"/>
-  <int value="9" label="Ad frame gesture"/>
+  <int value="10" label="Ad frame"/>
+  <int value="11" label="Sandbox"/>
+  <int value="12" label="No gesture"/>
 </enum>
 
 <enum name="NavigationInterceptResult">
@@ -53364,12 +53523,20 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="SharingClickToCallDialogType">
+  <int value="0" label="Dialog with devices and maybe apps"/>
+  <int value="1" label="Dialog without devices but with an app"/>
+  <int value="2" label="Educational dialog without devices or apps"/>
+  <int value="3" label="Error dialog"/>
+</enum>
+
 <enum name="SharingDeviceRegistrationResult">
   <int value="0" label="Operation is successful"/>
   <int value="1" label="Failed with Sync not ready"/>
   <int value="2" label="Failed with encryption related error"/>
   <int value="3" label="Failed with FCM transient error"/>
   <int value="4" label="Failed with FCM fatal error"/>
+  <int value="5" label="Device has not been registered"/>
 </enum>
 
 <enum name="SharingMessageType">
@@ -58444,6 +58611,15 @@ Full version information for the fingerprint enum values:
       label="CROS Cr50 0.2.2 aka 0.4.4 Flags 0x10(pre-pvt)"/>
 </enum>
 
+<enum name="TracingFinalizationDisallowedReason">
+  <int value="0" label="Incognito profile launched"/>
+  <int value="1" label="Default profile not loaded"/>
+  <int value="2" label="Crash metrics not loaded"/>
+  <int value="3" label="Last session crashed"/>
+  <int value="4" label="Metrics reporting disabled"/>
+  <int value="5" label="Recently uploaded another trace"/>
+</enum>
+
 <enum name="TrackedPreference">
   <int value="0" label="kShowHomeButton"/>
   <int value="1" label="kHomePageIsNewTabPage"/>
@@ -62912,6 +63088,361 @@ Full version information for the fingerprint enum values:
   </obsolete>
   <int value="0" label="Last opened profile is non-empty"/>
   <int value="1" label="Cannot open last used profile"/>
+</enum>
+
+<enum name="WindowsPatchLevel">
+<!-- These can be generated by visiting https://bit.ly/2JQr6rB -->
+
+  <int value="0" label="Invalid Patch Level"/>
+  <int value="498163541" label="Windows 7 Service Pack 1 (Build 7601.24405)"/>
+  <int value="602947584" label="Windows 8 (Build 9200.16384)"/>
+  <int value="629164923" label="Windows 8.1 (Build 9600.19323)"/>
+  <int value="671090283" label="Windows 10 1507 (Build 10240.1643)"/>
+  <int value="671090292" label="Windows 10 1507 (Build 10240.1652)"/>
+  <int value="671090299" label="Windows 10 1507 (Build 10240.1659)"/>
+  <int value="671090359" label="Windows 10 1507 (Build 10240.1719)"/>
+  <int value="671090417" label="Windows 10 1507 (Build 10240.1777)"/>
+  <int value="671105045" label="Windows 10 1507 (Build 10240.16405)"/>
+  <int value="671105053" label="Windows 10 1507 (Build 10240.16413)"/>
+  <int value="671105073" label="Windows 10 1507 (Build 10240.16433)"/>
+  <int value="671105085" label="Windows 10 1507 (Build 10240.16445)"/>
+  <int value="671105103" label="Windows 10 1507 (Build 10240.16463)"/>
+  <int value="671105127" label="Windows 10 1507 (Build 10240.16487)"/>
+  <int value="671105189" label="Windows 10 1507 (Build 10240.16549)"/>
+  <int value="671105206" label="Windows 10 1507 (Build 10240.16566)"/>
+  <int value="671105241" label="Windows 10 1507 (Build 10240.16601)"/>
+  <int value="671105284" label="Windows 10 1507 (Build 10240.16644)"/>
+  <int value="671105323" label="Windows 10 1507 (Build 10240.16683)"/>
+  <int value="671105365" label="Windows 10 1507 (Build 10240.16725)"/>
+  <int value="671105411" label="Windows 10 1507 (Build 10240.16771)"/>
+  <int value="671105494" label="Windows 10 1507 (Build 10240.16854)"/>
+  <int value="671105582" label="Windows 10 1507 (Build 10240.16942)"/>
+  <int value="671105664" label="Windows 10 1507 (Build 10240.17024)"/>
+  <int value="671105711" label="Windows 10 1507 (Build 10240.17071)"/>
+  <int value="671105753" label="Windows 10 1507 (Build 10240.17113)"/>
+  <int value="671105786" label="Windows 10 1507 (Build 10240.17146)"/>
+  <int value="671105842" label="Windows 10 1507 (Build 10240.17202)"/>
+  <int value="671105876" label="Windows 10 1507 (Build 10240.17236)"/>
+  <int value="671105959" label="Windows 10 1507 (Build 10240.17319)"/>
+  <int value="671105994" label="Windows 10 1507 (Build 10240.17354)"/>
+  <int value="671106034" label="Windows 10 1507 (Build 10240.17394)"/>
+  <int value="671106083" label="Windows 10 1507 (Build 10240.17443)"/>
+  <int value="671106086" label="Windows 10 1507 (Build 10240.17446)"/>
+  <int value="671106128" label="Windows 10 1507 (Build 10240.17488)"/>
+  <int value="671106173" label="Windows 10 1507 (Build 10240.17533)"/>
+  <int value="671106249" label="Windows 10 1507 (Build 10240.17609)"/>
+  <int value="671106283" label="Windows 10 1507 (Build 10240.17643)"/>
+  <int value="671106313" label="Windows 10 1507 (Build 10240.17673)"/>
+  <int value="671106349" label="Windows 10 1507 (Build 10240.17709)"/>
+  <int value="671106378" label="Windows 10 1507 (Build 10240.17738)"/>
+  <int value="671106381" label="Windows 10 1507 (Build 10240.17741)"/>
+  <int value="671106437" label="Windows 10 1507 (Build 10240.17797)"/>
+  <int value="671106471" label="Windows 10 1507 (Build 10240.17831)"/>
+  <int value="671106501" label="Windows 10 1507 (Build 10240.17861)"/>
+  <int value="671106529" label="Windows 10 1507 (Build 10240.17889)"/>
+  <int value="671106554" label="Windows 10 1507 (Build 10240.17914)"/>
+  <int value="671106558" label="Windows 10 1507 (Build 10240.17918)"/>
+  <int value="671106586" label="Windows 10 1507 (Build 10240.17946)"/>
+  <int value="671106616" label="Windows 10 1507 (Build 10240.17976)"/>
+  <int value="671106645" label="Windows 10 1507 (Build 10240.18005)"/>
+  <int value="671106676" label="Windows 10 1507 (Build 10240.18036)"/>
+  <int value="671106703" label="Windows 10 1507 (Build 10240.18063)"/>
+  <int value="671106704" label="Windows 10 1507 (Build 10240.18064)"/>
+  <int value="671106734" label="Windows 10 1507 (Build 10240.18094)"/>
+  <int value="671106772" label="Windows 10 1507 (Build 10240.18132)"/>
+  <int value="671106775" label="Windows 10 1507 (Build 10240.18135)"/>
+  <int value="671106798" label="Windows 10 1507 (Build 10240.18158)"/>
+  <int value="671106826" label="Windows 10 1507 (Build 10240.18186)"/>
+  <int value="671106827" label="Windows 10 1507 (Build 10240.18187)"/>
+  <int value="671106855" label="Windows 10 1507 (Build 10240.18215)"/>
+  <int value="671106858" label="Windows 10 1507 (Build 10240.18218)"/>
+  <int value="671106884" label="Windows 10 1507 (Build 10240.18244)"/>
+  <int value="671106915" label="Windows 10 1507 (Build 10240.18275)"/>
+  <int value="693764099" label="Windows 10 1511 (Build 10586.3)"/>
+  <int value="693764107" label="Windows 10 1511 (Build 10586.11)"/>
+  <int value="693764110" label="Windows 10 1511 (Build 10586.14)"/>
+  <int value="693764113" label="Windows 10 1511 (Build 10586.17)"/>
+  <int value="693764125" label="Windows 10 1511 (Build 10586.29)"/>
+  <int value="693764132" label="Windows 10 1511 (Build 10586.36)"/>
+  <int value="693764138" label="Windows 10 1511 (Build 10586.42)"/>
+  <int value="693764159" label="Windows 10 1511 (Build 10586.63)"/>
+  <int value="693764167" label="Windows 10 1511 (Build 10586.71)"/>
+  <int value="693764200" label="Windows 10 1511 (Build 10586.104)"/>
+  <int value="693764218" label="Windows 10 1511 (Build 10586.122)"/>
+  <int value="693764250" label="Windows 10 1511 (Build 10586.154)"/>
+  <int value="693764260" label="Windows 10 1511 (Build 10586.164)"/>
+  <int value="693764314" label="Windows 10 1511 (Build 10586.218)"/>
+  <int value="693764414" label="Windows 10 1511 (Build 10586.318)"/>
+  <int value="693764590" label="Windows 10 1511 (Build 10586.494)"/>
+  <int value="693764641" label="Windows 10 1511 (Build 10586.545)"/>
+  <int value="693764685" label="Windows 10 1511 (Build 10586.589)"/>
+  <int value="693764729" label="Windows 10 1511 (Build 10586.633)"/>
+  <int value="693764775" label="Windows 10 1511 (Build 10586.679)"/>
+  <int value="693764809" label="Windows 10 1511 (Build 10586.713)"/>
+  <int value="693764849" label="Windows 10 1511 (Build 10586.753)"/>
+  <int value="693764935" label="Windows 10 1511 (Build 10586.839)"/>
+  <int value="693764969" label="Windows 10 1511 (Build 10586.873)"/>
+  <int value="693765012" label="Windows 10 1511 (Build 10586.916)"/>
+  <int value="693765058" label="Windows 10 1511 (Build 10586.962)"/>
+  <int value="693765061" label="Windows 10 1511 (Build 10586.965)"/>
+  <int value="693765103" label="Windows 10 1511 (Build 10586.1007)"/>
+  <int value="693765141" label="Windows 10 1511 (Build 10586.1045)"/>
+  <int value="693765202" label="Windows 10 1511 (Build 10586.1106)"/>
+  <int value="693765272" label="Windows 10 1511 (Build 10586.1176)"/>
+  <int value="693765273" label="Windows 10 1511 (Build 10586.1177)"/>
+  <int value="693765328" label="Windows 10 1511 (Build 10586.1232)"/>
+  <int value="693765391" label="Windows 10 1511 (Build 10586.1295)"/>
+  <int value="693765452" label="Windows 10 1511 (Build 10586.1356)"/>
+  <int value="693765454" label="Windows 10 1511 (Build 10586.1358)"/>
+  <int value="693765513" label="Windows 10 1511 (Build 10586.1417)"/>
+  <int value="693765574" label="Windows 10 1511 (Build 10586.1478)"/>
+  <int value="943259649" label="Windows 10 1607 (Build 14393.1)"/>
+  <int value="943259699" label="Windows 10 1607 (Build 14393.51)"/>
+  <int value="943259730" label="Windows 10 1607 (Build 14393.82)"/>
+  <int value="943259753" label="Windows 10 1607 (Build 14393.105)"/>
+  <int value="943259796" label="Windows 10 1607 (Build 14393.148)"/>
+  <int value="943259815" label="Windows 10 1607 (Build 14393.167)"/>
+  <int value="943259825" label="Windows 10 1607 (Build 14393.177)"/>
+  <int value="943259835" label="Windows 10 1607 (Build 14393.187)"/>
+  <int value="943259870" label="Windows 10 1607 (Build 14393.222)"/>
+  <int value="943259891" label="Windows 10 1607 (Build 14393.243)"/>
+  <int value="943259906" label="Windows 10 1607 (Build 14393.258)"/>
+  <int value="943259915" label="Windows 10 1607 (Build 14393.267)"/>
+  <int value="943259969" label="Windows 10 1607 (Build 14393.321)"/>
+  <int value="943259999" label="Windows 10 1607 (Build 14393.351)"/>
+  <int value="943260095" label="Windows 10 1607 (Build 14393.447)"/>
+  <int value="943260127" label="Windows 10 1607 (Build 14393.479)"/>
+  <int value="943260224" label="Windows 10 1607 (Build 14393.576)"/>
+  <int value="943260341" label="Windows 10 1607 (Build 14393.693)"/>
+  <int value="943260601" label="Windows 10 1607 (Build 14393.953)"/>
+  <int value="943260617" label="Windows 10 1607 (Build 14393.969)"/>
+  <int value="943260714" label="Windows 10 1607 (Build 14393.1066)"/>
+  <int value="943260846" label="Windows 10 1607 (Build 14393.1198)"/>
+  <int value="943261006" label="Windows 10 1607 (Build 14393.1358)"/>
+  <int value="943261026" label="Windows 10 1607 (Build 14393.1378)"/>
+  <int value="943261180" label="Windows 10 1607 (Build 14393.1532)"/>
+  <int value="943261185" label="Windows 10 1607 (Build 14393.1537)"/>
+  <int value="943261241" label="Windows 10 1607 (Build 14393.1593)"/>
+  <int value="943261261" label="Windows 10 1607 (Build 14393.1613)"/>
+  <int value="943261363" label="Windows 10 1607 (Build 14393.1715)"/>
+  <int value="943261385" label="Windows 10 1607 (Build 14393.1737)"/>
+  <int value="943261442" label="Windows 10 1607 (Build 14393.1794)"/>
+  <int value="943261445" label="Windows 10 1607 (Build 14393.1797)"/>
+  <int value="943261532" label="Windows 10 1607 (Build 14393.1884)"/>
+  <int value="943261562" label="Windows 10 1607 (Build 14393.1914)"/>
+  <int value="943261592" label="Windows 10 1607 (Build 14393.1944)"/>
+  <int value="943261655" label="Windows 10 1607 (Build 14393.2007)"/>
+  <int value="943261683" label="Windows 10 1607 (Build 14393.2035)"/>
+  <int value="943261716" label="Windows 10 1607 (Build 14393.2068)"/>
+  <int value="943261745" label="Windows 10 1607 (Build 14393.2097)"/>
+  <int value="943261773" label="Windows 10 1607 (Build 14393.2125)"/>
+  <int value="943261803" label="Windows 10 1607 (Build 14393.2155)"/>
+  <int value="943261804" label="Windows 10 1607 (Build 14393.2156)"/>
+  <int value="943261837" label="Windows 10 1607 (Build 14393.2189)"/>
+  <int value="943261862" label="Windows 10 1607 (Build 14393.2214)"/>
+  <int value="943261896" label="Windows 10 1607 (Build 14393.2248)"/>
+  <int value="943261921" label="Windows 10 1607 (Build 14393.2273)"/>
+  <int value="943261960" label="Windows 10 1607 (Build 14393.2312)"/>
+  <int value="943261987" label="Windows 10 1607 (Build 14393.2339)"/>
+  <int value="943262011" label="Windows 10 1607 (Build 14393.2363)"/>
+  <int value="943262016" label="Windows 10 1607 (Build 14393.2368)"/>
+  <int value="943262043" label="Windows 10 1607 (Build 14393.2395)"/>
+  <int value="943262044" label="Windows 10 1607 (Build 14393.2396)"/>
+  <int value="943262105" label="Windows 10 1607 (Build 14393.2457)"/>
+  <int value="943262133" label="Windows 10 1607 (Build 14393.2485)"/>
+  <int value="943262163" label="Windows 10 1607 (Build 14393.2515)"/>
+  <int value="943262199" label="Windows 10 1607 (Build 14393.2551)"/>
+  <int value="943262256" label="Windows 10 1607 (Build 14393.2608)"/>
+  <int value="943262287" label="Windows 10 1607 (Build 14393.2639)"/>
+  <int value="943262289" label="Windows 10 1607 (Build 14393.2641)"/>
+  <int value="943262313" label="Windows 10 1607 (Build 14393.2665)"/>
+  <int value="943262372" label="Windows 10 1607 (Build 14393.2724)"/>
+  <int value="943262407" label="Windows 10 1607 (Build 14393.2759)"/>
+  <int value="943262439" label="Windows 10 1607 (Build 14393.2791)"/>
+  <int value="943262476" label="Windows 10 1607 (Build 14393.2828)"/>
+  <int value="943262496" label="Windows 10 1607 (Build 14393.2848)"/>
+  <int value="943262527" label="Windows 10 1607 (Build 14393.2879)"/>
+  <int value="943262554" label="Windows 10 1607 (Build 14393.2906)"/>
+  <int value="943262556" label="Windows 10 1607 (Build 14393.2908)"/>
+  <int value="943262589" label="Windows 10 1607 (Build 14393.2941)"/>
+  <int value="943262617" label="Windows 10 1607 (Build 14393.2969)"/>
+  <int value="943262620" label="Windows 10 1607 (Build 14393.2972)"/>
+  <int value="943262647" label="Windows 10 1607 (Build 14393.2999)"/>
+  <int value="943262673" label="Windows 10 1607 (Build 14393.3025)"/>
+  <int value="943262701" label="Windows 10 1607 (Build 14393.3053)"/>
+  <int value="943262704" label="Windows 10 1607 (Build 14393.3056)"/>
+  <int value="943262733" label="Windows 10 1607 (Build 14393.3085)"/>
+  <int value="943262763" label="Windows 10 1607 (Build 14393.3115)"/>
+  <int value="987168793" label="Windows 10 1703 (Build 15063.25)"/>
+  <int value="987168822" label="Windows 10 1703 (Build 15063.54)"/>
+  <int value="987168853" label="Windows 10 1703 (Build 15063.85)"/>
+  <int value="987168906" label="Windows 10 1703 (Build 15063.138)"/>
+  <int value="987169064" label="Windows 10 1703 (Build 15063.296)"/>
+  <int value="987169100" label="Windows 10 1703 (Build 15063.332)"/>
+  <int value="987169181" label="Windows 10 1703 (Build 15063.413)"/>
+  <int value="987169215" label="Windows 10 1703 (Build 15063.447)"/>
+  <int value="987169251" label="Windows 10 1703 (Build 15063.483)"/>
+  <int value="987169270" label="Windows 10 1703 (Build 15063.502)"/>
+  <int value="987169376" label="Windows 10 1703 (Build 15063.608)"/>
+  <int value="987169400" label="Windows 10 1703 (Build 15063.632)"/>
+  <int value="987169442" label="Windows 10 1703 (Build 15063.674)"/>
+  <int value="987169443" label="Windows 10 1703 (Build 15063.675)"/>
+  <int value="987169494" label="Windows 10 1703 (Build 15063.726)"/>
+  <int value="987169497" label="Windows 10 1703 (Build 15063.729)"/>
+  <int value="987169554" label="Windows 10 1703 (Build 15063.786)"/>
+  <int value="987169645" label="Windows 10 1703 (Build 15063.877)"/>
+  <int value="987169677" label="Windows 10 1703 (Build 15063.909)"/>
+  <int value="987169704" label="Windows 10 1703 (Build 15063.936)"/>
+  <int value="987169734" label="Windows 10 1703 (Build 15063.966)"/>
+  <int value="987169762" label="Windows 10 1703 (Build 15063.994)"/>
+  <int value="987169797" label="Windows 10 1703 (Build 15063.1029)"/>
+  <int value="987169826" label="Windows 10 1703 (Build 15063.1058)"/>
+  <int value="987169856" label="Windows 10 1703 (Build 15063.1088)"/>
+  <int value="987169880" label="Windows 10 1703 (Build 15063.1112)"/>
+  <int value="987169923" label="Windows 10 1703 (Build 15063.1155)"/>
+  <int value="987169950" label="Windows 10 1703 (Build 15063.1182)"/>
+  <int value="987169974" label="Windows 10 1703 (Build 15063.1206)"/>
+  <int value="987169977" label="Windows 10 1703 (Build 15063.1209)"/>
+  <int value="987170003" label="Windows 10 1703 (Build 15063.1235)"/>
+  <int value="987170034" label="Windows 10 1703 (Build 15063.1266)"/>
+  <int value="987170060" label="Windows 10 1703 (Build 15063.1292)"/>
+  <int value="987170092" label="Windows 10 1703 (Build 15063.1324)"/>
+  <int value="987170124" label="Windows 10 1703 (Build 15063.1356)"/>
+  <int value="987170155" label="Windows 10 1703 (Build 15063.1387)"/>
+  <int value="987170186" label="Windows 10 1703 (Build 15063.1418)"/>
+  <int value="987170214" label="Windows 10 1703 (Build 15063.1446)"/>
+  <int value="987170246" label="Windows 10 1703 (Build 15063.1478)"/>
+  <int value="987170274" label="Windows 10 1703 (Build 15063.1506)"/>
+  <int value="987170276" label="Windows 10 1703 (Build 15063.1508)"/>
+  <int value="987170331" label="Windows 10 1703 (Build 15063.1563)"/>
+  <int value="987170364" label="Windows 10 1703 (Build 15063.1596)"/>
+  <int value="987170399" label="Windows 10 1703 (Build 15063.1631)"/>
+  <int value="987170427" label="Windows 10 1703 (Build 15063.1659)"/>
+  <int value="987170457" label="Windows 10 1703 (Build 15063.1689)"/>
+  <int value="987170484" label="Windows 10 1703 (Build 15063.1716)"/>
+  <int value="987170514" label="Windows 10 1703 (Build 15063.1746)"/>
+  <int value="987170552" label="Windows 10 1703 (Build 15063.1784)"/>
+  <int value="987170553" label="Windows 10 1703 (Build 15063.1785)"/>
+  <int value="987170573" label="Windows 10 1703 (Build 15063.1805)"/>
+  <int value="987170576" label="Windows 10 1703 (Build 15063.1808)"/>
+  <int value="987170607" label="Windows 10 1703 (Build 15063.1839)"/>
+  <int value="987170636" label="Windows 10 1703 (Build 15063.1868)"/>
+  <int value="987170665" label="Windows 10 1703 (Build 15063.1897)"/>
+  <int value="987170666" label="Windows 10 1703 (Build 15063.1898)"/>
+  <int value="987170696" label="Windows 10 1703 (Build 15063.1928)"/>
+  <int value="987170723" label="Windows 10 1703 (Build 15063.1955)"/>
+  <int value="1068171283" label="Windows 10 1709 (Build 16299.19)"/>
+  <int value="1068171328" label="Windows 10 1709 (Build 16299.64)"/>
+  <int value="1068171346" label="Windows 10 1709 (Build 16299.82)"/>
+  <int value="1068171362" label="Windows 10 1709 (Build 16299.98)"/>
+  <int value="1068171379" label="Windows 10 1709 (Build 16299.115)"/>
+  <int value="1068171389" label="Windows 10 1709 (Build 16299.125)"/>
+  <int value="1068171456" label="Windows 10 1709 (Build 16299.192)"/>
+  <int value="1068171458" label="Windows 10 1709 (Build 16299.194)"/>
+  <int value="1068171465" label="Windows 10 1709 (Build 16299.201)"/>
+  <int value="1068171478" label="Windows 10 1709 (Build 16299.214)"/>
+  <int value="1068171512" label="Windows 10 1709 (Build 16299.248)"/>
+  <int value="1068171515" label="Windows 10 1709 (Build 16299.251)"/>
+  <int value="1068171573" label="Windows 10 1709 (Build 16299.309)"/>
+  <int value="1068171598" label="Windows 10 1709 (Build 16299.334)"/>
+  <int value="1068171635" label="Windows 10 1709 (Build 16299.371)"/>
+  <int value="1068171666" label="Windows 10 1709 (Build 16299.402)"/>
+  <int value="1068171695" label="Windows 10 1709 (Build 16299.431)"/>
+  <int value="1068171725" label="Windows 10 1709 (Build 16299.461)"/>
+  <int value="1068171756" label="Windows 10 1709 (Build 16299.492)"/>
+  <int value="1068171786" label="Windows 10 1709 (Build 16299.522)"/>
+  <int value="1068171811" label="Windows 10 1709 (Build 16299.547)"/>
+  <int value="1068171815" label="Windows 10 1709 (Build 16299.551)"/>
+  <int value="1068171843" label="Windows 10 1709 (Build 16299.579)"/>
+  <int value="1068171875" label="Windows 10 1709 (Build 16299.611)"/>
+  <int value="1068171901" label="Windows 10 1709 (Build 16299.637)"/>
+  <int value="1068171929" label="Windows 10 1709 (Build 16299.665)"/>
+  <int value="1068171930" label="Windows 10 1709 (Build 16299.666)"/>
+  <int value="1068171963" label="Windows 10 1709 (Build 16299.699)"/>
+  <int value="1068171990" label="Windows 10 1709 (Build 16299.726)"/>
+  <int value="1068172019" label="Windows 10 1709 (Build 16299.755)"/>
+  <int value="1068172049" label="Windows 10 1709 (Build 16299.785)"/>
+  <int value="1068172110" label="Windows 10 1709 (Build 16299.846)"/>
+  <int value="1068172111" label="Windows 10 1709 (Build 16299.847)"/>
+  <int value="1068172168" label="Windows 10 1709 (Build 16299.904)"/>
+  <int value="1068172200" label="Windows 10 1709 (Build 16299.936)"/>
+  <int value="1068172231" label="Windows 10 1709 (Build 16299.967)"/>
+  <int value="1068172268" label="Windows 10 1709 (Build 16299.1004)"/>
+  <int value="1068172293" label="Windows 10 1709 (Build 16299.1029)"/>
+  <int value="1068172323" label="Windows 10 1709 (Build 16299.1059)"/>
+  <int value="1068172351" label="Windows 10 1709 (Build 16299.1087)"/>
+  <int value="1068172391" label="Windows 10 1709 (Build 16299.1127)"/>
+  <int value="1068172410" label="Windows 10 1709 (Build 16299.1146)"/>
+  <int value="1068172446" label="Windows 10 1709 (Build 16299.1182)"/>
+  <int value="1068172481" label="Windows 10 1709 (Build 16299.1217)"/>
+  <int value="1068172501" label="Windows 10 1709 (Build 16299.1237)"/>
+  <int value="1068172503" label="Windows 10 1709 (Build 16299.1239)"/>
+  <int value="1068172532" label="Windows 10 1709 (Build 16299.1268)"/>
+  <int value="1068172560" label="Windows 10 1709 (Build 16299.1296)"/>
+  <int value="1122893856" label="Windows 10 1803 (Build 17134.32)"/>
+  <int value="1122893872" label="Windows 10 1803 (Build 17134.48)"/>
+  <int value="1122893883" label="Windows 10 1803 (Build 17134.59)"/>
+  <int value="1122893905" label="Windows 10 1803 (Build 17134.81)"/>
+  <int value="1122893907" label="Windows 10 1803 (Build 17134.83)"/>
+  <int value="1122893910" label="Windows 10 1803 (Build 17134.86)"/>
+  <int value="1122893936" label="Windows 10 1803 (Build 17134.112)"/>
+  <int value="1122893961" label="Windows 10 1803 (Build 17134.137)"/>
+  <int value="1122893989" label="Windows 10 1803 (Build 17134.165)"/>
+  <int value="1122893991" label="Windows 10 1803 (Build 17134.167)"/>
+  <int value="1122894015" label="Windows 10 1803 (Build 17134.191)"/>
+  <int value="1122894052" label="Windows 10 1803 (Build 17134.228)"/>
+  <int value="1122894078" label="Windows 10 1803 (Build 17134.254)"/>
+  <int value="1122894109" label="Windows 10 1803 (Build 17134.285)"/>
+  <int value="1122894110" label="Windows 10 1803 (Build 17134.286)"/>
+  <int value="1122894169" label="Windows 10 1803 (Build 17134.345)"/>
+  <int value="1122894200" label="Windows 10 1803 (Build 17134.376)"/>
+  <int value="1122894231" label="Windows 10 1803 (Build 17134.407)"/>
+  <int value="1122894265" label="Windows 10 1803 (Build 17134.441)"/>
+  <int value="1122894295" label="Windows 10 1803 (Build 17134.471)"/>
+  <int value="1122894296" label="Windows 10 1803 (Build 17134.472)"/>
+  <int value="1122894347" label="Windows 10 1803 (Build 17134.523)"/>
+  <int value="1122894380" label="Windows 10 1803 (Build 17134.556)"/>
+  <int value="1122894443" label="Windows 10 1803 (Build 17134.619)"/>
+  <int value="1122894472" label="Windows 10 1803 (Build 17134.648)"/>
+  <int value="1122894501" label="Windows 10 1803 (Build 17134.677)"/>
+  <int value="1122894530" label="Windows 10 1803 (Build 17134.706)"/>
+  <int value="1122894577" label="Windows 10 1803 (Build 17134.753)"/>
+  <int value="1122894589" label="Windows 10 1803 (Build 17134.765)"/>
+  <int value="1122894590" label="Windows 10 1803 (Build 17134.766)"/>
+  <int value="1122894623" label="Windows 10 1803 (Build 17134.799)"/>
+  <int value="1122894653" label="Windows 10 1803 (Build 17134.829)"/>
+  <int value="1122894682" label="Windows 10 1803 (Build 17134.858)"/>
+  <int value="1122894709" label="Windows 10 1803 (Build 17134.885)"/>
+  <int value="1122894739" label="Windows 10 1803 (Build 17134.915)"/>
+  <int value="1164115969" label="Windows 10 1809 (Build 17763.1)"/>
+  <int value="1164116023" label="Windows 10 1809 (Build 17763.55)"/>
+  <int value="1164116075" label="Windows 10 1809 (Build 17763.107)"/>
+  <int value="1164116102" label="Windows 10 1809 (Build 17763.134)"/>
+  <int value="1164116136" label="Windows 10 1809 (Build 17763.168)"/>
+  <int value="1164116162" label="Windows 10 1809 (Build 17763.194)"/>
+  <int value="1164116163" label="Windows 10 1809 (Build 17763.195)"/>
+  <int value="1164116221" label="Windows 10 1809 (Build 17763.253)"/>
+  <int value="1164116260" label="Windows 10 1809 (Build 17763.292)"/>
+  <int value="1164116284" label="Windows 10 1809 (Build 17763.316)"/>
+  <int value="1164116316" label="Windows 10 1809 (Build 17763.348)"/>
+  <int value="1164116347" label="Windows 10 1809 (Build 17763.379)"/>
+  <int value="1164116372" label="Windows 10 1809 (Build 17763.404)"/>
+  <int value="1164116405" label="Windows 10 1809 (Build 17763.437)"/>
+  <int value="1164116407" label="Windows 10 1809 (Build 17763.439)"/>
+  <int value="1164116443" label="Windows 10 1809 (Build 17763.475)"/>
+  <int value="1164116471" label="Windows 10 1809 (Build 17763.503)"/>
+  <int value="1164116472" label="Windows 10 1809 (Build 17763.504)"/>
+  <int value="1164116497" label="Windows 10 1809 (Build 17763.529)"/>
+  <int value="1164116525" label="Windows 10 1809 (Build 17763.557)"/>
+  <int value="1164116560" label="Windows 10 1809 (Build 17763.592)"/>
+  <int value="1164116561" label="Windows 10 1809 (Build 17763.593)"/>
+  <int value="1164116583" label="Windows 10 1809 (Build 17763.615)"/>
+  <int value="1164116620" label="Windows 10 1809 (Build 17763.652)"/>
+  <int value="1203372148" label="Windows 10 1903 (Build 18362.116)"/>
+  <int value="1203372177" label="Windows 10 1903 (Build 18362.145)"/>
+  <int value="1203372207" label="Windows 10 1903 (Build 18362.175)"/>
+  <int value="1203372239" label="Windows 10 1903 (Build 18362.207)"/>
+  <int value="1203372271" label="Windows 10 1903 (Build 18362.239)"/>
 </enum>
 
 <enum name="WindowsToastActivatorCLSIDMismatchReason">

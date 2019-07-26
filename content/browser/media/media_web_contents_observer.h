@@ -31,6 +31,10 @@ namespace media {
 enum class MediaContentType;
 }  // namespace media
 
+namespace media_session {
+struct MediaPosition;
+}  // namespace media_session
+
 namespace gfx {
 class Size;
 }  // namespace size
@@ -126,6 +130,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
                                  int delegate_id,
                                  bool muted);
+  void OnMediaPositionStateChanged(
+      RenderFrameHost* render_frame_host,
+      int delegate_id,
+      const media_session::MediaPosition& position);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);

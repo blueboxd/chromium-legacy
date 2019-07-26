@@ -23,6 +23,7 @@
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -46,6 +47,7 @@ const char kAuthSecret[] = "auth_secret";
 const char kFcmToken[] = "fcm_token";
 const char kDeviceName[] = "other_name";
 const char kMessageId[] = "message_id";
+const char kAuthorizedEntity[] = "authorized_entity";
 constexpr base::TimeDelta kTtl = base::TimeDelta::FromSeconds(10);
 
 class FakeGCMDriver : public gcm::FakeGCMDriver {
@@ -67,6 +69,10 @@ class FakeGCMDriver : public gcm::FakeGCMDriver {
     fcm_token_ = fcm_token;
     if (should_respond_)
       std::move(callback).Run(base::make_optional(kMessageId));
+  }
+
+  gcm::GCMEncryptionProvider* GetEncryptionProviderInternal() override {
+    return nullptr;
   }
 
   void set_should_respond(bool should_respond) {
@@ -127,12 +133,10 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
       SharingSyncPreference* prefs,
       instance_id::InstanceIDDriver* instance_id_driver,
       VapidKeyManager* vapid_key_manager,
-      gcm::GCMDriver* gcm_driver,
       syncer::LocalDeviceInfoProvider* device_info_tracker)
       : SharingDeviceRegistration(prefs,
                                   instance_id_driver,
                                   vapid_key_manager,
-                                  gcm_driver,
                                   device_info_tracker) {}
   ~FakeSharingDeviceRegistration() override = default;
 
@@ -166,7 +170,7 @@ class SharingServiceTest : public testing::Test {
     sync_prefs_ = new SharingSyncPreference(&prefs_);
     sharing_device_registration_ = new FakeSharingDeviceRegistration(
         sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
-        &fake_gcm_driver_, &fake_local_device_info_provider_);
+        &fake_local_device_info_provider_);
     vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
     fcm_sender_ = new SharingFCMSender(&fake_gcm_driver_,
                                        &fake_local_device_info_provider_,
@@ -204,8 +208,8 @@ class SharingServiceTest : public testing::Test {
           base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
           base::WrapUnique(sharing_device_registration_),
           base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
-          &device_info_tracker_, &fake_local_device_info_provider_,
-          &test_sync_service_);
+          &fake_gcm_driver_, &device_info_tracker_,
+          &fake_local_device_info_provider_, &test_sync_service_);
     }
     return sharing_service_.get();
   }
@@ -344,6 +348,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
 
   GetSharingService()->SendMessageToDevice(
       id, kTtl, chrome_browser_sharing::SharingMessage(),
@@ -373,6 +378,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceFCMNotResponding) {
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
 
   // FCM driver will not respond to the send request.
   fake_gcm_driver_.set_should_respond(false);
@@ -411,6 +417,7 @@ TEST_F(SharingServiceTest, SendMessageToDeviceExpired) {
       CreateFakeDeviceInfo(id, kDeviceName);
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
+  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
 
   GetSharingService()->SendMessageToDevice(
       id, kTtl, chrome_browser_sharing::SharingMessage(),
@@ -547,12 +554,22 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(0, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Further state changes do nothing.
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(0);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(0, sharing_device_registration_->unregistration_attempts());
+  EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+
+  // Change sync to configuring, which will be ignored.
+  test_sync_service_.SetTransportState(
+      syncer::SyncService::TransportState::CONFIGURING);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(0, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
 
   // Disable sync and un-registration should happen.
@@ -560,12 +577,14 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
       syncer::SyncService::TransportState::DISABLED);
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(1);
   test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
   // Further state changes do nothing.
   EXPECT_CALL(*fcm_handler_, StopListening()).Times(0);
   test_sync_service_.FireStateChanged();
+  EXPECT_EQ(1, sharing_device_registration_->registration_attempts());
   EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 
@@ -575,7 +594,16 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   test_sync_service_.FireStateChanged();
   EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
   EXPECT_EQ(SharingService::State::ACTIVE, GetSharingService()->GetState());
+
+  // Disable syncing of preference and un-registration should happen.
+  test_sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+  EXPECT_CALL(*fcm_handler_, StopListening()).Times(1);
+  test_sync_service_.FireStateChanged();
+  EXPECT_EQ(2, sharing_device_registration_->registration_attempts());
+  EXPECT_EQ(2, sharing_device_registration_->unregistration_attempts());
+  EXPECT_EQ(SharingService::State::DISABLED, GetSharingService()->GetState());
 }
 
 TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
@@ -586,8 +614,7 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
 
   // Create new SharingService instance with FCM already registered at
   // constructor.
-  sync_prefs_->SetFCMRegistration(
-      {"authorized_entity", "fcm_registration_token", base::Time::Now()});
+  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
   EXPECT_CALL(*fcm_handler_, StartListening()).Times(1);
   GetSharingService();
 }

@@ -770,6 +770,7 @@ jumbo_static_library("extensions") {
   ]
   deps = [
     "//apps",
+    "//build:branding_buildflags",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",

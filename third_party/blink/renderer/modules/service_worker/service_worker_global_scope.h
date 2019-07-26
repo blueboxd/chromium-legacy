@@ -32,7 +32,8 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
@@ -148,7 +149,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   void BindServiceWorker(mojom::blink::ServiceWorkerRequest);
   void BindControllerServiceWorker(
-      mojom::blink::ControllerServiceWorkerRequest);
+      mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>);
   void OnNavigationPreloadResponse(
       int fetch_event_id,
       std::unique_ptr<WebURLResponse>,
@@ -355,7 +356,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       mojom::blink::DispatchFetchEventParamsPtr params,
       mojom::blink::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventForSubresourceCallback callback) override;
-  void Clone(mojom::blink::ControllerServiceWorkerRequest request) override;
+  void Clone(mojo::PendingReceiver<mojom::blink::ControllerServiceWorker>
+                 reciever) override;
 
   // Implements mojom::blink::ServiceWorker.
   void InitializeGlobalScope(
@@ -522,7 +524,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // |timeout_timer_| since the pipe needs to be disconnected before callbacks
   // passed by DispatchSomeEvent() get destructed, which may be stored in
   // |timeout_timer_|
-  mojo::BindingSet<mojom::blink::ControllerServiceWorker> controller_bindings_;
+  mojo::ReceiverSet<mojom::blink::ControllerServiceWorker>
+      controller_receivers_;
 };
 
 template <>

@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -2929,6 +2930,47 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y,
               kHitTestTolerance);
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       RecordTimeInQueueMetric) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_masked_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  router->GetRenderWidgetTargeterForTests()
+      ->set_async_hit_test_timeout_delay_for_testing(base::TimeDelta());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  blink::WebMouseEvent child_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  child_event.button = blink::WebPointerProperties::Button::kLeft;
+  SetWebEventPositions(&child_event, gfx::Point(75, 75), root_view);
+  child_event.click_count = 1;
+
+  base::HistogramTester tester;
+
+  InputEventAckWaiter waiter(root_view->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kMouseDown);
+  // Need at least two events to generate a queue.
+  router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
+  router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
+  waiter.Wait();
+
+  tester.ExpectTotalCount("Event.AsyncTargeting.TimeInQueue", 1);
 }
 
 // Tooltips aren't used on Android, so no need to compile/run this test in that

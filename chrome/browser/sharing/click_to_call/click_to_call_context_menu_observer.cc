@@ -61,7 +61,8 @@ void ClickToCallContextMenuObserver::InitMenu(
   url_ = params.link_url;
   devices_ = sharing_service_->GetDeviceCandidates(
       static_cast<int>(SharingDeviceCapability::kTelephony));
-  LogClickToCallDevicesToShow(devices_.size());
+  LogClickToCallDevicesToShow(kSharingClickToCallUiContextMenu,
+                              devices_.size());
   if (devices_.empty())
     return;
 

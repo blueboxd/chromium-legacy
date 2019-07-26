@@ -9,8 +9,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -30,10 +28,7 @@ UrgentPasswordExpiryNotificationHandler::
 
 void UrgentPasswordExpiryNotificationHandler::HandleContinue(
     const base::ListValue* params) {
-  auto* in_session_password_change_manager =
-      g_browser_process->platform_part()->in_session_password_change_manager();
-  CHECK(in_session_password_change_manager);
-  in_session_password_change_manager->StartInSessionPasswordChange();
+  InSessionPasswordChangeManager::Get()->StartInSessionPasswordChange();
 }
 
 void UrgentPasswordExpiryNotificationHandler::HandleGetTitleText(

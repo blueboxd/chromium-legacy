@@ -81,7 +81,10 @@ base::string16 ClickToCallSharingDialogController::GetTitle() {
 void ClickToCallSharingDialogController::ShowNewDialog() {
   if (dialog_)
     dialog_->Hide();
-  DCHECK(!dialog_);
+
+  // Treat the dialog as closed as the process of closing the native widget
+  // might be async.
+  dialog_ = nullptr;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   auto* window = browser ? browser->window() : nullptr;
@@ -174,7 +177,12 @@ void ClickToCallSharingDialogController::OnAppChosen(const App& app) {
                                                          web_contents_);
 }
 
-void ClickToCallSharingDialogController::OnDialogClosed() {
+void ClickToCallSharingDialogController::OnDialogClosed(
+    ClickToCallDialog* dialog) {
+  // Ignore already replaced dialogs.
+  if (dialog != dialog_)
+    return;
+
   dialog_ = nullptr;
   UpdateIcon();
 }

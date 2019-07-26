@@ -48,14 +48,6 @@
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
 // Don't do anything. We're going to use the default store.
 #elif defined(USE_X11)
-#include "components/os_crypt/key_storage_util_linux.h"
-#if defined(USE_GNOME_KEYRING)
-#include "chrome/browser/password_manager/native_backend_gnome_x.h"
-#endif
-#if defined(USE_LIBSECRET)
-#include "chrome/browser/password_manager/native_backend_libsecret.h"
-#endif
-#include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #endif
 
@@ -179,96 +171,9 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #if defined(OS_WIN)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
-  // For now, we use PasswordStoreDefault. We might want to make a native
-  // backend for PasswordStoreX (see below) in the future though.
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #elif defined(USE_X11)
-  // On POSIX systems, we try to use the "native" password management system of
-  // the desktop environment currently running, allowing GNOME Keyring in XFCE.
-  // (In all cases we fall back on the basic store in case of failure.)
-  base::nix::DesktopEnvironment desktop_env = GetDesktopEnvironment();
-  std::string store_type =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kPasswordStore);
-  LinuxBackendUsed used_backend = PLAINTEXT;
-
-  PrefService* prefs = profile->GetPrefs();
-  LocalProfileId id = GetLocalProfileId(prefs);
-
-  bool use_preference = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableEncryptionSelection);
-  bool use_backend = true;
-  if (use_preference) {
-    base::FilePath user_data_dir;
-    chrome::GetDefaultUserDataDirectory(&user_data_dir);
-    use_backend = os_crypt::GetBackendUse(user_data_dir);
-  }
-
-  os_crypt::SelectedLinuxBackend selected_backend =
-      os_crypt::SelectBackend(store_type, use_backend, desktop_env);
-
-  std::unique_ptr<PasswordStoreX::NativeBackend> backend;
-  if (selected_backend == os_crypt::SelectedLinuxBackend::KWALLET ||
-      selected_backend == os_crypt::SelectedLinuxBackend::KWALLET5) {
-    VLOG(1) << "Trying KWallet for password storage.";
-    base::nix::DesktopEnvironment used_desktop_env =
-        selected_backend == os_crypt::SelectedLinuxBackend::KWALLET
-            ? base::nix::DESKTOP_ENVIRONMENT_KDE4
-            : base::nix::DESKTOP_ENVIRONMENT_KDE5;
-    backend.reset(new NativeBackendKWallet(id, used_desktop_env));
-    if (backend->Init()) {
-      VLOG(1) << "Using KWallet for password storage.";
-      used_backend = KWALLET;
-    } else {
-      backend.reset();
-    }
-  } else if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
-             selected_backend ==
-                 os_crypt::SelectedLinuxBackend::GNOME_KEYRING ||
-             selected_backend ==
-                 os_crypt::SelectedLinuxBackend::GNOME_LIBSECRET) {
-#if defined(USE_LIBSECRET)
-    if (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
-        selected_backend == os_crypt::SelectedLinuxBackend::GNOME_LIBSECRET) {
-      VLOG(1) << "Trying libsecret for password storage.";
-      backend.reset(new NativeBackendLibsecret(id));
-      if (backend->Init()) {
-        VLOG(1) << "Using libsecret keyring for password storage.";
-        used_backend = LIBSECRET;
-      } else {
-        backend.reset();
-      }
-    }
-#endif  // defined(USE_LIBSECRET)
-#if defined(USE_GNOME_KEYRING)
-    if (!backend.get() &&
-        (selected_backend == os_crypt::SelectedLinuxBackend::GNOME_ANY ||
-         selected_backend == os_crypt::SelectedLinuxBackend::GNOME_KEYRING)) {
-      VLOG(1) << "Trying GNOME keyring for password storage.";
-      backend.reset(new NativeBackendGnome(id));
-      if (backend->Init()) {
-        VLOG(1) << "Using GNOME keyring for password storage.";
-        used_backend = GNOME_KEYRING;
-      } else {
-        backend.reset();
-      }
-    }
-#endif  // defined(USE_GNOME_KEYRING)
-  }
-
-  if (!backend.get()) {
-    LOG(WARNING) << "Using basic (unencrypted) store for password storage. "
-        "See "
-        "https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md"
-        " for more information about password storage options.";
-  }
-
-  ps = new PasswordStoreX(
-      std::move(login_db),
-      profile->GetPath().Append(password_manager::kLoginDataFileName),
-      profile->GetPath().Append(password_manager::kSecondLoginDataFileName),
-      std::move(backend), prefs);
-  RecordBackendStatistics(desktop_env, store_type, used_backend);
+  ps = new PasswordStoreX(std::move(login_db), profile->GetPrefs());
 #elif defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #else

@@ -20,6 +20,10 @@ class ASH_EXPORT AutoclickMenuBubbleController
     : public TrayBubbleView::Delegate,
       public LocaleChangeObserver {
  public:
+  // The duration of the position change animation for the menu and scroll
+  // bubbles in milliseconds.
+  static const int kAnimationDurationMs = 150;
+
   AutoclickMenuBubbleController();
   ~AutoclickMenuBubbleController() override;
 

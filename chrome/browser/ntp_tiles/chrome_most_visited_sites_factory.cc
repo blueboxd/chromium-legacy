@@ -18,10 +18,7 @@
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#include "chrome/common/buildflags.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_tiles/icon_cacher_impl.h"
@@ -33,8 +30,16 @@
 #include "chrome/browser/android/explore_sites/most_visited_client.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_service_observer.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
+#endif
+
 using suggestions::SuggestionsServiceFactory;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 namespace {
 
 class SupervisorBridge : public ntp_tiles::MostVisitedSitesSupervisor,
@@ -110,6 +115,7 @@ void SupervisorBridge::OnURLFilterChanged() {
 }
 
 }  // namespace
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 // static
 std::unique_ptr<ntp_tiles::MostVisitedSites>
@@ -140,7 +146,12 @@ ChromeMostVisitedSitesFactory::NewForProfile(Profile* profile) {
               std::make_unique<ImageDecoderImpl>(),
               content::BrowserContext::GetDefaultStoragePartition(profile)
                   ->GetURLLoaderFactoryForBrowserProcess())),
-      std::make_unique<SupervisorBridge>(profile));
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      std::make_unique<SupervisorBridge>(profile)
+#else
+      nullptr
+#endif
+  );
 #if defined(OS_ANDROID)
   most_visited_sites->SetExploreSitesClient(
       explore_sites::MostVisitedClient::Create());

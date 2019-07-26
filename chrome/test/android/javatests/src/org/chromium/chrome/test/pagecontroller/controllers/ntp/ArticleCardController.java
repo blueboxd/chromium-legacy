@@ -105,14 +105,14 @@ public class ArticleCardController extends ElementController {
                                 return null;
                             } else {
                                 if (headline == null)
-                                    throw UiLocationException.newInstance(
-                                            "Headline not found", headlineLocator, articleCard);
+                                    throw new UiLocationException(
+                                            "Headline not found.", headlineLocator, articleCard);
                                 else if (publisher == null)
-                                    throw UiLocationException.newInstance(
-                                            "Publisher not found", publisherLocator, articleCard);
+                                    throw new UiLocationException(
+                                            "Publisher not found.", publisherLocator, articleCard);
                                 else
-                                    throw UiLocationException.newInstance(
-                                            "Age not found", ageLocator, articleCard);
+                                    throw new UiLocationException(
+                                            "Age not found.", ageLocator, articleCard);
                             }
                         }
                     });

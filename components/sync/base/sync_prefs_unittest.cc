@@ -39,6 +39,15 @@ class SyncPrefsTest : public testing::Test {
     sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
   }
 
+  void SetDemographics(int birth_year,
+                       metrics::UserDemographicsProto::Gender gender) {
+    base::DictionaryValue dict;
+    dict.SetIntPath(prefs::kSyncDemographics_BirthYearPath, birth_year);
+    dict.SetIntPath(prefs::kSyncDemographics_GenderPath,
+                    static_cast<int>(gender));
+    pref_service_.Set(prefs::kSyncDemographics, dict);
+  }
+
   base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<SyncPrefs> sync_prefs_;
@@ -151,10 +160,7 @@ TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
       metrics::UserDemographicsProto::GENDER_MALE;
 
   // Set user demographic prefs.
-  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear,
-                           user_demographics_birth_year);
-  pref_service_.SetInteger(prefs::kSyncDemographicsGender,
-                           static_cast<int>(user_demographics_gender));
+  SetDemographics(user_demographics_birth_year, user_demographics_gender);
 
   int provided_birth_year;
   {
@@ -172,8 +178,8 @@ TEST_F(SyncPrefsTest, ReadDemographicsWithRandomOffset) {
   // Verify that the offset is cached and that the randomized birth year is the
   // same when doing more that one read of the birth year.
   {
-    ASSERT_TRUE(pref_service_.HasPrefPath(
-        prefs::kSyncDemographicsBirthYearNoiseOffset));
+    ASSERT_TRUE(
+        pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYearOffset));
     base::Optional<UserDemographics> demographics =
         sync_prefs_->GetUserDemographics(GetNowTime());
     ASSERT_TRUE(demographics.has_value());
@@ -188,12 +194,10 @@ TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
   // Set demographic prefs directly from the pref service interface because
   // demographic prefs will only be set on the server-side. The SyncPrefs
   // interface cannot set demographic prefs.
-  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear, 1983);
-  pref_service_.SetInteger(
-      prefs::kSyncDemographicsGender,
-      static_cast<int>(metrics::UserDemographicsProto::GENDER_FEMALE));
+  SetDemographics(1983, metrics::UserDemographicsProto::GENDER_FEMALE);
+
   // Set birth year noise offset to not have it randomized.
-  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYearNoiseOffset, 2);
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYearOffset, 2);
 
   // Verify that demographics are provided.
   {
@@ -204,12 +208,15 @@ TEST_F(SyncPrefsTest, ReadAndClearUserDemographicPreferences) {
 
   sync_prefs_->ClearPreferences();
 
-  // Verify that demographics are not provided and all their prefs are cleared.
+  // Verify that demographics are not provided and kSyncDemographics is cleared.
+  // Note that we retain kSyncDemographicsBirthYearOffset. If the user resumes
+  // syncing, causing these prefs to be recreated, we don't want them to start
+  // reporting a different randomized birth year as this could narrow down or
+  // even reveal their true birth year.
   EXPECT_FALSE(sync_prefs_->GetUserDemographics(GetNowTime()).has_value());
-  EXPECT_FALSE(pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYear));
-  EXPECT_FALSE(
-      pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYearNoiseOffset));
-  EXPECT_FALSE(pref_service_.HasPrefPath(prefs::kSyncDemographicsGender));
+  EXPECT_FALSE(pref_service_.HasPrefPath(prefs::kSyncDemographics));
+  EXPECT_TRUE(
+      pref_service_.HasPrefPath(prefs::kSyncDemographicsBirthYearOffset));
 }
 
 TEST_F(SyncPrefsTest, Basic) {
@@ -485,29 +492,19 @@ struct DemographicsTestParam {
   bool should_return_demographics = false;
 };
 
-// Test fixture for parameterized tests on demographics.
+// Extend SyncPrefsTest fixture for parameterized tests on demographics.
 class SyncPrefsDemographicsTest
-    : public testing::TestWithParam<DemographicsTestParam> {
- protected:
-  SyncPrefsDemographicsTest() {
-    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
-  }
-
-  base::test::ScopedTaskEnvironment task_environment_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  std::unique_ptr<SyncPrefs> sync_prefs_;
-};
+    : public SyncPrefsTest,
+      public testing::WithParamInterface<DemographicsTestParam> {};
 
 TEST_P(SyncPrefsDemographicsTest, ReadDemographics_OffsetIsNotRandom) {
   DemographicsTestParam param = GetParam();
 
   // Set user demographic prefs.
-  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYear, param.birth_year);
-  pref_service_.SetInteger(prefs::kSyncDemographicsGender,
-                           static_cast<int>(param.gender));
+  SetDemographics(param.birth_year, param.gender);
+
   // Set birth year noise offset to not have it randomized.
-  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYearNoiseOffset,
+  pref_service_.SetInteger(prefs::kSyncDemographicsBirthYearOffset,
                            param.birth_year_offset);
 
   // Verify provided demographics for the different parameterized test cases.
@@ -543,6 +540,13 @@ INSTANTIATE_TEST_SUITE_P(
         DemographicsTestParam{
             /*birth_year=*/2001,
             /*birth_year_offset=*/-2,
+            /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
+            /*should_return_demographics=*/false},
+        // Test where birth year should not be provided because age of user is
+        // |kUserDemographicsMaxAge| + 1, which is over the max age.
+        DemographicsTestParam{
+            /*birth_year=*/1933,
+            /*birth_year_offset=*/0,
             /*gender=*/metrics::UserDemographicsProto::GENDER_FEMALE,
             /*should_return_demographics=*/false},
         // Test where gender should not be provided because it has a low

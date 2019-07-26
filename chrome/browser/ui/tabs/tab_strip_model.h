@@ -34,7 +34,6 @@
 #endif
 
 class Profile;
-class TabGroupData;
 class TabStripModelDelegate;
 
 namespace content {
@@ -325,7 +324,8 @@ class TabStripModel {
   // https://crbug.com/915956).
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
-  // Returns the TabGroupData instance for the given |group|.
+  // Returns the TabGroupData instance for the given |group|. The returned
+  // pointer is valid until all tabs in |group| are destroyed.
   const TabGroupData* GetDataForGroup(TabGroupId group) const;
 
   // Returns a list of tab groups that contain at least one tab in this strip.
@@ -668,7 +668,7 @@ class TabStripModel {
 
   // The data for tab groups hosted within this TabStripModel, indexed by the
   // group ID.
-  std::map<TabGroupId, std::unique_ptr<TabGroupData>> group_data_;
+  std::map<TabGroupId, TabGroupData> group_data_;
 
   TabStripModelDelegate* delegate_;
 

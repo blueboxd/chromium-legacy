@@ -23,8 +23,8 @@ cr.define('settings_reset_page', function() {
         lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
         settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
 
-        resetPageBrowserProxy = new reset_page.TestResetBrowserProxy();
-        settings.ResetOsProxyImpl.instance_ = resetPageBrowserProxy;
+        resetPageBrowserProxy = new reset_page.TestOsResetBrowserProxy();
+        settings.OsResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
 
         PolymerTest.clearBody();
         resetPage = document.createElement('os-settings-reset-page');

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "chromeos/dbus/kerberos/kerberos_client.h"
@@ -72,13 +73,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
     bool operator!=(const AccountData& other) const;
   };
 
+  enum class WhatToRemove { kNothing, kPassword, kAccount };
+
+  // Determines what data to remove, depending on |mode| and |data|.
+  static WhatToRemove DetermineWhatToRemove(kerberos::ClearMode mode,
+                                            const AccountData& data);
+
   // Returns the AccountData for |principal_name| if available or nullptr
   // otherwise.
   AccountData* GetAccountData(const std::string& principal_name);
 
   // Maps principal name (user@REALM.COM) to account data.
-  using AccountsMap = std::vector<AccountData>;
-  AccountsMap accounts_;
+  std::vector<AccountData> accounts_;
 
   KerberosFilesChangedCallback kerberos_files_changed_callback_;
   KerberosTicketExpiringCallback kerberos_ticket_expiring_callback_;

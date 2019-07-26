@@ -26,6 +26,11 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                        LocalFrame& frame,
                                        bool same_document_navigation);
 
+  static TextFragmentAnchor* TryCreateFragmentDirective(
+      const KURL& url,
+      LocalFrame& frame,
+      bool same_document_navigation);
+
   TextFragmentAnchor(
       const Vector<TextFragmentSelector>& text_fragment_selectors,
       LocalFrame& frame);

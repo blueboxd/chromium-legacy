@@ -574,8 +574,10 @@ foreach(_target_type,
       # On Android, write shared library output file to metadata. We will use
       # this information to, for instance, collect all shared libraries that
       # should be packaged into an APK.
-      if (!defined(invoker.metadata) && is_android &&
-          _target_type == "shared_library") {
+      if (!defined(invoker.metadata) && is_android && (_target_type ==
+                                                       "shared_library" ||
+                                                       _target_type ==
+                                                       "loadable_module")) {
         _output_name = _target_name
         if (defined(invoker.output_name)) {
           _output_name = invoker.output_name
@@ -590,7 +592,7 @@ foreach(_target_type,
         _output_name = string_replace(_output_name, _magic_prefix, "", 1)
 
         _shlib_extension = ".so"
-        if (is_component_build) {
+        if (is_component_build && _target_type != "loadable_module") {
           _shlib_extension = ".cr.so"
         }
 

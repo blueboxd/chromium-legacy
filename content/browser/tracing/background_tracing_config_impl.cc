@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
@@ -270,8 +271,11 @@ TraceConfig BackgroundTracingConfigImpl::GetTraceConfig() const {
 
 size_t BackgroundTracingConfigImpl::GetTraceUploadLimitKb() const {
 #if defined(OS_ANDROID)
-  if (net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType())) {
+  auto type = net::NetworkChangeNotifier::GetConnectionType();
+  UMA_HISTOGRAM_ENUMERATION(
+      "Tracing.Background.NetworkConnectionTypeWhenUploaded", type,
+      net::NetworkChangeNotifier::CONNECTION_LAST + 1);
+  if (net::NetworkChangeNotifier::IsConnectionCellular(type)) {
     return upload_limit_network_kb_;
   }
 #endif
@@ -521,8 +525,11 @@ int BackgroundTracingConfigImpl::GetMaximumTraceBufferSizeKb() const {
     return low_ram_buffer_size_kb_;
   }
 #if defined(OS_ANDROID)
-  if (net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType())) {
+  auto type = net::NetworkChangeNotifier::GetConnectionType();
+  UMA_HISTOGRAM_ENUMERATION(
+      "Tracing.Background.NetworkConnectionTypeWhenStarted", type,
+      net::NetworkChangeNotifier::CONNECTION_LAST + 1);
+  if (net::NetworkChangeNotifier::IsConnectionCellular(type)) {
     return mobile_network_buffer_size_kb_;
   }
 #endif

@@ -27,15 +27,3 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include "third_party/blink/renderer/platform/wtf/time.h"
-
-#include "base/time/time.h"
-
-namespace WTF {
-
-double CurrentTime() {
-  return base::Time::Now().ToDoubleT();
-}
-
-}  // namespace WTF

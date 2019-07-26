@@ -82,8 +82,9 @@ interface ServiceWorkerContainerHost {
   // reported to the controllees, but the browser process is responsible for
   // properly handling the failure and recording the reasons.
   // |purpose| is used for UMA.
-  EnsureControllerServiceWorker(ControllerServiceWorker& controller,
-                                ControllerServiceWorkerPurpose purpose);
+  EnsureControllerServiceWorker(
+      pending_receiver<ControllerServiceWorker> receiver,
+      ControllerServiceWorkerPurpose purpose);
 
   // Makes a new endpoint to this ServiceWorkerContainerHost.
   CloneContainerHost(ServiceWorkerContainerHost& container_host);

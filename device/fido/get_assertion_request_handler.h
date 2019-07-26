@@ -54,6 +54,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
 
   // FidoRequestHandlerBase:
   void DispatchRequest(FidoAuthenticator* authenticator) override;
+  void AuthenticatorAdded(FidoDiscoveryBase* discovery,
+                          FidoAuthenticator* authenticator) override;
   void AuthenticatorRemoved(FidoDiscoveryBase* discovery,
                             FidoAuthenticator* authenticator) override;
 

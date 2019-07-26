@@ -614,6 +614,9 @@ extern const char kExtensionsOnChromeUrlsDescription[];
 extern const char kFeaturePolicyName[];
 extern const char kFeaturePolicyDescription[];
 
+extern const char kFilteringScrollPredictionName[];
+extern const char kFilteringScrollPredictionDescription[];
+
 extern const char kForceEffectiveConnectionTypeName[];
 extern const char kForceEffectiveConnectionTypeDescription[];
 extern const char kEffectiveConnectionTypeUnknownDescription[];
@@ -815,9 +818,6 @@ extern const char kOmniboxLocalEntitySuggestionsDescription[];
 extern const char kOmniboxMaterialDesignWeatherIconsName[];
 extern const char kOmniboxMaterialDesignWeatherIconsDescription[];
 
-extern const char kOmniboxNewAnswerLayoutName[];
-extern const char kOmniboxNewAnswerLayoutDescription[];
-
 extern const char kOmniboxRichEntitySuggestionsName[];
 extern const char kOmniboxRichEntitySuggestionsDescription[];
 
@@ -897,6 +897,9 @@ extern const char kOverlayStrategiesNone[];
 extern const char kOverlayStrategiesUnoccludedFullscreen[];
 extern const char kOverlayStrategiesUnoccluded[];
 extern const char kOverlayStrategiesOccludedAndUnoccluded[];
+
+extern const char kUpdateHoverAtBeginFrameName[];
+extern const char kUpdateHoverAtBeginFrameDescription[];
 
 extern const char kUseNewAcceptLanguageHeaderName[];
 extern const char kUseNewAcceptLanguageHeaderDescription[];
@@ -1479,6 +1482,9 @@ extern const char kOffliningRecentPagesDescription[];
 
 extern const char kPasswordManagerOnboardingAndroidName[];
 extern const char kPasswordManagerOnboardingAndroidDescription[];
+
+extern const char kProcessSharingWithDefaultSiteInstancesName[];
+extern const char kProcessSharingWithDefaultSiteInstancesDescription[];
 
 extern const char kProcessSharingWithStrictSiteInstancesName[];
 extern const char kProcessSharingWithStrictSiteInstancesDescription[];

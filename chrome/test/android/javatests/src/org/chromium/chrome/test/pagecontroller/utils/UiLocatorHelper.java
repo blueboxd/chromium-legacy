@@ -42,7 +42,7 @@ public class UiLocatorHelper {
         if (object2.isCheckable()) {
             return object2.isChecked();
         } else {
-            throw UiLocationException.newInstance("Item is not checkable", null, object2);
+            throw new UiLocationException("Item in " + object2 + " is not checkable.");
         }
     };
 
@@ -288,9 +288,9 @@ public class UiLocatorHelper {
             }
             Utils.sleep(UI_CHECK_INTERVAL_MS);
         } while (true);
-        throw UiLocationException.newInstance("Could not find any objects after " + elapsedTime
-                        + " ms and " + attempts + " attempts",
-                locator, null);
+        throw new UiLocationException("Could not find any objects after " + elapsedTime + " ms and "
+                        + attempts + " attempts.",
+                locator);
     }
 
     /**

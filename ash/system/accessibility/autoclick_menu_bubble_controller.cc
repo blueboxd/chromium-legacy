@@ -177,6 +177,9 @@ void AutoclickMenuBubbleController::SetPosition(
       bubble_widget_->GetLayer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
   bubble_widget_->SetBounds(resting_bounds);
 
   if (!scroll_bubble_controller_)

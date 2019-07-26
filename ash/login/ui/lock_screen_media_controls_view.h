@@ -21,6 +21,7 @@ class Connector;
 namespace views {
 class ImageView;
 class ToggleImageButton;
+class ImageButton;
 }  // namespace views
 
 namespace ash {
@@ -61,6 +62,8 @@ class ASH_EXPORT LockScreenMediaControlsView
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   views::View* GetMiddleSpacingView();
 
@@ -74,6 +77,8 @@ class ASH_EXPORT LockScreenMediaControlsView
       override;
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override;
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   // media_session::mojom::MediaControllerImageObserver:
   void MediaControllerImageChanged(
@@ -155,6 +160,7 @@ class ASH_EXPORT LockScreenMediaControlsView
   views::ImageView* session_artwork_ = nullptr;
   NonAccessibleView* button_row_ = nullptr;
   views::ToggleImageButton* play_pause_button_ = nullptr;
+  views::ImageButton* close_button_ = nullptr;
 
   // Callbacks.
   const MediaControlsEnabled media_controls_enabled_;

@@ -437,8 +437,10 @@ void TestingProfile::Init() {
     user_prefs::UserPrefs::Set(this, prefs_.get());
   else if (IsOffTheRecord())
     CreateIncognitoPrefService();
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   else if (!supervised_user_id_.empty())
     CreatePrefServiceForSupervisedUser();
+#endif
   else
     CreateTestingPrefService();
 
@@ -821,6 +823,7 @@ void TestingProfile::CreateTestingPrefService() {
   RegisterUserProfilePrefs(testing_prefs_->registry());
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 void TestingProfile::CreatePrefServiceForSupervisedUser() {
   DCHECK(!prefs_.get());
   DCHECK(!supervised_user_id_.empty());
@@ -839,6 +842,7 @@ void TestingProfile::CreatePrefServiceForSupervisedUser() {
   RegisterUserProfilePrefs(registry.get());
   user_prefs::UserPrefs::Set(this, prefs_.get());
 }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 void TestingProfile::CreateIncognitoPrefService() {
   DCHECK(original_profile_);

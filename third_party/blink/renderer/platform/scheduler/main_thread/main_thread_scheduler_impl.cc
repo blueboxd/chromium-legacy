@@ -730,8 +730,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   // If this is a timer queue, and virtual time is enabled and paused, it should
   // be suspended by adding a fence to prevent immediate tasks from running when
   // they're not supposed to.
-  if (queue_class == MainThreadTaskQueue::QueueClass::kTimer &&
-      main_thread_only().virtual_time_stopped &&
+  if (main_thread_only().virtual_time_stopped &&
       main_thread_only().use_virtual_time &&
       task_queue->ShouldUseVirtualTime()) {
     task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
@@ -762,7 +761,8 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTimerTaskQueue(
                           .SetCanBeFrozen(true)
                           .SetCanBeDeferred(true)
                           .SetCanBeThrottled(true)
-                          .SetFrameScheduler(frame_scheduler));
+                          .SetFrameScheduler(frame_scheduler)
+                          .SetShouldUseVirtualTime(true));
 }
 
 std::unique_ptr<WebRenderWidgetSchedulingState>
@@ -1810,10 +1810,8 @@ void MainThreadSchedulerImpl::VirtualTimePaused() {
   for (const auto& pair : task_runners_) {
     if (!pair.first->ShouldUseVirtualTime())
       continue;
-    if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
-      DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
-      pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
-    }
+    DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
+    pair.first->InsertFence(TaskQueue::InsertFencePosition::kNow);
   }
 }
 
@@ -1821,11 +1819,9 @@ void MainThreadSchedulerImpl::VirtualTimeResumed() {
   for (const auto& pair : task_runners_) {
     if (!pair.first->ShouldUseVirtualTime())
       continue;
-    if (pair.first->queue_class() == MainThreadTaskQueue::QueueClass::kTimer) {
-      DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
-      DCHECK(pair.first->HasActiveFence());
-      pair.first->RemoveFence();
-    }
+    DCHECK(!task_queue_throttler_->IsThrottled(pair.first.get()));
+    DCHECK(pair.first->HasActiveFence());
+    pair.first->RemoveFence();
   }
 }
 
@@ -2046,7 +2042,7 @@ bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 MainThreadSchedulerImpl::TimeDomainType
 MainThreadSchedulerImpl::TaskQueuePolicy::GetTimeDomainType(
     MainThreadTaskQueue* task_queue) const {
-  if (use_virtual_time && task_queue->ShouldUseVirtualTime())
+  if (use_virtual_time)
     return TimeDomainType::kVirtual;
   return TimeDomainType::kReal;
 }

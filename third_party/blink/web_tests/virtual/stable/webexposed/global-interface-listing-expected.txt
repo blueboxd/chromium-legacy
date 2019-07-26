@@ -1608,6 +1608,7 @@ interface Element : Node
     getter clientLeft
     getter clientTop
     getter clientWidth
+    getter elementTiming
     getter firstElementChild
     getter id
     getter innerHTML
@@ -1689,6 +1690,7 @@ interface Element : Node
     method webkitRequestFullscreen
     setter classList
     setter className
+    setter elementTiming
     setter id
     setter innerHTML
     setter onbeforecopy
@@ -3785,6 +3787,23 @@ interface KeyframeEffect : AnimationEffect
     getter target
     method constructor
     setter target
+interface LargestContentfulPaint : PerformanceEntry
+    attribute @@toStringTag
+    getter element
+    getter id
+    getter loadTime
+    getter renderTime
+    getter size
+    getter url
+    method constructor
+    method toJSON
+interface LayoutShift : PerformanceEntry
+    attribute @@toStringTag
+    getter hadRecentInput
+    getter lastInputTime
+    getter value
+    method constructor
+    method toJSON
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor
@@ -5108,6 +5127,7 @@ interface RTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription
@@ -8723,6 +8743,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription

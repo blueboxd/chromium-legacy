@@ -216,6 +216,12 @@ using base::UserMetricsAction;
   self.view = [[ContentSuggestionsHeaderView alloc] init];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                  self.fakeOmnibox);
+}
+
 - (CGFloat)headerHeight {
   return content_suggestions::heightForLogoHeader(
       self.logoIsShowing, self.promoCanShow, YES, [self topInset]);

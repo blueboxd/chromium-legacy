@@ -20,9 +20,8 @@ int64_t SysInfo::AmountOfPhysicalMemoryImpl() {
 
 // static
 int64_t SysInfo::AmountOfAvailablePhysicalMemoryImpl() {
-  // TODO(https://crbug.com/706592): This method doesn't have an Fuchsia API to
-  // consume it
-  NOTREACHED();
+  // TODO(https://crbug.com/986608): Implement this.
+  NOTIMPLEMENTED_LOG_ONCE();
   return 0;
 }
 

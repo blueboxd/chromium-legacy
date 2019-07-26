@@ -91,11 +91,12 @@ class IncrementalMarkingScopeBase {
         thread_state_->IsSweepingInProgress()) {
       TestSupportingGC::PreciselyCollectGarbage();
     }
-    heap_.CommitCallbackStacks();
+    heap_.SetupWorklists();
   }
 
   ~IncrementalMarkingScopeBase() {
-    heap_.DecommitCallbackStacks(BlinkGC::StackState::kNoHeapPointersOnStack);
+    heap_.DestroyMarkingWorklists(BlinkGC::StackState::kNoHeapPointersOnStack);
+    heap_.DestroyCompactionWorklists();
   }
 
   ThreadHeap& heap() const { return heap_; }

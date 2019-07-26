@@ -75,6 +75,7 @@ class WorkerScriptFetchInitiator {
       scoped_refptr<network::SharedURLLoaderFactory>
           url_loader_factory_override,
       StoragePartitionImpl* storage_partition,
+      const std::string& storage_domain,
       CompletionCallback callback);
 
   // Returns the BrowserThread::ID that the WorkerScriptLoaderFactory will be
@@ -88,7 +89,9 @@ class WorkerScriptFetchInitiator {
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo> CreateFactoryBundle(
       int worker_process_id,
       StoragePartitionImpl* storage_partition,
-      bool file_support);
+      const std::string& storage_domain,
+      bool file_support,
+      bool filesystem_url_support);
 
   // Adds additional request headers to |resource_request|. Must be called on
   // the UI thread.

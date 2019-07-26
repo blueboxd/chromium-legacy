@@ -38,6 +38,7 @@ source_set("unittest_sources") {
   deps = [
     ":cleaner_ui",
     "//base",
+    "//base/test:test_support",
     "//chrome/chrome_cleaner/constants:uws_id",
     "//chrome/chrome_cleaner/ipc:mock_chrome_prompt_ipc",
     "//chrome/chrome_cleaner/test:test_pup_data",

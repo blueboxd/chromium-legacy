@@ -74,6 +74,7 @@ class UserTypeFilterTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(UserTypeFilterTest);
 };
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 TEST_F(UserTypeFilterTest, ChildUser) {
   const auto profile = CreateProfile();
   profile->SetSupervisedUserId(supervised_users::kChildAccountSUID);
@@ -82,6 +83,7 @@ TEST_F(UserTypeFilterTest, ChildUser) {
   EXPECT_TRUE(Match(
       profile, CreateJsonWithFilter({kUserTypeUnmanaged, kUserTypeChild})));
 }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 TEST_F(UserTypeFilterTest, GuestUser) {
   auto profile = CreateGuestProfile();
@@ -128,12 +130,16 @@ TEST_F(UserTypeFilterTest, DefaultFilter) {
   EXPECT_TRUE(MatchDefault(profile, default_filter));
   // Guest user.
   EXPECT_TRUE(MatchDefault(CreateGuestProfile(), default_filter));
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Child user.
   profile->SetSupervisedUserId(supervised_users::kChildAccountSUID);
   EXPECT_FALSE(MatchDefault(profile, default_filter));
   // Supervised user.
+  // TODO(crbug.com/971311): Remove the next assert test once legacy supervised
+  // user code has been fully removed.
   profile->SetSupervisedUserId("asdf");
   EXPECT_FALSE(MatchDefault(profile, default_filter));
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Managed user.
   profile = CreateProfile();
   profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);

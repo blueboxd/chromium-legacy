@@ -109,8 +109,11 @@ struct ProcessedField {
   // True if field->form_control_type == "password".
   bool is_password = false;
 
-  // True if the server predicts this field not to be a password.
+  // True if the server predicts that this field is not a password field.
   bool server_hints_not_password = false;
+
+  // True if the server predicts that this field is not a username field.
+  bool server_hints_not_username = false;
 
   Interactability interactability = Interactability::kUnlikely;
 };
@@ -133,6 +136,11 @@ bool IsNotPasswordField(const ProcessedField& field) {
          StringMatchesCVC(field.field->name_attribute) ||
          StringMatchesCVC(field.field->id_attribute) ||
          field.autocomplete_flag == AutocompleteFlag::kCreditCard;
+}
+
+// Returns true if the |field| is suspected to be not the username field.
+bool IsNotUsernameField(const ProcessedField& field) {
+  return field.server_hints_not_username;
 }
 
 // Returns true iff |field_type| is one of password types.
@@ -359,11 +367,14 @@ void ParseUsingPredictions(std::vector<ProcessedField>* processed_fields,
   // For the use of basic heuristics, also mark CVC fields and NOT_PASSWORD
   // fields as such.
   for (const PasswordFieldPrediction& prediction : predictions) {
+    ProcessedField* current_field = FindField(processed_fields, prediction);
+    if (!current_field)
+      continue;
     if (prediction.type == autofill::CREDIT_CARD_VERIFICATION_CODE ||
         prediction.type == autofill::NOT_PASSWORD) {
-      ProcessedField* processed_field = FindField(processed_fields, prediction);
-      if (processed_field)
-        processed_field->server_hints_not_password = true;
+      current_field->server_hints_not_password = true;
+    } else if (prediction.type == autofill::NOT_USERNAME) {
+      current_field->server_hints_not_username = true;
     }
   }
 }
@@ -388,7 +399,8 @@ void ParseUsingAutocomplete(const std::vector<ProcessedField>& processed_fields,
     }
     switch (processed_field.autocomplete_flag) {
       case AutocompleteFlag::kUsername:
-        if (processed_field.is_password || result->username)
+        if (processed_field.is_password || result->username ||
+            processed_field.server_hints_not_username)
           continue;
         username_fields_found++;
         field_marked_as_username = processed_field.field;
@@ -605,6 +617,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
 
   const FormFieldData* focusable_username = nullptr;
   const FormFieldData* username = nullptr;
+
   // Do reverse search to find the closest candidates preceding the password.
   for (auto it = std::make_reverse_iterator(first_relevant_password);
        it != processed_fields.rend(); ++it) {
@@ -616,6 +629,9 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
       continue;
     if (!is_fallback && IsNotPasswordField(*it))
       continue;
+    if (!is_fallback && IsNotUsernameField(*it)) {
+      continue;
+    }
     if (!username)
       username = it->field;
     if (it->field->is_focusable) {

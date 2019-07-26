@@ -38,6 +38,7 @@
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -289,6 +290,10 @@ class AppCacheStorageImplTest : public testing::Test {
     head.mime_type = "text/html";
     mock_url_loader_factory_.AddResponse(GetMockUrl("empty.html"), head, "",
                                          status);
+    // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
+    // tests.
+    feature_list_.InitWithFeatures({network::features::kNetworkService},
+                                   {features::kNavigationLoaderOnUI});
   }
 
   template <class Method>
@@ -1565,10 +1570,6 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void Reinitialize(ReinitTestCase test_case) {
-    // These tests use the network service code path when simulating requests
-    // to app cache.
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-
     // Unlike all of the other tests, this one actually read/write files.
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
 

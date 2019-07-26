@@ -83,6 +83,8 @@ using base::UTF8ToUTF16;
 using testing::_;
 using testing::AnyOf;
 using testing::AtLeast;
+using testing::Contains;
+using testing::ElementsAre;
 using testing::HasSubstr;
 using testing::Not;
 using testing::Return;
@@ -5388,6 +5390,28 @@ TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
       }
     }
   }
+}
+
+// When a field contains fields with UPI/VPA values, a crowdsourcing vote should
+// be uploaded.
+TEST_F(AutofillManagerTest, CrowdsourceUPIVPA) {
+  std::vector<AutofillProfile> profiles;
+  std::vector<CreditCard> credit_cards;
+
+  FormData form;
+  FormFieldData field;
+  test::CreateTestFormField("", "name1", "1234@indianbank", "text", &field);
+  form.fields.push_back(field);
+  test::CreateTestFormField("", "name2", "not-upi@gmail.com", "text", &field);
+  form.fields.push_back(field);
+  FormStructure form_structure(form);
+
+  AutofillManager::DeterminePossibleFieldTypesForUpload(
+      profiles, credit_cards, "en-us", &form_structure);
+
+  EXPECT_THAT(form_structure.field(0)->possible_types(), ElementsAre(UPI_VPA));
+  EXPECT_THAT(form_structure.field(1)->possible_types(),
+              Not(Contains(UPI_VPA)));
 }
 
 TEST_F(AutofillManagerTest, RemoveProfile) {

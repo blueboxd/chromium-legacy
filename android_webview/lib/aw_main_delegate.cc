@@ -171,16 +171,16 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
         autofill::features::kAutofillSkipComparingInferredLabels);
 
     if (cl->HasSwitch(switches::kWebViewLogJsConsoleMessages)) {
-      features.EnableIfNotSet(features::kLogJsConsoleMessages);
+      features.EnableIfNotSet(::features::kLogJsConsoleMessages);
     }
 
-    features.DisableIfNotSet(features::kWebPayments);
+    features.DisableIfNotSet(::features::kWebPayments);
 
     // WebView does not and should not support WebAuthN.
-    features.DisableIfNotSet(features::kWebAuth);
+    features.DisableIfNotSet(::features::kWebAuth);
 
     // WebView isn't compatible with OOP-D.
-    features.DisableIfNotSet(features::kVizDisplayCompositor);
+    features.DisableIfNotSet(::features::kVizDisplayCompositor);
 
     // WebView does not support AndroidOverlay yet for video overlays.
     features.DisableIfNotSet(media::kUseAndroidOverlay);
@@ -196,13 +196,13 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     features.DisableIfNotSet(
         autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
-    features.DisableIfNotSet(features::kBackgroundFetch);
+    features.DisableIfNotSet(::features::kBackgroundFetch);
 
-    features.DisableIfNotSet(features::kAndroidSurfaceControl);
+    features.DisableIfNotSet(::features::kAndroidSurfaceControl);
 
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.
-    features.DisableIfNotSet(features::kSmsReceiver);
+    features.DisableIfNotSet(::features::kSmsReceiver);
   }
 
   android_webview::RegisterPathProvider();

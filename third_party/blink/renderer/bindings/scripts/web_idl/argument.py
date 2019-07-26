@@ -33,6 +33,15 @@ class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
             self.idl_type = idl_type
             self.default_value = default_value
 
+        def make_copy(self):
+            return Argument.IR(
+                identifier=self.identifier,
+                index=self.index,
+                idl_type=self.idl_type,
+                default_value=self.default_value,
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy())
+
     @property
     def idl_type(self):
         """

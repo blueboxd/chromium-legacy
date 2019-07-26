@@ -26,13 +26,8 @@ SettingsUIBrowserTest.prototype = {
 // and several times that in a Debug build. See https://crbug.com/558434
 // and http://crbug.com/711256.
 
-GEN('#if !defined(NDEBUG) || defined(OS_MACOSX)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-
-TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
+// Disabling everywhere, see flaky failures at crbug.com/986985.
+TEST_F('SettingsUIBrowserTest', 'DISABLED_All', function() {
   suite('settings-ui', function() {
     let toolbar;
     let ui;

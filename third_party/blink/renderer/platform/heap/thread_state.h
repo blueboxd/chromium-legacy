@@ -432,6 +432,12 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   bool VerifyMarkingEnabled() const;
 
+  // Returns true if the current GC is a memory reducing GC.
+  bool IsMemoryReducingGC() {
+    return current_gc_data_.reason ==
+           BlinkGC::GCReason::kUnifiedHeapForMemoryReductionGC;
+  }
+
  private:
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
@@ -530,10 +536,6 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // Returns true if memory use is in a near-OOM state
   // (aka being under "memory pressure".)
   bool ShouldForceMemoryPressureGC();
-
-  // Returns true if shouldForceMemoryPressureGC() held and a
-  // conservative GC was performed to handle the emergency.
-  bool ForceMemoryPressureGCIfNeeded();
 
   size_t EstimatedLiveSize(size_t current_size, size_t size_at_last_gc);
   size_t TotalMemorySize();

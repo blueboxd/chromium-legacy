@@ -410,6 +410,20 @@ bool SiteInstanceImpl::HasWrongProcessForURL(const GURL& url) {
   browsing_instance_->GetSiteAndLockForURL(
       url, /* allow_default_instance */ true, &site_url, &origin_lock);
 
+  // If this is a default SiteInstance and the BrowsingInstance gives us a
+  // non-default site URL even when we explicitly allow the default SiteInstance
+  // to be considered, then |url| does not belong in the same process as this
+  // SiteInstance. This can happen when the
+  // kProcessSharingWithDefaultSiteInstances feature is not enabled and the
+  // site URL is explicitly set on a SiteInstance for a URL that would normally
+  // be directed to the default SiteInstance (e.g. a site not requiring a
+  // dedicated process). This situation typically happens when the top-level
+  // frame is a site that should be in the default SiteInstance and the
+  // SiteInstance associated with that frame is initially a SiteInstance with
+  // no site URL set.
+  if (IsDefaultSiteInstance() && site_url != GetSiteURL())
+    return true;
+
   // Note that HasProcess() may return true if process_ is null, in
   // process-per-site cases where there's an existing process available.
   // We want to use such a process in the IsSuitableHost check, so we

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/version.h"
 #include "components/metrics/metrics_service.h"
 #include "components/version_info/version_info.h"
@@ -70,7 +71,7 @@ void LogBatteryCharge(float battery_level) {
 // Logs the device's |available_storage| as a UTE stability metric.
 void LogAvailableStorage(NSInteger available_storage) {
   UMA_STABILITY_HISTOGRAM_CUSTOM_COUNTS("Stability.iOS.UTE.AvailableStorage",
-                                        available_storage, 1, 100000, 100);
+                                        available_storage, 1, 200000, 100);
 }
 
 // Logs the OS version change between |os_version| and the current os version.
@@ -79,7 +80,7 @@ void LogAvailableStorage(NSInteger available_storage) {
 void LogOSVersionChange(std::string os_version) {
   base::Version previous_os_version = base::Version(os_version);
   base::Version current_os_version =
-      base::Version(version_info::GetVersionNumber());
+      base::Version(base::SysInfo::OperatingSystemVersion());
 
   VersionComparison difference = VersionComparison::kSameVersion;
   if (previous_os_version.CompareTo(current_os_version) != 0) {

@@ -14,6 +14,10 @@ namespace features {
 COMPONENT_EXPORT(BLINK_FEATURES)
 extern const base::Feature kResamplingScrollEvents;
 
+// Enables filtering of predicted scroll events on compositor thread.
+COMPONENT_EXPORT(BLINK_FEATURES)
+extern const base::Feature kFilteringScrollPrediction;
+
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
 // converted to mouse move events due to a number of inconsistencies on

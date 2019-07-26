@@ -22,6 +22,18 @@ enum class SharingVapidKeyCreationResult {
   kMaxValue = kExportPrivateKeyFailed,
 };
 
+// The types of dialogs that can be shown for Click to Call.
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "SharingClickToCallDialogType" in src/tools/metrics/histograms/enums.xml.
+enum class SharingClickToCallDialogType {
+  kDialogWithDevicesMaybeApps = 0,
+  kDialogWithoutDevicesWithApp = 1,
+  kEducationalDialog = 2,
+  kErrorDialog = 3,
+  kMaxValue = kErrorDialog,
+};
+
 // These histogram suffixes must match the ones in SharingClickToCallUi defined
 // in histograms.xml.
 const char kSharingClickToCallUiContextMenu[] = "ContextMenu";
@@ -45,25 +57,34 @@ void LogSharingUnegistrationResult(SharingDeviceRegistrationResult result);
 void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result);
 
 // Logs the number of available devices that are about to be shown in a UI for
-// picking a device to start a phone call on.
-void LogClickToCallDevicesToShow(int count);
+// picking a device to start a phone call on. The |histogram_suffix| indicates
+// in which UI this event happened and must match one from SharingClickToCallUi
+// defined in histograms.xml - use the constants defined in this file for that.
+void LogClickToCallDevicesToShow(const char* histogram_suffix, int count);
 
 // Logs the number of available apps that are about to be shown in a UI for
-// picking an app to start a phone call with.
-void LogClickToCallAppsToShow(int count);
+// picking an app to start a phone call with. The |histogram_suffix| indicates
+// in which UI this event happened and must match one from SharingClickToCallUi
+// defined in histograms.xml - use the constants defined in this file for that.
+void LogClickToCallAppsToShow(const char* histogram_suffix, int count);
 
 // Logs the |index| of the device selected by the user for Click to Call. The
 // |histogram_suffix| indicates in which UI this event happened and must match
-// one from SharingClickToCallUi defined in histograms.xml.
+// one from SharingClickToCallUi defined in histograms.xml - use the constants
+// defined in this file for that.
 void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix, int index);
 
 // Logs the |index| of the app selected by the user for Click to Call. The
 // |histogram_suffix| indicates in which UI this event happened and must match
-// one from SharingClickToCallUi defined in histograms.xml.
+// one from SharingClickToCallUi defined in histograms.xml - use the constants
+// defined in this file for that.
 void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index);
 
 // Logs to UMA the time from sending a FCM message from the Sharing service
 // until an ack message is received for it.
 void LogSharingMessageAckTime(base::TimeDelta time);
+
+// Logs to UMA the |type| of dialog shown for Click to Call.
+void LogClickToCallDialogShown(SharingClickToCallDialogType type);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

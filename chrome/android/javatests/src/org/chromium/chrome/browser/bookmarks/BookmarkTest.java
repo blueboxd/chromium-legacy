@@ -51,6 +51,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.sync.AndroidSyncSettings;
@@ -141,8 +142,8 @@ public class BookmarkTest {
     protected void openBookmarkManager() throws InterruptedException {
         if (mActivityTestRule.getActivity().isTablet()) {
             mActivityTestRule.loadUrl(UrlConstants.BOOKMARKS_URL);
-            mItemsContainer =
-                    (RecyclerView) mActivityTestRule.getActivity().findViewById(R.id.recycler_view);
+            mItemsContainer = mActivityTestRule.getActivity().findViewById(R.id.recycler_view);
+            mItemsContainer.setItemAnimator(null); // Disable animation to reduce flakiness.
             mManager = ((BookmarkPage) mActivityTestRule.getActivity()
                                 .getActivityTab()
                                 .getNativePage())
@@ -153,7 +154,7 @@ public class BookmarkTest {
                     InstrumentationRegistry.getInstrumentation(), BookmarkActivity.class,
                     new MenuUtils.MenuActivityTrigger(InstrumentationRegistry.getInstrumentation(),
                             mActivityTestRule.getActivity(), R.id.all_bookmarks_menu_id));
-            mItemsContainer = (RecyclerView) mBookmarkActivity.findViewById(R.id.recycler_view);
+            mItemsContainer = mBookmarkActivity.findViewById(R.id.recycler_view);
             mItemsContainer.setItemAnimator(null); // Disable animation to reduce flakiness.
             mManager = mBookmarkActivity.getManagerForTesting();
         }
@@ -367,14 +368,16 @@ public class BookmarkTest {
 
         // Start searching without entering a query.
         TestThreadUtils.runOnUiThreadBlocking(manager::openSearchUI);
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
         Assert.assertEquals("Wrong state, should be searching", BookmarkUIState.STATE_SEARCHING,
                 manager.getCurrentState());
 
         // Select the folder and delete it.
+        toggleSelectionAndEndAnimation(testFolder,
+                (BookmarkRow) mItemsContainer.findViewHolderForLayoutPosition(2).itemView);
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> manager.getSelectionDelegate().toggleSelectionForItem(getIdByPosition(0)));
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> manager.getToolbarForTests().onMenuItemClick(
+                ()
+                        -> manager.getToolbarForTests().onMenuItemClick(
                                 manager.getToolbarForTests().getMenu().findItem(
                                         R.id.selection_mode_delete_menu_id)));
 
@@ -418,7 +421,7 @@ public class BookmarkTest {
     @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
     public void testBookmarkFolderIcon(boolean nightModeEnabled) throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(BookmarkPromoHeader.PromoState.PROMO_NONE);
-        addFolder(TEST_FOLDER_TITLE);
+        BookmarkId testId = addFolder(TEST_FOLDER_TITLE);
         openBookmarkManager();
 
         RecyclerView.Adapter adapter = getAdapter();
@@ -430,21 +433,14 @@ public class BookmarkTest {
                                        .findViewHolderForAdapterPosition(0)
                                        .itemView;
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            itemView.performLongClick();
-            itemView.endAnimationsForTests();
-            manager.getToolbarForTests().endAnimationsForTesting();
-        });
+        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
 
-        // Callback occurs when Item "test" is selected.
+        // Make sure the Item "test" is selected.
         CriteriaHelper.pollUiThread(
                 itemView::isChecked, "Expected item \"test\" to become selected");
 
         mRenderTestRule.render(manager.getView(), "bookmark_manager_folder_selected");
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> manager.getSelectionDelegate().toggleSelectionForItem(getIdByPosition(0)));
-
+        toggleSelectionAndEndAnimation(getIdByPosition(0), itemView);
         mRenderTestRule.render(manager.getView(), "bookmark_manager_one_folder");
     }
 
@@ -509,6 +505,15 @@ public class BookmarkTest {
                 return matchingViews.get(0);
             }
         });
+    }
+
+    protected void toggleSelectionAndEndAnimation(BookmarkId id, BookmarkRow view) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mManager.getSelectionDelegate().toggleSelectionForItem(id);
+            view.endAnimationsForTests();
+            mManager.getToolbarForTests().endAnimationsForTesting();
+        });
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
     }
 
     protected BookmarkId addBookmark(final String title, final String url)

@@ -28,9 +28,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 
 #if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
 #include "device/fido/mac/credential_metadata.h"
 #endif
 
@@ -304,19 +306,11 @@ std::string TouchIdMetadataSecret(Profile* profile) {
 }  // namespace
 
 // static
-content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig
+ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig
 ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfigForProfile(
     Profile* profile) {
-  return content::AuthenticatorRequestClientDelegate::
-      TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
-                                 TouchIdMetadataSecret(profile)};
-}
-
-base::Optional<
-    content::AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
-ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
-  return TouchIdAuthenticatorConfigForProfile(
-      Profile::FromBrowserContext(browser_context()));
+  return TouchIdAuthenticatorConfig{kTouchIdKeychainAccessGroup,
+                                    TouchIdMetadataSecret(profile)};
 }
 #endif
 
@@ -357,14 +351,38 @@ bool ChromeAuthenticatorRequestDelegate::IsWebAuthnUIEnabled() {
   return !disable_ui_;
 }
 
-bool ChromeAuthenticatorRequestDelegate::ShouldDisablePlatformAuthenticators() {
+bool ChromeAuthenticatorRequestDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailable() {
 #if defined(OS_MACOSX)
   // Touch ID is available in Incognito, but not in Guest mode.
-  return Profile::FromBrowserContext(browser_context())->IsGuestSession();
-#else  // Windows, Android
-  return browser_context()->IsOffTheRecord();
-#endif
+  if (Profile::FromBrowserContext(browser_context())->IsGuestSession())
+    return false;
+
+  return device::fido::mac::TouchIdAuthenticator::IsAvailable(
+      TouchIdAuthenticatorConfigForProfile(
+          Profile::FromBrowserContext(browser_context())));
+#elif defined(OS_WIN)
+  if (browser_context()->IsOffTheRecord())
+    return false;
+
+  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+         device::WinWebAuthnApiAuthenticator::
+             IsUserVerifyingPlatformAuthenticatorAvailable();
+#else
+  return false;
+#endif  // defined(OS_MACOSX) || defined(OS_WIN)
 }
+
+#if defined(OS_MACOSX)
+base::Optional<ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorConfig>
+ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
+  if (!IsUserVerifyingPlatformAuthenticatorAvailable())
+    return base::nullopt;
+
+  return TouchIdAuthenticatorConfigForProfile(
+      Profile::FromBrowserContext(browser_context()));
+}
+#endif  // defined(OS_MACOSX)
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {

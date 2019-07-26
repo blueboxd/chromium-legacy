@@ -135,10 +135,10 @@ Try tapping the mic to ask me anything.
 
       <!-- Managed guest session warnings -->
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING" desc="Text shown in the public account user pod in case of risky configuration, informing the user that this session is managed and admin can monitor all activity.">
-        The administrator of this device has access to all activity, including passwords and communications.
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and has access to all user activity, including webpages visited, passwords, and email.
       </message>
       <message name="IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING" desc="Text shown in the public account user pod in case of non-risky configuration, informing the user that this session is managed and admin can monitor all activity.">
-        The device administrator may be able to monitor your activity.
+        <ph name="ENROLLMENT_DOMAIN">$1<ex>example.com</ex></ph> manages this device and may be able to monitor your activity.
       </message>
 
       <!-- Status tray enterprise management. -->

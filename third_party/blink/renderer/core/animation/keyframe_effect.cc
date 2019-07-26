@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/css/compositor_keyframe_transform.h"
 #include "third_party/blink/renderer/core/animation/effect_input.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/sampled_effect.h"
@@ -328,6 +329,47 @@ void KeyframeEffect::Trace(blink::Visitor* visitor) {
   AnimationEffect::Trace(visitor);
 }
 
+bool KeyframeEffect::AnimationsPreserveAxisAlignment(
+    const PropertyHandle& property) const {
+  const auto* keyframes = Model()->GetPropertySpecificKeyframes(property);
+  if (!keyframes)
+    return true;
+  for (const auto& keyframe : *keyframes) {
+    const auto* value = keyframe->GetCompositorKeyframeValue();
+    if (!value)
+      continue;
+    DCHECK(value->IsTransform());
+    const auto& transform_operations =
+        ToCompositorKeyframeTransform(value)->GetTransformOperations();
+    if (!transform_operations.PreservesAxisAlignment())
+      return false;
+  }
+  return true;
+}
+
+namespace {
+
+static const size_t num_transform_properties = 4;
+
+const CSSProperty** TransformProperties() {
+  static const CSSProperty* kTransformProperties[num_transform_properties] = {
+      &GetCSSPropertyTransform(), &GetCSSPropertyScale(),
+      &GetCSSPropertyRotate(), &GetCSSPropertyTranslate()};
+  return kTransformProperties;
+}
+
+}  // namespace
+
+bool KeyframeEffect::AnimationsPreserveAxisAlignment() const {
+  static const auto** properties = TransformProperties();
+  for (size_t i = 0; i < num_transform_properties; i++) {
+    if (!AnimationsPreserveAxisAlignment(PropertyHandle(*properties[i])))
+      return false;
+  }
+
+  return true;
+}
+
 EffectModel::CompositeOperation KeyframeEffect::CompositeInternal() const {
   return model_->Composite();
 }
@@ -477,14 +519,14 @@ bool KeyframeEffect::HasIncompatibleStyle() const {
   if (!target_->GetComputedStyle())
     return false;
 
-  bool affects_transform = Affects(PropertyHandle(GetCSSPropertyTransform())) ||
-                           Affects(PropertyHandle(GetCSSPropertyScale())) ||
-                           Affects(PropertyHandle(GetCSSPropertyRotate())) ||
-                           Affects(PropertyHandle(GetCSSPropertyTranslate()));
-
   if (HasActiveAnimationsOnCompositor()) {
-    if (target_->GetComputedStyle()->HasOffset() && affects_transform)
-      return true;
+    if (target_->GetComputedStyle()->HasOffset()) {
+      static const auto** properties = TransformProperties();
+      for (size_t i = 0; i < num_transform_properties; i++) {
+        if (Affects(PropertyHandle(*properties[i])))
+          return true;
+      }
+    }
     return HasMultipleTransformProperties();
   }
 

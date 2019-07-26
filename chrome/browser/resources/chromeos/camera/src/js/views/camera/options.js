@@ -78,13 +78,13 @@ cca.views.camera.Camera3DeviceInfo = function(
 
 /**
  * Creates a controller for the options of Camera view.
- * @param {cca.camera.DeviceInfoUpdater} infoUpdater
+ * @param {cca.device.DeviceInfoUpdater} infoUpdater
  * @param {function()} doSwitchDevice Callback to trigger device switching.
  * @constructor
  */
 cca.views.camera.Options = function(infoUpdater, doSwitchDevice) {
   /**
-   * @type {cca.camera.DeviceInfoUpdater}
+   * @type {cca.device.DeviceInfoUpdater}
    * @private
    */
   this.infoUpdater_ = infoUpdater;

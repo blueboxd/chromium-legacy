@@ -1844,6 +1844,9 @@ void ExtensionPrefs::ClearExternalUninstallForTesting(const ExtensionId& id) {
   DeleteExtensionPrefs(id);
 }
 
+const char ExtensionPrefs::kFakeObsoletePrefForTesting[] =
+    "__fake_obsolete_pref_for_testing";
+
 ExtensionPrefs::ExtensionPrefs(
     content::BrowserContext* browser_context,
     PrefService* prefs,
@@ -2103,6 +2106,31 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   for (auto& observer : observer_list_)
     observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
+}
+
+void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {
+  const base::Value* extensions_dictionary =
+      prefs_->GetDictionary(pref_names::kExtensions);
+  DCHECK(extensions_dictionary->is_dict());
+
+  // Please clean this list up periodically, removing any entries added more
+  // than a year ago (with the exception of the testing key).
+  constexpr const char* kObsoleteKeys[] = {
+      // Permanent testing-only key.
+      kFakeObsoletePrefForTesting,
+
+      // Added 2019-07.
+      "has_set_script_all_urls",
+  };
+
+  for (const auto& key_value : extensions_dictionary->DictItems()) {
+    if (!crx_file::id_util::IdIsValid(key_value.first))
+      continue;
+    ScopedExtensionPrefUpdate update(prefs_, key_value.first);
+    std::unique_ptr<prefs::DictionaryValueUpdate> inner_update = update.Get();
+    for (const char* key : kObsoleteKeys)
+      inner_update->Remove(key, nullptr);
+  }
 }
 
 }  // namespace extensions

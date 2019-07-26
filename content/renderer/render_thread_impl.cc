@@ -137,6 +137,7 @@
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
 #include "skia/ext/skia_memory_dump_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
@@ -927,8 +928,11 @@ void RenderThreadImpl::Init() {
       discardable_shared_memory_manager_.get());
 
 #if defined(OS_LINUX)
-  render_message_filter()->SetThreadPriority(
-      ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkCompositorUseDisplayThreadPriority)) {
+    render_message_filter()->SetThreadPriority(
+        ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
+  }
 #endif
 
   process_foregrounded_count_ = 0;

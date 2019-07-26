@@ -1862,14 +1862,17 @@ if (is_android) {
       "jnigraphics",
     ]
 
-    deps = [
+    public_deps = [
       "//chrome/browser",
+      "//chrome/utility",
+    ]
+
+    deps = [
       "//chrome/browser/ui",
       "//chrome/child",
       "//chrome/common",
       "//chrome/gpu",
       "//chrome/renderer",
-      "//chrome/utility",
       "//components/gwp_asan/buildflags",
       "//components/minidump_uploader",
       "//components/safe_browsing/android:safe_browsing_mobile",

@@ -1200,14 +1200,14 @@ class WebContentsSplitCacheBrowserTestDisabled
   base::test::ScopedFeatureList feature_list;
 };
 
-// See: http://crbug.com/983931
-#if defined(OS_ANDROID)
-#define MAYBE_SplitCache DISABLED_SplitCache
-#else
-#define MAYBE_SplitCache SplitCache
-#endif
-IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       MAYBE_SplitCache) {
+IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
+  // This test will fail if there is no network service, as we fill the
+  // network isolation key in network::URLLoader only when there is network
+  // service. If split cache is enabled but the network isolation key is
+  // empty, then resources won't be cached.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1270,14 +1270,15 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
   EXPECT_FALSE(TestResourceLoad(blank_url, GURL()));
 }
 
-// See: http://crbug.com/983931
-#if defined(OS_ANDROID)
-#define MAYBE_SplitCache DISABLED_SplitCache
-#else
-#define MAYBE_SplitCache SplitCache
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
-                       MAYBE_SplitCache) {
+                       SplitCache) {
+  // This test will fail if there is no network service, as we fill the
+  // network isolation key in network::URLLoader only when there is network
+  // service. If split cache is enabled but the network isolation key is
+  // empty, then resources won't be cached.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Load a cacheable resource for the first time, and it's not cached.
   EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
 
@@ -1350,14 +1351,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
                                GenURL("c.com", "/title1.html")));
 }
 
-// See: http://crbug.com/983931
-#if defined(OS_ANDROID)
-#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
-#else
-#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
-                       MAYBE_SplitCacheDedicatedWorkers) {
+                       SplitCacheDedicatedWorkers) {
+  // This test will fail if there is no network service, as we fill the
+  // network isolation key in network::URLLoader only when there is network
+  // service. If split cache is enabled but the network isolation key is
+  // empty, then resources won't be cached.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(
@@ -1390,14 +1392,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
       GenURL("c.com", "/embedding_worker.js?c")));
 }
 
-// See: http://crbug.com/983931
-#if defined(OS_ANDROID)
-#define MAYBE_NavigationResources DISABLED_NavigationResources
-#else
-#define MAYBE_NavigationResources NavigationResources
-#endif
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       MAYBE_NavigationResources) {
+                       NavigationResources) {
+  // This test will fail if there is no network service, as we fill the
+  // network isolation key in network::URLLoader only when there is network
+  // service. If split cache is enabled but the network isolation key is
+  // empty, then resources won't be cached.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Navigate for the first time, and it's not cached.
   EXPECT_FALSE(
       NavigationResourceCached(GenURL("a.com", "/title1.html"), GURL(), false));
@@ -1429,14 +1432,15 @@ IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
       GenURL("a.com", "/title1.html"), false));
 }
 
-// See: http://crbug.com/983931
-#if defined(OS_ANDROID)
-#define MAYBE_SubframeNavigationResources DISABLED_SubframeNavigationResources
-#else
-#define MAYBE_SubframeNavigationResources SubframeNavigationResources
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
-                       MAYBE_SubframeNavigationResources) {
+                       SubframeNavigationResources) {
+  // This test will fail if there is no network service, as we fill the
+  // network isolation key in network::URLLoader only when there is network
+  // service. If split cache is enabled but the network isolation key is
+  // empty, then resources won't be cached.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Navigate for the first time, and it's not cached.
   NavigationResourceCached(
       GenURL("a.com", "/navigation_controller/page_with_iframe.html"),
@@ -1466,15 +1470,15 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
       GenURL("d.com", "/title1.html"), true);
 }
 
-// See: http://crbug.com/983931
-#if defined(OS_ANDROID)
-#define MAYBE_SplitCacheDedicatedWorkers DISABLED_SplitCacheDedicatedWorkers
-#else
-#define MAYBE_SplitCacheDedicatedWorkers SplitCacheDedicatedWorkers
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebContentsSplitCacheBrowserTestEnabled,
-                       MAYBE_SplitCacheDedicatedWorkers) {
+                       SplitCacheDedicatedWorkers) {
+  // This test will fail if there is no network service, as we fill the
+  // network isolation key in network::URLLoader only when there is network
+  // service. If split cache is enabled but the network isolation key is
+  // empty, then resources won't be cached.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   // Load 3p.com/script from a.com's worker. The first time it's loaded from the
   // network and the second it's cached.
   EXPECT_FALSE(TestResourceLoadFromDedicatedWorker(

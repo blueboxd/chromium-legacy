@@ -84,6 +84,8 @@ class PLATFORM_EXPORT ScaleTransformOperation final
 
   scoped_refptr<TransformOperation> Zoom(double factor) final { return this; }
 
+  bool PreservesAxisAlignment() const final { return true; }
+
   ScaleTransformOperation(double sx, double sy, double sz, OperationType type)
       : x_(sx), y_(sy), z_(sz), type_(type) {
     DCHECK(IsMatchingOperationType(type));

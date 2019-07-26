@@ -40,6 +40,7 @@ AndroidSmsService::AndroidSmsService(
       android_sms_app_manager_(std::make_unique<AndroidSmsAppManagerImpl>(
           profile_,
           andoid_sms_app_setup_controller_.get(),
+          profile_->GetPrefs(),
           app_list_syncable_service)),
       android_sms_pairing_state_tracker_(
           std::make_unique<AndroidSmsPairingStateTrackerImpl>(

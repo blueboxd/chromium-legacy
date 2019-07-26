@@ -688,9 +688,10 @@ void FeedLoggingMetrics::OnVisualElementViewed(int element_type,
 
 void FeedLoggingMetrics::OnInternalError(int internal_error) {
   // TODO(https://crbug.com/935602): The max value here is fragile, figure out
-  // some way to test the @IntDef size.
+  // some way to test the @IntDef size. For now the count needs to be kept in
+  // sync with InternalFeedError.java and enums.xml.
   UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.InternalError",
-                            internal_error, 13);
+                            internal_error, 18);
 }
 
 void FeedLoggingMetrics::OnTokenCompleted(bool was_synthetic,

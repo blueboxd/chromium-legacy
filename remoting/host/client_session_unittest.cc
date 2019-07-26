@@ -48,6 +48,15 @@
 #define MAYBE_RestoreEventState DISABLED_RestoreEventState
 #define MAYBE_MultiMonMouseMove DISABLED_MultiMonMouseMove
 #define MAYBE_DisconnectOnLocalInputTest DISABLED_DisconnectOnLocalInputTest
+#elif OS_MACOSX
+// TODO(crbug.com/987513): Reenable tests for MacOS.
+#define MAYBE_MultiMonMouseMove_SameSize DISABLED_MultiMonMouseMove_SameSize
+#define MAYBE_MultiMonMouseMove DISABLED_MultiMonMouseMove
+#define MAYBE_ClampMouseEvents DISABLED_ClampMouseEvents
+#define MAYBE_DisableInputs DISABLED_DisableInputs
+#define MAYBE_DisconnectOnLocalInputTest DISABLED_DisconnectOnLocalInputTest
+#define MAYBE_LocalInputTest DISABLED_LocalInputTest
+#define MAYBE_RestoreEventState DISABLED_RestoreEventState
 #else
 #define MAYBE_LocalInputTest LocalInputTest
 #define MAYBE_ClampMouseEvents ClampMouseEvents

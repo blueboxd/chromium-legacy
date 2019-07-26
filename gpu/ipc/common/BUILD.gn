@@ -79,6 +79,7 @@ source_set("ipc_common_sources") {
     "gpu_param_traits.cc",
     "gpu_param_traits.h",
     "gpu_param_traits_macros.h",
+    "gpu_watchdog_timeout.h",
     "memory_stats.cc",
     "memory_stats.h",
     "vulkan_ycbcr_info.cc",

@@ -120,8 +120,8 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
     views::View* anchor_view,
     content::WebContents* web_contents,
     std::vector<AppInfo> app_info,
-    bool enable_stay_in_chrome,
-    bool show_persistence_options,
+    bool show_stay_in_chrome,
+    bool show_remember_selection,
     IntentPickerResponse intent_picker_cb) {
   if (intent_picker_bubble_) {
     intent_picker_bubble_->Initialize();
@@ -140,7 +140,7 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   intent_picker_bubble_ = new IntentPickerBubbleView(
       std::move(app_info), std::move(intent_picker_cb), web_contents,
-      enable_stay_in_chrome, show_persistence_options);
+      show_stay_in_chrome, show_remember_selection);
   intent_picker_bubble_->set_margins(gfx::Insets());
 
   if (anchor_view) {
@@ -184,13 +184,13 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
 // static
 std::unique_ptr<IntentPickerBubbleView>
 IntentPickerBubbleView::CreateBubbleView(std::vector<AppInfo> app_info,
-                                         bool enable_stay_in_chrome,
-                                         bool show_persistence_options,
+                                         bool show_stay_in_chrome,
+                                         bool show_remember_selection,
                                          IntentPickerResponse intent_picker_cb,
                                          content::WebContents* web_contents) {
   std::unique_ptr<IntentPickerBubbleView> bubble(new IntentPickerBubbleView(
       std::move(app_info), std::move(intent_picker_cb), web_contents,
-      enable_stay_in_chrome, show_persistence_options));
+      show_stay_in_chrome, show_remember_selection));
   bubble->Initialize();
   return bubble;
 }
@@ -242,20 +242,14 @@ bool IntentPickerBubbleView::ShouldShowCloseButton() const {
 }
 
 int IntentPickerBubbleView::GetDialogButtons() const {
-  if (show_persistence_options_)
+  // The cancel button here refers to the 'Stay in Chrome' button
+  if (show_stay_in_chrome_)
     return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
   return ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_INTENT_PICKER_BUBBLE_VIEW_OPEN_WITH);
-}
-
-bool IntentPickerBubbleView::IsDialogButtonEnabled(
-    ui::DialogButton button) const {
-  if (!enable_stay_in_chrome_ && button == ui::DIALOG_BUTTON_CANCEL)
-    return false;
-  return true;
 }
 
 base::string16 IntentPickerBubbleView::GetDialogButtonLabel(
@@ -270,16 +264,16 @@ IntentPickerBubbleView::IntentPickerBubbleView(
     std::vector<AppInfo> app_info,
     IntentPickerResponse intent_picker_cb,
     content::WebContents* web_contents,
-    bool enable_stay_in_chrome,
-    bool show_persistence_options)
+    bool show_stay_in_chrome,
+    bool show_remember_selection)
     : LocationBarBubbleDelegateView(nullptr /* anchor_view */,
                                     gfx::Point(),
                                     web_contents),
       intent_picker_cb_(std::move(intent_picker_cb)),
       selected_app_tag_(0),
       app_info_(std::move(app_info)),
-      enable_stay_in_chrome_(enable_stay_in_chrome),
-      show_persistence_options_(show_persistence_options) {
+      show_stay_in_chrome_(show_stay_in_chrome),
+      show_remember_selection_(show_remember_selection) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::INTENT_PICKER);
 }
 
@@ -388,8 +382,7 @@ void IntentPickerBubbleView::Initialize() {
   scroll_view_ = layout->AddView(std::move(scroll_view));
   layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId, 0);
 
-  // Add Show remember selection checkbox if there are apps besides pwas present
-  if (show_persistence_options_) {
+  if (show_remember_selection_) {
     layout->AddView(CreateHorizontalSeparator());
 
     // This second ColumnSet has a padding column in order to manipulate the

@@ -305,10 +305,6 @@ jumbo_split_static_library("ui") {
     "webui/quota_internals/quota_internals_ui.h",
     "webui/signin_internals_ui.cc",
     "webui/signin_internals_ui.h",
-    "webui/supervised_user_internals_message_handler.cc",
-    "webui/supervised_user_internals_message_handler.h",
-    "webui/supervised_user_internals_ui.cc",
-    "webui/supervised_user_internals_ui.h",
     "webui/sync_internals_message_handler.cc",
     "webui/sync_internals_message_handler.h",
     "webui/sync_internals_ui.cc",
@@ -1392,10 +1388,20 @@ jumbo_split_static_library("ui") {
     }
   }
 
+  # TODO(crbug.com/980869): Remove the section below.
   if (enable_supervised_users && !is_android && !is_chromeos) {
     sources += [
       "startup/supervised_users_deprecated_infobar_delegate.cc",
       "startup/supervised_users_deprecated_infobar_delegate.h",
+    ]
+  }
+
+  if (enable_supervised_users) {
+    sources += [
+      "webui/supervised_user_internals_message_handler.cc",
+      "webui/supervised_user_internals_message_handler.h",
+      "webui/supervised_user_internals_ui.cc",
+      "webui/supervised_user_internals_ui.h",
     ]
   }
 
@@ -2045,22 +2051,22 @@ jumbo_split_static_library("ui") {
       "webui/signin/user_manager_screen_handler.h",
       "webui/signin/user_manager_ui.cc",
       "webui/signin/user_manager_ui.h",
-      "webui/welcome/nux/bookmark_handler.cc",
-      "webui/welcome/nux/bookmark_handler.h",
-      "webui/welcome/nux/bookmark_item.cc",
-      "webui/welcome/nux/bookmark_item.h",
-      "webui/welcome/nux/constants.cc",
-      "webui/welcome/nux/constants.h",
-      "webui/welcome/nux/google_apps_handler.cc",
-      "webui/welcome/nux/google_apps_handler.h",
-      "webui/welcome/nux/ntp_background_fetcher.cc",
-      "webui/welcome/nux/ntp_background_fetcher.h",
-      "webui/welcome/nux/ntp_background_handler.cc",
-      "webui/welcome/nux/ntp_background_handler.h",
-      "webui/welcome/nux/set_as_default_handler.cc",
-      "webui/welcome/nux/set_as_default_handler.h",
+      "webui/welcome/bookmark_handler.cc",
+      "webui/welcome/bookmark_handler.h",
+      "webui/welcome/bookmark_item.cc",
+      "webui/welcome/bookmark_item.h",
+      "webui/welcome/constants.cc",
+      "webui/welcome/constants.h",
+      "webui/welcome/google_apps_handler.cc",
+      "webui/welcome/google_apps_handler.h",
+      "webui/welcome/ntp_background_fetcher.cc",
+      "webui/welcome/ntp_background_fetcher.h",
+      "webui/welcome/ntp_background_handler.cc",
+      "webui/welcome/ntp_background_handler.h",
       "webui/welcome/nux_helper.cc",
       "webui/welcome/nux_helper.h",
+      "webui/welcome/set_as_default_handler.cc",
+      "webui/welcome/set_as_default_handler.h",
       "webui/welcome/welcome_handler.cc",
       "webui/welcome/welcome_handler.h",
       "webui/welcome/welcome_ui.cc",

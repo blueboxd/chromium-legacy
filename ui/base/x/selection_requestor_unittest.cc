@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/selection_utils.h"
@@ -89,7 +89,8 @@ class SelectionRequestorTest : public testing::Test {
   std::unique_ptr<PlatformEventSource> event_source_;
   std::unique_ptr<SelectionRequestor> requestor_;
 
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SelectionRequestorTest);

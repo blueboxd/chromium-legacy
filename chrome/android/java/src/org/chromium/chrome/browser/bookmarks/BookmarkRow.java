@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import android.content.Context;
 import android.support.annotation.IntDef;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.ImageView;
 
 import org.chromium.base.VisibleForTesting;
@@ -39,6 +40,8 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Location
     private int mLocation;
 
+    private static final String TAG = "BookmarkRow";
+
     @IntDef({Location.TOP, Location.MIDDLE, Location.BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Location {
@@ -57,6 +60,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     /**
      * Updates this row for the given {@link BookmarkId}.
+     *
      * @return The {@link BookmarkItem} corresponding the given {@link BookmarkId}.
      */
     // TODO(crbug.com/160194): Clean up these 2 functions after bookmark reordering launches.
@@ -77,7 +81,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
      * within the list of bookmarks.
      *
      * @param bookmarkId The BookmarkId that this BookmarkRow now contains.
-     * @param location The location of this BookmarkRow.
+     * @param location   The location of this BookmarkRow.
      * @return The BookmarkItem corresponding to BookmarkId.
      */
     BookmarkItem setBookmarkId(BookmarkId bookmarkId, @Location int location) {
@@ -87,26 +91,31 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     private void updateVisualState() {
         BookmarkItem bookmarkItem = mDelegate.getModel().getBookmarkById(mBookmarkId);
+        // This check is needed because updateVisualState is called when the item has been deleted
+        // in the model but not in the adapter. If we hit this if-block, the
+        // item is about to be deleted, and we don't need to do anything.
+        if (bookmarkItem == null) {
+            return;
+        }
+        // TODO(jhimawan): Look into using cleanup(). Perhaps unhook the selection state observer?
+
         // If the visibility of the drag handle or more icon is not set later, it will be gone.
         mDragHandle.setVisibility(GONE);
         mMoreIcon.setVisibility(GONE);
 
-        if (mReorderBookmarksEnabled) {
-            if (mDelegate.getDragStateDelegate().getDragActive()) {
-                mDragHandle.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
-                mDragHandle.setEnabled(isItemSelected());
-            } else {
-                mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
-                mMoreIcon.setEnabled(isSelectionModeActive());
-            }
+        if (mReorderBookmarksEnabled && mDelegate.getDragStateDelegate().getDragActive()) {
+            mDragHandle.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
+            mDragHandle.setEnabled(isItemSelected());
         } else {
-            // Bookmark reordering is off
             mMoreIcon.setVisibility(bookmarkItem.isEditable() ? VISIBLE : GONE);
+            mMoreIcon.setClickable(!isSelectionModeActive());
+            mMoreIcon.setEnabled(mMoreIcon.isClickable());
         }
     }
 
     /**
      * Sets the delegate to use to handle UI actions related to this view.
+     *
      * @param delegate A {@link BookmarkDelegate} instance to handle all backend interaction.
      */
     public void onDelegateInitialized(BookmarkDelegate delegate) {
@@ -117,16 +126,11 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
 
     private void initialize() {
         mDelegate.addUIObserver(this);
-        updateSelectionState();
     }
 
     private void cleanup() {
         mMoreIcon.dismiss();
         if (mDelegate != null) mDelegate.removeUIObserver(this);
-    }
-
-    private void updateSelectionState() {
-        mMoreIcon.setEnabled(!mDelegate.getSelectionDelegate().isSelectionEnabled());
     }
 
     // PopupMenuItem.Delegate implementation.
@@ -226,7 +230,7 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Override
     public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
         super.onSelectionStateChange(selectedBookmarks);
-        updateSelectionState();
+        updateVisualState();
     }
 
     // BookmarkUIObserver implementation.
@@ -252,5 +256,30 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @VisibleForTesting
     String getTitle() {
         return String.valueOf(mTitleView.getText());
+    }
+
+    private boolean isDragActive() {
+        if (mReorderBookmarksEnabled) {
+            return mDelegate.getDragStateDelegate().getDragActive();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        // Override is needed in order to support long-press-to-drag on already-selected items.
+        if (isDragActive() && isItemSelected()) return true;
+        return super.onLongClick(view);
+    }
+
+    @Override
+    public void onClick(View view) {
+        // Override is needed in order to allow items to be selected / deselected with a click.
+        // Since we override #onLongClick(), we cannot rely on the base class for this behavior.
+        if (isDragActive()) {
+            toggleSelectionForItem(getItem());
+        } else {
+            super.onClick(view);
+        }
     }
 }

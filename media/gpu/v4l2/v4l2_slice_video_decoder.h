@@ -5,6 +5,8 @@
 #ifndef MEDIA_GPU_V4L2_V4L2_SLICE_VIDEO_DECODER_H_
 #define MEDIA_GPU_V4L2_V4L2_SLICE_VIDEO_DECODER_H_
 
+#include <linux/videodev2.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -135,15 +137,30 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   void InitializeTask(const VideoDecoderConfig& config,
                       InitCB init_cb,
                       const OutputCB& output_cb);
-  // Setup format for V4L2 input buffers.
+  // Setup format for input queue.
   bool SetupInputFormat(uint32_t input_format_fourcc);
-  // Negotiate the pixel output format with V4L2 device. Return fourcc of the
-  // pixel format that is supported by V4L2 device.
-  uint32_t NegotiateOutputFormat();
-  // Setup format for V4L2 output buffers.
-  bool SetupOutputFormat(uint32_t output_format_fourcc);
-  // Update the format of frames in |frame_pool_|.
-  void UpdateVideoFramePoolFormat(const gfx::Rect& visible_rect);
+
+  // Call VIDIOC_S_FMT with |format_fourcc| and |size|. Returns v4l2_format
+  // returned by VIDIOC_S_FMT on success, otherwise returns base::nullopt.
+  // This should be called only from SetupOutputFormat().
+  base::Optional<struct v4l2_format> SetFormatOnOutputQueue(
+      uint32_t format_fourcc,
+      const gfx::Size& size);
+  // Setup format for output queue. This function sets output format on output
+  // queue that is supported by a v4l2 driver, can be allocatable by
+  // VideoFramePool and can be composited by chrome. This also updates format
+  // in VideoFramePool. The returned VideoFrameLayout is one of VideoFrame that
+  // VideoFramePool will allocate. Returns base::nullopt on failure of if there
+  // is no format that satisfies the above conditions.
+  base::Optional<VideoFrameLayout> SetupOutputFormat(
+      const gfx::Size& size,
+      const gfx::Rect& visible_rect);
+  // Update the format of frames in |frame_pool_| with |output_format_fourcc|,
+  // |size| and |visible_rect|.
+  base::Optional<VideoFrameLayout> UpdateVideoFramePoolFormat(
+      uint32_t output_format_fourcc,
+      const gfx::Size& size,
+      const gfx::Rect& visible_rect);
 
   // Destroy on decoder thread.
   void DestroyTask();

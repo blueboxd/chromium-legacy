@@ -8,16 +8,11 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.support.annotation.IntDef;
-import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.tab_ui.R;
@@ -72,20 +67,9 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
         assert status < AnimationStatus.NUM_ENTRIES;
 
         View view = itemView;
-        Context context = view.getContext();
         final View backgroundView = view.findViewById(R.id.background_view);
         final View contentView = view.findViewById(R.id.content_view);
-        final int cardNormalMargin =
-                (int) context.getResources().getDimension(R.dimen.tab_list_card_padding);
-        final int cardBackgroundMargin =
-                (int) context.getResources().getDimension(R.dimen.tab_list_card_background_margin);
-        final Drawable greyBackground =
-                AppCompatResources.getDrawable(context, R.drawable.tab_grid_card_background_grey);
-        final Drawable normalBackground =
-                AppCompatResources.getDrawable(context, R.drawable.popup_bg);
-        final Drawable selectedBackground = new InsetDrawable(
-                AppCompatResources.getDrawable(context, R.drawable.selected_tab_background),
-                (int) context.getResources().getDimension(R.dimen.tab_list_selected_inset_kitkat));
+        final View selectedViewBelowLollipop = view.findViewById(R.id.selected_view_below_lollipop);
         boolean isZoomIn = status == AnimationStatus.SELECTED_CARD_ZOOM_IN
                 || status == AnimationStatus.HOVERED_CARD_ZOOM_IN;
         boolean isHovered = status == AnimationStatus.HOVERED_CARD_ZOOM_IN
@@ -94,14 +78,10 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
         long duration = isRestore ? RESTORE_ANIMATION_DURATION_MS
                                   : TabListRecyclerView.BASE_ANIMATION_DURATION_MS;
         float scale = isZoomIn ? ZOOM_IN_SCALE : 1f;
-        ViewGroup.MarginLayoutParams backgroundParams =
-                (ViewGroup.MarginLayoutParams) backgroundView.getLayoutParams();
         View animateView = isHovered ? contentView : view;
 
         if (status == AnimationStatus.HOVERED_CARD_ZOOM_IN) {
-            backgroundParams.setMargins(
-                    cardNormalMargin, cardNormalMargin, cardNormalMargin, cardNormalMargin);
-            backgroundView.setBackground(greyBackground);
+            backgroundView.setVisibility(View.VISIBLE);
         }
 
         AnimatorSet scaleAnimator = new AnimatorSet();
@@ -109,13 +89,10 @@ class ClosableTabGridViewHolder extends TabGridViewHolder {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (!isZoomIn) {
-                    backgroundParams.setMargins(cardBackgroundMargin, cardBackgroundMargin,
-                            cardBackgroundMargin, cardBackgroundMargin);
+                    backgroundView.setVisibility(View.GONE);
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                        backgroundView.setBackground(
-                                isSelected ? selectedBackground : normalBackground);
-                    } else {
-                        backgroundView.setBackground(normalBackground);
+                        selectedViewBelowLollipop.setVisibility(
+                                isSelected ? View.VISIBLE : View.GONE);
                     }
                 }
                 mIsAnimating = false;

@@ -32,6 +32,7 @@ const char kFcmToken[] = "fcm_token";
 constexpr int kNoCapabilities =
     static_cast<int>(SharingDeviceCapability::kNone);
 const char kSenderGuid[] = "test_sender_guid";
+const char kAuthorizedEntity[] = "authorized_entity";
 const int kTtlSeconds = 10;
 
 class MockGCMDriver : public gcm::FakeGCMDriver {
@@ -140,6 +141,7 @@ MATCHER(WebPushMessageMatcher, "") {
 TEST_F(SharingFCMSenderTest, SendMessageToDevice) {
   std::string guid = base::GenerateGUID();
   sync_prefs_->SetSyncDevice(guid, CreateFakeSyncDevice());
+  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
       crypto::ECPrivateKey::Create();
@@ -153,9 +155,9 @@ TEST_F(SharingFCMSenderTest, SendMessageToDevice) {
 
   EXPECT_CALL(
       mock_gcm_driver_,
-      SendWebPushMessage(Eq(kSharingFCMAppID), Eq(""), Eq(kP256dh),
-                         Eq(kAuthSecret), Eq(kFcmToken), Eq(vapid_key.get()),
-                         WebPushMessageMatcher(), _));
+      SendWebPushMessage(Eq(kSharingFCMAppID), Eq(kAuthorizedEntity),
+                         Eq(kP256dh), Eq(kAuthSecret), Eq(kFcmToken),
+                         Eq(vapid_key.get()), WebPushMessageMatcher(), _));
 
   sharing_fcm_sender_->SendMessageToDevice(
       guid, base::TimeDelta::FromSeconds(kTtlSeconds), SharingMessage(),
@@ -166,6 +168,7 @@ TEST_F(SharingFCMSenderTest, SendMessageToDevice) {
 TEST_F(SharingFCMSenderTest, SendMessageBeforeLocalDeviceInfoReady) {
   std::string guid = base::GenerateGUID();
   sync_prefs_->SetSyncDevice(guid, CreateFakeSyncDevice());
+  sync_prefs_->SetFCMRegistration({kAuthorizedEntity, "", base::Time::Now()});
 
   std::unique_ptr<crypto::ECPrivateKey> vapid_key =
       crypto::ECPrivateKey::Create();
@@ -189,9 +192,9 @@ TEST_F(SharingFCMSenderTest, SendMessageBeforeLocalDeviceInfoReady) {
 
   EXPECT_CALL(
       mock_gcm_driver_,
-      SendWebPushMessage(Eq(kSharingFCMAppID), Eq(""), Eq(kP256dh),
-                         Eq(kAuthSecret), Eq(kFcmToken), Eq(vapid_key.get()),
-                         WebPushMessageMatcher(), _));
+      SendWebPushMessage(Eq(kSharingFCMAppID), Eq(kAuthorizedEntity),
+                         Eq(kP256dh), Eq(kAuthSecret), Eq(kFcmToken),
+                         Eq(vapid_key.get()), WebPushMessageMatcher(), _));
 
   local_device_info_provider_.SetReady(true);
 }

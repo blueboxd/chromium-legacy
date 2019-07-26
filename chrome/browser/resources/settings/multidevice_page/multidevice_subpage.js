@@ -108,10 +108,8 @@ Polymer({
    * @private
    */
   doesAndroidMessagesRequireSetUp_: function() {
-    // The pairing state is preferred over the FeatureState here since
-    // FeatureState.UNAVAILABLE_SUITE_DISABLED is returned when the suite is
-    // disabled, regardless if Messages requires further setup.
-    return !this.pageContentData.isAndroidSmsPairingComplete;
+    return this.getFeatureState(settings.MultiDeviceFeature.MESSAGES) ===
+        settings.MultiDeviceFeatureState.FURTHER_SETUP_REQUIRED;
   },
 
   /**

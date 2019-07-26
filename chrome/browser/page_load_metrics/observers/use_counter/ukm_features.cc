@@ -86,7 +86,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kSignedExchangeInnerResponseInMainFrame,
           WebFeature::kSignedExchangeInnerResponseInSubFrame,
           WebFeature::kWebShareShare,
-          WebFeature::kDownloadInAdFrameWithUserGesture,
           WebFeature::kDownloadInAdFrameWithoutUserGesture,
           WebFeature::kOpenWebDatabase,
           WebFeature::kV8MediaCapabilities_DecodingInfo_Method,
@@ -109,6 +108,11 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kAccelerometerConstructor,
           WebFeature::kGyroscopeConstructor,
           WebFeature::kServiceWorkerInterceptedRequestFromOriginDirtyStyleSheet,
+          WebFeature::kDownloadPrePolicyCheck,
+          WebFeature::kDownloadPostPolicyCheck,
+          WebFeature::kDownloadInAdFrame,
+          WebFeature::kDownloadInSandbox,
+          WebFeature::kDownloadWithoutUserGesture,
       }));
   return *opt_in_features;
 }

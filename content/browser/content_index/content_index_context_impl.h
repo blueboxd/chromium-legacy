@@ -69,6 +69,9 @@ class CONTENT_EXPORT ContentIndexContextImpl
       const std::string& description_id,
       blink::ServiceWorkerStatusCode start_worker_status);
 
+  void DidDispatchEvent(const url::Origin& origin,
+                        blink::ServiceWorkerStatusCode service_worker_status);
+
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   ContentIndexDatabase content_index_database_;
 

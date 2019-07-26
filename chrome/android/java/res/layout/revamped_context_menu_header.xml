@@ -38,7 +38,7 @@
             android:scaleType="centerInside"
             android:importantForAccessibility="no"
             android:layout_marginTop="@dimen/revamped_context_menu_header_vertical_padding"
-            android:layout_marginBottom="@dimen/revamped_context_menu_header_vertical_padding"
+            android:layout_marginBottom="@dimen/revamped_context_menu_bottom_padding"
             app:cornerRadiusTopStart="@dimen/default_rounded_corner_radius"
             app:cornerRadiusTopEnd="@dimen/default_rounded_corner_radius"
             app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
@@ -53,7 +53,7 @@
         android:orientation="vertical"
         android:layout_gravity="center_vertical"
         android:paddingTop="@dimen/revamped_context_menu_header_vertical_padding"
-        android:paddingBottom="@dimen/revamped_context_menu_header_vertical_padding">
+        android:paddingBottom="@dimen/revamped_context_menu_bottom_padding">
 
         <org.chromium.ui.widget.TextViewWithLeading
             android:id="@+id/menu_header_title"

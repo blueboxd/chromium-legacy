@@ -220,7 +220,9 @@ class SelectionButtonView : public LoginButton {
 // Container for the device monitoring warning.
 class MonitoringWarningView : public NonAccessibleView {
  public:
-  MonitoringWarningView() : NonAccessibleView(kMonitoringWarningClassName) {
+  MonitoringWarningView()
+      : NonAccessibleView(kMonitoringWarningClassName),
+        warning_type_(WarningType::kNone) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
         kSpacingBetweenMonitoringWarningIconAndLabelDp));
@@ -241,27 +243,46 @@ class MonitoringWarningView : public NonAccessibleView {
     AddChildView(label_);
   }
 
-  enum class WarningType { kSoftWarning, kFullWarning };
+  enum class WarningType { kNone, kSoftWarning, kFullWarning };
+
+  void UpdateForUser(const LoginUserInfo& user) {
+    enterprise_domain_ = user.public_account_info->enterprise_domain;
+    UpdateLabel();
+  }
 
   void SetWarningType(WarningType warning_type) {
-    base::string16 label_text;
-    if (warning_type == WarningType::kFullWarning) {
-      label_text = l10n_util::GetStringUTF16(
-          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING);
-      image_->SetVisible(true);
-    } else if (warning_type == WarningType::kSoftWarning) {
-      label_text = l10n_util::GetStringUTF16(
-          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING);
-      image_->SetVisible(false);
-    }
-    label_->SetText(label_text);
+    warning_type_ = warning_type;
+    UpdateLabel();
   }
 
   ~MonitoringWarningView() override = default;
 
  private:
+  void UpdateLabel() {
+    // Call sequence of UpdateForUser() and SetWarningType() is not clear.
+    // In case SetWarningType is called first there is a need to wait for
+    // enterprise_domain_ is set.
+    if (warning_type_ == WarningType::kNone || !enterprise_domain_.has_value())
+      return;
+    base::string16 label_text;
+    if (warning_type_ == WarningType::kFullWarning) {
+      label_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_FULL_WARNING,
+          base::UTF8ToUTF16(enterprise_domain_.value()));
+      image_->SetVisible(true);
+    } else {
+      label_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_SOFT_WARNING,
+          base::UTF8ToUTF16(enterprise_domain_.value()));
+      image_->SetVisible(false);
+    }
+    label_->SetText(label_text);
+  }
+
   friend class LoginExpandedPublicAccountView::TestApi;
 
+  WarningType warning_type_;
+  base::Optional<std::string> enterprise_domain_;
   views::ImageView* image_;
   views::Label* label_;
 
@@ -458,6 +479,7 @@ class RightPaneView : public NonAccessibleView,
   void UpdateForUser(const LoginUserInfo& user) {
     DCHECK_EQ(user.basic_user_info.type,
               user_manager::USER_TYPE_PUBLIC_ACCOUNT);
+    monitoring_warning_view_->UpdateForUser(user);
     current_user_ = user;
     if (!language_changed_by_user_)
       selected_language_item_.value = user.public_account_info->default_locale;
@@ -664,6 +686,15 @@ LoginExpandedPublicAccountView::TestApi::selected_keyboard_item() {
 views::ImageView*
 LoginExpandedPublicAccountView::TestApi::monitoring_warning_icon() {
   return view_->right_pane_->monitoring_warning_view_->image_;
+}
+
+views::Label*
+LoginExpandedPublicAccountView::TestApi::monitoring_warning_label() {
+  return view_->right_pane_->monitoring_warning_view_->label_;
+}
+
+void LoginExpandedPublicAccountView::TestApi::ResetUserForTest() {
+  view_->right_pane_->monitoring_warning_view_->enterprise_domain_.reset();
 }
 
 LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(

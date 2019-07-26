@@ -14,9 +14,6 @@ import android.widget.TextView;
 
 /**
  * A Chrome switch preference that supports managed preferences.
- *
- * TODO(crbug.com/967022): Remove {@link ChromeSwitchPreference} when Preference Support Library
- * migration is complete in favor of this class.
  */
 public class ChromeSwitchPreferenceCompat extends SwitchPreferenceCompat {
     private ManagedPreferenceDelegateCompat mManagedPrefDelegate;

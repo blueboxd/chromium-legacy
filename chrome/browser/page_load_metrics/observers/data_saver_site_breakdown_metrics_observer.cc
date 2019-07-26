@@ -7,6 +7,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -27,6 +28,13 @@ DataSaverSiteBreakdownMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle,
     ukm::SourceId source_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  Profile* profile = Profile::FromBrowserContext(
+      navigation_handle->GetWebContents()->GetBrowserContext());
+  // Skip if Lite mode is not enabled.
+  if (!profile || !data_reduction_proxy::DataReductionProxySettings::
+                      IsDataSaverEnabledByUser(profile->GetPrefs())) {
+    return STOP_OBSERVING;
+  }
 
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserver. BrowserContext is always valid and

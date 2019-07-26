@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 
 #include <numeric>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -125,7 +126,7 @@ std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
   });
   bool display_arrow = !usernames.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(usernames),
+      std::make_unique<ui::SimpleComboboxModel>(std::move(usernames)),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kRegular, views::style::CONTEXT_BUTTON,
       views::style::STYLE_PRIMARY, display_arrow);

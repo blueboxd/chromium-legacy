@@ -83,7 +83,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration =
       std::make_unique<SharingDeviceRegistration>(
           sync_prefs.get(), instance_id_service->driver(),
-          vapid_key_manager.get(), gcm_driver, local_device_info_provider);
+          vapid_key_manager.get(), local_device_info_provider);
   std::unique_ptr<SharingFCMSender> fcm_sender =
       std::make_unique<SharingFCMSender>(gcm_driver, local_device_info_provider,
                                          sync_prefs.get(),
@@ -94,8 +94,8 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
   return new SharingService(std::move(sync_prefs), std::move(vapid_key_manager),
                             std::move(sharing_device_registration),
                             std::move(fcm_sender), std::move(fcm_handler),
-                            device_info_tracker, local_device_info_provider,
-                            sync_service);
+                            gcm_driver, device_info_tracker,
+                            local_device_info_provider, sync_service);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

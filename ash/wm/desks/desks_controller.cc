@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/root_window_desk_switch_animator.h"
@@ -22,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -146,6 +149,11 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
 
   UMA_HISTOGRAM_ENUMERATION(kNewDeskHistogramName, source);
   ReportDesksCountHistogram();
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_VIRTUAL_DESKS_ALERT_NEW_DESK_CREATED,
+          base::NumberToString16(desks_.size())));
 
   for (auto& observer : observers_)
     observer.OnDeskAdded(desks_.back().get());
@@ -161,6 +169,9 @@ void DesksController::RemoveDesk(const Desk* desk,
       desks_.begin(), desks_.end(),
       [desk](const std::unique_ptr<Desk>& d) { return d.get() == desk; });
   DCHECK(iter != desks_.end());
+
+  // Used by accessibility to indicate the desk that has been removed.
+  const int removed_desk_number = std::distance(desks_.begin(), iter) + 1;
 
   // Keep the removed desk alive until the end of this function.
   std::unique_ptr<Desk> removed_desk = std::move(*iter);
@@ -269,6 +280,16 @@ void DesksController::RemoveDesk(const Desk* desk,
   ReportDesksCountHistogram();
   ReportNumberOfWindowsPerDeskHistogram();
 
+  int active_desk_number = GetDeskIndex(active_desk_) + 1;
+  if (active_desk_number == removed_desk_number)
+    active_desk_number++;
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_REMOVED,
+          base::NumberToString16(removed_desk_number),
+          base::NumberToString16(active_desk_number)));
+
   DCHECK_LE(available_container_ids_.size(), desks_util::kMaxNumberOfDesks);
 }
 
@@ -292,6 +313,12 @@ void DesksController::ActivateDesk(const Desk* desk, DesksSwitchSource source) {
     ActivateDeskInternal(desk, /*update_window_activation=*/!in_overview);
     return;
   }
+
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_VIRTUAL_DESKS_ALERT_DESK_ACTIVATED,
+          base::NumberToString16(GetDeskIndex(desk) + 1)));
 
   // New desks are always added at the end of the list to the right of existing
   // desks. Therefore, desks at lower indices are located on the left of desks
@@ -323,6 +350,14 @@ void DesksController::MoveWindowFromActiveDeskTo(
   const bool in_overview = overview_controller->InOverviewSession();
 
   active_desk_->MoveWindowToDesk(window, target_desk);
+
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_VIRTUAL_DESKS_ALERT_WINDOW_MOVED_FROM_ACTIVE_DESK,
+          window->GetTitle(),
+          base::NumberToString16(GetDeskIndex(active_desk_) + 1),
+          base::NumberToString16(GetDeskIndex(target_desk) + 1)));
 
   if (in_overview) {
     DCHECK(overview_controller->InOverviewSession());

@@ -173,4 +173,16 @@ void ElementAnimations::ClearBaseComputedStyle() {
   base_computed_style_ = nullptr;
 }
 
+bool ElementAnimations::AnimationsPreserveAxisAlignment() const {
+  for (const auto& entry : animations_) {
+    const Animation& animation = *entry.key;
+    DCHECK(animation.effect());
+    DCHECK(animation.effect()->IsKeyframeEffect());
+    const KeyframeEffect& effect = *ToKeyframeEffect(animation.effect());
+    if (!effect.AnimationsPreserveAxisAlignment())
+      return false;
+  }
+  return true;
+}
+
 }  // namespace blink

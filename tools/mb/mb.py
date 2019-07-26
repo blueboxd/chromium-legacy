@@ -1296,7 +1296,10 @@ class MetaBuildWrapper(object):
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
       if is_simplechrome:
-        cmdline = [os.path.join('bin', 'cros_test_wrapper')]
+        cmdline = [
+            os.path.join('bin', 'cros_test_wrapper'),
+            '--logs-dir=${ISOLATED_OUTDIR}',
+        ]
       cmdline += [
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(isolate_map[target]['script'])

@@ -6,13 +6,9 @@ package org.chromium.chrome.browser.omnibox.suggestions.answer;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Pair;
-import android.util.TypedValue;
-import android.view.View;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
@@ -25,9 +21,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewProperties.AnswerIcon;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
-import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionTextContainer;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.components.omnibox.AnswerType;
 import org.chromium.components.omnibox.SuggestionAnswer;
@@ -47,7 +40,6 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
     private final SuggestionHost mSuggestionHost;
     private ImageFetcher mImageFetcher;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
-    private boolean mEnableNewAnswerLayout;
 
     /**
      * @param context An Android context.
@@ -76,22 +68,16 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
     }
 
     @Override
-    public void onNativeInitialized() {
-        // Experiment: controls presence of certain answer icon types.
-        mEnableNewAnswerLayout =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT);
-    }
+    public void onNativeInitialized() {}
 
     @Override
     public int getViewTypeId() {
-        return mEnableNewAnswerLayout ? OmniboxSuggestionUiType.ANSWER_SUGGESTION
-                                      : OmniboxSuggestionUiType.DEFAULT;
+        return OmniboxSuggestionUiType.ANSWER_SUGGESTION;
     }
 
     @Override
     public PropertyModel createModelForSuggestion(OmniboxSuggestion suggestion) {
-        return mEnableNewAnswerLayout ? new PropertyModel(AnswerSuggestionViewProperties.ALL_KEYS)
-                                      : new PropertyModel(SuggestionViewProperties.ALL_KEYS);
+        return new PropertyModel(AnswerSuggestionViewProperties.ALL_KEYS);
     }
 
     @Override
@@ -100,11 +86,7 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
-        if (mEnableNewAnswerLayout) {
-            setStateForNewSuggestion(model, suggestion, delegate);
-        } else {
-            setStateForClassicSuggestion(model, suggestion, delegate);
-        }
+        setStateForNewSuggestion(model, suggestion, delegate);
     }
 
     @Override
@@ -169,53 +151,11 @@ public class AnswerSuggestionProcessor implements SuggestionProcessor {
                     for (int i = 0; i < currentModels.size(); i++) {
                         PropertyModel currentModel = currentModels.get(i);
                         if (!mSuggestionHost.isActiveModel(currentModel)) continue;
-
-                        if (mEnableNewAnswerLayout) {
-                            model.set(AnswerSuggestionViewProperties.ANSWER_IMAGE, bitmap);
-                        } else {
-                            model.set(SuggestionViewProperties.ANSWER_IMAGE, bitmap);
-                        }
+                        model.set(AnswerSuggestionViewProperties.ANSWER_IMAGE, bitmap);
                         didUpdate = true;
                     }
                     if (didUpdate) mSuggestionHost.notifyPropertyModelsChanged();
                 });
-    }
-
-    /**
-     * Sets both lines of the Omnibox suggestion in a basic Suggestion result.
-     */
-    private void setStateForClassicSuggestion(
-            PropertyModel model, OmniboxSuggestion suggestion, SuggestionViewDelegate delegate) {
-        AnswerText[] details = AnswerTextClassic.from(mContext, suggestion);
-
-        SuggestionAnswer answer = suggestion.getAnswer();
-        if (answer != null) {
-            model.set(SuggestionViewProperties.HAS_ANSWER_IMAGE, answer.getSecondLine().hasImage());
-        }
-
-        model.set(SuggestionViewProperties.IS_ANSWER, true);
-        model.set(SuggestionViewProperties.DELEGATE, delegate);
-
-        model.set(SuggestionViewProperties.TEXT_LINE_1_SIZING,
-                Pair.create(TypedValue.COMPLEX_UNIT_SP, details[0].mHeightSp));
-        model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT,
-                new SuggestionTextContainer(details[0].mText));
-        model.set(SuggestionViewProperties.TEXT_LINE_1_MAX_LINES, details[0].mMaxLines);
-        model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT_DIRECTION, View.TEXT_DIRECTION_INHERIT);
-
-        if (details[1] != null) {
-            model.set(SuggestionViewProperties.TEXT_LINE_2_SIZING,
-                    Pair.create(TypedValue.COMPLEX_UNIT_SP, details[1].mHeightSp));
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT,
-                    new SuggestionTextContainer(details[1].mText));
-            model.set(SuggestionViewProperties.TEXT_LINE_2_MAX_LINES, details[1].mMaxLines);
-            model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT_DIRECTION,
-                    View.TEXT_DIRECTION_INHERIT);
-        }
-
-        model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.MAGNIFIER);
-
-        model.set(SuggestionViewProperties.REFINABLE, true);
     }
 
     /**

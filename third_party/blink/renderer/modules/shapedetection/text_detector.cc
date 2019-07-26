@@ -67,7 +67,7 @@ void TextDetector::OnDetectText(
       point->setY(corner_point.y);
       corner_points.push_back(point);
     }
-    detected_text.push_back(DetectedText::Create(
+    detected_text.push_back(MakeGarbageCollected<DetectedText>(
         text->raw_value,
         DOMRectReadOnly::Create(text->bounding_box.x, text->bounding_box.y,
                                 text->bounding_box.width,

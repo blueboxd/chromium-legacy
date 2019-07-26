@@ -833,7 +833,6 @@ void EffectTree::UpdateHasMaskingChild(EffectNode* node,
   // when we actually encounter a masking child.
   node->has_masking_child = false;
   if (node->blend_mode == SkBlendMode::kDstIn) {
-    DCHECK(parent_node->HasRenderSurface());
     parent_node->has_masking_child = true;
   }
 }

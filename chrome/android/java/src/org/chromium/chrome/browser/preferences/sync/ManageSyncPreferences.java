@@ -59,17 +59,28 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
     @VisibleForTesting
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
-    private static final String PREF_SYNC_EVERYTHING = "sync_everything";
-    private static final String PREF_SYNC_AUTOFILL = "sync_autofill";
-    private static final String PREF_SYNC_BOOKMARKS = "sync_bookmarks";
-    private static final String PREF_SYNC_PAYMENTS_INTEGRATION = "sync_payments_integration";
-    private static final String PREF_SYNC_HISTORY = "sync_history";
-    private static final String PREF_SYNC_PASSWORDS = "sync_passwords";
-    private static final String PREF_SYNC_RECENT_TABS = "sync_recent_tabs";
-    private static final String PREF_SYNC_SETTINGS = "sync_settings";
-    private static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
-    private static final String PREF_ENCRYPTION = "encryption";
-    private static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
+    @VisibleForTesting
+    public static final String PREF_SYNC_EVERYTHING = "sync_everything";
+    @VisibleForTesting
+    public static final String PREF_SYNC_AUTOFILL = "sync_autofill";
+    @VisibleForTesting
+    public static final String PREF_SYNC_BOOKMARKS = "sync_bookmarks";
+    @VisibleForTesting
+    public static final String PREF_SYNC_PAYMENTS_INTEGRATION = "sync_payments_integration";
+    @VisibleForTesting
+    public static final String PREF_SYNC_HISTORY = "sync_history";
+    @VisibleForTesting
+    public static final String PREF_SYNC_PASSWORDS = "sync_passwords";
+    @VisibleForTesting
+    public static final String PREF_SYNC_RECENT_TABS = "sync_recent_tabs";
+    @VisibleForTesting
+    public static final String PREF_SYNC_SETTINGS = "sync_settings";
+    @VisibleForTesting
+    public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
+    @VisibleForTesting
+    public static final String PREF_ENCRYPTION = "encryption";
+    @VisibleForTesting
+    public static final String PREF_SYNC_MANAGE_DATA = "sync_manage_data";
 
     private final ProfileSyncService mProfileSyncService = ProfileSyncService.get();
 
@@ -230,8 +241,8 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
         // Note: mSyncPaymentsIntegration should be checked if mSyncEverything is checked, but if
         // mSyncEverything was just enabled, then that state may not have propagated to
         // mSyncPaymentsIntegration yet. See crbug.com/972863.
-        PersonalDataManager.setPaymentsIntegrationEnabled(
-                mSyncEverything.isChecked() || mSyncPaymentsIntegration.isChecked());
+        PersonalDataManager.setPaymentsIntegrationEnabled(mSyncEverything.isChecked()
+                || (mSyncPaymentsIntegration.isChecked() && mSyncAutofill.isChecked()));
         // Some calls to setChosenDataTypes don't trigger syncStateChanged, so schedule update here.
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::updateSyncPreferences);
     }

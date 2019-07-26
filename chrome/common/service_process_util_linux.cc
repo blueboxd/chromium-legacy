@@ -28,7 +28,7 @@ MultiProcessLock* TakeServiceInitializingLock(bool waiting) {
 std::string GetBaseDesktopName() {
 #if defined(GOOGLE_CHROME_BUILD)
   return "google-chrome-service.desktop";
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
   return "chromium-service.desktop";
 #endif
 }
@@ -72,7 +72,7 @@ bool ServiceProcessState::AddToAutoRun() {
   DCHECK(autorun_command_line_.get());
 #if defined(GOOGLE_CHROME_BUILD)
   std::string app_name = "Google Chrome Service";
-#else  // CHROMIUM_BUILD
+#else  // BUILDFLAG(CHROMIUM_BRANDING)
   std::string app_name = "Chromium Service";
 #endif
   return AutoStart::AddApplication(

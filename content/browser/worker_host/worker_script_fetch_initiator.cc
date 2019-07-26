@@ -18,6 +18,7 @@
 #include "content/browser/appcache/appcache_navigation_handle_core.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/file_url_loader_factory.h"
+#include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
@@ -86,6 +87,7 @@ void WorkerScriptFetchInitiator::Start(
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_override,
     StoragePartitionImpl* storage_partition,
+    const std::string& storage_domain,
     CompletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -105,16 +107,22 @@ void WorkerScriptFetchInitiator::Start(
   bool constructor_uses_file_url =
       request_initiator.scheme() == url::kFileScheme;
 
+  // TODO(https://crbug.com/987517): Filesystem URL support on shared workers
+  // are now broken.
+  bool filesystem_url_support = resource_type == ResourceType::kWorker;
+
   // Set up the factory bundle for non-NetworkService URLs, e.g.,
   // chrome-extension:// URLs. One factory bundle is consumed by the browser
   // for WorkerScriptLoaderFactory, and one is sent to the renderer for
   // subresource loading.
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       factory_bundle_for_browser = CreateFactoryBundle(
-          worker_process_id, storage_partition, constructor_uses_file_url);
+          worker_process_id, storage_partition, storage_domain,
+          constructor_uses_file_url, filesystem_url_support);
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories = CreateFactoryBundle(
-          worker_process_id, storage_partition, constructor_uses_file_url);
+          worker_process_id, storage_partition, storage_domain,
+          constructor_uses_file_url, filesystem_url_support);
 
   // Create a resource request for initiating worker script fetch from the
   // browser process.
@@ -226,12 +234,23 @@ std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
 WorkerScriptFetchInitiator::CreateFactoryBundle(
     int worker_process_id,
     StoragePartitionImpl* storage_partition,
-    bool file_support) {
+    const std::string& storage_domain,
+    bool file_support,
+    bool filesystem_url_support) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap non_network_factories;
   non_network_factories[url::kDataScheme] =
       std::make_unique<DataURLLoaderFactory>();
+  if (filesystem_url_support) {
+    // TODO(https://crbug.com/986188): Pass ChildProcessHost::kInvalidUniqueID
+    // instead of valid |worker_process_id| for |factory_bundle_for_browser|
+    // once CanCommitURL-like check is implemented in PlzWorker.
+    non_network_factories[url::kFileSystemScheme] =
+        CreateFileSystemURLLoaderFactory(
+            worker_process_id, RenderFrameHost::kNoFrameTreeNodeId,
+            storage_partition->GetFileSystemContext(), storage_domain);
+  }
   GetContentClient()
       ->browser()
       ->RegisterNonNetworkSubresourceURLLoaderFactories(

@@ -57,6 +57,9 @@ void GetPaymentInformationAction::InternalProcessAction(
   payment_options->additional_actions_callback =
       base::BindOnce(&GetPaymentInformationAction::OnAdditionalActionTriggered,
                      weak_ptr_factory_.GetWeakPtr());
+  payment_options->terms_link_callback = base::BindOnce(
+      &GetPaymentInformationAction::OnTermsAndConditionsLinkClicked,
+      weak_ptr_factory_.GetWeakPtr());
 
   // Gather info for UMA histograms.
   if (!presented_to_user_) {
@@ -156,13 +159,21 @@ void GetPaymentInformationAction::OnAdditionalActionTriggered(int index) {
   std::move(callback_).Run(std::move(processed_action_proto_));
 }
 
+void GetPaymentInformationAction::OnTermsAndConditionsLinkClicked(int link) {
+  if (!callback_)
+    return;
+
+  UpdateProcessedAction(ACTION_APPLIED);
+  processed_action_proto_->mutable_payment_details()->set_terms_link(link);
+  action_successful_ = true;
+  std::move(callback_).Run(std::move(processed_action_proto_));
+}
+
 std::unique_ptr<PaymentRequestOptions>
 GetPaymentInformationAction::CreateOptionsFromProto() const {
   auto payment_options = std::make_unique<PaymentRequestOptions>();
   auto get_payment_information = proto_.get_payment_information();
 
-  payment_options->request_terms_and_conditions =
-      get_payment_information.request_terms_and_conditions();
   if (get_payment_information.has_contact_details()) {
     auto contact_details = get_payment_information.contact_details();
     payment_options->request_payer_email =
@@ -208,6 +219,19 @@ GetPaymentInformationAction::CreateOptionsFromProto() const {
       payment_options->initial_terms_and_conditions = REQUIRES_REVIEW;
       break;
   }
+
+  if (get_payment_information.request_terms_and_conditions()) {
+    payment_options->show_terms_as_checkbox =
+        get_payment_information.show_terms_as_checkbox();
+    payment_options->accept_terms_and_conditions_text =
+        get_payment_information.accept_terms_and_conditions_text();
+    if (payment_options->accept_terms_and_conditions_text.empty()) {
+      payment_options->accept_terms_and_conditions_text =
+          l10n_util::GetStringUTF8(
+              IDS_AUTOFILL_ASSISTANT_3RD_PARTY_TERMS_ACCEPT);
+    }
+  }
+
   return payment_options;
 }
 

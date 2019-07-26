@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.support.v4.widget.TextViewCompat;
-import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -89,7 +88,6 @@ public class TabGroupUiToolbarView extends FrameLayout {
      */
     void setupDialogToolbarLayout() {
         Context context = getContext();
-        setBackground(AppCompatResources.getDrawable(context, R.drawable.tab_grid_card_background));
         mLeftButton.setImageResource(org.chromium.chrome.R.drawable.ic_arrow_back_24dp);
         int topicMargin =
                 (int) context.getResources().getDimension(R.dimen.tab_group_toolbar_topic_margin);

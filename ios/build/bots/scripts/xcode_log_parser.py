@@ -30,7 +30,8 @@ def parse_passed_tests_for_interrupted_run(output):
   passed_tests = []
   # Test has format:
   # [09:04:42:INFO] Test case '-[Test_class test_method]' passed.
-  passed_test_regex = re.compile(r'Test case \'\-\[(.+?)\s(.+?)\]\' passed')
+  # [09:04:42:INFO] Test Case '-[Test_class test_method]' passed.
+  passed_test_regex = re.compile(r'Test [Cc]ase \'\-\[(.+?)\s(.+?)\]\' passed')
 
   for test_line in output:
     m_test = passed_test_regex.search(test_line)

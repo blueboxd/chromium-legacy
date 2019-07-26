@@ -52,8 +52,8 @@ void CreateServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          std::move(container_host_info), nullptr /* controller_ptr */,
-          client_id),
+          std::move(container_host_info),
+          mojo::NullRemote() /* remote_controller */, client_id),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(request), std::move(task_runner));
 }

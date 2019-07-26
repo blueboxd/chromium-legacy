@@ -189,9 +189,11 @@ class InstallableManager
   void OnDidGetManifest(const GURL& manifest_url,
                         const blink::Manifest& manifest);
 
-  void CheckManifestValid(bool check_webapp_manifest_display);
+  void CheckManifestValid(bool check_webapp_manifest_display,
+                          bool prefer_maskable_icon);
   bool IsManifestValidForWebApp(const blink::Manifest& manifest,
-                                bool check_webapp_manifest_display);
+                                bool check_webapp_manifest_display,
+                                bool prefer_maskable_icon);
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 

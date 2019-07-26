@@ -75,6 +75,19 @@ void MockMediaSessionMojoObserver::MediaSessionImagesChanged(
   }
 }
 
+void MockMediaSessionMojoObserver::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  session_position_ = position;
+
+  if (waiting_for_empty_position_ && !position.has_value()) {
+    run_loop_->Quit();
+    waiting_for_empty_position_ = false;
+  } else if (waiting_for_non_empty_position_ && position.has_value()) {
+    run_loop_->Quit();
+    waiting_for_non_empty_position_ = false;
+  }
+}
+
 void MockMediaSessionMojoObserver::WaitForState(
     mojom::MediaSessionInfo::SessionState wanted_state) {
   if (session_info_ && session_info_->state == wanted_state)
@@ -141,6 +154,24 @@ void MockMediaSessionMojoObserver::WaitForExpectedImagesOfType(
   }
 
   expected_images_of_type_ = std::make_pair(type, images);
+  StartWaiting();
+}
+
+void MockMediaSessionMojoObserver::WaitForEmptyPosition() {
+  // |session_position_| is doubly wrapped in base::Optional so we must check
+  // both values.
+  if (session_position_.has_value() && !session_position_->has_value())
+    return;
+
+  waiting_for_empty_position_ = true;
+  StartWaiting();
+}
+
+void MockMediaSessionMojoObserver::WaitForNonEmptyPosition() {
+  if (session_position_.has_value() && session_position_->has_value())
+    return;
+
+  waiting_for_non_empty_position_ = true;
   StartWaiting();
 }
 
@@ -337,6 +368,13 @@ void MockMediaSession::SimulateMetadataChanged(
     const base::Optional<MediaMetadata>& metadata) {
   for (auto& observer : observers_) {
     observer->MediaSessionMetadataChanged(metadata);
+  }
+}
+
+void MockMediaSession::SimulatePositionChanged(
+    const base::Optional<MediaPosition>& position) {
+  for (auto& observer : observers_) {
+    observer->MediaSessionPositionChanged(position);
   }
 }
 

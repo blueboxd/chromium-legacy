@@ -295,7 +295,6 @@ test("components_unittests") {
       "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
       "//components/invalidation/impl",
       "//components/invalidation/impl:java",
-      "//components/journey:unit_tests",
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
       "//components/signin/core/browser/android:java",

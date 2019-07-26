@@ -32,6 +32,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
                                           const AtomicString& id,
                                           Element*);
   PerformanceElementTiming(const AtomicString& name,
+                           DOMHighResTimeStamp start_time,
                            const String& url,
                            const FloatRect& intersection_rect,
                            DOMHighResTimeStamp render_time,

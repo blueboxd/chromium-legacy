@@ -291,8 +291,7 @@ base::Optional<Gamepad> OculusGamepadHelper::CreateGamepad(ovrSession session,
 
   OculusGamepadBuilder touch(input_touch, hand);
 
-  // TODO(https://crbug.com/966060): Determine if inverting the y value here is
-  // necessary.
+  // Invert the y axis because -1 is up in the Gamepad API, but down in Oculus.
   touch.AddAxis(input_touch.Thumbstick[hand].x);
   touch.AddAxis(-input_touch.Thumbstick[hand].y);
 

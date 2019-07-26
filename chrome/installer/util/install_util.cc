@@ -47,6 +47,10 @@ using installer::ProductState;
 
 namespace {
 
+// DowngradeVersion holds the version from which Chrome was downgraded. In case
+// of multiple downgrades (e.g., 75->74->73), it retains the highest version
+// installed prior to any downgrades. DowngradeVersion is deleted on upgrade
+// once Chrome reaches the version from which it was downgraded.
 const wchar_t kRegDowngradeVersion[] = L"DowngradeVersion";
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -531,7 +535,7 @@ bool InstallUtil::ProgramCompare::GetInfo(const base::File& file,
 }
 
 // static
-base::Version InstallUtil::GetDowngradeVersion() {
+base::Optional<base::Version> InstallUtil::GetDowngradeVersion() {
   RegKey key;
   base::string16 downgrade_version;
   if (key.Open(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
@@ -541,9 +545,12 @@ base::Version InstallUtil::GetDowngradeVersion() {
       key.ReadValue(kRegDowngradeVersion, &downgrade_version) !=
           ERROR_SUCCESS ||
       downgrade_version.empty()) {
-    return base::Version();
+    return base::nullopt;
   }
-  return base::Version(base::UTF16ToASCII(downgrade_version));
+  base::Version version(base::UTF16ToASCII(downgrade_version));
+  if (!version.IsValid())
+    return base::nullopt;
+  return version;
 }
 
 // static
@@ -553,18 +560,21 @@ void InstallUtil::AddUpdateDowngradeVersionItem(
     const base::Version& new_version,
     WorkItemList* list) {
   DCHECK(list);
-  const base::Version downgrade_version = GetDowngradeVersion();
-  if (!current_version ||
-      (*current_version <= new_version &&
-       ((!downgrade_version.IsValid() || downgrade_version <= new_version)))) {
+  const auto downgrade_version = GetDowngradeVersion();
+  if (current_version && new_version < *current_version) {
+    // This is a downgrade. Write the value if this is the first one (i.e., no
+    // previous value exists). Otherwise, leave any existing value in place.
+    if (!downgrade_version) {
+      list->AddSetRegValueWorkItem(
+          root, install_static::GetClientStateKeyPath(), KEY_WOW64_32KEY,
+          kRegDowngradeVersion,
+          base::ASCIIToUTF16(current_version->GetString()), true);
+    }
+  } else if (!current_version || new_version >= downgrade_version) {
+    // This is a new install or an upgrade to/past a previous DowngradeVersion.
     list->AddDeleteRegValueWorkItem(root,
                                     install_static::GetClientStateKeyPath(),
                                     KEY_WOW64_32KEY, kRegDowngradeVersion);
-  } else if (*current_version > new_version && !downgrade_version.IsValid()) {
-    list->AddSetRegValueWorkItem(
-        root, install_static::GetClientStateKeyPath(), KEY_WOW64_32KEY,
-        kRegDowngradeVersion, base::ASCIIToUTF16(current_version->GetString()),
-        true);
   }
 }
 

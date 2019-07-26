@@ -154,35 +154,37 @@
       },
     },
 
-    'android_webview_gpu_telemetry_tests': {
-      'pixel_skia': {
-        'name': 'android_webview_pixel_skia_gold_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--os-type',
-          '${os_type}',
-          '--build-revision',
-          '${got_revision}',
-          '--test-machine-name',
-          '${buildername}',
-        ],
-        'precommit_args': [
-          # Gerrit issue ID
-          '--review-patch-issue',
-          '${patch_issue}',
-          # Patch set number
-          '--review-patch-set',
-          '${patch_set}',
-          # Buildbucket ID
-          '--buildbucket-build-id',
-          '${buildbucket_build_id}',
-        ],
-        'swarming': {
-          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
-        },
-        'telemetry_test_name': 'pixel',
-      },
-    },
+    # Temporarily disabled due to timeouts causing invalid test results.
+    # TODO(jmadill): Re-enable once timeout is resolved. http://crbug.com/987623
+    # 'android_webview_gpu_telemetry_tests': {
+    #   'pixel_skia': {
+    #     'name': 'android_webview_pixel_skia_gold_test',
+    #     'args': [
+    #       '--dont-restore-color-profile-after-test',
+    #       '--os-type',
+    #       '${os_type}',
+    #       '--build-revision',
+    #       '${got_revision}',
+    #       '--test-machine-name',
+    #       '${buildername}',
+    #     ],
+    #     'precommit_args': [
+    #       # Gerrit issue ID
+    #       '--review-patch-issue',
+    #       '${patch_issue}',
+    #       # Patch set number
+    #       '--review-patch-set',
+    #       '${patch_set}',
+    #       # Buildbucket ID
+    #       '--buildbucket-build-id',
+    #       '${buildbucket_build_id}',
+    #     ],
+    #     'swarming': {
+    #       'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+    #     },
+    #     'telemetry_test_name': 'pixel',
+    #   },
+    # },
 
     'aura_gtests': {
       'aura_unittests': {},
@@ -2140,7 +2142,7 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--no-sandbox',
-          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw',
+          '--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw',
         ],
         'isolate_name': 'blink_web_tests_exparchive',
         'merge': {
@@ -4844,6 +4846,9 @@
             }
           ],
         },
+      },
+      'polymer_tools_python_unittests': {
+        'experiment_percentage': 100,
       },
     },
 

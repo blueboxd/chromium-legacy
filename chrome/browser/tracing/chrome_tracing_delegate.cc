@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -42,6 +43,25 @@
 namespace {
 
 const int kMinDaysUntilNextUpload = 7;
+
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "TracingFinalizationDisallowedReason" in
+// src/tools/metrics/histograms/enums.xml.
+enum class TracingFinalizationDisallowedReason {
+  kIncognitoLaunched = 0,
+  kProfileNotLoaded = 1,
+  kCrashMetricsNotLoaded = 2,
+  kLastSessionCrashed = 3,
+  kMetricsReportingDisabled = 4,
+  kTraceUploadedRecently = 5,
+  kMaxValue = kTraceUploadedRecently
+};
+
+void RecordDisallowedMetric(TracingFinalizationDisallowedReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Tracing.Background.FinalizationDisallowedReason",
+                            reason);
+}
 
 }  // namespace
 
@@ -118,30 +138,49 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
   // If the profile hasn't loaded or been created yet, we allow the scenario
   // to start up, but not be finalized.
   Profile* profile = GetProfile();
-  if (!profile)
+  if (!profile) {
+    if (profile_permission == PROFILE_REQUIRED) {
+      RecordDisallowedMetric(
+          TracingFinalizationDisallowedReason::kProfileNotLoaded);
+    }
     return profile_permission != PROFILE_REQUIRED;
+  }
 
 // Safeguard, in case background tracing is responsible for a crash on
 // startup.
 #if !defined(OS_ANDROID)
-  if (profile->GetLastSessionExitType() == Profile::EXIT_CRASHED)
+  if (profile->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
+    RecordDisallowedMetric(
+        TracingFinalizationDisallowedReason::kLastSessionCrashed);
     return false;
+  }
 #else
   // If the metrics haven't loaded, we allow the scenario to start up, but not
   // be finalized.
-  if (!CrashUploadListAndroid::BrowserCrashMetricsInitialized())
+  if (!CrashUploadListAndroid::BrowserCrashMetricsInitialized()) {
+    if (profile_permission == PROFILE_REQUIRED) {
+      RecordDisallowedMetric(
+          TracingFinalizationDisallowedReason::kCrashMetricsNotLoaded);
+    }
     return profile_permission != PROFILE_REQUIRED;
+  }
 
-  if (CrashUploadListAndroid::DidBrowserCrashRecently())
+  if (CrashUploadListAndroid::DidBrowserCrashRecently()) {
+    RecordDisallowedMetric(
+        TracingFinalizationDisallowedReason::kLastSessionCrashed);
     return false;
+  }
 #endif
 
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
 #if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
-  if (!local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled))
+  if (!local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled)) {
+    RecordDisallowedMetric(
+        TracingFinalizationDisallowedReason::kMetricsReportingDisabled);
     return false;
+  }
 #endif // !OS_CHROMEOS && OFFICIAL_BUILD
 
   if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
@@ -151,6 +190,8 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
       base::Time computed_next_allowed_time =
           last_upload_time + base::TimeDelta::FromDays(kMinDaysUntilNextUpload);
       if (computed_next_allowed_time > base::Time::Now()) {
+        RecordDisallowedMetric(
+            TracingFinalizationDisallowedReason::kTraceUploadedRecently);
         return false;
       }
     }
@@ -178,6 +219,8 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     bool requires_anonymized_data) {
   if (requires_anonymized_data &&
       (incognito_launched_ || chrome::IsIncognitoSessionActive())) {
+    RecordDisallowedMetric(
+        TracingFinalizationDisallowedReason::kIncognitoLaunched);
     return false;
   }
 

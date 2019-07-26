@@ -4,12 +4,13 @@
 
 // This file contains unit tests for Windows internationalization funcs.
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include <stddef.h>
+#include <string.h>
 
+#include "base/strings/string_util.h"
 #include "base/win/i18n.h"
 #include "base/win/windows_version.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace win {
@@ -22,6 +23,8 @@ TEST(I18NTest, GetUserPreferredUILanguageList) {
   EXPECT_FALSE(languages.empty());
   for (const auto& language : languages) {
     EXPECT_FALSE(language.empty());
+    // Ensure there's no extra trailing 0 characters.
+    EXPECT_EQ(language.size(), wcslen(base::as_wcstr(language)));
   }
 }
 
@@ -32,6 +35,7 @@ TEST(I18NTest, GetThreadPreferredUILanguageList) {
   EXPECT_FALSE(languages.empty());
   for (const auto& language : languages) {
     EXPECT_FALSE(language.empty());
+    EXPECT_EQ(language.size(), wcslen(base::as_wcstr(language)));
   }
 }
 

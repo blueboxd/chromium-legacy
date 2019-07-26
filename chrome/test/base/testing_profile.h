@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/buildflags.h"
 #include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/simple_factory_key.h"
@@ -419,9 +420,11 @@ class TestingProfile : public Profile {
   // Creates a TestingPrefService and associates it with the TestingProfile.
   void CreateTestingPrefService();
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // Creates a pref service that uses SupervisedUserPrefStore and associates
   // it with the TestingProfile.
   void CreatePrefServiceForSupervisedUser();
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // Initializes |prefs_| for an incognito profile, derived from
   // |original_profile_|.

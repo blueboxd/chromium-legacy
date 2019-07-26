@@ -22,7 +22,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -110,12 +109,6 @@ void ClickToCallDialogView::LinkClicked(views::Link* source, int event_flags) {
   controller_->OnHelpTextClicked();
 }
 
-void ClickToCallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
-                                                   const gfx::Range& range,
-                                                   int event_flags) {
-  controller_->OnHelpTextClicked();
-}
-
 void ClickToCallDialogView::Init() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
@@ -170,9 +163,14 @@ void ClickToCallDialogView::ButtonPressed(views::Button* sender,
 }
 
 void ClickToCallDialogView::InitListView() {
+  LogClickToCallDialogShown(
+      devices_.empty()
+          ? SharingClickToCallDialogType::kDialogWithoutDevicesWithApp
+          : SharingClickToCallDialogType::kDialogWithDevicesMaybeApps);
+
   int tag = 0;
   // Devices:
-  LogClickToCallDevicesToShow(devices_.size());
+  LogClickToCallDevicesToShow(kSharingClickToCallUiDialog, devices_.size());
   for (const auto& device : devices_) {
     auto dialog_button = std::make_unique<HoverButton>(
         this, CreateDeviceIcon(device.device_type()),
@@ -183,7 +181,7 @@ void ClickToCallDialogView::InitListView() {
   }
 
   // Apps:
-  LogClickToCallAppsToShow(apps_.size());
+  LogClickToCallAppsToShow(kSharingClickToCallUiDialog, apps_.size());
   for (const auto& app : apps_) {
     auto dialog_button =
         std::make_unique<HoverButton>(this, CreateIconView(app.icon), app.name,
@@ -195,6 +193,8 @@ void ClickToCallDialogView::InitListView() {
 }
 
 void ClickToCallDialogView::InitEmptyView() {
+  LogClickToCallDialogShown(SharingClickToCallDialogType::kEducationalDialog);
+
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(
           IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES),
@@ -225,17 +225,13 @@ void ClickToCallDialogView::InitEmptyView() {
 }
 
 void ClickToCallDialogView::InitErrorView() {
-  const base::string16 link = l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
-  size_t offset;
-  const base::string16 text = l10n_util::GetStringFUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE, link, &offset);
-  auto label = std::make_unique<views::StyledLabel>(text, this);
+  LogClickToCallDialogShown(SharingClickToCallDialogType::kErrorDialog);
 
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
-
+  auto label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE),
+      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(std::move(label));
 }
 
@@ -262,5 +258,5 @@ base::string16 ClickToCallDialogView::GetWindowTitle() const {
 }
 
 void ClickToCallDialogView::WindowClosing() {
-  controller_->OnDialogClosed();
+  controller_->OnDialogClosed(this);
 }

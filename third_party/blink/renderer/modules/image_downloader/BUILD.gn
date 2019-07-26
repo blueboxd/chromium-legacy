@@ -10,8 +10,6 @@ blink_modules_sources("image_downloader") {
     "fetcher/associated_resource_fetcher.h",
     "fetcher/multi_resolution_image_resource_fetcher.cc",
     "fetcher/multi_resolution_image_resource_fetcher.h",
-    "image_downloader_base.cc",
-    "image_downloader_base.h",
     "image_downloader_impl.cc",
     "image_downloader_impl.h",
   ]

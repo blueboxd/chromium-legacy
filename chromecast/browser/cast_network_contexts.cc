@@ -82,8 +82,10 @@ class CastNetworkContexts::URLLoaderFactoryForSystem
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
 };
 
-CastNetworkContexts::CastNetworkContexts()
-    : system_shared_url_loader_factory_(
+CastNetworkContexts::CastNetworkContexts(
+    std::vector<std::string> cors_exempt_headers_list)
+    : cors_exempt_headers_list_(std::move(cors_exempt_headers_list)),
+      system_shared_url_loader_factory_(
           base::MakeRefCounted<URLLoaderFactoryForSystem>(this)) {}
 
 CastNetworkContexts::~CastNetworkContexts() {
@@ -207,6 +209,8 @@ CastNetworkContexts::CreateDefaultNetworkContextParams() {
       IsFeatureEnabled(kDisableIdleSocketsCloseOnMemoryPressure);
 
   AddProxyToNetworkContextParams(network_context_params.get());
+
+  network_context_params->cors_exempt_header_list = cors_exempt_headers_list_;
 
   return network_context_params;
 }

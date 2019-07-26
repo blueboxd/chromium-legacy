@@ -350,6 +350,8 @@ crbug.com/931486 paint/invalidation/scroll/scrollbar-ancestor-clip-change.html [
 crbug.com/931486 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Failure ]
 crbug.com/931486 paint/invalidation/text-match-document-change.html [ Failure ]
 crbug.com/931486 paint/invalidation/invalidation-on-foreground-graphics-layer.html [ Failure ]
+crbug.com/931486 paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
+crbug.com/931486 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
 
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides

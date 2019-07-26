@@ -35,6 +35,7 @@ class Env;
 namespace storage {
 
 class ObfuscatedFileUtil;
+class ObfuscatedFileUtilMemoryDelegate;
 class SpecialStoragePolicy;
 class WatcherManager;
 
@@ -134,8 +135,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) PluginPrivateFileSystemBackend
 
  private:
   friend class content::PluginPrivateFileSystemBackendTest;
+  friend class SandboxFileStreamWriter;
 
   ObfuscatedFileUtil* obfuscated_file_util();
+  ObfuscatedFileUtilMemoryDelegate* obfuscated_file_util_memory_delegate();
   const base::FilePath& base_path() const { return base_path_; }
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

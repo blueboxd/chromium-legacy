@@ -134,7 +134,7 @@ File* File::Create(
   if (options->hasLastModified())
     last_modified = static_cast<double>(options->lastModified());
   else
-    last_modified = CurrentTimeMS();
+    last_modified = base::Time::Now().ToDoubleT() * 1000.0;
   DCHECK(options->hasEndings());
   bool normalize_line_endings_to_native = options->endings() == "native";
   if (normalize_line_endings_to_native)
@@ -301,7 +301,7 @@ double File::LastModifiedMS() const {
       IsValidFileTime(modification_time_ms))
     return modification_time_ms;
 
-  return CurrentTimeMS();
+  return base::Time::Now().ToDoubleT() * 1000.0;
 }
 
 int64_t File::lastModified() const {
@@ -310,7 +310,7 @@ int64_t File::lastModified() const {
   // The getter should return the current time when the last modification time
   // isn't known.
   if (!IsValidFileTime(modified_date))
-    modified_date = CurrentTimeMS();
+    modified_date = base::Time::Now().ToDoubleT() * 1000.0;
 
   // lastModified returns a number, not a Date instance,
   // http://dev.w3.org/2006/webapi/FileAPI/#file-attrs
@@ -323,7 +323,7 @@ double File::lastModifiedDate() const {
   // The getter should return the current time when the last modification time
   // isn't known.
   if (!IsValidFileTime(modified_date))
-    modified_date = CurrentTimeMS();
+    modified_date = base::Time::Now().ToDoubleT() * 1000.0;
 
   // lastModifiedDate returns a Date instance,
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate

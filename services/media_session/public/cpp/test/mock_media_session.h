@@ -46,6 +46,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void MediaSessionImagesChanged(
       const base::flat_map<mojom::MediaSessionImageType,
                            std::vector<MediaImage>>& images) override;
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
@@ -61,6 +63,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void WaitForExpectedImagesOfType(mojom::MediaSessionImageType type,
                                    const std::vector<MediaImage>& images);
 
+  void WaitForEmptyPosition();
+  void WaitForNonEmptyPosition();
+
   const mojom::MediaSessionInfoPtr& session_info() const {
     return session_info_;
   }
@@ -74,6 +79,10 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     return *session_actions_;
   }
 
+  const base::Optional<base::Optional<MediaPosition>>& session_position() {
+    return session_position_;
+  }
+
  private:
   void StartWaiting();
 
@@ -83,6 +92,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<
       base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>>>
       session_images_;
+  base::Optional<base::Optional<MediaPosition>> session_position_;
+  bool waiting_for_empty_position_ = false;
+  bool waiting_for_non_empty_position_ = false;
 
   base::Optional<MediaMetadata> expected_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> expected_actions_;
@@ -152,6 +164,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void FlushForTesting();
 
   void SimulateMetadataChanged(const base::Optional<MediaMetadata>& metadata);
+  void SimulatePositionChanged(const base::Optional<MediaPosition>& position);
 
   void ClearAllImages();
   void SetImagesOfType(mojom::MediaSessionImageType type,

@@ -227,8 +227,17 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcsetForHiDPI) {
   String mhtml =
       GenerateMHTMLFromHtml("http://www.test.com", "img_srcset.html");
 
-  // srcset attribute should be skipped.
+  // srcset and sizes attributes should be skipped.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("srcset="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("sizes="));
+
+  // src attribute with original URL should be preserved.
+  EXPECT_EQ(2,
+            MatchSubstring(mhtml, "src=3D\"http://www.test.com/1x.png\"", 34));
+
+  // The image resource for original URL should be attached.
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/1x.png"));
 
   // Width and height attributes should be set when none is present in <img>.
   EXPECT_NE(WTF::kNotFound,
@@ -248,8 +257,17 @@ TEST_F(WebFrameSerializerSanitizationTest, ImageLoadedFromSrcForNormalDPI) {
   String mhtml =
       GenerateMHTMLFromHtml("http://www.test.com", "img_srcset.html");
 
-  // srcset attribute should be skipped.
+  // srcset and sizes attributes should be skipped.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("srcset="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("sizes="));
+
+  // src attribute with original URL should be preserved.
+  EXPECT_EQ(2,
+            MatchSubstring(mhtml, "src=3D\"http://www.test.com/1x.png\"", 34));
+
+  // The image resource for original URL should be attached.
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("Content-Location: http://www.test.com/1x.png"));
 
   // New width and height attributes should not be set.
   EXPECT_NE(WTF::kNotFound, mhtml.Find("id=3D\"i1\">"));

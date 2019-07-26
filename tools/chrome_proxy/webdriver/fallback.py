@@ -35,8 +35,8 @@ class Fallback(IntegrationTest):
       # Verify that DataReductionProxy.ProbeURL histogram has one entry in
       # FAILED_PROXY_DISABLED, which is bucket=1.
       histogram = test_driver.GetBrowserHistogram('DataReductionProxy.ProbeURL')
-      self.assertEqual(histogram['count'], 1)
-      self.assertEqual(histogram['buckets'][0]['low'], 1)
+      self.assertGreaterEqual(histogram['count'], 1)
+      self.assertGreaterEqual(histogram['buckets'][0]['low'], 1)
       for response in responses:
           self.assertHasProxyHeaders(response)
           # TODO(rajendrant): Fix the correct protocol received.

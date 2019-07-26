@@ -36,6 +36,7 @@
 #include "content/browser/appcache/mock_appcache_policy.h"
 #include "content/browser/appcache/mock_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
@@ -196,10 +197,14 @@ class AppCacheRequestHandlerTest
   AppCacheRequestHandlerTest()
       : host_(nullptr), request_(nullptr), request_handler_type_(GetParam()) {
     AppCacheRequestHandler::SetRunningInTests(true);
-    if (request_handler_type_ == URLLOADER)
-      feature_list_.InitAndEnableFeature(network::features::kNetworkService);
-    else
+    if (request_handler_type_ == URLLOADER) {
+      // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
+      // tests.
+      feature_list_.InitWithFeatures({network::features::kNetworkService},
+                                     {features::kNavigationLoaderOnUI});
+    } else {
       feature_list_.InitAndDisableFeature(network::features::kNetworkService);
+    }
   }
 
   ~AppCacheRequestHandlerTest() {

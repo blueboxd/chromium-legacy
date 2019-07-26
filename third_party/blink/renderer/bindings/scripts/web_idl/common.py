@@ -138,27 +138,25 @@ class WithComponent(object):
 
 
 class Location(object):
-    def __init__(self, filepath=None, line_number=None, column_number=None):
+    def __init__(self, filepath=None, line_number=None, position=None):
         assert filepath is None or isinstance(filepath, str)
         assert line_number is None or isinstance(line_number, int)
-        assert column_number is None or isinstance(column_number, int)
+        assert position is None or isinstance(position, int)
         self._filepath = filepath
         self._line_number = line_number
-        self._column_number = column_number
+        self._position = position  # Position number in a file
 
     def __str__(self):
         text = '{}'.format(self._filepath or '<<unknown path>>')
         if self._line_number:
             text += ':{}'.format(self._line_number)
-            if self._column_number:
-                text += ':{}'.format(self._column_number)
         return text
 
     def make_copy(self):
         return Location(
             filepath=self._filepath,
             line_number=self._line_number,
-            column_number=self._column_number)
+            position=self._position)
 
     @property
     def filepath(self):
@@ -169,8 +167,8 @@ class Location(object):
         return self._line_number
 
     @property
-    def column_number(self):
-        return self._column_number
+    def position_in_file(self):
+        return self._position
 
 
 class DebugInfo(object):

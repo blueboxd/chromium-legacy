@@ -379,24 +379,28 @@ void BackgroundSyncManager::Register(
          options.min_interval == kMinIntervalForOneShotSync);
 
   if (GetBackgroundSyncType(options) == BackgroundSyncType::ONE_SHOT) {
+    auto id = op_scheduler_.CreateId();
     op_scheduler_.ScheduleOperation(
+        id, CacheStorageSchedulerMode::kExclusive,
         CacheStorageSchedulerOp::kBackgroundSync,
         base::BindOnce(
             &BackgroundSyncManager::RegisterCheckIfHasMainFrame,
             weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
             std::move(options),
-            op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+            op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
   } else {
     // Periodic Background Sync events already have a pre-defined cadence which
     // the user agent decides. Don't block registration if there's no top level
     // frame at the time of registration.
+    auto id = op_scheduler_.CreateId();
     op_scheduler_.ScheduleOperation(
+        id, CacheStorageSchedulerMode::kExclusive,
         CacheStorageSchedulerOp::kBackgroundSync,
         base::BindOnce(
             &BackgroundSyncManager::RegisterImpl,
             weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
             std::move(options),
-            op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+            op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
   }
 }
 
@@ -413,11 +417,14 @@ void BackgroundSyncManager::UnregisterPeriodicSync(
     return;
   }
 
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(&BackgroundSyncManager::UnregisterPeriodicSyncImpl,
-                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag,
-                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+      base::BindOnce(
+          &BackgroundSyncManager::UnregisterPeriodicSyncImpl,
+          weak_ptr_factory_.GetWeakPtr(), sw_registration_id, tag,
+          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
 }
 
 void BackgroundSyncManager::DidResolveRegistration(
@@ -426,11 +433,13 @@ void BackgroundSyncManager::DidResolveRegistration(
 
   if (disabled_)
     return;
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::DidResolveRegistrationImpl,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(registration_info)));
+                     std::move(registration_info), id));
 }
 
 void BackgroundSyncManager::GetOneShotSyncRegistrations(
@@ -462,12 +471,14 @@ void BackgroundSyncManager::GetRegistrations(
     return;
   }
 
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(&BackgroundSyncManager::GetRegistrationsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), sync_type,
-                     sw_registration_id,
-                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+      base::BindOnce(
+          &BackgroundSyncManager::GetRegistrationsImpl,
+          weak_ptr_factory_.GetWeakPtr(), sync_type, sw_registration_id,
+          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
 }
 
 void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
@@ -477,11 +488,13 @@ void BackgroundSyncManager::OnRegistrationDeleted(int64_t sw_registration_id,
   // Operations already in the queue will either fail when they write to storage
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service worker is gone.
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::OnRegistrationDeletedImpl,
                      weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     MakeEmptyCompletion()));
+                     MakeEmptyCompletion(id)));
 }
 
 void BackgroundSyncManager::OnStorageWiped() {
@@ -490,19 +503,23 @@ void BackgroundSyncManager::OnStorageWiped() {
   // Operations already in the queue will either fail when they write to storage
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service workers are gone.
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::OnStorageWipedImpl,
-                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
 }
 
 void BackgroundSyncManager::SetMaxSyncAttemptsForTesting(int max_attempts) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::SetMaxSyncAttemptsImpl,
                      weak_ptr_factory_.GetWeakPtr(), max_attempts,
-                     MakeEmptyCompletion()));
+                     MakeEmptyCompletion(id)));
 }
 
 void BackgroundSyncManager::EmulateDispatchSyncEvent(
@@ -570,10 +587,12 @@ void BackgroundSyncManager::Init() {
   DCHECK(!op_scheduler_.ScheduledOperations());
   DCHECK(!disabled_);
 
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::InitImpl,
-                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion()));
+                     weak_ptr_factory_.GetWeakPtr(), MakeEmptyCompletion(id)));
 }
 
 void BackgroundSyncManager::InitImpl(base::OnceClosure callback) {
@@ -1107,7 +1126,8 @@ void BackgroundSyncManager::RegisterDidStore(
 }
 
 void BackgroundSyncManager::DidResolveRegistrationImpl(
-    blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info) {
+    blink::mojom::BackgroundSyncRegistrationInfoPtr registration_info,
+    CacheStorageSchedulerId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BackgroundSyncRegistration* registration =
@@ -1116,7 +1136,7 @@ void BackgroundSyncManager::DidResolveRegistrationImpl(
     // There might not be a registration if the client ack's a registration that
     // was a duplicate in the first place and was already firing and finished by
     // the time the client acknowledged the second registration.
-    op_scheduler_.CompleteOperationAndRunNext();
+    op_scheduler_.CompleteOperationAndRunNext(id);
     return;
   }
 
@@ -1127,16 +1147,17 @@ void BackgroundSyncManager::DidResolveRegistrationImpl(
                      service_worker_context_, std::move(*registration_info)),
       base::BindOnce(
           &BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive,
-          weak_ptr_factory_.GetWeakPtr()));
+          weak_ptr_factory_.GetWeakPtr(), id));
 }
 
 void BackgroundSyncManager::ResolveRegistrationDidCreateKeepAlive(
+    CacheStorageSchedulerId id,
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   FireReadyEvents(BackgroundSyncType::ONE_SHOT, base::DoNothing::Once(),
                   std::move(keepalive));
-  op_scheduler_.CompleteOperationAndRunNext();
+  op_scheduler_.CompleteOperationAndRunNext(id);
 }
 
 void BackgroundSyncManager::RemoveActiveRegistration(
@@ -1518,11 +1539,13 @@ void BackgroundSyncManager::RevivePeriodicSyncRegistrations(
   if (disabled_)
     return;
 
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
       base::BindOnce(&BackgroundSyncManager::ReviveOriginImpl,
                      weak_ptr_factory_.GetWeakPtr(), std::move(origin),
-                     MakeEmptyCompletion()));
+                     MakeEmptyCompletion(id)));
 }
 
 void BackgroundSyncManager::ReviveOriginImpl(url::Origin origin,
@@ -1657,12 +1680,15 @@ void BackgroundSyncManager::FireReadyEvents(
     std::unique_ptr<BackgroundSyncEventKeepAlive> keepalive) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(&BackgroundSyncManager::FireReadyEventsImpl,
-                     weak_ptr_factory_.GetWeakPtr(), sync_type,
-                     op_scheduler_.WrapCallbackToRunNext(std::move(callback)),
-                     std::move(keepalive)));
+      base::BindOnce(
+          &BackgroundSyncManager::FireReadyEventsImpl,
+          weak_ptr_factory_.GetWeakPtr(), sync_type,
+          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback)),
+          std::move(keepalive)));
 }
 
 void BackgroundSyncManager::FireReadyEventsImpl(
@@ -1850,13 +1876,15 @@ void BackgroundSyncManager::EventComplete(
                      registration_info->sync_type,
                      status_code == blink::ServiceWorkerStatusCode::kOk));
 
+  auto id = op_scheduler_.CreateId();
   op_scheduler_.ScheduleOperation(
+      id, CacheStorageSchedulerMode::kExclusive,
       CacheStorageSchedulerOp::kBackgroundSync,
-      base::BindOnce(&BackgroundSyncManager::EventCompleteImpl,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(registration_info), std::move(keepalive),
-                     status_code, origin,
-                     op_scheduler_.WrapCallbackToRunNext(std::move(callback))));
+      base::BindOnce(
+          &BackgroundSyncManager::EventCompleteImpl,
+          weak_ptr_factory_.GetWeakPtr(), std::move(registration_info),
+          std::move(keepalive), status_code, origin,
+          op_scheduler_.WrapCallbackToRunNext(id, std::move(callback))));
 }
 
 void BackgroundSyncManager::EventCompleteImpl(
@@ -2084,9 +2112,10 @@ void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
-base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion() {
+base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion(
+    CacheStorageSchedulerId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return op_scheduler_.WrapCallbackToRunNext(base::DoNothing::Once());
+  return op_scheduler_.WrapCallbackToRunNext(id, base::DoNothing::Once());
 }
 
 blink::ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(

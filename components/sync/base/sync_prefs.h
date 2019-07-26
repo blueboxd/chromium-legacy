@@ -158,16 +158,6 @@ class SyncPrefs : public CryptoSyncPrefs,
   // For testing.
   void SetManagedForTest(bool is_managed);
 
-  // Get/Set number of memory warnings received.
-  int GetMemoryPressureWarningCount() const;
-  void SetMemoryPressureWarningCount(int value);
-
-  // Check if the previous shutdown was clean.
-  bool DidSyncShutdownCleanly() const;
-
-  // Set whether the last shutdown was clean.
-  void SetCleanShutdown(bool value);
-
   // Get/set for the last known sync invalidation versions.
   void GetInvalidationVersions(
       std::map<ModelType, int64_t>* invalidation_versions) const;
@@ -226,6 +216,7 @@ void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service);
 void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service);
 #endif  // defined(OS_CHROMEOS)
 void MigrateSyncSuppressedPref(PrefService* pref_service);
+void ClearObsoleteMemoryPressurePrefs(PrefService* pref_service);
 
 }  // namespace syncer
 

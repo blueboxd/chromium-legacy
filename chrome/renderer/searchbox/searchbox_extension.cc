@@ -1264,8 +1264,6 @@ void NewTabPageBindings::RevertThemeChanges() {
   if (!search_box)
     return;
   search_box->RevertThemeChanges();
-  content::RenderThread::Get()->RecordAction(
-      base::UserMetricsAction("ChromeColors_MenuCancel"));
 }
 
 // static
@@ -1274,8 +1272,6 @@ void NewTabPageBindings::ConfirmThemeChanges() {
   if (!search_box)
     return;
   search_box->ConfirmThemeChanges();
-  content::RenderThread::Get()->RecordAction(
-      base::UserMetricsAction("ChromeColors_MenuDone"));
 }
 
 v8::Local<v8::Value> NewTabPageBindings::GetColorsInfo(v8::Isolate* isolate) {

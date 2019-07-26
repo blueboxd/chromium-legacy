@@ -220,6 +220,13 @@ void XrBrowserTestBase::LoadUrlAndAwaitInitialization(const GURL& url) {
                                     kPollTimeoutMedium,
                                     GetCurrentWebContents()))
       << "Timed out waiting for JavaScript test initialization.";
+
+#if defined(OS_WIN)
+  // Now that the browser is opened and has focus, keep track of this window so
+  // that we can restore the proper focus after entering each session. This is
+  // required for WMR tests that create multiple sessions to work properly.
+  hwnd_ = GetForegroundWindow();
+#endif
 }
 
 void XrBrowserTestBase::RunJavaScriptOrFail(

@@ -131,8 +131,7 @@ cr.define('cr.icon', function() {
     // Note: Literal strings used below must match those in the description of
     // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
     let path = 'chrome://favicon2/?size=16&scale_factor=SCALEFACTORx' +
-        '&url_type=' + (isIconUrl ? 'icon_url' : 'page_url') +
-        '&url=' + encodeURIComponent(url);
+        (isIconUrl ? '&icon_url=' : '&page_url=') + encodeURIComponent(url);
     if (!isIconUrl) {
       path += '&allow_google_server_fallback=' +
           (isSyncedUrlForHistoryUi ? '1' : '0');

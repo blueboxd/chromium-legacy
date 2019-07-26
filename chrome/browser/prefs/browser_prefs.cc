@@ -13,6 +13,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/accessibility/invert_bubble_prefs.h"
+#include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
@@ -51,7 +52,6 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
-#include "chrome/browser/previews/previews_prober.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -691,6 +691,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   // User prefs. Please keep this list alphabetized.
   AccessibilityLabelsService::RegisterProfilePrefs(registry);
   AccessibilityUIMessageHandler::RegisterProfilePrefs(registry);
+  AvailabilityProber::RegisterProfilePrefs(registry);
   autofill::prefs::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
   certificate_transparency::prefs::RegisterPrefs(registry);
@@ -733,7 +734,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
   PreviewsLitePageDecider::RegisterProfilePrefs(registry);
   PreviewsOfflineHelper::RegisterProfilePrefs(registry);
-  PreviewsProber::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);
   ProfileNetworkContextService::RegisterProfilePrefs(registry);
@@ -1099,4 +1099,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 7/2019.
   syncer::MigrateSyncSuppressedPref(profile_prefs);
   profile_prefs->ClearPref(kSignedInTime);
+  syncer::ClearObsoleteMemoryPressurePrefs(profile_prefs);
 }

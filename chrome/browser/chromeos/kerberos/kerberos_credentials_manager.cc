@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager.h"
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -390,6 +392,10 @@ const char* KerberosCredentialsManager::GetDefaultKerberosConfig() {
   return kDefaultKerberosConfig;
 }
 
+bool KerberosCredentialsManager::IsKerberosEnabled() {
+  return local_state_->GetBoolean(prefs::kKerberosEnabled);
+}
+
 void KerberosCredentialsManager::OnPolicyUpdated(
     const policy::PolicyNamespace& ns,
     const policy::PolicyMap& previous,
@@ -450,17 +456,15 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
 
   LogError("AddAccountAndAuthenticate", error);
 
-  // Note: For managed accounts don't change the active principal.
   if (Succeeded(error)) {
-    // Don't change the active account if an account is added by policy.
-    if (!is_managed)
-      SetActivePrincipalName(updated_principal);
-
-    // Set active account.
+    // Set active account. Be sure not to wipe user selection if the
+    // account was added automatically by policy.
     // TODO(https://crbug.com/948121): Wait until the files have been saved.
     // This is important when this code is triggered directly through a page
     // that requires Kerberos auth.
-    if (GetActivePrincipalName() == updated_principal)
+    if (!is_managed || GetActivePrincipalName().empty())
+      SetActivePrincipalName(updated_principal);
+    else if (GetActivePrincipalName() == updated_principal)
       GetKerberosFiles();
 
     // Bring the merry news to the observers, but only if there is no
@@ -491,11 +495,9 @@ void KerberosCredentialsManager::OnRemoveAccount(
     const kerberos::RemoveAccountResponse& response) {
   LogError("RemoveAccount", response.error());
   if (Succeeded(response.error())) {
-    // Clear out active credentials.
-    if (GetActivePrincipalName() == principal_name) {
-      kerberos_files_handler_.DeleteFiles();
-      ClearActivePrincipalName();
-    }
+    // Reassign active principal if it got deleted.
+    if (GetActivePrincipalName() == principal_name)
+      ValidateActivePrincipal();
 
     // Express our condolence to the observers.
     NotifyAccountsChanged();
@@ -506,19 +508,35 @@ void KerberosCredentialsManager::OnRemoveAccount(
 
 void KerberosCredentialsManager::ClearAccounts(ResultCallback callback) {
   kerberos::ClearAccountsRequest request;
+  request.set_mode(kerberos::CLEAR_ALL);
   KerberosClient::Get()->ClearAccounts(
       request, base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
-                              weak_factory_.GetWeakPtr(), std::move(callback)));
+                              weak_factory_.GetWeakPtr(), request.mode(),
+                              std::move(callback)));
 }
 
 void KerberosCredentialsManager::OnClearAccounts(
+    kerberos::ClearMode mode,
     ResultCallback callback,
     const kerberos::ClearAccountsResponse& response) {
   LogError("ClearAccounts", response.error());
   if (Succeeded(response.error())) {
-    // Clear out active credentials.
-    kerberos_files_handler_.DeleteFiles();
-    ClearActivePrincipalName();
+    // Depending on the mode, we might have to check if the active principal is
+    // still valid.
+    if (!GetActivePrincipalName().empty()) {
+      switch (mode) {
+        case kerberos::CLEAR_ALL:
+        case kerberos::CLEAR_ONLY_MANAGED_ACCOUNTS:
+        case kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS:
+          // Check if the active account was wiped and if so, replace it.
+          ValidateActivePrincipal();
+          break;
+
+        case kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS:
+          // We're good, only passwords got wiped, not accounts.
+          break;
+      }
+    }
 
     // Tattle on the lost accounts to the observers.
     NotifyAccountsChanged();
@@ -538,8 +556,8 @@ void KerberosCredentialsManager::OnListAccounts(
     ListAccountsCallback callback,
     const kerberos::ListAccountsResponse& response) {
   LogError("ListAccounts", response.error());
-  // Lazily validate principal here.
-  ValidateActivePrincipal(response);
+  // Lazily validate principal here while we're at it.
+  DoValidateActivePrincipal(response);
   std::move(callback).Run(response);
 }
 
@@ -548,10 +566,7 @@ kerberos::ErrorType KerberosCredentialsManager::SetActiveAccount(
   if (!NormalizePrincipal(&principal_name))
     return kerberos::ERROR_PARSE_PRINCIPAL_FAILED;
 
-  // Don't early out if names are equal, this might be required to bootstrap
-  // Kerberos credentials.
   SetActivePrincipalName(principal_name);
-  GetKerberosFiles();
   NotifyAccountsChanged();
   return kerberos::ERROR_NONE;
 }
@@ -697,22 +712,35 @@ const std::string& KerberosCredentialsManager::GetActivePrincipalName() const {
 
 void KerberosCredentialsManager::SetActivePrincipalName(
     const std::string& principal_name) {
+  // Don't early out if names are equal, this might be required to bootstrap
+  // Kerberos credentials.
   primary_profile_->GetPrefs()->SetString(prefs::kKerberosActivePrincipalName,
                                           principal_name);
+  GetKerberosFiles();
 }
 
 void KerberosCredentialsManager::ClearActivePrincipalName() {
   primary_profile_->GetPrefs()->ClearPref(prefs::kKerberosActivePrincipalName);
+  kerberos_files_handler_.DeleteFiles();
 }
 
-void KerberosCredentialsManager::ValidateActivePrincipal(
+void KerberosCredentialsManager::ValidateActivePrincipal() {
+  kerberos::ListAccountsRequest request;
+  KerberosClient::Get()->ListAccounts(
+      request,
+      base::BindOnce(&KerberosCredentialsManager::DoValidateActivePrincipal,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void KerberosCredentialsManager::DoValidateActivePrincipal(
     const kerberos::ListAccountsResponse& response) {
   const std::string& active_principal = GetActivePrincipalName();
   bool found = false;
   for (int n = 0; n < response.accounts_size() && !found; ++n)
     found |= response.accounts(n).principal_name() == active_principal;
+
   if (!found) {
-    LOG(ERROR) << "Active principal does not exist. Restoring.";
+    LOG(ERROR) << "Active principal got removed. Restoring.";
     if (response.accounts_size() > 0)
       SetActivePrincipalName(response.accounts(0).principal_name());
     else
@@ -721,15 +749,16 @@ void KerberosCredentialsManager::ValidateActivePrincipal(
 }
 
 void KerberosCredentialsManager::UpdateEnabledFromPref() {
-  if (local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+  if (IsKerberosEnabled()) {
     // Kerberos got enabled, re-populate managed accounts.
+    VLOG(1) << "Kerberos got enabled, populating managed accounts";
     UpdateAccountsFromPref();
     return;
   }
 
   // Note that ClearAccounts logs an error if the operation fails.
   VLOG(1) << "Kerberos got disabled, clearing accounts";
-  ClearAccounts(base::BindOnce([](kerberos::ErrorType) {}));
+  ClearAccounts(EmptyResultCallback());
 }
 
 void KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref() {
@@ -740,9 +769,9 @@ void KerberosCredentialsManager::UpdateRememberPasswordEnabledFromPref() {
   kerberos::ClearAccountsRequest request;
   request.set_mode(kerberos::CLEAR_ONLY_UNMANAGED_REMEMBERED_PASSWORDS);
   KerberosClient::Get()->ClearAccounts(
-      request,
-      base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
-                     weak_factory_.GetWeakPtr(), EmptyResultCallback()));
+      request, base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                              weak_factory_.GetWeakPtr(), request.mode(),
+                              EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
@@ -753,27 +782,32 @@ void KerberosCredentialsManager::UpdateAddAccountsAllowedFromPref() {
   kerberos::ClearAccountsRequest request;
   request.set_mode(kerberos::CLEAR_ONLY_UNMANAGED_ACCOUNTS);
   KerberosClient::Get()->ClearAccounts(
-      request,
-      base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
-                     weak_factory_.GetWeakPtr(), EmptyResultCallback()));
+      request, base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                              weak_factory_.GetWeakPtr(), request.mode(),
+                              EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::UpdateAccountsFromPref() {
-  if (!local_state_->GetBoolean(prefs::kKerberosEnabled)) {
+  if (!IsKerberosEnabled()) {
     VLOG(1) << "Kerberos disabled";
     NotifyRequiresLoginPassword(false);
+    // All managed accounts have already been removed here. No need to call
+    // RemoveAllManagedAccountsExcept().
     return;
   }
 
+  // Principal names of all accounts added.
   const base::Value* accounts = local_state_->GetList(prefs::kKerberosAccounts);
   if (!accounts) {
     VLOG(1) << "No KerberosAccounts policy";
     NotifyRequiresLoginPassword(false);
+    RemoveAllManagedAccountsExcept({});
     return;
   }
 
   VLOG(1) << accounts->GetList().size() << " accounts in KerberosAccounts";
   bool requires_login_password = false;
+  std::vector<std::string> managed_accounts_added;
   for (const auto& account : accounts->GetList()) {
     // Get the principal. Should always be set.
     const base::Value* principal_value = account.FindPath(kPrincipal);
@@ -787,10 +821,6 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
       VLOG(1) << "Ignoring bad principal '" << principal << "'";
       continue;
     }
-
-    // Kickstart active principal if it's not set yet.
-    if (GetActivePrincipalName().empty())
-      SetActivePrincipalName(principal);
 
     // Get the password, default to not set.
     const std::string* password_str = account.FindStringKey(kPassword);
@@ -825,10 +855,27 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
     add_account_runners_.push_back(std::make_unique<KerberosAddAccountRunner>(
         this, principal, true /* is_managed */, password, remember_password,
         krb5_conf, true /* allow_existing */, EmptyResultCallback()));
+    managed_accounts_added.push_back(principal);
   }
 
   // Let UserSessionManager know whether it should keep the login password.
   NotifyRequiresLoginPassword(requires_login_password);
+  RemoveAllManagedAccountsExcept(std::move(managed_accounts_added));
+}
+
+void KerberosCredentialsManager::RemoveAllManagedAccountsExcept(
+    std::vector<std::string> keep_list) {
+  VLOG(1) << "Clearing out managed accounts except for " << keep_list.size();
+
+  kerberos::ClearAccountsRequest request;
+  request.set_mode(kerberos::CLEAR_ONLY_MANAGED_ACCOUNTS);
+  for (const std::string& principal_name : keep_list)
+    *request.add_principal_names_to_ignore() = principal_name;
+
+  KerberosClient::Get()->ClearAccounts(
+      request, base::BindOnce(&KerberosCredentialsManager::OnClearAccounts,
+                              weak_factory_.GetWeakPtr(), request.mode(),
+                              EmptyResultCallback()));
 }
 
 void KerberosCredentialsManager::NotifyRequiresLoginPassword(

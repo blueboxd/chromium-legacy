@@ -88,7 +88,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
     private static final String PREF_SYNC_ERROR_CARD = "sync_error_card";
     private static final String PREF_SYNC_DISABLED_BY_ADMINISTRATOR =
             "sync_disabled_by_administrator";
-    private static final String PREF_SYNC_REQUESTED = "sync_requested";
+    @VisibleForTesting
+    public static final String PREF_SYNC_REQUESTED = "sync_requested";
     private static final String PREF_MANAGE_SYNC = "manage_sync";
 
     private static final String PREF_SERVICES_CATEGORY = "services_category";

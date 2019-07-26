@@ -205,7 +205,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &offline_pages::kPrefetchingOfflinePagesFeature,
     &omnibox::kHideSteadyStateUrlScheme,
     &omnibox::kHideSteadyStateUrlTrivialSubdomains,
-    &omnibox::kOmniboxNewAnswerLayout,
     &omnibox::kOmniboxRichEntitySuggestions,
     &omnibox::kQueryInOmnibox,
     &omnibox::kUIExperimentShowSuggestionFavicons,

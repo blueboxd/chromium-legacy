@@ -87,6 +87,12 @@ void BrowserAccessibilityStateImpl::
 }
 
 void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnOtherThread() {}
+    UpdatePlatformSpecificHistogramsOnOtherThread() {
+  // Screen reader metric.
+  ui::AXMode mode =
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.Mac.ScreenReader",
+                        mode.has_mode(ui::AXMode::kScreenReader));
+}
 
 }  // namespace content

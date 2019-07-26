@@ -9,6 +9,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,6 +18,7 @@
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
+#include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_sync_message.h"
 #include "url/gurl.h"
@@ -85,7 +87,25 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
 
   // http://crbug.com/125264
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
-  pending_sync.done_event->Wait();
+
+  // TODO(magchen): crbug.com/949839. Remove this histogram and do only one
+  // done_event->Wait() after the GPU watchdog V2 is fully launched.
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  // The wait for event is split into two phases so we can still record the
+  // case in which the GPU hangs but not killed. Also all data should be
+  // recorded in the range of max_wait_sec seconds for easier comparison.
+  bool signaled =
+      pending_sync.done_event->TimedWait(kGpuChannelHostMaxWaitTime);
+
+  // Histogram of wait-for-sync time, used for monitoring the GPU watchdog.
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "GPU.GPUChannelHostWaitTime", base::TimeTicks::Now() - start_time,
+      base::TimeDelta::FromSeconds(1), kGpuChannelHostMaxWaitTime, 50);
+
+  // Continue waiting for the event if not signaled
+  if (!signaled)
+    pending_sync.done_event->Wait();
 
   return pending_sync.send_result;
 }

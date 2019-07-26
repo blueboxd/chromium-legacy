@@ -8,7 +8,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.ColorInt;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
@@ -27,6 +29,9 @@ public class TabListFaviconProvider {
     private final int mFaviconSize;
     private final Profile mProfile;
     private final FaviconHelper mFaviconHelper;
+    private final Context mContext;
+    @ColorInt
+    private final int mDefaultIconColor;
 
     /**
      * Construct the provider that provides favicons for tab list.
@@ -34,6 +39,7 @@ public class TabListFaviconProvider {
      * @param profile The profile to use for getting favicons.
      */
     public TabListFaviconProvider(Context context, Profile profile) {
+        mContext = context;
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mProfile = profile;
         mFaviconHelper = new FaviconHelper();
@@ -52,6 +58,7 @@ public class TabListFaviconProvider {
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.chromelogo16);
             sRoundedChromeDrawable = processBitmap(chromeBitmap);
         }
+        mDefaultIconColor = mContext.getResources().getColor(R.color.default_icon_color);
     }
 
     private Drawable processBitmap(Bitmap bitmap) {
@@ -64,7 +71,7 @@ public class TabListFaviconProvider {
      * @return The scaled rounded Globe Drawable as default favicon.
      */
     public Drawable getDefaultFaviconDrawable() {
-        return sRoundedGlobeDrawable;
+        return getRoundedGlobeDrawable();
     }
 
     /**
@@ -76,12 +83,12 @@ public class TabListFaviconProvider {
     public void getFaviconForUrlAsync(
             String url, boolean isIncognito, Callback<Drawable> faviconCallback) {
         if (NativePageFactory.isNativePageUrl(url, isIncognito)) {
-            faviconCallback.onResult(sRoundedChromeDrawable);
+            faviconCallback.onResult(getRoundedChromeDrawable());
         } else {
             mFaviconHelper.getLocalFaviconImageForURL(
                     mProfile, url, mFaviconSize, (image, iconUrl) -> {
                         if (image == null) {
-                            faviconCallback.onResult(sRoundedGlobeDrawable);
+                            faviconCallback.onResult(getRoundedGlobeDrawable());
                         } else {
                             faviconCallback.onResult(processBitmap(image));
                         }
@@ -99,9 +106,25 @@ public class TabListFaviconProvider {
     public Drawable getFaviconForUrlSync(String url, boolean isIncognito, Bitmap icon) {
         if (icon == null) {
             boolean isNativeUrl = NativePageFactory.isNativePageUrl(url, isIncognito);
-            return isNativeUrl ? sRoundedChromeDrawable : sRoundedGlobeDrawable;
+            return isNativeUrl ? getRoundedChromeDrawable() : getRoundedGlobeDrawable();
         } else {
             return processBitmap(icon);
         }
+    }
+
+    private Drawable getRoundedChromeDrawable() {
+        // Since static variable is still loaded when activity is destroyed due to configuration
+        // changes, e.g. light/dark theme changes, setColorFilter is needed when we retrieve the
+        // drawable. setColorFilter would be a no-op if color and the mode are the same.
+        sRoundedChromeDrawable.setColorFilter(mDefaultIconColor, PorterDuff.Mode.SRC_IN);
+        return sRoundedChromeDrawable;
+    }
+
+    private Drawable getRoundedGlobeDrawable() {
+        // Since static variable is still loaded when activity is destroyed due to configuration
+        // changes, e.g. light/dark theme changes, setColorFilter is needed when we retrieve the
+        // drawable. setColorFilter would be a no-op if color and the mode are the same.
+        sRoundedGlobeDrawable.setColorFilter(mDefaultIconColor, PorterDuff.Mode.SRC_IN);
+        return sRoundedGlobeDrawable;
     }
 }

@@ -212,7 +212,8 @@ void StartExternalMojoBrokerService(
 CastContentBrowserClient::CastContentBrowserClient(
     CastFeatureListCreator* cast_feature_list_creator)
     : cast_browser_main_parts_(nullptr),
-      cast_network_contexts_(std::make_unique<CastNetworkContexts>()),
+      cast_network_contexts_(
+          std::make_unique<CastNetworkContexts>(GetCorsExemptHeadersList())),
       url_request_context_factory_(new URLRequestContextFactory()),
       cast_feature_list_creator_(cast_feature_list_creator) {
   cast_feature_list_creator_->SetExtraEnableFeatures({

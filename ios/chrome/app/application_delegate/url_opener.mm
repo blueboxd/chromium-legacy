@@ -80,10 +80,17 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
         URL = [params externalURL];
       }
       UrlLoadParams urlLoadParams = UrlLoadParams::InNewTab(URL, virtualURL);
+
+      ApplicationModeForTabOpening targetMode =
+          [params launchInIncognito] ? ApplicationModeForTabOpening::INCOGNITO
+                                     : ApplicationModeForTabOpening::NORMAL;
+      // If the call is coming from the app, it should be opened in the current
+      // mode to avoid changing mode.
+      if (callerApp == CALLER_APP_GOOGLE_CHROME)
+        targetMode = ApplicationModeForTabOpening::CURRENT;
+
       [tabOpener
-          dismissModalsAndOpenSelectedTabInMode:[params launchInIncognito]
-                                                    ? ApplicationMode::INCOGNITO
-                                                    : ApplicationMode::NORMAL
+          dismissModalsAndOpenSelectedTabInMode:targetMode
                               withUrlLoadParams:urlLoadParams
                                  dismissOmnibox:[params postOpeningAction] !=
                                                 FOCUS_OMNIBOX

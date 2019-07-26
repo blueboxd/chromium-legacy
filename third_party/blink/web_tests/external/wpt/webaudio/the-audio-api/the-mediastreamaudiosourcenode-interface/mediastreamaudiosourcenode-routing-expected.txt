@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL MediaStreamAudioSourceNode captures the right track. assert_true: Other track seem to be routed to the AudioContext? expected true got false
-Harness: the test ran to completion.
-

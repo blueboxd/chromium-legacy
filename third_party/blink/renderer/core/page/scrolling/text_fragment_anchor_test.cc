@@ -1113,6 +1113,105 @@ TEST_F(TextFragmentAnchorTest, OverlappingTextRanges) {
   EXPECT_EQ(14u, markers.at(0)->EndOffset());
 }
 
+// Test that the ##targetText fragment syntax works properly and is stripped
+// from the URL.
+TEST_F(TextFragmentAnchorTest, DoubleHashSyntax) {
+  SimRequest request("https://example.com/test.html##targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html##targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#");
+}
+
+// Test that the ##targetText fragment directive is stripped from the URL when
+// there's also non-directive fragment contents.
+TEST_F(TextFragmentAnchorTest, DoubleHashStrippedWithRemainingFragment) {
+  SimRequest request("https://example.com/test.html#element##targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#element##targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      #text {
+        position: absolute;
+        top: 1000px;
+      }
+      #element {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+    <div id="element"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#element");
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// If the fragment has a double hash, but the double hash isn't followed by a
+// valid targetText syntax, it should be interpreted as an element ID.
+TEST_F(TextFragmentAnchorTest, IdFragmentWithDoubleHash) {
+  SimRequest request("https://example.com/test.html#element##id", "text/html");
+  LoadURL("https://example.com/test.html#element##id");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+      div {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="element">This is a test page</p>
+    <div id="element##id"></div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& div = *GetDocument().getElementById("element##id");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
+      << "Should have scrolled <div> into view but didn't, scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+}
+
 }  // namespace
 
 }  // namespace blink

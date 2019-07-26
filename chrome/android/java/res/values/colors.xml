@@ -70,7 +70,6 @@
     <color name="suggestion_url_light_modern">@color/modern_blue_300</color>
     <color name="answers_description_text_negative">@color/default_red</color>
     <color name="answers_description_text_positive">@color/default_green</color>
-    <color name="answers_answer_text">#8A8A8A</color>
 
     <!--  Distilled Page Prefs colors -->
     <color name="distilled_page_prefs_selected">#999999</color>

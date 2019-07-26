@@ -199,13 +199,13 @@ class ProfileShortcutManagerTest : public testing::Test {
   // Posts a task to call ShellUtil::CreateOrUpdateShortcut on the COM thread.
   void PostCreateOrUpdateShortcut(
       const base::Location& location,
+      ShellUtil::ShortcutLocation shortcut_location,
       const ShellUtil::ShortcutProperties& properties) {
     base::PostTaskAndReplyWithResult(
         base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()}).get(),
         location,
-        base::Bind(&ShellUtil::CreateOrUpdateShortcut,
-                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, properties,
-                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
+        base::Bind(&ShellUtil::CreateOrUpdateShortcut, shortcut_location,
+                   properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS),
         base::Bind([](bool succeeded) { EXPECT_TRUE(succeeded); }));
     thread_bundle_.RunUntilIdle();
   }
@@ -222,7 +222,8 @@ class ProfileShortcutManagerTest : public testing::Test {
     ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
     ShellUtil::AddDefaultShortcutProperties(GetExePath(), &properties);
     properties.set_shortcut_name(shortcut_name);
-    PostCreateOrUpdateShortcut(location, properties);
+    PostCreateOrUpdateShortcut(location, ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                               properties);
     EXPECT_TRUE(base::PathExists(shortcut_path)) << location.ToString();
 
     return shortcut_path;
@@ -232,7 +233,8 @@ class ProfileShortcutManagerTest : public testing::Test {
       const base::Location& location) {
     ShellUtil::ShortcutProperties properties(ShellUtil::SYSTEM_LEVEL);
     ShellUtil::AddDefaultShortcutProperties(GetExePath(), &properties);
-    PostCreateOrUpdateShortcut(location, properties);
+    PostCreateOrUpdateShortcut(location, ShellUtil::SHORTCUT_LOCATION_DESKTOP,
+                               properties);
     const base::FilePath system_level_shortcut_path =
         GetSystemShortcutsDirectory().Append(InstallUtil::GetShortcutName() +
                                              installer::kLnkExt);

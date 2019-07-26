@@ -180,8 +180,10 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   component_updater::ComponentUpdateService* component_updater() override;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   component_updater::SupervisedUserWhitelistInstaller*
   supervised_user_whitelist_installer() override;
+#endif
   MediaFileSystemRegistry* media_file_system_registry() override;
   WebRtcLogUploader* webrtc_log_uploader() override;
   network_time::NetworkTimeTracker* network_time_tracker() override;
@@ -366,8 +368,10 @@ class BrowserProcessImpl : public BrowserProcess,
   // but some users of component updater only install per-user.
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   std::unique_ptr<component_updater::SupervisedUserWhitelistInstaller>
       supervised_user_whitelist_installer_;
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   std::unique_ptr<PluginsResourceService> plugins_resource_service_;

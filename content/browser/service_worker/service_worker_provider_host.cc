@@ -366,16 +366,17 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   UpdateController(true /* notify_controllerchange */);
 }
 
-blink::mojom::ControllerServiceWorkerPtr
-ServiceWorkerProviderHost::GetControllerServiceWorkerPtr() {
+mojo::Remote<blink::mojom::ControllerServiceWorker>
+ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
   DCHECK(controller_);
   if (controller_->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
-    return nullptr;
+    return mojo::Remote<blink::mojom::ControllerServiceWorker>();
   }
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
-  controller_->controller()->Clone(mojo::MakeRequest(&controller_ptr));
-  return controller_ptr;
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
+  controller_->controller()->Clone(
+      remote_controller.BindNewPipeAndPassReceiver());
+  return remote_controller;
 }
 
 void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
@@ -778,7 +779,11 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   controller_info->mode = GetControllerMode();
 
   // Pass an endpoint for the client to talk to this controller.
-  controller_info->endpoint = GetControllerServiceWorkerPtr().PassInterface();
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
+      GetRemoteControllerServiceWorker();
+  if (remote.is_bound()) {
+    controller_info->remote_controller = remote.Unbind();
+  }
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
@@ -1129,14 +1134,14 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 }
 
 void ServiceWorkerProviderHost::StartControllerComplete(
-    blink::mojom::ControllerServiceWorkerRequest controller_request,
+    mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::ServiceWorkerStatusCode status) {
   if (status == blink::ServiceWorkerStatusCode::kOk)
-    controller_->controller()->Clone(std::move(controller_request));
+    controller_->controller()->Clone(std::move(receiver));
 }
 
 void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
-    blink::mojom::ControllerServiceWorkerRequest controller_request,
+    mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::mojom::ControllerServiceWorkerPurpose purpose) {
   // TODO(kinuko): Log the reasons we drop the request.
   if (!IsContextAlive() || !controller_)
@@ -1145,7 +1150,7 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
   controller_->RunAfterStartWorker(
       PurposeToEventType(purpose),
       base::BindOnce(&ServiceWorkerProviderHost::StartControllerComplete,
-                     AsWeakPtr(), std::move(controller_request)));
+                     AsWeakPtr(), std::move(receiver)));
 }
 
 void ServiceWorkerProviderHost::CloneContainerHost(

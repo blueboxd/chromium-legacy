@@ -155,6 +155,7 @@ static_library("router") {
         "providers/openscreen/platform/task_runner.cc",
         "providers/openscreen/platform/task_runner.h",
         "providers/openscreen/platform/time.cc",
+        "providers/openscreen/platform/trace_logging_platform.cc",
       ]
 
       configs +=

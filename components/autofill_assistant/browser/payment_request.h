@@ -54,7 +54,11 @@ struct PaymentRequestOptions {
   bool request_payer_phone = false;
   bool request_shipping = false;
   bool request_payment_method = false;
-  bool request_terms_and_conditions = true;
+
+  // If empty, terms and conditions should not be shown.
+  std::string accept_terms_and_conditions_text;
+  bool show_terms_as_checkbox = false;
+
   std::vector<std::string> supported_basic_card_networks;
   std::string default_email;
   UserActionProto confirm_action;
@@ -64,6 +68,7 @@ struct PaymentRequestOptions {
   base::OnceCallback<void(std::unique_ptr<PaymentInformation>)>
       confirm_callback;
   base::OnceCallback<void(int)> additional_actions_callback;
+  base::OnceCallback<void(int)> terms_link_callback;
 };
 
 }  // namespace autofill_assistant

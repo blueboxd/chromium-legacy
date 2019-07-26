@@ -20,11 +20,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * A preference that opens a HelpAndFeedback activity to learn more about the specified context.
- *
- * TODO(crbug.com/967022): This class is mostly a duplicate of {@link LearnMorePreference}, but is
- * implemented for Support Library preferences rather than the deprecated Framework preferences.
- * Once all {@link LearnMorePreference}s have been migrated to the Support Library, {@link
- * LearnMorePreference} will be removed in favor of this class.
  */
 public class LearnMorePreferenceCompat extends Preference {
     /**

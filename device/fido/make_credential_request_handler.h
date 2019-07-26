@@ -42,11 +42,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       CompletionCallback completion_callback);
   ~MakeCredentialRequestHandler() override;
 
-  // FidoRequestHandlerBase:
-  void SetPlatformAuthenticatorOrMarkUnavailable(
-      base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info)
-      override;
-
  private:
   enum class State {
     kWaitingForTouch,

@@ -74,7 +74,6 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
                 context, compositorViewHolder, tabModelSelector, tabContentManager);
 
-        TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider;
         mMediator = new GridTabSwitcherMediator(this, containerViewModel, tabModelSelector,
                 fullscreenManager, compositorViewHolder,
                 mTabSelectionEditorCoordinator.getController());
@@ -227,6 +226,9 @@ public class GridTabSwitcherCoordinator implements Destroyable, GridTabSwitcher,
         mContainerViewChangeProcessor.destroy();
         if (mTabGridDialogCoordinator != null) {
             mTabGridDialogCoordinator.destroy();
+        }
+        if (mUndoGroupSnackbarController != null) {
+            mUndoGroupSnackbarController.destroy();
         }
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);

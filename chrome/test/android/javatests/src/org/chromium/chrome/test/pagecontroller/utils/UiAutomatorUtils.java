@@ -342,15 +342,14 @@ public class UiAutomatorUtils {
         int iterationsLeft = MAX_SWIPES;
         while (!mLocatorHelper.isOnScreen(locator) && iterationsLeft-- > 0) {
             if (mLocatorHelper.isOnScreen(stopLocator))
-                throw UiLocationException.newInstance(
-                        "Did not find locator while swiping to " + stopLocator, locator, null);
+                throw new UiLocationException(
+                        "Did not find locator while swiping to " + stopLocator + ".", locator);
             swipeVertically(fractionOfScreen);
             Utils.sleep(UiLocatorHelper.UI_CHECK_INTERVAL_MS);
         }
         if (!mLocatorHelper.isOnScreen(locator)) {
-            throw UiLocationException.newInstance(
-                    "Did not find locator after swiping for " + MAX_SWIPES + " times", locator,
-                    null);
+            throw new UiLocationException(
+                    "Did not find locator after swiping for " + MAX_SWIPES + " times.", locator);
         }
     }
 

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequence_bound.h"
 #include "base/threading/thread_checker.h"
 #include "media/mojo/interfaces/cdm_storage.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
@@ -51,33 +52,26 @@ class CdmFileImpl final : public media::mojom::CdmFile {
 
  private:
   class FileReader;
-
-  using CreateOrOpenCallback = storage::AsyncFileUtil::CreateOrOpenCallback;
-
-  // Open the file |file_name| using the flags provided in |file_flags|.
-  // |callback| is called with the result.
-  void OpenFile(const std::string& file_name,
-                uint32_t file_flags,
-                CreateOrOpenCallback callback);
+  class FileWriter;
 
   // Called when the file is read. If |success| is true, |data| is the contents
   // of the file read.
   void ReadDone(bool success, std::vector<uint8_t> data);
 
-  // Called when |temp_file_name_| has been opened for writing. Writes
-  // |data| to |file|, closes |file|, and then kicks off a rename of
-  // |temp_file_name_| to |file_name_|, effectively replacing the contents of
-  // the old file.
-  void OnTempFileOpenedForWriting(std::vector<uint8_t> data,
-                                  WriteCallback callback,
-                                  base::File file,
-                                  base::OnceClosure on_close_callback);
-  void OnFileWritten(WriteCallback callback, Status status);
-  void OnFileRenamed(WriteCallback callback, base::File::Error move_result);
+  // Called in sequence to write the file. |buffer| is the contents to be
+  // written to the file, |bytes_to_write| is the length. Uses |file_writer_|,
+  // which is cleared when no longer needed. |write_callback_| will always be
+  // called with the result.
+  void OnEnsureFileExists(scoped_refptr<net::IOBuffer> buffer,
+                          int bytes_to_write,
+                          base::File::Error result,
+                          bool created);
+  void WriteDone(bool success);
+  void OnFileRenamed(base::File::Error move_result);
 
   // Deletes |file_name_| asynchronously.
-  void DeleteFile(WriteCallback callback);
-  void OnFileDeleted(WriteCallback callback, base::File::Error result);
+  void DeleteFile();
+  void OnFileDeleted(base::File::Error result);
 
   // Returns the FileSystemURL for the specified |file_name|.
   storage::FileSystemURL CreateFileSystemURL(const std::string& file_name);
@@ -107,7 +101,11 @@ class CdmFileImpl final : public media::mojom::CdmFile {
 
   // Used when reading the file. |file_reader_| lives on the IO thread.
   ReadCallback read_callback_;
-  std::unique_ptr<FileReader> file_reader_;
+  base::SequenceBound<FileReader> file_reader_;
+
+  // Used when writing the file. |file_writer_| lives on the IO thread.
+  WriteCallback write_callback_;
+  base::SequenceBound<FileWriter> file_writer_;
 
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<CdmFileImpl> weak_factory_{this};

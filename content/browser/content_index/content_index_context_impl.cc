@@ -133,11 +133,25 @@ void ContentIndexContextImpl::DeliverMessageToWorker(
     blink::ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // Don't allow DB operations while the `contentdelete` event is firing.
+  // This is to prevent re-registering the deleted content within the event.
+  content_index_database_.BlockOrigin(service_worker->script_origin());
+
   int request_id = service_worker->StartRequest(
-      ServiceWorkerMetrics::EventType::CONTENT_DELETE, base::DoNothing());
+      ServiceWorkerMetrics::EventType::CONTENT_DELETE,
+      base::BindOnce(&ContentIndexContextImpl::DidDispatchEvent, this,
+                     service_worker->script_origin()));
 
   service_worker->endpoint()->DispatchContentDeleteEvent(
       description_id, service_worker->CreateSimpleEventCallback(request_id));
+}
+
+void ContentIndexContextImpl::DidDispatchEvent(
+    const url::Origin& origin,
+    blink::ServiceWorkerStatusCode service_worker_status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  content_index_database_.UnblockOrigin(origin);
 }
 
 void ContentIndexContextImpl::Shutdown() {

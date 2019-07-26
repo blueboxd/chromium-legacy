@@ -29,6 +29,9 @@ void MaybePopulateProcessHintsComponentResult(
 
 }  // namespace
 
+const char kComponentHintsUpdatedResultHistogramString[] =
+    "OptimizationGuide.UpdateComponentHints.Result";
+
 void RecordProcessHintsComponentResult(ProcessHintsComponentResult result) {
   UMA_HISTOGRAM_ENUMERATION(kProcessHintsComponentResultHistogramString,
                             result);

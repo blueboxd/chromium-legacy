@@ -55,8 +55,9 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
     case AutocompleteMatchType::SEARCH_HISTORY:
-      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) ? SEARCH
-                                                                  : HISTORY;
+      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)
+                 ? SEARCH_HISTORY
+                 : HISTORY;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:

@@ -55,8 +55,9 @@ public class TabSwitcherController extends PageController {
         if (matcher.matches()) {
             return Integer.valueOf(matcher.group(1));
         } else {
-            throw UiLocationException.newInstance(
-                    "Could not match " + text + " to " + PATTERN_NUMBER_OF_OPEN_TABS);
+            throw new UiLocationException(
+                    "Could not get number of open tabs in Tab Switcher button.",
+                    LOCATOR_TAB_SWITCHER_BUTTON);
         }
     }
     public NewTabPageController clickNewTab() {

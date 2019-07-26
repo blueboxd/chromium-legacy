@@ -58,6 +58,7 @@ KNOWN_TYP_TEST_RUNNERS = {
     'run_blinkpy_tests.py',
     'metrics_python_tests.py',
     'run_mac_signing_tests.py',
+    'run_polymer_tools_tests.py',
 }
 
 

@@ -144,6 +144,8 @@ public class BookmarkManager
     class BookmarkDragStateDelegate implements DragStateDelegate {
         private BookmarkDelegate mBookmarkDelegate;
         private SelectionDelegate<BookmarkId> mSelectionDelegate;
+        private AccessibilityManager mA11yManager;
+        private AccessibilityManager.AccessibilityStateChangeListener mA11yChangeListener;
         private boolean mA11yEnabled;
 
         void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
@@ -151,11 +153,12 @@ public class BookmarkManager
 
             mSelectionDelegate = delegate.getSelectionDelegate();
 
-            AccessibilityManager a11yManager =
+            mA11yManager =
                     (AccessibilityManager) getSelectableListLayout().getContext().getSystemService(
                             Context.ACCESSIBILITY_SERVICE);
-            mA11yEnabled = a11yManager.isEnabled();
-            a11yManager.addAccessibilityStateChangeListener(enabled -> mA11yEnabled = enabled);
+            mA11yEnabled = mA11yManager.isEnabled();
+            mA11yChangeListener = enabled -> mA11yEnabled = enabled;
+            mA11yManager.addAccessibilityStateChangeListener(mA11yChangeListener);
         }
 
         // DragStateDelegate implementation
@@ -168,6 +171,17 @@ public class BookmarkManager
         @Override
         public boolean getDragActive() {
             return getDragEnabled() && mSelectionDelegate.isSelectionEnabled();
+        }
+
+        @VisibleForTesting
+        @Override
+        public void setA11yStateForTesting(boolean a11yEnabled) {
+            if (mA11yManager != null) {
+                mA11yManager.removeAccessibilityStateChangeListener(mA11yChangeListener);
+            }
+            mA11yChangeListener = null;
+            mA11yManager = null;
+            mA11yEnabled = a11yEnabled;
         }
     }
 

@@ -65,7 +65,6 @@ PlatformVideoFramePool::PlatformVideoFramePool(
     const base::TickClock* tick_clock)
     : create_frame_cb_(std::move(cb)),
       tick_clock_(tick_clock),
-      format_(PIXEL_FORMAT_UNKNOWN),
       max_num_frames_(kDefaultMaxNumFrames),
       weak_this_factory_(this) {
   DVLOGF(4);
@@ -88,11 +87,13 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  if (coded_size_.IsEmpty()) {
-    VLOGF(1) << "Please call SetFrameFormat() first.";
+  if (!frame_layout_) {
+    VLOGF(1) << "Please call NegotiateFrameFormat() first.";
     return nullptr;
   }
 
+  VideoPixelFormat format = frame_layout_->format();
+  const gfx::Size& coded_size = frame_layout_->coded_size();
   if (free_frames_.empty()) {
     if (GetTotalNumFrames_Locked() >= max_num_frames_)
       return nullptr;
@@ -101,8 +102,8 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     // is sub rect of the original visible_rect. Therefore we set visible_rect
     // as large as coded_size to guarantee this condition.
     scoped_refptr<VideoFrame> new_frame =
-        create_frame_cb_.Run(format_, coded_size_, gfx::Rect(coded_size_),
-                             coded_size_, base::TimeDelta());
+        create_frame_cb_.Run(format, coded_size, gfx::Rect(coded_size),
+                             coded_size, base::TimeDelta());
     if (!new_frame)
       return nullptr;
 
@@ -112,11 +113,11 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   DCHECK(!free_frames_.empty());
   scoped_refptr<VideoFrame> origin_frame = std::move(free_frames_.back().frame);
   free_frames_.pop_back();
-  DCHECK_EQ(origin_frame->format(), format_);
-  DCHECK_EQ(origin_frame->coded_size(), coded_size_);
+  DCHECK_EQ(origin_frame->format(), format);
+  DCHECK_EQ(origin_frame->coded_size(), coded_size);
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
-      *origin_frame, format_, visible_rect_, natural_size_);
+      *origin_frame, format, visible_rect_, natural_size_);
   DCHECK(wrapped_frame);
   frames_in_use_.emplace(GetDmabufId(*wrapped_frame), origin_frame.get());
   wrapped_frame->AddDestructionObserver(
@@ -167,9 +168,10 @@ void PlatformVideoFramePool::SetMaxNumFrames(size_t max_num_frames) {
     std::move(frame_available_cb_).Run();
 }
 
-void PlatformVideoFramePool::SetFrameFormat(VideoFrameLayout layout,
-                                            gfx::Rect visible_rect,
-                                            gfx::Size natural_size) {
+base::Optional<VideoFrameLayout> PlatformVideoFramePool::NegotiateFrameFormat(
+    const VideoFrameLayout& layout,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size) {
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
@@ -177,17 +179,27 @@ void PlatformVideoFramePool::SetFrameFormat(VideoFrameLayout layout,
   // the pool here. If only the visible or natural size changed we don't need to
   // allocate new frames, but will just update the properties of wrapped frames
   // returned by GetFrame().
-  if (!IsSameLayout_Locked(layout.format(), layout.coded_size())) {
+  // NOTE: It is assumed layout is determined by |format| and |coded_size|.
+  if (!IsSameLayout_Locked(layout)) {
     DVLOGF(4) << "The video frame format is changed. Clearing the pool.";
     free_frames_.clear();
   }
 
-  format_ = layout.format();
-  coded_size_ = layout.coded_size();
   visible_rect_ = visible_rect;
   natural_size_ = natural_size;
-  DCHECK_LE(visible_rect_.right(), coded_size_.width());
-  DCHECK_LE(visible_rect_.bottom(), coded_size_.height());
+
+  // Create a temporary frame in order to know VideoFrameLayout that VideoFrame
+  // that will be allocated in GetFrame() has.
+  auto frame =
+      create_frame_cb_.Run(layout.format(), layout.coded_size(), visible_rect,
+                           natural_size_, base::TimeDelta());
+  if (!frame) {
+    VLOGF(1) << "Failed to create video frame";
+    return base::nullopt;
+  }
+  frame_layout_ = base::make_optional<VideoFrameLayout>(frame->layout());
+
+  return frame_layout_;
 }
 
 bool PlatformVideoFramePool::IsExhausted() {
@@ -249,7 +261,7 @@ void PlatformVideoFramePool::OnFrameReleased(
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 
-  if (IsSameLayout_Locked(origin_frame->format(), origin_frame->coded_size())) {
+  if (IsSameLayout_Locked(origin_frame->layout())) {
     InsertFreeFrame_Locked(std::move(origin_frame));
   }
 
@@ -274,12 +286,13 @@ size_t PlatformVideoFramePool::GetTotalNumFrames_Locked() const {
   return free_frames_.size() + frames_in_use_.size();
 }
 
-bool PlatformVideoFramePool::IsSameLayout_Locked(VideoPixelFormat format,
-                                                 gfx::Size coded_size) const {
+bool PlatformVideoFramePool::IsSameLayout_Locked(
+    const VideoFrameLayout& layout) const {
   DVLOGF(4);
   lock_.AssertAcquired();
 
-  return format_ == format && coded_size_ == coded_size;
+  return frame_layout_ && frame_layout_->format() == layout.format() &&
+         frame_layout_->coded_size() == layout.coded_size();
 }
 
 size_t PlatformVideoFramePool::GetPoolSizeForTesting() {

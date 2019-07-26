@@ -207,7 +207,7 @@ suite('CupsSavedPrintersTests', function() {
     page = document.createElement('settings-cups-printers');
     // Enable feature flag to show the new saved printers list.
     // TODO(jimmyxgong): Remove this line when the feature flag is removed.
-    page.enableUpdatedUI_ = true;
+    page.enableUpdatedUi_ = true;
     document.body.appendChild(page);
     assertTrue(!!page);
 
@@ -386,7 +386,7 @@ suite('CupsNearbyPrintersTests', function() {
     page = document.createElement('settings-cups-printers');
     // Enable feature flag to show the new saved printers list.
     // TODO(jimmyxgong): Remove this line when the feature flag is removed.
-    page.enableUpdatedUI_ = true;
+    page.enableUpdatedUi_ = true;
     document.body.appendChild(page);
     assertTrue(!!page);
 

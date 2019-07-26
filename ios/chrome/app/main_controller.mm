@@ -461,7 +461,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
 // |completion| is executed after the tab is opened. After Tab is open the
 // virtual URL is set to the pending navigation item.
-- (void)openSelectedTabInMode:(ApplicationMode)targetMode
+- (void)openSelectedTabInMode:(ApplicationModeForTabOpening)targetMode
             withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion;
 // Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
@@ -838,7 +838,8 @@ enum class EnterTabSwitcherSnapshotResult {
   if (_startupParameters) {
     UrlLoadParams params =
         UrlLoadParams::InNewTab(_startupParameters.externalURL);
-    [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
+    [self dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
+                                                    NORMAL
                               withUrlLoadParams:params
                                  dismissOmnibox:YES
                                      completion:^{
@@ -1838,7 +1839,8 @@ enum class EnterTabSwitcherSnapshotResult {
   UrlLoadParams params = UrlLoadParams::InNewTab([command URL]);
   params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
   ProceduralBlock completion = ^{
-    [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
+    [self dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
+                                                    NORMAL
                               withUrlLoadParams:params
                                  dismissOmnibox:YES
                                      completion:nil];
@@ -2351,9 +2353,21 @@ enum class EnterTabSwitcherSnapshotResult {
   }
 }
 
-- (void)openSelectedTabInMode:(ApplicationMode)targetMode
+- (void)openSelectedTabInMode:(ApplicationModeForTabOpening)tabOpeningTargetMode
             withUrlLoadParams:(const UrlLoadParams&)urlLoadParams
                    completion:(ProceduralBlock)completion {
+  ApplicationMode targetMode;
+
+  if (tabOpeningTargetMode == ApplicationModeForTabOpening::CURRENT) {
+    targetMode = self.interfaceProvider.currentInterface.incognito
+                     ? ApplicationMode::INCOGNITO
+                     : ApplicationMode::NORMAL;
+  } else if (tabOpeningTargetMode == ApplicationModeForTabOpening::NORMAL) {
+    targetMode = ApplicationMode::NORMAL;
+  } else {
+    targetMode = ApplicationMode::INCOGNITO;
+  }
+
   id<BrowserInterface> targetInterface =
       targetMode == ApplicationMode::NORMAL
           ? self.interfaceProvider.mainInterface
@@ -2532,7 +2546,8 @@ enum class EnterTabSwitcherSnapshotResult {
 
 #pragma mark - TabOpening implementation.
 
-- (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
+- (void)dismissModalsAndOpenSelectedTabInMode:
+            (ApplicationModeForTabOpening)targetMode
                             withUrlLoadParams:
                                 (const UrlLoadParams&)urlLoadParams
                                dismissOmnibox:(BOOL)dismissOmnibox

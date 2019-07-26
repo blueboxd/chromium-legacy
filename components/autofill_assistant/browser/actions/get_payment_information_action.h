@@ -37,6 +37,7 @@ class GetPaymentInformationAction
       const GetPaymentInformationProto& get_payment_information,
       std::unique_ptr<PaymentInformation> payment_information);
   void OnAdditionalActionTriggered(int index);
+  void OnTermsAndConditionsLinkClicked(int link);
 
   // Creates a new instance of |PaymentRequestOptions| from |proto_|.
   std::unique_ptr<PaymentRequestOptions> CreateOptionsFromProto() const;

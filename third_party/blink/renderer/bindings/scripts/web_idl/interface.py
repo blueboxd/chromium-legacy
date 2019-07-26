@@ -40,12 +40,13 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
                      constants=None,
                      operations=None,
                      iterable=None,
-                     setlike=None,
                      maplike=None,
+                     setlike=None,
                      extended_attributes=None,
                      exposures=None,
                      code_generator_info=None,
                      component=None,
+                     components=None,
                      debug_info=None):
             assert isinstance(is_partial, bool)
             assert isinstance(is_mixin, bool)
@@ -54,8 +55,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
             assert constants is None or isinstance(constants, (list, tuple))
             assert operations is None or isinstance(operations, (list, tuple))
             assert iterable is None or isinstance(iterable, Iterable)
-            assert setlike is None or isinstance(setlike, Setlike)
             assert maplike is None or isinstance(maplike, Maplike)
+            assert setlike is None or isinstance(setlike, Setlike)
 
             attributes = attributes or []
             constants = constants or []
@@ -84,18 +85,37 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithExposure,
             WithExtendedAttributes.__init__(self, extended_attributes)
             WithExposure.__init__(self, exposures)
             WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(self, component)
+            WithComponent.__init__(
+                self, component=component, components=components)
             WithDebugInfo.__init__(self, debug_info)
 
             self.is_partial = is_partial
             self.is_mixin = is_mixin
             self.inherited = inherited
-            self.attrbiutes = list(attributes)
+            self.attributes = list(attributes)
             self.constants = list(constants)
             self.operations = list(operations)
             self.iterable = iterable
             self.maplike = maplike
             self.setlike = setlike
+
+        def make_copy(self):
+            return Interface.IR(
+                identifier=self.identifier,
+                is_partial=self.is_partial,
+                is_mixin=self.is_mixin,
+                inherited=self.inherited,
+                attributes=map(Attribute.IR.make_copy, self.attributes),
+                constants=map(Constant.IR.make_copy, self.constants),
+                operations=map(Operation.IR.make_copy, self.operations),
+                iterable=self.iterable,
+                maplike=self.maplike,
+                setlike=self.setlike,
+                extended_attributes=self.extended_attributes.make_copy(),
+                code_generator_info=self.code_generator_info.make_copy(),
+                components=self.components,
+                debug_info=self.debug_info.make_copy())
+
 
     @property
     def inherited_interface(self):

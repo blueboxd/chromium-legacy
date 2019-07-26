@@ -27,6 +27,8 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -163,7 +165,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     params->is_installed = false;
 
     params->service_worker_request = CreateServiceWorker();
-    params->controller_request = CreateController();
+    params->controller_receiver = CreateController();
     params->installed_scripts_info = GetInstalledScriptsInfoPtr();
     params->provider_info = CreateProviderInfo(std::move(version));
     return params;
@@ -183,9 +185,10 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     return mojo::MakeRequest(&service_workers_.back());
   }
 
-  blink::mojom::ControllerServiceWorkerRequest CreateController() {
+  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+  CreateController() {
     controllers_.emplace_back();
-    return mojo::MakeRequest(&controllers_.back());
+    return controllers_.back().BindNewPipeAndPassReceiver();
   }
 
   void SetWorkerStatus(EmbeddedWorkerInstance* worker,
@@ -208,7 +211,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
   // Mojo endpoints.
   std::vector<blink::mojom::ServiceWorkerPtr> service_workers_;
-  std::vector<blink::mojom::ControllerServiceWorkerPtr> controllers_;
+  std::vector<mojo::Remote<blink::mojom::ControllerServiceWorker>> controllers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerPtr>
       installed_scripts_managers_;
   std::vector<blink::mojom::ServiceWorkerInstalledScriptsManagerHostRequest>

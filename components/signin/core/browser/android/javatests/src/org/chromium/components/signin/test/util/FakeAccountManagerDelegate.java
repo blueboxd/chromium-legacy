@@ -22,14 +22,12 @@ import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.AuthException;
-import org.chromium.components.signin.CoreAccountInfo;
 import org.chromium.components.signin.ProfileDataSource;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -105,18 +103,18 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public List<CoreAccountInfo> getAccountInfosSync() throws AccountManagerDelegateException {
+    public Account[] getAccountsSync() throws AccountManagerDelegateException {
         return getAccountsSyncNoThrow();
     }
 
-    public List<CoreAccountInfo> getAccountsSyncNoThrow() {
-        List<CoreAccountInfo> result = new ArrayList<>();
+    public Account[] getAccountsSyncNoThrow() {
+        ArrayList<Account> result = new ArrayList<>();
         synchronized (mAccounts) {
             for (AccountHolder ah : mAccounts) {
-                result.add(ah.getAccountInfo());
+                result.add(ah.getAccount());
             }
         }
-        return result;
+        return result.toArray(new Account[0]);
     }
 
     /**
@@ -220,7 +218,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
                 // No authtoken registered. Need to create one.
                 String authToken = UUID.randomUUID().toString();
                 Log.d(TAG,
-                        "Created new auth token for " + ah.getAccountInfo() + ": authTokenScope = "
+                        "Created new auth token for " + ah.getAccount() + ": authTokenScope = "
                                 + authTokenScope + ", authToken = " + authToken);
                 ah = ah.withAuthToken(authTokenScope, authToken);
                 mAccounts.add(ah);
@@ -293,7 +291,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
         }
         synchronized (mAccounts) {
             for (AccountHolder accountHolder : mAccounts) {
-                if (account.equals(accountHolder.getAccountInfo().getAccount())) {
+                if (account.equals(accountHolder.getAccount())) {
                     return accountHolder;
                 }
             }

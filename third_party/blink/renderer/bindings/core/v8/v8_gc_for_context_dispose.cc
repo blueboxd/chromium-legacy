@@ -69,7 +69,7 @@ void V8GCForContextDispose::NotifyContextDisposed(
     bool is_main_frame,
     WindowProxy::FrameReuseStatus frame_reuse_status) {
   did_dispose_context_for_main_frame_ = is_main_frame;
-  last_context_disposal_time_ = WTF::CurrentTime();
+  last_context_disposal_time_ = base::Time::Now().ToDoubleT();
 #if defined(OS_ANDROID)
   // When a low end device is in a low memory situation we should prioritize
   // memory use and trigger a V8+Blink GC. However, on Android, if the frame
@@ -101,7 +101,7 @@ void V8GCForContextDispose::NotifyIdle() {
   double max_time_since_last_context_disposal = .2;
   if (!did_dispose_context_for_main_frame_ && !pseudo_idle_timer_.IsActive() &&
       last_context_disposal_time_ + max_time_since_last_context_disposal >=
-          WTF::CurrentTime()) {
+          base::Time::Now().ToDoubleT()) {
     pseudo_idle_timer_.StartOneShot(base::TimeDelta(), FROM_HERE);
   }
 }

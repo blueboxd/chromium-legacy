@@ -39,7 +39,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
-#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/devtools/devtools_auto_opener.h"
 #include "chrome/browser/devtools/remote_debugging_server.h"
@@ -193,6 +192,10 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_stats_mac.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -376,9 +379,11 @@ void BrowserProcessImpl::StartTearDown() {
   notification_ui_manager_.reset();
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   // The SupervisedUserWhitelistInstaller observes the ProfileAttributesStorage,
   // so it needs to be shut down before the ProfileManager.
   supervised_user_whitelist_installer_.reset();
+#endif
 
   // Debugger must be cleaned up before ProfileManager.
   remote_debugging_server_.reset();
@@ -1031,6 +1036,7 @@ BrowserProcessImpl::component_updater() {
   return component_updater_.get();
 }
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 component_updater::SupervisedUserWhitelistInstaller*
 BrowserProcessImpl::supervised_user_whitelist_installer() {
   if (!supervised_user_whitelist_installer_) {
@@ -1042,6 +1048,7 @@ BrowserProcessImpl::supervised_user_whitelist_installer() {
   }
   return supervised_user_whitelist_installer_.get();
 }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 void BrowserProcessImpl::OnKeepAliveStateChanged(bool is_keeping_alive) {
   if (is_keeping_alive)

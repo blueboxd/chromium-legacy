@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -45,6 +46,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     private final Paint mThumbnailFramePaint;
     private final Paint mTextPaint;
     private final Paint mFaviconBackgroundPaint;
+    private final int mFaviconBackgroundPaintColor;
     private final List<Rect> mFaviconRects = new ArrayList<>(4);
     private final List<RectF> mThumbnailRects = new ArrayList<>(4);
     private final List<RectF> mFaviconBackgroundRects = new ArrayList<>(4);
@@ -190,55 +192,55 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
 
     MultiThumbnailCardProvider(Context context, TabContentManager tabContentManager,
             TabModelSelector tabModelSelector) {
+        Resources resource = context.getResources();
+
         mTabContentManager = tabContentManager;
         mTabModelSelector = tabModelSelector;
-        mRadius = context.getResources().getDimension(R.dimen.tab_list_mini_card_radius);
-        mSize = (int) context.getResources().getDimension(
-                R.dimen.tab_grid_thumbnail_card_default_size);
-        mFaviconCirclePadding = context.getResources().getDimension(
-                R.dimen.tab_grid_thumbnail_favicon_background_padding);
+        mRadius = resource.getDimension(R.dimen.tab_list_mini_card_radius);
+        mSize = (int) resource.getDimension(R.dimen.tab_grid_thumbnail_card_default_size);
+        mFaviconCirclePadding =
+                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_background_padding);
         mTabListFaviconProvider = new TabListFaviconProvider(context, Profile.getLastUsedProfile());
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();
         mEmptyThumbnailPaint.setStyle(Paint.Style.FILL);
-        mEmptyThumbnailPaint.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_100));
+        mEmptyThumbnailPaint.setColor(ApiCompatibilityUtils.getColor(
+                resource, R.color.tab_list_mini_card_default_background_color));
         mEmptyThumbnailPaint.setAntiAlias(true);
 
         mThumbnailFramePaint = new Paint();
         mThumbnailFramePaint.setStyle(Paint.Style.STROKE);
         mThumbnailFramePaint.setStrokeWidth(
-                context.getResources().getDimension(R.dimen.tab_list_mini_card_frame_size));
+                resource.getDimension(R.dimen.tab_list_mini_card_frame_size));
         mThumbnailFramePaint.setColor(
-                ApiCompatibilityUtils.getColor(context.getResources(), R.color.modern_grey_300));
+                ApiCompatibilityUtils.getColor(resource, R.color.divider_bg_color));
         mThumbnailFramePaint.setAntiAlias(true);
 
         mTextPaint = new Paint();
-        mTextPaint.setTextSize(
-                context.getResources().getDimension(R.dimen.compositor_tab_title_text_size));
+        mTextPaint.setTextSize(resource.getDimension(R.dimen.compositor_tab_title_text_size));
         mTextPaint.setFakeBoldText(true);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
+        mTextPaint.setColor(ApiCompatibilityUtils.getColor(resource, R.color.default_text_color));
 
+        mFaviconBackgroundPaintColor =
+                ApiCompatibilityUtils.getColor(resource, R.color.favicon_background_color);
         mFaviconBackgroundPaint = new Paint();
         mFaviconBackgroundPaint.setAntiAlias(true);
-        mFaviconBackgroundPaint.setColor(Color.WHITE);
+        mFaviconBackgroundPaint.setColor(mFaviconBackgroundPaintColor);
         mFaviconBackgroundPaint.setStyle(Paint.Style.FILL);
         mFaviconBackgroundPaint.setShadowLayer(
-                context.getResources().getDimension(
-                        R.dimen.tab_grid_thumbnail_favicon_background_radius),
-                0,
-                context.getResources().getDimension(
-                        R.dimen.tab_grid_thumbnail_favicon_background_down_shift),
-                context.getResources().getColor(R.color.modern_grey_800_alpha_38));
+                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_background_radius), 0,
+                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_background_down_shift),
+                resource.getColor(R.color.modern_grey_800_alpha_38));
 
         // Initialize Rects for thumbnails.
-        float thumbnailPadding = context.getResources().getDimension(R.dimen.tab_list_card_padding);
+        float thumbnailPadding = resource.getDimension(R.dimen.tab_list_card_padding);
         float thumbnailFaviconPadding =
-                context.getResources().getDimension(R.dimen.tab_grid_thumbnail_favicon_padding);
-        float thumbnailFaviconBackgroundPadding = context.getResources().getDimension(
-                R.dimen.tab_grid_thumbnail_favicon_frame_padding);
+                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_padding);
+        float thumbnailFaviconBackgroundPadding =
+                resource.getDimension(R.dimen.tab_grid_thumbnail_favicon_frame_padding);
 
         mThumbnailRects.add(new RectF(thumbnailPadding, thumbnailPadding,
                 mSize / 2 - thumbnailPadding / 2, mSize / 2 - thumbnailPadding / 2));

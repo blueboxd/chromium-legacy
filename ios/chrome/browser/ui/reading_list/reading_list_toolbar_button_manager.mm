@@ -116,7 +116,6 @@ NSString* GetMarkButtonTitleForSelectionState(ReadingListSelectionState state) {
     return;
   BOOL hadSelectedItems = _selectionState != ReadingListSelectionState::NONE;
   _selectionState = selectionState;
-  _markButton.title = GetMarkButtonTitleForSelectionState(_selectionState);
   // Check whether selection status has changed to or from NONE.
   if ((_selectionState != ReadingListSelectionState::NONE) != hadSelectedItems)
     _buttonItems = nil;
@@ -142,6 +141,12 @@ NSString* GetMarkButtonTitleForSelectionState(ReadingListSelectionState state) {
   // Selected cells are unselected when exiting edit mode.
   if (!_editing)
     self.selectionState = ReadingListSelectionState::NONE;
+}
+
+- (void)updateMarkButtonTitle {
+  if (!_editing)
+    return;
+  _markButton.title = GetMarkButtonTitleForSelectionState(_selectionState);
 }
 
 - (BOOL)buttonItemsUpdated {

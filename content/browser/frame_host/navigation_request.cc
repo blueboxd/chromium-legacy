@@ -450,6 +450,13 @@ void RecordIsSameProcessMetrics(ui::PageTransition transition,
   NOTREACHED() << "Invalid page transition: " << transition;
 }
 
+// Use this to get a new unique ID for a NavigationHandle during construction.
+// The returned ID is guaranteed to be nonzero (zero is the "no ID" indicator).
+int64_t CreateUniqueHandleID() {
+  static int64_t unique_id_counter = 0;
+  return ++unique_id_counter;
+}
+
 }  // namespace
 
 // static
@@ -989,6 +996,7 @@ void NavigationRequest::CreateNavigationHandle(bool is_for_commit) {
   }
 
   handle_state_ = NavigationRequest::INITIAL;
+  navigation_handle_id_ = CreateUniqueHandleID();
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle = base::WrapUnique(
       new NavigationHandleImpl(this, nav_entry_id_, std::move(headers)));
@@ -1388,7 +1396,7 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // This must be set before DetermineCommittedPreviews is called.
-  navigation_handle_->set_proxy_server(response_head->head.proxy_server);
+  proxy_server_ = response_head->head.proxy_server;
 
   // Update the previews state of the request.
   common_params_.previews_state =
@@ -2418,6 +2426,18 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
         rfh, blink::mojom::WebFeature::kOpenerNavigationDownloadCrossOrigin);
   }
 
+  // Log UseCounters for download in sandbox.
+  if (download_policy.IsType(NavigationDownloadType::kSandbox)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadInSandbox);
+  }
+
+  // Log UseCounters for download without user activation.
+  if (download_policy.IsType(NavigationDownloadType::kNoGesture)) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kDownloadWithoutUserGesture);
+  }
+
   // Log UseCounters for download in sandbox without user activation.
   if (download_policy.IsType(NavigationDownloadType::kSandboxNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
@@ -2430,10 +2450,10 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
         rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
   }
 
-  // Log UseCounters for download in ad frame with user activation.
-  if (download_policy.IsType(NavigationDownloadType::kAdFrameGesture)) {
+  // Log UseCounters for download in ad frame.
+  if (download_policy.IsType(NavigationDownloadType::kAdFrame)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
+        rfh, blink::mojom::WebFeature::kDownloadInAdFrame);
   }
 }
 

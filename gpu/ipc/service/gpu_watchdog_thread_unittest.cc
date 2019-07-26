@@ -14,7 +14,8 @@
 namespace gpu {
 
 namespace {
-constexpr auto kGpuWatchdogTimeout = base::TimeDelta::FromMilliseconds(1000);
+constexpr auto kGpuWatchdogTimeoutForTesting =
+    base::TimeDelta::FromMilliseconds(1000);
 
 // This task will run for duration_ms milliseconds.
 void SimpleTask(base::TimeDelta duration) {
@@ -66,7 +67,7 @@ void GpuWatchdogTest::SetUp() {
   // Set watchdog timeout to 1000 milliseconds
   watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
       /*start_backgrounded*/ false,
-      /*timeout*/ kGpuWatchdogTimeout,
+      /*timeout*/ kGpuWatchdogTimeoutForTesting,
       /*test_mode*/ true);
 }
 
@@ -134,7 +135,8 @@ void GpuWatchdogPowerTest::LongTaskOnResume(
 // GPU Hang In Initialization
 TEST_F(GpuWatchdogTest, GpuInitializationHang) {
   // Gpu init (4000 ms) takes longer than timeout (1000 ms).
-  SimpleTask(kGpuWatchdogTimeout + base::TimeDelta::FromMilliseconds(3000));
+  SimpleTask(kGpuWatchdogTimeoutForTesting +
+             base::TimeDelta::FromMilliseconds(3000));
 
   // Gpu hangs. OnInitComplete() is not called
 
@@ -160,11 +162,11 @@ TEST_F(GpuWatchdogTest, GpuInitializationAndRunningTasks) {
   // This long task takes 3000 milliseconds to finish, longer than timeout.
   // But it reports progress every 500 milliseconds
   main_loop.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &GpuWatchdogTest::LongTaskWithReportProgress, base::Unretained(this),
-          kGpuWatchdogTimeout + base::TimeDelta::FromMilliseconds(2000),
-          base::TimeDelta::FromMilliseconds(500)));
+      FROM_HERE, base::BindOnce(&GpuWatchdogTest::LongTaskWithReportProgress,
+                                base::Unretained(this),
+                                kGpuWatchdogTimeoutForTesting +
+                                    base::TimeDelta::FromMilliseconds(2000),
+                                base::TimeDelta::FromMilliseconds(500)));
 
   main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
@@ -182,7 +184,7 @@ TEST_F(GpuWatchdogTest, GpuRunningATaskHang) {
   // Start running a GPU task. This long task takes 6000 milliseconds to finish.
   main_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&SimpleTask, kGpuWatchdogTimeout * 2 +
+      base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       base::TimeDelta::FromMilliseconds(4000)));
 
   main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
@@ -198,7 +200,8 @@ TEST_F(GpuWatchdogTest, ChromeInBackground) {
   watchdog_thread_->OnBackgrounded();
 
   // Gpu init (2000 ms) takes longer than timeout (1000 ms).
-  SimpleTask(kGpuWatchdogTimeout + base::TimeDelta::FromMilliseconds(1000));
+  SimpleTask(kGpuWatchdogTimeoutForTesting +
+             base::TimeDelta::FromMilliseconds(1000));
 
   // Report GPU init complete.
   watchdog_thread_->OnInitComplete();
@@ -206,7 +209,7 @@ TEST_F(GpuWatchdogTest, ChromeInBackground) {
   // Run a task that takes longer (3000 milliseconds) than timeout.
   main_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&SimpleTask, kGpuWatchdogTimeout * 2 +
+      base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       base::TimeDelta::FromMilliseconds(1000)));
   main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
@@ -227,7 +230,7 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
       FROM_HERE,
       base::BindOnce(&GpuWatchdogTest::LongTaskFromBackgroundToForeground,
                      base::Unretained(this),
-                     /*duration*/ kGpuWatchdogTimeout * 2 +
+                     /*duration*/ kGpuWatchdogTimeoutForTesting * 2 +
                          base::TimeDelta::FromMilliseconds(4200),
                      /*time_to_switch_to_foreground*/
                      base::TimeDelta::FromMilliseconds(200)));
@@ -250,7 +253,7 @@ TEST_F(GpuWatchdogPowerTest, GpuOnSuspend) {
   // Run a task that takes longer (4000 milliseconds) than timeout.
   main_loop.task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&SimpleTask, kGpuWatchdogTimeout * 2 +
+      base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       base::TimeDelta::FromMilliseconds(2000)));
   main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();
@@ -268,12 +271,13 @@ TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
   // wakes up on power resume and then runs for 6000 milliseconds. This is
   // longer than the watchdog resume timeout (2000 ms).
   main_loop.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&GpuWatchdogPowerTest::LongTaskOnResume,
-                                base::Unretained(this),
-                                /*duration*/ kGpuWatchdogTimeout * 2 +
-                                    base::TimeDelta::FromMilliseconds(4200),
-                                /*time_to_power_resume*/
-                                base::TimeDelta::FromMilliseconds(200)));
+      FROM_HERE,
+      base::BindOnce(
+          &GpuWatchdogPowerTest::LongTaskOnResume, base::Unretained(this),
+          /*duration*/ kGpuWatchdogTimeoutForTesting * kRestartFactor +
+              base::TimeDelta::FromMilliseconds(4200),
+          /*time_to_power_resume*/
+          base::TimeDelta::FromMilliseconds(200)));
 
   main_loop.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
   run_loop.Run();

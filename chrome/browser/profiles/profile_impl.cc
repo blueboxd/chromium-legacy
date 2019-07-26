@@ -232,6 +232,7 @@
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #endif
 
@@ -951,6 +952,12 @@ void ProfileImpl::OnLocaleReady() {
   if (g_browser_process->local_state())
     MigrateObsoleteBrowserPrefs(this, g_browser_process->local_state());
   MigrateObsoleteProfilePrefs(this);
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Note: Extension preferences can be keyed off the extension ID, so need to
+  // be handled specially (rather than directly as part of
+  // MigrateObsoleteProfilePrefs()).
+  extensions::ExtensionPrefs::Get(this)->MigrateObsoleteExtensionPrefs();
+#endif
 
   // |kSessionExitType| was added after |kSessionExitedCleanly|. If the pref
   // value is empty fallback to checking for |kSessionExitedCleanly|.

@@ -27,9 +27,9 @@ static_library("core") {
   ]
   deps = [
     ":metrics",
-    "cache",
   ]
   public_deps = [
+    "cache",
     "//base",
     "//components/keyed_service/core",
     "//net",

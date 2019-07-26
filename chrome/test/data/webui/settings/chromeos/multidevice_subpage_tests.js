@@ -168,7 +168,7 @@ suite('Multidevice', function() {
       });
 
   test(
-      'AndroidMessages set up button is disabled when prohibited by policy',
+      'AndroidMessages toggle is disabled when prohibited by policy',
       function() {
         // Verify that setup button is disabled when prohibited by policy.
         multideviceSubpage.pageContentData =
@@ -181,9 +181,7 @@ suite('Multidevice', function() {
 
         let setUpButton =
             multideviceSubpage.$$('#messagesItem > [slot=feature-controller]');
-        assertTrue(!!setUpButton);
-        assertTrue(setUpButton.tagName.includes('BUTTON'));
-        assertTrue(setUpButton.disabled);
+        assertFalse(!!setUpButton);
 
         // Verify that setup button is not disabled when feature is enabled.
         setAndroidSmsPairingComplete(false);

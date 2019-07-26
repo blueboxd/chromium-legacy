@@ -1121,7 +1121,8 @@ void DownloadManagerImpl::PostInitialization(
 
   // Download manager is only initialized if both history db and in progress
   // cache are initialized.
-  if (!history_db_initialized_ || !in_progress_cache_initialized_)
+  bool history_loaded = history_db_initialized_ || IsOffTheRecord();
+  if (!history_loaded || !in_progress_cache_initialized_)
     return;
 
 #if defined(OS_ANDROID)
@@ -1381,8 +1382,8 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
     }
     url_loader_factory_getter =
         base::MakeRefCounted<FileSystemDownloadURLLoaderFactoryGetter>(
-            params->url(), rfh, /*is_navigation=*/false,
-            storage_partition->GetFileSystemContext(), storage_domain);
+            params->url(), rfh, storage_partition->GetFileSystemContext(),
+            storage_domain);
   } else if (params->url().SchemeIs(url::kDataScheme)) {
     url_loader_factory_getter =
         CreateDownloadURLLoaderFactoryGetterFromURLLoaderFactory(

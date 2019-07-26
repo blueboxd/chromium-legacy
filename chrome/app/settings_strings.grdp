@@ -685,7 +685,7 @@
       Google Play Store
     </message>
     <message name="IDS_SETTINGS_ANDROID_APPS_SUBTEXT" desc="Description for the section for enabling and managing Google Play Store (Android) apps.">
-      Install apps and games from Google Play on your Chromebook. &lt;a target="_blank" href="<ph name="URL">$1<ex>https://google.com/</ex></ph>"&gt;Learn more&lt;/a&gt;
+      Install apps and games from Google Play on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. &lt;a target="_blank" href="<ph name="URL">$2<ex>https://google.com/</ex></ph>"&gt;Learn more&lt;/a&gt;
     </message>
     <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS" desc="Label for launching Android apps settings.">
       Manage Android preferences
@@ -697,6 +697,8 @@
     <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE" desc="Title of the confirmation dialog for disabling android apps.">
       Remove Android apps?
     </message>
+    <!-- TODO(jamescook): Use device type instead of "Chromebook", which may
+         require changing ArcPlayTermsOfServiceConsent resource id handling. -->
     <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE" desc="Describes what will happen if the user opts out of android apps.">
       Apps you’ve downloaded from Google Play will be deleted from this Chromebook.
       <ph name="LINE_BREAKS1">&lt;br&gt;&lt;br&gt;</ph>
@@ -4843,7 +4845,7 @@
       Android phone
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY" desc="Tells the user to connect their Chromebook to their phone.">
-      Connect your Chromebook with your phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+      Connect your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_NO_ELIGIBLE_HOSTS" desc="Tells the user that there is no phone with their account on it that can connect to their Chromebook.">
       No eligible devices. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
@@ -4864,7 +4866,7 @@
       Disabled
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SMART_LOCK_SUMMARY" desc="Description of for the 'Smart Lock' setting. This feature automatically unlocks the user's Chromebook if their phone is nearby and unlocked.">
-      Unlock your Chromebook with your phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+      Unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_INSTANT_TETHERING" desc="Name of a feature. This feature automatically offers the user to tether to their phone if their Chromebook is offline and their phone supports tethering.">
       Instant Tethering
@@ -4876,16 +4878,16 @@
       Messages
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_ANDROID_MESSAGES_SUMMARY" desc="Description of for the 'Android Messages' setting. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
-      Send and receive text messages from your Chromebook. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+      Send and receive text messages from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE" desc="Header to tell the user an action will make their Chromebook forget their phone. This means they will no longer have access to multidevice features.">
       Forget phone
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_EXPLANATION" desc="Explanation on a clickable menu item that makes the Chromebook forget the user's phone. It tells the user that the menu item will cause their phone to stop acting as a partner for their Chromebook for multidevice features.">
-      Disconnect your phone from your Chromebook
+      Disconnect your phone from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE" desc="Text of a dialog that lets the user choose if their Chromebook should forget their phone. This means they will no longer have access to multidevice features.">
-      Disconnect your phone from your Chromebook. They will no longer connect automatically.
+      Disconnect your phone from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. They will no longer connect automatically.
     </message>
   </if>
 

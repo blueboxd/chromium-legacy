@@ -1025,36 +1025,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile2));
 }
 
-class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kSupervisedUserId,
-                                    supervised_users::kChildAccountSUID);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(SupervisedUserBrowserCreatorTest,
-                       StartupSupervisedUserProfile) {
-  StartupBrowserCreator browser_creator;
-
-  // Do a simple non-process-startup browser launch.
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, &browser_creator,
-                                   chrome::startup::IS_FIRST_RUN);
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
-  ASSERT_TRUE(launch.Launch(browser()->profile(), std::vector<GURL>(), false));
-
-  // This should have created a new browser window.
-  Browser* new_browser = FindOneOtherBrowser(browser());
-  ASSERT_TRUE(new_browser);
-
-  TabStripModel* tab_strip = new_browser->tab_strip_model();
-
-  EXPECT_EQ(1, tab_strip->count());
-}
-
 #endif  // !defined(OS_CHROMEOS)
 
 // These tests are not applicable to Chrome OS as neither master_preferences nor

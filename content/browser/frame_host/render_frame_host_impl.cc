@@ -5038,8 +5038,8 @@ void RenderFrameHostImpl::CommitNavigation(
     non_network_url_loader_factories_.emplace(
         url::kFileSystemScheme,
         content::CreateFileSystemURLLoaderFactory(
-            this, /*is_navigation=*/false, partition->GetFileSystemContext(),
-            storage_domain));
+            process_->GetID(), GetFrameTreeNodeId(),
+            partition->GetFileSystemContext(), storage_domain));
 
     non_network_url_loader_factories_.emplace(
         url::kDataScheme, std::make_unique<DataURLLoaderFactory>());

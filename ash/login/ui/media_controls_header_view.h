@@ -27,7 +27,7 @@ class ASH_EXPORT MediaControlsHeaderView : public views::View {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   const base::string16& app_name_for_testing() const;
-  const gfx::ImageSkia& app_icon_for_testing() const;
+  const views::ImageView* app_icon_for_testing() const;
 
  private:
   views::ImageView* app_icon_view_;

@@ -19,10 +19,6 @@ import android.widget.ImageView;
 import org.chromium.chrome.R;
 
 /**
- * TODO(crbug.com/967022): This class is a duplicate of {@link ChromeImageViewPreference}, but with
- * Support Library classes replacing deprecated Framework classes. When Preference Support Library
- * migration is complete remove {@link ChromeImageViewPreference} in favor of this class.
- *
  * A preference that supports some Chrome-specific customizations:
  *
  * 1. This preference supports being managed. If this preference is managed (as determined by its

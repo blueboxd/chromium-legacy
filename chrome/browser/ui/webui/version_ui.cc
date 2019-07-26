@@ -55,8 +55,7 @@ namespace {
 WebUIDataSource* CreateVersionUIDataSource() {
   WebUIDataSource* html_source =
       WebUIDataSource::Create(chrome::kChromeUIVersionHost);
-
-  // Localized strings.
+  // These localized strings are used to label version details.
   static constexpr LocalizedString kStrings[] = {
     {version_ui::kTitle, IDS_VERSION_UI_TITLE},
     {version_ui::kApplicationLabel, IDS_PRODUCT_NAME},
@@ -82,6 +81,42 @@ WebUIDataSource* CreateVersionUIDataSource() {
   };
   AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
 
+  VersionUI::AddVersionDetailStrings(html_source);
+
+  html_source->SetJsonPath("strings.js");
+  html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
+  html_source->AddResourcePath(version_ui::kAboutVersionCSS,
+                               IDR_VERSION_UI_CSS);
+  html_source->SetDefaultResource(IDR_VERSION_UI_HTML);
+  return html_source;
+}
+
+}  // namespace
+
+VersionUI::VersionUI(content::WebUI* web_ui)
+    : content::WebUIController(web_ui) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+
+#if defined(OS_CHROMEOS)
+  web_ui->AddMessageHandler(std::make_unique<VersionHandlerChromeOS>());
+#elif defined(OS_WIN)
+  web_ui->AddMessageHandler(std::make_unique<VersionHandlerWindows>());
+#else
+  web_ui->AddMessageHandler(std::make_unique<VersionHandler>());
+#endif
+
+#if !defined(OS_ANDROID)
+  // Set up the chrome://theme/ source.
+  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
+#endif
+
+  WebUIDataSource::Add(profile, CreateVersionUIDataSource());
+}
+
+VersionUI::~VersionUI() {}
+
+// static
+void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(version_ui::kOfficial,
                                   version_info::IsOfficialBuild()
                                       ? IDS_VERSION_UI_OFFICIAL
@@ -151,35 +186,4 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #endif  // defined(OS_WIN)
 
   html_source->AddString(version_ui::kSanitizer, version_info::GetSanitizerList());
-
-  html_source->SetJsonPath("strings.js");
-  html_source->AddResourcePath(version_ui::kVersionJS, IDR_VERSION_UI_JS);
-  html_source->AddResourcePath(version_ui::kAboutVersionCSS,
-                               IDR_VERSION_UI_CSS);
-  html_source->SetDefaultResource(IDR_VERSION_UI_HTML);
-  return html_source;
 }
-
-}  // namespace
-
-VersionUI::VersionUI(content::WebUI* web_ui)
-    : content::WebUIController(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
-
-#if defined(OS_CHROMEOS)
-  web_ui->AddMessageHandler(std::make_unique<VersionHandlerChromeOS>());
-#elif defined(OS_WIN)
-  web_ui->AddMessageHandler(std::make_unique<VersionHandlerWindows>());
-#else
-  web_ui->AddMessageHandler(std::make_unique<VersionHandler>());
-#endif
-
-#if !defined(OS_ANDROID)
-  // Set up the chrome://theme/ source.
-  content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
-#endif
-
-  WebUIDataSource::Add(profile, CreateVersionUIDataSource());
-}
-
-VersionUI::~VersionUI() {}

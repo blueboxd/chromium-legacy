@@ -312,7 +312,7 @@ class BlinkScrollbarPartAnimationTimer {
   ~BlinkScrollbarPartAnimationTimer() {}
 
   void Start() {
-    start_time_ = WTF::CurrentTime();
+    start_time_ = base::Time::Now().ToDoubleT();
     // Set the framerate of the animation. NSAnimation uses a default
     // framerate of 60 Hz, so use that here.
     timer_.StartRepeating(base::TimeDelta::FromSecondsD(1.0 / 60.0), FROM_HERE);
@@ -324,7 +324,7 @@ class BlinkScrollbarPartAnimationTimer {
 
  private:
   void TimerFired(TimerBase*) {
-    double current_time = WTF::CurrentTime();
+    double current_time = base::Time::Now().ToDoubleT();
     double delta = current_time - start_time_;
 
     if (delta >= duration_)

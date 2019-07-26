@@ -119,7 +119,9 @@ void AppsNavigationThrottle::ShowIntentPickerBubble(
 
   bool show_persistence_options = ShouldShowPersistenceOptions(apps);
   ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps), show_persistence_options,
+      web_contents, std::move(apps),
+      /*show_stay_in_chrome=*/show_persistence_options,
+      /*show_remember_selection=*/show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }
@@ -203,7 +205,8 @@ bool AppsNavigationThrottle::ShouldOverrideUrlLoadingForTesting(
 void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
     content::WebContents* web_contents,
     std::vector<IntentPickerAppInfo> apps,
-    bool show_persistence_options,
+    bool show_stay_in_chrome,
+    bool show_remember_selection,
     IntentPickerResponse callback) {
   if (apps.empty())
     return;
@@ -214,10 +217,9 @@ void AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
-  browser->window()->ShowIntentPickerBubble(std::move(apps),
-                                            /*enable_stay_in_chrome=*/true,
-                                            show_persistence_options,
-                                            std::move(callback));
+  browser->window()->ShowIntentPickerBubble(
+      std::move(apps), show_stay_in_chrome, show_remember_selection,
+      std::move(callback));
 }
 
 AppsNavigationThrottle::AppsNavigationThrottle(
@@ -359,6 +361,9 @@ bool AppsNavigationThrottle::ShouldShowPersistenceOptions(
   // if only PWAs are present.
   // TODO(crbug.com/826982): Provide the "Remember my choice" option when the
   // app registry can support persistence for PWAs.
+  // This function is also used to hide the "Stay In Chrome" button when the
+  // "Remember my choice" option is hidden such that the bubble is easy to
+  // understand.
   return !ContainsOnlyPwas(apps);
 }
 
@@ -390,9 +395,11 @@ void AppsNavigationThrottle::ShowIntentPickerForApps(
       break;
     case PickerShowState::kPopOut: {
       bool show_persistence_options = ShouldShowPersistenceOptions(apps);
-      ShowIntentPickerBubbleForApps(web_contents, std::move(apps),
-                                    show_persistence_options,
-                                    std::move(callback));
+      ShowIntentPickerBubbleForApps(
+          web_contents, std::move(apps),
+          /*show_stay_in_chrome=*/show_persistence_options,
+          /*show_remember_selection=*/show_persistence_options,
+          std::move(callback));
       break;
     }
     default:

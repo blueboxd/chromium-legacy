@@ -103,6 +103,9 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // Unused cross-component visit methods.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
 
+  // Flush private segments remaining in visitor's worklists to global pools.
+  void FlushCompactionWorklists();
+
   size_t marked_bytes() const { return marked_bytes_; }
 
  protected:
@@ -125,6 +128,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   MarkingWorklist::View marking_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
   WeakCallbackWorklist::View weak_callback_worklist_;
+  MovableReferenceWorklist::View movable_reference_worklist_;
   size_t marked_bytes_ = 0;
   const MarkingMode marking_mode_;
 };

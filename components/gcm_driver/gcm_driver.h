@@ -268,7 +268,7 @@ class GCMDriver {
   // The InstanceIDHandler provides an implementation for the InstanceID system.
   virtual InstanceIDHandler* GetInstanceIDHandlerInternal() = 0;
   // Allows the InstanceID system to integrate with GCM encryption storage.
-  GCMEncryptionProvider* GetEncryptionProviderInternal();
+  virtual GCMEncryptionProvider* GetEncryptionProviderInternal();
 
   // Adds or removes a custom client requested heartbeat interval. If multiple
   // components set that setting, the lowest setting will be used. If the

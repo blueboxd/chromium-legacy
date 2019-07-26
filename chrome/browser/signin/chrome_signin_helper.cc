@@ -389,13 +389,11 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
       kManageAccountsHeaderReceivedUserDataKey,
       std::make_unique<ManageAccountsHeaderReceivedUserData>());
 
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    ProcessMirrorHeaderUIThread(params, response->GetWebContentsGetter());
-  } else {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             base::BindOnce(ProcessMirrorHeaderUIThread, params,
-                                            response->GetWebContentsGetter()));
-  }
+  // Post a task even if we are already on the UI thread to avoid making any
+  // requests while processing a throttle event.
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
+                           base::BindOnce(ProcessMirrorHeaderUIThread, params,
+                                          response->GetWebContentsGetter()));
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -428,15 +426,12 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
   if (params.user_intention == DiceAction::NONE)
     return;
 
-  if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    ProcessDiceHeaderUIThread(std::move(params),
-                              response->GetWebContentsGetter());
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
-                       response->GetWebContentsGetter()));
-  }
+  // Post a task even if we are already on the UI thread to avoid making any
+  // requests while processing a throttle event.
+  base::PostTaskWithTraits(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
+                     response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

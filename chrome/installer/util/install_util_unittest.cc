@@ -439,14 +439,14 @@ TEST_F(InstallUtilTest, AddDowngradeVersion) {
   base::Version lower_new_version_1("1.1.1.0");
   base::Version lower_new_version_2("1.1.0.0");
 
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Upgrade should not create the value.
   list.reset(WorkItem::CreateWorkItemList());
   InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &current_version,
                                              higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Downgrade should create the value.
   list.reset(WorkItem::CreateWorkItemList());
@@ -501,7 +501,7 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   InstallUtil::AddUpdateDowngradeVersionItem(kRoot, &lower_new_version_1,
                                              higer_new_version, list.get());
   ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 
   // Fresh install should delete the value if it exists.
   list.reset(WorkItem::CreateWorkItemList());
@@ -513,7 +513,7 @@ TEST_F(InstallUtilTest, DeleteDowngradeVersion) {
   InstallUtil::AddUpdateDowngradeVersionItem(kRoot, nullptr,
                                              lower_new_version_1, list.get());
   ASSERT_TRUE(list->Do());
-  ASSERT_FALSE(InstallUtil::GetDowngradeVersion().IsValid());
+  ASSERT_FALSE(InstallUtil::GetDowngradeVersion());
 }
 
 TEST(DeleteRegistryKeyTest, DeleteAccessRightIsEnoughToDelete) {

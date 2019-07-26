@@ -47,14 +47,15 @@ constexpr int kSeparatorCommandId = -1;
 class MockSharingService : public SharingService {
  public:
   explicit MockSharingService(std::unique_ptr<SharingFCMHandler> fcm_handler)
-      : SharingService(nullptr,
-                       nullptr,
-                       nullptr,
-                       nullptr,
+      : SharingService(/* sync_prefs= */ nullptr,
+                       /* vapid_key_manager= */ nullptr,
+                       /* sharing_device_registration= */ nullptr,
+                       /* fcm_sender= */ nullptr,
                        std::move(fcm_handler),
-                       nullptr,
-                       nullptr,
-                       nullptr) {}
+                       /* gcm_driver= */ nullptr,
+                       /* device_info_tracker= */ nullptr,
+                       /* local_device_info_provider= */ nullptr,
+                       /* sync_service */ nullptr) {}
 
   ~MockSharingService() override = default;
 

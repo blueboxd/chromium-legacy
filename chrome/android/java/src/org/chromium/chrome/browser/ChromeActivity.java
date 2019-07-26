@@ -2110,7 +2110,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         if (id == R.id.preferences_id) {
-            PreferencesLauncher.launchSettingsPage(this, null);
+            PreferencesLauncher.launchSettingsPageCompat(this, null);
             RecordUserAction.record("MobileMenuSettings");
         }
 

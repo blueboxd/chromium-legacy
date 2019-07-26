@@ -7,16 +7,16 @@
 cr.define('chrome.sync', function() {
   let currSearchId = 0;
 
-  const setQueryString = function(queryControl, query) {
+  function setQueryString(queryControl, query) {
     queryControl.value = query;
-  };
+  }
 
-  const createDoQueryFunction = function(queryControl, submitControl, query) {
+  function createDoQueryFunction(queryControl, submitControl, query) {
     return function() {
       setQueryString(queryControl, query);
       submitControl.click();
     };
-  };
+  }
 
   /**
    * Decorates the quick search controls
@@ -27,7 +27,7 @@ cr.define('chrome.sync', function() {
    * @param {!HTMLInputElement} queryControl The <input> object of
    *     type=search where user's query is typed.
    */
-  const decorateQuickQueryControls = function(
+  function decorateQuickQueryControls(
       quickLinkArray, submitControl, queryControl) {
     for (let index = 0; index < quickLinkArray.length; ++index) {
       const quickQuery = quickLinkArray[index].getAttribute('data-query');
@@ -35,7 +35,7 @@ cr.define('chrome.sync', function() {
           createDoQueryFunction(queryControl, submitControl, quickQuery);
       quickLinkArray[index].addEventListener('click', quickQueryFunction);
     }
-  };
+  }
 
   /**
    * Runs a search with the given query.
@@ -44,7 +44,7 @@ cr.define('chrome.sync', function() {
    * @param {!Function} callback The callback called with the search results.
    *     not called if doSearch() is called again while the search is running.
    */
-  const doSearch = function(query, callback) {
+  function doSearch(query, callback) {
     const searchId = ++currSearchId;
     try {
       const regex = new RegExp(query);
@@ -70,7 +70,7 @@ cr.define('chrome.sync', function() {
       // be caught and handled here.
       callback([], err);
     }
-  };
+  }
 
   /**
    * Decorates the various search controls.
@@ -90,7 +90,7 @@ cr.define('chrome.sync', function() {
                                   resultsControl, detailsControl) {
     const resultsDataModel = new cr.ui.ArrayDataModel([]);
 
-    const searchFunction = function() {
+    function searchFunction() {
       const query = queryControl.value;
       statusControl.textContent = '';
       resultsDataModel.splice(0, resultsDataModel.length);
@@ -99,7 +99,7 @@ cr.define('chrome.sync', function() {
       }
       statusControl.textContent = 'Searching for ' + query + '...';
       queryControl.removeAttribute('error');
-      const timer = chrome.sync.makeTimer();
+      const timer = new chrome.sync.Timer();
       doSearch(query, function(nodes, error) {
         if (error) {
           statusControl.textContent = 'Error: ' + error;
@@ -121,7 +121,7 @@ cr.define('chrome.sync', function() {
           resultsControl.redraw();
         }
       });
-    };
+    }
 
     submitControl.addEventListener('click', searchFunction);
     // Decorate search box.

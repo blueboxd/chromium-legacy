@@ -656,7 +656,8 @@ RTCPeerConnection* RTCPeerConnection::Create(
 
   // Make sure no certificates have expired.
   if (!configuration.certificates.empty()) {
-    DOMTimeStamp now = ConvertSecondsToDOMTimeStamp(CurrentTime());
+    DOMTimeStamp now =
+        ConvertSecondsToDOMTimeStamp(base::Time::Now().ToDoubleT());
     for (const rtc::scoped_refptr<rtc::RTCCertificate>& certificate :
          configuration.certificates) {
       DOMTimeStamp expires = certificate->Expires();
@@ -1874,6 +1875,12 @@ String RTCPeerConnection::connectionState() const {
 
   NOTREACHED();
   return String();
+}
+
+void RTCPeerConnection::restartIce() {
+  if (closed_)
+    return;
+  peer_handler_->RestartIce();
 }
 
 void RTCPeerConnection::addStream(ScriptState* script_state,

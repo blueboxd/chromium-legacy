@@ -26,7 +26,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_APP);
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_REMOVE_DEFAULT_APP);
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_FOLDER);
-    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_URL);
+    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_OBSOLETE_URL);
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_PAGE_BREAK);
   }
   NOTREACHED();

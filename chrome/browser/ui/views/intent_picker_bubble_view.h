@@ -64,13 +64,13 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   static views::Widget* ShowBubble(views::View* anchor_view,
                                    content::WebContents* web_contents,
                                    std::vector<AppInfo> app_info,
-                                   bool enable_stay_in_chrome,
-                                   bool show_persistence_options,
+                                   bool show_stay_in_chrome,
+                                   bool show_remember_selection,
                                    IntentPickerResponse intent_picker_cb);
   static std::unique_ptr<IntentPickerBubbleView> CreateBubbleView(
       std::vector<AppInfo> app_info,
-      bool enable_stay_in_chrome,
-      bool show_persistence_options,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse intent_picker_cb,
       content::WebContents* web_contents);
   static IntentPickerBubbleView* intent_picker_bubble() {
@@ -90,7 +90,6 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
  protected:
   // LocationBarBubbleDelegateView overrides:
   base::string16 GetWindowTitle() const override;
-  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   void CloseBubble() override;
 
@@ -108,8 +107,8 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
   IntentPickerBubbleView(std::vector<AppInfo> app_info,
                          IntentPickerResponse intent_picker_cb,
                          content::WebContents* web_contents,
-                         bool enable_stay_in_chrome,
-                         bool show_persistence_options);
+                         bool show_stay_in_chrome,
+                         bool show_remember_selection);
 
   // views::BubbleDialogDelegateView overrides:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -174,12 +173,11 @@ class IntentPickerBubbleView : public LocationBarBubbleDelegateView,
 
   views::Checkbox* remember_selection_checkbox_ = nullptr;
 
-  // Tells whether or not 'Stay in Chrome' should be enabled as an option.
-  const bool enable_stay_in_chrome_;
+  // Tells whether 'Stay in Chrome' button should be shown or hidden.
+  const bool show_stay_in_chrome_;
 
-  // Whether 'Remember selection' checkbox and "Stay in chrome" button should be
-  // shown or hidden.
-  const bool show_persistence_options_;
+  // Whether 'Remember my choice' checkbox should be shown or hidden.
+  const bool show_remember_selection_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentPickerBubbleView);
 };

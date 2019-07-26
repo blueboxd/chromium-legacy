@@ -109,6 +109,13 @@ void AssistantPaymentRequestDelegate::OnTermsAndConditionsChanged(
       static_cast<TermsAndConditionsState>(state));
 }
 
+void AssistantPaymentRequestDelegate::OnTermsAndConditionsLinkClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint link) {
+  ui_controller_->OnTermsAndConditionsLinkClicked(link);
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantPaymentRequestDelegate::GetJavaObject() {
   return java_assistant_payment_request_delegate_;

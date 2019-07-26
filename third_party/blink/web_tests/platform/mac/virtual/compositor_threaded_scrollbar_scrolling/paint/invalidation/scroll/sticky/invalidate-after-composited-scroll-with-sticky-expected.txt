@@ -1,0 +1,75 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "drawsContent": false,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "Scrolling Layer",
+      "bounds": [785, 600],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [785, 656],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutNGBlockFlow MAT id='scroller'",
+      "position": [8, 8],
+      "bounds": [360, 640]
+    },
+    {
+      "name": "Scrolling Layer",
+      "position": [8, 8],
+      "bounds": [345, 640],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "position": [8, 8],
+      "bounds": [345, 2018],
+      "transform": 1
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "position": [8, 8],
+      "bounds": [360, 640],
+      "drawsContent": false
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [353, 8],
+      "bounds": [15, 640],
+      "drawsContent": false,
+      "paintInvalidations": [
+        {
+          "object": "Vertical Scrollbar Layer",
+          "rect": [0, 0, 15, 640],
+          "reason": "full layer"
+        }
+      ]
+    },
+    {
+      "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",
+      "position": [8, -27],
+      "bounds": [345, 18]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -35, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    }
+  ]
+}
+

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL restartIce() does not trigger negotiation ahead of initial negotiation promise_test: Unhandled rejection with value: object "TypeError: pc1.restartIce is not a function"
+FAIL restartIce() does not trigger negotiation ahead of initial negotiation assert_equals: No negotiationneeded event expected (undefined) undefined but got (object) object "[object Event]"
 FAIL restartIce() has no effect on initial negotiation promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL restartIce() fires negotiationneeded after initial negotiation promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL restartIce() causes fresh ufrags promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."

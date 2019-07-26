@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -150,9 +151,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeArticlesForYou,
 };
 
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 NSString* kDevViewSourceKey = @"DevViewSource";
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 }  // namespace
 
@@ -435,14 +436,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
         toSectionWithIdentifier:SectionIdentifierDebug];
   }
 
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
   [model addItem:[self viewSourceSwitchItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self collectionViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
   [model addItem:[self tableViewCatalogDetailItem]
       toSectionWithIdentifier:SectionIdentifierDebug];
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 }
 
 #pragma mark - Model Items
@@ -645,7 +646,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   return articlesForYouSwitchItem;
 }
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 - (SettingsSwitchItem*)viewSourceSwitchItem {
   return [self switchItemWithType:ItemTypeViewSource
@@ -667,7 +668,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                        detailText:nil
                     iconImageName:kSettingsDebugImageName];
 }
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 #pragma mark Item Constructors
 
@@ -751,7 +752,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       break;
     }
     case ItemTypeViewSource: {
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       SettingsSwitchCell* switchCell =
           base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
       [switchCell.switchView addTarget:self
@@ -759,7 +760,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                       forControlEvents:UIControlEventValueChanged];
 #else
       NOTREACHED();
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       break;
     }
     default:
@@ -901,7 +902,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [_articlesEnabled setValue:newSwitchValue];
 }
 
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 - (void)viewSourceSwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
       [self.tableViewModel indexPathForItemType:ItemTypeViewSource
@@ -915,7 +916,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   switchItem.on = newSwitchValue;
   [self setBooleanNSUserDefaultsValue:newSwitchValue forKey:kDevViewSourceKey];
 }
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 
 #pragma mark Private methods
 
@@ -944,14 +945,14 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 // Chromium builds, but for official builds it is gated by an experimental flag
 // because the "Debug" section should never be showing in stable channel.
 - (BOOL)hasDebugSection {
-#if CHROMIUM_BUILD && !defined(NDEBUG)
+#if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
   return YES;
 #else
   if (experimental_flags::IsMemoryDebuggingEnabled()) {
     return YES;
   }
   return NO;
-#endif  // CHROMIUM_BUILD && !defined(NDEBUG)
+#endif  // BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 }
 
 // Updates the identity cell.

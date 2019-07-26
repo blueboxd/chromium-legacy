@@ -41,7 +41,8 @@ namespace blink {
 static int64_t GenerateSequenceNumber() {
   // Initialize to the current time to reduce the likelihood of generating
   // identifiers that overlap with those from past/future browser sessions.
-  static int64_t next = static_cast<int64_t>(CurrentTime() * 1000000.0);
+  static int64_t next =
+      static_cast<int64_t>(base::Time::Now().ToDoubleT() * 1000000.0);
   return ++next;
 }
 

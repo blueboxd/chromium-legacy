@@ -14,8 +14,6 @@ blink_modules_sources("native_file_system") {
     "native_file_system_file_handle.h",
     "native_file_system_handle.cc",
     "native_file_system_handle.h",
-    "native_file_system_writable_file_stream.cc",
-    "native_file_system_writable_file_stream.h",
     "native_file_system_writer.cc",
     "native_file_system_writer.h",
     "window_native_file_system.cc",

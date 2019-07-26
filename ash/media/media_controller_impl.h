@@ -81,6 +81,8 @@ class ASH_EXPORT MediaControllerImpl
       override;
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
  private:
   friend class MediaControllerTest;

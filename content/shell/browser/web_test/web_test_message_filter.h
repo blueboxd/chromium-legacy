@@ -21,21 +21,18 @@ class GURL;
 
 namespace base {
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace network {
 namespace mojom {
 class NetworkContext;
-}
+}  // namespace mojom
 }  // namespace network
 
 namespace storage {
-class QuotaManager;
-}
-
-namespace storage {
 class DatabaseTracker;
-}
+class QuotaManager;
+}  // namespace storage
 
 namespace content {
 
@@ -71,6 +68,7 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const base::Optional<int>& action_index,
       const base::Optional<base::string16>& reply);
   void OnSimulateWebNotificationClose(const std::string& title, bool by_user);
+  void OnSimulateWebContentIndexDelete(const std::string& id);
   void OnDeleteAllCookies();
   void OnSetPermission(const std::string& name,
                        blink::mojom::PermissionStatus status,

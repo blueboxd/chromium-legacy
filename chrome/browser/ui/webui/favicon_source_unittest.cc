@@ -215,7 +215,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
       .Times(0);
 
   source()->StartDataRequest(
-      "?size=16&scale_factor=1x&url_type=page_url&url=https%3A%2F%2Fwww.google."
+      "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
       "com&allow_google_server_fallback=0",
       test_web_contents_getter_, base::BindRepeating(&Noop));
 }
@@ -230,7 +230,7 @@ TEST_F(FaviconSourceTestWithFavicon2Format,
       .Times(0);
 
   source()->StartDataRequest(
-      "?size=16&scale_factor=1x&url_type=page_url&url=https%3A%2F%2Fwww.google."
+      "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
       "com&allow_google_server_fallback=1",
       test_web_contents_getter_, base::BindRepeating(&Noop));
 }
@@ -247,7 +247,7 @@ TEST_F(
       .Times(1);
 
   source()->StartDataRequest(
-      "?size=16&scale_factor=1x&url_type=page_url&url=https%3A%2F%2Fwww.google."
+      "?size=16&scale_factor=1x&page_url=https%3A%2F%2Fwww.google."
       "com&allow_google_server_fallback=1",
       test_web_contents_getter_, base::BindRepeating(&Noop));
 }

@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_DATABASE_H_
 #define CONTENT_BROWSER_CONTENT_INDEX_CONTENT_INDEX_DATABASE_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -62,6 +63,10 @@ class CONTENT_EXPORT ContentIndexDatabase {
                 const std::string& description_id,
                 ContentIndexContext::GetEntryCallback callback);
 
+  // Block/Unblock DB operations for |origin|.
+  void BlockOrigin(const url::Origin& origin);
+  void UnblockOrigin(const url::Origin& origin);
+
   // Called when the storage partition is shutting down.
   void Shutdown();
 
@@ -109,6 +114,9 @@ class CONTENT_EXPORT ContentIndexDatabase {
 
   // Lives on the UI thread.
   ContentIndexProvider* provider_;
+
+  // A map from origins to how many times it's been blocked.
+  base::flat_map<url::Origin, int> blocked_origins_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<ContentIndexDatabase> weak_ptr_factory_io_;

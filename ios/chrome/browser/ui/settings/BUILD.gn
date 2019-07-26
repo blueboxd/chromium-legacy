@@ -97,6 +97,7 @@ source_set("settings") {
     "resources:sync_and_google_services_sync_on",
     "//base",
     "//base:i18n",
+    "//build:branding_buildflags",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/browsing_data/core",

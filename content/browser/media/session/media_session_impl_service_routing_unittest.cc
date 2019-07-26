@@ -274,6 +274,14 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   ASSERT_EQ(services_[sub_frame_].get(), ComputeServiceForRouting());
 }
 
+TEST_F(MediaSessionImplServiceRoutingTest, NotifyMockPositionData) {
+  media_session::test::MockMediaSessionMojoObserver observer(
+      *GetMediaSession());
+
+  // Verify that the default/mock position data is received by the observer.
+  observer.WaitForNonEmptyPosition();
+}
+
 TEST_F(MediaSessionImplServiceRoutingTest,
        DontNotifyMetadataAndActionsChangeWhenUncontrollable) {
   media_session::test::MockMediaSessionMojoObserver observer(

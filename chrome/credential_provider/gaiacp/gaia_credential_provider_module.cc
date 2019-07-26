@@ -103,7 +103,7 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                            true,    // Enable thread id.
                            true,    // Enable timestamp.
                            false);  // Enable tickcount.
-      logging::SetEventSource("GCP", GCP_CATEGORY, MSG_LOG_MESSAGE);
+      logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
 
       base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 

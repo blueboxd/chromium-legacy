@@ -21,6 +21,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/http/http_util.h"
@@ -118,7 +119,7 @@ class FakeControllerServiceWorker
     return response;
   }
 
-  void CloseAllBindings() { bindings_.CloseAllBindings(); }
+  void ClearReceivers() { receivers_.Clear(); }
 
   // Tells this controller to abort the fetch event without a response.
   // i.e., simulate the service worker failing to handle the fetch event.
@@ -301,8 +302,9 @@ class FakeControllerServiceWorker
       std::move(fetch_event_callback_).Run();
   }
 
-  void Clone(blink::mojom::ControllerServiceWorkerRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+                 receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   void RunUntilFetchEvent() {
@@ -334,7 +336,7 @@ class FakeControllerServiceWorker
   int fetch_event_count_ = 0;
   blink::mojom::FetchAPIRequestPtr fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
-  mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
+  mojo::ReceiverSet<blink::mojom::ControllerServiceWorker> receivers_;
 
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
@@ -389,12 +391,12 @@ class FakeServiceWorkerContainerHost
     NOTIMPLEMENTED();
   }
   void EnsureControllerServiceWorker(
-      blink::mojom::ControllerServiceWorkerRequest request,
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::mojom::ControllerServiceWorkerPurpose purpose) override {
     get_controller_service_worker_count_++;
     if (!fake_controller_)
       return;
-    fake_controller_->Clone(std::move(request));
+    fake_controller_->Clone(std::move(receiver));
   }
   void CloneContainerHost(
       blink::mojom::ServiceWorkerContainerHostRequest request) override {
@@ -455,7 +457,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
       fake_container_host_.CloneContainerHost(
           mojo::MakeRequest(&host_ptr_info));
       connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          std::move(host_ptr_info), nullptr /*controller_ptr*/,
+          std::move(host_ptr_info), mojo::NullRemote() /*remote_controller*/,
           "" /*client_id*/);
     }
     network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
@@ -685,7 +687,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
   }
 
   // Drop the connection to the ControllerServiceWorker.
-  fake_controller_.CloseAllBindings();
+  fake_controller_.ClearReceivers();
   base::RunLoop().RunUntilIdle();
 
   {
@@ -722,7 +724,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
   }
 
   // Make the connector have no controller.
-  connector_->UpdateController(nullptr);
+  connector_->UpdateController(mojo::NullRemote());
   base::RunLoop().RunUntilIdle();
 
   base::HistogramTester histogram_tester;
@@ -796,7 +798,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
   StartRequest(factory, request, &loader, &client);
 
   // Drop the connection to the ControllerServiceWorker.
-  fake_controller_.CloseAllBindings();
+  fake_controller_.ClearReceivers();
   base::RunLoop().RunUntilIdle();
 
   // If connection is closed during fetch event, it's restarted and successfully

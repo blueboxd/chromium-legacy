@@ -49,13 +49,13 @@
 
 namespace WTF {
 
-#if defined(MEMORY_SANITIZER_INITIAL_SIZE)
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+// The allocation pool for nodes is one big chunk that ASAN has no insight
+// into, so it can cloak errors. Make it as small as possible to force nodes
+// to be allocated individually where ASAN can see them.
 static const wtf_size_t kInitialVectorSize = 1;
 #else
-#ifndef WTF_VECTOR_INITIAL_SIZE
-#define WTF_VECTOR_INITIAL_SIZE 4
-#endif
-static const wtf_size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
+static const wtf_size_t kInitialVectorSize = 4;
 #endif
 
 template <typename T, wtf_size_t inlineBuffer, typename Allocator>

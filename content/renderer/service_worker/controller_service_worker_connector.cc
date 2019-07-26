@@ -12,14 +12,15 @@ namespace content {
 
 ControllerServiceWorkerConnector::ControllerServiceWorkerConnector(
     blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-    blink::mojom::ControllerServiceWorkerPtr controller_ptr,
+    mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
+        remote_controller,
     const std::string& client_id)
     : client_id_(client_id) {
   container_host_ptr_.Bind(std::move(container_host_info));
   container_host_ptr_.set_connection_error_handler(base::BindOnce(
       &ControllerServiceWorkerConnector::OnContainerHostConnectionClosed,
       base::Unretained(this)));
-  SetControllerServiceWorkerPtr(std::move(controller_ptr));
+  SetControllerServiceWorker(std::move(remote_controller));
 }
 
 blink::mojom::ControllerServiceWorker*
@@ -29,10 +30,13 @@ ControllerServiceWorkerConnector::GetControllerServiceWorker(
     case State::kDisconnected: {
       DCHECK(!controller_service_worker_);
       DCHECK(container_host_ptr_);
-      blink::mojom::ControllerServiceWorkerPtr controller_ptr;
+      mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
+          remote_controller;
+
       container_host_ptr_->EnsureControllerServiceWorker(
-          mojo::MakeRequest(&controller_ptr), purpose);
-      SetControllerServiceWorkerPtr(std::move(controller_ptr));
+          remote_controller.InitWithNewPipeAndPassReceiver(), purpose);
+
+      SetControllerServiceWorker(std::move(remote_controller));
       return controller_service_worker_.get();
     }
     case State::kConnected:
@@ -78,19 +82,22 @@ void ControllerServiceWorkerConnector::AddBinding(
 }
 
 void ControllerServiceWorkerConnector::UpdateController(
-    blink::mojom::ControllerServiceWorkerPtr controller_ptr) {
+    mojo::PendingRemote<blink::mojom::ControllerServiceWorker> controller) {
   if (state_ == State::kNoContainerHost)
     return;
-  SetControllerServiceWorkerPtr(std::move(controller_ptr));
+  SetControllerServiceWorker(std::move(controller));
   if (!controller_service_worker_)
     state_ = State::kNoController;
 }
 
-void ControllerServiceWorkerConnector::SetControllerServiceWorkerPtr(
-    blink::mojom::ControllerServiceWorkerPtr controller_ptr) {
-  controller_service_worker_ = std::move(controller_ptr);
+void ControllerServiceWorkerConnector::SetControllerServiceWorker(
+    mojo::PendingRemote<blink::mojom::ControllerServiceWorker> controller) {
+  controller_service_worker_.reset();
+  if (!controller)
+    return;
+  controller_service_worker_.Bind(std::move(controller));
   if (controller_service_worker_) {
-    controller_service_worker_.set_connection_error_handler(base::BindOnce(
+    controller_service_worker_.set_disconnect_handler(base::BindOnce(
         &ControllerServiceWorkerConnector::OnControllerConnectionClosed,
         base::Unretained(this)));
     state_ = State::kConnected;

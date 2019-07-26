@@ -4,6 +4,7 @@
 
 #include "chrome/common/chrome_constants.h"
 
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_version.h"
 
@@ -13,7 +14,7 @@
 #define CHROMIUM_PRODUCT_STRING "Chromium"
 #if defined(GOOGLE_CHROME_BUILD)
 #define PRODUCT_STRING "Google Chrome"
-#elif defined(CHROMIUM_BUILD)
+#elif BUILDFLAG(CHROMIUM_BRANDING)
 #define PRODUCT_STRING "Chromium"
 #else
 #error Unknown branding

@@ -25,14 +25,16 @@ struct ScriptHandle {
   DirectAction direct_action;
   std::string path;
   std::string initial_prompt;
+  std::string start_message;
+  bool needs_ui = false;
 
   // When set to true this script can be run in 'autostart mode'. Script won't
   // be shown.
-  bool autostart;
+  bool autostart = false;
 
   // If set, the script might be run during WaitForDom actions with
   // allow_interrupt=true.
-  bool interrupt;
+  bool interrupt = false;
 };
 
 // Script represents a sequence of actions.
@@ -45,7 +47,7 @@ struct Script {
   // Display priority of the script. Lowest number has highest priority, which
   // means a script with priority 0 should be displayed before a script with
   // priority 1.
-  int priority;
+  int priority = 0;
 
   std::unique_ptr<ScriptPrecondition> precondition;
 };

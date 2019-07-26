@@ -143,6 +143,7 @@
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/blink/blink_features.h"
+#include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
@@ -1062,6 +1063,14 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
       kResamplingInputEventsLinearSecondEnabled,
       base::size(kResamplingInputEventsLinearSecondEnabled), nullptr}};
 
+const FeatureEntry::FeatureParam kFilteringPredictionEmptyFilterEnabled[] = {
+    {"filter", ui::input_prediction::kFilterNameEmpty}};
+
+const FeatureEntry::FeatureVariation kFilteringPredictionFeatureVariations[] = {
+    {ui::input_prediction::kFilterNameEmpty,
+     kFilteringPredictionEmptyFilterEnabled,
+     base::size(kFilteringPredictionEmptyFilterEnabled), nullptr}};
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kBottomOfflineIndicatorEnabled[] = {
     {"bottom_offline_indicator", "true"}};
@@ -1819,6 +1828,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-site-per-process", flag_descriptions::kStrictSiteIsolationName,
      flag_descriptions::kStrictSiteIsolationDescription, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
+    {"enable-process-sharing-with-default-site-instances",
+     flag_descriptions::kProcessSharingWithDefaultSiteInstancesName,
+     flag_descriptions::kProcessSharingWithDefaultSiteInstancesDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kProcessSharingWithDefaultSiteInstances)},
     {"enable-process-sharing-with-strict-site-instances",
      flag_descriptions::kProcessSharingWithStrictSiteInstancesName,
      flag_descriptions::kProcessSharingWithStrictSiteInstancesDescription,
@@ -2556,11 +2570,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
-    {"omnibox-new-answer-layout",
-     flag_descriptions::kOmniboxNewAnswerLayoutName,
-     flag_descriptions::kOmniboxNewAnswerLayoutDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxNewAnswerLayout)},
-
     {"omnibox-on-device-head-suggestions",
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsName,
      flag_descriptions::kOmniboxOnDeviceHeadSuggestionsDescription, kOsAndroid,
@@ -3414,6 +3423,13 @@ const FeatureEntry kFeatureEntries[] = {
                                     kResamplingInputEventsFeatureVariations,
                                     "ResamplingScrollEvents")},
 
+    {"enable-filtering-scroll-events",
+     flag_descriptions::kFilteringScrollPredictionName,
+     flag_descriptions::kFilteringScrollPredictionDescription, kOsAll,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kFilteringScrollPrediction,
+                                    kFilteringPredictionFeatureVariations,
+                                    "FilteringScrollPrediction")},
+
     {"compositor-threaded-scrollbar-scrolling",
      flag_descriptions::kCompositorThreadedScrollbarScrollingName,
      flag_descriptions::kCompositorThreadedScrollbarScrollingDescription,
@@ -3762,8 +3778,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kDisableBestEffortTasks)},
     {"enable-sync-uss-passwords",
      flag_descriptions::kEnableSyncUSSPasswordsName,
-     flag_descriptions::kEnableSyncUSSPasswordsDescription,
-     kOsMac | kOsWin | kOsCrOS | kOsAndroid,
+     flag_descriptions::kEnableSyncUSSPasswordsDescription, kOsAll,
      FEATURE_VALUE_TYPE(switches::kSyncUSSPasswords)},
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -4191,6 +4206,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNotificationSchedulerDebugOptionName,
      flag_descriptions::kNotificationSchedulerDebugOptionDescription,
      kOsAndroid, MULTI_VALUE_TYPE(kNotificationSchedulerChoices)},
+
+    {"update-hover-at-begin-frame",
+     flag_descriptions::kUpdateHoverAtBeginFrameName,
+     flag_descriptions::kUpdateHoverAtBeginFrameDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kUpdateHoverAtBeginFrame)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

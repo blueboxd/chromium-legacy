@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -19,6 +20,8 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
+#include "storage/browser/fileapi/obfuscated_file_util_memory_delegate.h"
+#include "storage/browser/fileapi/plugin_private_file_system_backend.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/fileapi/file_system_util.h"
 
@@ -143,9 +146,21 @@ void SandboxFileStreamWriter::DidCreateSnapshotFile(
 
   if (file_system_context_->is_incognito() &&
       base::FeatureList::IsEnabled(features::kEnableFilesystemInIncognito)) {
+    base::WeakPtr<ObfuscatedFileUtilMemoryDelegate> memory_file_util_delegate;
+    if (url_.type() == kFileSystemTypePluginPrivate) {
+      auto* backend = static_cast<PluginPrivateFileSystemBackend*>(
+          file_system_context_->GetFileSystemBackend(
+              kFileSystemTypePluginPrivate));
+      memory_file_util_delegate =
+          backend->obfuscated_file_util_memory_delegate()->GetWeakPtr();
+    } else {
+      memory_file_util_delegate =
+          file_system_context_->sandbox_delegate()->memory_file_util_delegate();
+    }
     file_writer_ = FileStreamWriter::CreateForMemoryFile(
-        file_system_context_->sandbox_delegate()->memory_file_util_delegate(),
-        platform_path, initial_offset_, FileStreamWriter::OPEN_EXISTING_FILE);
+        memory_file_util_delegate, platform_path, initial_offset_,
+        FileStreamWriter::OPEN_EXISTING_FILE);
+
   } else {
     file_writer_ = FileStreamWriter::CreateForLocalFile(
         file_system_context_->default_file_task_runner(), platform_path,

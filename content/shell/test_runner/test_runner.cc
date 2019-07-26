@@ -273,6 +273,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void InspectSecondaryWindow();
   void SimulateWebNotificationClick(gin::Arguments* args);
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
+  void SimulateWebContentIndexDelete(const std::string& id);
   void UseUnfortunateSynchronousResizeMode();
   void WaitForPolicyDelegate();
   void WaitUntilDone();
@@ -605,6 +606,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("simulateWebNotificationClose",
                  &TestRunnerBindings::SimulateWebNotificationClose)
+      .SetMethod("simulateWebContentIndexDelete",
+                 &TestRunnerBindings::SimulateWebContentIndexDelete)
       .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
       .SetMethod("useUnfortunateSynchronousResizeMode",
                  &TestRunnerBindings::UseUnfortunateSynchronousResizeMode)
@@ -1296,6 +1299,12 @@ void TestRunnerBindings::SimulateWebNotificationClose(const std::string& title,
   if (!runner_)
     return;
   runner_->SimulateWebNotificationClose(title, by_user);
+}
+
+void TestRunnerBindings::SimulateWebContentIndexDelete(const std::string& id) {
+  if (!runner_)
+    return;
+  runner_->SimulateWebContentIndexDelete(id);
 }
 
 void TestRunnerBindings::SetHighlightAds() {
@@ -2558,6 +2567,10 @@ void TestRunner::SimulateWebNotificationClick(
 void TestRunner::SimulateWebNotificationClose(const std::string& title,
                                               bool by_user) {
   delegate_->SimulateWebNotificationClose(title, by_user);
+}
+
+void TestRunner::SimulateWebContentIndexDelete(const std::string& id) {
+  delegate_->SimulateWebContentIndexDelete(id);
 }
 
 void TestRunner::SetAnimationRequiresRaster(bool do_raster) {

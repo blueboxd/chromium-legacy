@@ -23,16 +23,10 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.CoreAccountId;
-import org.chromium.components.signin.CoreAccountInfo;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Tests for {@link ToSAckedReceiver}.
- */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ToSAckedReceiverTest {
@@ -64,11 +58,9 @@ public class ToSAckedReceiverTest {
         Assert.assertThat(toSAckedAccounts, Matchers.contains(GOOGLE_ACCOUNT));
 
         AccountManagerDelegate accountManagerDelegate = Mockito.mock(AccountManagerDelegate.class);
-        CoreAccountInfo accountInfo = new CoreAccountInfo(
-                new CoreAccountId("gaia-id"), new Account(GOOGLE_ACCOUNT, "LegitAccount"));
-        Mockito.doReturn(Arrays.asList(accountInfo))
-                .when(accountManagerDelegate)
-                .getAccountInfosSync();
+        Account[] accounts = new Account[1];
+        accounts[0] = new Account(GOOGLE_ACCOUNT, "LegitAccount");
+        Mockito.doReturn(accounts).when(accountManagerDelegate).getAccountsSync();
         AccountManagerFacade.overrideAccountManagerFacadeForTests(accountManagerDelegate);
         Assert.assertTrue(ToSAckedReceiver.checkAnyUserHasSeenToS());
     }

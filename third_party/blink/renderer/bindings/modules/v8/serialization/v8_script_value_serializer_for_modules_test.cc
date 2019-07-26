@@ -28,7 +28,9 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
+#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 

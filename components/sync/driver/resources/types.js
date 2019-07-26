@@ -11,7 +11,7 @@ cr.define('chrome.sync.types', function() {
    *
    * Makes use of typeCountersMap, which is defined in the containing scope.
    */
-  const refreshTypeCountersDisplay = function() {
+  function refreshTypeCountersDisplay() {
     const typeCountersArray = [];
 
     // Transform our map into an array to make jstemplate happy.
@@ -25,7 +25,7 @@ cr.define('chrome.sync.types', function() {
     jstProcess(
         new JsEvalContext({ rows: typeCountersArray }),
         $('type-counters-table'));
-  };
+  }
 
   /**
    * Helps to initialize the table by picking up where initTypeCounters() left
@@ -34,7 +34,7 @@ cr.define('chrome.sync.types', function() {
    *
    * @param {!Object} e An event containing the list of known sync types.
    */
-  const onReceivedListOfTypes = function(e) {
+  function onReceivedListOfTypes(e) {
     const types = e.details.types;
     types.map(function(type) {
       if (!typeCountersMap.hasOwnProperty(type)) {
@@ -45,14 +45,14 @@ cr.define('chrome.sync.types', function() {
         'onReceivedListOfTypes',
         onReceivedListOfTypes);
     refreshTypeCountersDisplay();
-  };
+  }
 
   /**
    * Callback for receipt of updated per-type counters.
    *
    * @param {!Object} e An event containing an updated counter.
    */
-  const onCountersUpdated = function(e) {
+  function onCountersUpdated(e) {
     const details = e.details;
 
     const modelType = details.modelType;
@@ -64,12 +64,12 @@ cr.define('chrome.sync.types', function() {
       }
     }
     refreshTypeCountersDisplay();
-  };
+  }
 
   /**
    * Initializes state and callbacks for the per-type counters and status UI.
    */
-  const initTypeCounters = function() {
+  function initTypeCounters() {
     chrome.sync.events.addEventListener(
         'onCountersUpdated',
         onCountersUpdated);
@@ -79,11 +79,11 @@ cr.define('chrome.sync.types', function() {
 
     chrome.sync.requestListOfTypes();
     chrome.sync.registerForPerTypeCounters();
-  };
+  }
 
-  const onLoad = function() {
+  function onLoad() {
     initTypeCounters();
-  };
+  }
 
   return {
     onLoad: onLoad

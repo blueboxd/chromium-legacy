@@ -41,7 +41,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     private final SuggestionHost mSuggestionHost;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private LargeIconBridge mLargeIconBridge;
-    private boolean mEnableNewAnswerLayout;
     private boolean mEnableSuggestionFavicons;
     private final int mDesiredFaviconWidthPx;
 
@@ -105,8 +104,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
     @Override
     public void onNativeInitialized() {
         // Experiment: controls presence of certain answer icon types.
-        mEnableNewAnswerLayout =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT);
         mEnableSuggestionFavicons =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
     }
@@ -148,10 +145,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                     return mEnableSuggestionFavicons ? SuggestionIcon.MAGNIFIER
                                                      : SuggestionIcon.HISTORY;
 
-                case OmniboxSuggestionType.CALCULATOR:
-                    return mEnableNewAnswerLayout ? SuggestionIcon.CALCULATOR
-                                                  : SuggestionIcon.MAGNIFIER;
-
                 default:
                     return SuggestionIcon.MAGNIFIER;
             }
@@ -191,14 +184,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                         model.get(SuggestionCommonProperties.USE_DARK_COLORS)
                                 ? R.color.default_text_color_dark
                                 : R.color.default_text_color_light);
-                textLine2Direction = View.TEXT_DIRECTION_INHERIT;
-            } else if (mEnableNewAnswerLayout
-                    && suggestionType == OmniboxSuggestionType.CALCULATOR) {
-                textLine2 = SpannableString.valueOf(
-                        mUrlBarEditingTextProvider.getTextWithAutocomplete());
-
-                textLine2Color = ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.answers_answer_text);
                 textLine2Direction = View.TEXT_DIRECTION_INHERIT;
             } else {
                 textLine2 = null;
@@ -303,16 +288,6 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                         new OmniboxSuggestion.MatchClassification(
                                 0, MatchClassificationStyle.NONE));
             }
-        } else if (mEnableNewAnswerLayout
-                && suggestion.getType() == OmniboxSuggestionType.CALCULATOR) {
-            // Trim preceding equal sign since we're going to present an icon instead.
-            // This is probably best placed in search_suggestion_parser.cc file, but at this point
-            // this would affect other devices that still want to present the sign (eg. iOS) so
-            // until these devices adopt the new entities we need to manage this here.
-            if (suggestedQuery.subSequence(0, 2).equals("= ")) {
-                suggestedQuery = suggestedQuery.substring(2);
-            }
-            shouldHighlight = false;
         }
 
         Spannable str = SpannableString.valueOf(suggestedQuery);

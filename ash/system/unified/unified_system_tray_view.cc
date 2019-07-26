@@ -298,6 +298,15 @@ void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
   max_height_ = max_height;
   message_center_view_->SetMaxHeight(max_height_);
 
+  // FeaturePodsContainer can adjust it's height by reducing the number of rows
+  // it uses. It will calculate how many rows to use based on the max height
+  // passed here.
+  feature_pods_container_->SetMaxHeight(
+      max_height - top_shortcuts_view_->GetPreferredSize().height() -
+      page_indicator_view_->GetPreferredSize().height() -
+      sliders_container_->GetPreferredSize().height() -
+      system_info_view_->GetPreferredSize().height());
+
   // Because the message center view requires a certain height to be usable, it
   // will be hidden if there isn't sufficient remaining height.
   int system_tray_height = expanded_amount_ > 0.0

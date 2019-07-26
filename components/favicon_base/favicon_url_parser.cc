@@ -23,20 +23,6 @@ bool HasSubstringAt(const std::string& path,
   return path.compare(start_index, search.length(), search) == 0;
 }
 
-bool ParseIsIconUrl(const std::string& url_type, bool* is_icon_url) {
-  if (url_type == "page_url") {
-    *is_icon_url = false;
-    return true;
-  }
-
-  if (url_type == "icon_url") {
-    *is_icon_url = true;
-    return true;
-  }
-
-  return false;
-}
-
 // Parse with legacy FaviconUrlFormat::kFavicon format.
 bool ParseFaviconPathWithLegacyFormat(const std::string& path,
                                       chrome::ParsedFaviconPath* parsed) {
@@ -45,8 +31,6 @@ bool ParseFaviconPathWithLegacyFormat(const std::string& path,
   const char kIconURLParameter[] = "iconurl/";
   const char kSizeParameter[] = "size/";
 
-  parsed->is_icon_url = false;
-  parsed->url = "";
   parsed->size_in_dip = gfx::kFaviconSize;
   parsed->device_scale_factor = 1.0f;
   parsed->path_index = std::string::npos;
@@ -89,10 +73,9 @@ bool ParseFaviconPathWithLegacyFormat(const std::string& path,
 
   if (HasSubstringAt(path, parsed_index, kIconURLParameter)) {
     parsed_index += strlen(kIconURLParameter);
-    parsed->is_icon_url = true;
-    parsed->url = path.substr(parsed_index);
+    parsed->icon_url = path.substr(parsed_index);
   } else {
-    parsed->url = path.substr(parsed_index);
+    parsed->page_url = path.substr(parsed_index);
   }
 
   // The parsed index needs to be returned in order to allow Instant Extended
@@ -112,8 +95,8 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
   // "favicon_url_parser.h" for a description of what each one does.
   const std::string kSizeParameter = "size";
   const std::string kScaleParameter = "scale_factor";
-  const std::string kUrlTypeParameter = "url_type";
-  const std::string kUrlParameter = "url";
+  const std::string kPageUrlParameter = "page_url";
+  const std::string kIconUrlParameter = "icon_url";
   const std::string kAllowFallbackParameter = "allow_google_server_fallback";
 
   if (path.empty())
@@ -133,31 +116,29 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
   else if (!webui::ParseScaleFactor(scale_str, &parsed->device_scale_factor))
     return false;
 
-  std::string url_type;
-  if (!net::GetValueForKeyInQuery(query_url, kUrlTypeParameter, &url_type))
-    parsed->is_icon_url = false;
-  else if (!ParseIsIconUrl(url_type, &parsed->is_icon_url))
+  if (!net::GetValueForKeyInQuery(query_url, kPageUrlParameter,
+                                  &parsed->page_url))
+    parsed->page_url = "";
+
+  if (!net::GetValueForKeyInQuery(query_url, kIconUrlParameter,
+                                  &parsed->icon_url))
+    parsed->icon_url = "";
+
+  if (parsed->page_url.empty() && parsed->icon_url.empty())
     return false;
 
-  std::string url;
-  if (!net::GetValueForKeyInQuery(query_url, kUrlParameter, &url))
-    return false;
-  parsed->url = url;
-
-  if (parsed->is_icon_url) {
-    // Fallback is never allowed for icon urls, since the server is queried by
-    // page url.
-    parsed->allow_favicon_server_fallback = false;
-    return true;
-  }
-
-  // Check optional |kAllowFallbackParameter|.
   std::string allow_favicon_server_fallback;
   if (!net::GetValueForKeyInQuery(query_url, kAllowFallbackParameter,
-                                  &allow_favicon_server_fallback)) {
+                                  &allow_favicon_server_fallback))
     parsed->allow_favicon_server_fallback = false;
-  } else if (!base::StringToInt(allow_favicon_server_fallback,
-                                (int*)&parsed->allow_favicon_server_fallback)) {
+  else if (!base::StringToInt(allow_favicon_server_fallback,
+                              (int*)&parsed->allow_favicon_server_fallback))
+    return false;
+
+  if (parsed->allow_favicon_server_fallback && parsed->page_url.empty()) {
+    // Since the server is queried by page url, we'll fail if no non-empty page
+    // url is provided and the fallback parameter is still set to true.
+    NOTIMPLEMENTED();
     return false;
   }
 
@@ -165,6 +146,8 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
 }
 
 }  // namespace
+
+ParsedFaviconPath::ParsedFaviconPath() = default;
 
 bool ParseFaviconPath(const std::string& path,
                       FaviconUrlFormat format,

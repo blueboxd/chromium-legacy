@@ -18,6 +18,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/variations/variations_associated_data.h"
@@ -84,12 +85,12 @@ WhatsNewPromoStatus GetWhatsNewPromoStatus() {
 bool IsMemoryDebuggingEnabled() {
 // Always return true for Chromium builds, but check the user default for
 // official builds because memory debugging should never be enabled on stable.
-#if CHROMIUM_BUILD
+#if BUILDFLAG(CHROMIUM_BRANDING)
   return true;
 #else
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:@"EnableMemoryDebugging"];
-#endif  // CHROMIUM_BUILD
+#endif  // BUILDFLAG(CHROMIUM_BRANDING)
 }
 
 bool IsStartupCrashEnabled() {

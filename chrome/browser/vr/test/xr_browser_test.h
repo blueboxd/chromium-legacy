@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/vr/test/conditional_skipping.h"
 #include "chrome/common/chrome_features.h"
@@ -22,6 +23,10 @@
 #include "device/vr/test/test_hook.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace vr {
 
@@ -227,6 +232,10 @@ class XrBrowserTestBase : public InProcessBrowserTest {
   std::vector<std::string> append_switches_;
   std::vector<XrTestRequirement> runtime_requirements_;
   std::unordered_set<std::string> ignored_requirements_;
+
+#if defined(OS_WIN)
+  HWND hwnd_;
+#endif
 
  private:
   void LogJavaScriptFailure();

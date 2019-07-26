@@ -2241,6 +2241,20 @@
     ],
     'machines': {
       # BEGIN Fake builder used as mirror targets for ANGLE's GPU tryservers
+      'ANGLE GPU Android Release (Nexus 5X)': {
+        'browser_config': 'android-chromium',
+        'os_type': 'android',
+        'skip_merge_script': True,
+        'mixins': [
+          'marshmallow',
+          'bullhead',
+        ],
+        'test_suites': {
+          'gtest_tests': 'gpu_angle_gtests',
+          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+        },
+      },
       'ANGLE GPU Linux Release (Intel HD 630)': {
         'os_type': 'linux',
         'browser_config': 'release',
@@ -2420,7 +2434,9 @@
           'gtest_tests': 'gpu_fyi_android_and_mac_gtests',
           'isolated_scripts': 'gpu_angle_and_mobile_representative_perf_fyi_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_nexus5x_telemetry_tests',
-          'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
+          # Temporarily disabled due to timeouts causing invalid test results.
+          # TODO(jmadill): Re-enable once timeout is resolved. http://crbug.com/987623
+          # 'android_webview_gpu_telemetry_tests': 'android_webview_gpu_telemetry_tests',
         },
       },
       'Android FYI Release (Nexus 6)': {
@@ -3898,7 +3914,7 @@
       },
       'WebRTC Chromium Linux Tester': {
         'mixins': [
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_tests_with_baremetal_tests',
@@ -3997,7 +4013,7 @@
       'WebRTC Chromium FYI Linux Tester': {
         'mixins': [
           'x86-64',
-          'linux-trusty',
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'webrtc_chromium_gtests',

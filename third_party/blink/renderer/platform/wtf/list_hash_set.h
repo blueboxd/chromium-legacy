@@ -386,7 +386,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
 
   Node* free_list_;
   bool is_done_with_initial_free_list_;
-#if defined(MEMORY_SANITIZER_INITIAL_SIZE)
+#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   // The allocation pool for nodes is one big chunk that ASAN has no insight
   // into, so it can cloak errors. Make it as small as possible to force nodes
   // to be allocated individually where ASAN can see them.

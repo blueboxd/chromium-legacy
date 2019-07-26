@@ -111,4 +111,36 @@ contentIndexTest(async (t, index) => {
 
 }, 'index.delete works on invalid ID.');
 
+contentIndexTest(async (t, index) => {
+  // Register an entry.
+  await index.add(createDescription({id: 'my-id'}));
+
+  // Simulate a user deleting it.
+  testRunner.simulateWebContentIndexDelete('my-id');
+
+  const swMessage = await waitForMessageFromServiceWorker();
+  assert_equals(swMessage, 'my-id');
+
+  // Make sure it is actually deleted.
+  const descriptions = await index.getDescriptions();
+  assert_equals(descriptions.length, 0);
+
+}, 'Fire contentdelete event on user intiated content deletion.');
+
+contentIndexTest(async (t, index) => {
+  // Register an entry.
+  await index.add(createDescription({id: 'register-again'}));
+
+  // Simulate a user deleting it.
+  testRunner.simulateWebContentIndexDelete('register-again');
+
+  const swMessage = await waitForMessageFromServiceWorker();
+  assert_equals(swMessage, 'Failed to add description due to I/O error.');
+
+  // Make sure it is actually deleted and no new content was added.
+  const descriptions = await index.getDescriptions();
+  assert_equals(descriptions.length, 0);
+
+}, 'Content cannot be registered while contentdelete event is firing.');
+
 </script>

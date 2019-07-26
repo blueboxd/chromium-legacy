@@ -24,10 +24,15 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_factory.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
 namespace {
+
+// This value is derived from the Trusted Types spec (draft), and determines the
+// maximum length of the sample value in the violation reports.
+const unsigned kReportedValueMaximumLength = 40;
 
 enum TrustedTypeViolationKind {
   kAnyTrustedTypeAssignment,
@@ -81,6 +86,31 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
   return "";
 }
 
+std::pair<String, String> GetMessageAndSample(
+    TrustedTypeViolationKind kind,
+    const ExceptionState& exception_state,
+    const String& value) {
+  const char* interface_name = exception_state.InterfaceName();
+  const char* property_name = exception_state.PropertyName();
+
+  // We have two sample formats, one for eval and one for assignment.
+  // If we don't have the required values being passed in, just leave the
+  // sample empty.
+  StringBuilder sample;
+  if (interface_name && strcmp("eval", interface_name) == 0) {
+    sample.Append("eval");
+  } else if (interface_name && property_name) {
+    sample.Append(interface_name);
+    sample.Append(".");
+    sample.Append(property_name);
+  }
+  if (!sample.IsEmpty()) {
+    sample.Append(" ");
+    sample.Append(value.Left(kReportedValueMaximumLength));
+  }
+  return std::make_pair<String, String>(GetMessage(kind), sample.ToString());
+}
+
 // Handle failure of a Trusted Type assignment.
 //
 // If trusted type assignment fails, we need to
@@ -91,7 +121,8 @@ const char* GetMessage(TrustedTypeViolationKind kind) {
 // Returns whether the failure should be enforced.
 bool TrustedTypeFail(TrustedTypeViolationKind kind,
                      const ExecutionContext* execution_context,
-                     ExceptionState& exception_state) {
+                     ExceptionState& exception_state,
+                     const String& value) {
   if (!execution_context)
     return true;
 
@@ -100,10 +131,12 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   if (execution_context->GetTrustedTypes())
     execution_context->GetTrustedTypes()->CountTrustedTypeAssignmentError();
 
-  const char* message = GetMessage(kind);
+  String message;
+  String sample;
+  std::tie(message, sample) = GetMessageAndSample(kind, exception_state, value);
   bool allow = execution_context->GetSecurityContext()
                    .GetContentSecurityPolicy()
-                   ->AllowTrustedTypeAssignmentFailure(message);
+                   ->AllowTrustedTypeAssignmentFailure(message, sample);
   if (!allow) {
     exception_state.ThrowTypeError(message);
   }
@@ -129,8 +162,9 @@ String GetStringFromTrustedType(
 
   if (string_or_trusted_type.IsString() &&
       RequireTrustedTypesCheck(execution_context)) {
-    TrustedTypeFail(kAnyTrustedTypeAssignment, execution_context,
-                    exception_state);
+    TrustedTypeFail(
+        kAnyTrustedTypeAssignment, execution_context, exception_state,
+        GetStringFromTrustedTypeWithoutCheck(string_or_trusted_type));
     return g_empty_string;
   }
 
@@ -243,7 +277,7 @@ String GetStringFromTrustedHTML(const String& string,
   TrustedTypePolicy* default_policy = GetDefaultPolicy(execution_context);
   if (!default_policy) {
     if (TrustedTypeFail(kTrustedHTMLAssignment, execution_context,
-                        exception_state)) {
+                        exception_state, string)) {
       return g_empty_string;
     }
     return string;
@@ -254,7 +288,7 @@ String GetStringFromTrustedHTML(const String& string,
   if (exception_state.HadException()) {
     exception_state.ClearException();
     TrustedTypeFail(kTrustedHTMLAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state);
+                    execution_context, exception_state, string);
     return g_empty_string;
   }
 
@@ -295,7 +329,7 @@ String GetStringFromTrustedScript(const String& potential_script,
   TrustedTypePolicy* default_policy = GetDefaultPolicy(execution_context);
   if (!default_policy) {
     if (TrustedTypeFail(kTrustedScriptAssignment, execution_context,
-                        exception_state)) {
+                        exception_state, potential_script)) {
       return g_empty_string;
     }
     return potential_script;
@@ -307,7 +341,7 @@ String GetStringFromTrustedScript(const String& potential_script,
   if (exception_state.HadException()) {
     exception_state.ClearException();
     TrustedTypeFail(kTrustedScriptAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state);
+                    execution_context, exception_state, potential_script);
     return g_empty_string;
   }
 
@@ -319,35 +353,36 @@ String GetStringFromTrustedScriptURL(
     const ExecutionContext* execution_context,
     ExceptionState& exception_state) {
   DCHECK(!string_or_trusted_script_url.IsNull());
+  if (string_or_trusted_script_url.IsTrustedScriptURL()) {
+    return string_or_trusted_script_url.GetAsTrustedScriptURL()->toString();
+  }
+
+  DCHECK(string_or_trusted_script_url.IsString());
+  String string = string_or_trusted_script_url.GetAsString();
 
   bool require_trusted_type =
       RequireTrustedTypesCheck(execution_context) &&
       RuntimeEnabledFeatures::TrustedDOMTypesEnabled(execution_context);
-  if (!require_trusted_type && string_or_trusted_script_url.IsString()) {
-    return string_or_trusted_script_url.GetAsString();
-  }
-
-  if (string_or_trusted_script_url.IsTrustedScriptURL()) {
-    return string_or_trusted_script_url.GetAsTrustedScriptURL()->toString();
+  if (!require_trusted_type) {
+    return string;
   }
 
   TrustedTypePolicy* default_policy = GetDefaultPolicy(execution_context);
   if (!default_policy) {
     if (TrustedTypeFail(kTrustedScriptURLAssignment, execution_context,
-                        exception_state)) {
+                        exception_state, string)) {
       return g_empty_string;
     }
-    return string_or_trusted_script_url.GetAsString();
+    return string;
   }
 
   TrustedScriptURL* result = default_policy->CreateScriptURL(
-      execution_context->GetIsolate(),
-      string_or_trusted_script_url.GetAsString(), exception_state);
+      execution_context->GetIsolate(), string, exception_state);
 
   if (exception_state.HadException()) {
     exception_state.ClearException();
     TrustedTypeFail(kTrustedScriptURLAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state);
+                    execution_context, exception_state, string);
     return g_empty_string;
   }
 
@@ -358,32 +393,33 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
                                const ExecutionContext* execution_context,
                                ExceptionState& exception_state) {
   DCHECK(!string_or_trusted_url.IsNull());
-
-  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
-  if (!require_trusted_type && string_or_trusted_url.IsUSVString()) {
-    return string_or_trusted_url.GetAsUSVString();
-  }
-
   if (string_or_trusted_url.IsTrustedURL()) {
     return string_or_trusted_url.GetAsTrustedURL()->toString();
+  }
+
+  DCHECK(string_or_trusted_url.IsUSVString());
+  String string = string_or_trusted_url.GetAsUSVString();
+
+  bool require_trusted_type = RequireTrustedTypesCheck(execution_context);
+  if (!require_trusted_type) {
+    return string;
   }
 
   TrustedTypePolicy* default_policy = GetDefaultPolicy(execution_context);
   if (!default_policy) {
     if (TrustedTypeFail(kTrustedURLAssignment, execution_context,
-                        exception_state)) {
+                        exception_state, string)) {
       return g_empty_string;
     }
-    return string_or_trusted_url.GetAsUSVString();
+    return string;
   }
 
   TrustedURL* result = default_policy->CreateURL(
-      execution_context->GetIsolate(), string_or_trusted_url.GetAsUSVString(),
-      exception_state);
+      execution_context->GetIsolate(), string, exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     TrustedTypeFail(kTrustedURLAssignmentAndDefaultPolicyFailed,
-                    execution_context, exception_state);
+                    execution_context, exception_state, string);
     return g_empty_string;
   }
 
@@ -399,7 +435,8 @@ Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
 
   TrustedTypePolicy* default_policy = GetDefaultPolicy(doc);
   if (!default_policy) {
-    return TrustedTypeFail(kTextNodeScriptAssignment, doc, exception_state)
+    return TrustedTypeFail(kTextNodeScriptAssignment, doc, exception_state,
+                           child->textContent())
                ? nullptr
                : child;
   }
@@ -409,7 +446,7 @@ Node* TrustedTypesCheckForHTMLScriptElement(Node* child,
   if (exception_state.HadException()) {
     exception_state.ClearException();
     return TrustedTypeFail(kTextNodeScriptAssignmentAndDefaultPolicyFailed, doc,
-                           exception_state)
+                           exception_state, child->textContent())
                ? nullptr
                : child;
   }

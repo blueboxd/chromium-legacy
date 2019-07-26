@@ -129,6 +129,15 @@ void RecordScaledDurationHistogram(ImageEncodingMimeType mime_type,
   }
 }
 
+SkColorType GetColorTypeForConversion(SkColorType color_type) {
+  if (color_type == kRGBA_8888_SkColorType ||
+      color_type == kBGRA_8888_SkColorType) {
+    return color_type;
+  }
+
+  return kN32_SkColorType;
+}
+
 }  // anonymous namespace
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
@@ -191,7 +200,9 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   // covnert to the requested color space and pixel format.
   if (function_type_ != kHTMLCanvasConvertToBlobPromise) {
     if (skia_image->colorSpace()) {
-      image_ = image_->ConvertToColorSpace(SkColorSpace::MakeSRGB());
+      image_ = image_->ConvertToColorSpace(
+          SkColorSpace::MakeSRGB(),
+          GetColorTypeForConversion(skia_image->colorType()));
       skia_image = image_->PaintImageForCurrentFrame().GetSkImage();
     }
 
@@ -212,7 +223,8 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       DCHECK(skia_image->colorSpace());
     }
 
-    SkColorType target_color_type = kN32_SkColorType;
+    SkColorType target_color_type =
+        GetColorTypeForConversion(skia_image->colorType());
     if (encode_options_->pixelFormat() == kRGBA16ImagePixelFormatName)
       target_color_type = kRGBA_F16_SkColorType;
     // We can do color space and color type conversion together.

@@ -305,7 +305,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
       reinterpret_cast<icu::RegexMatcher*>(DangerousPatternTLS().Get());
   if (!dangerous_pattern) {
     // The parentheses in the below strings belong to the raw string sequence
-    // R("..."). They are NOT part of the regular expression. Each sub
+    // R"(...)". They are NOT part of the regular expression. Each sub
     // regex is OR'ed with the | operator.
     dangerous_pattern = new icu::RegexMatcher(
         icu::UnicodeString(
@@ -361,6 +361,9 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(base::StringPiece16 label,
 
             // Disallow dotless i (U+0131) followed by a combining mark.
             R"(\u0131[\u0300-\u0339]|)"
+
+            // Disallow combining Kana voiced sound marks.
+            R"(\u3099|\u309A|)"
 
             // Disallow U+0307 (dot above) after 'i', 'j', 'l' or dotless i
             // (U+0131). Dotless j (U+0237) is not in the allowed set to begin

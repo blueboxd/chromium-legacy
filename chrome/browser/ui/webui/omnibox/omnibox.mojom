@@ -59,6 +59,7 @@ struct OmniboxResponse {
   string type;
   string host;
   bool is_typed_host;
+  string input_text;
   array<AutocompleteMatch> combined_results;
   array<AutocompleteResultsForProvider> results_by_provider;
 };

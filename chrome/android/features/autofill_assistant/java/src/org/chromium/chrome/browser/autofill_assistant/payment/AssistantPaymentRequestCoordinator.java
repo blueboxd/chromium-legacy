@@ -64,8 +64,11 @@ public class AssistantPaymentRequestCoordinator {
                 new AssistantPaymentRequestShippingAddressSection(
                         mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
-        AssistantPaymentRequestTermsSection termsSection =
-                new AssistantPaymentRequestTermsSection(mActivity, paymentRequestExpanderAccordion);
+        AssistantPaymentRequestTermsSection termsSection = new AssistantPaymentRequestTermsSection(
+                mActivity, paymentRequestExpanderAccordion, /* showAsSingleCheckbox= */ false);
+        AssistantPaymentRequestTermsSection termsAsCheckboxSection =
+                new AssistantPaymentRequestTermsSection(mActivity, paymentRequestExpanderAccordion,
+                        /* showAsSingleCheckbox= */ true);
 
         paymentRequestExpanderAccordion.setTag(
                 AssistantTagsForTesting.PAYMENT_REQUEST_ACCORDION_TAG);
@@ -79,7 +82,8 @@ public class AssistantPaymentRequestCoordinator {
         // Bind view and mediator through the model.
         mViewHolder = new AssistantPaymentRequestBinder.ViewHolder(mPaymentRequestUI,
                 paymentRequestExpanderAccordion, sectionToSectionPadding, contactDetailsSection,
-                paymentMethodSection, shippingAddressSection, termsSection, DIVIDER_TAG, activity);
+                paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
+                DIVIDER_TAG, activity);
         AssistantPaymentRequestBinder binder = new AssistantPaymentRequestBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

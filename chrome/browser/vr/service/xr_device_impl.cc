@@ -307,10 +307,20 @@ void XRDeviceImpl::DoRequestSession(
                        "id", session_runtime_id);
 
   auto runtime_options = GetRuntimeOptions(options.get());
-  runtime_options->render_process_id =
-      render_frame_host_ ? render_frame_host_->GetProcess()->GetID() : -1;
-  runtime_options->render_frame_id =
-      render_frame_host_ ? render_frame_host_->GetRoutingID() : -1;
+
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARCORE)
+  if (session_runtime_id == device::mojom::XRDeviceId::ARCORE_DEVICE_ID) {
+    if (!render_frame_host_) {
+      std::move(callback).Run(
+          device::mojom::RequestSessionResult::NewFailureReason(
+              device::mojom::RequestSessionError::INVALID_CLIENT));
+      return;
+    }
+    runtime_options->render_process_id =
+        render_frame_host_->GetProcess()->GetID();
+    runtime_options->render_frame_id = render_frame_host_->GetRoutingID();
+  }
+#endif
 
   if (runtime_options->immersive) {
     GetSessionMetricsHelper()->ReportRequestPresent(*runtime_options);

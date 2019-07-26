@@ -67,6 +67,7 @@ const char kCertificateProviderErrorTimeout[] =
 const char kCertificateProviderNoActiveDialog[] =
     "No active dialog from extension.";
 const char kCertificateProviderInvalidId[] = "Invalid signRequestId";
+const char kCertificateProviderInvalidAttemptsLeft[] = "Invalid attemptsLeft";
 const char kCertificateProviderOtherFlowInProgress[] = "Other flow in progress";
 const char kCertificateProviderPreviousDialogActive[] =
     "Previous request not finished";
@@ -292,8 +293,13 @@ ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
           browser_context());
   DCHECK(service);
 
-  int attempts_left =
-      params->details.attempts_left ? *params->details.attempts_left : -1;
+  int attempts_left = -1;
+  if (params->details.attempts_left) {
+    if (*params->details.attempts_left < 0)
+      return RespondNow(Error(kCertificateProviderInvalidAttemptsLeft));
+    attempts_left = *params->details.attempts_left;
+  }
+
   const chromeos::PinDialogManager::RequestPinResult result =
       service->pin_dialog_manager()->RequestPin(
           extension()->id(), extension()->name(),

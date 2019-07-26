@@ -109,7 +109,8 @@ String BaseTemporalInputType::RangeUnderflowText(const Decimal& minimum) const {
 }
 
 Decimal BaseTemporalInputType::DefaultValueForStepUp() const {
-  return Decimal::FromDouble(ConvertToLocalTime(CurrentTimeMS()));
+  return Decimal::FromDouble(
+      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
 }
 
 bool BaseTemporalInputType::IsSteppable() const {

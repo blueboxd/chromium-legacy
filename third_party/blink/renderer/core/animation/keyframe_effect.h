@@ -123,6 +123,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   void Trace(blink::Visitor*) override;
 
+  bool AnimationsPreserveAxisAlignment() const;
+
  private:
   EffectModel::CompositeOperation CompositeInternal() const;
 
@@ -139,6 +141,8 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
       double time_to_next_iteration) const override;
   bool HasIncompatibleStyle() const;
   bool HasMultipleTransformProperties() const;
+
+  bool AnimationsPreserveAxisAlignment(const PropertyHandle&) const;
 
   Member<Element> target_;
   Member<KeyframeEffectModelBase> model_;

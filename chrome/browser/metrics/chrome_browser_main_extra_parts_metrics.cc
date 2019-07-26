@@ -225,6 +225,14 @@ void RecordStartupMetrics() {
   UMA_HISTOGRAM_ENUMERATION("Windows.Kernel32Version",
                             os_info.Kernel32Version(),
                             base::win::Version::WIN_LAST);
+  int patch = os_info.version_number().patch;
+  int build = os_info.version_number().build;
+  int patch_level = 0;
+
+  if (patch < 65536 && build < 65536)
+    patch_level = MAKELONG(patch, build);
+  DCHECK(patch_level) << "Windows version too high!";
+  base::UmaHistogramSparse("Windows.PatchLevel", patch_level);
 
   UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
                         base::TimeTicks::IsHighResolution());

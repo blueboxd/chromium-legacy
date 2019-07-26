@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
@@ -90,26 +89,7 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<ExtensionActionAPI>>::
     DestructorAtExit g_extension_action_api_factory = LAZY_INSTANCE_INITIALIZER;
 
 ExtensionActionAPI::ExtensionActionAPI(content::BrowserContext* context)
-    : browser_context_(context),
-      extension_prefs_(nullptr) {
-  ExtensionFunctionRegistry& registry =
-      ExtensionFunctionRegistry::GetInstance();
-
-  // Actions
-  // TODO(devlin): Remove this bespoke registration when action.enable() and
-  // action.disable() have appropriate tests.
-  registry.RegisterFunction<ActionSetIconFunction>();
-  registry.RegisterFunction<ActionGetPopupFunction>();
-  registry.RegisterFunction<ActionSetPopupFunction>();
-  registry.RegisterFunction<ActionGetTitleFunction>();
-  registry.RegisterFunction<ActionSetTitleFunction>();
-  registry.RegisterFunction<ActionGetBadgeTextFunction>();
-  registry.RegisterFunction<ActionSetBadgeTextFunction>();
-  registry.RegisterFunction<ActionGetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<ActionSetBadgeBackgroundColorFunction>();
-  registry.RegisterFunction<ActionEnableFunction>();
-  registry.RegisterFunction<ActionDisableFunction>();
-}
+    : browser_context_(context), extension_prefs_(nullptr) {}
 
 ExtensionActionAPI::~ExtensionActionAPI() {
 }

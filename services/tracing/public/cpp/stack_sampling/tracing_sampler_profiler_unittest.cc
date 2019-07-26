@@ -3,14 +3,17 @@
 // found in the LICENSE file.
 
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include <limits>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -172,20 +175,6 @@ class TracingSampleProfilerTest : public testing::Test {
 #endif
   }
 
-  static void TraceDataCallback(
-      const base::RepeatingCallback<void()>& callback,
-      std::string* output,
-      const scoped_refptr<base::RefCountedString>& json_events_str,
-      bool has_more_events) {
-    if (output->size() > 1 && !json_events_str->data().empty()) {
-      output->append(",");
-    }
-    output->append(json_events_str->data());
-    if (!has_more_events) {
-      callback.Run();
-    }
-  }
-
   void EndTracing() {
     TracingSamplerProfiler::StopTracingForTesting();
     base::RunLoop().RunUntilIdle();
@@ -206,7 +195,20 @@ class TracingSampleProfilerTest : public testing::Test {
     }
   }
 
-  size_t ProfileEventsCount() const { return events_stack_received_count_; }
+  uint32_t FindProfilerSequenceId() {
+    uint32_t profile_sequence_id = std::numeric_limits<uint32_t>::max();
+    auto& packets = producer_->finalized_packets();
+    for (auto& packet : packets) {
+      if (packet->has_streaming_profile_packet()) {
+        profile_sequence_id = packet->trusted_packet_sequence_id();
+        break;
+      }
+    }
+    EXPECT_NE(profile_sequence_id, std::numeric_limits<uint32_t>::max());
+    return profile_sequence_id;
+  }
+
+  const MockPerfettoProducer* producer() const { return producer_.get(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -214,7 +216,6 @@ class TracingSampleProfilerTest : public testing::Test {
   // We want our singleton torn down after each test.
   base::ShadowingAtExitManager at_exit_manager_;
   base::trace_event::TraceResultBuffer trace_buffer_;
-  base::trace_event::TraceResultBuffer::SimpleOutput json_output_;
 
   std::unique_ptr<MockPerfettoProducer> producer_;
 
@@ -232,11 +233,15 @@ class TestModule : public base::ModuleCache::Module {
   TestModule(const TestModule&) = delete;
   TestModule& operator=(const TestModule&) = delete;
 
+  void set_id(const std::string& id) { id_ = id; }
   uintptr_t GetBaseAddress() const override { return 0; }
-  std::string GetId() const override { return ""; }
+  std::string GetId() const override { return id_; }
   base::FilePath GetDebugBasename() const override { return base::FilePath(); }
   size_t GetSize() const override { return 0; }
   bool IsNative() const override { return true; }
+
+ private:
+  std::string id_;
 };
 
 }  // namespace
@@ -268,13 +273,32 @@ TEST_F(TracingSampleProfilerTest, TestStartupTracing) {
   TracingSamplerProfiler::SetupStartupTracing();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
+  auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
   if (IsStackUnwindingSupported()) {
-    EXPECT_GT(ProfileEventsCount(), 4u);
+    uint32_t seq_id = FindProfilerSequenceId();
+    auto& packets = producer()->finalized_packets();
+    int64_t reference_ts = 0;
+    int64_t first_profile_ts = 0;
+    for (auto& packet : packets) {
+      if (packet->trusted_packet_sequence_id() == seq_id) {
+        if (packet->has_thread_descriptor()) {
+          reference_ts = packet->thread_descriptor().reference_timestamp_us();
+        } else if (packet->has_streaming_profile_packet()) {
+          first_profile_ts =
+              reference_ts +
+              packet->streaming_profile_packet().timestamp_delta_us(0);
+          break;
+        }
+      }
+    }
+    // Expect first sample before tracing started.
+    EXPECT_LT(first_profile_ts,
+              start_tracing_ts.since_origin().InMicroseconds());
   }
   TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
@@ -284,13 +308,32 @@ TEST_F(TracingSampleProfilerTest, JoinStartupTracing) {
   base::RunLoop().RunUntilIdle();
   TracingSamplerProfiler::CreateForCurrentThread();
   WaitForEvents();
+  auto start_tracing_ts = TRACE_TIME_TICKS_NOW();
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();
   base::RunLoop().RunUntilIdle();
   if (IsStackUnwindingSupported()) {
-    EXPECT_GT(ProfileEventsCount(), 4u);
+    uint32_t seq_id = FindProfilerSequenceId();
+    auto& packets = producer()->finalized_packets();
+    int64_t reference_ts = 0;
+    int64_t first_profile_ts = 0;
+    for (auto& packet : packets) {
+      if (packet->trusted_packet_sequence_id() == seq_id) {
+        if (packet->has_thread_descriptor()) {
+          reference_ts = packet->thread_descriptor().reference_timestamp_us();
+        } else if (packet->has_streaming_profile_packet()) {
+          first_profile_ts =
+              reference_ts +
+              packet->streaming_profile_packet().timestamp_delta_us(0);
+          break;
+        }
+      }
+    }
+    // Expect first sample before tracing started.
+    EXPECT_LT(first_profile_ts,
+              start_tracing_ts.since_origin().InMicroseconds());
   }
   TracingSamplerProfiler::DeleteForCurrentThreadForTesting();
 }
@@ -327,5 +370,35 @@ TEST(TracingProfileBuilderTest, InvalidModule) {
       std::make_unique<MockTraceWriter>(base::DoNothing()), false);
   profile_builder.OnSampleCompleted({base::Frame(0x1010, nullptr)});
 }
+
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+TEST(TracingProfileBuilderTest, MangleELFModuleID) {
+  TestModule module;
+  // See explanation for the module_id mangling in
+  // TracingSamplerProfiler::TracingProfileBuilder::GetCallstackIDAndMaybeEmit.
+  module.set_id("7F0715C286F8B16C10E4AD349CDA3B9B56C7A773");
+
+  bool found_build_id = false;
+  auto on_packet_callback = base::BindLambdaForTesting(
+      [&found_build_id](std::unique_ptr<perfetto::protos::TracePacket> packet) {
+        if (!packet->has_interned_data() ||
+            packet->interned_data().build_ids_size() == 0) {
+          return;
+        }
+
+        found_build_id = true;
+        EXPECT_EQ(packet->interned_data().build_ids(0).str(),
+                  "C215077FF8866CB110E4AD349CDA3B9B0");
+      });
+
+  auto trace_writer = std::make_unique<MockTraceWriter>(on_packet_callback);
+  auto* raw_trace_writer = trace_writer.get();
+  TracingSamplerProfiler::TracingProfileBuilder profile_builder(
+      base::PlatformThreadId(), std::move(trace_writer), false);
+  profile_builder.OnSampleCompleted({base::Frame(0x1010, &module)});
+  raw_trace_writer->FlushPacketIfPossible();
+  EXPECT_TRUE(found_build_id);
+}
+#endif
 
 }  // namespace tracing

@@ -71,15 +71,4 @@ class DestinationSort {
   CompareWithDemoteByType<Match> demote_by_type_;
 };
 
-// Such a simple comparison should only be used by std::stable_sort().
-class CompareBySearchVsUrl {
- public:
-  bool operator()(const AutocompleteMatch& elem1,
-                  const AutocompleteMatch& elem2) {
-    // Put search matches first, followed by all other types.
-    return AutocompleteMatch::IsSearchType(elem1.type) &&
-           !AutocompleteMatch::IsSearchType(elem2.type);
-  }
-};
-
 #endif  // COMPONENTS_OMNIBOX_BROWSER_MATCH_COMPARE_H_

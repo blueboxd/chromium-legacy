@@ -15,6 +15,12 @@
 
 class PrefService;
 
+namespace chromecast {
+namespace shell {
+class CastNetworkContexts;
+}  // namespace shell
+}  // namespace chromecast
+
 namespace extensions {
 
 class ExtensionsAPIClient;
@@ -25,11 +31,14 @@ class CastExtensionsBrowserClient : public ExtensionsBrowserClient {
  public:
   // |context| is the single BrowserContext used for IsValidContext() below.
   // |pref_service| is used for GetPrefServiceForContext() below.
-  CastExtensionsBrowserClient(content::BrowserContext* context,
-                              PrefService* pref_service);
+  CastExtensionsBrowserClient(
+      content::BrowserContext* context,
+      PrefService* pref_service,
+      chromecast::shell::CastNetworkContexts* cast_network_contexts);
   ~CastExtensionsBrowserClient() override;
 
   // ExtensionsBrowserClient overrides:
+  network::mojom::NetworkContext* GetSystemNetworkContext() override;
   bool IsShuttingDown() override;
   bool AreExtensionsDisabled(const base::CommandLine& command_line,
                              content::BrowserContext* context) override;
@@ -111,6 +120,8 @@ class CastExtensionsBrowserClient : public ExtensionsBrowserClient {
  private:
   // The single BrowserContext for cast_shell. Not owned.
   content::BrowserContext* browser_context_;
+
+  chromecast::shell::CastNetworkContexts* cast_network_contexts_;
 
   // The PrefService for |browser_context_|. Not owned.
   PrefService* pref_service_;

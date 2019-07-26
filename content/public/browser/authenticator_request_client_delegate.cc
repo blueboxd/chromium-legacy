@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "base/strings/string_piece.h"
+#include "build/build_config.h"
+#include "device/fido/fido_discovery_factory.h"
 
 namespace content {
 
@@ -60,16 +62,34 @@ bool AuthenticatorRequestClientDelegate::IsFocused() {
   return true;
 }
 
-bool AuthenticatorRequestClientDelegate::ShouldDisablePlatformAuthenticators() {
-  return false;
-}
-
 #if defined(OS_MACOSX)
 base::Optional<AuthenticatorRequestClientDelegate::TouchIdAuthenticatorConfig>
 AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() {
   return base::nullopt;
 }
+#endif  // defined(OS_MACOSX)
+
+bool AuthenticatorRequestClientDelegate::
+    IsUserVerifyingPlatformAuthenticatorAvailable() {
+  return false;
+}
+
+device::FidoDiscoveryFactory*
+AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
+#if defined(OS_ANDROID)
+  // Android uses an internal FIDO API to manage device discovery.
+  NOTREACHED();
+  return nullptr;
+#else
+  if (!discovery_factory_) {
+    discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
+#if defined(OS_MACOSX)
+    discovery_factory_->set_mac_touch_id_info(GetTouchIdAuthenticatorConfig());
+#endif  // defined(OS_MACOSX)
+  }
+  return discovery_factory_.get();
 #endif
+}
 
 void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
     device::FidoTransportProtocol transport) {}

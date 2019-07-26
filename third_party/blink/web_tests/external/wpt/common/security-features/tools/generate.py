@@ -47,13 +47,18 @@ def permute_expansion(expansion,
             yield next_selection
 
 
-def generate_selection(config, selection, spec, test_html_template_basename):
-    # TODO: Refactor out this referrer-policy-specific part.
-    if 'referrer_policy' in spec:
-        # Oddball: it can be None, so in JS it's null.
-        selection['referrer_policy'] = spec['referrer_policy']
+# Dumps the test config `selection` into a serialized JSON string.
+# We omit `name` parameter because it is not used by tests.
+def dump_test_parameters(selection):
+    selection = dict(selection)
+    del selection['name']
 
-    test_parameters = json.dumps(selection, indent=2, separators=(',', ':'))
+    return json.dumps(
+        selection, indent=2, separators=(',', ': '), sort_keys=True)
+
+
+def generate_selection(config, selection, spec, test_html_template_basename):
+    test_parameters = dump_test_parameters(selection)
     # Adjust the template for the test invoking JS. Indent it to look nice.
     indent = "\n" + " " * 8
     test_parameters = test_parameters.replace("\n", indent)
@@ -86,7 +91,7 @@ def generate_selection(config, selection, spec, test_html_template_basename):
     html_template_filename = os.path.join(util.template_directory,
                                           test_html_template_basename)
     generated_disclaimer = disclaimer_template \
-        % {'generating_script_filename': os.path.relpath(__file__,
+        % {'generating_script_filename': os.path.relpath(sys.argv[0],
                                                          util.test_root_directory),
            'html_template_filename': os.path.relpath(html_template_filename,
                                                      util.test_root_directory)}
@@ -158,6 +163,7 @@ def generate_test_source_files(config, spec_json, target):
             expansion = expand_pattern(expansion_pattern,
                                        test_expansion_schema)
             for selection in permute_expansion(expansion, artifact_order):
+                selection['delivery_key'] = spec_json['delivery_key']
                 selection_path = config.selection_pattern % selection
                 if not selection_path in exclusion_dict:
                     if selection_path in output_dict:

@@ -110,10 +110,6 @@ void BrowserList::RemoveBrowser(Browser* browser) {
   RemoveBrowserFrom(browser, &browser_list->last_active_browsers_);
   browser_list->currently_closing_browsers_.erase(browser);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser),
-      content::NotificationService::NoDetails());
-
   RemoveBrowserFrom(browser, &browser_list->browsers_);
 
   for (BrowserListObserver& observer : observers_.Get())

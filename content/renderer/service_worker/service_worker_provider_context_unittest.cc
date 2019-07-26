@@ -23,6 +23,8 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -193,8 +195,9 @@ class FakeControllerServiceWorker
     if (fetch_event_callback_)
       std::move(fetch_event_callback_).Run();
   }
-  void Clone(blink::mojom::ControllerServiceWorkerRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+                 receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   void set_fetch_callback(base::OnceClosure closure) {
@@ -205,13 +208,13 @@ class FakeControllerServiceWorker
     return *fetch_event_request_;
   }
 
-  void Disconnect() { bindings_.CloseAllBindings(); }
+  void Disconnect() { receivers_.Clear(); }
 
  private:
   int fetch_event_count_ = 0;
   blink::mojom::FetchAPIRequestPtr fetch_event_request_;
   base::OnceClosure fetch_event_callback_;
-  mojo::BindingSet<blink::mojom::ControllerServiceWorker> bindings_;
+  mojo::ReceiverSet<blink::mojom::ControllerServiceWorker> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeControllerServiceWorker);
 };
@@ -242,7 +245,7 @@ class FakeServiceWorkerContainerHost
     NOTIMPLEMENTED();
   }
   void EnsureControllerServiceWorker(
-      blink::mojom::ControllerServiceWorkerRequest request,
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::mojom::ControllerServiceWorkerPurpose purpose) override {
     NOTIMPLEMENTED();
   }
@@ -436,12 +439,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller1;
   auto controller_info1 = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr1;
-  fake_controller1.Clone(mojo::MakeRequest(&controller_ptr1));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller1;
+  fake_controller1.Clone(remote_controller1.BindNewPipeAndPassReceiver());
   controller_info1->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info1->object_info = std::move(object_info1);
-  controller_info1->endpoint = controller_ptr1.PassInterface();
+  controller_info1->remote_controller = remote_controller1.Unbind();
 
   // Make the ServiceWorkerProviderContext, pasing it the controller, container,
   // and container host.
@@ -479,12 +482,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EXPECT_EQ(1, object_host2->GetBindingCount());
   FakeControllerServiceWorker fake_controller2;
   auto controller_info2 = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr2;
-  fake_controller2.Clone(mojo::MakeRequest(&controller_ptr2));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller2;
+  fake_controller2.Clone(remote_controller2.BindNewPipeAndPassReceiver());
   controller_info2->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info2->object_info = std::move(object_info2);
-  controller_info2->endpoint = controller_ptr2.PassInterface();
+  controller_info2->remote_controller = remote_controller2.Unbind();
 
   // Resetting the controller will trigger many things happening, including the
   // object binding being broken.
@@ -568,12 +571,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EXPECT_EQ(1, object_host4->GetBindingCount());
   FakeControllerServiceWorker fake_controller4;
   auto controller_info4 = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr4;
-  fake_controller4.Clone(mojo::MakeRequest(&controller_ptr4));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller4;
+  fake_controller4.Clone(remote_controller4.BindNewPipeAndPassReceiver());
   controller_info4->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info4->object_info = std::move(object_info4);
-  controller_info4->endpoint = controller_ptr4.PassInterface();
+  controller_info4->remote_controller = remote_controller4.Unbind();
   container_ptr->SetController(std::move(controller_info4), true);
   container_ptr.FlushForTesting();
 
@@ -718,12 +721,12 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
-  fake_controller.Clone(mojo::MakeRequest(&controller_ptr));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);
-  controller_info->endpoint = controller_ptr.PassInterface();
+  controller_info->remote_controller = remote_controller.Unbind();
 
   // Make the container host and container pointers.
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;
@@ -765,12 +768,12 @@ TEST_F(ServiceWorkerProviderContextTest,
   // Make the ControllerServiceWorkerInfo.
   FakeControllerServiceWorker fake_controller;
   auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
-  fake_controller.Clone(mojo::MakeRequest(&controller_ptr));
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller;
+  fake_controller.Clone(remote_controller.BindNewPipeAndPassReceiver());
   controller_info->mode =
       blink::mojom::ControllerServiceWorkerMode::kControlled;
   controller_info->object_info = std::move(object_info);
-  controller_info->endpoint = controller_ptr.PassInterface();
+  controller_info->remote_controller = remote_controller.Unbind();
 
   // Make the container host and container pointers.
   blink::mojom::ServiceWorkerContainerHostAssociatedPtr host_ptr;

@@ -664,7 +664,8 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(
 
 static int CurrentFullYear() {
   DateComponents date;
-  date.SetMillisecondsSinceEpochForMonth(ConvertToLocalTime(CurrentTimeMS()));
+  date.SetMillisecondsSinceEpochForMonth(
+      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
   return date.FullYear();
 }
 

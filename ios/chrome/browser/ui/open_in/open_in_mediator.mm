@@ -37,6 +37,11 @@
   self = [super init];
   if (self) {
     _webStateList = webStateList;
+    // Set the delegates for all existing webstates in the |_webStateList|.
+    for (int i = 0; i < _webStateList->count(); i++) {
+      web::WebState* webState = _webStateList->GetWebStateAt(i);
+      OpenInTabHelper::FromWebState(webState)->SetDelegate(self);
+    }
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
     _webStateList->AddObserver(_webStateListObserver.get());
   }
@@ -69,7 +74,6 @@
               atIndex:(int)index
            activating:(BOOL)activating {
   DCHECK_EQ(_webStateList, webStateList);
-
   OpenInTabHelper::FromWebState(webState)->SetDelegate(self);
 }
 

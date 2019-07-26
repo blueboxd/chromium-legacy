@@ -12,10 +12,10 @@ import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -145,14 +145,10 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
             Assert.assertFalse(((FrameLayout) (holder.itemView)).getForeground() != null);
         } else {
             model.set(TabProperties.IS_SELECTED, true);
-            Drawable selectedDrawable =
-                    holder.itemView.findViewById(R.id.background_view).getBackground();
-            Assert.assertTrue(selectedDrawable != null);
+            View selectedView = holder.itemView.findViewById(R.id.selected_view_below_lollipop);
+            Assert.assertTrue(selectedView.getVisibility() == View.VISIBLE);
             model.set(TabProperties.IS_SELECTED, false);
-            Drawable elevationDrawable =
-                    holder.itemView.findViewById(R.id.background_view).getBackground();
-            Assert.assertTrue(elevationDrawable != null);
-            Assert.assertNotSame(selectedDrawable, elevationDrawable);
+            Assert.assertTrue(selectedView.getVisibility() == View.GONE);
         }
         mStripModel.set(TabProperties.IS_SELECTED, true);
         Assert.assertTrue(((FrameLayout) (mTabStripViewHolder.itemView)).getForeground() != null);
@@ -186,6 +182,8 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     public void testAnimationRestored() throws Exception {
+        View backgroundView = mTabGridViewHolder.itemView.findViewById(R.id.background_view);
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mGridModel.set(TabProperties.IS_SELECTED, true);
             mGridModel.set(TabProperties.CARD_ANIMATION_STATUS,
@@ -193,9 +191,16 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         });
         CriteriaHelper.pollUiThread(
                 () -> !((ClosableTabGridViewHolder) mTabGridViewHolder).getIsAnimatingForTesting());
-        Drawable selectedTabRestoredBackground =
-                mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
-        Assert.assertNotNull(selectedTabRestoredBackground);
+
+        Assert.assertTrue(backgroundView.getVisibility() == View.GONE);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            View selectedView =
+                    mTabGridViewHolder.itemView.findViewById(R.id.selected_view_below_lollipop);
+            Assert.assertTrue(selectedView.getVisibility() == View.VISIBLE);
+        } else {
+            Drawable selectedDrawable = mTabGridViewHolder.itemView.getForeground();
+            Assert.assertNotNull(selectedDrawable);
+        }
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mGridModel.set(TabProperties.IS_SELECTED, false);
@@ -204,19 +209,15 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
         });
         CriteriaHelper.pollUiThread(
                 () -> !((ClosableTabGridViewHolder) mTabGridViewHolder).getIsAnimatingForTesting());
-        Drawable normalTabRestoredBackground =
-                mTabGridViewHolder.itemView.findViewById(R.id.background_view).getBackground();
-        Assert.assertNotNull(normalTabRestoredBackground);
+        Assert.assertTrue(backgroundView.getVisibility() == View.GONE);
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-            // After restoring, the background should be the same because for post-M devices, the
-            // selected state is reflected through foreground and the background is always the same.
-            Assert.assertSame(selectedTabRestoredBackground, normalTabRestoredBackground);
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            View selectedView =
+                    mTabGridViewHolder.itemView.findViewById(R.id.selected_view_below_lollipop);
+            Assert.assertTrue(selectedView.getVisibility() == View.GONE);
         } else {
-            // For pre-M devices, after restoring, the background should still reflect the selection
-            // status.
-            Assert.assertTrue(selectedTabRestoredBackground instanceof InsetDrawable);
-            Assert.assertNotSame(normalTabRestoredBackground, selectedTabRestoredBackground);
+            Drawable selectedDrawable = mTabGridViewHolder.itemView.getForeground();
+            Assert.assertNull(selectedDrawable);
         }
     }
 

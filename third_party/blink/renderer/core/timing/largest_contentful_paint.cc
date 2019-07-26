@@ -10,13 +10,14 @@
 
 namespace blink {
 
-LargestContentfulPaint::LargestContentfulPaint(double render_time,
+LargestContentfulPaint::LargestContentfulPaint(double start_time,
+                                               double render_time,
                                                uint64_t size,
                                                double load_time,
                                                const AtomicString& id,
                                                const String& url,
                                                Element* element)
-    : PerformanceEntry(g_empty_atom, 0, 0),
+    : PerformanceEntry(g_empty_atom, start_time, start_time),
       size_(size),
       render_time_(render_time),
       load_time_(load_time),
@@ -38,6 +39,11 @@ Element* LargestContentfulPaint::element() const {
   if (!element_ || !element_->isConnected() || element_->IsInShadowTree())
     return nullptr;
 
+  // Do not expose |element_| when the document is not 'fully active'.
+  const Document& document = element_->GetDocument();
+  if (!document.IsActive() || !document.GetFrame())
+    return nullptr;
+
   return element_;
 }
 
@@ -48,7 +54,7 @@ void LargestContentfulPaint::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("loadTime", load_time_);
   builder.Add("id", id_);
   builder.Add("url", url_);
-  builder.Add("element", element_);
+  builder.Add("element", element());
 }
 
 void LargestContentfulPaint::Trace(blink::Visitor* visitor) {

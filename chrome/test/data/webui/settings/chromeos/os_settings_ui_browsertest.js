@@ -28,7 +28,15 @@ var OSSettingsUIBrowserTest = class extends PolymerTest {
   }
 };
 
-TEST_F('OSSettingsUIBrowserTest', 'All', () => {
+// Timeouts in debug because the page can be slow to load.
+// https://crbug.com/987512
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_AllJsTests DISABLED_AllJsTests');
+GEN('#else');
+GEN('#define MAYBE_AllJsTests AllJsTests');
+GEN('#endif');
+
+TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
   suite('os-settings-ui', () => {
     let ui;
 

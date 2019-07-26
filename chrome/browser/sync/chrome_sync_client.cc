@@ -612,7 +612,11 @@ ChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 syncer::SyncTypePreferenceProvider* ChromeSyncClient::GetPreferenceProvider() {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return SupervisedUserServiceFactory::GetForProfile(profile_);
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace browser_sync

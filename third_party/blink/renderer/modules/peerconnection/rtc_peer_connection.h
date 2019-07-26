@@ -193,6 +193,8 @@ class MODULES_EXPORT RTCPeerConnection final
 
   String connectionState() const;
 
+  void restartIce();
+
   // A local stream is any stream associated with a sender.
   MediaStreamVector getLocalStreams() const;
   // A remote stream is any stream associated with a receiver.

@@ -69,13 +69,15 @@ bool NavigationDownloadPolicy::IsType(NavigationDownloadType type) const {
 ResourceInterceptPolicy NavigationDownloadPolicy::GetResourceInterceptPolicy()
     const {
   if (disallowed_types.test(
+          static_cast<size_t>(NavigationDownloadType::kSandbox)) ||
+      disallowed_types.test(
           static_cast<size_t>(NavigationDownloadType::kSandboxNoGesture)) ||
       disallowed_types.test(
           static_cast<size_t>(NavigationDownloadType::kOpenerCrossOrigin)) ||
       disallowed_types.test(
-          static_cast<size_t>(NavigationDownloadType::kAdFrameNoGesture)) ||
+          static_cast<size_t>(NavigationDownloadType::kAdFrame)) ||
       disallowed_types.test(
-          static_cast<size_t>(NavigationDownloadType::kAdFrameGesture))) {
+          static_cast<size_t>(NavigationDownloadType::kAdFrameNoGesture))) {
     return ResourceInterceptPolicy::kAllowPluginOnly;
   }
   return disallowed_types.any() ? ResourceInterceptPolicy::kAllowNone

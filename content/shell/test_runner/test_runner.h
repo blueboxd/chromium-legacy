@@ -506,6 +506,9 @@ class TestRunner : public WebTestRunner {
   // Simulates closing a Web Notification.
   void SimulateWebNotificationClose(const std::string& title, bool by_user);
 
+  // Simulates a user deleting a content index entry.
+  void SimulateWebContentIndexDelete(const std::string& id);
+
   // Takes care of notifying the delegate after a change to web test runtime
   // flags.
   void OnWebTestRuntimeFlagsChanged();

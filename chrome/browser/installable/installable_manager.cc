@@ -72,9 +72,13 @@ int GetIdealBadgeIconSizeInPx() {
 
 using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
-// Returns true if |manifest| specifies a PNG icon with IconPurpose::ANY and of
-// height and width >= kMinimumPrimaryIconSizeInPx (or size "any").
-bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
+// Returns true if |manifest| specifies a PNG icon of height and width >=
+// kMinimumPrimaryIconSizeInPx (or size "any"), and either
+// 1. with IconPurpose::ANY or IconPurpose::MASKABLE, if maskable icon is
+// preferred, or
+// 2. with IconPurpose::ANY if maskable icon is not preferred.
+bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest,
+                                     bool prefer_maskable_icon) {
   for (const auto& icon : manifest.icons) {
     // The type field is optional. If it isn't present, fall back on checking
     // the src extension, and allow the icon if the extension ends with png.
@@ -84,8 +88,12 @@ bool DoesManifestContainRequiredIcon(const blink::Manifest& manifest) {
             base::CompareCase::INSENSITIVE_ASCII)))
       continue;
 
-    if (!base::Contains(icon.purpose,
-                        blink::Manifest::ImageResource::Purpose::ANY)) {
+    if (!(base::Contains(icon.purpose,
+                         blink::Manifest::ImageResource::Purpose::ANY) ||
+          (prefer_maskable_icon &&
+           base::Contains(
+               icon.purpose,
+               blink::Manifest::ImageResource::Purpose::MASKABLE)))) {
       continue;
     }
 
@@ -445,7 +453,8 @@ void InstallableManager::WorkOnTask() {
     CheckAndFetchBestIcon(GetIdealPrimaryIconSizeInPx(),
                           GetMinimumPrimaryIconSizeInPx(), IconPurpose::ANY);
   } else if (params.valid_manifest && !valid_manifest_->fetched) {
-    CheckManifestValid(params.check_webapp_manifest_display);
+    CheckManifestValid(params.check_webapp_manifest_display,
+                       params.prefer_maskable_icon);
   } else if (params.has_worker && !worker_->fetched) {
     CheckServiceWorker();
   } else if (params.valid_badge_icon && !IsIconFetched(IconPurpose::BADGE)) {
@@ -503,20 +512,21 @@ void InstallableManager::OnDidGetManifest(const GURL& manifest_url,
   WorkOnTask();
 }
 
-void InstallableManager::CheckManifestValid(
-    bool check_webapp_manifest_display) {
+void InstallableManager::CheckManifestValid(bool check_webapp_manifest_display,
+                                            bool prefer_maskable_icon) {
   DCHECK(!valid_manifest_->fetched);
   DCHECK(!manifest().IsEmpty());
 
-  valid_manifest_->is_valid =
-      IsManifestValidForWebApp(manifest(), check_webapp_manifest_display);
+  valid_manifest_->is_valid = IsManifestValidForWebApp(
+      manifest(), check_webapp_manifest_display, prefer_maskable_icon);
   valid_manifest_->fetched = true;
   WorkOnTask();
 }
 
 bool InstallableManager::IsManifestValidForWebApp(
     const blink::Manifest& manifest,
-    bool check_webapp_manifest_display) {
+    bool check_webapp_manifest_display,
+    bool prefer_maskable_icon) {
   bool is_valid = true;
   if (manifest.IsEmpty()) {
     valid_manifest_->errors.push_back(MANIFEST_EMPTY);
@@ -542,7 +552,7 @@ bool InstallableManager::IsManifestValidForWebApp(
     is_valid = false;
   }
 
-  if (!DoesManifestContainRequiredIcon(manifest)) {
+  if (!DoesManifestContainRequiredIcon(manifest, prefer_maskable_icon)) {
     valid_manifest_->errors.push_back(MANIFEST_MISSING_SUITABLE_ICON);
     is_valid = false;
   }

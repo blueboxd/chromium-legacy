@@ -20,7 +20,7 @@ const char kSyncAllowInsecureXmppConnection[] =
     "sync-allow-insecure-xmpp-connection";
 
 const base::Feature kFCMInvalidations = {"FCMInvalidations",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFCMInvalidationsConservativeEnabling = {
     "FCMInvalidationsConservativeEnabling", base::FEATURE_ENABLED_BY_DEFAULT};

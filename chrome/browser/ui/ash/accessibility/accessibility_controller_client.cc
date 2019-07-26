@@ -88,6 +88,15 @@ void AccessibilityControllerClient::TriggerAccessibilityAlert(
   }
 }
 
+void AccessibilityControllerClient::TriggerAccessibilityAlertWithMessage(
+    const std::string& message) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (!profile)
+    return;
+
+  AutomationManagerAura::GetInstance()->HandleAlert(message);
+}
+
 void AccessibilityControllerClient::PlayEarcon(int32_t sound_key) {
   chromeos::AccessibilityManager::Get()->PlayEarcon(
       sound_key, chromeos::PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED);

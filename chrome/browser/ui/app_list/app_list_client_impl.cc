@@ -380,6 +380,9 @@ void AppListClientImpl::SetUpSearchUI() {
 
   search_controller_ =
       app_list::CreateSearchController(profile_, current_model_updater_, this);
+  search_ranking_event_logger_ =
+      std::make_unique<app_list::SearchRankingEventLogger>(
+          profile_, search_controller_.get());
 }
 
 app_list::SearchController* AppListClientImpl::search_controller() {
@@ -525,7 +528,7 @@ void AppListClientImpl::NotifySearchResultsForLogging(
     const base::string16& trimmed_query,
     const ash::SearchResultIdWithPositionIndices& results,
     int position_index) {
-  search_ranking_event_logger_.Log(trimmed_query, results, position_index);
+  search_ranking_event_logger_->Log(trimmed_query, results, position_index);
 }
 
 ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(

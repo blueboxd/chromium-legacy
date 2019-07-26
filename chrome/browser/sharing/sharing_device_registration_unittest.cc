@@ -17,8 +17,6 @@
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "components/gcm_driver/fake_gcm_driver.h"
-#include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -95,17 +93,7 @@ class FakeInstanceID : public InstanceID {
 
   void SetFCMToken(std::string fcm_token) { fcm_token_ = std::move(fcm_token); }
 
- private:
-  InstanceID::Result result_;
-  std::string fcm_token_;
-};
-
-class FakeEncryptionGCMDriver : public FakeGCMDriver {
- public:
-  FakeEncryptionGCMDriver() = default;
-  ~FakeEncryptionGCMDriver() override = default;
-
-  void GetEncryptionInfo(const std::string& app_id,
+  void GetEncryptionInfo(const std::string& authorized_entity,
                          GetEncryptionInfoCallback callback) override {
     std::move(callback).Run(p256dh_, auth_secret_);
   }
@@ -117,7 +105,8 @@ class FakeEncryptionGCMDriver : public FakeGCMDriver {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeEncryptionGCMDriver);
+  InstanceID::Result result_;
+  std::string fcm_token_;
   std::string p256dh_ = kDevicep256dh;
   std::string auth_secret_ = kDeviceAuthSecret;
 };
@@ -130,7 +119,6 @@ class SharingDeviceRegistrationTest : public testing::Test {
         sharing_device_registration_(&sync_prefs_,
                                      &mock_instance_id_driver_,
                                      &vapid_key_manager_,
-                                     &fake_encryption_gcm_driver_,
                                      &fake_local_device_info_provider_) {
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
@@ -177,7 +165,6 @@ class SharingDeviceRegistrationTest : public testing::Test {
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  FakeEncryptionGCMDriver fake_encryption_gcm_driver_;
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
   FakeLocalDeviceInfoProvider fake_local_device_info_provider_;
   FakeInstanceID fake_instance_id_;
@@ -245,8 +232,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
   // Instance ID now returns a new token, however it shouldn't be invoked.
   SetInstanceIDFCMToken(kFCMToken2);
   // GCMDriver now returns new encryption info.
-  fake_encryption_gcm_driver_.SetEncryptionInfo(kDevicep256dh2,
-                                                kDeviceAuthSecret2);
+  fake_instance_id_.SetEncryptionInfo(kDevicep256dh2, kDeviceAuthSecret2);
 
   // Register device again without changing VAPID keys.
   RegisterDeviceSync();
@@ -328,6 +314,10 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
   ASSERT_EQ(devices_.end(), devices_.find(guid));
   EXPECT_FALSE(fcm_registration_);
+
+  // Further unregister does nothing and returns kDeviceNotRegistered.
+  UnregisterDeviceSync();
+  EXPECT_EQ(SharingDeviceRegistrationResult::kDeviceNotRegistered, result_);
 
   // Register the device again, Instance.GetToken will be attempted once more,
   // which will return a different FCM token.

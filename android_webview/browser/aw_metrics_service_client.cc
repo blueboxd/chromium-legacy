@@ -218,9 +218,6 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
 }
 
 std::string AwMetricsServiceClient::GetAppPackageName() {
-  if (!base::FeatureList::IsEnabled(features::kWebViewUmaLogAppPackageName))
-    return std::string();
-
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> j_app_name =
       Java_AwMetricsServiceClient_getAppPackageName(env);

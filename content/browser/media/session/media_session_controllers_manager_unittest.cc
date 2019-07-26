@@ -96,6 +96,12 @@ class MediaSessionControllersManagerTest
     return &manager_->controllers_map_;
   }
 
+  MediaSessionController* GetController(const MediaPlayerId& id) {
+    auto it = manager_->controllers_map_.find(id);
+    DCHECK(it != manager_->controllers_map_.end());
+    return it->second.get();
+  }
+
   void TearDown() override {
     manager_.reset();
     service_manager_context_.reset();
@@ -212,6 +218,94 @@ TEST_P(MediaSessionControllersManagerTest, OnEndRemovesMediaPlayerId) {
     manager_->OnEnd(media_player_id_);
     EXPECT_TRUE(GetControllersMap()->empty());
   }
+}
+
+TEST_P(MediaSessionControllersManagerTest, PositionState) {
+  // If not enabled, no adds will occur, as RequestPlay returns early.
+  if (!IsMediaSessionEnabled())
+    return;
+
+  {
+    media_session::MediaPosition expected_position(1.0, base::TimeDelta(),
+                                                   base::TimeDelta());
+
+    manager_->OnMediaPositionStateChanged(media_player_id_, expected_position);
+
+    EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
+                                      media::MediaContentType::Transient));
+    EXPECT_EQ(1U, GetControllersMap()->size());
+
+    // The controller should be created with the last received position for
+    // that player.
+    EXPECT_EQ(expected_position,
+              GetController(media_player_id_)->get_position_for_testing());
+  }
+
+  {
+    media_session::MediaPosition expected_position(
+        0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+    manager_->OnMediaPositionStateChanged(media_player_id_, expected_position);
+
+    // The controller should be updated with the new position.
+    EXPECT_EQ(expected_position,
+              GetController(media_player_id_)->get_position_for_testing());
+
+    // Destroy the current controller.
+    manager_->OnEnd(media_player_id_);
+    EXPECT_TRUE(GetControllersMap()->empty());
+
+    // Recreate the current controller.
+    EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
+                                      media::MediaContentType::Transient));
+    EXPECT_EQ(1U, GetControllersMap()->size());
+
+    // The controller should be created with the last received position for
+    // that player.
+    EXPECT_EQ(expected_position,
+              GetController(media_player_id_)->get_position_for_testing());
+  }
+}
+
+TEST_P(MediaSessionControllersManagerTest, MultiplePlayersWithPositionState) {
+  // If not enabled, no adds will occur, as RequestPlay returns early.
+  if (!IsMediaSessionEnabled())
+    return;
+
+  MediaPlayerId media_player_id_2 =
+      MediaPlayerId(contents()->GetMainFrame(), 2);
+
+  media_session::MediaPosition expected_position1(1.0, base::TimeDelta(),
+                                                  base::TimeDelta());
+  media_session::MediaPosition expected_position2(
+      0.0, base::TimeDelta::FromSeconds(10), base::TimeDelta());
+
+  manager_->OnMediaPositionStateChanged(media_player_id_, expected_position1);
+  manager_->OnMediaPositionStateChanged(media_player_id_2, expected_position2);
+
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_, true, false,
+                                    media::MediaContentType::Transient));
+  EXPECT_TRUE(manager_->RequestPlay(media_player_id_2, true, false,
+                                    media::MediaContentType::Transient));
+
+  EXPECT_EQ(2U, GetControllersMap()->size());
+
+  // The controllers should have been created with the correct positions.
+  EXPECT_EQ(expected_position1,
+            GetController(media_player_id_)->get_position_for_testing());
+  EXPECT_EQ(expected_position2,
+            GetController(media_player_id_2)->get_position_for_testing());
+
+  media_session::MediaPosition new_position(
+      0.0, base::TimeDelta::FromSeconds(20), base::TimeDelta());
+
+  manager_->OnMediaPositionStateChanged(media_player_id_, new_position);
+
+  // The controller should be updated with the new position.
+  EXPECT_EQ(new_position,
+            GetController(media_player_id_)->get_position_for_testing());
+  EXPECT_EQ(expected_position2,
+            GetController(media_player_id_2)->get_position_for_testing());
 }
 
 // First bool is to indicate whether InternalMediaSession is enabled.

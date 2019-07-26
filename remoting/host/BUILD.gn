@@ -305,6 +305,7 @@ static_library("common") {
 
   deps = [
     "//base:i18n",
+    "//build:branding_buildflags",
     "//components/policy/core/common",
     "//crypto",
     "//google_apis",

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/network/network_configuration_handler.h"
+
 #include <stddef.h>
 
 #include <map>
@@ -12,17 +14,16 @@
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
-#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
@@ -309,7 +310,8 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
   std::unique_ptr<TestNetworkStateHandlerObserver>
       network_state_handler_observer_;
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::string success_callback_name_;
   std::string get_properties_path_;
   std::unique_ptr<base::DictionaryValue> get_properties_;

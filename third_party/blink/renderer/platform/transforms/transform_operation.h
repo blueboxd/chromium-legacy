@@ -90,6 +90,8 @@ class PLATFORM_EXPORT TransformOperation
   }
   virtual bool CanBlendWith(const TransformOperation& other) const = 0;
 
+  virtual bool PreservesAxisAlignment() const { return false; }
+
   bool Is3DOperation() const {
     OperationType op_type = GetType();
     return op_type == kScaleZ || op_type == kScale3D ||

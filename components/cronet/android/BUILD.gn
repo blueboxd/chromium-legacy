@@ -10,6 +10,8 @@ import("//build/config/zip.gni")
 import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
+import("//components/cronet/native/include/headers.gni")
+import("//components/grpc_support/include/headers.gni")
 import("//testing/test.gni")
 import("//third_party/netty4/netty4.gni")
 import("//third_party/protobuf/proto_library.gni")
@@ -1306,6 +1308,14 @@ if (!is_component_build) {
     ]
   }
 
+  copy("cronet_package_copy_native_headers") {
+    sources = cronet_native_public_headers + grpc_public_headers
+
+    outputs = [
+      "$_package_dir/include/{{source_file_part}}",
+    ]
+  }
+
   copy("cronet_package_copy_native_lib") {
     sources = [
       "$root_out_dir/" + _cronet_shared_lib_file_name,
@@ -1490,6 +1500,7 @@ if (!is_component_build) {
       deps = [
         ":api_static_checks",
         ":cronet_package_copy",
+        ":cronet_package_copy_native_headers",
         ":cronet_package_copy_native_lib",
         ":cronet_package_copy_native_lib_unstripped",
         ":cronet_package_copy_resources",

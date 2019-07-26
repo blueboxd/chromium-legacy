@@ -213,9 +213,16 @@ void AutocompleteResult::SortAndCull(
 
   if (OmniboxFieldTrial::IsGroupSuggestionsBySearchVsUrlFeatureEnabled() &&
       matches_.size() > 2) {
-    // "Bunch" first by search type, then all others.
-    std::stable_sort(std::next(matches_.begin()), matches_.end(),
-                     CompareBySearchVsUrl());
+    // Skip over default match.
+    auto next = std::next(matches_.begin());
+    // If it has submatches, skip them too.
+    if (matches_.front().subrelevance != 0) {
+      while (next != matches_.end() &&
+             AutocompleteMatch::IsSameFamily(matches_.front().subrelevance,
+                                             next->subrelevance))
+        next = std::next(next);
+    }
+    GroupSuggestionsBySearchVsURL(next, matches_.end());
   }
 
   // There is no default match for chromeOS launcher zero prefix query
@@ -769,4 +776,64 @@ void AutocompleteResult::LimitNumberOfURLsShown(
                               ++total_count > GetMaxMatches();
                      }),
       matches_.end());
+}
+
+// static
+void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
+                                                       iterator end) {
+  // The following routine implements a semi-stateful stable partition. It
+  // moves all search-type matches towards the beginning of the range, (and
+  // non-search-type towards the end) but has to keep any submatches of a
+  // match together with that match.
+  //
+  // It does this by iterating through the list, top to bottom, so that it
+  // can associate submatches with their match simply by position. It finds
+  // a section of matches to be moved down, then finds the following section
+  // of matches to be moved up:
+  //
+  // Search-type              (a search-type in the correct position, skipped)
+  // Navigation-type          <- begin
+  // submatch Search-type
+  // Navigation-type
+  // Search-type              <- mid
+  // submatch Navigation-type
+  // ...                      <- temp_end
+  //
+  // We then call rotate() with those 3 iterators, then repeat the search,
+  // starting with where the navigation-types landed.
+
+  // Find the first element to be moved downwards. Skip matches in correct
+  // position.
+  while (begin != end &&
+         (AutocompleteMatch::IsSearchType(begin->type) ||
+         // Any submatch present would belong to the previous search-type
+         // match.
+         begin->IsSubMatch())) {
+    begin = std::next(begin);
+  }
+  while (begin != end) {
+    // Find the last element (technically, the end of the range) to be moved
+    // downwards.
+    auto mid = begin;
+    while (mid != end &&
+           (!AutocompleteMatch::IsSearchType(mid->type) || mid->IsSubMatch())) {
+      mid = std::next(mid);
+    }
+    // Find the last element (technically, the end of the range) to be moved
+    // upwards.
+    auto temp_end = mid;
+    while (temp_end != end &&
+           (AutocompleteMatch::IsSearchType(temp_end->type) ||
+            temp_end->IsSubMatch())) {
+      temp_end = std::next(temp_end);
+    }
+    if (mid != end) {
+      std::rotate(begin, mid, temp_end);
+      // Advance |begin| iterator over the elements now in correct position.
+      // |begin += temp_end - mid;|
+      begin = std::next(begin, std::distance(mid, temp_end));
+    } else {
+      break;
+    }
+  }
 }

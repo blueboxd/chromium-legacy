@@ -576,6 +576,23 @@ TEST_F(OmniboxViewViewsTest, BackspaceExitsKeywordMode) {
   EXPECT_TRUE(omnibox_view()->model()->keyword().empty());
 }
 
+TEST_F(OmniboxViewViewsTest, BlurNeverExitsKeywordMode) {
+  location_bar_model()->set_url(GURL());
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Enter keyword mode, but with no user text.
+  omnibox_view()->model()->EnterKeywordModeForDefaultSearchProvider(
+      OmniboxEventProto::KEYBOARD_SHORTCUT);
+  EXPECT_TRUE(omnibox_view()->text().empty());
+  EXPECT_FALSE(omnibox_view()->model()->keyword().empty());
+
+  // Expect that on blur, stay in keyword mode.
+  omnibox_textfield()->OnBlur();
+  EXPECT_TRUE(omnibox_view()->text().empty());
+  EXPECT_FALSE(omnibox_view()->model()->keyword().empty());
+}
+
 TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   ui::ClipboardType clipboard_type = ui::ClipboardType::kCopyPaste;

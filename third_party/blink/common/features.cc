@@ -326,7 +326,7 @@ const base::Feature kBlinkHeapConcurrentMarking{
     "BlinkHeapConcurrentMarking", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables concurrently sweeping Blink's heap.
 const base::Feature kBlinkHeapConcurrentSweeping{
-    "BlinkHeapConcurrentSweeping", base::FEATURE_ENABLED_BY_DEFAULT};
+    "BlinkHeapConcurrentSweeping", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables incrementally marking Blink's heap.
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -351,6 +351,17 @@ const base::FeatureParam<int> kBufferingBytesConsumerDelayMilliseconds{
 const base::Feature kVerifyHTMLFetchedFromAppCacheBeforeDelay{
     "VerifyHTMLFetchedFromAppCacheBeforeDelay",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether we use ThreadPriority::DISPLAY for renderer
+// compositor & IO threads.
+const base::Feature kBlinkCompositorUseDisplayThreadPriority {
+  "BlinkCompositorUseDisplayThreadPriority",
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 }  // namespace features
 }  // namespace blink

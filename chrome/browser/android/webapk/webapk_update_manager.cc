@@ -54,6 +54,7 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
     const JavaParamRef<jstring>& java_short_name,
     const JavaParamRef<jstring>& java_primary_icon_url,
     const JavaParamRef<jobject>& java_primary_icon_bitmap,
+    jboolean java_is_primary_icon_maskable,
     const JavaParamRef<jstring>& java_badge_icon_url,
     const JavaParamRef<jobject>& java_badge_icon_bitmap,
     const JavaParamRef<jobjectArray>& java_icon_urls,
@@ -166,9 +167,10 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
       static_cast<WebApkUpdateReason>(java_update_reason);
 
   WebApkInstaller::StoreUpdateRequestToFile(
-      base::FilePath(update_request_path), info, primary_icon, badge_icon,
-      webapk_package, std::to_string(java_webapk_version),
-      icon_url_to_murmur2_hash, java_is_manifest_stale, update_reason,
+      base::FilePath(update_request_path), info, primary_icon,
+      java_is_primary_icon_maskable, badge_icon, webapk_package,
+      std::to_string(java_webapk_version), icon_url_to_murmur2_hash,
+      java_is_manifest_stale, update_reason,
       base::BindOnce(&base::android::RunBooleanCallbackAndroid,
                      ScopedJavaGlobalRef<jobject>(java_callback)));
 }

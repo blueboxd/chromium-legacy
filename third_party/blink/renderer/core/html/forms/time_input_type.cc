@@ -65,7 +65,8 @@ const AtomicString& TimeInputType::FormControlType() const {
 
 Decimal TimeInputType::DefaultValueForStepUp() const {
   DateComponents date;
-  date.SetMillisecondsSinceMidnight(ConvertToLocalTime(CurrentTimeMS()));
+  date.SetMillisecondsSinceMidnight(
+      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
   double milliseconds = date.MillisecondsSinceEpoch();
   DCHECK(std::isfinite(milliseconds));
   return Decimal::FromDouble(milliseconds);

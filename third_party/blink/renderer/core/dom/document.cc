@@ -2339,23 +2339,23 @@ void Document::SetupFontBuilder(ComputedStyle& document_style) {
 
 void Document::PropagateStyleToViewport() {
   DCHECK(InStyleRecalc());
-  if (!documentElement())
-    return;
-
   HTMLElement* body = this->body();
+  Element* document_element = this->documentElement();
 
+  const ComputedStyle* document_element_style =
+      document_element && documentElement()->GetLayoutObject()
+          ? documentElement()->GetComputedStyle()
+          : nullptr;
   const ComputedStyle* body_style =
-      body ? body->EnsureComputedStyle() : nullptr;
-  const ComputedStyle* document_style =
-      documentElement()->EnsureComputedStyle();
+      body && body->GetLayoutObject() ? body->GetComputedStyle() : nullptr;
 
   const ComputedStyle& viewport_style = GetLayoutView()->StyleRef();
   scoped_refptr<ComputedStyle> new_viewport_style =
       ComputedStyle::Clone(viewport_style);
   bool changed = false;
 
-#define PROPAGATE_FROM(source, getter, setter) \
-  PROPAGATE_VALUE(source->getter(), getter, setter);
+#define PROPAGATE_FROM(source, getter, setter, initial) \
+  PROPAGATE_VALUE(source ? source->getter() : initial, getter, setter);
 
 #define PROPAGATE_VALUE(value, getter, setter)     \
   if ((new_viewport_style->getter()) != (value)) { \
@@ -2365,22 +2365,22 @@ void Document::PropagateStyleToViewport() {
 
   // Writing mode and direction
   {
-    const ComputedStyle* direction_style = document_style;
-    if (body_style)
-      direction_style = body_style;
-    PROPAGATE_FROM(direction_style, GetWritingMode, SetWritingMode);
-    PROPAGATE_FROM(direction_style, Direction, SetDirection);
+    const ComputedStyle* direction_style =
+        body_style ? body_style : document_element_style;
+    PROPAGATE_FROM(direction_style, GetWritingMode, SetWritingMode,
+                   WritingMode::kHorizontalTb);
+    PROPAGATE_FROM(direction_style, Direction, SetDirection,
+                   TextDirection::kLtr);
   }
 
   // Background
   {
-    const ComputedStyle* background_style = document_style;
+    const ComputedStyle* background_style = document_element_style;
     // http://www.w3.org/TR/css3-background/#body-background
     // <html> root element with no background steals background from its first
     // <body> child.
     // Also see LayoutBoxModelObject::BackgroundTransfersToView()
-    if (IsHTMLHtmlElement(documentElement()) &&
-        document_style->Display() != EDisplay::kNone &&
+    if (body_style && IsHTMLHtmlElement(documentElement()) &&
         IsHTMLBodyElement(body) && !background_style->HasBackground()) {
       background_style = body_style;
     }
@@ -2389,7 +2389,7 @@ void Document::PropagateStyleToViewport() {
     FillLayer background_layers(EFillLayerType::kBackground, true);
     EImageRendering image_rendering = EImageRendering::kAuto;
 
-    if (background_style->Display() != EDisplay::kNone) {
+    if (background_style) {
       background_color = background_style->VisitedDependentColor(
           GetCSSPropertyBackgroundColor());
       background_layers = background_style->BackgroundLayers();
@@ -2424,98 +2424,115 @@ void Document::PropagateStyleToViewport() {
   // Overflow
   {
     const ComputedStyle* overflow_style = nullptr;
-    Element* viewport_element = ViewportDefiningElement();
-    DCHECK(viewport_element);
-    if (viewport_element == body) {
-      overflow_style = body_style;
-    } else {
-      DCHECK_EQ(viewport_element, documentElement());
-      overflow_style = document_style;
+    if (Element* viewport_element = ViewportDefiningElement()) {
+      if (viewport_element == body) {
+        overflow_style = body_style;
+      } else {
+        DCHECK_EQ(viewport_element, documentElement());
+        overflow_style = document_element_style;
 
-      // The body element has its own scrolling box, independent from the
-      // viewport.  This is a bit of a weird edge case in the CSS spec that we
-      // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
-      // see http://crbug.com/157855).
-      if (body_style && !body_style->IsOverflowVisible())
-        UseCounter::Count(*this, WebFeature::kBodyScrollsInAdditionToViewport);
+        // The body element has its own scrolling box, independent from the
+        // viewport.  This is a bit of a weird edge case in the CSS spec that we
+        // might want to try to eliminate some day (eg. for ScrollTopLeftInterop
+        // - see http://crbug.com/157855).
+        if (body_style && !body_style->IsOverflowVisible()) {
+          UseCounter::Count(*this,
+                            WebFeature::kBodyScrollsInAdditionToViewport);
+        }
+      }
     }
-    DCHECK(overflow_style);
 
     // TODO(954423, 952711): scroll-snap-* and overscroll-behavior (and most
-    // likely overflow-anchor) should be propagated from documet element and not
-    // the viewport defining element.
+    // likely overflow-anchor) should be propagated from the document element
+    // and not the viewport defining element.
 
     // We only propagate the properties related to snap container since viewport
     // defining element cannot be a snap area.
-    PROPAGATE_FROM(overflow_style, GetScrollSnapType, SetScrollSnapType);
-    PROPAGATE_FROM(overflow_style, ScrollPaddingTop, SetScrollPaddingTop);
-    PROPAGATE_FROM(overflow_style, ScrollPaddingRight, SetScrollPaddingRight);
-    PROPAGATE_FROM(overflow_style, ScrollPaddingBottom, SetScrollPaddingBottom);
-    PROPAGATE_FROM(overflow_style, ScrollPaddingLeft, SetScrollPaddingLeft);
+    PROPAGATE_FROM(overflow_style, GetScrollSnapType, SetScrollSnapType,
+                   cc::ScrollSnapType());
+    PROPAGATE_FROM(overflow_style, ScrollPaddingTop, SetScrollPaddingTop,
+                   Length());
+    PROPAGATE_FROM(overflow_style, ScrollPaddingRight, SetScrollPaddingRight,
+                   Length());
+    PROPAGATE_FROM(overflow_style, ScrollPaddingBottom, SetScrollPaddingBottom,
+                   Length());
+    PROPAGATE_FROM(overflow_style, ScrollPaddingLeft, SetScrollPaddingLeft,
+                   Length());
+
+    PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX,
+                   EOverscrollBehavior::kAuto);
+    PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY,
+                   EOverscrollBehavior::kAuto);
 
     // Counts any time scroll snapping and scroll padding break if we change its
     // viewport propagation logic. Scroll snapping only breaks if body has
     // non-none snap type that is different from the document one.
     // TODO(952711): Remove once propagation logic change is complete.
-    bool snap_type_is_different =
-        !overflow_style->GetScrollSnapType().is_none &&
-        (overflow_style->GetScrollSnapType() !=
-         document_style->GetScrollSnapType());
-    bool scroll_padding_is_different =
-        overflow_style->ScrollPaddingTop() !=
-            document_style->ScrollPaddingTop() ||
-        overflow_style->ScrollPaddingBottom() !=
-            document_style->ScrollPaddingBottom() ||
-        overflow_style->ScrollPaddingLeft() !=
-            document_style->ScrollPaddingLeft() ||
-        overflow_style->ScrollPaddingRight() !=
-            document_style->ScrollPaddingRight();
+    if (document_element_style && body_style) {
+      bool snap_type_is_different =
+          !body_style->GetScrollSnapType().is_none &&
+          (body_style->GetScrollSnapType() !=
+           document_element_style->GetScrollSnapType());
+      bool scroll_padding_is_different =
+          body_style->ScrollPaddingTop() !=
+              document_element_style->ScrollPaddingTop() ||
+          body_style->ScrollPaddingBottom() !=
+              document_element_style->ScrollPaddingBottom() ||
+          body_style->ScrollPaddingLeft() !=
+              document_element_style->ScrollPaddingLeft() ||
+          body_style->ScrollPaddingRight() !=
+              document_element_style->ScrollPaddingRight();
 
-    if (snap_type_is_different) {
-      UseCounter::Count(*this, WebFeature::kScrollSnapOnViewportBreaks);
+      if (snap_type_is_different) {
+        UseCounter::Count(*this, WebFeature::kScrollSnapOnViewportBreaks);
+      }
+      if (scroll_padding_is_different) {
+        UseCounter::Count(*this, WebFeature::kScrollPaddingOnViewportBreaks);
+      }
     }
-    if (scroll_padding_is_different) {
-      UseCounter::Count(*this, WebFeature::kScrollPaddingOnViewportBreaks);
+
+    EOverflow overflow_x = EOverflow::kAuto;
+    EOverflow overflow_y = EOverflow::kAuto;
+    EOverflowAnchor overflow_anchor = EOverflowAnchor::kAuto;
+
+    if (overflow_style) {
+      overflow_x = overflow_style->OverflowX();
+      overflow_y = overflow_style->OverflowY();
+      overflow_anchor = overflow_style->OverflowAnchor();
+      // Visible overflow on the viewport is meaningless, and the spec says to
+      // treat it as 'auto':
+      if (overflow_x == EOverflow::kVisible)
+        overflow_x = EOverflow::kAuto;
+      if (overflow_y == EOverflow::kVisible)
+        overflow_y = EOverflow::kAuto;
+      if (overflow_anchor == EOverflowAnchor::kVisible)
+        overflow_anchor = EOverflowAnchor::kAuto;
+
+      if (IsInMainFrame()) {
+        using OverscrollBehaviorType =
+            cc::OverscrollBehavior::OverscrollBehaviorType;
+        GetPage()->GetChromeClient().SetOverscrollBehavior(
+            *GetFrame(),
+            cc::OverscrollBehavior(static_cast<OverscrollBehaviorType>(
+                                       overflow_style->OverscrollBehaviorX()),
+                                   static_cast<OverscrollBehaviorType>(
+                                       overflow_style->OverscrollBehaviorY())));
+      }
     }
-
-    PROPAGATE_FROM(overflow_style, OverscrollBehaviorX, SetOverscrollBehaviorX);
-    PROPAGATE_FROM(overflow_style, OverscrollBehaviorY, SetOverscrollBehaviorY);
-
-    EOverflow overflow_x = overflow_style->OverflowX();
-    EOverflow overflow_y = overflow_style->OverflowY();
-    EOverflowAnchor overflow_anchor = overflow_style->OverflowAnchor();
-
-    // Visible overflow on the viewport is meaningless, and the spec says to
-    // treat it as 'auto':
-    if (overflow_x == EOverflow::kVisible)
-      overflow_x = EOverflow::kAuto;
-    if (overflow_y == EOverflow::kVisible)
-      overflow_y = EOverflow::kAuto;
-    if (overflow_anchor == EOverflowAnchor::kVisible)
-      overflow_anchor = EOverflowAnchor::kAuto;
 
     PROPAGATE_VALUE(overflow_x, OverflowX, SetOverflowX)
     PROPAGATE_VALUE(overflow_y, OverflowY, SetOverflowY)
     PROPAGATE_VALUE(overflow_anchor, OverflowAnchor, SetOverflowAnchor);
-
-    if (IsInMainFrame()) {
-      using OverscrollBehaviorType =
-          cc::OverscrollBehavior::OverscrollBehaviorType;
-      GetPage()->GetChromeClient().SetOverscrollBehavior(
-          *GetFrame(),
-          cc::OverscrollBehavior(static_cast<OverscrollBehaviorType>(
-                                     overflow_style->OverscrollBehaviorX()),
-                                 static_cast<OverscrollBehaviorType>(
-                                     overflow_style->OverscrollBehaviorY())));
-    }
   }
 
   // Misc
   {
-    PROPAGATE_FROM(document_style, GetEffectiveTouchAction,
-                   SetEffectiveTouchAction);
-    PROPAGATE_FROM(document_style, GetScrollBehavior, SetScrollBehavior);
-    PROPAGATE_FROM(document_style, DarkColorScheme, SetDarkColorScheme);
+    PROPAGATE_FROM(document_element_style, GetEffectiveTouchAction,
+                   SetEffectiveTouchAction, TouchAction::kTouchActionAuto);
+    PROPAGATE_FROM(document_element_style, GetScrollBehavior, SetScrollBehavior,
+                   kScrollBehaviorAuto);
+    PROPAGATE_FROM(document_element_style, DarkColorScheme, SetDarkColorScheme,
+                   false);
   }
 
   if (changed) {
@@ -3742,7 +3759,7 @@ Element* Document::ViewportDefiningElement() const {
   if (!root_element)
     return nullptr;
   const ComputedStyle* root_style = root_element->GetComputedStyle();
-  if (!root_style)
+  if (!root_style || root_style->IsEnsuredInDisplayNone())
     return nullptr;
   if (body_element && root_style->IsOverflowVisible() &&
       IsHTMLHtmlElement(*root_element))
@@ -5686,10 +5703,6 @@ String Document::cookie(ExceptionState& exception_state) const {
 
   CountUse(WebFeature::kCookieGet);
 
-  // FIXME: The HTML5 DOM spec states that this attribute can raise an
-  // InvalidStateError exception on getting if the Document has no
-  // browsing context.
-
   if (!GetSecurityOrigin()->CanAccessCookies()) {
     if (IsSandboxed(WebSandboxFlags::kOrigin))
       exception_state.ThrowSecurityError(
@@ -5715,10 +5728,6 @@ void Document::setCookie(const String& value, ExceptionState& exception_state) {
     return;
 
   UseCounter::Count(*this, WebFeature::kCookieSet);
-
-  // FIXME: The HTML5 DOM spec states that this attribute can raise an
-  // InvalidStateError exception on setting if the Document has no
-  // browsing context.
 
   if (!GetSecurityOrigin()->CanAccessCookies()) {
     if (IsSandboxed(WebSandboxFlags::kOrigin))
@@ -5859,9 +5868,10 @@ String Document::lastModified() const {
   // FIXME: If this document came from the file system, the HTML5
   // specificiation tells us to read the last modification date from the file
   // system.
-  if (!found_date)
+  if (!found_date) {
     date.SetMillisecondsSinceEpochForDateTime(
-        ConvertToLocalTime(CurrentTimeMS()));
+        ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
+  }
   return String::Format("%02d/%02d/%04d %02d:%02d:%02d", date.Month() + 1,
                         date.MonthDay(), date.FullYear(), date.Hour(),
                         date.Minute(), date.Second());

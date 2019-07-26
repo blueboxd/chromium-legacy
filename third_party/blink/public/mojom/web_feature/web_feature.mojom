@@ -2049,7 +2049,6 @@ enum WebFeature {
   kOpenerNavigationDownloadCrossOrigin = 2649,
   kV8RegExpMatchIsTrueishOnNonJSRegExp = 2650,
   kV8RegExpMatchIsFalseishOnJSRegExp = 2651,
-  kDownloadInAdFrameWithUserGesture = 2652,
   kDownloadInAdFrameWithoutUserGesture = 2653,
   kNavigatorAppVersion = 2654,
   kNavigatorDoNotTrack = 2655,
@@ -2330,9 +2329,7 @@ enum WebFeature {
   kWebkitMarginAfterCollapseDiscard = 2945,
   kWebkitMarginAfterCollapseSeparate = 2946,
   kWebkitMarginAfterCollapseSeparateMaybeDoesSomething = 2947,
-  kCredentialManagerCreateWithUVM = 2948,
   kCredentialManagerGetWithUVM = 2949,
-  kCredentialManagerCreateSuccessWithUVM = 2950,
   kCredentialManagerGetSuccessWithUVM = 2951,
   kDiscardInputEventToMovingIframe = 2952,
   kSignedExchangeSubresourcePrefetch = 2953,
@@ -2356,6 +2353,10 @@ enum WebFeature {
   kV8PointerEvent_GetPredictedEvents_Method = 2971,
   kScrollSnapOnViewportBreaks = 2972,
   kScrollPaddingOnViewportBreaks = 2973,
+  kDownloadInAdFrame = 2974,
+  kDownloadInSandbox = 2975,
+  kDownloadWithoutUserGesture = 2976,
+  kAutoplayDynamicDelegation = 2977,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

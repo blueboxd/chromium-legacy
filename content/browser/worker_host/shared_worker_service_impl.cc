@@ -169,10 +169,23 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     DestroyHost(host);
   }
 
+  // Get a storage domain.
+  SiteInstance* site_instance = render_frame_host->GetSiteInstance();
+  if (!site_instance) {
+    client->OnScriptLoadFailed();
+    return;
+  }
+  std::string storage_domain;
+  std::string partition_name;
+  bool in_memory;
+  GetContentClient()->browser()->GetStoragePartitionConfigForSite(
+      storage_partition_->browser_context(), site_instance->GetSiteURL(),
+      /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
+
   CreateWorker(std::move(instance),
                std::move(outside_fetch_client_settings_object),
-               std::move(client), client_process_id, frame_id, message_port,
-               std::move(blob_url_loader_factory));
+               std::move(client), client_process_id, frame_id, storage_domain,
+               message_port, std::move(blob_url_loader_factory));
 }
 
 void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
@@ -191,6 +204,7 @@ void SharedWorkerServiceImpl::CreateWorker(
     blink::mojom::SharedWorkerClientPtr client,
     int client_process_id,
     int frame_id,
+    const std::string& storage_domain,
     const blink::MessagePortChannel& message_port,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -232,7 +246,7 @@ void SharedWorkerServiceImpl::CreateWorker(
       ResourceType::kSharedWorker, service_worker_context_,
       service_worker_handle_raw, appcache_handle_core,
       std::move(blob_url_loader_factory), url_loader_factory_override_,
-      storage_partition_,
+      storage_partition_, storage_domain,
       base::BindOnce(&SharedWorkerServiceImpl::DidCreateScriptLoader,
                      weak_factory_.GetWeakPtr(), std::move(instance), weak_host,
                      std::move(client), client_process_id, frame_id,
@@ -261,6 +275,9 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     client->OnScriptLoadFailed();
     return;
   }
+
+  // TODO(https://crbug.com/986188): Check if the main script's final response
+  // URL is commitable.
 
   StartWorker(std::move(instance), std::move(host), std::move(client),
               process_id, frame_id, message_port,

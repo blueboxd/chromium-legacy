@@ -128,6 +128,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     bool flattens_inherited_transform = false;
     bool affected_by_outer_viewport_bounds_delta = false;
     bool in_subtree_of_page_scale = true;
+    bool animation_is_axis_aligned = false;
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -141,6 +142,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           affected_by_outer_viewport_bounds_delta !=
               other.affected_by_outer_viewport_bounds_delta ||
           in_subtree_of_page_scale != other.in_subtree_of_page_scale ||
+          animation_is_axis_aligned != other.animation_is_axis_aligned ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
@@ -356,6 +358,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   bool HasActiveTransformAnimation() const {
     return state_.direct_compositing_reasons &
            CompositingReason::kActiveTransformAnimation;
+  }
+  bool TransformAnimationIsAxisAligned() const {
+    return state_.animation_is_axis_aligned;
   }
 
   bool RequiresCompositingForRootScroller() const {

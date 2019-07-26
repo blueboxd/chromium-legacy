@@ -10,7 +10,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_param_associator.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -66,6 +65,19 @@ struct Features {
   std::vector<StringPiece> disabled_feature_list;
 };
 
+// Features in |feature_vector| came from |merged_features| in
+// OverrideFeatures() and contains linkage with field trial is case when they
+// have parameters (with '<' simbol). In |feature_name| name is already cleared
+// with GetFeatureName() and also could be without parameters.
+bool ContainsFeature(const std::vector<StringPiece>& feature_vector,
+                     StringPiece feature_name) {
+  auto iter = std::find_if(feature_vector.begin(), feature_vector.end(),
+                           [&feature_name](const StringPiece& a) {
+                             return GetFeatureName(a) == feature_name;
+                           });
+  return iter != feature_vector.end();
+}
+
 // Merges previously-specified feature overrides with those passed into one of
 // the Init() methods. |features| should be a list of features previously
 // overridden to be in the |override_state|. |merged_features| should contain
@@ -80,8 +92,8 @@ void OverrideFeatures(const std::string& features,
   for (StringPiece feature : features_list) {
     StringPiece feature_name = GetFeatureName(feature);
 
-    if (Contains(merged_features->enabled_feature_list, feature_name) ||
-        Contains(merged_features->disabled_feature_list, feature_name)) {
+    if (ContainsFeature(merged_features->enabled_feature_list, feature_name) ||
+        ContainsFeature(merged_features->disabled_feature_list, feature_name)) {
       continue;
     }
 
@@ -102,6 +114,8 @@ std::string HexEncodeString(const std::string& input) {
 
 // Inverse of HexEncodeString().
 std::string HexDecodeString(const std::string& input) {
+  if (input.empty())
+    return std::string();
   std::vector<uint8_t> bytes;
   bool result = HexStringToBytes(input, &bytes);
   DCHECK(result);

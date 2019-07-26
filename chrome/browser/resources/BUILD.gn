@@ -11,6 +11,7 @@ if (closure_compile) {
   group("closure_compile") {
     deps = [
       "engagement:closure_compile",
+      "interventions_internals:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {
       deps += [

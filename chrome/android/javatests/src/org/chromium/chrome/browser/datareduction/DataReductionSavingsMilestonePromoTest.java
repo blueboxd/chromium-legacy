@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.datareduction;
 
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -12,8 +14,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
@@ -35,8 +39,14 @@ public class DataReductionSavingsMilestonePromoTest {
     private static final String SECOND_PROMO_SIZE_STRING = "1 GB";
     private static final String COMMAND_LINE_FLAG_PROMO_SIZE_STRING = "1 MB";
 
+    private Context mContext;
+
     @Before
-    public void setUp() throws InterruptedException {
+    public void setUp() throws InterruptedException, Throwable {
+        // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
+        mContext = new AdvancedMockContext(InstrumentationRegistry.getInstrumentation()
+                                                   .getTargetContext()
+                                                   .getApplicationContext());
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
@@ -52,6 +62,8 @@ public class DataReductionSavingsMilestonePromoTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                        mContext, true);
                 Assert.assertFalse(
                         DataReductionPromoUtils.hasMilestonePromoBeenInitWithStartingSavedBytes());
 
@@ -96,6 +108,8 @@ public class DataReductionSavingsMilestonePromoTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                        mContext, true);
                 Assert.assertFalse(
                         DataReductionPromoUtils.hasMilestonePromoBeenInitWithStartingSavedBytes());
 
@@ -126,6 +140,8 @@ public class DataReductionSavingsMilestonePromoTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                        mContext, true);
                 Assert.assertFalse(
                         DataReductionPromoUtils.hasMilestonePromoBeenInitWithStartingSavedBytes());
 
@@ -164,6 +180,8 @@ public class DataReductionSavingsMilestonePromoTest {
         mActivityTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
+                        mContext, true);
                 Assert.assertFalse(
                         DataReductionPromoUtils.hasMilestonePromoBeenInitWithStartingSavedBytes());
 

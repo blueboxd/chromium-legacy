@@ -633,7 +633,9 @@ void AppCacheHost::MaybePassSubresourceFactory() {
   AppCacheSubresourceURLFactory::CreateURLLoaderFactory(GetWeakPtr(),
                                                         &factory_ptr);
 
-  frontend()->SetSubresourceFactory(std::move(factory_ptr));
+  // We may not have bound |factory_ptr| if the storage partition has shut down.
+  if (factory_ptr)
+    frontend()->SetSubresourceFactory(std::move(factory_ptr));
 }
 
 void AppCacheHost::SetAppCacheSubresourceFactory(

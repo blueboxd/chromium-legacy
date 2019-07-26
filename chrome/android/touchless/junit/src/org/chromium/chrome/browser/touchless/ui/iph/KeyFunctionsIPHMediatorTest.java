@@ -92,31 +92,26 @@ public class KeyFunctionsIPHMediatorTest {
 
     @Test
     public void cursorVisibilityToggleTest() {
+        // Toggling cursor mode does not trigger the IPH, but should update the model.
         mKeyFunctionsIPHMediator.onFallbackCursorModeToggled(true);
         Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE), true);
-        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), true);
+        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), false);
 
         mKeyFunctionsIPHMediator.onFallbackCursorModeToggled(false);
         Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE), false);
-        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), true);
-
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), false);
-
-        mKeyFunctionsIPHMediator.onFallbackCursorModeToggled(true);
-        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE), true);
-        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), true);
     }
 
     @Test
     public void otherIPHShowingTest() {
+        // Toggling cursor mode does not trigger the IPH.
         when(mTracker.acquireDisplayLock()).thenReturn(null);
         mKeyFunctionsIPHMediator.onFallbackCursorModeToggled(true);
         Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), false);
 
         when(mTracker.acquireDisplayLock()).thenReturn(mock(Tracker.DisplayLockHandle.class));
         mKeyFunctionsIPHMediator.onFallbackCursorModeToggled(false);
-        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), true);
+        Assert.assertEquals(mModel.get(KeyFunctionsIPHProperties.IS_VISIBLE), false);
     }
 
     @After

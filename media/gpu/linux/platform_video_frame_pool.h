@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_frame_layout.h"
 #include "media/gpu/linux/dmabuf_video_frame_pool.h"
 #include "media/gpu/media_gpu_export.h"
 
@@ -32,10 +33,10 @@ namespace media {
 // the memory is returned to the pool for use by a subsequent GetFrame()
 // call. The memory in the pool is retained for the life of the
 // PlatformVideoFramePool object. Before calling GetFrame(), the client should
-// call SetFrameFormat(). If the parameters passed to SetFrameFormat() are
-// changed, then the memory used by frames with the old parameter values will be
-// purged from the pool. Frames which are not used for a certain period
-// will be purged.
+// call NegotiateFrameFormat(). If the parameters passed to
+// NegotiateFrameFormat() are changed, then the memory used by frames with the
+// old parameter values will be purged from the pool. Frames which are not used
+// for a certain period will be purged.
 class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
  public:
   using DmabufId = const std::vector<base::ScopedFD>*;
@@ -47,9 +48,10 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   void set_parent_task_runner(
       scoped_refptr<base::SequencedTaskRunner> parent_task_runner) override;
   void SetMaxNumFrames(size_t max_num_frames) override;
-  void SetFrameFormat(VideoFrameLayout layout,
-                      gfx::Rect visible_rect,
-                      gfx::Size natural_size) override;
+  base::Optional<VideoFrameLayout> NegotiateFrameFormat(
+      const VideoFrameLayout& layout,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size) override;
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
   VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame) override;
@@ -92,7 +94,7 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   void InsertFreeFrame_Locked(scoped_refptr<VideoFrame> frame)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   size_t GetTotalNumFrames_Locked() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  bool IsSameLayout_Locked(VideoPixelFormat format, gfx::Size coded_size) const
+  bool IsSameLayout_Locked(const VideoFrameLayout& layout) const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -110,11 +112,10 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // Every public method and OnFrameReleased() should acquire this lock.
   base::Lock lock_;
 
-  // The arguments of current frame. We allocate new frames only with |format_|
-  // and |coded_size_|. When calling GetFrame(), we update |visible_rect_| and
-  // |natural_size_| of wrapped frames.
-  VideoPixelFormat format_ GUARDED_BY(lock_);
-  gfx::Size coded_size_ GUARDED_BY(lock_);
+  // The arguments of current frame. We allocate new frames only if a pixel
+  // format or coded size in |frame_layout_| is changed. When GetFrame() is
+  // called, we update |visible_rect_| and |natural_size_| of wrapped frames.
+  base::Optional<VideoFrameLayout> frame_layout_ GUARDED_BY(lock_);
   gfx::Rect visible_rect_ GUARDED_BY(lock_);
   gfx::Size natural_size_ GUARDED_BY(lock_);
 

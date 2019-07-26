@@ -630,6 +630,7 @@ class AutofillManager : public AutofillHandler,
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUploadStressTest);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DisambiguateUploadTypes);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, CrowdsourceUPIVPA);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,

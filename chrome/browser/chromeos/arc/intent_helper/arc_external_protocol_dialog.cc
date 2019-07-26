@@ -480,7 +480,7 @@ void OnAppIconsReceived(
   const bool stay_in_chrome = IsChromeAnAppCandidate(handlers);
   IntentPickerTabHelper::SetShouldShowIcon(web_contents, true);
   browser->window()->ShowIntentPickerBubble(
-      std::move(app_info), stay_in_chrome, /*show_persistence_options=*/true,
+      std::move(app_info), stay_in_chrome, /*show_remember_selection=*/true,
       base::BindOnce(OnIntentPickerClosed, render_process_host_id, routing_id,
                      url, safe_to_bypass_ui, std::move(handlers)));
 }

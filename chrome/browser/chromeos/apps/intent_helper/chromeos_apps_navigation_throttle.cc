@@ -76,6 +76,8 @@ void ChromeOsAppsNavigationThrottle::OnIntentPickerClosed(
       } else {
         close_reason = apps::IntentPickerCloseReason::ERROR_AFTER_PICKER;
       }
+      RecordUma(launch_name, app_type, close_reason, apps::Source::kHttpOrHttps,
+                should_persist);
       return;
     case apps::mojom::AppType::kUnknown:
       // TODO(crbug.com/826982): This workaround can be removed when preferences
@@ -136,7 +138,9 @@ void ChromeOsAppsNavigationThrottle::FindPwaForUrlAndShowIntentPickerForApps(
       FindPwaForUrl(web_contents, url, std::move(apps));
   bool show_persistence_options = ShouldShowPersistenceOptions(apps_for_picker);
   apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
-      web_contents, std::move(apps_for_picker), show_persistence_options,
+      web_contents, std::move(apps_for_picker),
+      /*show_stay_in_chrome=*/show_persistence_options,
+      /*show_remember_selection=*/show_persistence_options,
       base::BindOnce(&OnIntentPickerClosed, web_contents,
                      ui_auto_display_service, url));
 }

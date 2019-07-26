@@ -39,8 +39,6 @@ android_library("java") {
     "java/src/org/chromium/components/signin/ChildAccountStatus.java",
     "java/src/org/chromium/components/signin/ChromeSigninController.java",
     "java/src/org/chromium/components/signin/ConsistencyCookieManager.java",
-    "java/src/org/chromium/components/signin/CoreAccountId.java",
-    "java/src/org/chromium/components/signin/CoreAccountInfo.java",
     "java/src/org/chromium/components/signin/GmsAvailabilityException.java",
     "java/src/org/chromium/components/signin/GmsJustUpdatedException.java",
     "java/src/org/chromium/components/signin/util/PatternMatcher.java",

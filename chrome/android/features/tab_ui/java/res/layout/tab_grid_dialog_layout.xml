@@ -19,7 +19,7 @@
             android:id="@+id/dialog_ungroup_bar"
             android:text="@string/tab_grid_dialog_remove_from_group"
             android:textAppearance="@style/TextAppearance.WhiteHeadline"
-            android:background="@color/modern_blue_600"
+            android:background="@color/light_active_color"
             android:gravity="center"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"

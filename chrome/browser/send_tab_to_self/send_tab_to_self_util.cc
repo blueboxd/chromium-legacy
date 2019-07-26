@@ -77,6 +77,9 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
          HasValidTargetDevice(profile) &&
+         // Send tab to self should not be offered for tel links, click to call
+         // feature will be handling tel links.
+         !link_url.SchemeIs(url::kTelScheme) &&
          (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
           IsContentRequirementsMet(link_url, profile));
 }

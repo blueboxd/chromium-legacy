@@ -1622,7 +1622,23 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
 
-  SetBodyInnerHTML("<div id='target' style='width: 100px; height: 100px'>");
+  SetBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes animation {
+          0% { opacity: 0.3; }
+          100% { opacity: 0.4; }
+        }
+        #target {
+          animation-name: animation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+        }
+      </style>
+      <div id='target'></div>
+  )HTML");
+
   auto* target = GetLayoutObjectByElementId("target");
   auto style = ComputedStyle::Clone(target->StyleRef());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);

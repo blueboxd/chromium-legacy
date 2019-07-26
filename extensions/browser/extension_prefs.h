@@ -614,11 +614,19 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id,
                                        bool use_action_count_as_badge_text);
 
+  // Iterates over the extension pref entries and removes any obsolete keys. We
+  // need to do this here specially (rather than in
+  // MigrateObsoleteProfilePrefs()) because these entries are subkeys of the
+  // extension's dictionary, which is keyed on the extension ID.
+  void MigrateObsoleteExtensionPrefs();
+
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();
 
   void ClearExternalUninstallForTesting(const ExtensionId& id);
+
+  static const char kFakeObsoletePrefForTesting[];
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.

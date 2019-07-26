@@ -6,12 +6,19 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
        xmlns:app="http://schemas.android.com/apk/res-auto">
     <View
+        android:id="@+id/background_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/background_view"
-        android:background="@drawable/popup_bg"
-        android:layout_margin="3dp"
-        android:visibility="visible"/>
+        android:background="@drawable/hovered_tab_grid_card_background"
+        android:layout_margin="8dp"
+        android:visibility="gone"/>
+    <View
+        android:id="@+id/selected_view_below_lollipop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/selected_tab_background"
+        android:layout_margin="6dp"
+        android:visibility="gone"/>
     <FrameLayout
         android:id="@+id/content_view"
         android:layout_width="match_parent"
@@ -20,8 +27,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="center"
-            android:background="@drawable/tab_grid_card_background"
-            android:layout_margin="8dp">
+            android:background="@drawable/popup_bg_tinted"
+            android:layout_margin="2dp">
             <ImageView
                 android:id="@+id/tab_favicon"
                 android:layout_width="@dimen/tab_grid_favicon_size"
@@ -52,12 +59,13 @@
                 android:scaleType="fitCenter"
                 android:importantForAccessibility="no"
                 android:src="@color/thumbnail_placeholder_on_primary_bg"
-                app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
-                app:cornerRadiusBottomEnd="@dimen/default_rounded_corner_radius"
-                app:roundedfillColor="@color/default_bg_color_light"/>
+                app:cornerRadiusBottomStart="@dimen/tab_list_card_radius"
+                app:cornerRadiusBottomEnd="@dimen/tab_list_card_radius"/>
             <View
+                android:id="@+id/divider_view"
                 style="@style/HorizontalDivider"
-                android:layout_below="@id/tab_title"/>
+                android:layout_below="@id/tab_title"
+                android:background="@color/divider_bg_color"/>
             <org.chromium.ui.widget.ButtonCompat
                 android:id="@+id/create_group_button"
                 android:layout_width="wrap_content"
@@ -76,6 +84,6 @@
             android:layout_height="48dp"
             android:scaleType="center"
             android:layout_gravity="end"
-            android:tint="@color/modern_grey_800"/>
+            android:tint="@color/default_icon_color"/>
     </FrameLayout>
 </merge>

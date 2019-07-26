@@ -281,6 +281,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/services/VariationsSeedServerTest.java",
     "../javatests/src/org/chromium/android_webview/test/services/VisualStateCallbackTest.java",
     "../javatests/src/org/chromium/android_webview/test/ui/util/UploadedCrashesInfoLoaderTest.java",
+    "../javatests/src/org/chromium/android_webview/test/ui/util/WebViewCrashLogParserTest.java",
     "../javatests/src/org/chromium/android_webview/test/util/AwQuotaManagerBridgeTestUtil.java",
     "../javatests/src/org/chromium/android_webview/test/util/AwTestTouchUtils.java",
     "../javatests/src/org/chromium/android_webview/test/util/CommonResources.java",

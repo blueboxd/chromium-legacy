@@ -1035,6 +1035,10 @@ const char kFeaturePolicyDescription[] =
     "Enables granting and removing access to features through the "
     "Feature-Policy HTTP header.";
 
+const char kFilteringScrollPredictionName[] = "Filtering scroll prediction";
+const char kFilteringScrollPredictionDescription[] =
+    "Enable filtering of predicted scroll events";
+
 const char kForceEffectiveConnectionTypeName[] =
     "Override effective connection type";
 const char kForceEffectiveConnectionTypeDescription[] =
@@ -1304,6 +1308,11 @@ const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and notification "
     "center on platforms where these are available.";
 
+const char kUpdateHoverAtBeginFrameName[] = "Update hover at the begin frame";
+const char kUpdateHoverAtBeginFrameDescription[] =
+    "Recompute hover state at BeginFrame for layout and scroll based mouse "
+    "moves, rather than old timing-based mechanism.";
+
 const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
@@ -1345,10 +1354,6 @@ const char kOmniboxMaterialDesignWeatherIconsName[] =
 const char kOmniboxMaterialDesignWeatherIconsDescription[] =
     "Use material design weather icons in the omnibox when displaying weather "
     "answers.";
-
-const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
-const char kOmniboxNewAnswerLayoutDescription[] =
-    "Modernize omnibox answers using an enhanced layout with larger icons.";
 
 const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
@@ -2500,6 +2505,16 @@ const char kPasswordManagerOnboardingAndroidName[] =
     "Password manager onboarding experience";
 const char kPasswordManagerOnboardingAndroidDescription[] =
     "This flag enables showing the password manager onboarding experience.";
+
+extern const char kProcessSharingWithDefaultSiteInstancesName[] =
+    "Process sharing with default site instances";
+extern const char kProcessSharingWithDefaultSiteInstancesDescription[] =
+    "When site isolation is disabled, this mode changes how sites are lumped "
+    "in to shared processes. For sites that do not require isolation, this "
+    "feature groups them into a single 'default' site instance (per browsing "
+    "instance) instead of creating unique site instances for each one. This "
+    "enables resource savings by creating fewer processes for sites that do "
+    "not need isolation.";
 
 extern const char kProcessSharingWithStrictSiteInstancesName[] =
     "Process sharing with strict site instances";

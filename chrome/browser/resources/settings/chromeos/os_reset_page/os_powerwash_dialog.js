@@ -19,7 +19,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    settings.ResetOsProxyImpl.getInstance().onPowerwashDialogShow();
+    settings.OsResetBrowserProxyImpl.getInstance().onPowerwashDialogShow();
     this.$.dialog.showModal();
   },
 

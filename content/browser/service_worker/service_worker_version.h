@@ -39,6 +39,8 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -343,11 +345,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // not running is a bit sketchy, maybe this should queue a task to check
   // if the pending request is pending too long? https://crbug.com/797222
   blink::mojom::ControllerServiceWorker* controller() {
-    if (!controller_ptr_.is_bound()) {
-      DCHECK(!controller_request_.is_pending());
-      controller_request_ = mojo::MakeRequest(&controller_ptr_);
+    if (!remote_controller_.is_bound()) {
+      DCHECK(!controller_receiver_.is_valid());
+      controller_receiver_ = remote_controller_.BindNewPipeAndPassReceiver();
     }
-    return controller_ptr_.get();
+    return remote_controller_.get();
   }
 
   // Adds and removes the specified host as a controllee of this service worker.
@@ -843,11 +845,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   blink::mojom::ServiceWorkerPtr service_worker_ptr_;
 
   // Connection to the controller service worker.
-  // |controller_request_| is non-null only when the |controller_ptr_| is
+  // |controller_receiver_| is non-null only when the |remote_controller_| is
   // requested before the worker is started, it is passed to the worker (and
   // becomes null) once it's started.
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr_;
-  blink::mojom::ControllerServiceWorkerRequest controller_request_;
+  mojo::Remote<blink::mojom::ControllerServiceWorker> remote_controller_;
+  mojo::PendingReceiver<blink::mojom::ControllerServiceWorker>
+      controller_receiver_;
 
   std::unique_ptr<ServiceWorkerInstalledScriptsSender>
       installed_scripts_sender_;

@@ -284,6 +284,11 @@ class ActionDelegate {
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> callback) = 0;
 
+  // Force showing the UI if no UI is shown. This is useful when executing a
+  // direct action which realizes it needs to interact with the user. Once
+  // shown, the UI stays up until the end of the flow.
+  virtual void RequireUI() = 0;
+
  protected:
   ActionDelegate() = default;
 };

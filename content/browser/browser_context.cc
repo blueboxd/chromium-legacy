@@ -531,6 +531,14 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
     return;
   browser_context->was_notify_will_be_destroyed_called_ = true;
 
+  // Stop the ServiceManagerConnection from handling any new incoming requests
+  // before we tear anything down. This prevents races at shutdown.
+  BrowserContextServiceManagerConnectionHolder* connection_holder =
+      static_cast<BrowserContextServiceManagerConnectionHolder*>(
+          browser_context->GetUserData(kServiceManagerConnection));
+  if (connection_holder)
+    connection_holder->service_manager_connection()->Stop();
+
   // Subclasses of BrowserContext may expect there to be no more
   // RenderProcessHosts using them by the time this function returns. We
   // therefore explicitly tear down embedded Content Service instances now to
@@ -542,9 +550,6 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // because it's possible for someone to call
   // |GetServiceManagerConnectionFor()| between now and actual BrowserContext
   // destruction.
-  BrowserContextServiceManagerConnectionHolder* connection_holder =
-      static_cast<BrowserContextServiceManagerConnectionHolder*>(
-          browser_context->GetUserData(kServiceManagerConnection));
   if (connection_holder)
     connection_holder->DestroyRunningServices();
 

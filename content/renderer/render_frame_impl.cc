@@ -1752,21 +1752,33 @@ void RenderFrameImpl::MaybeSetDownloadFramePolicy(
     bool blocking_downloads_in_sandbox_without_user_activation_enabled,
     bool from_ad,
     NavigationDownloadPolicy* download_policy) {
+  bool has_gesture = request.HasUserGesture();
+  if (!has_gesture) {
+    download_policy->SetAllowed(NavigationDownloadType::kNoGesture);
+  }
+
   // Disallow downloads on an opener if the requestor is cross origin.
   // See crbug.com/632514.
   if (is_opener_navigation &&
       !request.RequestorOrigin().CanAccess(current_origin)) {
     download_policy->SetDisallowed(NavigationDownloadType::kOpenerCrossOrigin);
   }
-  if (has_download_sandbox_flag && !request.HasUserGesture()) {
-    if (blocking_downloads_in_sandbox_without_user_activation_enabled) {
-      download_policy->SetDisallowed(NavigationDownloadType::kSandboxNoGesture);
-    } else {
-      download_policy->SetAllowed(NavigationDownloadType::kSandboxNoGesture);
+
+  if (has_download_sandbox_flag) {
+    download_policy->SetAllowed(NavigationDownloadType::kSandbox);
+    if (!has_gesture) {
+      if (blocking_downloads_in_sandbox_without_user_activation_enabled) {
+        download_policy->SetDisallowed(
+            NavigationDownloadType::kSandboxNoGesture);
+      } else {
+        download_policy->SetAllowed(NavigationDownloadType::kSandboxNoGesture);
+      }
     }
   }
+
   if (from_ad) {
-    if (!request.HasUserGesture()) {
+    download_policy->SetAllowed(NavigationDownloadType::kAdFrame);
+    if (!has_gesture) {
       if (base::FeatureList::IsEnabled(
               blink::features::
                   kBlockingDownloadsInAdFrameWithoutUserActivation)) {
@@ -1775,8 +1787,6 @@ void RenderFrameImpl::MaybeSetDownloadFramePolicy(
       } else {
         download_policy->SetAllowed(NavigationDownloadType::kAdFrameNoGesture);
       }
-    } else {
-      download_policy->SetAllowed(NavigationDownloadType::kAdFrameGesture);
     }
   }
 }

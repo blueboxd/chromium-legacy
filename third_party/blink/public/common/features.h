@@ -112,6 +112,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::Feature
     kVerifyHTMLFetchedFromAppCacheBeforeDelay;
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBlinkCompositorUseDisplayThreadPriority;
+
 }  // namespace features
 }  // namespace blink
 

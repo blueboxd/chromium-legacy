@@ -77,9 +77,16 @@ void SharingFCMSender::DoSendMessageToDevice(
   web_push_message.urgency = gcm::WebPushMessage::Urgency::kHigh;
   message.SerializeToString(&web_push_message.payload);
 
+  auto fcm_registration = sync_preference_->GetFCMRegistration();
+  if (!fcm_registration) {
+    LOG(ERROR) << "Unable to retrieve FCM registration";
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
   gcm_driver_->SendWebPushMessage(
-      kSharingFCMAppID,
-      /* authorized_entity= */ std::string(), target.p256dh, target.auth_secret,
-      target.fcm_token, vapid_key_manager_->GetOrCreateKey(),
-      std::move(web_push_message), std::move(callback));
+      kSharingFCMAppID, fcm_registration->authorized_entity, target.p256dh,
+      target.auth_secret, target.fcm_token,
+      vapid_key_manager_->GetOrCreateKey(), std::move(web_push_message),
+      std::move(callback));
 }

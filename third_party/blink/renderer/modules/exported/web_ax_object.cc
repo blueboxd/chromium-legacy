@@ -154,14 +154,7 @@ static bool IsLayoutClean(Document* document) {
     return false;
   if (document->View()->NeedsLayout())
     return false;
-  DocumentLifecycle::LifecycleState state = document->Lifecycle().GetState();
-  if (state >= DocumentLifecycle::kLayoutClean ||
-      state == DocumentLifecycle::kStyleClean ||
-      state == DocumentLifecycle::kLayoutSubtreeChangeClean) {
-    return true;
-  }
-
-  return false;
+  return document->Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean;
 }
 
 void WebAXObject::Reset() {

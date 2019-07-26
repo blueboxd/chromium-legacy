@@ -86,6 +86,7 @@ enum RTCPeerConnectionState {
     readonly attribute RTCIceConnectionState iceConnectionState;
     readonly attribute RTCPeerConnectionState connectionState;
     // readonly attribute boolean? canTrickleIceCandidates;
+    void restartIce();
     [CallWith=ScriptState] RTCConfiguration getConfiguration();
     [CallWith=ScriptState, RaisesException] void setConfiguration(RTCConfiguration configuration);
     void close();

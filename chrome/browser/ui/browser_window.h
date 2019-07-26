@@ -340,16 +340,16 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void ShowUpdateChromeDialog() = 0;
 
   // Shows the intent picker bubble. |app_info| contains the app candidates to
-  // display, |enable_stay_in_chrome| allows to enable or disable 'Stay in
-  // Chrome' (used for non-http(s) queries), if |show_persistence_options| is
-  // false, the "remember my choice" checkbox is hidden, the "stay in chrome"
-  // button is hidden, and |callback| helps to continue the flow back to either
+  // display, if |show_stay_in_chrome| is false, the 'Stay in
+  // Chrome' (used for non-http(s) queries) button is hidden, if
+  // |show_remember_selection| is false, the "remember my choice" checkbox is
+  // hidden and |callback| helps to continue the flow back to either
   // AppsNavigationThrottle or ArcExternalProtocolDialog capturing the user's
   // decision and storing UMA metrics.
   virtual void ShowIntentPickerBubble(
       std::vector<apps::IntentPickerAppInfo> app_info,
-      bool enable_stay_in_chrome,
-      bool show_persistence_options,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse callback) = 0;
 
   // Shows the Bookmark bubble. |url| is the URL being bookmarked,

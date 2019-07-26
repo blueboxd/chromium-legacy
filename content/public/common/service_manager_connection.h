@@ -75,6 +75,10 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // below.
   virtual void Start() = 0;
 
+  // Stops accepting incoming connections. This happens asynchronously by
+  // posting to the IO thread, and cannot be undone.
+  virtual void Stop() = 0;
+
   // Returns the service_manager::Connector received via this connection's
   // Service
   // implementation. Use this to initiate connections as this object's Identity.

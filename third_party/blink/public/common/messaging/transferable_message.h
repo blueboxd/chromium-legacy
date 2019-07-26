@@ -47,6 +47,9 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   // destination frame.
   bool transfer_user_activation = false;
 
+  // Whether the destination frame is allowed to autoplay.
+  bool allow_autoplay = false;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TransferableMessage);
 };

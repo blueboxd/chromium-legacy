@@ -619,8 +619,8 @@ void UserSelectionScreen::HandleGetUsers() {
 }
 
 void UserSelectionScreen::CheckUserStatus(const AccountId& account_id) {
-  // No checks on lock screen.
-  if (ScreenLocker::default_screen_locker())
+  // No checks on the multi-profiles signin or locker screen.
+  if (user_manager::UserManager::Get()->IsUserLoggedIn())
     return;
 
   if (!token_handle_util_.get()) {

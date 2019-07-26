@@ -32,6 +32,8 @@
     'uses-responsive-images',
     'uses-text-compression',
     'uses-webp-images',
+    // content shell issues
+    'content-width' // crbug.com/987722
   ];
 
   TestRunner.addResult('Tests that audits panel works.\n');

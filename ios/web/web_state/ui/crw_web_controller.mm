@@ -974,19 +974,13 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       web::WKNavigationState::FINISHED)
     return;
 
-  // Restore allowsBackForwardNavigationGestures and the scroll proxy once
-  // restoration is complete.
+  // Restore allowsBackForwardNavigationGestures once restoration is complete.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       !self.navigationManagerImpl->IsRestoreSessionInProgress()) {
     if (_webView.allowsBackForwardNavigationGestures !=
         _allowsBackForwardNavigationGestures) {
       _webView.allowsBackForwardNavigationGestures =
           _allowsBackForwardNavigationGestures;
-    }
-
-    if (base::FeatureList::IsEnabled(
-            web::features::kDisconnectScrollProxyDuringRestore)) {
-      [_containerView reconnectScrollProxy];
     }
   }
 
@@ -1660,13 +1654,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       [[CRWWebViewContentView alloc] initWithWebView:self.webView
                                           scrollView:self.webScrollView];
   [_containerView displayWebViewContentView:webViewContentView];
-
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      self.navigationManagerImpl->IsRestoreSessionInProgress() &&
-      base::FeatureList::IsEnabled(
-          web::features::kDisconnectScrollProxyDuringRestore)) {
-    [_containerView disconnectScrollProxy];
-  }
 }
 
 - (void)removeWebView {
@@ -2149,17 +2136,12 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   [self loadCompleteWithSuccess:loadSuccess forContext:context];
 }
 
-- (void)webRequestControllerDisconnectScrollViewProxy:
+- (void)webRequestControllerDisableNavigationGesturesUntilFinishNavigation:
     (CRWWebRequestController*)requestController {
   // Disable |allowsBackForwardNavigationGestures| during restore. Otherwise,
   // WebKit will trigger a snapshot for each (blank) page, and quickly
-  // overload system memory.  Also disables the scroll proxy during session
-  // restoration.
+  // overload system memory.
   self.webView.allowsBackForwardNavigationGestures = NO;
-  if (base::FeatureList::IsEnabled(
-          web::features::kDisconnectScrollProxyDuringRestore)) {
-    [_containerView disconnectScrollProxy];
-  }
 }
 
 - (web::UserInteractionState*)webRequestControllerUserInteractionState:

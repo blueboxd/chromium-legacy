@@ -100,6 +100,13 @@ interface MediaControllerObserver {
   // Called when the bound media session changes. This tells the observer the
   // |request_id| of the new session of null if it is not bound to a session.
   MediaSessionChanged(mojo_base.mojom.UnguessableToken? request_id);
+
+  // Called when the position of the bound media session has changed. If
+  // |position| is empty then the media session does not have a position or
+  // the controller is no longer bound to a media session. Position is updated
+  // anytime the position state (playback rate, duration) is changed or the
+  // media is seeked.
+  MediaSessionPositionChanged(MediaPosition? position);
 };
 
 // The observer for observing when images associated with a media controller

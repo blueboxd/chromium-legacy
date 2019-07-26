@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -36,6 +37,8 @@ namespace safe_browsing {
 namespace {
 
 static constexpr uint8_t kVersion = 1U;
+static constexpr uint32_t kErrorMoreData =
+    0xEA;  // Equivalent to Windows ERROR_MORE_DATA
 
 // Get the error category from a histogram sample.
 ChromePromptChannelProtobuf::ErrorCategory SampleToCategory(
@@ -142,6 +145,11 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
   // Closes the cleaner process pipe handles to simulate the cleaner process
   // exiting.
   void CloseCleanerHandles() {
+    // Cancel anything that might be left to be read/written for fail-scenario
+    // tests.
+    ::CancelIoEx(response_read_handle_.Get(), nullptr);
+    ::CancelIoEx(request_write_handle_.Get(), nullptr);
+
     response_read_handle_.Close();
     request_write_handle_.Close();
   }
@@ -153,19 +161,45 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
                        base::Unretained(this)));
   }
 
-  void WriteVersion(uint8_t version) {
+  template <typename T>
+  void WriteByValue(T value) {
     DWORD bytes_written = 0;
-    ASSERT_TRUE(::WriteFile(request_write_handle_.Get(), &version,
-                            sizeof(version), &bytes_written, nullptr));
-    ASSERT_EQ(bytes_written, sizeof(version));
+    ASSERT_TRUE(::WriteFile(request_write_handle_.Get(), &value, sizeof(value),
+                            &bytes_written, nullptr));
+    ASSERT_EQ(bytes_written, sizeof(value));
   }
 
-  // Writes the version to the pipe without blocking the main test thread.
-  void PostWriteVersion(uint8_t version) {
+  template <typename T>
+  void WriteByPointer(const T* ptr, uint32_t size, bool should_succeed) {
+    DWORD bytes_written = 0;
+    ASSERT_EQ(::WriteFile(request_write_handle_.Get(), ptr, size,
+                          &bytes_written, nullptr),
+              should_succeed);
+
+    // On a failed write we don't care about the number of bytes read.
+    if (should_succeed) {
+      ASSERT_EQ(bytes_written, size);
+    }
+  }
+
+  // Writes bytes taken by pointer to the pipe without blocking the main test
+  // thread.
+  template <typename T>
+  void PostWriteByPointer(const T* ptr, uint32_t size, bool should_succeed) {
     channel_->task_runner()->PostTask(
         FROM_HERE,
-        base::BindOnce(&ChromePromptChannelProtobufTest::WriteVersion,
-                       base::Unretained(this), version));
+        base::BindOnce(&ChromePromptChannelProtobufTest::WriteByPointer<T>,
+                       base::Unretained(this), ptr, size, should_succeed));
+  }
+
+  // Writes bytes taken by value to the pipe without blocking the main test
+  // thread.
+  template <typename T>
+  void PostWriteByValue(T value) {
+    channel_->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChromePromptChannelProtobufTest::WriteByValue<T>,
+                       base::Unretained(this), value));
   }
 
   void ExpectReadFails() {
@@ -200,6 +234,7 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
   base::RunLoop run_loop_;
   ChromePromptChannelPtr channel_ =
       ChromePromptChannelPtr(nullptr, base::OnTaskRunnerDeleter(nullptr));
+
   base::win::ScopedHandle response_read_handle_;
   base::win::ScopedHandle request_write_handle_;
 
@@ -239,7 +274,8 @@ TEST_F(ChromePromptChannelProtobufTest, VersionIsTooLarge) {
   channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
 
   // Invalid version
-  PostWriteVersion(128);
+  constexpr uint8_t kVersion = 128;
+  PostWriteByValue(kVersion);
   WaitForDisconnect();
 
   // We expect the the handshake to have failed because of the version.
@@ -255,7 +291,8 @@ TEST_F(ChromePromptChannelProtobufTest, VersionIsZero) {
   channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
 
   // Invalid version
-  PostWriteVersion(0U);
+  constexpr uint8_t kVersion = 0;
+  PostWriteByValue(kVersion);
   WaitForDisconnect();
 
   // We expect the the handshake to have failed because of the version.
@@ -270,17 +307,148 @@ TEST_F(ChromePromptChannelProtobufTest, ExitAfterVersion) {
   channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
 
   // Write version 1.
-  PostWriteVersion(kVersion);
+  PostWriteByValue(kVersion);
 
   // Simulate the cleaner exiting after writing the version.
   PostCloseCleanerHandles();
 
   WaitForDisconnect();
 
-  // There were no errors so the histogram should be empty
-  // TODO(crbug.com/969139): We should be getting a kReadRequestLengthWinError
-  // here.
-  ExpectHistogramEmpty();
+  ExpectCategoryErrorCount(
+      ChromePromptChannelProtobuf::ErrorCategory::kReadRequestLengthWinError,
+      1);
+
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostSizeOfZero) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  // Send invalid size
+  PostWriteByValue(0U);
+  WaitForDisconnect();
+
+  ExpectUniqueSample(
+      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+      ChromePromptChannelProtobuf::CustomErrors::kRequestInvalidSize);
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostSizeMoreThanMax) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  // Send invalid size
+  PostWriteByValue(ChromePromptChannelProtobuf::kMaxMessageLength + 1);
+  WaitForDisconnect();
+
+  ExpectUniqueSample(
+      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+      ChromePromptChannelProtobuf::CustomErrors::kRequestInvalidSize);
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, PostExtraData) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  constexpr uint32_t kSize = 10;
+  const std::vector<uint8_t> bytes(kSize);
+
+  // Post the size of the read.
+  PostWriteByValue(kSize - 1);
+
+  // Post slightly more data.
+  PostWriteByPointer(bytes.data(), bytes.size(), false);
+
+  WaitForDisconnect();
+
+  ExpectUniqueSample(
+      ChromePromptChannelProtobuf::ErrorCategory::kReadRequestWinError,
+      kErrorMoreData);
+
+  ExpectReadFails();
+}
+
+// The pipes are valid before ConnectToCleaner just as much as after.
+TEST_F(ChromePromptChannelProtobufTest, VersionSentBeforeConnection) {
+  SetupCommunicationFailure();
+
+  // Valid version but BEFORE connection
+  PostWriteByValue(kVersion);
+
+  // Connect
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Disconnect
+  PostCloseCleanerHandles();
+  WaitForDisconnect();
+
+  // The first read that fails is the reading of the length of the first
+  // request. That is because the sending of the version was successful (unless
+  // we see an error in the histogram which will cause a test failure) and we
+  // disconnect before sending a length.
+  ExpectCategoryErrorCount(
+      ChromePromptChannelProtobuf::ErrorCategory::kReadRequestLengthWinError,
+      1);
+
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, LengthShortWrite) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  // The receiving side expects to receive the size of the request using 4
+  // bytes. Setup data that is one byte less than that.
+  const std::vector<uint8_t> bytes(sizeof(uint32_t) - 1);
+
+  // Post the incomplete size data.
+  PostWriteByPointer(bytes.data(), bytes.size(), true);
+
+  WaitForDisconnect();
+
+  ExpectUniqueSample(
+      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+      ChromePromptChannelProtobuf::CustomErrors::kRequestLengthShortRead);
+
+  ExpectReadFails();
+}
+
+TEST_F(ChromePromptChannelProtobufTest, RequestShortWrite) {
+  SetupCommunicationFailure();
+  channel_->ConnectToCleaner(std::move(mock_cleaner_process_));
+
+  // Valid version
+  PostWriteByValue(kVersion);
+
+  constexpr uint32_t kSize = 10;
+  const std::vector<uint8_t> bytes(kSize);
+
+  // Post the size of the read. It's too big.
+  PostWriteByValue(kSize + 1);
+
+  // Post slightly less data.
+  PostWriteByPointer(bytes.data(), bytes.size(), true);
+
+  WaitForDisconnect();
+
+  ExpectUniqueSample(
+      ChromePromptChannelProtobuf::ErrorCategory::kCustomError,
+      ChromePromptChannelProtobuf::CustomErrors::kRequestShortRead);
 
   ExpectReadFails();
 }

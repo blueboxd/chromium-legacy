@@ -847,6 +847,13 @@ void MediaSessionImpl::AddObserver(
   std::vector<media_session::mojom::MediaSessionAction> actions(
       actions_.begin(), actions_.end());
   media_session_observer->MediaSessionActionsChanged(actions);
+
+  // TODO(crbug.com/985394): Use real position data here, this is mock data.
+  media_session::MediaPosition media_position(
+      1 /* playback_rate */, base::TimeDelta::FromSeconds(600) /* duration */,
+      base::TimeDelta::FromSeconds(300) /* position */);
+  media_session_observer->MediaSessionPositionChanged(media_position);
+
   observers_.Add(std::move(media_session_observer));
 }
 

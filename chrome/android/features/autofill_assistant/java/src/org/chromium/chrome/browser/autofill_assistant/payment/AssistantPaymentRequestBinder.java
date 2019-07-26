@@ -10,6 +10,7 @@ import android.view.View;
 
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRequestTermsSection.Delegate;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillPaymentApp;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -96,6 +97,7 @@ class AssistantPaymentRequestBinder
         private final AssistantPaymentRequestPaymentMethodSection mPaymentMethodSection;
         private final AssistantPaymentRequestShippingAddressSection mShippingAddressSection;
         private final AssistantPaymentRequestTermsSection mTermsSection;
+        private final AssistantPaymentRequestTermsSection mTermsAsCheckboxSection;
         private final Object mDividerTag;
         private final Activity mActivity;
         private PersonalDataManager.PersonalDataManagerObserver mPersonalDataManagerObserver;
@@ -105,7 +107,8 @@ class AssistantPaymentRequestBinder
                 AssistantPaymentRequestContactDetailsSection contactDetailsSection,
                 AssistantPaymentRequestPaymentMethodSection paymentMethodSection,
                 AssistantPaymentRequestShippingAddressSection shippingAddressSection,
-                AssistantPaymentRequestTermsSection termsSection, Object dividerTag,
+                AssistantPaymentRequestTermsSection termsSection,
+                AssistantPaymentRequestTermsSection termsAsCheckboxSection, Object dividerTag,
                 Activity activity) {
             mRootView = rootView;
             mPaymentRequestExpanderAccordion = accordion;
@@ -114,6 +117,7 @@ class AssistantPaymentRequestBinder
             mPaymentMethodSection = paymentMethodSection;
             mShippingAddressSection = shippingAddressSection;
             mTermsSection = termsSection;
+            mTermsAsCheckboxSection = termsAsCheckboxSection;
             mDividerTag = dividerTag;
             mActivity = activity;
         }
@@ -156,8 +160,20 @@ class AssistantPaymentRequestBinder
         if (propertyKey == AssistantPaymentRequestModel.DELEGATE) {
             AssistantPaymentRequestDelegate delegate =
                     model.get(AssistantPaymentRequestModel.DELEGATE);
-            view.mTermsSection.setListener(
-                    delegate != null ? delegate::onTermsAndConditionsChanged : null);
+
+            Delegate termsDelegate = delegate == null ? null : new Delegate() {
+                @Override
+                public void onStateChanged(@AssistantTermsAndConditionsState int state) {
+                    delegate.onTermsAndConditionsChanged(state);
+                }
+
+                @Override
+                public void onLinkClicked(int link) {
+                    delegate.onTermsAndConditionsLinkClicked(link);
+                }
+            };
+            view.mTermsSection.setDelegate(termsDelegate);
+            view.mTermsAsCheckboxSection.setDelegate(termsDelegate);
             view.mContactDetailsSection.setListener(
                     delegate != null ? delegate::onContactInfoChanged : null);
             view.mPaymentMethodSection.setListener(
@@ -232,9 +248,20 @@ class AssistantPaymentRequestBinder
             view.mPaymentMethodSection.setVisible(
                     (model.get(AssistantPaymentRequestModel.REQUEST_PAYMENT)));
             return true;
-        } else if (propertyKey == AssistantPaymentRequestModel.REQUEST_TERMS_AND_CONDITIONS) {
-            view.mTermsSection.setTermsListVisible(
-                    model.get(AssistantPaymentRequestModel.REQUEST_TERMS_AND_CONDITIONS));
+        } else if (propertyKey == AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT) {
+            view.mTermsSection.setAcceptTermsAndConditionsText(
+                    model.get(AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
+            view.mTermsAsCheckboxSection.setAcceptTermsAndConditionsText(
+                    model.get(AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT));
+            return true;
+        } else if (propertyKey == AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX) {
+            if (model.get(AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX)) {
+                view.mTermsSection.getView().setVisibility(View.GONE);
+                view.mTermsAsCheckboxSection.getView().setVisibility(View.VISIBLE);
+            } else {
+                view.mTermsSection.getView().setVisibility(View.VISIBLE);
+                view.mTermsAsCheckboxSection.getView().setVisibility(View.GONE);
+            }
             return true;
         }
         return false;
@@ -259,6 +286,9 @@ class AssistantPaymentRequestBinder
                 if (webContents != null) {
                     view.mTermsSection.setOrigin(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
                             webContents.getLastCommittedUrl()));
+                    view.mTermsAsCheckboxSection.setOrigin(
+                            UrlFormatter.formatUrlForSecurityDisplayOmitScheme(
+                                    webContents.getLastCommittedUrl()));
                 }
                 view.startListenToPersonalDataManager(() -> {
                     AssistantPaymentRequestBinder.this.updateAvailableProfiles(model, view);
@@ -291,7 +321,9 @@ class AssistantPaymentRequestBinder
                     model.get(AssistantPaymentRequestModel.CONTACT_DETAILS), true);
             return true;
         } else if (propertyKey == AssistantPaymentRequestModel.TERMS_STATUS) {
-            view.mTermsSection.setTermsStatus(model.get(AssistantPaymentRequestModel.TERMS_STATUS));
+            int termsStatus = model.get(AssistantPaymentRequestModel.TERMS_STATUS);
+            view.mTermsSection.setTermsStatus(termsStatus);
+            view.mTermsAsCheckboxSection.setTermsStatus(termsStatus);
             return true;
         }
         return false;
@@ -339,6 +371,7 @@ class AssistantPaymentRequestBinder
             view.mShippingAddressSection.setPaddings(0, view.mSectionToSectionPadding);
         }
         view.mTermsSection.setPaddings(view.mSectionToSectionPadding, 0);
+        view.mTermsAsCheckboxSection.setPaddings(view.mSectionToSectionPadding, 0);
 
         // Hide dividers for currently invisible sections and after the expanded section, if any.
         boolean prevSectionIsExpandedOrInvisible = false;

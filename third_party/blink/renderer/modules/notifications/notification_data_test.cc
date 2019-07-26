@@ -99,7 +99,7 @@ TEST_F(NotificationDataTest, ReflectProperties) {
     actions.push_back(action);
   }
 
-  DOMTimeStamp showTimestamp = WTF::CurrentTimeMS();
+  DOMTimeStamp showTimestamp = base::Time::Now().ToDoubleT() * 1000.0;
   TimestampTrigger* showTrigger = TimestampTrigger::Create(showTimestamp);
 
   NotificationOptions* options = NotificationOptions::Create();
@@ -286,7 +286,8 @@ TEST_F(NotificationDataTest, DefaultTimestampValue) {
   // The timestamp should be set to the current time since the epoch if it
   // wasn't supplied by the developer. "32" has no significance, but an equal
   // comparison of the value could lead to flaky failures.
-  EXPECT_NEAR(notification_data->timestamp, WTF::CurrentTimeMS(), 32);
+  EXPECT_NEAR(notification_data->timestamp,
+              base::Time::Now().ToDoubleT() * 1000.0, 32);
 }
 
 TEST_F(NotificationDataTest, DirectionValues) {

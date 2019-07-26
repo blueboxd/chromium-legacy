@@ -21,11 +21,11 @@ MockSystemService::MockSystemService(const std::string& consumer_socket,
       task_runner_(std::make_unique<PerfettoTaskRunner>(
           base::SequencedTaskRunnerHandle::Get())) {
   service_ = perfetto::ServiceIPCHost::CreateInstance(task_runner_.get());
-  DCHECK(service_);
+  CHECK(service_);
   unlink(producer_socket.c_str());
   unlink(consumer_socket.c_str());
   bool succeeded = service_->Start(producer_.c_str(), consumer_.c_str());
-  DCHECK(succeeded);
+  CHECK(succeeded);
 }
 
 MockSystemService::~MockSystemService() {
@@ -73,7 +73,7 @@ MockAndroidSystemProducer::~MockAndroidSystemProducer() {
   // See comment in the constructor.
   auto client = PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
       std::move(old_producer_));
-  DCHECK(client.get() == this);
+  CHECK(client.get() == this);
   client.release();
 }
 
@@ -81,7 +81,7 @@ void MockAndroidSystemProducer::StartDataSource(
     perfetto::DataSourceInstanceID id,
     const perfetto::DataSourceConfig& data_source_config) {
   AndroidSystemProducer::StartDataSource(id, data_source_config);
-  DCHECK_LT(num_data_sources_active_, num_data_sources_expected_);
+  CHECK_LT(num_data_sources_active_, num_data_sources_expected_);
   if (data_source_enabled_callback_ &&
       ++num_data_sources_active_ == num_data_sources_expected_) {
     std::move(data_source_enabled_callback_).Run();
@@ -91,7 +91,7 @@ void MockAndroidSystemProducer::StartDataSource(
 void MockAndroidSystemProducer::StopDataSource(
     perfetto::DataSourceInstanceID id) {
   AndroidSystemProducer::StopDataSource(id);
-  DCHECK_GT(num_data_sources_active_, 0u);
+  CHECK_GT(num_data_sources_active_, 0u);
   if (data_source_disabled_callback_ && --num_data_sources_active_ == 0) {
     std::move(data_source_disabled_callback_).Run();
   }

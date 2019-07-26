@@ -384,13 +384,10 @@ void HeapCompact::Initialize(ThreadState* state) {
   force_for_next_gc_ = false;
 }
 
-void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
+bool HeapCompact::ShouldRegisterMovingObjectReference(MovableReference* slot) {
   CHECK(heap_->LookupPageForAddress(reinterpret_cast<Address>(slot)));
 
-  if (!do_compact_)
-    return;
-
-  traced_slots_.insert(slot);
+  return do_compact_;
 }
 
 void HeapCompact::RegisterMovingObjectCallback(MovableReference* slot,
@@ -458,13 +455,15 @@ void HeapCompact::FilterNonLiveSlots() {
     return;
 
   last_fixup_count_for_testing_ = 0;
-  for (auto** slot : traced_slots_) {
+  MovableReferenceWorklist::View traced_slots(
+      heap_->GetMovableReferenceWorklist(), WorklistTaskId::MainThread);
+  MovableReference* slot;
+  while (traced_slots.Pop(&slot)) {
     if (*slot) {
       Fixups().AddOrFilter(slot);
       last_fixup_count_for_testing_++;
     }
   }
-  traced_slots_.clear();
 }
 
 void HeapCompact::Finish() {
@@ -484,9 +483,9 @@ void HeapCompact::Cancel() {
     return;
 
   last_fixup_count_for_testing_ = 0;
-  traced_slots_.clear();
-  fixups_.reset();
   do_compact_ = false;
+  heap_->GetMovableReferenceWorklist()->Clear();
+  fixups_.reset();
 }
 
 void HeapCompact::AddCompactingPage(BasePage* page) {

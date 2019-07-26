@@ -84,9 +84,12 @@ Color.findDistance = function(firstColor, secondColor) {
 
 /**
  * The distance between black and dark grey is the threshold.
+ * 0x000000 = Black.
+ * 0x282828 = Dark Grey. This value was chosen somewhat arbitrarily. It encodes
+ * a shade of grey that could be visibly identified as black.
  * @const {number}
  */
-Color.DISTANCE_THRESHOLD = Color.findDistance(0X000000, 0X181818);
+Color.DISTANCE_THRESHOLD = Color.findDistance(0X000000, 0X282828);
 
 /**
  * Holds objects that contain hexadecimal RGB values of colors and their

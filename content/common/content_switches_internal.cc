@@ -88,9 +88,9 @@ void WaitForDebugger(const std::string& label) {
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
   std::string title = "Google Chrome";
-#else   // CHROMIUM_BUILD
+#else   // BUILDFLAG(CHROMIUM_BRANDING)
   std::string title = "Chromium";
-#endif  // CHROMIUM_BUILD
+#endif  // BUILDFLAG(CHROMIUM_BRANDING)
   title += " ";
   title += label;  // makes attaching to process easier
   std::string message = label;

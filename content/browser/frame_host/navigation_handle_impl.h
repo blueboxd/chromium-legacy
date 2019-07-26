@@ -194,10 +194,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->common_params().source_location;
   }
 
-  void set_proxy_server(const net::ProxyServer& proxy_server) {
-    proxy_server_ = proxy_server;
-  }
-
   std::vector<std::string> TakeRemovedRequestHeaders() {
     return std::move(removed_request_headers_);
   }
@@ -272,17 +268,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // corresponding provider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
-  // The unique id to identify this to navigation with.
-  int64_t navigation_id_;
-
   // Stores the reload type, or NONE if it's not a reload.
   ReloadType reload_type_;
 
   // Stores the restore type, or NONE it it's not a restore.
   RestoreType restore_type_;
-
-  // Which proxy server was used for this navigation, if any.
-  net::ProxyServer proxy_server_;
 
   // Allows to override response_headers_ in tests.
   // TODO(clamy): Clean this up once the architecture of unit tests is better.

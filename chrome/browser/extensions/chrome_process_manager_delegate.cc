@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -33,8 +34,7 @@
 namespace extensions {
 
 ChromeProcessManagerDelegate::ChromeProcessManagerDelegate() {
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllSources());
+  BrowserList::AddObserver(this);
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
@@ -44,6 +44,7 @@ ChromeProcessManagerDelegate::ChromeProcessManagerDelegate() {
 }
 
 ChromeProcessManagerDelegate::~ChromeProcessManagerDelegate() {
+  BrowserList::RemoveObserver(this);
 }
 
 bool ChromeProcessManagerDelegate::AreBackgroundPagesAllowedForContext(
@@ -111,7 +112,7 @@ bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
 
   // There are no browser windows open and the browser process was
   // started to show the app launcher. Background hosts will be loaded later
-  // via NOTIFICATION_BROWSER_OPENED. http://crbug.com/178260
+  // via OnBrowserAdded(). http://crbug.com/178260
   return chrome::GetBrowserCount(profile) == 0 &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              ::switches::kShowAppList);
@@ -122,11 +123,6 @@ void ChromeProcessManagerDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_OPENED: {
-      Browser* browser = content::Source<Browser>(source).ptr();
-      OnBrowserOpened(browser);
-      break;
-    }
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
       OnProfileCreated(profile);
@@ -142,7 +138,7 @@ void ChromeProcessManagerDelegate::Observe(
   }
 }
 
-void ChromeProcessManagerDelegate::OnBrowserOpened(Browser* browser) {
+void ChromeProcessManagerDelegate::OnBrowserAdded(Browser* browser) {
   Profile* profile = browser->profile();
   DCHECK(profile);
 

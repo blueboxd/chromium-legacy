@@ -56,16 +56,13 @@ TEST_F(LayoutViewTest, DisplayNoneFrame) {
   LayoutObject* view = frame_doc->GetLayoutView();
   ASSERT_TRUE(view);
   EXPECT_FALSE(view->CanHaveChildren());
+  EXPECT_FALSE(frame_doc->documentElement()->GetComputedStyle());
 
   frame_doc->body()->SetInnerHTMLFromString(R"HTML(
     <div id="div"></div>
   )HTML");
 
-  frame_doc->Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  frame_doc->GetStyleEngine().RecalcStyle({});
-
-  Element* div = frame_doc->getElementById("div");
-  EXPECT_FALSE(div->GetComputedStyle());
+  EXPECT_FALSE(frame_doc->NeedsLayoutTreeUpdate());
 }
 
 struct HitTestConfig {

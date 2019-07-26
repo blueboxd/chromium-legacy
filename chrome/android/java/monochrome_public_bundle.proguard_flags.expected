@@ -292,11 +292,6 @@
 # Fragments loaded by name via Fragment.instantiate(Context,String)
 # Not all fragments in this package are PreferenceFragments. E.g. HomepageEditor
 # is a normal Fragment.
-# TODO(crbug.com/967022): Remove the android.app.Fragment rule once all
-# Fragments have been migrated to the support library.
--keep public class org.chromium.chrome.browser.** extends android.app.Fragment {
-  public <init>();
-}
 -keep public class org.chromium.chrome.browser.preferences.** extends android.support.v4.app.Fragment {
   public <init>();
 }

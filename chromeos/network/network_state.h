@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -77,6 +78,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   const std::string& device_path() const { return device_path_; }
   const std::string& guid() const { return guid_; }
   const std::string& profile_path() const { return profile_path_; }
+  const GURL& probe_url() const { return probe_url_; }
   ::onc::ONCSource onc_source() const { return onc_source_; }
 
   // Provides the error for the last attempt to connect/configure the network
@@ -272,6 +274,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string connection_state_;
   std::string last_connection_state_;
   std::string profile_path_;
+  GURL probe_url_;
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
   int priority_ = 0;  // kPriority, used for organizing known networks.
   ::onc::ONCSource onc_source_ = ::onc::ONC_SOURCE_UNKNOWN;

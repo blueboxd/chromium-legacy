@@ -1113,9 +1113,7 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
           false);                 // It's a folder itself.
       return;
     }
-    case sync_pb::AppListSpecifics::TYPE_URL: {
-      // TODO(stevenjb): Implement
-      LOG(WARNING) << "TYPE_URL not supported";
+    case sync_pb::AppListSpecifics::TYPE_OBSOLETE_URL: {
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_PAGE_BREAK: {

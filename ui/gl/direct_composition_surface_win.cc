@@ -281,6 +281,16 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 }
 
 // static
+bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported() {
+  if (base::FeatureList::IsEnabled(
+          features::kDirectCompositionUseNV12DecodeSwapChain)) {
+    InitializeHardwareOverlaySupport();
+    return GetOverlayFormatUsed() == DXGI_FORMAT_NV12;
+  }
+  return false;
+}
+
+// static
 void DirectCompositionSurfaceWin::DisableOverlays() {
   g_supports_overlays = false;
 }

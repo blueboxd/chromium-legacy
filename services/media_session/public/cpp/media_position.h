@@ -9,6 +9,16 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 
+namespace IPC {
+template <class P>
+struct ParamTraits;
+}
+
+namespace ipc_fuzzer {
+template <class T>
+struct FuzzTraits;
+}  // namespace ipc_fuzzer
+
 namespace mojo {
 template <typename DataViewType, typename T>
 struct StructTraits;
@@ -50,6 +60,8 @@ struct COMPONENT_EXPORT(MEDIA_SESSION_BASE_CPP) MediaPosition {
   std::string ToString() const;
 
  private:
+  friend struct IPC::ParamTraits<media_session::MediaPosition>;
+  friend struct ipc_fuzzer::FuzzTraits<media_session::MediaPosition>;
   friend struct mojo::StructTraits<mojom::MediaPositionDataView, MediaPosition>;
   friend class MediaPositionTest;
   FRIEND_TEST_ALL_PREFIXES(MediaPositionTest, TestPositionUpdated);

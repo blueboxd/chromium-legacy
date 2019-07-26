@@ -68,9 +68,7 @@ double MockWMRInputSourceState::ThumbstickX() const {
   return val;
 }
 
-// Invert the y axis because gamepad and the rest of Chrome follows the
-// convention that -1 is up, but WMR reports -1 as down.
-// TODO(https://crbug.com/966060): Revisit this if the convention changes.
+// Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
 double MockWMRInputSourceState::ThumbstickY() const {
   double val = data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisPrimary)].y;
   // Should be in [-1, 1] for joysticks.
@@ -88,9 +86,7 @@ double MockWMRInputSourceState::TouchpadX() const {
   return val;
 }
 
-// Invert the y axis because gamepad and the rest of Chrome follows the
-// convention that -1 is up, but WMR reports -1 as down.
-// TODO(https://crbug.com/966060): Revisit this if the convention changes.
+// Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
 double MockWMRInputSourceState::TouchpadY() const {
   double val =
       data_.axis_data[XrAxisOffsetFromId(XrButtonId::kAxisSecondary)].y;

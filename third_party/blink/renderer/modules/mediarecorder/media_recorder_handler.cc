@@ -119,7 +119,8 @@ MediaRecorderHandler::MediaRecorderHandler(
       audio_codec_id_(AudioTrackRecorder::CodecId::LAST),
       recording_(false),
       recorder_(nullptr),
-      task_runner_(std::move(task_runner)) {}
+      task_runner_(std::move(task_runner)),
+      weak_factory_(this) {}
 
 MediaRecorderHandler::~MediaRecorderHandler() = default;
 
@@ -253,7 +254,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
                            CodecIdToMediaAudioCodec(audio_codec_id_),
                            use_video_tracks, use_audio_tracks,
                            WTF::BindRepeating(&MediaRecorderHandler::WriteData,
-                                              WrapWeakPersistent(this))));
+                                              weak_factory_.GetWeakPtr())));
 
   if (use_video_tracks) {
     // TODO(mcasas): The muxer API supports only one video track. Extend it to
@@ -266,7 +267,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
 
     const VideoTrackRecorder::OnEncodedVideoCB on_encoded_video_cb =
         media::BindToCurrentLoop(WTF::BindRepeating(
-            &MediaRecorderHandler::OnEncodedVideo, WrapWeakPersistent(this)));
+            &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
     video_recorders_.emplace_back(MakeGarbageCollected<VideoTrackRecorder>(
         video_codec_id_, video_tracks_[0], on_encoded_video_cb,
@@ -284,7 +285,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
 
     const AudioTrackRecorder::OnEncodedAudioCB on_encoded_audio_cb =
         media::BindToCurrentLoop(base::Bind(
-            &MediaRecorderHandler::OnEncodedAudio, WrapWeakPersistent(this)));
+            &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
     audio_recorders_.emplace_back(MakeGarbageCollected<AudioTrackRecorder>(
         audio_codec_id_, audio_tracks_[0], std::move(on_encoded_audio_cb),
@@ -299,6 +300,7 @@ void MediaRecorderHandler::Stop() {
   DCHECK(IsMainThread());
   // Don't check |recording_| since we can go directly from pause() to stop().
 
+  weak_factory_.InvalidateWeakPtrs();
   recording_ = false;
   timeslice_ = base::TimeDelta::FromMilliseconds(0);
   video_recorders_.clear();
@@ -458,9 +460,6 @@ void MediaRecorderHandler::OnEncodedVideo(
     bool is_key_frame) {
   DCHECK(IsMainThread());
 
-  if (video_recorders_.IsEmpty())
-    return;
-
   if (UpdateTracksAndCheckIfChanged()) {
     recorder_->OnError("Amount of tracks in MediaStream has changed.");
     return;
@@ -479,9 +478,6 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
                                           std::string encoded_data,
                                           base::TimeTicks timestamp) {
   DCHECK(IsMainThread());
-
-  if (audio_recorders_.IsEmpty())
-    return;
 
   if (UpdateTracksAndCheckIfChanged()) {
     recorder_->OnError("Amount of tracks in MediaStream has changed.");

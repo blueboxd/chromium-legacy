@@ -150,6 +150,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   DISALLOW_COPY_AND_ASSIGN(InterceptedRequest);
 };
 
+// A ResponseDelegate for responses returned by shouldInterceptRequest.
 class InterceptResponseDelegate
     : public AndroidStreamReaderURLLoader::ResponseDelegate {
  public:
@@ -203,6 +204,9 @@ class InterceptResponseDelegate
   base::WeakPtr<InterceptedRequest> request_;
 };
 
+// A ResponseDelegate based on top of AndroidProtocolHandler for special
+// protocols, such as content://, file:///android_asset, and file:///android_res
+// URLs.
 class ProtocolResponseDelegate
     : public AndroidStreamReaderURLLoader::ResponseDelegate {
  public:

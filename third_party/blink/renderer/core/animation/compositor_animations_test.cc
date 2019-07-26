@@ -873,10 +873,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   effect1->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
 
-  EXPECT_EQ(2u,
-            effect1->GetPropertySpecificKeyframes(target_property1h).size());
-  EXPECT_FALSE(effect1->GetPropertySpecificKeyframes(target_property1h)[0]
-                   ->GetCompositorKeyframeValue());
+  const auto& keyframes1 =
+      *effect1->GetPropertySpecificKeyframes(target_property1h);
+  EXPECT_EQ(2u, keyframes1.size());
+  EXPECT_FALSE(keyframes1[0]->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect1->Properties().size());
   EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
                                               animation1, *effect1) &
@@ -896,10 +896,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   effect2->SnapshotAllCompositorKeyframesIfNecessary(*inline_.Get(), *style,
                                                      nullptr);
 
-  EXPECT_EQ(2u,
-            effect2->GetPropertySpecificKeyframes(target_property2h).size());
-  EXPECT_TRUE(effect2->GetPropertySpecificKeyframes(target_property2h)[0]
-                  ->GetCompositorKeyframeValue());
+  const auto& keyframes2 =
+      *effect2->GetPropertySpecificKeyframes(target_property2h);
+  EXPECT_EQ(2u, keyframes2.size());
+  EXPECT_TRUE(keyframes2[0]->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect2->Properties().size());
   EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *inline_.Get(),
                                               animation2, *effect2) &
@@ -922,10 +922,10 @@ TEST_P(AnimationCompositorAnimationsTest,
   effect3->SnapshotAllCompositorKeyframesIfNecessary(*element_.Get(), *style,
                                                      nullptr);
 
-  EXPECT_EQ(2u,
-            effect3->GetPropertySpecificKeyframes(target_property3h).size());
-  EXPECT_TRUE(effect3->GetPropertySpecificKeyframes(target_property3h)[0]
-                  ->GetCompositorKeyframeValue());
+  const auto& keyframes3 =
+      *effect3->GetPropertySpecificKeyframes(target_property3h);
+  EXPECT_EQ(2u, keyframes3.size());
+  EXPECT_TRUE(keyframes3[0]->GetCompositorKeyframeValue());
   EXPECT_EQ(1u, effect3->Properties().size());
   EXPECT_TRUE(CheckCanStartEffectOnCompositor(timing_, *element_.Get(),
                                               animation3, *effect3) &

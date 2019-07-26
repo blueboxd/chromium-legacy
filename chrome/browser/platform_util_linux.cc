@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -136,6 +137,9 @@ void ShowItem(Profile* profile,
 namespace internal {
 
 void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
+  // May result in an interactive dialog.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   switch (type) {
     case OPEN_FILE:
       XDGOpen(path.DirName(), path.value());

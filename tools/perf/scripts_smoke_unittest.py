@@ -33,8 +33,6 @@ class ScriptsSmokeTest(unittest.TestCase):
     return_code = proc.returncode
     return return_code, stdout
 
-  # TODO(crbug.com/985712): Re-enable after new command line interface lands.
-  @decorators.Disabled('all')
   def testRunBenchmarkHelp(self):
     return_code, stdout = self.RunPerfScript('run_benchmark --help')
     self.assertEquals(return_code, 0, stdout)
@@ -45,8 +43,6 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('Pass --browser to list benchmarks', stdout)
     self.assertNotEquals(return_code, 0)
 
-  # TODO(crbug.com/985712): Re-enable after new command line interface lands.
-  @decorators.Disabled('all')
   def testRunBenchmarkRunNonExistingBenchmark(self):
     return_code, stdout = self.RunPerfScript('run_benchmark foo')
     self.assertIn('no such benchmark: foo', stdout)

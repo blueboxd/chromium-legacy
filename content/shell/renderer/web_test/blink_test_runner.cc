@@ -312,6 +312,10 @@ void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
                                                        by_user));
 }
 
+void BlinkTestRunner::SimulateWebContentIndexDelete(const std::string& id) {
+  Send(new WebTestHostMsg_SimulateWebContentIndexDelete(routing_id(), id));
+}
+
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
   content::SetDeviceScaleFactor(render_view(), factor);
 }

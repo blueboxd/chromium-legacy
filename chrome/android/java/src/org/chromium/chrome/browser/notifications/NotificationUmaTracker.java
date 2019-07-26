@@ -167,9 +167,15 @@ public class NotificationUmaTracker {
                 .record(type);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Content.Click.Age", createTime);
 
-        if (type == SystemNotificationType.SEND_TAB_TO_SELF) {
-            recordNotificationAgeHistogram(
-                    "Mobile.SystemNotification.Content.Click.Age.SendTabToSelf", createTime);
+        switch (type) {
+            case SystemNotificationType.SEND_TAB_TO_SELF:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Content.Click.Age.SendTabToSelf", createTime);
+                break;
+            case SystemNotificationType.CLICK_TO_CALL:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Content.Click.Age.ClickToCall", createTime);
+                break;
         }
     }
 
@@ -189,9 +195,15 @@ public class NotificationUmaTracker {
                 .record(type);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Dismiss.Age", createTime);
 
-        if (type == SystemNotificationType.SEND_TAB_TO_SELF) {
-            recordNotificationAgeHistogram(
-                    "Mobile.SystemNotification.Dismiss.Age.SendTabToSelf", createTime);
+        switch (type) {
+            case SystemNotificationType.SEND_TAB_TO_SELF:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Dismiss.Age.SendTabToSelf", createTime);
+                break;
+            case SystemNotificationType.CLICK_TO_CALL:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Dismiss.Age.ClickToCall", createTime);
+                break;
         }
     }
 
@@ -213,9 +225,15 @@ public class NotificationUmaTracker {
                 .record(actionType);
         recordNotificationAgeHistogram("Mobile.SystemNotification.Action.Click.Age", createTime);
 
-        if (notificationType == SystemNotificationType.SEND_TAB_TO_SELF) {
-            recordNotificationAgeHistogram(
-                    "Mobile.SystemNotification.Action.Click.Age.SendTabToSelf", createTime);
+        switch (notificationType) {
+            case SystemNotificationType.SEND_TAB_TO_SELF:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Action.Click.Age.SendTabToSelf", createTime);
+                break;
+            case SystemNotificationType.CLICK_TO_CALL:
+                recordNotificationAgeHistogram(
+                        "Mobile.SystemNotification.Action.Click.Age.ClickToCall", createTime);
+                break;
         }
     }
 

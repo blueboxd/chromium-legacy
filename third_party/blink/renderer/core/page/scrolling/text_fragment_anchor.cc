@@ -23,9 +23,14 @@ namespace blink {
 
 namespace {
 
+constexpr char kFragmentDirectivePrefix[] = "##";
 constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
-constexpr size_t kTextFragmentIdentifierPrefixArrayLength =
-    base::size(kTextFragmentIdentifierPrefix);
+
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kFragmentDirectivePrefixStringLength =
+    base::size(kFragmentDirectivePrefix) - 1;
+constexpr size_t kTextFragmentIdentifierPrefixStringLength =
+    base::size(kTextFragmentIdentifierPrefix) - 1;
 
 bool ParseTargetTextIdentifier(const String& fragment,
                                Vector<TextFragmentSelector>* out_selectors) {
@@ -37,8 +42,7 @@ bool ParseTargetTextIdentifier(const String& fragment,
     if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos)
       return false;
 
-    // The prefix array length includes the \0 string terminator.
-    start_pos += kTextFragmentIdentifierPrefixArrayLength - 1;
+    start_pos += kTextFragmentIdentifierPrefixStringLength;
     end_pos = fragment.find('&', start_pos);
 
     String target_text;
@@ -54,30 +58,84 @@ bool ParseTargetTextIdentifier(const String& fragment,
   return true;
 }
 
+// For fragment directive style text fragment anchors, we strip the directive
+// from the fragment string to avoid breaking pages that rely on the fragment.
+// E.g. "#id##targetText=a" --> "#id"
+String StripFragmentDirective(const String& fragment) {
+  size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+  if (start_pos == kNotFound)
+    return fragment;
+
+  return fragment.Substring(0, start_pos);
+}
+
+bool CheckSecurityRestrictions(LocalFrame& frame,
+                               bool same_document_navigation) {
+  // For security reasons, we only allow text fragments on the main frame of a
+  // main window. So no iframes, no window.open. Also only on a full
+  // navigation.
+  if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
+      same_document_navigation) {
+    return false;
+  }
+
+  // For security reasons, we only allow text fragment anchors for user or
+  // browser initiated navigations, i.e. no script navigations.
+  if (!(frame.Loader().GetDocumentLoader()->HadTransientActivation() ||
+        frame.Loader().GetDocumentLoader()->IsBrowserInitiated())) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 TextFragmentAnchor* TextFragmentAnchor::TryCreate(
     const KURL& url,
     LocalFrame& frame,
     bool same_document_navigation) {
-  // For security reasons, we only allow text fragments on the main frame of a
-  // main window. So no iframes, no window.open. Also only on a full
-  // navigation.
-  if (frame.Tree().Parent() || frame.DomWindow()->opener() ||
-      same_document_navigation)
+  if (!CheckSecurityRestrictions(frame, same_document_navigation))
     return nullptr;
-
-  // For security reasons, we only allow text fragment anchors for user or
-  // browser initiated navigations, i.e. no script navigations.
-  if (!(frame.Loader().GetDocumentLoader()->HadTransientActivation() ||
-        frame.Loader().GetDocumentLoader()->IsBrowserInitiated())) {
-    return nullptr;
-  }
 
   Vector<TextFragmentSelector> selectors;
 
   if (!ParseTargetTextIdentifier(url.FragmentIdentifier(), &selectors))
     return nullptr;
+
+  return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
+}
+
+TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
+    const KURL& url,
+    LocalFrame& frame,
+    bool same_document_navigation) {
+  DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
+      frame.GetDocument()));
+
+  if (!CheckSecurityRestrictions(frame, same_document_navigation))
+    return nullptr;
+
+  Vector<TextFragmentSelector> selectors;
+
+  // Add the hash to the beginning of the fragment identifier as it is
+  // part of parsing the ##targetText= prefix but is not included by
+  // KURL::FragmentIdentifier().
+  String fragment = "#" + url.FragmentIdentifier();
+  size_t directive_pos = fragment.Find(kFragmentDirectivePrefix);
+  if (directive_pos == kNotFound)
+    return nullptr;
+
+  size_t start_pos = directive_pos + kFragmentDirectivePrefixStringLength;
+  if (!ParseTargetTextIdentifier(fragment.Substring(start_pos), &selectors))
+    return nullptr;
+
+  // Strip the fragment directive from the document URL so that the page cannot
+  // see the directive, to avoid breaking pages that rely on the fragment.
+  String stripped_fragment = StripFragmentDirective(fragment).Substring(1);
+  KURL stripped_url(url);
+  stripped_url.SetFragmentIdentifier(stripped_fragment);
+  frame.GetDocument()->SetURL(std::move(stripped_url));
 
   return MakeGarbageCollected<TextFragmentAnchor>(selectors, frame);
 }

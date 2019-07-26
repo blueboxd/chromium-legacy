@@ -151,6 +151,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       scoped_refptr<blink::WebRTCICECandidate> candidate) override;
   virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
                                        bool result);
+  void RestartIce() override;
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;
   void GetStats(blink::WebRTCStatsReportCallback callback,

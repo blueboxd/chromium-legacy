@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "components/media_message_center/media_notification_util.h"
+#include "components/vector_icons/vector_icons.h"
 #include "services/media_session/public/cpp/util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
@@ -24,6 +25,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/grid_layout.h"
 
 namespace ash {
 
@@ -41,22 +43,25 @@ constexpr size_t kMaxActions = 5;
 constexpr int kMediaControlsTotalWidthDp = 320;
 constexpr int kMediaControlsTotalHeightDp = 400;
 constexpr int kMediaControlsCornerRadius = 8;
-constexpr gfx::Insets kMediaControlsInsets = gfx::Insets(25, 25, 30, 25);
-constexpr int kMediaControlsChildSpacing = 30;
 constexpr int kMinimumIconSize = 16;
 constexpr int kDesiredIconSize = 20;
 constexpr int kIconSize = 20;
+constexpr gfx::Insets kArtworkInsets = gfx::Insets(0, 25, 0, 25);
 constexpr int kMinimumArtworkSize = 200;
 constexpr int kDesiredArtworkSize = 300;
 constexpr int kArtworkViewWidth = 270;
 constexpr int kArtworkViewHeight = 200;
 constexpr gfx::Size kMediaButtonSize = gfx::Size(45, 45);
+constexpr int kMediaButtonRowSeparator = 10;
+constexpr gfx::Insets kButtonRowInsets = gfx::Insets(25, 25, 30, 25);
 constexpr int kPlayPauseIconSize = 32;
 constexpr int kChangeTrackIconSize = 16;
 constexpr int kSeekingIconsSize = 28;
 constexpr gfx::Size kMediaControlsButtonRowSize =
     gfx::Size(270, kMediaButtonSize.height());
-constexpr int kMediaButtonRowSeparator = 10;
+constexpr int kCloseButtonOffset = 290;
+constexpr gfx::Size kCloseButtonSize = gfx::Size(24, 24);
+constexpr int kCloseButtonIconSize = 20;
 
 // How long to wait (in milliseconds) for a new media session to begin.
 constexpr base::TimeDelta kNextMediaDelay =
@@ -129,6 +134,11 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   DCHECK(callbacks.hide_media_controls);
   DCHECK(callbacks.show_media_controls);
 
+  set_notify_enter_exit_on_child(true);
+
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
   SetBackground(views::CreateRoundedRectBackground(kMediaControlsBackground,
                                                    kMediaControlsCornerRadius));
   middle_spacing_ = std::make_unique<NonAccessibleView>();
@@ -137,22 +147,45 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   // Media controls have not been dismissed initially.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical, kMediaControlsInsets,
-      kMediaControlsChildSpacing));
+  // |close_button_row| contains the close button to dismiss the controls.
+  auto close_button_row = std::make_unique<NonAccessibleView>();
+  views::GridLayout* close_button_layout =
+      close_button_row->SetLayoutManager(std::make_unique<views::GridLayout>());
+  views::ColumnSet* columns = close_button_layout->AddColumnSet(0);
 
+  columns->AddPaddingColumn(0, kCloseButtonOffset);
+  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+  close_button_layout->StartRowWithPadding(
+      0, 0, 0, 5 /* padding between close button and top of view */);
+
+  auto close_button = CreateVectorImageButton(this);
+  SetImageFromVectorIcon(close_button.get(), vector_icons::kCloseRoundedIcon,
+                         kCloseButtonIconSize, gfx::kGoogleGrey700);
+  close_button->SetPreferredSize(kCloseButtonSize);
+  close_button->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  base::string16 close_button_label(
+      l10n_util::GetStringUTF16(IDS_ASH_LOCK_SCREEN_MEDIA_CONTROLS_CLOSE));
+  close_button->SetAccessibleName(close_button_label);
+  close_button_ = close_button_layout->AddView(std::move(close_button));
+  close_button_->SetVisible(false);
+  AddChildView(std::move(close_button_row));
+
+  // |header_row_| contains the app icon and source title of the current media
+  // session.
   header_row_ = AddChildView(std::make_unique<MediaControlsHeaderView>());
 
   auto session_artwork = std::make_unique<views::ImageView>();
   session_artwork->SetPreferredSize(
       gfx::Size(kArtworkViewWidth, kArtworkViewHeight));
+  session_artwork->SetBorder(views::CreateEmptyBorder(kArtworkInsets));
   session_artwork_ = AddChildView(std::move(session_artwork));
 
   // |button_row_| contains the buttons for controlling playback.
   auto button_row = std::make_unique<NonAccessibleView>();
   auto* button_row_layout =
       button_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+          views::BoxLayout::Orientation::kHorizontal, kButtonRowInsets,
           kMediaButtonRowSeparator));
   button_row_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
@@ -259,6 +292,14 @@ void LockScreenMediaControlsView::GetAccessibleNodeData(
     node_data->SetName(accessible_name_);
 }
 
+void LockScreenMediaControlsView::OnMouseEntered(const ui::MouseEvent& event) {
+  close_button_->SetVisible(true);
+}
+
+void LockScreenMediaControlsView::OnMouseExited(const ui::MouseEvent& event) {
+  close_button_->SetVisible(false);
+}
+
 views::View* LockScreenMediaControlsView::GetMiddleSpacingView() {
   return middle_spacing_.get();
 }
@@ -340,15 +381,28 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
   if (hide_controls_timer_->IsRunning())
     return;
 
+  // Convert the bitmap to kN32_SkColorType if necessary.
+  SkBitmap converted_bitmap;
+  if (bitmap.colorType() == kN32_SkColorType) {
+    converted_bitmap = bitmap;
+  } else {
+    SkImageInfo info = bitmap.info().makeColorType(kN32_SkColorType);
+    if (converted_bitmap.tryAllocPixels(info)) {
+      bitmap.readPixels(info, converted_bitmap.getPixels(),
+                        converted_bitmap.rowBytes(), 0, 0);
+    }
+  }
+
   switch (type) {
     case media_session::mojom::MediaSessionImageType::kArtwork: {
       base::Optional<gfx::ImageSkia> session_artwork =
-          gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+          gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       SetArtwork(session_artwork);
       break;
     }
     case media_session::mojom::MediaSessionImageType::kSourceIcon: {
-      gfx::ImageSkia session_icon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+      gfx::ImageSkia session_icon =
+          gfx::ImageSkia::CreateFrom1xBitmap(converted_bitmap);
       if (session_icon.isNull()) {
         session_icon = gfx::CreateVectorIcon(message_center::kProductIcon,
                                              kIconSize, gfx::kChromeIconGrey);
@@ -360,6 +414,12 @@ void LockScreenMediaControlsView::MediaControllerImageChanged(
 
 void LockScreenMediaControlsView::ButtonPressed(views::Button* sender,
                                                 const ui::Event& event) {
+  if (sender == close_button_) {
+    media_controller_ptr_->Stop();
+    hide_media_controls_.Run();
+    return;
+  }
+
   if (!base::Contains(enabled_actions_,
                       media_message_center::GetActionFromButtonTag(*sender)) ||
       !media_session_id_.has_value()) {

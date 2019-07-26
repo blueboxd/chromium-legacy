@@ -50,7 +50,7 @@ Polymer({
      * is launched.
      * @private
      */
-    enableUpdatedUI_: {
+    enableUpdatedUi_: {
       type: Boolean,
       value: function() {
         return loadTimeData.getBoolean('updatedCupsPrintersUiEnabled');
@@ -87,7 +87,7 @@ Polymer({
           this.onActiveNetworksChanged(responseParams.result);
         });
 
-    if (this.enableUpdatedUI_) {
+    if (this.enableUpdatedUi_) {
       return;
     }
 
@@ -123,7 +123,7 @@ Polymer({
     const printerName = event.detail.printerName;
     switch (event.detail.resultCode) {
       case PrinterSetupResult.SUCCESS:
-        if (this.enableUpdatedUI_) {
+        if (this.enableUpdatedUi_) {
           this.$$('#savedPrinters').updateSavedPrintersList();
         } else {
           this.updateCupsPrintersList_();
@@ -133,7 +133,7 @@ Polymer({
                                     printerName);
         break;
       case PrinterSetupResult.EDIT_SUCCESS:
-        if (this.enableUpdatedUI_) {
+        if (this.enableUpdatedUi_) {
           this.$$('#savedPrinters').updateSavedPrintersList();
         } else {
           this.updateCupsPrintersList_();

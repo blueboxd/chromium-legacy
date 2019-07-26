@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -61,13 +60,14 @@ public class BasicSuggestionProcessorTest {
         sSuggestionTypes[OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE] = "SEARCH_SUGGEST_PROFILE";
         sSuggestionTypes[OmniboxSuggestionType.SEARCH_OTHER_ENGINE] = "SEARCH_OTHER_ENGINE";
         sSuggestionTypes[OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED] = "NAVSUGGEST_PERSONALIZED";
-        sSuggestionTypes[OmniboxSuggestionType.CALCULATOR] = "CALCULATOR";
         sSuggestionTypes[OmniboxSuggestionType.CLIPBOARD_URL] = "CLIPBOARD_URL";
         sSuggestionTypes[OmniboxSuggestionType.VOICE_SUGGEST] = "VOICE_SUGGEST";
         sSuggestionTypes[OmniboxSuggestionType.DOCUMENT_SUGGESTION] = "DOCUMENT_SUGGESTION";
         sSuggestionTypes[OmniboxSuggestionType.PEDAL] = "PEDAL";
         sSuggestionTypes[OmniboxSuggestionType.CLIPBOARD_TEXT] = "CLIPBOARD_TEXT";
         sSuggestionTypes[OmniboxSuggestionType.CLIPBOARD_IMAGE] = "CLIPBOARD_IMAGE";
+        // Note: CALCULATOR suggestions are not handled by basic suggestion processor.
+        // These suggestions are now processed by AnswerSuggestionProcessor instead.
 
         sIconTypes = new String[SuggestionIcon.TOTAL_COUNT];
         sIconTypes[SuggestionIcon.UNSET] = "UNSET";
@@ -76,7 +76,6 @@ public class BasicSuggestionProcessorTest {
         sIconTypes[SuggestionIcon.GLOBE] = "GLOBE";
         sIconTypes[SuggestionIcon.MAGNIFIER] = "MAGNIFIER";
         sIconTypes[SuggestionIcon.VOICE] = "VOICE";
-        sIconTypes[SuggestionIcon.CALCULATOR] = "CALCULATOR";
         sIconTypes[SuggestionIcon.FAVICON] = "FAVICON";
     }
 
@@ -143,42 +142,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.VOICE},
-                {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.PEDAL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_TEXT, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CLIPBOARD_IMAGE, SuggestionIcon.MAGNIFIER},
-        };
-
-        for (int[] test : testSuites) {
-            assertSuggestionIconTypeIs(createSearchSuggestion(test[0]), test[1]);
-        }
-    }
-
-    @Test
-    @EnableFeatures(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT)
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    public void getSuggestionIconTypeForSearch_AnwersInSuggest() {
-        mProcessor.onNativeInitialized();
-        int[][] testSuites = {
-                {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_URL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_TITLE, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_BODY, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.HISTORY_KEYWORD, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.NAVSUGGEST, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_WHAT_YOU_TYPED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_HISTORY, SuggestionIcon.HISTORY},
-                {OmniboxSuggestionType.SEARCH_SUGGEST, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_ENTITY, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_TAIL, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PERSONALIZED, SuggestionIcon.HISTORY},
-                {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.CALCULATOR},
                 {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.VOICE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.MAGNIFIER},
@@ -194,7 +157,6 @@ public class BasicSuggestionProcessorTest {
 
     @Test
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT)
     public void getSuggestionIconTypeForSearch_FavIcons() {
         mProcessor.onNativeInitialized();
         int[][] testSuites = {
@@ -213,7 +175,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.MAGNIFIER},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.MAGNIFIER},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.VOICE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.MAGNIFIER},
@@ -245,7 +206,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.GLOBE},
@@ -261,7 +221,6 @@ public class BasicSuggestionProcessorTest {
 
     @Test
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT)
     public void getSuggestionIconTypeForUrl_FavIcons() {
         mProcessor.onNativeInitialized();
         int[][] testSuites = {
@@ -280,7 +239,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.GLOBE},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.GLOBE},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.GLOBE},
@@ -312,7 +270,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.BOOKMARK},
@@ -328,7 +285,6 @@ public class BasicSuggestionProcessorTest {
 
     @Test
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    @DisableFeatures(ChromeFeatureList.OMNIBOX_NEW_ANSWER_LAYOUT)
     public void getSuggestionIconTypeForBookmarks_FavIcons() {
         mProcessor.onNativeInitialized();
         int[][] testSuites = {
@@ -347,7 +303,6 @@ public class BasicSuggestionProcessorTest {
                 {OmniboxSuggestionType.SEARCH_SUGGEST_PROFILE, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.SEARCH_OTHER_ENGINE, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.NAVSUGGEST_PERSONALIZED, SuggestionIcon.BOOKMARK},
-                {OmniboxSuggestionType.CALCULATOR, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.CLIPBOARD_URL, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.VOICE_SUGGEST, SuggestionIcon.BOOKMARK},
                 {OmniboxSuggestionType.DOCUMENT_SUGGESTION, SuggestionIcon.BOOKMARK},

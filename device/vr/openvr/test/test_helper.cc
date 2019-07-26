@@ -331,9 +331,7 @@ bool TestHelper::GetControllerState(unsigned int index,
     controller_state->ulButtonTouched =
         TranslateButtonMask(controller_data.buttons_touched);
     for (unsigned int i = 0; i < device::kMaxNumAxes; ++i) {
-      // Invert the y axis because gamepad and the rest of Chrome follows the
-      // convention that -1 is up, but WMR reports -1 as down.
-      // TODO(https://crbug.com/966060): Revisit this if the convention changes.
+      // Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
       controller_state->rAxis[i].x = controller_data.axis_data[i].x;
       controller_state->rAxis[i].y = -controller_data.axis_data[i].y;
     }

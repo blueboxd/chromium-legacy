@@ -62,6 +62,7 @@
     case DEFAULT_FAVICON:
     case HISTORY:
     case SEARCH:
+    case SEARCH_HISTORY:
       return NO;
     case CALCULATOR:
     case CONVERSION:

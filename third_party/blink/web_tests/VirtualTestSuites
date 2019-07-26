@@ -526,6 +526,12 @@
              "--disable-smooth-scrolling"]
   },
   {
+    "prefix": "compositor_threaded_scrollbar_scrolling",
+    "base": "paint/invalidation/scroll/sticky",
+    "args": ["--enable-threaded-compositing",
+             "--enable-prefer-compositing-to-lcd-text"]
+  },
+  {
     "prefix": "main_thread_scrollbar_gestures",
     "base": "fast/scrolling/scrollbars",
     "args": ["--enable-features=ScrollbarInjectScrollGestures"]
@@ -1186,6 +1192,13 @@
     "prefix": "at-property",
     "base": "external/wpt/css/css-properties-values-api",
     "args": ["--enable-blink-features=CSSVariables2AtProperty"]
+  },
+  {
+    "prefix": "cache-storage-parallel",
+    "base": "external/wpt/service-workers",
+    "args": ["--enable-features=CacheStorageParallelOps<CSPO",
+             "--force-fieldtrials=CSPO/G1",
+             "--force-fieldtrial-params=CSPO.G1:max_shared_ops/64"]
   },
   {
     "prefix": "cache-storage-sequence",

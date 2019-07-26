@@ -102,6 +102,11 @@ public class AutofillAssistantPaymentRequestTestHelper {
         public void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state) {
             mTermsStatus = state;
         }
+
+        @Override
+        public void onTermsAndConditionsLinkClicked(int link) {
+            // TODO(crbug.com/860868): Add tests that use this method.
+        }
     }
 
     public AutofillAssistantPaymentRequestTestHelper()

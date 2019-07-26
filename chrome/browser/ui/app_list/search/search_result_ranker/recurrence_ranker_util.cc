@@ -237,14 +237,13 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
 }
 
 JsonConfigConverter::JsonConfigConverter(service_manager::Connector* connector)
-    : connector_(connector) {
-  DCHECK(connector_);
-}
+    : connector_(connector) {}
 JsonConfigConverter::~JsonConfigConverter() {}
 
 void JsonConfigConverter::Convert(const std::string& json_string,
                                   const std::string& model_identifier,
                                   OnConfigLoadedCallback callback) {
+  DCHECK(connector_);
   GetJsonParser().Parse(
       json_string,
       base::BindOnce(&JsonConfigConverter::OnJsonParsed, base::Unretained(this),

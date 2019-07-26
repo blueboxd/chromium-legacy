@@ -14,6 +14,7 @@ enum OmniboxSuggestionIconType {
   DEFAULT_FAVICON,
   HISTORY,
   SEARCH,
+  SEARCH_HISTORY,
   CONVERSION,
   DICTIONARY,
   STOCK,

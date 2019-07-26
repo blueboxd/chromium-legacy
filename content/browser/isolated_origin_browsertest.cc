@@ -1469,6 +1469,112 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SubframeErrorPages) {
   }
 }
 
+namespace {
+bool HasDefaultSiteInstance(RenderFrameHost* rfh) {
+  return static_cast<SiteInstanceImpl*>(rfh->GetSiteInstance())
+      ->IsDefaultSiteInstance();
+}
+}  // namespace
+
+// Verify process assignment behavior for the case where a site that does not
+// require isolation embeds a frame that does require isolation, which in turn
+// embeds another site that does not require isolation.
+// A  (Does not require isolation)
+// +-> B (requires isolation)
+//     +-> C (different site from A that does not require isolation.)
+//         +-> A (same site as top-level which also does not require isolation.)
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, AIsolatedCA) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "www.foo.com",
+      "/cross_site_iframe_factory.html?a(isolated.foo.com(c(www.foo.com)))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  RenderFrameHost* a = root->current_frame_host();
+  RenderFrameHost* b = root->child_at(0)->current_frame_host();
+  RenderFrameHost* c = root->child_at(0)->child_at(0)->current_frame_host();
+  RenderFrameHost* d =
+      root->child_at(0)->child_at(0)->child_at(0)->current_frame_host();
+
+  // Sanity check that the test works with the right frame tree.
+  EXPECT_FALSE(IsIsolatedOrigin(a->GetLastCommittedOrigin()));
+  EXPECT_TRUE(IsIsolatedOrigin(b->GetLastCommittedOrigin()));
+  EXPECT_FALSE(IsIsolatedOrigin(c->GetLastCommittedOrigin()));
+  EXPECT_FALSE(IsIsolatedOrigin(d->GetLastCommittedOrigin()));
+  EXPECT_EQ("www.foo.com", a->GetLastCommittedURL().host());
+  EXPECT_EQ("isolated.foo.com", b->GetLastCommittedURL().host());
+  EXPECT_EQ("c.com", c->GetLastCommittedURL().host());
+  EXPECT_EQ("www.foo.com", d->GetLastCommittedURL().host());
+
+  // Verify that the isolated site is indeed isolated.
+  EXPECT_NE(b->GetProcess()->GetID(), a->GetProcess()->GetID());
+  EXPECT_NE(b->GetProcess()->GetID(), c->GetProcess()->GetID());
+  EXPECT_NE(b->GetProcess()->GetID(), d->GetProcess()->GetID());
+
+  // Verify that same-origin a and d frames share a process.  This is
+  // necessary for correctness - otherwise a and d wouldn't be able to
+  // synchronously script each other.
+  EXPECT_EQ(a->GetProcess()->GetID(), d->GetProcess()->GetID());
+
+  // Verify that same-origin a and d frames can script each other.
+  EXPECT_TRUE(ExecuteScript(a, "window.name = 'a';"));
+  EXPECT_TRUE(ExecuteScript(d, R"(
+      a = window.open('', 'a');
+      a.cross_frame_property_test = 'hello from d'; )"));
+  EXPECT_EQ("hello from d",
+            EvalJs(a, "window.cross_frame_property_test").ExtractString());
+
+  // The test assertions below are not strictly necessary - they just document
+  // the current behavior.  In particular, consolidating www.foo.com and c.com
+  // sites into the same process is not necessary for correctness.
+  if (AreAllSitesIsolatedForTesting()) {
+    // All sites are isolated so we expect foo.com, isolated.foo.com and c.com
+    // to all be in their own processes.
+    EXPECT_NE(a->GetProcess()->GetID(), b->GetProcess()->GetID());
+    EXPECT_NE(a->GetProcess()->GetID(), c->GetProcess()->GetID());
+    EXPECT_NE(b->GetProcess()->GetID(), c->GetProcess()->GetID());
+
+    EXPECT_NE(a->GetSiteInstance(), b->GetSiteInstance());
+    EXPECT_NE(a->GetSiteInstance(), c->GetSiteInstance());
+    EXPECT_EQ(a->GetSiteInstance(), d->GetSiteInstance());
+    EXPECT_NE(b->GetSiteInstance(), c->GetSiteInstance());
+
+    EXPECT_FALSE(HasDefaultSiteInstance(a));
+    EXPECT_FALSE(HasDefaultSiteInstance(b));
+    EXPECT_FALSE(HasDefaultSiteInstance(c));
+  } else if (AreDefaultSiteInstancesEnabled()) {
+    // All sites that are not isolated should be in the same default
+    // SiteInstance process.
+    EXPECT_NE(a->GetProcess()->GetID(), b->GetProcess()->GetID());
+    EXPECT_EQ(a->GetProcess()->GetID(), c->GetProcess()->GetID());
+
+    EXPECT_NE(a->GetSiteInstance(), b->GetSiteInstance());
+    EXPECT_EQ(a->GetSiteInstance(), c->GetSiteInstance());
+    EXPECT_EQ(a->GetSiteInstance(), d->GetSiteInstance());
+    EXPECT_NE(b->GetSiteInstance(), c->GetSiteInstance());
+
+    EXPECT_TRUE(HasDefaultSiteInstance(a));
+    EXPECT_FALSE(HasDefaultSiteInstance(b));
+  } else {
+    // Documenting current behavior where the top level document doesn't end
+    // up in a default SiteInstance even though it is not isolated and does not
+    // require a dedicated process. c.com does get placed in a default
+    // SiteInstance because we currently allow subframes that don't require
+    // isolation to share a process. This behavior should go away once we
+    // turn on default SiteInstances by default.
+    EXPECT_NE(a->GetProcess()->GetID(), b->GetProcess()->GetID());
+    EXPECT_NE(a->GetProcess()->GetID(), c->GetProcess()->GetID());
+
+    EXPECT_NE(a->GetSiteInstance(), b->GetSiteInstance());
+    EXPECT_NE(a->GetSiteInstance(), c->GetSiteInstance());
+    EXPECT_EQ(a->GetSiteInstance(), d->GetSiteInstance());
+    EXPECT_NE(b->GetSiteInstance(), c->GetSiteInstance());
+
+    EXPECT_FALSE(HasDefaultSiteInstance(a));
+    EXPECT_FALSE(HasDefaultSiteInstance(b));
+    EXPECT_TRUE(HasDefaultSiteInstance(c));
+  }
+}
+
 class IsolatedOriginTestWithMojoBlobURLs : public IsolatedOriginTest {
  public:
   IsolatedOriginTestWithMojoBlobURLs() {

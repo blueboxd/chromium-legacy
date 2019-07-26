@@ -5209,13 +5209,6 @@ ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
                                                               relying_party_id);
 }
 
-#if defined(OS_MACOSX)
-bool ChromeContentBrowserClient::
-    IsWebAuthenticationTouchIdAuthenticatorSupported() {
-  return true;
-}
-#endif
-
 std::unique_ptr<net::ClientCertStore>
 ChromeContentBrowserClient::CreateClientCertStore(
     content::ResourceContext* resource_context) {
@@ -5844,6 +5837,7 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
   const ChromeSubresourceFilterClient* client =
       ChromeSubresourceFilterClient::FromWebContents(web_contents);
   if (client && client->GetThrottleManager()->IsFrameTaggedAsAd(frame_host)) {
+    download_policy->SetAllowed(content::NavigationDownloadType::kAdFrame);
     if (!user_gesture) {
       if (base::FeatureList::IsEnabled(
               blink::features::
@@ -5854,9 +5848,6 @@ void ChromeContentBrowserClient::AugmentNavigationDownloadPolicy(
         download_policy->SetAllowed(
             content::NavigationDownloadType::kAdFrameNoGesture);
       }
-    } else {
-      download_policy->SetAllowed(
-          content::NavigationDownloadType::kAdFrameGesture);
     }
   }
 }

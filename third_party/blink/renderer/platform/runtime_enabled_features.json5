@@ -546,6 +546,12 @@
       name: "ExpensiveBackgroundTimerThrottling",
       status: "stable",
     },
+    // Experimental feature to try dynamic delegation of autoplay capability
+    // through postMessages.
+    {
+      name: "ExperimentalAutoplayDynamicDelegation",
+      origin_trial_feature_name: "ExperimentalAutoplayDynamicDelegation",
+    },
     {
       name: "ExperimentalContentSecurityPolicyFeatures",
       status: "experimental",
@@ -797,14 +803,14 @@
     },
     {
       name: "LargestContentfulPaint",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Exposes layout shift scores to Javascript. See explainer:
       // http://bit.ly/lsm-explainer.
       name: "LayoutInstabilityAPI",
       origin_trial_feature_name: "LayoutJankAPI",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LayoutNG",

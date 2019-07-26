@@ -360,7 +360,7 @@ TEST_F(BlobDataHandleTest, CreateFromMergedSmallAndLargeBytes) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFileAndFileSystemURL) {
-  double timestamp1 = CurrentTime();
+  double timestamp1 = base::Time::Now().ToDoubleT();
   double timestamp2 = timestamp1 + 1;
   KURL url(NullURL(), "http://example.com/");
   auto data = std::make_unique<BlobData>();
@@ -386,7 +386,7 @@ TEST_F(BlobDataHandleTest, CreateFromFileWithUnknownSize) {
 }
 
 TEST_F(BlobDataHandleTest, CreateFromFilesystemFileWithUnknownSize) {
-  double timestamp = CurrentTime();
+  double timestamp = base::Time::Now().ToDoubleT();
   KURL url(NullURL(), "http://example.com/");
   Vector<ExpectedElement> expected_elements;
   expected_elements.push_back(ExpectedElement::FileFilesystem(

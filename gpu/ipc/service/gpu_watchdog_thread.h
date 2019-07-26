@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/progress_reporter.h"

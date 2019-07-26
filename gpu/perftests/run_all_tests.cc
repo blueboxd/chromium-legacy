@@ -5,7 +5,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
@@ -18,12 +19,12 @@
 static int RunHelper(base::TestSuite* test_suite) {
   base::FeatureList::InitializeInstance(std::string(), std::string());
 #if defined(USE_OZONE)
-  base::MessageLoopForUI main_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::UI);
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
   ui::OzonePlatform::InitializeForGPU(params);
 #else
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePump::Type::IO);
 #endif
   CHECK(gl::init::InitializeGLOneOff());
   return test_suite->Run();

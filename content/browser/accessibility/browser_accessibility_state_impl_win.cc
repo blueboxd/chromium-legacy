@@ -105,9 +105,18 @@ void BrowserAccessibilityStateImpl::
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinAudioDescription",
                         !!audio_description.Enabled);
 
+  // This screen reader flag is nearly meaningless, it is set very often
+  // when there is no screen reader, and is not set for Narrator.
   BOOL win_screen_reader = FALSE;
   SystemParametersInfo(SPI_GETSCREENREADER, 0, &win_screen_reader, 0);
   UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader", !!win_screen_reader);
+
+  // Better all-encompassing screen reader metric.
+  // See also specific screen reader metrics below, e.g. WinJAWS, WinNVDA.
+  ui::AXMode mode =
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode();
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.WinScreenReader2",
+                        mode.has_mode(ui::AXMode::kScreenReader));
 
   STICKYKEYS sticky_keys = {0};
   sticky_keys.cbSize = sizeof(STICKYKEYS);
@@ -153,7 +162,8 @@ void BrowserAccessibilityStateImpl::
       nvda = true;
     if (base::LowerCaseEqualsASCII(module_name, "stsaw32.dll"))
       satogo = true;
-    if (base::LowerCaseEqualsASCII(module_name, "zslhook.dll"))
+    if (base::LowerCaseEqualsASCII(module_name, "zslhook.dll") ||
+        base::LowerCaseEqualsASCII(module_name, "zslhook64.dll"))
       zoomtext = true;
   }
 

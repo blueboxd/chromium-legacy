@@ -1151,6 +1151,18 @@
         }
       },
       {
+        "experiment_percentage": 100,
+        "isolate_name": "polymer_tools_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "polymer_tools_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "merge": {
           "args": [],
@@ -2962,6 +2974,24 @@
             {
               "cpu": "x86-64",
               "integrity": "high",
+              "os": "Windows-10-15063"
+            }
+          ]
+        }
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "polymer_tools_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "polymer_tools_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
           ]
@@ -6041,6 +6071,18 @@
               "integrity": "high"
             }
           ]
+        }
+      },
+      {
+        "experiment_percentage": 100,
+        "isolate_name": "polymer_tools_python_unittests",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "polymer_tools_python_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
         }
       },
       {

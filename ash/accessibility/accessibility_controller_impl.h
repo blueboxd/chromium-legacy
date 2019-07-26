@@ -135,6 +135,9 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // Triggers an accessibility alert to give the user feedback.
   void TriggerAccessibilityAlert(AccessibilityAlert alert);
 
+  // Triggers an accessibility alert with the given |message|.
+  void TriggerAccessibilityAlertWithMessage(const std::string& message);
+
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // that their mapped event has occurred. The |sound_key| enums can be found in
   // chromeos/audio/chromeos_sounds.h.

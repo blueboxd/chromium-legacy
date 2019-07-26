@@ -66,6 +66,7 @@ public class KeyFunctionsIPHMediator implements CursorObserver {
     @Override
     public void onFallbackCursorModeToggled(boolean isOn) {
         mIsFallbackCursorModeOn = isOn;
+        mModel.set(KeyFunctionsIPHProperties.IS_CURSOR_VISIBLE, mIsFallbackCursorModeOn);
     }
 
     private void show(@DisplayCause int displayCause) {

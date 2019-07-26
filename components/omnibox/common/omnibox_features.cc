@@ -86,11 +86,6 @@ const base::Feature kOmniboxRichEntitySuggestions{
 #endif
 };
 
-// Feature used to enable enhanced presentation showing larger images.
-// This is currently only used on Android.
-const base::Feature kOmniboxNewAnswerLayout{"OmniboxNewAnswerLayout",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kOmniboxPreserveDefaultMatchScore{
     "OmniboxPreserveDefaultMatchScore", base::FEATURE_DISABLED_BY_DEFAULT};
 

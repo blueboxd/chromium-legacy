@@ -37,6 +37,10 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   // horizontally placed.
   void SetExpandedAmount(double expanded_amount);
 
+  // Set the number of rows of feature pods based on the max height the
+  // container can have.
+  void SetMaxHeight(int max_height);
+
   // Get height of the view when |expanded_amount| is set to 1.0.
   int GetExpandedHeight() const;
 
@@ -55,7 +59,6 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
-
   const char* GetClassName() const override;
 
  private:
@@ -96,6 +99,10 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
 
   // The last |expanded_amount| passed to SetExpandedAmount().
   double expanded_amount_;
+
+  // Number of rows of feature pods to display. Updated based on the available
+  // max height for FeaturePodsContainer.
+  int feature_pod_rows_ = 0;
 
   // Horizontal side padding in dip for collapsed state.
   int collapsed_side_padding_ = 0;

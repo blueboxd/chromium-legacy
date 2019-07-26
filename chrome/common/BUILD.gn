@@ -543,6 +543,7 @@ static_library("non_code_constants") {
     ":buildflags",
     ":version_header",
     "//base",
+    "//build:branding_buildflags",
     "//ppapi/buildflags",
   ]
 
@@ -598,6 +599,7 @@ static_library("constants") {
     ":buildflags",
     ":chrome_features",
     ":non_code_constants",
+    "//build:branding_buildflags",
     "//content/public/common:result_codes",
     "//rlz/buildflags",
   ]

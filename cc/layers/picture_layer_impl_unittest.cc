@@ -5588,5 +5588,35 @@ TEST_F(PictureLayerImplTest, PaintWorkletInputs) {
   EXPECT_TRUE(pending_layer()->GetPaintWorkletRecordMap().contains(input3));
 }
 
+TEST_F(PictureLayerImplTest, NoTilingsUsesScaleOne) {
+  std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
+
+  gfx::Size layer_bounds(1000, 10000);
+  scoped_refptr<FakeRasterSource> active_raster_source =
+      FakeRasterSource::CreateEmpty(layer_bounds);
+  SetupPendingTree(active_raster_source);
+  ActivateTree();
+
+  active_layer()->SetContentsOpaque(true);
+  active_layer()->draw_properties().visible_layer_rect =
+      gfx::Rect(0, 0, 1000, 1000);
+  active_layer()->UpdateTiles();
+
+  ASSERT_FALSE(active_layer()->HighResTiling());
+
+  AppendQuadsData data;
+  active_layer()->WillDraw(DRAW_MODE_HARDWARE, nullptr);
+  active_layer()->AppendQuads(render_pass.get(), &data);
+  active_layer()->DidDraw(nullptr);
+
+  // One checkerboard quad.
+  EXPECT_EQ(1u, render_pass->quad_list.size());
+
+  auto* shared_quad_state = render_pass->quad_list.begin()->shared_quad_state;
+  // We should use scale 1 here, so the layer rect should be full layer bounds
+  // and the transform should be identity.
+  EXPECT_RECT_EQ(gfx::Rect(1000, 10000), shared_quad_state->quad_layer_rect);
+  EXPECT_TRUE(shared_quad_state->quad_to_target_transform.IsIdentity());
+}
 }  // namespace
 }  // namespace cc

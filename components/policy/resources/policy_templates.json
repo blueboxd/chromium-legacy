@@ -3349,7 +3349,7 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': '*example.com,foobar.com,*baz',
+      'example_value': '*.example.com,example.com',
       'id': 29,
       'caption': '''Authentication server whitelist''',
       'tags': [],

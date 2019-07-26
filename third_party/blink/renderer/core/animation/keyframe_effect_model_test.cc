@@ -162,7 +162,7 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
   EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *style, nullptr));
 
-  return effect->GetPropertySpecificKeyframes(PropertyHandle(property_name));
+  return *effect->GetPropertySpecificKeyframes(PropertyHandle(property_name));
 }
 
 void ExpectProperty(CSSPropertyID property,
@@ -610,7 +610,7 @@ TEST_F(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
 
   auto* effect = MakeGarbageCollected<StringKeyframeEffectModel>(keyframes);
   const StringPropertySpecificKeyframeVector& property_specific_keyframes =
-      effect->GetPropertySpecificKeyframes(
+      *effect->GetPropertySpecificKeyframes(
           PropertyHandle(GetCSSPropertyLeft()));
   EXPECT_EQ(3U, property_specific_keyframes.size());
   EXPECT_DOUBLE_EQ(0.0, property_specific_keyframes[0]->Offset());
@@ -636,10 +636,9 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
   const CompositorKeyframeValue* value;
 
   // Compositor keyframe value should be empty before snapshot
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& empty_keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyOpacity()));
+  value = empty_keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_FALSE(value);
 
   // Snapshot should update first time after construction
@@ -654,10 +653,9 @@ TEST_F(AnimationKeyframeEffectModel, CompositorSnapshotUpdateBasic) {
       *element, *style, nullptr));
 
   // Compositor keyframe value should be available after snapshot
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& available_keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyOpacity()));
+  value = available_keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 }
@@ -675,10 +673,9 @@ TEST_F(AnimationKeyframeEffectModel,
       *element, *style, nullptr));
 
   const CompositorKeyframeValue* value;
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyOpacity()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyOpacity()));
+  value = keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsDouble());
 
@@ -689,10 +686,9 @@ TEST_F(AnimationKeyframeEffectModel,
   // Snapshot should update after changing keyframes
   EXPECT_TRUE(effect->SnapshotAllCompositorKeyframesIfNecessary(
       *element, *style, nullptr));
-  value = effect
-              ->GetPropertySpecificKeyframes(
-                  PropertyHandle(GetCSSPropertyFilter()))[0]
-              ->GetCompositorKeyframeValue();
+  const auto& updated_keyframes = *effect->GetPropertySpecificKeyframes(
+      PropertyHandle(GetCSSPropertyFilter()));
+  value = updated_keyframes[0]->GetCompositorKeyframeValue();
   EXPECT_TRUE(value);
   EXPECT_TRUE(value->IsFilterOperations());
 }

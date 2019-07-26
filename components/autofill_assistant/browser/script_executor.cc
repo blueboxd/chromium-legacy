@@ -216,6 +216,9 @@ void ScriptExecutor::GetPaymentInformation(
       base::BindOnce(&ScriptExecutor::OnAdditionalActionTriggered,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(options->additional_actions_callback));
+  options->terms_link_callback = base::BindOnce(
+      &ScriptExecutor::OnTermsAndConditionsLinkClicked,
+      weak_ptr_factory_.GetWeakPtr(), std::move(options->terms_link_callback));
   delegate_->SetPaymentRequestOptions(std::move(options));
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
@@ -232,6 +235,13 @@ void ScriptExecutor::OnAdditionalActionTriggered(
     int index) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   std::move(callback).Run(index);
+}
+
+void ScriptExecutor::OnTermsAndConditionsLinkClicked(
+    base::OnceCallback<void(int)> callback,
+    int link) {
+  delegate_->EnterState(AutofillAssistantState::RUNNING);
+  std::move(callback).Run(link);
 }
 
 void ScriptExecutor::GetFullCard(GetFullCardCallback callback) {
@@ -512,6 +522,10 @@ bool ScriptExecutor::SetForm(
     std::unique_ptr<FormProto> form,
     base::RepeatingCallback<void(const FormProto::Result*)> callback) {
   return delegate_->SetForm(std::move(form), std::move(callback));
+}
+
+void ScriptExecutor::RequireUI() {
+  delegate_->RequireUI();
 }
 
 void ScriptExecutor::OnGetActions(bool result, const std::string& response) {

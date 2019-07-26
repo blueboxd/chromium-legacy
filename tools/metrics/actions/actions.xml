@@ -4007,16 +4007,19 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ChromeColors_MenuCancel">
+  <obsolete>Deprecated as of 7/2019.</obsolete>
   <owner>gayane@chromium.org</owner>
   <description>Applied changes where canceled from Colors menu.</description>
 </action>
 
 <action name="ChromeColors_MenuDone">
+  <obsolete>Deprecated as of 7/2019.</obsolete>
   <owner>gayane@chromium.org</owner>
   <description>Applied changes where confirmed from Colors menu.</description>
 </action>
 
 <action name="ChromeColors_TabClosed">
+  <obsolete>Deprecated as of 7/2019.</obsolete>
   <owner>gayane@chromium.org</owner>
   <description>Tab with open Colors menu was closed.</description>
 </action>

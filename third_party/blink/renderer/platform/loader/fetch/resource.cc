@@ -75,6 +75,20 @@ blink::mojom::CodeCacheType ToCodeCacheType(ResourceType resource_type) {
              : blink::mojom::CodeCacheType::kJavascript;
 }
 
+void GetSharedBufferMemoryDump(SharedBuffer* buffer,
+                               const String& dump_prefix,
+                               WebProcessMemoryDump* memory_dump) {
+  size_t dump_size;
+  String dump_name;
+  buffer->GetMemoryDumpNameAndSize(dump_name, dump_size);
+
+  WebMemoryAllocatorDump* dump =
+      memory_dump->CreateMemoryAllocatorDump(dump_prefix + dump_name);
+  dump->AddScalar("size", "bytes", dump_size);
+  memory_dump->AddSuballocation(
+      dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+}
+
 }  // namespace
 
 // These response headers are not copied from a revalidated response to the
@@ -885,7 +899,7 @@ void Resource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
     dump->AddScalar("dead_size", "bytes", encoded_size_memory_usage_);
 
   if (data_)
-    data_->OnMemoryDump(dump_name, memory_dump);
+    GetSharedBufferMemoryDump(Data(), dump_name, memory_dump);
 
   if (level_of_detail == WebMemoryDumpLevelOfDetail::kDetailed) {
     String url_to_report = Url().GetString();

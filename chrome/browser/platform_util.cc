@@ -62,8 +62,14 @@ void OpenItem(Profile* profile,
               OpenItemType item_type,
               const OpenOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // TaskPriority::USER_BLOCKING because this is usually opened as a result of a
+  // user action (e.g. open-downloaded-file or show-item-in-folder).
+  // TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN because this doesn't need global
+  // state and can hang shutdown without this trait as it may result in an
+  // interactive dialog.
   base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+                           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
                            base::BindOnce(&VerifyAndOpenItemOnBlockingThread,
                                           full_path, item_type, callback));
 }

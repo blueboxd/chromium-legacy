@@ -63,8 +63,8 @@ class PLATFORM_EXPORT HeapCompact final {
     return do_compact_ && (compactable_arenas_ & (0x1u << arena_index));
   }
 
-  // See |Heap::RegisterMovingObjectReference()| documentation.
-  void RegisterMovingObjectReference(MovableReference* slot);
+  // See |Heap::ShouldRegisterMovingObjectReference()| documentation.
+  bool ShouldRegisterMovingObjectReference(MovableReference* slot);
 
   // See |Heap::RegisterMovingObjectCallback()| documentation.
   void RegisterMovingObjectCallback(MovableReference*,
@@ -133,11 +133,6 @@ class PLATFORM_EXPORT HeapCompact final {
 
   ThreadHeap* const heap_;
   std::unique_ptr<MovableObjectFixups> fixups_;
-
-  // The set is to remember slots that traced during
-  // marking phases. The mapping between the slots and the backing stores are
-  // created at the atomic pause phase.
-  HashSet<MovableReference*> traced_slots_;
 
   // Set to |true| when a compacting sweep will go ahead.
   bool do_compact_ = false;

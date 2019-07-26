@@ -26,11 +26,6 @@ import org.chromium.chrome.R;
  * 2. This preference can have a multiline title.
  * 3. This preference can set an icon color in XML through app:iconTint. Note that if a
  *    ColorStateList is set, only the default color will be used.
- *
- * TODO(crbug.com/967022): This class is analogous to {@link ChromeBasePreference}, but extends the
- * Preference Support Library rather than the deprecated Framework preferences. Once all {@link
- * ChromeBasePreference}s have been migrated to the Support Library, {@link ChromeBasePreference}
- * will be removed in favor of {@link ChromeBasePreferenceCompat}.
  */
 public class ChromeBasePreferenceCompat extends Preference {
     private ColorStateList mIconTint;

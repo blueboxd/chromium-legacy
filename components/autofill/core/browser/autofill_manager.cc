@@ -1874,6 +1874,9 @@ void AutofillManager::DeterminePossibleFieldTypesForUpload(
       card.GetMatchingTypes(value, app_locale, &matching_types);
     }
 
+    if (IsUPIVirtualPaymentAddress(value))
+      matching_types.insert(UPI_VPA);
+
     if (matching_types.empty()) {
       matching_types.insert(UNKNOWN_TYPE);
       ServerFieldTypeValidityStateMap matching_types_validities;

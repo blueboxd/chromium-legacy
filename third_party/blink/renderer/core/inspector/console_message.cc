@@ -93,7 +93,7 @@ ConsoleMessage::ConsoleMessage(mojom::ConsoleMessageSource source,
       level_(level),
       message_(message),
       location_(std::move(location)),
-      timestamp_(WTF::CurrentTimeMS()),
+      timestamp_(base::Time::Now().ToDoubleT() * 1000.0),
       frame_(nullptr) {}
 
 ConsoleMessage::~ConsoleMessage() = default;

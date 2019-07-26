@@ -27,7 +27,7 @@ class SkBitmap;
 
 namespace base {
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace blink {
 class WebView;
@@ -35,7 +35,7 @@ class WebView;
 
 namespace test_runner {
 class AppBannerService;
-}
+}  // namespace test_runner
 
 namespace content {
 
@@ -86,6 +86,7 @@ class BlinkTestRunner : public RenderViewObserver,
       const base::Optional<base::string16>& reply) override;
   void SimulateWebNotificationClose(const std::string& title,
                                     bool by_user) override;
+  void SimulateWebContentIndexDelete(const std::string& id) override;
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorSpace(const std::string& name) override;
   float GetWindowToViewportScale() override;

@@ -1617,4 +1617,35 @@ TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
   // gracefully exit (and not crash).
   test::RunPendingTasks();
 }
+
+class DisplayLockContextRenderingTest : public RenderingTest,
+                                        private ScopedDisplayLockingForTest {
+ public:
+  DisplayLockContextRenderingTest()
+      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()),
+        ScopedDisplayLockingForTest(true) {}
+};
+
+TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
+  SetHtmlInnerHTML(R"HTML(
+    <iframe id="frame"></iframe>
+  )HTML");
+  SetChildFrameHTML(R"HTML(
+    <style>
+      div {
+        contain: style layout;
+      }
+    </style>
+    <div id="target"></target>
+  )HTML");
+
+  auto* target = ChildDocument().getElementById("target");
+  GetDocument().getElementById("frame")->remove();
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  ScriptState::Scope scope(script_state);
+  DisplayLockOptions options;
+  target->getDisplayLockForBindings()->acquire(script_state, &options);
+}
+
 }  // namespace blink

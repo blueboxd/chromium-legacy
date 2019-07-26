@@ -99,6 +99,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       marking_worklist_(nullptr),
       not_fully_constructed_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
+      movable_reference_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -162,16 +163,17 @@ void ThreadHeap::RegisterWeakTable(void* table,
 #endif  // DCHECK_IS_ON()
 }
 
-void ThreadHeap::CommitCallbackStacks() {
+void ThreadHeap::SetupWorklists() {
   marking_worklist_.reset(new MarkingWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
   previously_not_fully_constructed_worklist_.reset(
       new NotFullyConstructedWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
+  movable_reference_worklist_.reset(new MovableReferenceWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
-void ThreadHeap::DecommitCallbackStacks(BlinkGC::StackState stack_state) {
+void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
@@ -206,14 +208,18 @@ void ThreadHeap::DecommitCallbackStacks(BlinkGC::StackState stack_state) {
   not_fully_constructed_worklist_.reset(nullptr);
 }
 
+void ThreadHeap::DestroyCompactionWorklists() {
+  movable_reference_worklist_.reset();
+}
+
 HeapCompact* ThreadHeap::Compaction() {
   if (!compaction_)
     compaction_ = std::make_unique<HeapCompact>(this);
   return compaction_.get();
 }
 
-void ThreadHeap::RegisterMovingObjectReference(MovableReference* slot) {
-  Compaction()->RegisterMovingObjectReference(slot);
+bool ThreadHeap::ShouldRegisterMovingObjectReference(MovableReference* slot) {
+  return Compaction()->ShouldRegisterMovingObjectReference(slot);
 }
 
 void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,

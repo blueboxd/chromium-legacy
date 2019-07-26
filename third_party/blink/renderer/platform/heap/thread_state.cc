@@ -1528,6 +1528,7 @@ void ThreadState::AtomicPauseSweepAndCompact(
     SweepForbiddenScope scope(this);
     NoAllocationScope no_allocation_scope(this);
     Heap().Compact();
+    Heap().DestroyCompactionWorklists();
   }
 
 #if defined(ADDRESS_SANITIZER)
@@ -1578,7 +1579,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
                                     BlinkGC::MarkingType marking_type,
                                     BlinkGC::GCReason reason) {
   SetGCPhase(GCPhase::kMarking);
-  Heap().CommitCallbackStacks();
+  Heap().SetupWorklists();
 
   const bool take_snapshot = marking_type == BlinkGC::kTakeSnapshot;
 
@@ -1659,8 +1660,11 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
     VisitWeakPersistents(visitor);
     Heap().WeakProcessing(visitor);
   }
-  Heap().DecommitCallbackStacks(current_gc_data_.stack_state);
+  Heap().DestroyMarkingWorklists(current_gc_data_.stack_state);
 
+  // TODO(omerkatz): When migrating to concurrent marking, the following 3
+  // lines will need to be wrapped with a loop iterating over all visitors.
+  current_gc_data_.visitor->FlushCompactionWorklists();
   const size_t marked_bytes = current_gc_data_.visitor->marked_bytes();
   current_gc_data_.visitor.reset();
 

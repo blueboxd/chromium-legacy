@@ -58,7 +58,6 @@
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
-#include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
 #include "chrome/browser/ui/webui/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "chrome/browser/ui/webui/ukm/ukm_internals_ui.h"
@@ -236,6 +235,10 @@
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/ui/webui/supervised_user_internals_ui.h"
+#endif
+
 using content::WebUI;
 using content::WebUIController;
 using ui::WebDialogUI;
@@ -403,8 +406,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SignInInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISuggestionsHost)
     return &NewWebUI<suggestions::SuggestionsUI>;
-  if (url.host_piece() == chrome::kChromeUISupervisedUserInternalsHost)
-    return &NewWebUI<SupervisedUserInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISupervisedUserPassphrasePageHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host_piece() == chrome::kChromeUISyncInternalsHost)
@@ -716,6 +717,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIResetPasswordHost) {
     return &NewWebUI<ResetPasswordUI>;
   }
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  if (url.host_piece() == chrome::kChromeUISupervisedUserInternalsHost)
+    return &NewWebUI<SupervisedUserInternalsUI>;
 #endif
 
   return NULL;

@@ -104,7 +104,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
           can_be_paused(false),
           can_be_frozen(false),
           can_run_in_background(true),
-          should_use_virtual_time(true),
+          should_use_virtual_time(false),
           is_high_priority(false) {}
 
     QueueTraits(const QueueTraits&) = default;

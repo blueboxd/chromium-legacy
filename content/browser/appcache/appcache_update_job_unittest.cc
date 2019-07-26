@@ -21,6 +21,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -31,6 +32,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -704,6 +706,9 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         tested_manifest_path_override_(nullptr),
         thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
         process_id_(123) {
+    // TODO(http://crbug.com/824840): Enable NavigationLoaderOnUI for these
+    // tests.
+    feature_list_.InitAndDisableFeature(features::kNavigationLoaderOnUI);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&IOThread::Init, base::Unretained(io_thread_.get())));
@@ -3829,6 +3834,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     PENDING_MASTER_NO_UPDATE,
     MANIFEST_WITH_INTERCEPT
   };
+
+  base::test::ScopedFeatureList feature_list_;
 
   // base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<IOThread> io_thread_;

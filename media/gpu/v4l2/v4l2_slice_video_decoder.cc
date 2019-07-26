@@ -339,7 +339,9 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
                                   base::BindOnce(std::move(init_cb), false));
     return;
   }
+
   needs_bitstream_conversion_ = (config.codec() == kCodecH264);
+  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
   // Setup input format.
   if (!SetupInputFormat(input_format_fourcc)) {
@@ -350,28 +352,12 @@ void V4L2SliceVideoDecoder::InitializeTask(const VideoDecoderConfig& config,
   }
 
   // Setup output format.
-  uint32_t output_format_fourcc = NegotiateOutputFormat();
-  num_output_planes_ =
-      V4L2Device::GetNumPlanesOfV4L2PixFmt(output_format_fourcc);
-  if (!SetupOutputFormat(output_format_fourcc)) {
+  if (!SetupOutputFormat(config.coded_size(), config.visible_rect())) {
     VLOGF(1) << "Failed to setup output format.";
     client_task_runner_->PostTask(FROM_HERE,
                                   base::BindOnce(std::move(init_cb), false));
     return;
   }
-
-  // Setup frame pool.
-  VideoPixelFormat output_format =
-      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc);
-  frame_layout_ = VideoFrameLayout::Create(output_format, config.coded_size());
-  if (!frame_layout_) {
-    VLOGF(1) << "Failed to create video frame layout.";
-    client_task_runner_->PostTask(FROM_HERE,
-                                  base::BindOnce(std::move(init_cb), false));
-    return;
-  }
-  pixel_aspect_ratio_ = config.GetPixelAspectRatio();
-  UpdateVideoFramePoolFormat(config.visible_rect());
 
   // Create Input/Output V4L2Queue
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
@@ -433,48 +419,81 @@ bool V4L2SliceVideoDecoder::SetupInputFormat(uint32_t input_format_fourcc) {
   return true;
 }
 
-uint32_t V4L2SliceVideoDecoder::NegotiateOutputFormat() {
+base::Optional<struct v4l2_format>
+V4L2SliceVideoDecoder::SetFormatOnOutputQueue(uint32_t format_fourcc,
+                                              const gfx::Size& size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+
+  struct v4l2_format format = {};
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  format.fmt.pix_mp.pixelformat = format_fourcc;
+  format.fmt.pix_mp.width = size.width();
+  format.fmt.pix_mp.height = size.height();
+  format.fmt.pix_mp.num_planes =
+      V4L2Device::GetNumPlanesOfV4L2PixFmt(format_fourcc);
+  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != format_fourcc) {
+    VPLOGF(2) << "Failed to set output format. format_fourcc=" << format_fourcc;
+    return base::nullopt;
+  }
+  return format;
+}
+
+base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
+    const gfx::Size& size,
+    const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
 
   const std::vector<uint32_t> formats = device_->EnumerateSupportedPixelformats(
       V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
   DCHECK(!formats.empty());
-  for (const auto format : formats) {
-    if (device_->CanCreateEGLImageFrom(format)) {
-      return format;
+  for (const auto format_fourcc : formats) {
+    if (!device_->CanCreateEGLImageFrom(format_fourcc))
+      continue;
+
+    // Make sure VFPool can allocate video frames with width and height.
+    auto frame_layout =
+        UpdateVideoFramePoolFormat(format_fourcc, size, visible_rect);
+    if (!frame_layout) {
+      continue;
+    }
+
+    // Next S_FMT with the size adjusted by VFPool.
+    gfx::Size adjusted_size(frame_layout->planes()[0].stride,
+                            frame_layout->coded_size().height());
+    base::Optional<struct v4l2_format> format =
+        SetFormatOnOutputQueue(format_fourcc, adjusted_size);
+    if (!format) {
+      num_output_planes_ = format->fmt.pix_mp.num_planes;
+      return frame_layout;
     }
   }
 
   // TODO(akahuang): Use ImageProcessor in this case.
   VLOGF(2) << "WARNING: Cannot find format that can create EGL image. "
            << "We need ImageProcessor to convert pixel format.";
-  return formats[0];
+  NOTIMPLEMENTED();
+  return base::nullopt;
 }
 
-bool V4L2SliceVideoDecoder::SetupOutputFormat(uint32_t output_format_fourcc) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(3) << "output_format_fourcc = " << output_format_fourcc;
-
-  // Only set fourcc for output; resolution, etc., will come from the
-  // driver once surface_it extracts surface_it from the stream.
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.pixelformat = output_format_fourcc;
-  format.fmt.pix_mp.num_planes = num_output_planes_;
-  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    VPLOGF(1) << "Failed to call IOCTL to set output format.";
-    return false;
-  }
-  DCHECK_EQ(format.fmt.pix_mp.pixelformat, output_format_fourcc);
-
-  return true;
-}
-
-void V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
+base::Optional<VideoFrameLayout>
+V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
+    uint32_t output_format_fourcc,
+    const gfx::Size& size,
     const gfx::Rect& visible_rect) {
+  VideoPixelFormat output_format =
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(output_format_fourcc);
+  if (output_format == PIXEL_FORMAT_UNKNOWN) {
+    return base::nullopt;
+  }
+  auto layout = VideoFrameLayout::Create(output_format, size);
+  if (!layout) {
+    VLOGF(1) << "Failed to create video frame layout.";
+    return base::nullopt;
+  }
+
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
-  frame_pool_->SetFrameFormat(*frame_layout_, visible_rect, natural_size);
+  return frame_pool_->NegotiateFrameFormat(*layout, visible_rect, natural_size);
 }
 
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
@@ -705,38 +724,24 @@ bool V4L2SliceVideoDecoder::ChangeResolution() {
   if (!StopStreamV4L2Queue())
     return false;
 
-  // Set the new resolution.
+  // Set output format with the new resolution.
   gfx::Size pic_size = avd_->GetPicSize();
   DCHECK(!pic_size.IsEmpty());
   DVLOGF(3) << "Change resolution to " << pic_size.width() << "x"
             << pic_size.height();
-  struct v4l2_format format;
-  memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
-    VLOGF(1) << "Failed getting output format.";
-    return false;
-  }
-  format.fmt.pix_mp.width = pic_size.width();
-  format.fmt.pix_mp.height = pic_size.height();
-  if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0) {
-    VLOGF(1) << "Failed setting resolution.";
+  auto frame_layout = SetupOutputFormat(pic_size, avd_->GetVisibleRect());
+  if (!frame_layout) {
+    VLOGF(1) << "No format is available with thew new resolution";
     return false;
   }
 
-  // Update frame layout.
-  gfx::Size coded_size(base::checked_cast<int>(format.fmt.pix_mp.width),
-                       base::checked_cast<int>(format.fmt.pix_mp.height));
+  auto coded_size = frame_layout->coded_size();
   DCHECK_EQ(coded_size.width() % 16, 0);
   DCHECK_EQ(coded_size.height() % 16, 0);
   if (!gfx::Rect(coded_size).Contains(gfx::Rect(pic_size))) {
     VLOGF(1) << "Got invalid adjusted coded size: " << coded_size.ToString();
     return false;
   }
-  frame_layout_ = VideoFrameLayout::Create(frame_layout_->format(), coded_size);
-  DCHECK(frame_layout_);
-
-  UpdateVideoFramePoolFormat(avd_->GetVisibleRect());
 
   // Allocate new output buffers.
   if (!output_queue_->DeallocateBuffers())

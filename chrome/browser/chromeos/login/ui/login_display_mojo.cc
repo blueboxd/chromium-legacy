@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -104,10 +106,15 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     // features (TPM firmware update) depend on system services running, which
     // is in turn blocked on the 'login-prompt-visible' signal.
     PrefService* local_state = g_browser_process->local_state();
-    if (local_state->GetBoolean(prefs::kFactoryResetRequested))
+    if (local_state->GetBoolean(prefs::kFactoryResetRequested)) {
       host_->StartWizard(ResetView::kScreenId);
-    else if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested))
+    } else if (local_state->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
       host_->StartWizard(EnableDebuggingScreenView::kScreenId);
+    } else if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
+               KioskAppManager::Get()->IsAutoLaunchRequested()) {
+      VLOG(0) << "Showing auto-launch warning";
+      host_->StartWizard(KioskAutolaunchScreenView::kScreenId);
+    }
   }
 }
 

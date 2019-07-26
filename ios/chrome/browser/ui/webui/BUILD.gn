@@ -37,6 +37,7 @@ source_set("webui") {
   deps = [
     "//base",
     "//base:i18n",
+    "//build:branding_buildflags",
     "//components/autofill/core/browser",
     "//components/crash/core/browser",
     "//components/flags_ui",

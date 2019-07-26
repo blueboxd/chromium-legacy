@@ -14,11 +14,6 @@ import android.widget.TextView;
 
 /**
  * A preference that displays informational text.
- *
- * TODO(crbug.com/967022): This class is analogous to {@link TextMessagePreference}, but extends
- * {@link ChromeBasePreferenceCompat} rather than {@link ChromeBasePreference}. Once all {@link
- * TextMessagePreference}-containing fragments have been migrated to the Support Library, remove
- * {@link TextMessagePreference} in favor of this class.
  */
 public class TextMessagePreferenceCompat extends ChromeBasePreferenceCompat {
     /**

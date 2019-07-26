@@ -26,13 +26,15 @@ PerformanceElementTiming* PerformanceElementTiming::Create(
   DCHECK_GE(naturalWidth, 0);
   DCHECK_GE(naturalHeight, 0);
   DCHECK(element);
+  double start_time = render_time != 0.0 ? render_time : load_time;
   return MakeGarbageCollected<PerformanceElementTiming>(
-      name, url, intersection_rect, render_time, load_time, identifier,
-      naturalWidth, naturalHeight, id, element);
+      name, start_time, url, intersection_rect, render_time, load_time,
+      identifier, naturalWidth, naturalHeight, id, element);
 }
 
 PerformanceElementTiming::PerformanceElementTiming(
     const AtomicString& name,
+    DOMHighResTimeStamp start_time,
     const String& url,
     const FloatRect& intersection_rect,
     DOMHighResTimeStamp render_time,
@@ -42,7 +44,7 @@ PerformanceElementTiming::PerformanceElementTiming(
     int naturalHeight,
     const AtomicString& id,
     Element* element)
-    : PerformanceEntry(name, 0, 0),
+    : PerformanceEntry(name, start_time, start_time),
       element_(element),
       intersection_rect_(DOMRectReadOnly::FromFloatRect(intersection_rect)),
       render_time_(render_time),
@@ -65,6 +67,11 @@ PerformanceEntryType PerformanceElementTiming::EntryTypeEnum() const {
 
 Element* PerformanceElementTiming::element() const {
   if (!element_ || !element_->isConnected() || element_->IsInShadowTree())
+    return nullptr;
+
+  // Do not expose |element_| when the document is not 'fully active'.
+  const Document& document = element_->GetDocument();
+  if (!document.IsActive() || !document.GetFrame())
     return nullptr;
 
   return element_;

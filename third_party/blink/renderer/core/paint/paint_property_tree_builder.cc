@@ -8,6 +8,7 @@
 
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/overscroll_behavior.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/link_highlights.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -676,6 +677,20 @@ static bool NeedsTransform(const LayoutObject& object,
   return false;
 }
 
+static bool ActiveTransformAnimationIsAxisAligned(
+    const LayoutObject& object,
+    CompositingReasons compositing_reasons) {
+  if (!(compositing_reasons & CompositingReason::kActiveTransformAnimation))
+    return false;
+
+  if (!object.GetNode() || !object.GetNode()->IsElementNode())
+    return false;
+  const Element* element = To<Element>(object.GetNode());
+  const auto* animations = element->GetElementAnimations();
+  DCHECK(animations);
+  return animations->AnimationsPreserveAxisAlignment();
+}
+
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   if (object_.IsSVGChild()) {
     UpdateTransformForNonRootSVG();
@@ -728,6 +743,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           state.direct_compositing_reasons =
               full_context_.direct_compositing_reasons &
               CompositingReasonsForTransformProperty();
+          // TODO(flackr): This only needs to consider composited transform
+          // animations. This is currently a cyclic dependency but we could
+          // calculate most of the compositable animation reasons up front to
+          // only consider animations which are candidates for compositing.
+          state.animation_is_axis_aligned =
+              ActiveTransformAnimationIsAxisAligned(
+                  object_, full_context_.direct_compositing_reasons);
         }
       }
 

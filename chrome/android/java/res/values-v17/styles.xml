@@ -962,31 +962,6 @@
         <item name="android:textColor">@color/suggestion_url_dark_modern</item>
     </style>
 
-    <style name="TextAppearance.OmniboxAnswerTextLarge">
-        <item name="android:textSize">24sp</item>
-        <item name="android:textColor">@color/answers_answer_text</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerTextMedium">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textColor">@color/answers_answer_text</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerTextSmall">
-        <item name="android:textSize">@dimen/text_size_small</item>
-        <item name="android:textColor">@color/answers_answer_text</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerDescriptionNegative">
-        <item name="android:textSize">@dimen/text_size_large</item>
-        <item name="android:textColor">@color/answers_description_text_negative</item>
-    </style>
-
-    <style name="TextAppearance.OmniboxAnswerDescriptionPositive">
-        <item name="android:textSize">@dimen/text_size_large</item>
-        <item name="android:textColor">@color/answers_description_text_positive</item>
-    </style>
-
     <style name="TextAppearance.OmniboxAnswerDescriptionNegativeSmall">
         <item name="android:textSize">@dimen/text_size_small</item>
         <item name="android:textColor">@color/answers_description_text_negative</item>

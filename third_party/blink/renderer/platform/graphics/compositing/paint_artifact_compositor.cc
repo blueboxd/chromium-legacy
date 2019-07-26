@@ -778,14 +778,15 @@ static void UpdateCompositorViewportProperties(
 //  1. It is not the root transform node.
 //  2. It is a 2d translation only.
 //  3. The transform is not used for scrolling - its ScrollNode() is nullptr.
-//  4. It has no direct compositing reasons, other than k3DTransform. Note
+//  4. The transform is not a StickyTranslation node.
+//  5. It has no direct compositing reasons, other than k3DTransform. Note
 //     that if it has a k3DTransform reason, check #2 above ensures that it
 //     isn't really 3D.
-//  5. It has FlattensInheritedTransform matching that of its direct parent.
-//  6. It has backface visibility matching its direct parent.
-//  7. No clips have local_transform_space referring to this transform node.
-//  8. No effects have local_transform_space referring to this transform node.
-//  9. All child transform nodes are also able to be de-composited.
+//  6. It has FlattensInheritedTransform matching that of its direct parent.
+//  7. It has backface visibility matching its direct parent.
+//  8. No clips have local_transform_space referring to this transform node.
+//  9. No effects have local_transform_space referring to this transform node.
+//  10. All child transform nodes are also able to be de-composited.
 // This algorithm should be O(t+c+e) where t,c,e are the number of transform,
 // clip, and effect nodes in the full tree.
 void PaintArtifactCompositor::DecompositeTransforms(
@@ -819,6 +820,7 @@ void PaintArtifactCompositor::DecompositeTransforms(
          !node->IsRoot() && !can_be_decomposited.Contains(node);
          node = &node->Parent()->Unalias()) {
       if (!node->IsIdentityOr2DTranslation() || node->ScrollNode() ||
+          node->GetStickyConstraint() ||
           node->IsAffectedByOuterViewportBoundsDelta() ||
           node->HasDirectCompositingReasonsOtherThan3dTransform() ||
           !node->FlattensInheritedTransformSameAsParent() ||

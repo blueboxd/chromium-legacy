@@ -170,14 +170,6 @@ UIView* GetFirstResponderSubview(UIView* view) {
   [_contentViewScrollViewProxy setScrollView:contentView.scrollView];
 }
 
-- (void)disconnectScrollProxy {
-  [_contentViewScrollViewProxy setScrollView:nil];
-}
-
-- (void)reconnectScrollProxy {
-  [_contentViewScrollViewProxy setScrollView:self.contentView.scrollView];
-}
-
 - (void)addSubview:(UIView*)view {
   return [_contentView addSubview:view];
 }

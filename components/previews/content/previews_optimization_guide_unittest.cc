@@ -244,12 +244,21 @@ class PreviewsOptimizationGuideTest
 
   void ProcessHints(const optimization_guide::proto::Configuration& config,
                     const std::string& version) {
+    base::HistogramTester histogram_tester;
+
     optimization_guide::HintsComponentInfo info(
         base::Version(version),
         temp_dir().Append(FILE_PATH_LITERAL("somefile.pb")));
     ASSERT_NO_FATAL_FAILURE(WriteConfigToFile(config, info.path));
+    base::RunLoop run_loop;
+    guide_->ListenForNextUpdateForTesting(run_loop.QuitClosure());
     guide_->OnHintsComponentAvailable(info);
-    RunUntilIdle();
+    run_loop.Run();
+
+    // Check for histogram to ensure that we do not remove this histogram since
+    // it's relied on in release tools.
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.UpdateComponentHints.Result", 1);
   }
 
   void EnableDataSaver() {

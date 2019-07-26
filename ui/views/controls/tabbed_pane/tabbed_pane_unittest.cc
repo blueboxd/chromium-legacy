@@ -34,6 +34,12 @@ base::string16 GetAccessibleName(View* view) {
   return ax_node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
 }
 
+ax::mojom::Role GetAccessibleRole(View* view) {
+  ui::AXNodeData ax_node_data;
+  view->GetViewAccessibility().GetAccessibleNodeData(&ax_node_data);
+  return ax_node_data.role;
+}
+
 }  // namespace
 
 class TabbedPaneTest : public ViewsTestBase {
@@ -292,6 +298,17 @@ TEST_F(TabbedPaneTest, AccessiblePaneContentsTitleTracksTabTitle) {
       tabbed_pane_->AddTab(kSecondTitle, std::make_unique<View>());
   EXPECT_EQ(kFirstTitle, GetAccessibleName(tab1_contents));
   EXPECT_EQ(kSecondTitle, GetAccessibleName(tab2_contents));
+}
+
+TEST_F(TabbedPaneTest, AccessiblePaneContentsRoleIsTab) {
+  const base::string16 kFirstTitle = ASCIIToUTF16("Tab1");
+  const base::string16 kSecondTitle = ASCIIToUTF16("Tab2");
+  View* const tab1_contents =
+      tabbed_pane_->AddTab(kFirstTitle, std::make_unique<View>());
+  View* const tab2_contents =
+      tabbed_pane_->AddTab(kSecondTitle, std::make_unique<View>());
+  EXPECT_EQ(ax::mojom::Role::kTab, GetAccessibleRole(tab1_contents));
+  EXPECT_EQ(ax::mojom::Role::kTab, GetAccessibleRole(tab2_contents));
 }
 
 }  // namespace test

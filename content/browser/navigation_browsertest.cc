@@ -1726,8 +1726,10 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
       popup,
       "window.opener.location ='data:html/text;base64,'+btoa('payload');"));
   observer.WaitForFinished();
+
+  // Implies NavigationDownloadType::kOpenerCrossOrigin has 0 count.
   histograms.ExpectUniqueSample("Navigation.DownloadPolicy.LogPerPolicyApplied",
-                                NavigationDownloadType::kDefaultAllow, 1);
+                                NavigationDownloadType::kNoGesture, 1);
 }
 
 // A variation of the OpenerNavigation_DownloadPolicy test above, but uses a
@@ -1779,7 +1781,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   // boolean before the navigation turns into a download. Just expect metrics
   // when the network service is enabled.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    histograms.ExpectUniqueSample(
+    histograms.ExpectBucketCount(
         "Navigation.DownloadPolicy.LogPerPolicyApplied",
         NavigationDownloadType::kOpenerCrossOrigin, 1);
   }

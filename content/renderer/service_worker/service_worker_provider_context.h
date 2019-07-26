@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -287,7 +288,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Used in |subresource_loader_factory_| to get the connection to the
   // controller service worker.
   //
-  // |controller_endpoint_| is a Mojo pipe to the controller service worker,
+  // |remote_controller_| is a Mojo pipe to the controller service worker,
   // and is to be passed to (i.e. taken by) a subresource loader factory when
   // GetSubresourceLoaderFactory() is called for the first time when a valid
   // controller exists.
@@ -297,7 +298,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // subresource loader factory and lives on a background thread. This is
   // populated when GetSubresourceLoader() creates the subresource loader
   // factory and takes |controller_endpoint_|.
-  blink::mojom::ControllerServiceWorkerPtrInfo controller_endpoint_;
+  mojo::PendingRemote<blink::mojom::ControllerServiceWorker> remote_controller_;
   blink::mojom::ControllerServiceWorkerConnectorPtr controller_connector_;
 
   bool sent_execution_ready_ = false;

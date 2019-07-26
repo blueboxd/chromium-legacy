@@ -493,6 +493,16 @@ void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
   delete this;
 }
 
+void MigrateChromeAndChromeProxyShortcuts(
+    const base::FilePath& chrome_exe,
+    const base::FilePath& chrome_proxy_path,
+    const base::FilePath& shortcut_path) {
+  win::MigrateShortcutsInPathInternal(chrome_exe, shortcut_path);
+
+  // Migrate any pinned PWA shortcuts in taskbar directory.
+  win::MigrateShortcutsInPathInternal(chrome_proxy_path, shortcut_path);
+}
+
 }  // namespace
 
 bool SetAsDefaultBrowser() {
@@ -701,28 +711,44 @@ void MigrateTaskbarPins() {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
-  base::FilePath pins_path;
-  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &pins_path)) {
+  base::FilePath taskbar_path;
+  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path)) {
+    NOTREACHED();
+    return;
+  }
+
+  // Migrate any pinned shortcuts in ImplicitApps sub-directories.
+  base::FilePath implicit_apps_path;
+  if (!base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
+                              &implicit_apps_path)) {
     NOTREACHED();
     return;
   }
 
   base::CreateCOMSTATaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&MigrateTaskbarPinsCallback, pins_path));
+      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
+                                           taskbar_path, implicit_apps_path));
 }
 
-void MigrateTaskbarPinsCallback(const base::FilePath& pins_path) {
+void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
+                                const base::FilePath& implicit_apps_path) {
   // Get full path of chrome.
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
     return;
+  base::FilePath chrome_proxy_path(web_app::GetChromeProxyPath());
 
-  win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
-
-  // Migrate any pinned PWA shortcuts.
-  win::MigrateShortcutsInPathInternal(web_app::GetChromeProxyPath(), pins_path);
+  MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
+                                       taskbar_path);
+  base::FileEnumerator directory_enum(implicit_apps_path, /*recursive=*/false,
+                                      base::FileEnumerator::DIRECTORIES);
+  for (base::FilePath implicit_app_sub_directory = directory_enum.Next();
+       !implicit_app_sub_directory.empty();
+       implicit_app_sub_directory = directory_enum.Next()) {
+    MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
+                                         implicit_app_sub_directory);
+  }
 }
 
 void GetIsPinnedToTaskbarState(

@@ -116,8 +116,8 @@ class InstanceID {
   // created.
   // |authorized_entity|: the authorized entity passed when obtaining the token.
   // |callback|: to be called once the asynchronous operation is done.
-  void GetEncryptionInfo(const std::string& authorized_entity,
-                         GetEncryptionInfoCallback callback);
+  virtual void GetEncryptionInfo(const std::string& authorized_entity,
+                                 GetEncryptionInfoCallback callback);
 
   // Revokes a granted token.
   // |authorized_entity|: the authorized entity passed when obtaining the token.

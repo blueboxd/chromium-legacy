@@ -167,7 +167,11 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->session_artwork_;
   }
 
-  const gfx::ImageSkia& GetAppIcon() const {
+  views::ImageButton* close_button() const {
+    return media_controls_view_->close_button_;
+  }
+
+  const views::ImageView* icon_view() const {
     return header_row()->app_icon_for_testing();
   }
 
@@ -211,7 +215,7 @@ TEST_F(LockScreenMediaControlsViewTest, KeepMediaSessionDataBetweenSessions) {
       message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
 
   // Verify that the default icon is not drawn.
-  EXPECT_FALSE(GetAppIcon().BackedBySameObjectAs(default_icon));
+  EXPECT_FALSE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));
 
   // Set artwork for new media session.
   SkBitmap artwork;
@@ -266,11 +270,14 @@ TEST_F(LockScreenMediaControlsViewTest, ButtonsFocusCheck) {
   views::FocusManager* focus_manager = media_controls_view_->GetFocusManager();
 
   {
-    // Focus the first action button.
-    auto* button = GetButtonForAction(MediaSessionAction::kPreviousTrack);
-    focus_manager->SetFocusedView(button);
-    EXPECT_EQ(button, focus_manager->GetFocusedView());
+    // Focus the first action button - the close button.
+    focus_manager->SetFocusedView(close_button());
+    EXPECT_EQ(close_button(), focus_manager->GetFocusedView());
   }
+
+  SimulateTab();
+  EXPECT_EQ(GetButtonForAction(MediaSessionAction::kPreviousTrack),
+            focus_manager->GetFocusedView());
 
   SimulateTab();
   EXPECT_EQ(GetButtonForAction(MediaSessionAction::kSeekBackward),
@@ -306,6 +313,49 @@ TEST_F(LockScreenMediaControlsViewTest, PlayPauseButtonTooltipCheck) {
   base::string16 new_tooltip = button->GetTooltipText(gfx::Point());
   EXPECT_FALSE(new_tooltip.empty());
   EXPECT_NE(tooltip, new_tooltip);
+}
+
+TEST_F(LockScreenMediaControlsViewTest, CloseButtonVisibility) {
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+  EXPECT_FALSE(close_button()->IsDrawn());
+
+  // Move the mouse inside |media_controls_view_|.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+
+  // Verify that the close button is shown.
+  EXPECT_TRUE(close_button()->IsDrawn());
+
+  // Move the mouse outside |media_controls_view_|.
+  generator->MoveMouseBy(500, 500);
+
+  // Verify that the close button is hidden.
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+  EXPECT_FALSE(close_button()->IsDrawn());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, CloseButtonClick) {
+  EXPECT_TRUE(media_controls_view_->IsDrawn());
+
+  // Move the mouse inside |media_controls_view_|.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(
+      media_controls_view_->GetBoundsInScreen().CenterPoint());
+
+  EXPECT_TRUE(close_button()->IsDrawn());
+  EXPECT_EQ(0, media_controller()->stop_count());
+
+  // Send event to click the close button.
+  generator->MoveMouseTo(close_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
+
+  // Verify that the media was stopped.
+  media_controls_view_->FlushForTesting();
+  EXPECT_EQ(1, media_controller()->stop_count());
+
+  // Verify that the controls were hidden.
+  EXPECT_FALSE(media_controls_view_->IsDrawn());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, PreviousTrackButtonClick) {
@@ -385,17 +435,17 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {
       message_center::kProductIcon, kAppIconSize, gfx::kChromeIconGrey);
 
   // Verify that the icon is initialized to the default.
-  EXPECT_TRUE(GetAppIcon().BackedBySameObjectAs(default_icon));
-  EXPECT_EQ(kAppIconSize, GetAppIcon().width());
-  EXPECT_EQ(kAppIconSize, GetAppIcon().height());
+  EXPECT_TRUE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));
+  EXPECT_EQ(kAppIconSize, icon_view()->GetImage().width());
+  EXPECT_EQ(kAppIconSize, icon_view()->GetImage().height());
 
   media_controls_view_->MediaControllerImageChanged(
       media_session::mojom::MediaSessionImageType::kSourceIcon, SkBitmap());
 
   // Verify that the default icon is used if no icon is provided.
-  EXPECT_TRUE(GetAppIcon().BackedBySameObjectAs(default_icon));
-  EXPECT_EQ(kAppIconSize, GetAppIcon().width());
-  EXPECT_EQ(kAppIconSize, GetAppIcon().height());
+  EXPECT_TRUE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));
+  EXPECT_EQ(kAppIconSize, icon_view()->GetImage().width());
+  EXPECT_EQ(kAppIconSize, icon_view()->GetImage().height());
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(kAppIconSize, kAppIconSize);
@@ -403,9 +453,9 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppIcon) {
       media_session::mojom::MediaSessionImageType::kSourceIcon, bitmap);
 
   // Verify that the provided icon is used.
-  EXPECT_FALSE(GetAppIcon().BackedBySameObjectAs(default_icon));
-  EXPECT_EQ(kAppIconSize, GetAppIcon().width());
-  EXPECT_EQ(kAppIconSize, GetAppIcon().height());
+  EXPECT_FALSE(icon_view()->GetImage().BackedBySameObjectAs(default_icon));
+  EXPECT_EQ(kAppIconSize, icon_view()->GetImage().width());
+  EXPECT_EQ(kAppIconSize, icon_view()->GetImage().height());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, UpdateAppName) {
@@ -427,6 +477,36 @@ TEST_F(LockScreenMediaControlsViewTest, UpdateAppName) {
 
   // Verify that the provided app name is used.
   EXPECT_EQ(kTestAppName, GetAppName());
+}
+
+TEST_F(LockScreenMediaControlsViewTest, UpdateImagesConvertColors) {
+  SkBitmap artwork;
+  SkImageInfo artwork_info =
+      SkImageInfo::Make(200, 200, kAlpha_8_SkColorType, kOpaque_SkAlphaType);
+  artwork.allocPixels(artwork_info);
+
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, artwork);
+
+  // Verify the artwork color was converted.
+  EXPECT_EQ(artwork_view()->GetImage().bitmap()->colorType(), kN32_SkColorType);
+
+  // Verify the artwork is visible.
+  EXPECT_TRUE(artwork_view()->GetVisible());
+
+  SkBitmap icon;
+  SkImageInfo icon_info =
+      SkImageInfo::Make(20, 20, kAlpha_8_SkColorType, kOpaque_SkAlphaType);
+  artwork.allocPixels(icon_info);
+
+  media_controls_view_->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kSourceIcon, icon);
+
+  // Verify the icon color was converted.
+  EXPECT_EQ(icon_view()->GetImage().bitmap()->colorType(), kN32_SkColorType);
+
+  // Verify the icon is visible.
+  EXPECT_TRUE(icon_view()->GetVisible());
 }
 
 TEST_F(LockScreenMediaControlsViewTest, UpdateArtwork) {

@@ -60,8 +60,7 @@ std::map<vr::EVRButtonId, GamepadBuilder::ButtonData> GetAxesButtons(
 
     GamepadBuilder::ButtonData button_data;
 
-    // TODO(https://crbug.com/966060): Determine if inverting the y value here
-    // is necessary.
+    // Invert the y axis because -1 is up in the Gamepad API but down in OpenVR.
     double x_axis = controller_state.rAxis[j].x;
     double y_axis = -controller_state.rAxis[j].y;
 

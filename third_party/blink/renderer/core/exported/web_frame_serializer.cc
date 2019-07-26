@@ -228,7 +228,8 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // srcset prevents the problem. Long term we should make sure to MHTML plays
   // nicely with srcset.
   if (IsHTMLImageElement(element) &&
-      attribute.LocalName() == html_names::kSrcsetAttr) {
+      (attribute.LocalName() == html_names::kSrcsetAttr ||
+       attribute.LocalName() == html_names::kSizesAttr)) {
     return true;
   }
 

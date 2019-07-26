@@ -26,6 +26,9 @@ public interface AssistantPaymentRequestDelegate {
     /** The currently selected payment method has changed. */
     void onPaymentMethodChanged(@Nullable AutofillPaymentInstrument paymentInstrument);
 
-    /** the currently selected terms & conditions state has changed. */
+    /** The currently selected terms & conditions state has changed. */
     void onTermsAndConditionsChanged(@AssistantTermsAndConditionsState int state);
+
+    /** Called when a link on the terms and conditions message is clicked. */
+    void onTermsAndConditionsLinkClicked(int link);
 }

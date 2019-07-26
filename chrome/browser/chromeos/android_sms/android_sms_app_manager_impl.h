@@ -18,6 +18,9 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "url/gurl.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace app_list {
 class AppListSyncableService;
 }  // namespace app_list
@@ -38,10 +41,12 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
   AndroidSmsAppManagerImpl(
       Profile* profile,
       AndroidSmsAppSetupController* setup_controller,
+      PrefService* pref_service,
       app_list::AppListSyncableService* app_list_syncable_service,
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get());
   ~AndroidSmsAppManagerImpl() override;
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   friend class AndroidSmsAppManagerImplTest;
@@ -65,11 +70,13 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
   void SetUpAndroidSmsApp() override;
   void SetUpAndLaunchAndroidSmsApp() override;
   void TearDownAndroidSmsApp() override;
+  bool HasAppBeenManuallyUninstalledByUser() override;
 
   base::Optional<PwaDomain> GetInstalledPwaDomain();
   void CompleteAsyncInitialization();
   void NotifyInstalledAppUrlChangedIfNecessary();
   void OnSetUpNewAppResult(const base::Optional<PwaDomain>& migrating_from,
+                           const GURL& install_url,
                            bool success);
   void OnRemoveOldAppResult(const base::Optional<PwaDomain>& migrating_from,
                             bool success);
@@ -80,6 +87,7 @@ class AndroidSmsAppManagerImpl : public AndroidSmsAppManager {
   Profile* profile_;
   AndroidSmsAppSetupController* setup_controller_;
   app_list::AppListSyncableService* app_list_syncable_service_;
+  PrefService* pref_service_;
 
   // True if installation is in currently in progress.
   bool is_new_app_setup_in_progress_ = false;

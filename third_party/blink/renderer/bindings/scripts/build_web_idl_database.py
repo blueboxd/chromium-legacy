@@ -30,7 +30,14 @@ def parse_options():
 def main():
     options, filepaths = parse_options()
 
-    database = web_idl.build_database(filepaths)
+    # Incomplete IDL compiler produces a lot of errors, which break trybots.
+    # So, we ignore all the errors for the time being.
+    # TODO(bindings-team): Replace |report_error| with sys.exit once IDL
+    # compiler completes.
+    report_error = lambda message: None
+
+    database = web_idl.build_database(filepaths=filepaths,
+                                      report_error=report_error)
 
     utilities.write_pickle_file(options.output, database)
 

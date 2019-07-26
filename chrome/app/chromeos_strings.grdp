@@ -213,8 +213,14 @@
   <message name="IDS_CELLULAR_SETUP_TRY_AGAIN_LABEL" desc="Label for button to retry a step during cellular setup">
     Try again
   </message>
-  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE" desc="Title for first screen of cellular setup during which ChromeOS is preparing the cellular device for setup." translateable="false">
-    Sim Detect Page
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_TITLE" desc="Title for first screen of cellular setup during which ChromeOS is preparing the cellular device for setup.">
+    Preparing to setup your cellular device...
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_TITLE" desc="Title for cellular setup when Chrome OS encounters an error preparing the cellular device for setup.">
+    We couldn't detect your SIM card
+  </message>
+  <message name="IDS_CELLULAR_SETUP_SIM_DETECT_PAGE_ERROR_MESSAGE" desc="Message displayed under title in cellular setup when Chrome OS encounters an error preparing the cellular device for setup. Prompts user to insert SIM and try again.">
+    Please insert your SIM and try again
   </message>
   <message name="IDS_CELLULAR_SETUP_PROVISIONING_PAGE_TITLE" desc="Title for cellular setup step in which the user uses the embedded carrier provisioning portal to make payment and activate the device." translateable="false">
     Provisioning Page

@@ -17,7 +17,8 @@
 
 @implementation MockTabOpener
 
-- (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
+- (void)dismissModalsAndOpenSelectedTabInMode:
+            (ApplicationModeForTabOpening)targetMode
                             withUrlLoadParams:
                                 (const UrlLoadParams&)urlLoadParams
                                dismissOmnibox:(BOOL)dismissOmnibox

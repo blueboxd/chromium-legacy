@@ -1094,7 +1094,8 @@ FrameSchedulerImpl::ThrottleableTaskQueueTraits() {
       .SetCanBeThrottled(true)
       .SetCanBeFrozen(true)
       .SetCanBeDeferred(true)
-      .SetCanBePaused(true);
+      .SetCanBePaused(true)
+      .SetShouldUseVirtualTime(true);
 }
 
 // static
@@ -1104,15 +1105,18 @@ FrameSchedulerImpl::DeferrableTaskQueueTraits() {
       .SetCanBeDeferred(true)
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
-      .SetCanBePaused(true);
+      .SetCanBePaused(true)
+      .SetShouldUseVirtualTime(true);
 }
 
 // static
-MainThreadTaskQueue::QueueTraits FrameSchedulerImpl::PausableTaskQueueTraits() {
+MainThreadTaskQueue::QueueTraits
+FrameSchedulerImpl::PausableTaskQueueTraits() {
   return QueueTraits()
       .SetCanBeFrozen(base::FeatureList::IsEnabled(
           blink::features::kStopNonTimersInBackground))
-      .SetCanBePaused(true);
+      .SetCanBePaused(true)
+      .SetShouldUseVirtualTime(true);
 }
 
 // static
@@ -1120,23 +1124,25 @@ MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::FreezableTaskQueueTraits() {
   // Should not use VirtualTime because using VirtualTime would make the task
   // execution non-deterministic and produce timeouts failures.
-  return QueueTraits().SetCanBeFrozen(true).SetShouldUseVirtualTime(false);
+  return QueueTraits().SetCanBeFrozen(true);
 }
 
 // static
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::UnpausableTaskQueueTraits() {
-  return QueueTraits();
+  return QueueTraits().SetShouldUseVirtualTime(true);
 }
 
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits() {
-  return ThrottleableTaskQueueTraits().SetCanRunInBackground(false);
+  return ThrottleableTaskQueueTraits()
+      .SetCanRunInBackground(false)
+      .SetShouldUseVirtualTime(true);
 }
 
 MainThreadTaskQueue::QueueTraits
 FrameSchedulerImpl::DoesNotUseVirtualTimeTaskQueueTraits() {
-  return UnpausableTaskQueueTraits().SetShouldUseVirtualTime(false);
+  return QueueTraits().SetShouldUseVirtualTime(false);
 }
 
 }  // namespace scheduler

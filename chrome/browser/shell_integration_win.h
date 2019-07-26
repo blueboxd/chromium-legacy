@@ -74,7 +74,8 @@ void GetIsPinnedToTaskbarState(
 void MigrateTaskbarPins();
 
 // Callback for MigrateTaskbarPins(). Exposed for testing.
-void MigrateTaskbarPinsCallback(const base::FilePath& pins_path);
+void MigrateTaskbarPinsCallback(const base::FilePath& pins_path,
+                                const base::FilePath& implicit_apps_path);
 
 // Migrates all shortcuts in |path| which point to |chrome_exe| such that they
 // have the appropriate AppUserModelId. Also clears the legacy dual_mode

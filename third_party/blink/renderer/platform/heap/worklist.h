@@ -60,6 +60,8 @@ class Worklist {
 
     bool IsGlobalPoolEmpty() { return worklist_->IsGlobalPoolEmpty(); }
 
+    void FlushToGlobal() { worklist_->FlushToGlobal(task_id_); }
+
     size_t LocalPushSegmentSize() const {
       return worklist_->LocalPushSegmentSize(task_id_);
     }

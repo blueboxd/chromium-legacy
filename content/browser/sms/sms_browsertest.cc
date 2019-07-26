@@ -146,74 +146,53 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   ASSERT_FALSE(provider->HasObservers());
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReceiveMultiple) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   NavigateToURL(shell(), url);
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
-  auto* dialog1 = new NiceMock<MockSmsDialog>();
-  auto* dialog2 = new NiceMock<MockSmsDialog>();
+  auto* dialog = new NiceMock<MockSmsDialog>();
 
-  base::OnceClosure on_continue_callback1;
-  base::OnceClosure on_continue_callback2;
+  base::OnceClosure on_continue_callback;
 
   EXPECT_CALL(delegate_, CreateSmsDialog())
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog1))))
-      .WillOnce(Return(ByMove(base::WrapUnique(dialog2))));
+      .WillOnce(Return(ByMove(base::WrapUnique(dialog))));
 
-  EXPECT_CALL(*dialog1, Open(_, _, _))
-      .WillOnce(Invoke([&on_continue_callback1](content::RenderFrameHost*,
-                                                base::OnceClosure on_continue,
-                                                base::OnceClosure on_cancel) {
-        on_continue_callback1 = std::move(on_continue);
+  EXPECT_CALL(*dialog, Open(_, _, _))
+      .WillOnce(Invoke([&on_continue_callback](content::RenderFrameHost*,
+                                               base::OnceClosure on_continue,
+                                               base::OnceClosure on_cancel) {
+        on_continue_callback = std::move(on_continue);
       }));
 
-  EXPECT_CALL(*dialog2, Open(_, _, _))
-      .WillOnce(Invoke([&on_continue_callback2](content::RenderFrameHost*,
-                                                base::OnceClosure on_continue,
-                                                base::OnceClosure on_cancel) {
-        on_continue_callback2 = std::move(on_continue);
-      }));
-
-  EXPECT_CALL(*dialog1, EnableContinueButton())
-      .WillOnce(Invoke([&on_continue_callback1]() {
-        std::move(on_continue_callback1).Run();
-      }));
-  EXPECT_CALL(*dialog2, EnableContinueButton())
-      .WillOnce(Invoke([&on_continue_callback2]() {
-        std::move(on_continue_callback2).Run();
+  EXPECT_CALL(*dialog, EnableContinueButton())
+      .WillOnce(Invoke([&on_continue_callback]() {
+        std::move(on_continue_callback).Run();
       }));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
       base::WrapUnique(provider));
 
-  // Test that SMS content can retrieve multiple messages.
   std::string script = R"(
-    (async () => {
-      let sms1 = navigator.sms.receive();
-      let sms2 = navigator.sms.receive();
-
-      let msg1 = await sms1;
-      let msg2 = await sms2;
-
-      return [msg1.content, msg2.content];
-    }) ();
+    navigator.sms.receive().then(({content}) => { first = content; });
+    navigator.sms.receive().catch(e => e.name);
   )";
 
-  EXPECT_CALL(*provider, Retrieve())
-      .WillOnce(Invoke([&provider, &url]() {
-        provider->NotifyReceive(url::Origin::Create(url), "hello1");
-      }))
-      .WillOnce(Invoke([&provider, &url]() {
-        provider->NotifyReceive(url::Origin::Create(url), "hello2");
-      }));
+  base::RunLoop loop;
 
-  base::ListValue result = EvalJs(shell(), script).ExtractList();
-  ASSERT_EQ(2u, result.GetList().size());
-  EXPECT_EQ("hello1", result.GetList()[0].GetString());
-  EXPECT_EQ("hello2", result.GetList()[1].GetString());
+  EXPECT_CALL(*provider, Retrieve()).WillOnce(Invoke([&loop]() {
+    loop.Quit();
+  }));
+
+  EXPECT_EQ("AbortError", EvalJs(shell(), script));
+
+  loop.Run();
+
+  provider->NotifyReceive(url::Origin::Create(url), "hello");
+
+  EXPECT_EQ("hello", EvalJs(shell(), "first"));
 
   ASSERT_FALSE(provider->HasObservers());
 }

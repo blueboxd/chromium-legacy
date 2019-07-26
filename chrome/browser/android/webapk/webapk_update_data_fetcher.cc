@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <vector>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -33,6 +34,12 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace {
+
+bool DoesAndroidSupportMaskableIcons() {
+  // TODO(crbug.com/977173): re-enable maskable icon support once server support
+  // is ready.
+  return false;
+}
 
 // Returns whether the given |url| is within the scope of the |scope| url.
 bool IsInScope(const GURL& url, const GURL& scope) {
@@ -63,6 +70,7 @@ WebApkUpdateDataFetcher::WebApkUpdateDataFetcher(JNIEnv* env,
       scope_(scope),
       web_manifest_url_(web_manifest_url),
       info_(GURL()),
+      is_primary_icon_maskable_(false),
       weak_ptr_factory_(this) {
   java_ref_.Reset(env, obj);
 }
@@ -111,6 +119,7 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
 
   InstallableParams params;
   params.valid_manifest = true;
+  params.prefer_maskable_icon = DoesAndroidSupportMaskableIcons();
   params.has_worker = true;
   params.valid_primary_icon = true;
   params.valid_badge_icon = true;
@@ -148,6 +157,7 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   info_.manifest_url = data.manifest_url;
   info_.best_primary_icon_url = data.primary_icon_url;
   primary_icon_ = *data.primary_icon;
+  is_primary_icon_maskable_ = data.has_maskable_primary_icon;
 
   if (data.badge_icon && !data.badge_icon->drawsNothing()) {
     info_.best_badge_icon_url = data.badge_icon_url;
@@ -213,6 +223,7 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
       base::android::ConvertUTF8ToJavaString(env, primary_icon_murmur2_hash);
   ScopedJavaLocalRef<jobject> java_primary_icon =
       gfx::ConvertToJavaBitmap(&primary_icon_);
+  jboolean java_is_primary_icon_maskable = is_primary_icon_maskable_;
   ScopedJavaLocalRef<jstring> java_badge_icon_url =
       base::android::ConvertUTF8ToJavaString(env,
                                              info_.best_badge_icon_url.spec());
@@ -264,8 +275,9 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
       java_primary_icon_url, java_primary_icon_murmur2_hash, java_primary_icon,
-      java_badge_icon_url, java_badge_icon_murmur2_hash, java_badge_icon,
-      java_icon_urls, info_.display, info_.orientation,
+      java_is_primary_icon_maskable, java_badge_icon_url,
+      java_badge_icon_murmur2_hash, java_badge_icon, java_icon_urls,
+      info_.display, info_.orientation,
       OptionalSkColorToJavaColor(info_.theme_color),
       OptionalSkColorToJavaColor(info_.background_color), java_share_action,
       java_share_params_title, java_share_params_text, java_share_params_url,

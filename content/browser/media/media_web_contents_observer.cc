@@ -16,6 +16,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
+#include "services/media_session/public/cpp/media_position.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -139,6 +140,8 @@ bool MediaWebContentsObserver::OnMessageReceived(
                         OnMediaPlaying)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMutedStatusChanged,
                         OnMediaMutedStatusChanged)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaPositionStateChanged,
+                        OnMediaPositionStateChanged);
     IPC_MESSAGE_HANDLER(
         MediaPlayerDelegateHostMsg_OnMediaEffectivelyFullscreenChanged,
         OnMediaEffectivelyFullscreenChanged)
@@ -331,6 +334,14 @@ void MediaWebContentsObserver::OnMediaMutedStatusChanged(
     bool muted) {
   const MediaPlayerId id(render_frame_host, delegate_id);
   web_contents_impl()->MediaMutedStatusChanged(id, muted);
+}
+
+void MediaWebContentsObserver::OnMediaPositionStateChanged(
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    const media_session::MediaPosition& position) {
+  const MediaPlayerId id(render_frame_host, delegate_id);
+  session_controllers_manager_.OnMediaPositionStateChanged(id, position);
 }
 
 void MediaWebContentsObserver::AddMediaPlayerEntry(

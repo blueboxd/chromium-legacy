@@ -591,8 +591,8 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
   if (source_window != source_current_window_)
     return;
 
-  if (source_state_ != SOURCE_STATE_PENDING_DROP &&
-      source_state_ != SOURCE_STATE_OTHER) {
+  if (source_state_ != SourceState::kPendingDrop &&
+      source_state_ != SourceState::kOther) {
     return;
   }
 
@@ -606,13 +606,13 @@ void DesktopDragDropClientAuraX11::OnXdndStatus(
     negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
   }
 
-  if (source_state_ == SOURCE_STATE_PENDING_DROP) {
+  if (source_state_ == SourceState::kPendingDrop) {
     // We were waiting on the status message so we could send the XdndDrop.
     if (negotiated_operation_ == ui::DragDropTypes::DRAG_NONE) {
       move_loop_->EndMoveLoop();
       return;
     }
-    source_state_ = SOURCE_STATE_DROPPED;
+    source_state_ = SourceState::kDropped;
     SendXdndDrop(source_window);
     return;
   }
@@ -744,7 +744,7 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   waiting_on_status_ = false;
   next_position_message_.reset();
   status_received_since_enter_ = false;
-  source_state_ = SOURCE_STATE_OTHER;
+  source_state_ = SourceState::kOther;
   drag_operation_ = operation;
   negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
 
@@ -863,7 +863,7 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(
 void DesktopDragDropClientAuraX11::OnMouseReleased() {
   repeat_mouse_move_timer_.Stop();
 
-  if (source_state_ != SOURCE_STATE_OTHER) {
+  if (source_state_ != SourceState::kOther) {
     // The user has previously released the mouse and is clicking in
     // frustration.
     move_loop_->EndMoveLoop();
@@ -875,7 +875,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
       if (status_received_since_enter_) {
         // If we are waiting for an XdndStatus message, we need to wait for it
         // to complete.
-        source_state_ = SOURCE_STATE_PENDING_DROP;
+        source_state_ = SourceState::kPendingDrop;
 
         // Start timer to end the move loop if the target takes too long to send
         // the XdndStatus and XdndFinished messages.
@@ -896,7 +896,7 @@ void DesktopDragDropClientAuraX11::OnMouseReleased() {
       StartEndMoveLoopTimer();
 
       // We have negotiated an action with the other end.
-      source_state_ = SOURCE_STATE_DROPPED;
+      source_state_ = SourceState::kDropped;
       SendXdndDrop(source_current_window_);
       return;
     }
@@ -989,7 +989,7 @@ void DesktopDragDropClientAuraX11::SendXClientEvent(::Window xid,
 void DesktopDragDropClientAuraX11::ProcessMouseMove(
     const gfx::Point& screen_point,
     unsigned long event_time) {
-  if (source_state_ != SOURCE_STATE_OTHER)
+  if (source_state_ != SourceState::kOther)
     return;
 
   // Find the current window the cursor is over.

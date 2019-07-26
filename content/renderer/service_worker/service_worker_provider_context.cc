@@ -20,6 +20,7 @@
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "content/renderer/worker/worker_thread_registry.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -31,16 +32,15 @@ namespace {
 
 void CreateSubresourceLoaderFactoryForProviderContext(
     blink::mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
-    blink::mojom::ControllerServiceWorkerPtrInfo controller_ptr_info,
+    mojo::PendingRemote<blink::mojom::ControllerServiceWorker>
+        remote_controller,
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     blink::mojom::ControllerServiceWorkerConnectorRequest connector_request,
     network::mojom::URLLoaderFactoryRequest request,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  blink::mojom::ControllerServiceWorkerPtr controller_ptr;
-  controller_ptr.Bind(std::move(controller_ptr_info));
   auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-      std::move(container_host_info), std::move(controller_ptr), client_id);
+      std::move(container_host_info), std::move(remote_controller), client_id);
   connector->AddBinding(std::move(connector_request));
   ServiceWorkerSubresourceLoaderFactory::Create(
       std::move(connector),
@@ -95,7 +95,7 @@ ServiceWorkerProviderContext::GetControllerServiceWorkerMode() const {
 
 network::mojom::URLLoaderFactory*
 ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
-  if (!controller_endpoint_ && !controller_connector_) {
+  if (!remote_controller_ && !controller_connector_) {
     // No controller is attached.
     return nullptr;
   }
@@ -108,7 +108,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
 
   if (!subresource_loader_factory_) {
     DCHECK(!controller_connector_);
-    DCHECK(controller_endpoint_);
+    DCHECK(remote_controller_);
 
     blink::mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info =
         CloneContainerHostPtrInfo();
@@ -121,12 +121,12 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactoryInternal() {
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &CreateSubresourceLoaderFactoryForProviderContext,
-            std::move(host_ptr_info), std::move(controller_endpoint_),
-            client_id_, fallback_loader_factory_->Clone(),
-            mojo::MakeRequest(&controller_connector_),
-            mojo::MakeRequest(&subresource_loader_factory_), task_runner));
+        base::BindOnce(&CreateSubresourceLoaderFactoryForProviderContext,
+                       std::move(host_ptr_info), std::move(remote_controller_),
+                       client_id_, fallback_loader_factory_->Clone(),
+                       mojo::MakeRequest(&controller_connector_),
+                       mojo::MakeRequest(&subresource_loader_factory_),
+                       task_runner));
 
     DCHECK(!weak_wrapped_subresource_loader_factory_);
     weak_wrapped_subresource_loader_factory_ =
@@ -285,7 +285,7 @@ void ServiceWorkerProviderContext::SetController(
               blink::mojom::ControllerServiceWorkerMode::kNoController &&
           controller_));
   controller_mode_ = controller_info->mode;
-  controller_endpoint_ = std::move(controller_info->endpoint);
+  remote_controller_ = std::move(controller_info->remote_controller);
 
   // Propagate the controller to workers related to this provider.
   if (controller_) {
@@ -319,9 +319,7 @@ void ServiceWorkerProviderContext::SetController(
       // the existing controller or may use the new controller settings
       // depending on when the request is actually passed to the factory (this
       // part is inherently racy).
-      controller_connector_->UpdateController(
-          blink::mojom::ControllerServiceWorkerPtr(
-              std::move(controller_endpoint_)));
+      controller_connector_->UpdateController(std::move(remote_controller_));
     }
   }
 

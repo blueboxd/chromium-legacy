@@ -39,11 +39,12 @@ class InstallableManagerUnitTest : public testing::Test {
   }
 
   bool IsManifestValid(const blink::Manifest& manifest,
-                       bool check_webapp_manifest_display = true) {
+                       bool check_webapp_manifest_display = true,
+                       bool prefer_maskable_icon = false) {
     // Explicitly reset the error code before running the method.
     manager_->set_valid_manifest_error(NO_ERROR_DETECTED);
-    return manager_->IsManifestValidForWebApp(manifest,
-                                              check_webapp_manifest_display);
+    return manager_->IsManifestValidForWebApp(
+        manifest, check_webapp_manifest_display, prefer_maskable_icon);
   }
 
   InstallableStatusCode GetErrorCode() {
@@ -150,6 +151,32 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresPurposeAny) {
   // If one of the icon purposes match the requirement, it should be accepted.
   manifest.icons[0].purpose.push_back(IconPurpose::ANY);
   EXPECT_TRUE(IsManifestValid(manifest));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+}
+
+TEST_F(InstallableManagerUnitTest,
+       ManifestRequiresPurposeAnyOrMaskableWhenPreferringMaskable) {
+  blink::Manifest manifest = GetValidManifest();
+
+  EXPECT_TRUE(IsManifestValid(manifest, true, true));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.icons[0].purpose[0] = IconPurpose::MASKABLE;
+  EXPECT_TRUE(IsManifestValid(manifest, true, true));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  // The icon MUST have IconPurpose::ANY or IconPurpose::Maskable.
+  manifest.icons[0].purpose[0] = IconPurpose::BADGE;
+  EXPECT_FALSE(IsManifestValid(manifest, true, true));
+  EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
+
+  // If one of the icon purposes match the requirement, it should be accepted.
+  manifest.icons[0].purpose.push_back(IconPurpose::ANY);
+  EXPECT_TRUE(IsManifestValid(manifest, true, true));
+  EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
+
+  manifest.icons[0].purpose[1] = IconPurpose::MASKABLE;
+  EXPECT_TRUE(IsManifestValid(manifest, true, true));
   EXPECT_EQ(NO_ERROR_DETECTED, GetErrorCode());
 }
 

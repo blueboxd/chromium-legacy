@@ -51,6 +51,8 @@
       android:required="false"
       android:version="1"/>
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+  <uses-feature android:name="android.hardware.sensor.gyroscope" android:required="false"/>
+  <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false"/>
   <uses-feature android:name="android.hardware.screen.landscape" android:required="false"/>
   <uses-feature android:name="android.hardware.microphone" android:required="false"/>
   <uses-feature android:name="android.hardware.location.gps" android:required="false"/>

@@ -374,9 +374,12 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   }
   display_->Resize(viewport);
   display_->DrawAndSwap();
-  // TODO(dlibby): Consider sending real swap timings here for webview (or
-  // prove why it is not needed).
-  display_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
+  // SkiaRenderer generates DidReceiveSwapBuffersAck calls.
+  if (!features::IsUsingSkiaRenderer()) {
+    // TODO(dlibby): Consider sending real swap timings here for webview (or
+    // prove why it is not needed).
+    display_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
+  }
   gl_surface_->MaybeDidPresent(gfx::PresentationFeedback(
       base::TimeTicks::Now(), base::TimeDelta(), 0 /* flags */));
 }

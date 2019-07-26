@@ -158,7 +158,7 @@ void GcpSetupTest::ExpectCredentialProviderToBeRegistered(
   // Make sure eventlog source is registered.
   base::win::RegKey el_key(
       HKEY_LOCAL_MACHINE,
-      L"SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\GCP",
+      L"SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\GCPW",
       KEY_READ);
   EXPECT_EQ(registered, el_key.Valid());
 

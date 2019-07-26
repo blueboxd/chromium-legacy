@@ -185,9 +185,13 @@ enum ServerFieldType {
   // Text-type fields which are not usernames.
   NOT_USERNAME = 101,
 
+  // UPI/VPA is a payment method, which is stored and filled. See
+  // https://en.wikipedia.org/wiki/Unified_Payments_Interface
+  UPI_VPA = 102,
+
   // No new types can be added without a corresponding change to the Autofill
   // server.
-  MAX_VALID_FIELD_TYPE = 102,
+  MAX_VALID_FIELD_TYPE = 103,
 };
 
 // The list of all HTML autocomplete field type hints supported by Chrome.

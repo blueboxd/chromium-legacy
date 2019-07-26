@@ -641,6 +641,12 @@ void AccessibilityControllerImpl::TriggerAccessibilityAlert(
     client_->TriggerAccessibilityAlert(alert);
 }
 
+void AccessibilityControllerImpl::TriggerAccessibilityAlertWithMessage(
+    const std::string& message) {
+  if (client_)
+    client_->TriggerAccessibilityAlertWithMessage(message);
+}
+
 void AccessibilityControllerImpl::PlayEarcon(int32_t sound_key) {
   if (client_)
     client_->PlayEarcon(sound_key);

@@ -46,7 +46,7 @@ CSSValuePool& CssValuePool() {
 CSSValuePool::CSSValuePool()
     : inherited_value_(MakeGarbageCollected<CSSInheritedValue>()),
       initial_value_(MakeGarbageCollected<CSSInitialValue>()),
-      unset_value_(MakeGarbageCollected<CSSUnsetValue>()),
+      unset_value_(MakeGarbageCollected<CSSUnsetValue>(PassKey())),
       invalid_variable_value_(MakeGarbageCollected<CSSInvalidVariableValue>()),
       color_transparent_(
           MakeGarbageCollected<CSSColorValue>(Color::kTransparent)),

@@ -1044,4 +1044,37 @@ TEST_P(WebLayerListSimTest, NonDrawableLayersIgnoredForRenderSurfaces) {
   EXPECT_FALSE(effect_node->HasRenderSurface());
 }
 
+TEST_P(WebLayerListSimTest, NoRenderSurfaceWithAxisAlignedTransformAnimation) {
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes translation {
+          0% { transform: translate(10px, 11px); }
+          100% { transform: translate(20px, 21px); }
+        }
+        .animate {
+          animation-name: translation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+          overflow: hidden;
+        }
+        .compchild {
+          height: 200px;
+          width: 10px;
+          background: lightblue;
+          will-change: transform;
+        }
+      </style>
+      <div class="animate"><div class="compchild"></div></div>
+  )HTML");
+  Compositor().BeginFrame();
+  // No effect node with kClipAxisAlignment should be created because the
+  // animation is axis-aligned.
+  for (const auto& effect_node : GetPropertyTrees()->effect_tree.nodes()) {
+    EXPECT_NE(cc::RenderSurfaceReason::kClipAxisAlignment,
+              effect_node.render_surface_reason);
+  }
+}
+
 }  // namespace blink

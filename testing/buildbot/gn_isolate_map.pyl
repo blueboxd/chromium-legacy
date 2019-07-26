@@ -2209,6 +2209,14 @@
     "label": "//chrome/test:pixel_browser_tests",
     "type": "console_test_launcher",
   },
+  "polymer_tools_python_unittests": {
+    "args": [
+      "../../tools/polymer/run_polymer_tools_tests.py",
+    ],
+    "label": "//tools/polymer:polymer_tools_python_unittests",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "type": "script",
+  },
   "postmortem-metadata": {
     "label": "//v8:postmortem-metadata",
     "type": "additional_compile_target",

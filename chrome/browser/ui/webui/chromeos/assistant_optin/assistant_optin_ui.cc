@@ -22,6 +22,7 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
@@ -118,6 +119,12 @@ void AssistantOptInUI::Initialize() {
 void AssistantOptInDialog::Show(
     ash::FlowType type,
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
+  // Check session state here to prevent timing issue -- session state might
+  // have changed during the mojom calls to launch the opt-in dalog.
+  if (session_manager::SessionManager::Get()->session_state() !=
+      session_manager::SessionState::ACTIVE) {
+    return;
+  }
   if (g_dialog) {
     g_dialog->Focus();
     std::move(callback).Run(false);

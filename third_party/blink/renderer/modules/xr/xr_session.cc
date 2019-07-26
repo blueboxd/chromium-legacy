@@ -879,12 +879,20 @@ void XRSession::SetXRDisplayInfo(
 
     if (display_info_->stage_parameters && display_info->stage_parameters &&
         !display_info_->stage_parameters->Equals(
-            *(display_info->stage_parameters)))
+            *(display_info->stage_parameters))) {
+      // Stage parameters changed.
       stage_parameters_id_++;
-  } else {
-    if (display_info && display_info->stage_parameters) {
+    } else if (!!(display_info_->stage_parameters) !=
+               !!(display_info->stage_parameters)) {
+      // Either stage parameters just became available (sometimes happens if
+      // detecting the bounds doesn't happen until a few seconds into the
+      // session for platforms such as WMR), or the stage parameters just went
+      // away (probably due to tracking loss).
       stage_parameters_id_++;
     }
+  } else if (display_info && display_info->stage_parameters) {
+    // Got stage parameters for the first time this session.
+    stage_parameters_id_++;
   }
 
   display_info_id_++;

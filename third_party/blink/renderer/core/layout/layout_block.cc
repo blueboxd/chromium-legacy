@@ -2269,6 +2269,9 @@ void LayoutBlock::CheckPositionedObjectsNeedLayout() {
   if (!g_positioned_descendants_map)
     return;
 
+  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    return;
+
   if (TrackedLayoutBoxListHashSet* positioned_descendant_set =
           PositionedObjects()) {
     TrackedLayoutBoxListHashSet::const_iterator end =
@@ -2277,7 +2280,10 @@ void LayoutBlock::CheckPositionedObjectsNeedLayout() {
              positioned_descendant_set->begin();
          it != end; ++it) {
       LayoutBox* curr_box = *it;
-      DCHECK(!curr_box->NeedsLayout());
+      DCHECK(!curr_box->SelfNeedsLayout());
+      DCHECK(
+          curr_box->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren) ||
+          !curr_box->NeedsLayout());
     }
   }
 }

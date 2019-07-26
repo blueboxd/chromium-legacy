@@ -12,7 +12,6 @@
 
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -344,10 +343,6 @@ class ProfileSyncService : public SyncService,
   // Tell the sync server that this client has disabled sync.
   void RemoveClientFromServer() const;
 
-  // Called when the system is under memory pressure.
-  void OnMemoryPressure(
-      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
-
   // Check if previous shutdown is shutdown cleanly.
   void ReportPreviousSessionMemoryWarningCount();
 
@@ -480,9 +475,6 @@ class ProfileSyncService : public SyncService,
   std::unique_ptr<StartupController> startup_controller_;
 
   std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
-
-  // Listens for the system being under memory pressure.
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Whether the major version has changed since the last time Chrome ran,
   // and therefore a passphrase required state should result in prompting

@@ -93,7 +93,7 @@ bool WaitForMemoryPressureChanges(int available_fd) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
 
-  pollfd pfd = {available_fd, POLLPRI | POLLERR, 0};
+  pollfd pfd = {available_fd, POLLPRI | POLLERR | POLLIN, 0};
   int res = HANDLE_EINTR(poll(&pfd, 1, -1));  // Wait indefinitely.
   PCHECK(res != -1);
 

@@ -425,6 +425,11 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
   content::WebContents* active_tab = nullptr;
   if (active_browser)
     active_tab = active_browser->tab_strip_model()->GetActiveWebContents();
+  const AutocompleteInput empty_input;
+  if (!input)
+    input = &empty_input;
+  const GURL stripped_url = AutocompleteMatch::GURLToStrippedGURL(
+      url, *input, GetTemplateURLService(), base::string16());
   for (auto* browser : *BrowserList::GetInstance()) {
     // Only look at same profile (and anonymity level).
     if (browser->profile()->IsSameProfileAndType(profile_)) {
@@ -432,8 +437,8 @@ bool ChromeAutocompleteProviderClient::IsTabOpenWithURL(
         content::WebContents* web_contents =
             browser->tab_strip_model()->GetWebContentsAt(i);
         if (web_contents != active_tab &&
-            StrippedURLsAreEqual(web_contents->GetLastCommittedURL(), url,
-                                 input))
+            IsURLEqualToStrippedURL(web_contents->GetLastCommittedURL(),
+                                    stripped_url, *input))
           return true;
       }
     }
@@ -462,4 +467,14 @@ bool ChromeAutocompleteProviderClient::StrippedURLsAreEqual(
              url1, *input, template_url_service, base::string16()) ==
          AutocompleteMatch::GURLToStrippedGURL(
              url2, *input, template_url_service, base::string16());
+}
+
+bool ChromeAutocompleteProviderClient::IsURLEqualToStrippedURL(
+    const GURL& url1,
+    const GURL& stripped_url2,
+    const AutocompleteInput& input) const {
+  const TemplateURLService* template_url_service = GetTemplateURLService();
+  return AutocompleteMatch::GURLToStrippedGURL(
+             url1, input, template_url_service, base::string16()) ==
+         stripped_url2;
 }

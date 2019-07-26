@@ -546,11 +546,11 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   if (client()->IsOffTheRecord())
     return false;
 
-  // Check if ZeroSuggest is allowed in an empty state.
+  // When the omnibox is empty, only allow zero suggest for the ChromeOS
+  // Launcher and NTP.
   if (input_type == metrics::OmniboxInputType::EMPTY &&
       !(page_class == metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
-        (IsNTPPage(page_class) &&
-         base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)))) {
+        IsNTPPage(page_class))) {
     return false;
   }
 

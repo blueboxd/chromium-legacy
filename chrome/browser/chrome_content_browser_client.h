@@ -521,9 +521,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   GetWebAuthenticationRequestDelegate(
       content::RenderFrameHost* render_frame_host,
       const std::string& relying_party_id) override;
-#if defined(OS_MACOSX)
-  bool IsWebAuthenticationTouchIdAuthenticatorSupported() override;
-#endif
   std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       content::ResourceContext* resource_context) override;
   std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(

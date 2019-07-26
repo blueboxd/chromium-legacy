@@ -124,11 +124,12 @@ if (enable_service_discovery) {
 }
 
 uncompiled_sources_ = [
-  "page_action.json",
+  "action.json",
   "browser_action.json",
   "browsing_data.json",
   "extension.json",
   "idltest.idl",
+  "page_action.json",
   "top_sites.json",
 ]
 

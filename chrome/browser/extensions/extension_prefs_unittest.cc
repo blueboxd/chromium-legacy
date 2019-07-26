@@ -1097,4 +1097,40 @@ class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
 TEST_F(ExtensionPrefsRuntimeGrantedPermissions,
        ExtensionPrefsRuntimeGrantedPermissions) {}
 
+// Tests the removal of obsolete keys from extension pref entries.
+class ExtensionPrefsObsoletePrefRemoval : public ExtensionPrefsTest {
+ public:
+  ExtensionPrefsObsoletePrefRemoval() = default;
+  ~ExtensionPrefsObsoletePrefRemoval() override = default;
+
+  void Initialize() override {
+    extension_ = prefs_.AddExtension("a");
+    constexpr char kTestValue[] = "test_value";
+    prefs()->UpdateExtensionPref(extension_->id(),
+                                 ExtensionPrefs::kFakeObsoletePrefForTesting,
+                                 std::make_unique<base::Value>(kTestValue));
+    std::string str_value;
+    EXPECT_TRUE(prefs()->ReadPrefAsString(
+        extension_->id(), ExtensionPrefs::kFakeObsoletePrefForTesting,
+        &str_value));
+    EXPECT_EQ(kTestValue, str_value);
+
+    prefs()->MigrateObsoleteExtensionPrefs();
+  }
+
+  void Verify() override {
+    std::string str_value;
+    EXPECT_FALSE(prefs()->ReadPrefAsString(
+        extension_->id(), ExtensionPrefs::kFakeObsoletePrefForTesting,
+        &str_value));
+  }
+
+ private:
+  scoped_refptr<const Extension> extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsObsoletePrefRemoval);
+};
+
+TEST_F(ExtensionPrefsObsoletePrefRemoval, ExtensionPrefsObsoletePrefRemoval) {}
+
 }  // namespace extensions

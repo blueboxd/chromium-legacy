@@ -6,11 +6,13 @@
 #define COMPONENTS_CAPTIVE_PORTAL_CAPTIVE_PORTAL_DETECTOR_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/captive_portal/captive_portal_export.h"
@@ -76,6 +78,10 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector {
                                           net::HttpResponseHeaders* headers,
                                           Results* results) const;
 
+  // Starts portal detection probe after GetProbeUrl finishes running.
+  void StartProbe(const net::NetworkTrafficAnnotationTag& traffic_annotation,
+                  const GURL& url);
+
   // Returns the current time. Used only when determining time until a
   // Retry-After date.
   base::Time GetCurrentTime() const;
@@ -101,7 +107,12 @@ class CAPTIVE_PORTAL_EXPORT CaptivePortalDetector {
   // Test time used by unit tests.
   base::Time time_for_testing_;
 
+  // Probe URL accessed by tests.
+  GURL probe_url_;
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<CaptivePortalDetector> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalDetector);
 };

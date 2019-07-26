@@ -63,7 +63,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
                          ResourceContext* resource_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override;
-  // Returns params with the ControllerServiceWorkerPtr if we have found
+  // Returns params with the ControllerServiceWorkerInfoPtr if we have found
   // a matching controller service worker for the |request| that is given
   // to MaybeCreateLoader(). Otherwise this returns base::nullopt.
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()

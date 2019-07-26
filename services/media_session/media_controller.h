@@ -62,6 +62,8 @@ class MediaController : public mojom::MediaController,
   void MediaSessionImagesChanged(
       const base::flat_map<mojom::MediaSessionImageType,
                            std::vector<MediaImage>>& images) override;
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   void SetMediaSession(AudioFocusRequest* session);
   void ClearMediaSession();
@@ -90,6 +92,9 @@ class MediaController : public mojom::MediaController,
 
   // The current actions for |session_|.
   std::vector<mojom::MediaSessionAction> session_actions_;
+
+  // The current position for |session_|.
+  base::Optional<MediaPosition> session_position_;
 
   // The current images for |session_|.
   base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>>

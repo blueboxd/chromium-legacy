@@ -45,7 +45,7 @@ class ClickToCallSharingDialogController
   void OnAppChosen(const App& app) override;
 
   // Called by the ClickToCallDialogView when it is being closed.
-  void OnDialogClosed();
+  void OnDialogClosed(ClickToCallDialog* dialog);
 
   // Called by the ClickToCallDialogView when the help text got clicked.
   void OnHelpTextClicked();

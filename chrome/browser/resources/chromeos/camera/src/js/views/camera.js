@@ -17,9 +17,9 @@ cca.views = cca.views || {};
 /**
  * Creates the camera-view controller.
  * @param {cca.models.Gallery} model Model object.
- * @param {cca.camera.DeviceInfoUpdater} infoUpdater
- * @param {cca.camera.PhotoResolPreferrer} photoPreferrer
- * @param {cca.camera.VideoConstraintsPreferrer} videoPreferrer
+ * @param {cca.device.DeviceInfoUpdater} infoUpdater
+ * @param {cca.device.PhotoResolPreferrer} photoPreferrer
+ * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @constructor
  */
 cca.views.Camera = function(
@@ -34,7 +34,7 @@ cca.views.Camera = function(
   this.model_ = model;
 
   /**
-   * @type {cca.camera.DeviceInfoUpdater}
+   * @type {cca.device.DeviceInfoUpdater}
    * @private
    */
   this.infoUpdater_ = infoUpdater;

@@ -1524,6 +1524,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-process-sharing-with-default-site-instances",
+    "owners": [ "acolwell" ],
+    "expiry_milestone": 81
+  },
+  {
     "name": "enable-process-sharing-with-strict-site-instances",
     "owners": [ "japhet" ],
     "expiry_milestone": 80
@@ -1566,6 +1571,11 @@
   {
     "name": "enable-resampling-scroll-events",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "enable-filtering-scroll-events",
+    "owners": [ "axantoine", "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 80
   },
   {
@@ -2535,11 +2545,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "omnibox-new-answer-layout",
-    "owners": [ "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-on-device-head-suggestions",
     "owners": [ "cechen", "suggest-2g@google.com" ],
     "expiry_milestone": 80
@@ -3229,6 +3234,11 @@
     "name": "enable-streamlined-usb-printer-setup",
     "owners": [ "baileyberro" ],
     "expiry_milestone": 77
+  },
+  {
+    "name": "update-hover-at-begin-frame",
+    "owners": [ "lanwei", "input-dev" ],
+    "expiry_milestone": 81
   }
 
   // This is an alphabetized list; please do your part to keep it organized by

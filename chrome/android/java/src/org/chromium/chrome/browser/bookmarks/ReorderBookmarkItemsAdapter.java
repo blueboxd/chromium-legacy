@@ -121,13 +121,10 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     }
 
     private void setBookmarks(List<BookmarkId> bookmarks) {
-        // Update header in order to determine whether we have a Promo Header.
-        // Must be done before adding in all of our elements.
-        updateHeader();
         mElements.clear();
-        if (hasPromoHeader()) {
-            mElements.add(null);
-        }
+        // Restore the header, if it exists, then update it.
+        if (hasPromoHeader()) mElements.add(null);
+        updateHeader(false);
         for (BookmarkId bId : bookmarks) {
             mElements.add(mDelegate.getModel().getBookmarkById(bId));
         }
@@ -161,7 +158,7 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
 
         // ViewHolder is abstract and it cannot be instantiated directly.
         ViewHolder holder = new ViewHolder(row) {};
-        ((BookmarkRow) holder.itemView).onDelegateInitialized(mDelegate);
+        ((BookmarkRow) row).onDelegateInitialized(mDelegate);
         return holder;
     }
 
@@ -223,28 +220,9 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         mDelegate.getModel().addObserver(mBookmarkModelObserver);
-        // This must be registered directly with the selection delegate.
-        // addUIObserver (see above) is not sufficient.
-        // TODO(jhimawan): figure out why this is the case.
-        mDelegate.getSelectionDelegate().addObserver(ReorderBookmarkItemsAdapter.this);
 
         Runnable promoHeaderChangeAction = () -> {
-            assert mDelegate != null;
-            if (mDelegate.getCurrentState() != BookmarkUIState.STATE_FOLDER) {
-                return;
-            }
-
-            boolean wasShowingPromo = hasPromoHeader();
-            updateHeader();
-            boolean willShowPromo = hasPromoHeader();
-
-            if (!wasShowingPromo && willShowPromo) {
-                notifyItemInserted(0);
-            } else if (wasShowingPromo && willShowPromo) {
-                notifyItemChanged(0);
-            } else if (wasShowingPromo && !willShowPromo) {
-                notifyItemRemoved(0);
-            }
+            updateHeader(true);
         };
 
         mPromoHeaderManager = new BookmarkPromoHeader(mContext, promoHeaderChangeAction);
@@ -284,14 +262,14 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
     @Override
     public void onSearchStateSet() {
         disableDrag();
-        updateHeader();
+        // Headers should not appear in Search mode
+        // Don't need to notify because we need to redraw everything in the next step
+        updateHeader(false);
         notifyDataSetChanged();
     }
 
     @Override
-    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {
-        notifyDataSetChanged();
-    }
+    public void onSelectionStateChange(List<BookmarkId> selectedBookmarks) {}
 
     /**
      * Refresh the list of bookmarks within the currently visible folder.
@@ -350,33 +328,52 @@ class ReorderBookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkIte
         setOrder(mElements);
     }
 
-    private void updateHeader() {
+    /**
+     * Updates mPromoHeaderType. Makes sure that the 0th index of mElements is consistent with the
+     * promo header. This 0th index is null iff there is a promo header.
+     *
+     * @param shouldNotify True iff we should notify the RecyclerView of changes to the promoheader.
+     *                     (This should be false iff we are going to make further changes to the
+     *                     list of elements, as we do in setBookmarks, and true iff we are only
+     *                     changing the header, as we do in the promoHeaderChangeAction runnable).
+     */
+    private void updateHeader(boolean shouldNotify) {
         if (mDelegate == null) return;
 
-        int currentUIState = mDelegate.getCurrentState();
-        if (currentUIState == BookmarkUIState.STATE_LOADING) return;
+        boolean wasShowingPromo = hasPromoHeader();
 
-        // Reset the promo header and get rid of the Promo Header placeholder inside of mElements.
-        if (hasPromoHeader()) {
-            mElements.remove(0);
+        int currentUIState = mDelegate.getCurrentState();
+        if (currentUIState == BookmarkUIState.STATE_LOADING) {
+            return;
+        } else if (currentUIState == BookmarkUIState.STATE_SEARCHING) {
             mPromoHeaderType = ViewType.INVALID_PROMO;
+        } else {
+            switch (mPromoHeaderManager.getPromoState()) {
+                case BookmarkPromoHeader.PromoState.PROMO_NONE:
+                    mPromoHeaderType = ViewType.INVALID_PROMO;
+                    break;
+                case BookmarkPromoHeader.PromoState.PROMO_SIGNIN_PERSONALIZED:
+                    mPromoHeaderType = ViewType.PERSONALIZED_SIGNIN_PROMO;
+                    break;
+                case BookmarkPromoHeader.PromoState.PROMO_SYNC:
+                    mPromoHeaderType = ViewType.SYNC_PROMO;
+                    break;
+                default:
+                    assert false : "Unexpected value for promo state!";
+            }
         }
 
-        if (currentUIState == BookmarkUIState.STATE_SEARCHING) return;
+        boolean willShowPromo = hasPromoHeader();
 
-        assert currentUIState == BookmarkUIState.STATE_FOLDER : "Unexpected UI state";
-
-        switch (mPromoHeaderManager.getPromoState()) {
-            case BookmarkPromoHeader.PromoState.PROMO_NONE:
-                return;
-            case BookmarkPromoHeader.PromoState.PROMO_SIGNIN_PERSONALIZED:
-                mPromoHeaderType = ViewType.PERSONALIZED_SIGNIN_PROMO;
-                return;
-            case BookmarkPromoHeader.PromoState.PROMO_SYNC:
-                mPromoHeaderType = ViewType.SYNC_PROMO;
-                return;
-            default:
-                assert false : "Unexpected value for promo state!";
+        if (!wasShowingPromo && willShowPromo) {
+            // A null element at the 0th index represents a promo header.
+            mElements.add(0, null);
+            if (shouldNotify) notifyItemInserted(0);
+        } else if (wasShowingPromo && willShowPromo) {
+            if (shouldNotify) notifyItemChanged(0);
+        } else if (wasShowingPromo && !willShowPromo) {
+            mElements.remove(0);
+            if (shouldNotify) notifyItemRemoved(0);
         }
     }
 

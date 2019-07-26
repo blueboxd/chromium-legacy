@@ -82,6 +82,7 @@ _CONFIG = [
             'base::size',
             'base::span',
             'logging::GetVlogLevel',
+            'util::PassKey',
 
             # //base/observer_list.h.
             'base::ObserverList',

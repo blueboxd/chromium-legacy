@@ -54,18 +54,33 @@ void LogSharingVapidKeyCreationResult(SharingVapidKeyCreationResult result) {
   base::UmaHistogramEnumeration("Sharing.VapidKeyCreationResult", result);
 }
 
-void LogClickToCallDevicesToShow(int count) {
+void LogClickToCallDevicesToShow(const char* histogram_suffix, int count) {
+  // Explicitly log both the base and the suffixed histogram because the base
+  // aggregation is not automatically generated.
   base::UmaHistogramExactLinear("Sharing.ClickToCallDevicesToShow", count,
                                 /*value_max=*/20);
+  base::UmaHistogramExactLinear(
+      base::StrCat({"Sharing.ClickToCallDevicesToShow.", histogram_suffix}),
+      count,
+      /*value_max=*/20);
 }
 
-void LogClickToCallAppsToShow(int count) {
+void LogClickToCallAppsToShow(const char* histogram_suffix, int count) {
+  // Explicitly log both the base and the suffixed histogram because the base
+  // aggregation is not automatically generated.
   base::UmaHistogramExactLinear("Sharing.ClickToCallAppsToShow", count,
                                 /*value_max=*/20);
+  base::UmaHistogramExactLinear(
+      base::StrCat({"Sharing.ClickToCallAppsToShow.", histogram_suffix}), count,
+      /*value_max=*/20);
 }
 
 void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix,
                                        int index) {
+  // Explicitly log both the base and the suffixed histogram because the base
+  // aggregation is not automatically generated.
+  base::UmaHistogramExactLinear("Sharing.ClickToCallSelectedDeviceIndex", index,
+                                /*value_max=*/20);
   base::UmaHistogramExactLinear(
       base::StrCat(
           {"Sharing.ClickToCallSelectedDeviceIndex.", histogram_suffix}),
@@ -74,6 +89,10 @@ void LogClickToCallSelectedDeviceIndex(const char* histogram_suffix,
 }
 
 void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index) {
+  // Explicitly log both the base and the suffixed histogram because the base
+  // aggregation is not automatically generated.
+  base::UmaHistogramExactLinear("Sharing.ClickToCallSelectedAppIndex", index,
+                                /*value_max=*/20);
   base::UmaHistogramExactLinear(
       base::StrCat({"Sharing.ClickToCallSelectedAppIndex.", histogram_suffix}),
       index,
@@ -82,4 +101,8 @@ void LogClickToCallSelectedAppIndex(const char* histogram_suffix, int index) {
 
 void LogSharingMessageAckTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.MessageAckTime", time);
+}
+
+void LogClickToCallDialogShown(SharingClickToCallDialogType type) {
+  base::UmaHistogramEnumeration("Sharing.ClickToCallDialogShown", type);
 }

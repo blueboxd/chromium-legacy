@@ -12,6 +12,8 @@ jumbo_component("x") {
   output_name = "ui_base_x"
 
   sources = [
+    "x11_display_manager.cc",
+    "x11_display_manager.h",
     "x11_display_util.cc",
     "x11_display_util.h",
     "x11_menu_list.cc",

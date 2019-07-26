@@ -51,7 +51,7 @@
       }
     </style>
 
-    <template is="dom-if" if="[[!enableUpdatedUI_]]">
+    <template is="dom-if" if="[[!enableUpdatedUi_]]">
       <div class="settings-box first">
         <div class="start">
           <span>$i18n{cupsPrintersLearnMoreLabel}</span>
@@ -82,7 +82,7 @@
       </settings-cups-printers-list>
     </template>
 
-    <template is="dom-if" if="[[enableUpdatedUI_]]">
+    <template is="dom-if" if="[[enableUpdatedUi_]]">
       <div class="settings-box first">
         <div class="start">
           <span>$i18n{savedPrintersTitle}</span>
@@ -132,7 +132,8 @@
     </template>
 
     <settings-cups-add-printer-dialog id="addPrinterDialog"
-        on-close="onAddPrinterDialogClose_">
+        on-close="onAddPrinterDialogClose_"
+        enable-updated-ui="[[enableUpdatedUi_]]">
     </settings-cups-add-printer-dialog>
 
     <template is="dom-if" if="[[showCupsEditPrinterDialog_]]" restamp>

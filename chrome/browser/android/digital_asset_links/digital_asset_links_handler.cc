@@ -27,6 +27,10 @@
 
 namespace {
 
+// In some cases we get a network change while fetching the digital asset
+// links file. See https://crbug.com/987329.
+const int kNumNetworkRetries = 1;
+
 // Location on a website where the asset links file can be found, see
 // https://developers.google.com/digital-asset-links/v1/getting-started.
 const char kAssetLinksAbsolutePath[] = ".well-known/assetlinks.json";
@@ -246,6 +250,9 @@ bool DigitalAssetLinksHandler::CheckDigitalAssetLinkRelationship(
   request->url = request_url;
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  url_loader_->SetRetryOptions(
+      kNumNetworkRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       shared_url_loader_factory_.get(),
       base::BindOnce(&DigitalAssetLinksHandler::OnURLLoadComplete,

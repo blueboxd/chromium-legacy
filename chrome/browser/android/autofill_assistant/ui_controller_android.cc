@@ -695,6 +695,10 @@ void UiControllerAndroid::OnTermsAndConditionsChanged(
   ui_delegate_->SetTermsAndConditions(state);
 }
 
+void UiControllerAndroid::OnTermsAndConditionsLinkClicked(int link) {
+  ui_delegate_->OnTermsAndConditionsLinkClicked(link);
+}
+
 void UiControllerAndroid::OnPaymentRequestOptionsChanged(
     const PaymentRequestOptions* payment_options) {
   JNIEnv* env = AttachCurrentThread();
@@ -714,8 +718,13 @@ void UiControllerAndroid::OnPaymentRequestOptionsChanged(
       env, jmodel, payment_options->request_shipping);
   Java_AssistantPaymentRequestModel_setRequestPayment(
       env, jmodel, payment_options->request_payment_method);
-  Java_AssistantPaymentRequestModel_setRequestTermsAndConditions(
-      env, jmodel, payment_options->request_terms_and_conditions);
+  Java_AssistantPaymentRequestModel_setAcceptTermsAndConditionsText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, payment_options->accept_terms_and_conditions_text));
+  Java_AssistantPaymentRequestModel_setShowTermsAsCheckbox(
+      env, jmodel, payment_options->show_terms_as_checkbox);
+
   Java_AssistantPaymentRequestModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(

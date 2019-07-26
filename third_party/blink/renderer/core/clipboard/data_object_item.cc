@@ -144,7 +144,8 @@ File* DataObjectItem::GetAsFile() const {
       data->AppendBytes(png_data.data(), png_data.size());
       const uint64_t length = data->length();
       auto blob = BlobDataHandle::Create(std::move(data), length);
-      return File::Create("image.png", CurrentTimeMS(), std::move(blob));
+      return File::Create("image.png", base::Time::Now().ToDoubleT() * 1000.0,
+                          std::move(blob));
     }
   }
 

@@ -1502,20 +1502,17 @@ interface DetectedBarcode
     getter format
     getter rawValue
     method constructor
-    method toJSON
 interface DetectedFace
     attribute @@toStringTag
     getter boundingBox
     getter landmarks
     method constructor
-    method toJSON
 interface DetectedText
     attribute @@toStringTag
     getter boundingBox
     getter cornerPoints
     getter rawValue
     method constructor
-    method toJSON
 interface DeviceMotionEvent : Event
     attribute @@toStringTag
     getter acceleration
@@ -1993,6 +1990,7 @@ interface Element : Node
     getter computedName
     getter computedRole
     getter displayLock
+    getter elementTiming
     getter firstElementChild
     getter id
     getter innerHTML
@@ -2121,6 +2119,7 @@ interface Element : Node
     setter ariaValueText
     setter classList
     setter className
+    setter elementTiming
     setter id
     setter innerHTML
     setter invisible
@@ -5929,6 +5928,7 @@ interface RTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription
@@ -10884,6 +10884,7 @@ interface webkitRTCPeerConnection : EventTarget
     method getTransceivers
     method removeStream
     method removeTrack
+    method restartIce
     method setConfiguration
     method setLocalDescription
     method setRemoteDescription

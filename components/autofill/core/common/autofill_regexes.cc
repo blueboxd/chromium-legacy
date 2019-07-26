@@ -8,11 +8,11 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_local.h"
+#include "base/synchronization/lock.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 namespace {
@@ -24,14 +24,13 @@ namespace {
 // singleton instance (https://crbug.com/812182).
 class AutofillRegexes {
  public:
-  static AutofillRegexes* ThreadSpecificInstance();
+  AutofillRegexes() = default;
 
   // Returns the compiled regex matcher corresponding to |pattern|.
   icu::RegexMatcher* GetMatcher(const base::string16& pattern);
 
  private:
-  AutofillRegexes();
-  ~AutofillRegexes();
+  ~AutofillRegexes() = default;
 
   // Maps patterns to their corresponding regex matchers.
   std::unordered_map<base::string16, std::unique_ptr<icu::RegexMatcher>>
@@ -39,24 +38,6 @@ class AutofillRegexes {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillRegexes);
 };
-
-base::LazyInstance<base::ThreadLocalPointer<AutofillRegexes>>::Leaky
-    g_autofill_regexes_tls = LAZY_INSTANCE_INITIALIZER;
-
-// static
-AutofillRegexes* AutofillRegexes::ThreadSpecificInstance() {
-  if (g_autofill_regexes_tls.Pointer()->Get())
-    return g_autofill_regexes_tls.Pointer()->Get();
-  return new AutofillRegexes;
-}
-
-AutofillRegexes::AutofillRegexes() {
-  g_autofill_regexes_tls.Pointer()->Set(this);
-}
-
-AutofillRegexes::~AutofillRegexes() {
-  g_autofill_regexes_tls.Pointer()->Set(nullptr);
-}
 
 icu::RegexMatcher* AutofillRegexes::GetMatcher(const base::string16& pattern) {
   auto it = matchers_.find(pattern);
@@ -82,8 +63,11 @@ namespace autofill {
 
 bool MatchesPattern(const base::string16& input,
                     const base::string16& pattern) {
-  icu::RegexMatcher* matcher =
-      AutofillRegexes::ThreadSpecificInstance()->GetMatcher(pattern);
+  static base::NoDestructor<AutofillRegexes> g_autofill_regexes;
+  static base::NoDestructor<base::Lock> g_lock;
+  base::AutoLock lock(*g_lock);
+
+  icu::RegexMatcher* matcher = g_autofill_regexes->GetMatcher(pattern);
   icu::UnicodeString icu_input(FALSE, input.data(), input.length());
   matcher->reset(icu_input);
 

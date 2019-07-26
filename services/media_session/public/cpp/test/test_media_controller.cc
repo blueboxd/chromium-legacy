@@ -106,6 +106,19 @@ void TestMediaControllerObserver::MediaSessionChanged(
   }
 }
 
+void TestMediaControllerObserver::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  session_position_ = position;
+
+  if (waiting_for_empty_position_ && !position.has_value()) {
+    run_loop_->Quit();
+    waiting_for_empty_position_ = false;
+  } else if (waiting_for_non_empty_position_ && position.has_value()) {
+    run_loop_->Quit();
+    waiting_for_non_empty_position_ = false;
+  }
+}
+
 void TestMediaControllerObserver::WaitForState(
     mojom::MediaSessionInfo::SessionState wanted_state) {
   if (session_info_ && session_info()->state == wanted_state)
@@ -162,6 +175,24 @@ void TestMediaControllerObserver::WaitForExpectedActions(
   StartWaiting();
 }
 
+void TestMediaControllerObserver::WaitForEmptyPosition() {
+  // |session_position_| is doubly wrapped in base::Optional so we must check
+  // both values.
+  if (session_position_.has_value() && !session_position_->has_value())
+    return;
+
+  waiting_for_empty_position_ = true;
+  StartWaiting();
+}
+
+void TestMediaControllerObserver::WaitForNonEmptyPosition() {
+  if (session_position_.has_value() && session_position_->has_value())
+    return;
+
+  waiting_for_non_empty_position_ = true;
+  StartWaiting();
+}
+
 void TestMediaControllerObserver::WaitForSession(
     const base::Optional<base::UnguessableToken>& request_id) {
   if (session_request_id_.has_value() && session_request_id_ == request_id)
@@ -195,6 +226,10 @@ void TestMediaController::Suspend() {
 
 void TestMediaController::Resume() {
   ++resume_count_;
+}
+
+void TestMediaController::Stop() {
+  ++stop_count_;
 }
 
 void TestMediaController::ToggleSuspendResume() {

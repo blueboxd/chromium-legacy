@@ -446,9 +446,13 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
     const AtomicString& id,
     const String& url,
     Element* element) {
+  double render_timestamp = MonotonicTimeToDOMHighResTimeStamp(paint_time);
+  double load_timestamp = MonotonicTimeToDOMHighResTimeStamp(load_time);
+  double start_timestamp =
+      render_timestamp != 0.0 ? render_timestamp : load_timestamp;
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
-      MonotonicTimeToDOMHighResTimeStamp(paint_time), paint_size,
-      MonotonicTimeToDOMHighResTimeStamp(load_time), id, url, element);
+      start_timestamp, render_timestamp, paint_size, load_timestamp, id, url,
+      element);
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);

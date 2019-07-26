@@ -87,6 +87,13 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
                             const AutocompleteInput* input) const;
 
  private:
+  // Like StrippedURLsAreEqual(), but second URL is already stripped. The
+  // input corresponds to this second URL. This is a small optimization when
+  // comparing lots of URLs to a single one.
+  bool IsURLEqualToStrippedURL(const GURL& url1,
+                               const GURL& stripped_url2,
+                               const AutocompleteInput& input) const;
+
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
   std::unique_ptr<OmniboxPedalProvider> pedal_provider_;

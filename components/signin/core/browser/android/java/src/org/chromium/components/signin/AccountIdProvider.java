@@ -4,24 +4,24 @@
 
 package org.chromium.components.signin;
 
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
-import java.util.List;
+import java.io.IOException;
 
 /**
  * Returns a stable id that can be used to identify a Google Account.  This
  * id does not change if the email address associated to the account changes,
  * nor does it change depending on whether the email has dots or varying
  * capitalization.
- *
- * TODO(https://crbug.com/831257): remove this class after all clients start using {@link
- * AccountManagerFacade} methods instead.
  */
 public class AccountIdProvider {
     private static AccountIdProvider sProvider;
@@ -40,16 +40,12 @@ public class AccountIdProvider {
      * @param accountName The email address of a Google account.
      */
     public String getAccountId(String accountName) {
-        List<CoreAccountInfo> accountInfos = AccountManagerFacade.get().tryGetAccounts();
-        if (accountInfos == null) {
+        try {
+            return GoogleAuthUtil.getAccountId(ContextUtils.getApplicationContext(), accountName);
+        } catch (IOException | GoogleAuthException ex) {
+            Log.e("cr.AccountIdProvider", "AccountIdProvider.getAccountId", ex);
             return null;
         }
-        for (CoreAccountInfo accountInfo : accountInfos) {
-            if (accountInfo.getName().equals(accountName)) {
-                return accountInfo.getId().getGaiaIdAsString();
-            }
-        }
-        return null;
     }
 
     /**

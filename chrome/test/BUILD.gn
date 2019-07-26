@@ -782,6 +782,7 @@ if (!is_android) {
       "../browser/autofill/autofill_server_browsertest.cc",
       "../browser/autofill/content_autofill_driver_browsertest.cc",
       "../browser/autofill/form_structure_browsertest.cc",
+      "../browser/availability/availability_prober_browsertest.cc",
       "../browser/background_fetch/background_fetch_browsertest.cc",
       "../browser/background_sync/background_sync_browsertest.cc",
       "../browser/background_sync/background_sync_metrics_browsertest.cc",
@@ -1024,7 +1025,6 @@ if (!is_android) {
       "../browser/previews/lazyload_browsertest.cc",
       "../browser/previews/previews_browsertest.cc",
       "../browser/previews/previews_lite_page_browsertest.cc",
-      "../browser/previews/previews_prober_browsertest.cc",
       "../browser/previews/previews_service_browser_test.cc",
       "../browser/previews/resource_loading_hints/resource_loading_hints_browsertest.cc",
       "../browser/process_singleton_browsertest.cc",
@@ -2777,6 +2777,7 @@ test("unit_tests") {
     "../browser/autocomplete/chrome_autocomplete_scheme_classifier_unittest.cc",
     "../browser/autocomplete/search_provider_unittest.cc",
     "../browser/autocomplete/shortcuts_provider_extension_unittest.cc",
+    "../browser/availability/availability_prober_unittest.cc",
     "../browser/background_fetch/background_fetch_delegate_impl_unittest.cc",
     "../browser/background_fetch/background_fetch_permission_context_unittest.cc",
     "../browser/background_sync/background_sync_controller_impl_unittest.cc",
@@ -2813,7 +2814,6 @@ test("unit_tests") {
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
-    "../browser/component_updater/supervised_user_whitelist_installer_unittest.cc",
     "../browser/component_updater/sw_reporter_installer_win_unittest.cc",
     "../browser/content_index/content_index_provider_unittest.cc",
     "../browser/content_settings/content_settings_default_provider_unittest.cc",
@@ -3066,7 +3066,6 @@ test("unit_tests") {
     "../browser/previews/previews_lite_page_predictor_unittest.cc",
     "../browser/previews/previews_lite_page_url_loader_interceptor_unittest.cc",
     "../browser/previews/previews_offline_helper_unittest.cc",
-    "../browser/previews/previews_prober_unittest.cc",
     "../browser/previews/previews_service_unittest.cc",
     "../browser/previews/previews_top_host_provider_unittest.cc",
     "../browser/previews/previews_ui_tab_helper_unittest.cc",
@@ -4432,7 +4431,6 @@ test("unit_tests") {
   }
   if (!is_chromeos && is_linux) {
     sources += [
-      "../browser/password_manager/native_backend_kwallet_x_unittest.cc",
       "../browser/shell_integration_linux_unittest.cc",
       "../browser/ui/input_method/input_method_engine_unittest.cc",
     ]
@@ -4567,6 +4565,11 @@ test("unit_tests") {
       "//components/safe_browsing/renderer:websocket_sb_handshake_throttle_unittest",
       "//components/safe_browsing/triggers:ad_redirect_trigger",
     ]
+
+    # TODO(drubery): Once b/138388200 has been addressed, enable this on Windows.
+    if (!is_win) {
+      sources += [ "../browser/safe_browsing/download_protection/multipart_uploader_unittest.cc" ]
+    }
   } else if (safe_browsing_mode == 2) {
     sources += [ "../browser/safe_browsing/telemetry/android/android_telemetry_service_unittest.cc" ]
     deps += []
@@ -4669,21 +4672,6 @@ test("unit_tests") {
     deps += [ "//ui/events/devices" ]
   } else {
     sources -= [ "../browser/password_manager/password_store_x_unittest.cc" ]
-  }
-  if (use_gnome_keyring && current_cpu == "x64") {
-    # Only add this test for 64 bit builds because otherwise we need the 32
-    # bit library on 64 bit systems when running this test.
-    sources +=
-        [ "../browser/password_manager/native_backend_gnome_x_unittest.cc" ]
-    configs += [
-      "//components/os_crypt:gnome_keyring",
-      "//components/os_crypt:gnome_keyring_direct",
-    ]
-  }
-  if (is_linux && !is_chromeos && !use_ozone) {
-    sources +=
-        [ "../browser/password_manager/native_backend_libsecret_unittest.cc" ]
-    deps += [ "//third_party/libsecret" ]
   }
   if (is_linux && use_aura) {
     deps += [ "//ui/aura:test_support" ]
@@ -4941,6 +4929,7 @@ test("unit_tests") {
   }
   if (enable_supervised_users) {
     sources += [
+      "../browser/component_updater/supervised_user_whitelist_installer_unittest.cc",
       "../browser/content_settings/content_settings_supervised_provider_unittest.cc",
       "../browser/supervised_user/child_accounts/child_account_service_unittest.cc",
       "../browser/supervised_user/child_accounts/family_info_fetcher_unittest.cc",
@@ -4980,6 +4969,7 @@ test("unit_tests") {
       "../browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider_unittest.cc",
       "../browser/ui/app_list/search/arc/arc_playstore_search_provider_unittest.cc",
       "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
+      "../browser/ui/app_list/search/logging/search_ranking_event_logger_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_launch_predictor_unittest.cc",
       "../browser/ui/app_list/search/search_result_ranker/app_list_launch_metrics_provider_unittest.cc",

@@ -9,6 +9,7 @@ from .identifier_ir_map import IdentifierIRMap
 from .idl_type import IdlTypeFactory
 from .reference import RefByIdFactory
 from .typedef import Typedef
+from .user_defined_type import UserDefinedType
 
 
 class IdlCompiler(object):
@@ -32,27 +33,33 @@ class IdlCompiler(object):
     the details.
     """
 
-    def __init__(self, ir_map, ref_to_idl_type_factory, ref_to_idl_def_factory,
-                 idl_type_factory):
+    def __init__(self, ir_map, ref_to_idl_def_factory, ref_to_idl_type_factory,
+                 idl_type_factory, report_error):
         """
         Args:
             ir_map: IdentifierIRMap filled with the initial IRs of IDL
                 definitions.
-            ref_to_idl_type_factory: RefByIdFactory that created all references
-                to IdlType.
             ref_to_idl_def_factory: RefByIdFactory that created all references
                 to UserDefinedType.
+            ref_to_idl_type_factory: RefByIdFactory that created all references
+                to IdlType.
             idl_type_factory: IdlTypeFactory that created all instances of
                 IdlType.
+            report_error: A callback that will be invoked when an error occurs
+                due to inconsistent/invalid IDL definitions.  This callback
+                takes an error message of type str and return value is not used.
+                It's okay to terminate the program in this callback.
         """
         assert isinstance(ir_map, IdentifierIRMap)
-        assert isinstance(ref_to_idl_type_factory, RefByIdFactory)
         assert isinstance(ref_to_idl_def_factory, RefByIdFactory)
+        assert isinstance(ref_to_idl_type_factory, RefByIdFactory)
         assert isinstance(idl_type_factory, IdlTypeFactory)
+        assert callable(report_error)
         self._ir_map = ir_map
-        self._ref_to_idl_type_factory = ref_to_idl_type_factory
         self._ref_to_idl_def_factory = ref_to_idl_def_factory
+        self._ref_to_idl_type_factory = ref_to_idl_type_factory
         self._idl_type_factory = idl_type_factory
+        self._report_error = report_error
         self._db = DatabaseBody()
         self._did_run = False  # Run only once.
 
@@ -68,13 +75,45 @@ class IdlCompiler(object):
         self._create_public_objects()
 
         # Resolve references.
-        self._resolve_references_to_idl_type()
         self._resolve_references_to_idl_def()
+        self._resolve_references_to_idl_type()
 
         return Database(self._db)
 
     def _merge_partial_interfaces(self):
-        pass
+        def merge_partials(old_interfaces, partial_interfaces):
+            for identifier, old_interface in old_interfaces.iteritems():
+                new_interface = old_interface.make_copy()
+                for partial in partial_interfaces.get(identifier, []):
+                    new_interface.add_components(partial.components)
+                    new_interface.debug_info.add_locations(
+                        partial.debug_info.all_locations)
+                    new_interface.attributes.extend([
+                        attribute.make_copy()
+                        for attribute in partial.attributes
+                    ])
+                    new_interface.constants.extend([
+                        constant.make_copy() for constant in partial.constants
+                    ])
+                    new_interface.operations.extend([
+                        operation.make_copy()
+                        for operation in partial.operations
+                    ])
+
+            self._ir_map.add(new_interface)
+
+        old_interfaces = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE)
+        partial_interfaces = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE)
+        old_mixins = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.INTERFACE_MIXIN)
+        partial_mixins = self._ir_map.find_by_kind(
+            IdentifierIRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+
+        self._ir_map.move_to_new_phase()
+        merge_partials(old_interfaces, partial_interfaces)
+        merge_partials(old_mixins, partial_mixins)
 
     def _merge_partial_dictionaries(self):
         old_dictionaries = self._ir_map.find_by_kind(
@@ -109,20 +148,33 @@ class IdlCompiler(object):
         for ir in typedef_irs.itervalues():
             self._db.register(DatabaseBody.Kind.TYPEDEF, Typedef(ir))
 
-    def _resolve_references_to_idl_type(self):
-        def resolve(ref):
-            # Resolve to stubs for the time being.
-            ref.set_target_object(False)
-
-        self._ref_to_idl_type_factory.for_each(resolve)
-
     def _resolve_references_to_idl_def(self):
         def resolve(ref):
             try:
-                ref.set_target_object(
-                    self._db.find_by_identifier(ref.identifier))
+                idl_def = self._db.find_by_identifier(ref.identifier)
             except KeyError:
-                # Resolve to stubs for the time being.
-                ref.set_target_object(False)
+                self._report_error("{}: Unresolved reference to {}".format(
+                    ref.ref_own_debug_info.location, ref.identifier))
+                idl_def = UserDefinedType(ref.identifier)  # dummy stub
+            ref.set_target_object(idl_def)
 
         self._ref_to_idl_def_factory.for_each(resolve)
+
+    def _resolve_references_to_idl_type(self):
+        def resolve(ref):
+            try:
+                idl_def = self._db.find_by_identifier(ref.identifier)
+            except KeyError:
+                self._report_error("{}: Unresolved reference to {}".format(
+                    ref.ref_own_debug_info.location, ref.identifier))
+                idl_def = UserDefinedType(ref.identifier)  # dummy stub
+            if isinstance(idl_def, UserDefinedType):
+                idl_type = self._idl_type_factory.definition_type(
+                    user_defined_type=idl_def)
+            elif isinstance(idl_def, Typedef):
+                idl_type = self._idl_type_factory.typedef_type(typedef=idl_def)
+            else:
+                assert False
+            ref.set_target_object(idl_type)
+
+        self._ref_to_idl_type_factory.for_each(resolve)

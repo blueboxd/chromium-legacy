@@ -27,6 +27,8 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -229,7 +231,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // TODO(kinuko): revisit this if we start to use the ControllerServiceWorker
   // for posting messages.
-  blink::mojom::ControllerServiceWorkerPtr GetControllerServiceWorkerPtr();
+  // TODO(hayato): Return PendingRemote, instead of Remote. Binding to Remote
+  // as late as possible is more idiomatic for new Mojo types.
+  mojo::Remote<blink::mojom::ControllerServiceWorker>
+  GetRemoteControllerServiceWorker();
 
   // For service worker clients. Sets |url_| and |site_for_cookies_| and updates
   // the client uuid if it's a cross-origin transition.
@@ -494,7 +499,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetRegistrationForReady(
       GetRegistrationForReadyCallback callback) override;
   void EnsureControllerServiceWorker(
-      blink::mojom::ControllerServiceWorkerRequest controller_request,
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::mojom::ControllerServiceWorkerPurpose purpose) override;
   void CloneContainerHost(blink::mojom::ServiceWorkerContainerHostRequest
                               container_host_request) override;
@@ -525,7 +530,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Callback for ServiceWorkerVersion::RunAfterStartWorker()
   void StartControllerComplete(
-      blink::mojom::ControllerServiceWorkerRequest controller_request,
+      mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
       blink::ServiceWorkerStatusCode status);
 
   bool IsValidGetRegistrationMessage(const GURL& client_url,

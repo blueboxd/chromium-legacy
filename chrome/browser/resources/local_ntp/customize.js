@@ -1450,6 +1450,7 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   // Selecting a local image for the background should close the picker.
   if (configData.richerPicker) {
     ntpApiHandle.onlocalbackgroundselected = () => {
+      customize.selectedOptions.backgroundData = null;
       customize.richerPicker_deselectBackgroundTile(
           customize.selectedOptions.background);
       customize.richerPicker_applyCustomization();

@@ -69,7 +69,7 @@ void TestDataSource::StartTracing(
 }
 
 void TestDataSource::StopTracing(base::OnceClosure stop_complete_callback) {
-  DCHECK(producer_);
+  CHECK(producer_);
   producer_ = nullptr;
   std::move(stop_complete_callback).Run();
 }
@@ -118,7 +118,7 @@ void MockProducerClient::StartDataSource(
   ProducerClient::StartDataSource(id, std::move(data_source_config),
                                   std::move(callback));
 
-  DCHECK_LT(num_data_sources_active_, num_data_sources_expected_);
+  CHECK_LT(num_data_sources_active_, num_data_sources_expected_);
   if (client_enabled_callback_ &&
       ++num_data_sources_active_ == num_data_sources_expected_) {
     std::move(client_enabled_callback_).Run();
@@ -129,7 +129,7 @@ void MockProducerClient::StopDataSource(uint64_t id,
                                         StopDataSourceCallback callback) {
   ProducerClient::StopDataSource(id, std::move(callback));
 
-  DCHECK_GT(num_data_sources_active_, 0u);
+  CHECK_GT(num_data_sources_active_, 0u);
   if (client_disabled_callback_ && --num_data_sources_active_ == 0) {
     std::move(client_disabled_callback_).Run();
   }
@@ -165,18 +165,21 @@ MockConsumer::MockConsumer(std::vector<std::string> data_source_names,
                            PacketReceivedCallback packet_received_callback)
     : packet_received_callback_(packet_received_callback),
       data_source_names_(data_source_names) {
-  DCHECK(!data_source_names_.empty());
+  CHECK(!data_source_names_.empty());
   consumer_endpoint_ = service->ConnectConsumer(this, /*uid=*/0);
+  CHECK(consumer_endpoint_);
 }
 
 MockConsumer::~MockConsumer() = default;
 
 void MockConsumer::ReadBuffers() {
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->ReadBuffers();
 }
 
 void MockConsumer::StopTracing() {
   ReadBuffers();
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->DisableTracing();
 }
 
@@ -189,10 +192,12 @@ void MockConsumer::StartTracing() {
     ds_config->set_target_buffer(0);
   }
 
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->EnableTracing(trace_config);
 }
 
 void MockConsumer::FreeBuffers() {
+  CHECK(consumer_endpoint_);
   consumer_endpoint_->FreeBuffers();
 }
 

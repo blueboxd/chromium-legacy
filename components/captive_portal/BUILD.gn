@@ -21,6 +21,10 @@ component("captive_portal") {
     "//services/network/public/cpp",
     "//url",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/network" ]
+  }
 }
 
 static_library("test_support") {

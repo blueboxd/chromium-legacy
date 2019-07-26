@@ -44,9 +44,6 @@
 #include "components/ntp_tiles/constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/search/search.h"
-#include "components/search_engines/template_url_service.h"
-#include "components/search_engines/template_url_service_observer.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -145,44 +142,6 @@ SkColor GetBitmapMainColor(const SkBitmap& bitmap) {
 }  // namespace
 
 const char kNtpCustomBackgroundMainColor[] = "background_main_color";
-
-// Keeps track of any changes in search engine provider and notifies
-// InstantService if a third-party search provider (i.e. a third-party NTP) is
-// being used.
-class InstantService::SearchProviderObserver
-    : public TemplateURLServiceObserver {
- public:
-  explicit SearchProviderObserver(TemplateURLService* service,
-                                  base::RepeatingClosure callback)
-      : service_(service),
-        is_google_(search::DefaultSearchProviderIsGoogle(service_)),
-        callback_(std::move(callback)) {
-    DCHECK(service_);
-    service_->AddObserver(this);
-  }
-
-  ~SearchProviderObserver() override {
-    if (service_)
-      service_->RemoveObserver(this);
-  }
-
-  bool is_google() { return is_google_; }
-
- private:
-  void OnTemplateURLServiceChanged() override {
-    is_google_ = search::DefaultSearchProviderIsGoogle(service_);
-    callback_.Run();
-  }
-
-  void OnTemplateURLServiceShuttingDown() override {
-    service_->RemoveObserver(this);
-    service_ = nullptr;
-  }
-
-  TemplateURLService* service_;
-  bool is_google_;
-  base::RepeatingClosure callback_;
-};
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),

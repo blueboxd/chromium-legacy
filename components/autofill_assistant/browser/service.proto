@@ -146,6 +146,14 @@ message SupportedScriptProto {
     // When set to true this script will be run from WaitForDom actions with
     // allow_interrupt=true.
     optional bool interrupt = 9;
+
+    // Message to show once the script has been started. This is shown while
+    // loading the actions.
+    optional string start_message = 10;
+
+    // Show the UI if it's not shown yet. Setting this to false is useful for
+    // scripts started by direct actions.
+    optional bool needs_ui = 11 [default = true];
   }
   optional PresentationProto presentation = 2;
 }
@@ -414,6 +422,9 @@ message PaymentDetails {
   // |GetPaymentInformationProto.additional_actions| that has index
   // |additional_action_index|.
   optional int32 additional_action_index = 4;
+  // If set, this means that the user clicked on one of the terms and conditions
+  // links.
+  optional int32 terms_link = 5;
 }
 
 message ProcessedActionProto {
@@ -719,6 +730,10 @@ message SelectOptionProto {
 // Contain a localized text message from the server.
 message TellProto {
   optional string message = 1;
+
+  // Show the UI if it's not shown yet, such as when a script has been started
+  // by a direct action.
+  optional bool needs_ui = 2 [default = true];
 }
 
 // Contain all arguments to focus on an element.
@@ -1034,6 +1049,17 @@ message GetPaymentInformationProto {
   optional TermsAndConditionsState terms_and_conditions_state = 8;
   // When 'false', hide the terms and conditions box in the UI.
   optional bool request_terms_and_conditions = 9 [default = true];
+  // Whether the terms and conditions should be displayed as a single checkbox
+  // with |accept_terms_and_conditions_text| as text. If false, the accept terms
+  // will be displayed as a radio button next to an additional "Read and agree
+  // later on domain.com" choice.
+  optional bool show_terms_as_checkbox = 12;
+  // The text for the terms and conditions "I accept..." choice. The text is
+  // formatted such that '<b>text</b>' will be bold and '<link0>clickable
+  // link</link0>', '<link1>other link</link1>', etc will be clickable links
+  // that will finish this action and return the clicked link in the action
+  // result.
+  optional string accept_terms_and_conditions_text = 13;
   // Optionally allows confiriming through the given direct actions.
   optional DirectActionProto confirm_direct_action = 10;
   // Additional actions available to the user. This can be used for instance to

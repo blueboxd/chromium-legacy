@@ -30,7 +30,7 @@ static const char kManifestDisplayNotSupportedMessage[] =
 static const char kManifestMissingSuitableIconMessage[] =
     "Manifest does not contain a suitable icon - PNG format of at least "
     "%dpx is required, the sizes attribute must be set, and the purpose "
-    "attribute, if set, must include \"any\".";
+    "attribute, if set, must include \"any\" or \"maskable\".";
 static const char kNoMatchingServiceWorkerMessage[] =
     "No matching service worker detected. You may need to reload the page, or "
     "check that the service worker for the current page also controls the "

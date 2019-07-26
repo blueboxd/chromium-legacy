@@ -49,6 +49,7 @@ NSString* GetOmniboxSuggestionIconTypeAssetName(
     case FALLBACK_ANSWER:
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
+    case SEARCH_HISTORY:
     case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
       NOTREACHED();
       return @"omnibox_completion_default_favicon";
@@ -84,6 +85,8 @@ NSString* GetOmniboxNewSuggestionIconTypeAssetName(
       return @"answer_translation";
     case FALLBACK_ANSWER:
       return @"search";
+    case SEARCH_HISTORY:
+      return @"omnibox_popup_recent_query";
     case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
       NOTREACHED();
       return @"favicon_fallback";

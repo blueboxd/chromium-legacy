@@ -8,6 +8,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/custom_shape_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
@@ -334,6 +335,9 @@ void AutoclickScrollBubbleView::UpdateAnchorRect(
       GetWidget()->GetLayer()->GetAnimator());
   settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
+      AutoclickMenuBubbleController::kAnimationDurationMs));
+  settings.SetTweenType(gfx::Tween::EASE_OUT);
   // SetAnchorRect will resize, so set the arrow without reizing to avoid a
   // double animation.
   SetArrowWithoutResizing(arrow);

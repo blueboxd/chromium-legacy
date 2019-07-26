@@ -15,9 +15,6 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -57,8 +54,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
 import org.chromium.policy.test.annotations.Policies;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -84,22 +79,6 @@ public class PreferencesTest {
         Activity activity = instrumentation.startActivitySync(intent);
         Assert.assertTrue(activity instanceof Preferences);
         return (Preferences) activity;
-    }
-
-    public static void clickPreference(PreferenceFragment fragment, Preference preference) {
-        try {
-            Method performClick = Preference.class.getDeclaredMethod("performClick",
-                    PreferenceScreen.class);
-            performClick.invoke(preference, fragment.getPreferenceScreen());
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**

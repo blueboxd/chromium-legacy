@@ -8,6 +8,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/events/blink/prediction/filter_factory.h"
 #include "ui/events/blink/prediction/predictor_factory.h"
 
 using blink::WebInputEvent;
@@ -16,12 +17,26 @@ using blink::WebGestureEvent;
 namespace ui {
 
 ScrollPredictor::ScrollPredictor() {
+  // Get the predictor from feature flags
   std::string predictor_name = GetFieldTrialParamValueByFeature(
       features::kResamplingScrollEvents, "predictor");
 
   input_prediction::PredictorType predictor_type =
       ui::PredictorFactory::GetPredictorTypeFromName(predictor_name);
   predictor_ = ui::PredictorFactory::GetPredictor(predictor_type);
+
+  filtering_enabled_ =
+      base::FeatureList::IsEnabled(features::kFilteringScrollPrediction);
+
+  if (filtering_enabled_) {
+    // Get the filter from feature flags
+    std::string filter_name = GetFieldTrialParamValueByFeature(
+        features::kFilteringScrollPrediction, "filter");
+
+    input_prediction::FilterType filter_type =
+        ui::FilterFactory::GetFilterTypeFromName(filter_name);
+    filter_ = ui::FilterFactory::CreateFilter(filter_type);
+  }
 }
 
 ScrollPredictor::~ScrollPredictor() = default;
@@ -79,6 +94,8 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
 
 void ScrollPredictor::Reset() {
   predictor_->Reset();
+  if (filtering_enabled_)
+    filter_->Reset();
   current_accumulated_delta_ = gfx::PointF();
   last_accumulated_delta_ = gfx::PointF();
 }
@@ -114,7 +131,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   InputPredictor::InputData result;
 
   base::TimeDelta prediction_delta = time_stamp - gesture_event->TimeStamp();
-
+  bool predicted = false;
   // Disable prediction when dt < 0.
   if (prediction_delta > base::TimeDelta()) {
     // For resampling, we don't want to predict too far away because the result
@@ -131,8 +148,16 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
         predictor_->GeneratePrediction(prediction_time, &result)) {
       predicted_accumulated_delta = result.pos;
       gesture_event->SetTimeStamp(prediction_time);
+      predicted = true;
     }
   }
+
+  // Feed the filter with the first non-predicted events but only apply
+  // filtering on predicted events
+  gfx::PointF filtered_pos = predicted_accumulated_delta;
+  if (filtering_enabled_ && filter_->Filter(time_stamp, &filtered_pos) &&
+      predicted)
+    predicted_accumulated_delta = filtered_pos;
 
   // If the last resampled GSU over predict the delta, new GSU might try to
   // scroll back to make up the difference, which cause the scroll to jump back.

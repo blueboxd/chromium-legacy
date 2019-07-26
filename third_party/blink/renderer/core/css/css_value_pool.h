@@ -28,6 +28,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -51,6 +52,8 @@ class CORE_EXPORT CSSValuePool
     : public GarbageCollectedFinalized<CSSValuePool> {
 
  public:
+  using PassKey = util::PassKey<CSSValuePool>;
+
   // TODO(sashab): Make all the value pools store const CSSValues.
   static const int kMaximumCacheableIntegerValue = 255;
   using CSSColorValue = cssvalue::CSSColorValue;

@@ -54,6 +54,7 @@ source_set("omnibox_suggestion_icon_util") {
     "resources:omnibox_completion_default_favicon",
     "resources:omnibox_completion_history",
     "resources:omnibox_completion_search",
+    "resources:omnibox_popup_recent_query",
     "resources:search",
     "//base",
   ]

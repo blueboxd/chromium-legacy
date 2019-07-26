@@ -14,11 +14,9 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
-#include "ui/views/controls/styled_label_listener.h"
 
 namespace views {
 class Link;
-class StyledLabel;
 class View;
 }  // namespace views
 
@@ -28,7 +26,6 @@ class HoverButton;
 class ClickToCallDialogView : public ClickToCallDialog,
                               public views::ButtonListener,
                               public views::LinkListener,
-                              public views::StyledLabelListener,
                               public LocationBarBubbleDelegateView {
  public:
   // Bubble will be anchored to |anchor_view|.
@@ -48,11 +45,6 @@ class ClickToCallDialogView : public ClickToCallDialog,
 
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
-
-  // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
-                              const gfx::Range& range,
-                              int event_flags) override;
 
   // views::DialogDelegate:
   int GetDialogButtons() const override;

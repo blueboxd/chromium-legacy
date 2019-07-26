@@ -38,10 +38,11 @@ SYNC_TEST_F('ChromeVoxColorTest', 'FindClosestMatchingColorTest', function() {
   var blue = 0x0000ff;
   var black = 0x000000;
 
+  var gmailDefaultTextColor = 0x222222;
   var looksLikePink = 0xF4CCCC;
   var looksLikeGreen = 0x38761D;
-
-  var unknownColor = 0x0C343D;
+  var looksLikeDarkGrey = 0x0C343D;
+  var unknownColor = 0x003DAC;
 
   // Exact matches.
   assertEquals('White', Color.findClosestMatchingColor(white));
@@ -51,8 +52,10 @@ SYNC_TEST_F('ChromeVoxColorTest', 'FindClosestMatchingColorTest', function() {
   assertEquals('Black', Color.findClosestMatchingColor(black));
 
   // Inexact matches.
+  assertEquals('Black', Color.findClosestMatchingColor(gmailDefaultTextColor));
   assertEquals('Pink', Color.findClosestMatchingColor(looksLikePink));
   assertEquals('Forest Green', Color.findClosestMatchingColor(looksLikeGreen));
+  assertEquals('Dark Slate Grey', Color.findClosestMatchingColor(looksLikeDarkGrey));
 
   // No match.
   assertEquals('', Color.findClosestMatchingColor(unknownColor));

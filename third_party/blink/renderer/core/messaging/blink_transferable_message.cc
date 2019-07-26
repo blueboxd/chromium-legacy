@@ -82,6 +82,7 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
         message.user_activation->was_active);
   }
   result.transfer_user_activation = message.transfer_user_activation;
+  result.allow_autoplay = message.allow_autoplay;
 
   if (!message.array_buffer_contents_array.empty()) {
     SerializedScriptValue::ArrayBufferContentsArray array_buffer_contents_array;
@@ -150,6 +151,7 @@ TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
         message.user_activation->was_active);
   }
   result.transfer_user_activation = message.transfer_user_activation;
+  result.allow_autoplay = message.allow_autoplay;
 
   auto& array_buffer_contents_array =
       message.message->GetArrayBufferContentsArray();

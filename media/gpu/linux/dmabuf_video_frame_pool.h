@@ -6,6 +6,7 @@
 #define MEDIA_GPU_LINUX_DMABUF_VIDEO_FRAME_POOL_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -35,11 +36,13 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   // Used to prevent client from draining all memory.
   virtual void SetMaxNumFrames(size_t max_num_frames) = 0;
 
-  // Sets the parameters of allocating frames.
+  // Sets the parameters of allocating frames and returns a valid
+  // VideoFrameLayout that VideoFrame will be created by GetFrame() has.
   // This method must be called before GetFrame() is called.
-  virtual void SetFrameFormat(VideoFrameLayout layout,
-                              gfx::Rect visible_rect,
-                              gfx::Size natural_size) = 0;
+  virtual base::Optional<VideoFrameLayout> NegotiateFrameFormat(
+      const VideoFrameLayout& layout,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size) = 0;
 
   // Returns a frame from the pool with the parameters assigned by
   // SetFrameFormat(). Returns nullptr if the pool is exhausted.

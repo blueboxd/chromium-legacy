@@ -42,8 +42,11 @@ class UserInteractionState;
     didCompleteLoadWithSuccess:(BOOL)loadSuccess
                     forContext:(web::NavigationContextImpl*)context;
 
-// Asks proxy to disconnect scroll proxy if needed.
-- (void)webRequestControllerDisconnectScrollViewProxy:
+// Asks proxy to disable back forward navigation gestures until the current (in
+// this case restore) navigation is complete.  This is necessary as restore
+// can trigger a large number of navigations, and when back/forward is enabled
+// this can lead to an unbounded memory spike.
+- (void)webRequestControllerDisableNavigationGesturesUntilFinishNavigation:
     (CRWWebRequestController*)requestController;
 
 // Asks the delegate for the associated |UserInteractionState|.

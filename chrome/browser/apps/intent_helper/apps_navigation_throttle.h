@@ -83,7 +83,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
   static void ShowIntentPickerBubbleForApps(
       content::WebContents* web_contents,
       std::vector<IntentPickerAppInfo> apps,
-      bool show_persistence_options,
+      bool show_stay_in_chrome,
+      bool show_remember_selection,
       IntentPickerResponse callback);
 
   explicit AppsNavigationThrottle(content::NavigationHandle* navigation_handle);

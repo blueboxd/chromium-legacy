@@ -14,6 +14,7 @@ source_set("memory") {
   ]
   deps = [
     "//base",
+    "//build:branding_buildflags",
     "//components/prefs",
     "//ios/chrome/browser",
     "//ios/chrome/browser/ui/util",

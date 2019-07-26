@@ -57,8 +57,6 @@ class GFX_EXPORT PlatformFontSkia : public PlatformFont {
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
 
-  sk_sp<SkTypeface> typeface() const { return typeface_; }
-
  private:
   // Create a new instance of this object with the specified properties. Called
   // from DeriveFont.

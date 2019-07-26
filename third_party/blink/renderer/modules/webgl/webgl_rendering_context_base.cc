@@ -1609,7 +1609,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   if (resource_provider->IsAccelerated()) {
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
         SharedGpuContext::ContextProviderWrapper();
-    if (!shared_context_wrapper)
+    if (!shared_context_wrapper || !shared_context_wrapper->ContextProvider())
       return false;
     gpu::gles2::GLES2Interface* gl =
         shared_context_wrapper->ContextProvider()->ContextGL();

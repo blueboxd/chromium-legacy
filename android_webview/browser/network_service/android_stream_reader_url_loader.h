@@ -17,9 +17,15 @@ namespace android_webview {
 class InputStream;
 class InputStreamReaderWrapper;
 
-// Custom URLLoader implementation for loading network responses from stream.
-// Current implementation is in particular for supporting shouldInterceptRequest
-// callback in webview.
+// Custom URLLoader implementation for loading responses from Android
+// InputStreams. Although this works generally for implementers of the
+// ResponseDelegate interface, this specifically aims to support:
+//
+//  - shouldInterceptRequest callback
+//  - content:// URLs, which load content from Android ContentProviders (which
+//    could be in-app or come from other apps)
+//  - file:///android_asset/ & file:///android_res/ URLs, which load in-app
+//    content from the app's asset/ and res/ folders
 class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
  public:
   // Delegate abstraction for obtaining input streams.

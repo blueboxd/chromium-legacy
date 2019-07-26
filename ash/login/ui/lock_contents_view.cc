@@ -1210,10 +1210,10 @@ void LockContentsView::SetLowDensitySpacing(views::View* spacing_middle,
 }
 
 bool LockContentsView::AreMediaControlsEnabled() const {
-  return Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled() &&
-         base::FeatureList::IsEnabled(features::kLockScreenMediaControls) &&
-         screen_type_ == LockScreen::ScreenType::kLock &&
-         !expanded_view_->GetVisible();
+  return screen_type_ == LockScreen::ScreenType::kLock &&
+         !expanded_view_->GetVisible() &&
+         Shell::Get()->media_controller()->AreLockScreenMediaKeysEnabled() &&
+         base::FeatureList::IsEnabled(features::kLockScreenMediaControls);
 }
 
 void LockContentsView::HideMediaControlsLayout() {

@@ -36,6 +36,11 @@ class AssistantPaymentRequestDelegate {
       const base::android::JavaParamRef<jobject>& jcaller,
       jint state);
 
+  void OnTermsAndConditionsLinkClicked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint link);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

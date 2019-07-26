@@ -69,8 +69,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
       // XR globals.
       let xrButton = null;
-      let xrImmersiveRefSpace = null;
-      let xrNonImmersiveRefSpace = null;
+      let refSpaces = {};
 
       // WebGL scene globals.
       let gl = null;
@@ -127,13 +126,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         onResize();
 
         renderer = new Renderer(gl);
-
         scene.setRenderer(renderer);
+      }
+
+      function updateBoundsRenderer(refSpace) {
+        if (!boundsRenderer) {
+          boundsRenderer = new BoundsRenderer(refSpace);
+          scene.addNode(boundsRenderer);
+        } else {
+          boundsRenderer.boundedRefSpace = refSpace;
+        }
       }
 
       function onSessionStarted(session) {
         if (!session.mode)
           session.mode = 'inline';
+        session.ended = false;
         session.addEventListener('end', onSessionEnded);
 
         initGL();
@@ -147,13 +155,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         // Attempt to get a 'bounded' reference space, which will align the
         // user's physical floor with Y=0 and provide boundaries that indicate
         // where the user can safely walk.
-        session.requestReferenceSpace({ type: 'bounded' }).then((refSpace) => {
-          if (!boundsRenderer) {
-            boundsRenderer = new BoundsRenderer(refSpace);
-            scene.addNode(boundsRenderer);
-          } else {
-            boundsRenderer.boundedRefSpace = refSpace;
-          }
+        session.requestReferenceSpace('bounded-floor').then((refSpace) => {
+          updateBoundsRenderer(refSpace);
           return refSpace;
         }).catch(() => {
           // If a bounded reference space isn't supported, fall back to a
@@ -185,14 +188,29 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             }
           });
         }).then((refSpace) => {
-          if (session.mode.startsWith('immersive')) {
-            xrImmersiveRefSpace = refSpace;
-          } else {
-            xrNonImmersiveRefSpace = refSpace;
-          }
-
+          refSpaces[session.mode] = refSpace;
           session.requestAnimationFrame(onXRFrame);
+          if (session.mode.startsWith('immersive') && !boundsRenderer) {
+            pollBounds(session);
+          }
         });
+      }
+
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      function pollBounds(session) {
+        if (session.mode.startsWith('immersive') && !session.ended) {
+          session.requestReferenceSpace('bounded-floor').then((space) => {
+            updateBoundsRenderer(space);
+            refSpaces[session.mode] = space;
+            console.log(space.boundsGeometry);
+          }).catch(() => {
+            console.log("Failed to get bounded reference space. Trying again in 1 second.");
+            sleep(1000).then(() => pollBounds(session));
+          });
+        }
       }
 
       function onEndSession(session) {
@@ -203,14 +221,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (event.session.mode.startsWith('immersive')) {
           xrButton.setSession(null);
         }
+        event.session.ended = true;
       }
 
       function onXRFrame(t, frame) {
         let session = frame.session;
-        let refSpace = session.mode.startsWith('immersive') ?
-                         xrImmersiveRefSpace :
-                         xrNonImmersiveRefSpace;
-        let pose = frame.getViewerPose(refSpace);
+        let pose = frame.getViewerPose(refSpaces[session.mode]);
 
         scene.startFrame();
 

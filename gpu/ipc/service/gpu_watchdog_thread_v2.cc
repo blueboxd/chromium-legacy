@@ -16,16 +16,6 @@
 
 namespace gpu {
 
-namespace {
-#if defined(CYGPROFILE_INSTRUMENTATION)
-constexpr int64_t kGpuTimeoutInSeconds = 30;
-#elif defined(OS_WIN) || defined(OS_MACOSX)
-constexpr int64_t kGpuTimeoutInSeconds = 15;
-#else
-constexpr int64_t kGpuTimeoutInSeconds = 10;
-#endif
-}  // namespace
-
 GpuWatchdogThreadImplV2::GpuWatchdogThreadImplV2(base::TimeDelta timeout,
                                                  bool is_test_mode)
     : watchdog_timeout_(timeout),
@@ -63,8 +53,7 @@ std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
 // static
 std::unique_ptr<GpuWatchdogThreadImplV2> GpuWatchdogThreadImplV2::Create(
     bool start_backgrounded) {
-  return Create(start_backgrounded,
-                base::TimeDelta::FromSeconds(kGpuTimeoutInSeconds), false);
+  return Create(start_backgrounded, kGpuWatchdogTimeout, false);
 }
 
 // Do not add power observer during watchdog init, PowerMonitor might not be up
@@ -170,7 +159,7 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
     task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
-        watchdog_timeout_ * 2);
+        watchdog_timeout_ * kRestartFactor);
   }
 }
 

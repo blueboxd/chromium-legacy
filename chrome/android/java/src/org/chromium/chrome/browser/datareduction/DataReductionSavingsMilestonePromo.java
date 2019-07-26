@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.components.variations.VariationsAssociatedData;
 
@@ -80,6 +81,10 @@ public class DataReductionSavingsMilestonePromo {
      * @return The string to use in the promo. If null or empty, do not show a promo.
      */
     private String computeDataReductionMilestonePromo() {
+        // Skip if Lite mode is not enabled.
+        if (!DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+            return null;
+        }
         // Prevents users who upgrade and have already saved more than the threshold from seeing the
         // promo.
         if (!DataReductionPromoUtils.hasMilestonePromoBeenInitWithStartingSavedBytes()) {

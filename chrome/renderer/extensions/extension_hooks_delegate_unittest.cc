@@ -117,7 +117,7 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestDisabled) {
   // extension with an event page).
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("foo")
-          .SetBackgroundPage(ExtensionBuilder::BackgroundPage::EVENT)
+          .SetBackgroundContext(ExtensionBuilder::BackgroundContext::EVENT_PAGE)
           .SetLocation(Manifest::UNPACKED)
           .Build();
   RegisterExtension(extension);

@@ -1327,11 +1327,11 @@ void BrowserView::ShowUpdateChromeDialog() {
 
 void BrowserView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
-    bool enable_stay_in_chrome,
-    bool show_persistence_options,
+    bool show_stay_in_chrome,
+    bool show_remember_selection,
     IntentPickerResponse callback) {
-  toolbar_->ShowIntentPickerBubble(std::move(app_info), enable_stay_in_chrome,
-                                   show_persistence_options,
+  toolbar_->ShowIntentPickerBubble(std::move(app_info), show_stay_in_chrome,
+                                   show_remember_selection,
                                    std::move(callback));
 }
 

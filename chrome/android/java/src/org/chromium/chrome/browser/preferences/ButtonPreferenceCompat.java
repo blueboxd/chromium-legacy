@@ -17,9 +17,6 @@ import org.chromium.chrome.R;
  *
  * Preference.getOnPreferenceClickListener().onPreferenceClick() is called when the button is
  * clicked.
- *
- * TODO(crbug.com/967022): Remove {@link ButtonPreference} when Preference Support Library
- * migration is complete in favor of this class.
  */
 public class ButtonPreferenceCompat extends Preference {
     /**

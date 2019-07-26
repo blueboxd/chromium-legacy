@@ -45,6 +45,8 @@ class MediaSessionAndroid final
       const base::flat_map<media_session::mojom::MediaSessionImageType,
                            std::vector<media_session::MediaImage>>& images)
       override;
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   // MediaSession method wrappers.
   void Resume(JNIEnv* env, const base::android::JavaParamRef<jobject>& j_obj);

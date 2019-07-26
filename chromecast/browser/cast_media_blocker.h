@@ -60,6 +60,8 @@ class CastMediaBlocker : public content::WebContentsObserver,
       const base::flat_map<media_session::mojom::MediaSessionImageType,
                            std::vector<media_session::MediaImage>>& images)
       override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
  private:
   friend shell::CastMediaBlockerTest;

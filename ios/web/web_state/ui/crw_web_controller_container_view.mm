@@ -219,14 +219,6 @@
   self.contentViewProxy.contentView = self.webViewContentView;
 }
 
-- (void)disconnectScrollProxy {
-  [self.contentViewProxy disconnectScrollProxy];
-}
-
-- (void)reconnectScrollProxy {
-  [self.contentViewProxy reconnectScrollProxy];
-}
-
 #pragma mark UIView (printing)
 
 // Only print the web view by returning the web view printformatter.

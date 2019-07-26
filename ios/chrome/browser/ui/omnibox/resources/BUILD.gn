@@ -170,3 +170,11 @@ imageset("background_stroke") {
     "background_stroke.imageset/background_stroke@3x.png",
   ]
 }
+
+imageset("omnibox_popup_recent_query") {
+  sources = [
+    "omnibox_popup_recent_query.imageset/Contents.json",
+    "omnibox_popup_recent_query.imageset/omnibox_popup_recent_query@2x.png",
+    "omnibox_popup_recent_query.imageset/omnibox_popup_recent_query@3x.png",
+  ]
+}

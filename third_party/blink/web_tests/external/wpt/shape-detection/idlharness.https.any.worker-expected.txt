@@ -1,0 +1,40 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS FaceDetector interface: existence and properties of interface object
+PASS FaceDetector interface object length
+PASS FaceDetector interface object name
+PASS FaceDetector interface: existence and properties of interface prototype object
+PASS FaceDetector interface: existence and properties of interface prototype object's "constructor" property
+PASS FaceDetector interface: existence and properties of interface prototype object's @@unscopables property
+PASS FaceDetector interface: operation detect(ImageBitmapSource)
+PASS FaceDetector must be primary interface of faceDetector
+PASS Stringification of faceDetector
+PASS FaceDetector interface: faceDetector must inherit property "detect(ImageBitmapSource)" with the proper type
+PASS FaceDetector interface: calling detect(ImageBitmapSource) on faceDetector with too few arguments must throw TypeError
+FAIL DetectedFace interface: existence and properties of interface object assert_false: expected false got true
+PASS DetectedFace must be primary interface of detectedFace
+PASS Stringification of detectedFace
+FAIL DetectedFace interface: detectedFace must not have property "boundingBox" assert_false: expected false got true
+FAIL DetectedFace interface: detectedFace must not have property "landmarks" assert_false: expected false got true
+PASS BarcodeDetector interface: existence and properties of interface object
+PASS BarcodeDetector interface object length
+PASS BarcodeDetector interface object name
+PASS BarcodeDetector interface: existence and properties of interface prototype object
+PASS BarcodeDetector interface: existence and properties of interface prototype object's "constructor" property
+PASS BarcodeDetector interface: existence and properties of interface prototype object's @@unscopables property
+PASS BarcodeDetector interface: operation getSupportedFormats()
+PASS BarcodeDetector interface: operation detect(ImageBitmapSource)
+PASS BarcodeDetector must be primary interface of barcodeDetector
+PASS Stringification of barcodeDetector
+PASS BarcodeDetector interface: barcodeDetector must inherit property "getSupportedFormats()" with the proper type
+PASS BarcodeDetector interface: barcodeDetector must inherit property "detect(ImageBitmapSource)" with the proper type
+PASS BarcodeDetector interface: calling detect(ImageBitmapSource) on barcodeDetector with too few arguments must throw TypeError
+FAIL DetectedBarcode interface: existence and properties of interface object assert_false: expected false got true
+PASS DetectedBarcode must be primary interface of detectedBarcode
+PASS Stringification of detectedBarcode
+FAIL DetectedBarcode interface: detectedBarcode must not have property "boundingBox" assert_false: expected false got true
+FAIL DetectedBarcode interface: detectedBarcode must not have property "rawValue" assert_false: expected false got true
+FAIL DetectedBarcode interface: detectedBarcode must not have property "format" assert_false: expected false got true
+FAIL DetectedBarcode interface: detectedBarcode must not have property "cornerPoints" assert_false: expected false got true
+Harness: the test ran to completion.
+

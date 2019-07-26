@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from .common import DebugInfo
 from .common import WithIdentifier
 
 
@@ -98,9 +99,11 @@ class RefById(Proxy, WithIdentifier):
 
     def __init__(self,
                  identifier,
+                 debug_info=None,
                  target_attrs=None,
                  target_attrs_with_priority=None,
                  pass_key=None):
+        assert debug_info is None or isinstance(debug_info, DebugInfo)
         assert pass_key is _REF_BY_ID_PASS_KEY
 
         Proxy.__init__(
@@ -108,6 +111,12 @@ class RefById(Proxy, WithIdentifier):
             target_attrs=target_attrs,
             target_attrs_with_priority=target_attrs_with_priority)
         WithIdentifier.__init__(self, identifier)
+        self._ref_own_debug_info = debug_info
+
+    @property
+    def ref_own_debug_info(self):
+        """This reference's own DebugInfo."""
+        return self._ref_own_debug_info
 
 
 class RefByIdFactory(object):
@@ -128,10 +137,17 @@ class RefByIdFactory(object):
         self._target_attrs = target_attrs
         self._target_attrs_with_priority = target_attrs_with_priority
 
-    def create(self, identifier):
+    def create(self, identifier, debug_info=None):
+        """
+            Args:
+                identifier: An identifier to be resolved later.
+                debug_info: Where the reference is created, which is useful
+                    especially when the reference is unresolvable.
+        """
         assert not self._is_frozen
         ref = RefById(
             identifier,
+            debug_info=debug_info,
             target_attrs=self._target_attrs,
             target_attrs_with_priority=self._target_attrs_with_priority,
             pass_key=_REF_BY_ID_PASS_KEY)

@@ -27,6 +27,8 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "components/gcm_driver/crypto/gcm_encryption_provider.h"
+#include "components/gcm_driver/gcm_driver.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_tracker.h"
@@ -39,6 +41,7 @@ SharingService::SharingService(
     std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
     std::unique_ptr<SharingFCMSender> fcm_sender,
     std::unique_ptr<SharingFCMHandler> fcm_handler,
+    gcm::GCMDriver* gcm_driver,
     syncer::DeviceInfoTracker* device_info_tracker,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
     syncer::SyncService* sync_service)
@@ -52,6 +55,19 @@ SharingService::SharingService(
       sync_service_(sync_service),
       backoff_entry_(&kRetryBackoffPolicy),
       state_(State::DISABLED) {
+  // Remove old encryption info with empty authrozed_entity to avoid DCHECK.
+  // See http://crbug/987591
+  if (gcm_driver) {
+    gcm::GCMEncryptionProvider* encryption_provider =
+        gcm_driver->GetEncryptionProviderInternal();
+    if (encryption_provider) {
+      encryption_provider->RemoveEncryptionInfo(
+          kSharingFCMAppID, /*authorized_entity=*/std::string(),
+          base::DoNothing());
+    }
+  }
+
+  // Initialize sharing handlers.
   fcm_handler_->AddSharingHandler(
       chrome_browser_sharing::SharingMessage::kAckMessage,
       &ack_message_handler_);
@@ -76,8 +92,7 @@ SharingService::SharingService(
     sync_service_->AddObserver(this);
 
   // Only unregister if sync is disabled (not initializing).
-  if (sync_service_ && sync_service->GetTransportState() ==
-                           syncer::SyncService::TransportState::DISABLED) {
+  if (IsSyncDisabled()) {
     // state_ is kept as State::DISABLED as SharingService has never registered,
     // and only doing clean up via UnregisterDevice().
     UnregisterDevice();
@@ -239,7 +254,7 @@ void SharingService::OnStateChanged(syncer::SyncService* sync) {
         sync_service_->RemoveObserver(this);
       UnregisterDevice();
     }
-  } else if (state_ == State::ACTIVE) {
+  } else if (IsSyncDisabled() && state_ == State::ACTIVE) {
     state_ = State::UNREGISTERING;
     fcm_handler_->StopListening();
     sync_prefs_->ClearVapidKeyChangeObserver();
@@ -259,6 +274,7 @@ void SharingService::UnregisterDevice() {
 
 void SharingService::OnDeviceRegistered(
     SharingDeviceRegistrationResult result) {
+  LogSharingRegistrationResult(result);
   switch (result) {
     case SharingDeviceRegistrationResult::kSuccess:
       backoff_entry_.InformOfRequest(true);
@@ -271,7 +287,7 @@ void SharingService::OnDeviceRegistered(
           // state_ is kept as State::ACTIVE during re-registration.
           sync_prefs_->SetVapidKeyChangeObserver(base::BindRepeating(
               &SharingService::RegisterDevice, weak_ptr_factory_.GetWeakPtr()));
-        } else {
+        } else if (IsSyncDisabled()) {
           // In case sync is disabled during registration, unregister it.
           state_ = State::UNREGISTERING;
           UnregisterDevice();
@@ -298,11 +314,15 @@ void SharingService::OnDeviceRegistered(
       // No need to bother retrying in the case of one of fatal errors.
       LOG(ERROR) << "Device registration failed with fatal error";
       break;
+    case SharingDeviceRegistrationResult::kDeviceNotRegistered:
+      // Register device cannot return kDeviceNotRegistered.
+      NOTREACHED();
   }
 }
 
 void SharingService::OnDeviceUnregistered(
     SharingDeviceRegistrationResult result) {
+  LogSharingUnegistrationResult(result);
   if (IsSyncEnabled() &&
       base::FeatureList::IsEnabled(kSharingDeviceRegistration)) {
     // In case sync is enabled during un-registration, register it.
@@ -312,9 +332,22 @@ void SharingService::OnDeviceUnregistered(
     state_ = State::DISABLED;
   }
 
-  // Unregistration failure is ignored, and will be attempted in next restart.
-  if (result != SharingDeviceRegistrationResult::kSuccess)
-    LOG(ERROR) << "Device unregistration failed";
+  switch (result) {
+    case SharingDeviceRegistrationResult::kSuccess:
+      // Successfully unregistered, no-op
+      break;
+    case SharingDeviceRegistrationResult::kFcmTransientError:
+    case SharingDeviceRegistrationResult::kSyncServiceError:
+      LOG(ERROR) << "Device un-registration failed with transient error";
+      break;
+    case SharingDeviceRegistrationResult::kEncryptionError:
+    case SharingDeviceRegistrationResult::kFcmFatalError:
+      LOG(ERROR) << "Device un-registration failed with fatal error";
+      break;
+    case SharingDeviceRegistrationResult::kDeviceNotRegistered:
+      // Device has not been registered, no-op.
+      break;
+  }
 }
 
 bool SharingService::IsSyncEnabled() const {
@@ -322,4 +355,13 @@ bool SharingService::IsSyncEnabled() const {
          sync_service_->GetTransportState() ==
              syncer::SyncService::TransportState::ACTIVE &&
          sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES);
+}
+
+bool SharingService::IsSyncDisabled() const {
+  return sync_service_ &&
+         (sync_service_->GetTransportState() ==
+              syncer::SyncService::TransportState::DISABLED ||
+          (sync_service_->GetTransportState() ==
+               syncer::SyncService::TransportState::ACTIVE &&
+           !sync_service_->GetActiveDataTypes().Has(syncer::PREFERENCES)));
 }

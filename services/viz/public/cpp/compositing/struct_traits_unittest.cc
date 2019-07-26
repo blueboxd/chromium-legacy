@@ -885,9 +885,10 @@ TEST_F(StructTraitsTest, RenderPass) {
 TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const RenderPassId render_pass_id = 3u;
   const gfx::Rect output_rect(45, 22, 120, 13);
+  const gfx::Rect damage_rect(56, 123, 19, 43);
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
-  const gfx::Rect damage_rect(56, 123, 19, 43);
+  const base::Optional<gfx::RRectF> backdrop_filter_bounds;
   skcms_Matrix3x3 to_XYZD50 = SkNamedGamut::kXYZ;
   skcms_TransferFunction fn = {1, 0, 1, 0, 0, 0, 1};
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateCustom(to_XYZD50, fn);
@@ -898,9 +899,9 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(render_pass_id, output_rect, damage_rect, transform_to_root,
                 cc::FilterOperations(), cc::FilterOperations(),
-                base::Optional<gfx::RRectF>(), color_space,
-                has_transparent_background, cache_render_pass,
-                has_damage_from_contributing_content, generate_mipmap);
+                backdrop_filter_bounds, color_space, has_transparent_background,
+                cache_render_pass, has_damage_from_contributing_content,
+                generate_mipmap);
 
   // Unlike the previous test, don't add any quads to the list; we need to
   // verify that the serialization code can deal with that.
@@ -914,6 +915,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   EXPECT_EQ(output_rect, output->output_rect);
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
+  EXPECT_EQ(backdrop_filter_bounds, output->backdrop_filter_bounds);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
   EXPECT_EQ(color_space, output->color_space);
 }

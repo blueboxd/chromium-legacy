@@ -59,8 +59,8 @@ struct CommonCredentialInfo {
   array<uint8> client_data_json;
 };
 
-// Content of user verification method extension returned by both
-// Authenticator::MakeCredential and Authenticator::GetAssertion.
+// Content of user verification method extension returned by
+// Authenticator::GetAssertion.
 // See https://w3c.github.io/webauthn/#sctn-uvm-extension
 // Registry of the available values, see
 // https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-registry-v2.0-id-20180227.html#user-verification-methods

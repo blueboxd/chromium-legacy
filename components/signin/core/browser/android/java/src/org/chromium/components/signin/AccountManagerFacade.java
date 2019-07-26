@@ -33,6 +33,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.util.PatternMatcher;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -81,9 +82,9 @@ public class AccountManagerFacade {
 
     // These two variables should be accessed from either UI thread or during initialization phase.
     private PatternMatcher[] mAccountRestrictionPatterns;
-    private AccountManagerResult<List<CoreAccountInfo>> mAllAccounts;
+    private AccountManagerResult<List<Account>> mAllAccounts;
 
-    private final AtomicReference<AccountManagerResult<List<CoreAccountInfo>>> mFilteredAccounts =
+    private final AtomicReference<AccountManagerResult<List<Account>>> mFilteredAccounts =
             new AtomicReference<>();
     private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
     private final CachedMetrics.TimesHistogramSample mPopulateAccountCacheWaitingTimeHistogram =
@@ -227,14 +228,74 @@ public class AccountManagerFacade {
     }
 
     /**
-     * Retrieves {@link CoreAccountInfo} for all Google accounts on the device.
+     * Retrieves a list of the Google account names on the device.
      *
      * @throws AccountManagerDelegateException if Google Play Services are out of date,
      *         Chrome lacks necessary permissions, etc.
      */
     @AnyThread
-    public List<CoreAccountInfo> getAccounts() throws AccountManagerDelegateException {
-        AccountManagerResult<List<CoreAccountInfo>> maybeAccounts = mFilteredAccounts.get();
+    public List<String> getGoogleAccountNames() throws AccountManagerDelegateException {
+        List<String> accountNames = new ArrayList<>();
+        for (Account account : getGoogleAccounts()) {
+            accountNames.add(account.name);
+        }
+        return accountNames;
+    }
+
+    /**
+     * Retrieves a list of the Google account names on the device.
+     * Returns an empty list if Google Play Services aren't available or out of date.
+     */
+    @AnyThread
+    public List<String> tryGetGoogleAccountNames() {
+        List<String> accountNames = new ArrayList<>();
+        List<Account> tryGetGoogleAccounts = tryGetGoogleAccounts();
+        for (int i = 0; i < tryGetGoogleAccounts.size(); i++) {
+            Account account = tryGetGoogleAccounts.get(i);
+            accountNames.add(account.name);
+        }
+        return accountNames;
+    }
+
+    /**
+     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
+     */
+    @MainThread
+    public void tryGetGoogleAccountNames(final Callback<List<String>> callback) {
+        runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccountNames()));
+    }
+
+    /**
+     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
+     */
+    @MainThread
+    public void getGoogleAccountNames(
+            final Callback<AccountManagerResult<List<String>>> callback) {
+        runAfterCacheIsPopulated(() -> {
+            final AccountManagerResult<List<Account>> accounts = mFilteredAccounts.get();
+            final AccountManagerResult<List<String>> result;
+            if (accounts.hasValue()) {
+                List<String> accountNames = new ArrayList<>(accounts.getValue().size());
+                for (Account account : accounts.getValue()) {
+                    accountNames.add(account.name);
+                }
+                result = new AccountManagerResult<>(accountNames);
+            } else {
+                result = new AccountManagerResult<>(accounts.getException());
+            }
+            callback.onResult(result);
+        });
+    }
+
+    /**
+     * Retrieves all Google accounts on the device.
+     *
+     * @throws AccountManagerDelegateException if Google Play Services are out of date,
+     *         Chrome lacks necessary permissions, etc.
+     */
+    @AnyThread
+    public List<Account> getGoogleAccounts() throws AccountManagerDelegateException {
+        AccountManagerResult<List<Account>> maybeAccounts = mFilteredAccounts.get();
         if (maybeAccounts == null) {
             try {
                 // First call to update hasn't finished executing yet, should wait for it
@@ -253,148 +314,16 @@ public class AccountManagerFacade {
     }
 
     /**
-     * Asynchronous version of {@link #getAccounts()}. The {@code callback} will be executed on the
-     * UI thread after the account cache is populated.
-     */
-    @MainThread
-    public void getAccounts(Callback<AccountManagerResult<List<CoreAccountInfo>>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(mFilteredAccounts.get()));
-    }
-
-    /**
-     * Retrieves {@link CoreAccountInfo} for all Google accounts on the device.
-     * Returns an empty array if an error occurs while getting account information list.
-     */
-    @AnyThread
-    public List<CoreAccountInfo> tryGetAccounts() {
-        try {
-            return getAccounts();
-        } catch (AccountManagerDelegateException e) {
-            return Collections.emptyList();
-        }
-    }
-
-    /**
-     * Asynchronous version of {@link #tryGetAccounts()}. The {@code callback} will be executed on
-     * the UI thread after the account cache is populated.
-     */
-    @MainThread
-    public void tryGetAccounts(final Callback<List<CoreAccountInfo>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(tryGetAccounts()));
-    }
-
-    /**
-     * Retrieves a list of the Google account names on the device.
-     * TODO(https://crbug.com/831257): Move all callers to getAccounts and remove this
-     * method.
-     *
-     * @throws AccountManagerDelegateException if Google Play Services are out of date,
-     *         Chrome lacks necessary permissions, etc.
-     */
-    @AnyThread
-    public List<String> getGoogleAccountNames() throws AccountManagerDelegateException {
-        List<String> accountNames = new ArrayList<>();
-        for (CoreAccountInfo account : getAccounts()) {
-            accountNames.add(account.getName());
-        }
-        return accountNames;
-    }
-
-    /**
-     * Asynchronous version of {@link #getGoogleAccountNames()}.
-     * TODO(https://crbug.com/831257): Move all callers to getAccounts and remove this
-     * method.
-     */
-    @MainThread
-    public void getGoogleAccountNames(
-            final Callback<AccountManagerResult<List<String>>> callback) {
-        runAfterCacheIsPopulated(() -> {
-            final AccountManagerResult<List<CoreAccountInfo>> accounts = mFilteredAccounts.get();
-            final AccountManagerResult<List<String>> result;
-            if (accounts.hasValue()) {
-                List<String> accountNames = new ArrayList<>(accounts.getValue().size());
-                for (CoreAccountInfo account : accounts.getValue()) {
-                    accountNames.add(account.getName());
-                }
-                result = new AccountManagerResult<>(accountNames);
-            } else {
-                result = new AccountManagerResult<>(accounts.getException());
-            }
-            callback.onResult(result);
-        });
-    }
-
-    /**
-     * Retrieves a list of the Google account names on the device.
-     * Returns an empty list if Google Play Services aren't available or out of date.
-     * TODO(https://crbug.com/831257): Move all callers to tryGetAccounts and remove this
-     * method.
-     */
-    @AnyThread
-    public List<String> tryGetGoogleAccountNames() {
-        try {
-            return getGoogleAccountNames();
-        } catch (AccountManagerDelegateException e) {
-            return Collections.emptyList();
-        }
-    }
-
-    /**
-     * Asynchronous version of {@link #tryGetGoogleAccountNames()}.
-     * TODO(https://crbug.com/831257): Move all callers to tryGetAccounts and remove this
-     * method.
-     */
-    @MainThread
-    public void tryGetGoogleAccountNames(final Callback<List<String>> callback) {
-        runAfterCacheIsPopulated(() -> callback.onResult(tryGetGoogleAccountNames()));
-    }
-
-    /**
-     * Retrieves all Google accounts on the device.
-     * TODO(https://crbug.com/831257): Move all callers to getAccounts and remove this
-     * method.
-     *
-     * @throws AccountManagerDelegateException if Google Play Services are out of date,
-     *         Chrome lacks necessary permissions, etc.
-     */
-    @AnyThread
-    public List<Account> getGoogleAccounts() throws AccountManagerDelegateException {
-        List<Account> accounts = new ArrayList<>();
-        for (CoreAccountInfo account : getAccounts()) {
-            accounts.add(account.getAccount());
-        }
-        return accounts;
-    }
-
-    /**
      * Asynchronous version of {@link #getGoogleAccounts()}.
-     * TODO(https://crbug.com/831257): Move all callers to getAccounts and remove this
-     * method.
      */
     @MainThread
     public void getGoogleAccounts(Callback<AccountManagerResult<List<Account>>> callback) {
-        runAfterCacheIsPopulated(() -> {
-            final AccountManagerResult<List<CoreAccountInfo>> accountInfos =
-                    mFilteredAccounts.get();
-            final AccountManagerResult<List<Account>> result;
-            if (accountInfos.hasValue()) {
-                List<Account> accounts = new ArrayList<>(accountInfos.getValue().size());
-                for (CoreAccountInfo account : accountInfos.getValue()) {
-                    accounts.add(account.getAccount());
-                }
-                result = new AccountManagerResult<>(accounts);
-            } else {
-                result = new AccountManagerResult<>(accountInfos.getException());
-            }
-            callback.onResult(result);
-        });
+        runAfterCacheIsPopulated(() -> callback.onResult(mFilteredAccounts.get()));
     }
 
     /**
      * Retrieves all Google accounts on the device.
      * Returns an empty array if an error occurs while getting account list.
-     * TODO(https://crbug.com/831257): Move all callers to tryGetAccounts and remove this
-     * method.
      */
     @AnyThread
     public List<Account> tryGetGoogleAccounts() {
@@ -407,8 +336,6 @@ public class AccountManagerFacade {
 
     /**
      * Asynchronous version of {@link #tryGetGoogleAccounts()}.
-     * TODO(https://crbug.com/831257): Move all callers to tryGetAccounts and remove this
-     * method.
      */
     @MainThread
     public void tryGetGoogleAccounts(final Callback<List<Account>> callback) {
@@ -635,22 +562,22 @@ public class AccountManagerFacade {
         ContextUtils.getApplicationContext().registerReceiver(receiver, filter);
     }
 
-    private AccountManagerResult<List<CoreAccountInfo>> getAllAccounts() {
+    private AccountManagerResult<List<Account>> getAllAccounts() {
         try {
-            List<CoreAccountInfo> accounts = mDelegate.getAccountInfosSync();
+            List<Account> accounts = Arrays.asList(mDelegate.getAccountsSync());
             return new AccountManagerResult<>(Collections.unmodifiableList(accounts));
         } catch (AccountManagerDelegateException ex) {
             return new AccountManagerResult<>(ex);
         }
     }
 
-    private AccountManagerResult<List<CoreAccountInfo>> getFilteredAccounts() {
+    private AccountManagerResult<List<Account>> getFilteredAccounts() {
         if (mAllAccounts.hasException() || mAccountRestrictionPatterns == null) return mAllAccounts;
-        ArrayList<CoreAccountInfo> filteredAccounts = new ArrayList<>();
-        for (CoreAccountInfo accountInfo : mAllAccounts.getValue()) {
+        ArrayList<Account> filteredAccounts = new ArrayList<>();
+        for (Account account : mAllAccounts.getValue()) {
             for (PatternMatcher pattern : mAccountRestrictionPatterns) {
-                if (pattern.matches(accountInfo.getName())) {
-                    filteredAccounts.add(accountInfo);
+                if (pattern.matches(account.name)) {
+                    filteredAccounts.add(account);
                     break; // Don't check other patterns
                 }
             }
@@ -694,7 +621,7 @@ public class AccountManagerFacade {
         fireOnAccountsChangedNotification();
     }
 
-    private void setAllAccounts(AccountManagerResult<List<CoreAccountInfo>> allAccounts) {
+    private void setAllAccounts(AccountManagerResult<List<Account>> allAccounts) {
         mAllAccounts = allAccounts;
         mFilteredAccounts.set(getFilteredAccounts());
         fireOnAccountsChangedNotification();
@@ -771,20 +698,19 @@ public class AccountManagerFacade {
         }
     }
 
-    private class UpdateAccountsTask
-            extends AsyncTask<AccountManagerResult<List<CoreAccountInfo>>> {
+    private class UpdateAccountsTask extends AsyncTask<AccountManagerResult<List<Account>>> {
         @Override
         protected void onPreExecute() {
             incrementUpdateCounter();
         }
 
         @Override
-        protected AccountManagerResult<List<CoreAccountInfo>> doInBackground() {
+        protected AccountManagerResult<List<Account>> doInBackground() {
             return getAllAccounts();
         }
 
         @Override
-        protected void onPostExecute(AccountManagerResult<List<CoreAccountInfo>> allAccounts) {
+        protected void onPostExecute(AccountManagerResult<List<Account>> allAccounts) {
             setAllAccounts(allAccounts);
             decrementUpdateCounter();
         }

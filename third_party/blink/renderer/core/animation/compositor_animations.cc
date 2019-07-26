@@ -229,7 +229,7 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     }
 
     const PropertySpecificKeyframeVector& keyframes =
-        keyframe_effect.GetPropertySpecificKeyframes(property);
+        *keyframe_effect.GetPropertySpecificKeyframes(property);
     DCHECK_GE(keyframes.size(), 2U);
     for (const auto& keyframe : keyframes) {
       if (keyframe->Composite() != EffectModel::kCompositeReplace &&
@@ -666,7 +666,7 @@ void CompositorAnimations::GetAnimationOnCompositor(
     if (!std::isfinite(scale))
       scale = 1.0;
     const PropertySpecificKeyframeVector& values =
-        effect.GetPropertySpecificKeyframes(property);
+        *effect.GetPropertySpecificKeyframes(property);
 
     compositor_target_property::Type target_property;
     std::unique_ptr<CompositorAnimationCurve> curve;

@@ -195,10 +195,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
 
   if (identity_manager_)
     identity_manager_->AddObserver(this);
-
-  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
-      base::BindRepeating(&ProfileSyncService::OnMemoryPressure,
-                          sync_enabled_weak_factory_.GetWeakPtr()));
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -510,8 +506,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
 
   engine_->Initialize(std::move(params));
-
-  ReportPreviousSessionMemoryWarningCount();
 }
 
 void ProfileSyncService::Shutdown() {
@@ -598,9 +592,6 @@ void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   }
 
   NotifyObservers();
-
-  // Mark this as a clean shutdown(without crash).
-  sync_prefs_.SetCleanShutdown(true);
 }
 
 void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
@@ -1831,34 +1822,6 @@ void ProfileSyncService::RemoveClientFromServer() const {
     sync_stopped_reporter_->ReportSyncStopped(access_token, cache_guid,
                                               birthday);
   }
-}
-
-void ProfileSyncService::OnMemoryPressure(
-    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  if (memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
-    sync_prefs_.SetMemoryPressureWarningCount(
-        sync_prefs_.GetMemoryPressureWarningCount() + 1);
-  }
-}
-
-void ProfileSyncService::ReportPreviousSessionMemoryWarningCount() {
-  int warning_received = sync_prefs_.GetMemoryPressureWarningCount();
-
-  if (-1 != warning_received) {
-    // -1 means it is new client.
-    if (!sync_prefs_.DidSyncShutdownCleanly()) {
-      UMA_HISTOGRAM_COUNTS_1M("Sync.MemoryPressureWarningBeforeUncleanShutdown",
-                              warning_received);
-    } else {
-      UMA_HISTOGRAM_COUNTS_1M("Sync.MemoryPressureWarningBeforeCleanShutdown",
-                              warning_received);
-    }
-  }
-  sync_prefs_.SetMemoryPressureWarningCount(0);
-  // Will set to true during a clean shutdown, so crash or something else will
-  // remain this as false.
-  sync_prefs_.SetCleanShutdown(false);
 }
 
 void ProfileSyncService::RecordMemoryUsageHistograms() {

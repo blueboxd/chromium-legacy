@@ -279,7 +279,7 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
             &partition_name, &in_memory);
       }
       url_loader_factory = CreateFileSystemURLLoaderFactory(
-          rfh, /*is_navigation=*/false,
+          rfh->GetProcess()->GetID(), rfh->GetFrameTreeNodeId(),
           storage_partition->GetFileSystemContext(), storage_domain);
       factory = url_loader_factory.get();
     } else if (rfh && url.SchemeIs(content::kChromeUIScheme)) {

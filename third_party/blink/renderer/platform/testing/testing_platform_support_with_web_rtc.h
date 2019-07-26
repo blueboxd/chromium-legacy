@@ -51,6 +51,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const override;
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) override;
+  void RestartIce() override;
   void GetStats(const WebRTCStatsRequest&) override;
   void GetStats(WebRTCStatsReportCallback,
                 const WebVector<webrtc::NonStandardGroupId>&) override;

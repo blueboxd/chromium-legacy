@@ -219,7 +219,6 @@ modules_idl_files =
           "mediastream/media_stream_track_event.idl",
           "mediastream/overconstrained_error.idl",
           "native_file_system/native_file_system_directory_iterator.idl",
-          "native_file_system/native_file_system_writable_file_stream.idl",
           "native_file_system/file_system_directory_handle.idl",
           "native_file_system/file_system_file_handle.idl",
           "native_file_system/file_system_handle.idl",

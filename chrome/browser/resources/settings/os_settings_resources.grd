@@ -468,11 +468,11 @@
       <structure name="IDR_OS_SETTINGS_RESET_PAGE_JS"
                  file="chromeos/os_reset_page/os_reset_page.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_RESET_OS_PROXY_JS"
-                 file="chromeos/os_reset_page/reset_os_proxy.js"
+      <structure name="IDR_OS_SETTINGS_RESET_BROWSER_PROXY_JS"
+                 file="chromeos/os_reset_page/os_reset_browser_proxy.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_RESET_OS_PROXY_HTML"
-                 file="chromeos/os_reset_page/reset_os_proxy.html"
+      <structure name="IDR_OS_SETTINGS_RESET_BROWSER_PROXY_HTML"
+                 file="chromeos/os_reset_page/os_reset_browser_proxy.html"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_LANGUAGES_HTML"
                  file="languages_page/languages.html"

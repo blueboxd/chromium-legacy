@@ -25,7 +25,6 @@ namespace internal {
 
 struct PartitionRootBase;
 
-BASE_EXPORT extern const Feature kNoPartitionAllocDecommit;
 BASE_EXPORT extern const Feature kPartitionAllocPeriodicDecommit;
 
 }  // namespace internal

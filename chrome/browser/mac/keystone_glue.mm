@@ -24,6 +24,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #import "chrome/browser/mac/keystone_registration.h"
 #include "chrome/common/channel_info.h"
@@ -44,7 +45,7 @@ namespace ksr = keystone_registration;
 #if defined(GOOGLE_CHROME_BUILD)
 #define kStableBrandFileName @"Google Chrome Brand.plist"
 #define kCanaryBrandFileName @"Google Chrome Canary Brand.plist"
-#elif defined(CHROMIUM_BUILD)
+#elif BUILDFLAG(CHROMIUM_BRANDING)
 #define kStableBrandFileName @"Chromium Brand.plist"
 #define kCanaryBrandFileName @"Chromium Canary Brand.plist"
 #else

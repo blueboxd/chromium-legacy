@@ -81,7 +81,7 @@ check_targets = [
 
   #"//chrome/*",          # Many errors: https://crbug.com/949535
 
-  #"//chrome/android/*",  # 13 errors
+  "//chrome/android/*",
   "//chrome/app/*",
   "//chrome/app_shim/*",
 

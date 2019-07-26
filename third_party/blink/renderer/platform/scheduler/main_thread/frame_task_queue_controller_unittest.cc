@@ -123,23 +123,29 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
                                        .SetCanBeThrottled(true)
                                        .SetCanBeDeferred(true)
                                        .SetCanBeFrozen(true)
-                                       .SetCanBePaused(true));
+                                       .SetCanBePaused(true)
+                                       .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NonLoadingTaskQueue(
-      QueueTraits().SetCanBeDeferred(true).SetCanBePaused(true));
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                        .SetCanBeDeferred(true)
+                                        .SetCanBePaused(true)
+                                        .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NonLoadingTaskQueue(QueueTraits().SetCanBePaused(true));
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                        .SetCanBePaused(true)
+                                        .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());
 
-  task_queue = NonLoadingTaskQueue(QueueTraits());
+  task_queue = NonLoadingTaskQueue(QueueTraits()
+                                        .SetShouldUseVirtualTime(true));
   EXPECT_FALSE(all_task_queues.Contains(task_queue));
   all_task_queues.insert(task_queue.get(), QueueCheckResult::kDidNotSeeQueue);
   EXPECT_EQ(all_task_queues.size(), task_queue_created_count());

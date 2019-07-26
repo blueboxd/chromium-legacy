@@ -126,7 +126,8 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            EventTarget* source,
                            Vector<MessagePortChannel> channels,
                            UserActivation* user_activation,
-                           bool transfer_user_activation)
+                           bool transfer_user_activation,
+                           bool allow_autoplay)
     : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
@@ -136,7 +137,8 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       source_(source),
       channels_(std::move(channels)),
       user_activation_(user_activation),
-      transfer_user_activation_(transfer_user_activation) {
+      transfer_user_activation_(transfer_user_activation),
+      allow_autoplay_(allow_autoplay) {
   DCHECK(IsValidSource(source_.Get()));
 }
 
@@ -216,7 +218,8 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
                                     EventTarget* source,
                                     MessagePortArray* ports,
                                     UserActivation* user_activation,
-                                    bool transfer_user_activation) {
+                                    bool transfer_user_activation,
+                                    bool allow_autoplay) {
   if (IsBeingDispatched())
     return;
 
@@ -233,6 +236,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   is_ports_dirty_ = true;
   user_activation_ = user_activation;
   transfer_user_activation_ = transfer_user_activation;
+  allow_autoplay_ = allow_autoplay;
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,

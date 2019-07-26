@@ -81,8 +81,13 @@ class BrowserProxy {
    * @param {boolean} isPageController
    */
   handleNewAutocompleteResponse(response, isPageController) {
+    // Note: Using inputText is a sufficient fix for the way this is used today,
+    // but in principle it would be better to associate requests with responses
+    // using a unique session identifier, for example by rolling an integer each
+    // time a request is made. Doing so would require extra bookkeeping on the
+    // host side, so for now we keep it simple.
     const isForLastPageRequest = isPageController && this.lastRequest &&
-        this.lastRequest.inputText === response.host;
+        this.lastRequest.inputText === response.inputText;
 
     // When unfocusing the browser omnibox, the autocomplete controller
     // sends a response with no combined results. This response is ignored
@@ -95,6 +100,9 @@ class BrowserProxy {
       omniboxOutput.addAutocompleteResponse(response);
     }
 
+    // TODO(orinj|manukh): If |response.done| but not |isForLastPageRequest|
+    // then callback is being dropped. We should guarantee that callback is
+    // always called because some callers await promises.
     if (isForLastPageRequest && response.done) {
       this.lastRequest.callback(response);
       this.lastRequest = null;
@@ -213,8 +221,9 @@ class ExportDelegate {
    * This is the worker function that transforms query inputs to accumulate
    * batch exports, then finally initiates a download for the complete set.
    * @param {!Array<!QueryInputs>} batchQueryInputs
+   * @param {string} batchName
    */
-  async processBatch(batchQueryInputs) {
+  async processBatch(batchQueryInputs, batchName) {
     const batchExports = [];
     for (const queryInputs of batchQueryInputs) {
       const omniboxResponse = await browserProxy
@@ -233,8 +242,21 @@ class ExportDelegate {
       };
       batchExports.push(exportData);
     }
-    const fileName = `omnibox_batch_${ExportDelegate.getTimeStamp()}.json`;
-    const batchData = { appVersion: navigator.appVersion, batchExports };
+    const now = new Date();
+    const fileName = `omnibox_batch_${ExportDelegate.getTimeStamp(now)}.json`;
+    // If this data format changes, please roll schemaVersion.
+    const batchData = {
+      schemaKind: 'Omnibox Batch Export',
+      schemaVersion: 2,
+      dateCreated: now.toISOString(),
+      author: '',
+      description: '',
+      authorTool: 'chrome://omnibox',
+      batchName,
+      versionDetails: window.loadTimeData.data_,
+      appVersion: navigator.appVersion,
+      batchExports
+    };
     ExportDelegate.download_(batchData, fileName);
   }
 
@@ -244,11 +266,14 @@ class ExportDelegate {
    * @param {!BatchSpecifier} processBatchData
    */
   processBatchData(processBatchData) {
-    if (processBatchData.batchMode && processBatchData.batchQueryInputs) {
-      this.processBatch(processBatchData.batchQueryInputs);
+    if (processBatchData.batchMode && processBatchData.batchQueryInputs &&
+        processBatchData.batchName) {
+      this.processBatch(
+          processBatchData.batchQueryInputs, processBatchData.batchName);
     } else {
       const expected = {
         batchMode: "combined",
+        batchName: "name for this batch of queries",
         batchQueryInputs: [
           {
             inputText: "example input text",
@@ -305,9 +330,15 @@ class ExportDelegate {
     a.click();
   }
 
-  /** @return {string} A sortable timestamp string for use in filenames. */
-  static getTimeStamp() {
-    const iso = new Date().toISOString();
+  /** 
+    * @param {Date=} date
+    * @return {string} A sortable timestamp string for use in filenames.
+    */
+  static getTimeStamp(date) {
+    if (!date) {
+      date = new Date();
+    }
+    const iso = date.toISOString();
     return iso.replace(/:/g, '').split('.')[0];
   }
 }

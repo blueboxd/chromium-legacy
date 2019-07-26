@@ -40,8 +40,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Default implementation of {@link AccountManagerDelegate} which delegates all calls to the
@@ -113,64 +111,23 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
-    public List<CoreAccountInfo> getAccountInfosSync() throws AccountManagerDelegateException {
-        // GoogleAuthUtil.getAccountId requires Google Play Services being up to date.
+    public Account[] getAccountsSync() throws AccountManagerDelegateException {
+        // Account seeding relies on GoogleAuthUtil.getAccountId to get GAIA ids,
+        // so don't report any accounts if Google Play Services are out of date.
         checkCanUseGooglePlayServices();
 
-        long startTime = SystemClock.elapsedRealtime();
-        Account[] accounts = getAccountsSync();
-        long accountsTime = SystemClock.elapsedRealtime();
-        List<CoreAccountInfo> accountInfos = buildAccountInfoList(accounts);
-        long endTime = SystemClock.elapsedRealtime();
-        recordElapsedTimeHistogram(
-                "Signin.AndroidGetAccountsTime_AccountManager.Accounts", accountsTime - startTime);
-        recordElapsedTimeHistogram(
-                "Signin.AndroidGetAccountsTime_AccountManager.Ids", endTime - accountsTime);
-        recordElapsedTimeHistogram(
-                "Signin.AndroidGetAccountsTime_AccountManager.Total", endTime - startTime);
-        return accountInfos;
-    }
-
-    // TODO(https://crbug.com/831257): remove this.
-    public Account[] getAccountsSync() throws AccountManagerDelegateException {
-        return getAccountsFromAccountManager();
-    }
-
-    private Account[] getAccountsFromAccountManager() {
         if (!hasGetAccountsPermission()) {
             return new Account[] {};
         }
-        return mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
-    }
-
-    protected final List<CoreAccountInfo> buildAccountInfoList(Account[] accounts)
-            throws AccountManagerDelegateException {
-        List<CoreAccountInfo> accountInfos = new ArrayList<>(accounts.length);
-        for (Account account : accounts) {
-            CoreAccountId accountId = getAccountId(account.name);
-            if (accountId != null) {
-                accountInfos.add(new CoreAccountInfo(accountId, account));
-            }
+        long now = SystemClock.elapsedRealtime();
+        Account[] accounts = mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+        long elapsed = SystemClock.elapsedRealtime() - now;
+        recordElapsedTimeHistogram("Signin.AndroidGetAccountsTime_AccountManager", elapsed);
+        if (ThreadUtils.runningOnUiThread()) {
+            recordElapsedTimeHistogram(
+                    "Signin.AndroidGetAccountsTimeUiThread_AccountManager", elapsed);
         }
-        return accountInfos;
-    }
-
-    private CoreAccountId getAccountId(String accountName) throws AccountManagerDelegateException {
-        try {
-            String accountId =
-                    GoogleAuthUtil.getAccountId(ContextUtils.getApplicationContext(), accountName);
-            return new CoreAccountId(accountId);
-        } catch (GooglePlayServicesAvailabilityException ex) {
-            Log.e(TAG, "Availability error while getting an account id", ex);
-            throw new GmsAvailabilityException(
-                    String.format("Can't use Google Play Services: %s",
-                            GoogleApiAvailability.getInstance().getErrorString(
-                                    ex.getConnectionStatusCode())),
-                    ex.getConnectionStatusCode());
-        } catch (IOException | GoogleAuthException ex) {
-            Log.e(TAG, "Error while getting an account id", ex);
-            return null;
-        }
+        return accounts;
     }
 
     @Override

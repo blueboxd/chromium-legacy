@@ -70,6 +70,7 @@ void AddToHomescreenManager::AddToHomescreen(
     WebApkInstallService::Get(web_contents->GetBrowserContext())
         ->InstallAsync(web_contents, data_fetcher_->shortcut_info(),
                        data_fetcher_->primary_icon(),
+                       data_fetcher_->has_maskable_primary_icon(),
                        data_fetcher_->badge_icon(),
                        InstallableMetrics::GetInstallSource(
                            web_contents, InstallTrigger::MENU));

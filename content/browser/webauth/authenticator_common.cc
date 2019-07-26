@@ -18,10 +18,9 @@
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
-#include "build/build_config.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
+#include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
@@ -58,14 +57,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
-
-#if defined(OS_MACOSX)
-#include "device/fido/mac/authenticator.h"
-#endif
-
-#if defined(OS_WIN)
-#include "device/fido/win/authenticator.h"
-#endif
 
 namespace content {
 
@@ -565,12 +556,15 @@ void AuthenticatorCommon::UpdateRequestDelegate() {
 }
 
 void AuthenticatorCommon::StartMakeCredentialRequest() {
-  request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      connector_,
-      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
+  device::FidoDiscoveryFactory* discovery_factory =
+      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->frame_tree_node()),
-      GetTransports(caller_origin_, transports_),
+              ->frame_tree_node());
+  if (!discovery_factory)
+    discovery_factory = request_delegate_->GetDiscoveryFactory();
+
+  request_ = std::make_unique<device::MakeCredentialRequestHandler>(
+      connector_, discovery_factory, GetTransports(caller_origin_, transports_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
                      weak_factory_.GetWeakPtr()));
@@ -593,21 +587,19 @@ void AuthenticatorCommon::StartMakeCredentialRequest() {
     request_delegate_->SetMightCreateResidentCredential(true);
   }
   request_->set_observer(request_delegate_.get());
-
-  request_->SetPlatformAuthenticatorOrMarkUnavailable(
-      CreatePlatformAuthenticatorIfAvailable());
 }
 
 void AuthenticatorCommon::StartGetAssertionRequest() {
-  auto opt_platform_authenticator_info =
-      CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
-          *ctap_get_assertion_request_);
-  request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      connector_,
-      AuthenticatorEnvironmentImpl::GetInstance()->GetFactory(
+  device::FidoDiscoveryFactory* discovery_factory =
+      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->frame_tree_node()),
-      GetTransports(caller_origin_, transports_), *ctap_get_assertion_request_,
+              ->frame_tree_node());
+  if (!discovery_factory)
+    discovery_factory = request_delegate_->GetDiscoveryFactory();
+
+  request_ = std::make_unique<device::GetAssertionRequestHandler>(
+      connector_, discovery_factory, GetTransports(caller_origin_, transports_),
+      *ctap_get_assertion_request_,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
                      weak_factory_.GetWeakPtr()));
 
@@ -625,10 +617,8 @@ void AuthenticatorCommon::StartGetAssertionRequest() {
       base::BindRepeating(
           &device::FidoRequestHandlerBase::InitiatePairingWithDevice,
           request_->GetWeakPtr()) /* ble_pairing_callback*/);
-  request_->set_observer(request_delegate_.get());
 
-  request_->SetPlatformAuthenticatorOrMarkUnavailable(
-      std::move(opt_platform_authenticator_info));
+  request_->set_observer(request_delegate_.get());
 }
 
 bool AuthenticatorCommon::IsFocused() const {
@@ -986,36 +976,10 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
                         : maybe_request_delegate.get();
 
   const bool result =
-      IsUserVerifyingPlatformAuthenticatorAvailableImpl(request_delegate_ptr);
+      request_delegate_ptr->IsUserVerifyingPlatformAuthenticatorAvailable();
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
-}
-
-bool AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailableImpl(
-    AuthenticatorRequestClientDelegate* request_delegate) {
-  if (request_delegate->ShouldDisablePlatformAuthenticators()) {
-    return false;
-  }
-
-#if defined(OS_MACOSX)
-  // Touch ID is disabled, regardless of hardware support, if the embedder
-  // doesn't support it.
-  if (!GetContentClient()
-           ->browser()
-           ->IsWebAuthenticationTouchIdAuthenticatorSupported())
-    return false;
-
-  auto opt_config = request_delegate->GetTouchIdAuthenticatorConfig();
-  return opt_config &&
-         device::fido::mac::TouchIdAuthenticator::IsAvailable(*opt_config);
-#elif defined(OS_WIN)
-  return base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
-         device::WinWebAuthnApiAuthenticator::
-             IsUserVerifyingPlatformAuthenticatorAvailable();
-#else
-  return false;
-#endif
 }
 
 void AuthenticatorCommon::Cancel() {
@@ -1500,60 +1464,6 @@ void AuthenticatorCommon::Cleanup() {
 BrowserContext* AuthenticatorCommon::browser_context() const {
   return content::WebContents::FromRenderFrameHost(render_frame_host_)
       ->GetBrowserContext();
-}
-
-#if defined(OS_MACOSX)
-namespace {
-std::unique_ptr<device::fido::mac::TouchIdAuthenticator>
-CreateTouchIdAuthenticatorIfAvailable(
-    AuthenticatorRequestClientDelegate* request_delegate) {
-  // Not all embedders may provide an authenticator config.
-  auto opt_authenticator_config =
-      request_delegate->GetTouchIdAuthenticatorConfig();
-  if (!opt_authenticator_config) {
-    return nullptr;
-  }
-  return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
-      std::move(*opt_authenticator_config));
-}
-}  // namespace
-#endif
-
-base::Optional<device::PlatformAuthenticatorInfo>
-AuthenticatorCommon::CreatePlatformAuthenticatorIfAvailable() {
-  // Incognito mode disables platform authenticators, so check for availability
-  // first.
-  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl(
-          request_delegate_.get())) {
-    return base::nullopt;
-  }
-#if defined(OS_MACOSX)
-  return device::PlatformAuthenticatorInfo(
-      CreateTouchIdAuthenticatorIfAvailable(request_delegate_.get()), false);
-#else
-  return base::nullopt;
-#endif
-}
-
-base::Optional<device::PlatformAuthenticatorInfo> AuthenticatorCommon::
-    CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
-        const device::CtapGetAssertionRequest& request) {
-  // Incognito mode disables platform authenticators, so check for availability
-  // first.
-  if (!IsUserVerifyingPlatformAuthenticatorAvailableImpl(
-          request_delegate_.get())) {
-    return base::nullopt;
-  }
-#if defined(OS_MACOSX)
-  std::unique_ptr<device::fido::mac::TouchIdAuthenticator> authenticator =
-      CreateTouchIdAuthenticatorIfAvailable(request_delegate_.get());
-  const bool has_credential =
-      authenticator->HasCredentialForGetAssertionRequest(request);
-  return device::PlatformAuthenticatorInfo(std::move(authenticator),
-                                           has_credential);
-#else
-  return base::nullopt;
-#endif
 }
 
 }  // namespace content

@@ -751,6 +751,7 @@ void TabbedPane::AddTabInternal(size_t index,
   DCHECK_LE(index, GetTabCount());
   contents->SetVisible(false);
   contents->GetViewAccessibility().OverrideName(title);
+  contents->GetViewAccessibility().OverrideRole(ax::mojom::Role::kTab);
 
   tab_strip_->AddChildViewAt(
       std::make_unique<MdTab>(this, title, contents.get()),

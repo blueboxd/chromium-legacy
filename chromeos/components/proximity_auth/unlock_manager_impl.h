@@ -23,6 +23,10 @@
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
+namespace base {
+class OneShotTimer;
+}  // namespace base
+
 namespace proximity_auth {
 
 class Messenger;
@@ -57,6 +61,8 @@ class UnlockManagerImpl : public UnlockManager,
       RemoteDeviceLifeCycle* life_cycle);
 
  private:
+  friend class ProximityAuthUnlockManagerImplTest;
+
   // The possible lock screen states for the remote device.
   enum class RemoteScreenlockState {
     UNKNOWN,
@@ -90,6 +96,7 @@ class UnlockManagerImpl : public UnlockManager,
                              bool powered) override;
 
   // chromeos::PowerManagerClient::Observer:
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // RemoteDeviceLifeCycle::Observer:
@@ -98,6 +105,17 @@ class UnlockManagerImpl : public UnlockManager,
 
   // Returns true if the BluetoothAdapter is present and powered.
   bool IsBluetoothPresentAndPowered() const;
+
+  // TODO(crbug.com/986896): Waiting a certain time, after resume, before
+  // trusting the presence and power values returned by BluetoothAdapter is
+  // necessary because the BluetoothAdapter returns incorrect values directly
+  // after resume, and does not return correct values until about 1-2 seconds
+  // later. Remove this function once the bug is resolved.
+  //
+  // This function returns true if the BluetoothAdapter is still resuming from
+  // suspension, indicating that its returned presence and power values cannot
+  // yet be trusted.
+  bool IsBluetoothAdapterRecoveringFromSuspend() const;
 
   // If the RemoteDeviceLifeCycle is available, ensure it is started (but only
   // if Bluetooth is available).
@@ -159,27 +177,43 @@ class UnlockManagerImpl : public UnlockManager,
   // Clears the timers for beginning a scan and fetching remote status.
   void ResetPerformanceMetricsTimestamps();
 
+  void SetBluetoothSuspensionRecoveryTimerForTesting(
+      std::unique_ptr<base::OneShotTimer> timer);
+
   // Whether |this| manager is being used for sign-in or session unlock.
   const ProximityAuthSystem::ScreenlockType screenlock_type_;
 
-  // Whether the user is present at the remote device. Unset if no remote status
-  // update has yet been received.
-  std::unique_ptr<RemoteScreenlockState> remote_screenlock_state_;
+  // Used to call into the embedder. Expected to outlive |this| instance.
+  ProximityAuthClient* proximity_auth_client_;
 
-  // Controls the proximity auth flow logic for a remote device. Not owned, and
-  // expcted to outlive |this| instance.
-  RemoteDeviceLifeCycle* life_cycle_;
+  // Starts running after resuming from suspension, and fires once enough time
+  // has elapsed such that the BluetoothAdapter's presence and power values can
+  // be trusted again. To be removed once https://crbug.com/986896 is fixed.
+  std::unique_ptr<base::OneShotTimer> bluetooth_suspension_recovery_timer_;
+
+  // The Bluetooth adapter. Null if there is no adapter present on the local
+  // device.
+  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
   // Tracks whether the remote device is currently in close enough proximity to
   // the local device to allow unlocking.
   std::unique_ptr<ProximityMonitor> proximity_monitor_;
 
-  // Used to call into the embedder. Expected to outlive |this| instance.
-  ProximityAuthClient* proximity_auth_client_;
+  // Whether the user is present at the remote device. Unset if no remote status
+  // update has yet been received.
+  std::unique_ptr<RemoteScreenlockState> remote_screenlock_state_;
+
+  // The sign-in secret received from the remote device by decrypting the
+  // sign-in challenge.
+  std::unique_ptr<std::string> sign_in_secret_;
+
+  // Controls the proximity auth flow logic for a remote device. Not owned, and
+  // expcted to outlive |this| instance.
+  RemoteDeviceLifeCycle* life_cycle_ = nullptr;
 
   // True if the manager is currently processing a user-initiated authentication
   // attempt, which is initiated when the user pod is clicked.
-  bool is_attempting_auth_;
+  bool is_attempting_auth_ = false;
 
   // If true, either the lock screen was just shown (after resuming from
   // suspend, or directly locking the screen), or the focused user pod was
@@ -188,18 +222,17 @@ class UnlockManagerImpl : public UnlockManager,
   // point the user visually sees an indication that the phone cannot be found).
   // Though this field becomes false after this timeout, Smart Lock continues
   // to scan for the phone until the user unlocks the screen.
-  bool is_performing_initial_scan_;
+  bool is_performing_initial_scan_ = false;
 
-  // The Bluetooth adapter. Null if there is no adapter present on the local
-  // device.
-  scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-
-  // The sign-in secret received from the remote device by decrypting the
-  // sign-in challenge.
-  std::unique_ptr<std::string> sign_in_secret_;
+  // TODO(crbug.com/986896): For a short time window after resuming from
+  // suspension, BluetoothAdapter returns incorrect presence and power values.
+  // This field acts as a cache in case we need to check those values during
+  // that time window when the device resumes. Remove this field once the bug
+  // is fixed.
+  bool was_bluetooth_present_and_powered_before_last_suspend_ = false;
 
   // The state of the current screen lock UI.
-  ScreenlockState screenlock_state_;
+  ScreenlockState screenlock_state_ = ScreenlockState::INACTIVE;
 
   // The timestamp of when UnlockManager begins to try to establish a secure
   // connection to the requested remote device of the provided
@@ -214,15 +247,16 @@ class UnlockManagerImpl : public UnlockManager,
   // Used to track if the "initial scan" has timed out. See
   // |is_performing_initial_scan_| for more.
   base::WeakPtrFactory<UnlockManagerImpl>
-      initial_scan_timeout_weak_ptr_factory_;
+      initial_scan_timeout_weak_ptr_factory_{this};
 
   // Used to reject auth attempts after a timeout. An in-progress auth attempt
   // blocks the sign-in screen UI, so it's important to prevent the auth attempt
   // from blocking the UI in case a step in the code path hangs.
-  base::WeakPtrFactory<UnlockManagerImpl> reject_auth_attempt_weak_ptr_factory_;
+  base::WeakPtrFactory<UnlockManagerImpl> reject_auth_attempt_weak_ptr_factory_{
+      this};
 
   // Used to vend all other weak pointers.
-  base::WeakPtrFactory<UnlockManagerImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<UnlockManagerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UnlockManagerImpl);
 };

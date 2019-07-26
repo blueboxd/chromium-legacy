@@ -76,7 +76,7 @@ struct EmbeddedWorkerStartParams {
 
   // Cloned and passed to each controllee to directly dispatch events from the
   // controllees.
-  ControllerServiceWorker& controller_request;
+  pending_receiver<ControllerServiceWorker> controller_receiver;
 
   // Information to transfer installed scripts from the browser to the renderer.
   ServiceWorkerInstalledScriptsInfo? installed_scripts_info;

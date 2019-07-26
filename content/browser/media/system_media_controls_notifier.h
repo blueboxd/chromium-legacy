@@ -48,6 +48,8 @@ class CONTENT_EXPORT SystemMediaControlsNotifier
       override {}
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override {}
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override {}
 
   // media_session::mojom::MediaControllerImageObserver implementation.
   void MediaControllerImageChanged(

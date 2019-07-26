@@ -140,7 +140,8 @@ class TestInstallableManager : public InstallableManager {
       is_installable = false;
     } else if (params.valid_manifest && params.has_worker) {
       if (!IsManifestValidForWebApp(manifest_,
-                                    true /* check_webapp_manifest_display */)) {
+                                    true /* check_webapp_manifest_display */,
+                                    false /* prefer_maskable_icon */)) {
         code = valid_manifest_->errors.at(0);
         is_installable = false;
       } else if (!is_installable_) {

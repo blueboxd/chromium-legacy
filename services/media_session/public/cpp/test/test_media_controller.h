@@ -66,6 +66,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
       const std::vector<mojom::MediaSessionAction>& actions) override;
   void MediaSessionChanged(
       const base::Optional<base::UnguessableToken>& request_id) override;
+  void MediaSessionPositionChanged(
+      const base::Optional<media_session::MediaPosition>& position) override;
 
   void WaitForState(mojom::MediaSessionInfo::SessionState wanted_state);
   void WaitForPlaybackState(mojom::MediaPlaybackState wanted_state);
@@ -77,6 +79,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   void WaitForEmptyActions();
   void WaitForExpectedActions(
       const std::set<mojom::MediaSessionAction>& actions);
+
+  void WaitForEmptyPosition();
+  void WaitForNonEmptyPosition();
 
   void WaitForSession(const base::Optional<base::UnguessableToken>& request_id);
 
@@ -93,6 +98,10 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     return *session_actions_;
   }
 
+  const base::Optional<base::Optional<MediaPosition>>& session_position() {
+    return session_position_;
+  }
+
  private:
   void StartWaiting();
 
@@ -100,6 +109,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> session_actions_;
   base::Optional<base::Optional<base::UnguessableToken>> session_request_id_;
+  base::Optional<base::Optional<MediaPosition>> session_position_;
+  bool waiting_for_empty_position_ = false;
+  bool waiting_for_non_empty_position_ = false;
 
   base::Optional<MediaMetadata> expected_metadata_;
   base::Optional<std::set<mojom::MediaSessionAction>> expected_actions_;
@@ -128,7 +140,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   // mojom::MediaController:
   void Suspend() override;
   void Resume() override;
-  void Stop() override {}
+  void Stop() override;
   void ToggleSuspendResume() override;
   void AddObserver(
       mojo::PendingRemote<mojom::MediaControllerObserver> observer) override;
@@ -149,6 +161,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
 
   int suspend_count() const { return suspend_count_; }
   int resume_count() const { return resume_count_; }
+  int stop_count() const { return stop_count_; }
   int add_observer_count() const { return add_observer_count_; }
   int previous_track_count() const { return previous_track_count_; }
   int next_track_count() const { return next_track_count_; }
@@ -164,6 +177,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   int toggle_suspend_resume_count_ = 0;
   int suspend_count_ = 0;
   int resume_count_ = 0;
+  int stop_count_ = 0;
   int add_observer_count_ = 0;
   int previous_track_count_ = 0;
   int next_track_count_ = 0;

@@ -7,18 +7,19 @@
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom-blink.h"
-#include "third_party/blink/renderer/modules/image_downloader/image_downloader_base.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
 class KURL;
 class LocalFrame;
+class MultiResolutionImageResourceFetcher;
 
 class ImageDownloaderImpl final
     : public GarbageCollectedFinalized<ImageDownloaderImpl>,
       public Supplement<LocalFrame>,
-      public ImageDownloaderBase,
+      public ContextLifecycleObserver,
       public mojom::blink::ImageDownloader {
   USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
@@ -29,17 +30,21 @@ class ImageDownloaderImpl final
   explicit ImageDownloaderImpl(LocalFrame&);
   ~ImageDownloaderImpl() override;
 
+  using DownloadCallback =
+      base::OnceCallback<void(int32_t, const WTF::Vector<SkBitmap>&)>;
+
   static ImageDownloaderImpl* From(LocalFrame&);
 
   static void ProvideTo(LocalFrame&);
 
   void Trace(Visitor*) override;
 
- private:
-  // Override ImageDownloaderBase::ContextDestroyed().
+  // OverContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
-  // ImageDownloader implementation.
+ private:
+  // ImageDownloader implementation. Request to asynchronously download an
+  // image. When done, |callback| will be called.
   void DownloadImage(const KURL& url,
                      bool is_favicon,
                      uint32_t max_bitmap_size,
@@ -61,6 +66,28 @@ class ImageDownloaderImpl final
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.
   void Dispose();
+
+  // Requests to fetch an image. When done, the image downloader is notified by
+  // way of DidFetchImage. If the image is a favicon, cookies will not be sent
+  // nor accepted during download. If the image has multiple frames, all frames
+  // are returned.
+  void FetchImage(const KURL& image_url,
+                  bool is_favicon,
+                  bool bypass_cache,
+                  DownloadCallback callback);
+
+  // This callback is triggered when FetchImage completes, either
+  // successfully or with a failure. See FetchImage for more
+  // details.
+  void DidFetchImage(DownloadCallback callback,
+                     MultiResolutionImageResourceFetcher* fetcher,
+                     const WTF::Vector<SkBitmap>& images);
+
+  typedef WTF::Vector<std::unique_ptr<MultiResolutionImageResourceFetcher>>
+      ImageResourceFetcherList;
+
+  // ImageResourceFetchers schedule via FetchImage.
+  ImageResourceFetcherList image_fetchers_;
 
   mojo::Binding<mojom::blink::ImageDownloader> binding_{this};
 

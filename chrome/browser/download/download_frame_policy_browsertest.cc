@@ -331,11 +331,10 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_Sandbox, Download) {
       !enable_blocking_downloads_in_sandbox_without_user_activation ||
       initiate_with_gesture ||
       sandbox_option != SandboxOption::kDisallowDownloadsWithoutUserActivation;
-
+  bool sandboxed =
+      sandbox_option == SandboxOption::kDisallowDownloadsWithoutUserActivation;
   bool expect_download_in_sandbox_without_user_activation =
-      sandbox_option ==
-          SandboxOption::kDisallowDownloadsWithoutUserActivation &&
-      !initiate_with_gesture;
+      sandboxed && !initiate_with_gesture;
 
   InitializeHistogramTesterAndWebFeatureWaiter();
   SetNumDownloadsExpectation(expect_download);
@@ -347,6 +346,10 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_Sandbox, Download) {
   if (expect_download) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPostPolicyCheck);
+  }
+  if (sandboxed) {
+    GetWebFeatureWaiter()->AddWebFeatureExpectation(
+        blink::mojom::WebFeature::kDownloadInSandbox);
   }
   if (expect_download_in_sandbox_without_user_activation) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
@@ -423,8 +426,6 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_AdFrame, Download) {
   bool expect_download =
       !enable_blocking_downloads_in_ad_frame_without_user_activation ||
       initiate_with_gesture || !is_ad_frame;
-  bool expect_download_in_ad_frame_with_user_activation =
-      is_ad_frame && initiate_with_gesture;
   bool expect_download_in_ad_frame_without_user_activation =
       is_ad_frame && !initiate_with_gesture;
 
@@ -439,9 +440,9 @@ IN_PROC_BROWSER_TEST_P(SubframeSameFrameDownloadBrowserTest_AdFrame, Download) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPostPolicyCheck);
   }
-  if (expect_download_in_ad_frame_with_user_activation) {
+  if (is_ad_frame) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
-        blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
+        blink::mojom::WebFeature::kDownloadInAdFrame);
   }
   if (expect_download_in_ad_frame_without_user_activation) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
@@ -519,6 +520,8 @@ IN_PROC_BROWSER_TEST_P(OtherFrameNavigationDownloadBrowserTest_Sandbox,
 
   GetWebFeatureWaiter()->AddWebFeatureExpectation(
       blink::mojom::WebFeature::kDownloadPrePolicyCheck);
+  GetWebFeatureWaiter()->AddWebFeatureExpectation(
+      blink::mojom::WebFeature::kDownloadInSandbox);
   if (!expect_gesture) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadInSandboxWithoutUserGesture);
@@ -631,10 +634,10 @@ IN_PROC_BROWSER_TEST_P(OtherFrameNavigationDownloadBrowserTest_AdFrame,
 
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPrePolicyCheck);
-    if (expect_gesture) {
-      GetWebFeatureWaiter()->AddWebFeatureExpectation(
-          blink::mojom::WebFeature::kDownloadInAdFrameWithUserGesture);
-    } else {
+    GetWebFeatureWaiter()->AddWebFeatureExpectation(
+        blink::mojom::WebFeature::kDownloadInAdFrame);
+
+    if (!expect_gesture) {
       GetWebFeatureWaiter()->AddWebFeatureExpectation(
           blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
     }
@@ -724,11 +727,10 @@ IN_PROC_BROWSER_TEST_P(TopFrameSameFrameDownloadBrowserTest, Download) {
       !enable_blocking_downloads_in_sandbox_without_user_activation ||
       initiate_with_gesture ||
       sandbox_option != SandboxOption::kDisallowDownloadsWithoutUserActivation;
-
+  bool sandboxed =
+      sandbox_option == SandboxOption::kDisallowDownloadsWithoutUserActivation;
   bool expect_download_in_sandbox_without_user_activation =
-      sandbox_option ==
-          SandboxOption::kDisallowDownloadsWithoutUserActivation &&
-      !initiate_with_gesture;
+      sandboxed && !initiate_with_gesture;
 
   InitializeHistogramTesterAndWebFeatureWaiter();
   SetNumDownloadsExpectation(expect_download);
@@ -739,6 +741,10 @@ IN_PROC_BROWSER_TEST_P(TopFrameSameFrameDownloadBrowserTest, Download) {
   if (expect_download) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(
         blink::mojom::WebFeature::kDownloadPostPolicyCheck);
+  }
+  if (sandboxed) {
+    GetWebFeatureWaiter()->AddWebFeatureExpectation(
+        blink::mojom::WebFeature::kDownloadInSandbox);
   }
   if (expect_download_in_sandbox_without_user_activation) {
     GetWebFeatureWaiter()->AddWebFeatureExpectation(

@@ -399,7 +399,7 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
 
   primary_icon_url_ = data.primary_icon_url;
   primary_icon_ = *data.primary_icon;
-
+  has_maskable_primary_icon_ = data.has_maskable_primary_icon;
 
   // If we triggered the installability check on page load, then it's possible
   // we don't have enough engagement yet. If that's the case, return here but

@@ -131,7 +131,7 @@ void BarcodeDetector::OnDetectBarcodes(
       point->setY(corner_point.y);
       corner_points.push_back(point);
     }
-    detected_barcodes.push_back(DetectedBarcode::Create(
+    detected_barcodes.push_back(MakeGarbageCollected<DetectedBarcode>(
         barcode->raw_value,
         DOMRectReadOnly::Create(
             barcode->bounding_box.x, barcode->bounding_box.y,

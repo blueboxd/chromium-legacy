@@ -100,6 +100,8 @@ void ProtocolUtils::AddScript(const SupportedScriptProto& script_proto,
     script->handle.chip = Chip(presentation.chip());
   }
   script->handle.direct_action = DirectAction(presentation.direct_action());
+  script->handle.start_message = presentation.start_message();
+  script->handle.needs_ui = presentation.needs_ui();
   scripts->emplace_back(std::move(script));
 }
 

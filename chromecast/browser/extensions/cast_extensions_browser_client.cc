@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chromecast/browser/cast_network_contexts.h"
 #include "chromecast/browser/extensions/cast_extension_host_delegate.h"
 #include "chromecast/browser/extensions/cast_extension_system_factory.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
@@ -40,10 +41,13 @@ namespace extensions {
 
 CastExtensionsBrowserClient::CastExtensionsBrowserClient(
     BrowserContext* context,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    chromecast::shell::CastNetworkContexts* cast_network_contexts)
     : browser_context_(context),
+      cast_network_contexts_(cast_network_contexts),
       pref_service_(pref_service),
       api_client_(new CastExtensionsAPIClient) {
+  DCHECK(cast_network_contexts_);
   // Set to UNKNOWN to enable all APIs.
   // TODO(achaulk): figure out what channel to use here.
   SetCurrentChannel(version_info::Channel::UNKNOWN);
@@ -53,6 +57,11 @@ CastExtensionsBrowserClient::CastExtensionsBrowserClient(
 }
 
 CastExtensionsBrowserClient::~CastExtensionsBrowserClient() {}
+
+network::mojom::NetworkContext*
+CastExtensionsBrowserClient::GetSystemNetworkContext() {
+  return cast_network_contexts_->GetSystemContext();
+}
 
 bool CastExtensionsBrowserClient::IsShuttingDown() {
   return false;

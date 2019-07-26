@@ -935,13 +935,18 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
         browser_context_to_use = browser_context_;
       else
         resource_context_to_use = resource_context_;
+      // TODO(crbug.com/984460): Don't use WeakPtrs for callbacks. These
+      // WeakPtrs are to work around a case where ServiceWorkerNavigationLoader
+      // outlives the interceptor. We may want to reset fallback callback in
+      // ServiceWorkerNavigationLoader when the URLLoaderRequestController is
+      // going away.
       next_interceptor->MaybeCreateLoader(
           *resource_request_, browser_context_to_use, resource_context_to_use,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
-                         base::Unretained(this), next_interceptor),
+                         weak_factory_.GetWeakPtr(), next_interceptor),
           base::BindOnce(
               &URLLoaderRequestController::FallbackToNonInterceptedRequest,
-              base::Unretained(this)));
+              weak_factory_.GetWeakPtr()));
       return;
     }
 
@@ -1789,8 +1794,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
     const std::string storage_domain;
     non_network_url_loader_factories_[url::kFileSystemScheme] =
-        CreateFileSystemURLLoaderFactory(frame_tree_node->current_frame_host(),
-                                         /*is_navigation=*/true,
+        CreateFileSystemURLLoaderFactory(ChildProcessHost::kInvalidUniqueID,
+                                         frame_tree_node->frame_tree_node_id(),
                                          partition->GetFileSystemContext(),
                                          storage_domain);
   }

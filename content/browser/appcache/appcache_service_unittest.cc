@@ -14,11 +14,11 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/mock_appcache_storage.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
@@ -190,7 +190,7 @@ class AppCacheServiceImplTest : public testing::Test {
   const url::Origin kOrigin;
   const GURL kManifestUrl;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<AppCacheServiceImpl> service_;
   int delete_result_;
   int delete_completion_count_;

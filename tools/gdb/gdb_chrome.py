@@ -162,9 +162,14 @@ class WeakPtrPrinter(SmartPtrPrinter):
   typename = 'base::WeakPtr'
 
   def ptr(self):
-    if bool(
-        gdb.parse_and_eval(
-            '(*(%s*)(%s)).ref_.IsValid()' % (self.val.type, self.val.address))):
+    # Check that the pointer is valid. The invalidated flag is stored at
+    # val.ref_.flag_.ptr_->invalidated_.flag_.__a_.__a_value. This is a gdb
+    # implementation of base::WeakReference::IsValid(). This is necessary
+    # because calling gdb.parse_and_eval('(*(%s*)(%s)).ref_.IsValid()' %
+    # (self.val.type, self.val.address))) does not work in all cases.
+    ptr = self.val['ref_']['flag_']['ptr_']
+    if (ptr and
+        not ptr.dereference()['invalidated_']['flag_']['__a_']['__a_value']):
       return self.val['ptr_']
     return gdb.Value(0).cast(self.val['ptr_'].type)
 

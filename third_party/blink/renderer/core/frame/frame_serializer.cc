@@ -382,13 +382,20 @@ void FrameSerializer::AddResourceForElement(Document& document,
   }
 
   if (const auto* image = ToHTMLImageElementOrNull(element)) {
-    // ImageSourceURL() works for both scenarios:
-    // * parent element is <picture>: best fit image URL from sibling source
-    //   element
-    // * single <img> element: image url contained in href attribute
-    KURL image_url = document.CompleteURL(image->ImageSourceURL());
+    AtomicString image_url_value;
+    const Element* parent = element.parentElement();
+    if (parent && IsHTMLPictureElement(parent)) {
+      // If parent element is <picture>, use ImageSourceURL() to get best fit
+      // image URL from sibling source.
+      image_url_value = image->ImageSourceURL();
+    } else {
+      // Otherwise, it is single <img> element. We should get image url
+      // contained in href attribute. ImageSourceURL() may return a different
+      // URL from srcset attribute.
+      image_url_value = image->getAttribute(html_names::kSrcAttr);
+    }
     ImageResourceContent* cached_image = image->CachedImage();
-    AddImageToResources(cached_image, image_url);
+    AddImageToResources(cached_image, document.CompleteURL(image_url_value));
   } else if (const auto* input = ToHTMLInputElementOrNull(element)) {
     if (input->type() == input_type_names::kImage && input->ImageLoader()) {
       KURL image_url = input->Src();

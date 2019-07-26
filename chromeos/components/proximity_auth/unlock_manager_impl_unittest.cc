@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/mock_timer.h"
 #include "build/build_config.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
@@ -23,6 +24,9 @@
 #include "chromeos/components/proximity_auth/remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -160,16 +164,16 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   ~ProximityAuthUnlockManagerImplTest() override = default;
 
   void SetUp() override {
+    chromeos::PowerManagerClient::InitializeFake();
+
     ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(true));
     ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
+
     ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
     ON_CALL(messenger_, GetChannel())
         .WillByDefault(Return(fake_client_channel_.get()));
-
     life_cycle_.set_messenger(&messenger_);
     life_cycle_.set_channel(fake_client_channel_.get());
-
-    chromeos::PowerManagerClient::InitializeFake();
   }
 
   void TearDown() override {
@@ -189,6 +193,11 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
       ProximityAuthSystem::ScreenlockType screenlock_type) {
     unlock_manager_.reset(
         new TestUnlockManager(screenlock_type, &proximity_auth_client_));
+
+    auto mock_timer = std::make_unique<base::MockOneShotTimer>();
+    mock_bluetooth_suspension_recovery_timer_ = mock_timer.get();
+    unlock_manager_->SetBluetoothSuspensionRecoveryTimerForTesting(
+        std::move(mock_timer));
   }
 
   void SimulateUserPresentState() {
@@ -222,6 +231,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   NiceMock<MockProximityAuthClient> proximity_auth_client_;
   NiceMock<MockMessenger> messenger_;
   std::unique_ptr<TestUnlockManager> unlock_manager_;
+  base::MockOneShotTimer* mock_bluetooth_suspension_recovery_timer_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -526,6 +536,119 @@ TEST_F(ProximityAuthUnlockManagerImplTest, BluetoothAdapterPowerChanges) {
   ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(true));
   bluetooth_adapter_->NotifyAdapterPoweredChanged(true);
   EXPECT_TRUE(life_cycle_.started());
+}
+
+TEST_F(
+    ProximityAuthUnlockManagerImplTest,
+    CacheBluetoothAdapterStateAfterSuspendAndResume_AttemptConnectionWhileBluetoothAdapterIsStillRecovering) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  ASSERT_FALSE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+
+  // Simulate https://crbug.com/986896 by returning false for presence and power
+  // directly after resuming, but do not fire
+  // |mock_bluetooth_suspension_recovery_timer_|, simulating that not enough
+  // time has passed for the BluetoothAdapter to recover. It's expected under
+  // these conditions that:
+  // * ProximityAuthClient::UpdateScreenlockState() never be called with
+  //   ScreenlockState::NO_BLUETOOTH.
+  // * ProximityAuthClient::UpdateScreenlockState() only be called once with
+  //   ScreenlockState::BLUETOOTH_CONNECTING, because it should only be called
+  //   on when the ScreenlockState value changes.
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::NO_BLUETOOTH))
+      .Times(0);
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
+
+  ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));
+  ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(false));
+
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
+  EXPECT_TRUE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  // Simulate how ProximityAuthSystem, the owner of UnlockManager, reacts to
+  // resume: providing a new RemoteDeviceLifeCycle. This shouldn't trigger a new
+  // call to ProximityAuthClient::UpdateScreenlockState().
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  EXPECT_TRUE(life_cycle_.started());
+
+  EXPECT_TRUE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+}
+
+TEST_F(
+    ProximityAuthUnlockManagerImplTest,
+    CacheBluetoothAdapterStateAfterSuspendAndResume_AttemptConnectionOnceBluetoothAdapterHasHadTimeToRecover) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  ASSERT_FALSE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+
+  // Simulate https://crbug.com/986896 by returning false for presence and power
+  // directly after resuming, and then fire
+  // |mock_bluetooth_suspension_recovery_timer_|, simulating that enough time
+  // has passed for the BluetoothAdapter to recover - this means that Bluetooth
+  // is truly off after resume and the user should be visually informed as such.
+  // It's expected under these conditions that:
+  // * ProximityAuthClient::UpdateScreenlockState() only be called once with
+  //   ScreenlockState::NO_BLUETOOTH, but after the timer fires (this is
+  //   impossible to explicitly do in code with mocks, unfortunately).
+  // * ProximityAuthClient::UpdateScreenlockState() only be called once with
+  //   ScreenlockState::BLUETOOTH_CONNECTING, directly after SuspendDone.
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::NO_BLUETOOTH));
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
+
+  ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));
+  ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(false));
+
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
+  EXPECT_TRUE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  // Simulate how ProximityAuthSystem, the owner of UnlockManager, reacts to
+  // resume: providing a new RemoteDeviceLifeCycle. This shouldn't trigger a new
+  // call to ProximityAuthClient::UpdateScreenlockState().
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  EXPECT_TRUE(life_cycle_.started());
+
+  ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));
+  ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(false));
+
+  EXPECT_TRUE(mock_bluetooth_suspension_recovery_timer_->IsRunning());
+
+  // This leads to ProximityAuthClient::UpdateScreenlockState() being called
+  // with ScreenlockState::NO_BLUETOOTH.
+  mock_bluetooth_suspension_recovery_timer_->Fire();
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       BluetoothOffMessagePresentedImmediatelyIfBluetoothWasOffBeforeSuspend) {
+  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
+
+  ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));
+  ON_CALL(*bluetooth_adapter_, IsPowered()).WillByDefault(Return(false));
+
+  chromeos::FakePowerManagerClient::Get()->SendSuspendImminent(
+      power_manager::SuspendImminent_Reason_LID_CLOSED);
+
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::NO_BLUETOOTH));
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING))
+      .Times(0);
+
+  chromeos::FakePowerManagerClient::Get()->SendSuspendDone();
+
+  // Simulate how ProximityAuthSystem, the owner of UnlockManager, reacts to
+  // resume: providing a new RemoteDeviceLifeCycle.
+  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
+  EXPECT_FALSE(life_cycle_.started());
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest, StartsProximityMonitor) {

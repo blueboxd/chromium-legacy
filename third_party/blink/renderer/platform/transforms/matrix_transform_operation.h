@@ -83,6 +83,10 @@ class PLATFORM_EXPORT MatrixTransformOperation final
       bool blend_to_identity = false) override;
   scoped_refptr<TransformOperation> Zoom(double factor) final;
 
+  bool PreservesAxisAlignment() const final {
+    return Matrix().Preserves2dAxisAlignment();
+  }
+
   MatrixTransformOperation(double a,
                            double b,
                            double c,

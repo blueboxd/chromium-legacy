@@ -36,6 +36,7 @@ class CONTENT_EXPORT ServiceManagerConnectionImpl
 
   // ServiceManagerConnection:
   void Start() override;
+  void Stop() override;
   service_manager::Connector* GetConnector() override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
   int AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) override;

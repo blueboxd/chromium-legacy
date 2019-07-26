@@ -197,7 +197,7 @@ TEST_F(FeaturePodsContainerViewTest, NumberOfPagesChanged) {
   const int kNumberOfPages = 8;
 
   EnablePagination();
-  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodMaxRows *
              kNumberOfPages);
 
   // Adding buttons to fill kNumberOfPages should cause the the same number of
@@ -213,7 +213,7 @@ TEST_F(FeaturePodsContainerViewTest, PaginationTransition) {
   const int kNumberOfPages = 8;
 
   EnablePagination();
-  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodMaxRows *
              kNumberOfPages);
 
   // Position of a button should slide to the left during a page
@@ -248,11 +248,46 @@ TEST_F(FeaturePodsContainerViewTest, PaginationTransition) {
   EXPECT_EQ(final_bounds, buttons_[0]->bounds());
 }
 
+TEST_F(FeaturePodsContainerViewTest, PaginationDynamicRows) {
+  const int kNumberOfFeaturePods = kUnifiedFeaturePodItemsInRow * 3;
+  const int padding =
+      kUnifiedFeaturePodTopPadding + kUnifiedFeaturePodBottomPadding;
+
+  EnablePagination();
+  AddButtons(kNumberOfFeaturePods);
+
+  // Expect 1 row of feature pods even if there is 0 height.
+  container()->SetMaxHeight(0);
+  int expected_number_of_pages =
+      kNumberOfFeaturePods / kUnifiedFeaturePodItemsInRow;
+  if (kNumberOfFeaturePods % kUnifiedFeaturePodItemsInRow)
+    expected_number_of_pages += 1;
+  EXPECT_EQ(expected_number_of_pages, pagination_model()->total_pages());
+
+  // Expect 2 rows of feature pods when there is enough height to display them.
+  container()->SetMaxHeight(padding +
+                            (2 * (kUnifiedFeaturePodSize.height() +
+                                  kUnifiedFeaturePodVerticalPadding)));
+  expected_number_of_pages =
+      kNumberOfFeaturePods / (2 * kUnifiedFeaturePodItemsInRow);
+  if (kNumberOfFeaturePods % (2 * kUnifiedFeaturePodItemsInRow))
+    expected_number_of_pages += 1;
+  EXPECT_EQ(expected_number_of_pages, pagination_model()->total_pages());
+
+  // Expect 3 rows of feature pods at max even when the max height is very
+  // large.
+  container()->SetMaxHeight(100 * (kUnifiedFeaturePodSize.height()));
+  expected_number_of_pages =
+      kNumberOfFeaturePods / (3 * kUnifiedFeaturePodItemsInRow);
+  if (kNumberOfFeaturePods % (3 * kUnifiedFeaturePodItemsInRow))
+    expected_number_of_pages += 1;
+  EXPECT_EQ(expected_number_of_pages, pagination_model()->total_pages());
+}
 TEST_F(FeaturePodsContainerViewTest, PaginationGestureHandling) {
   const int kNumberOfPages = 8;
 
   EnablePagination();
-  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodMaxRows *
              kNumberOfPages);
 
   gfx::Point container_origin = container()->GetBoundsInScreen().origin();
@@ -320,7 +355,7 @@ TEST_F(FeaturePodsContainerViewTest, PaginationScrollHandling) {
   const int num_fingers = 2;
 
   EnablePagination();
-  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodMaxRows *
              kNumberOfPages);
 
   EXPECT_EQ(kNumberOfPages, pagination_model()->total_pages());
@@ -371,7 +406,7 @@ TEST_F(FeaturePodsContainerViewTest, PaginationMouseWheelHandling) {
   const int kNumberOfPages = 8;
 
   EnablePagination();
-  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodItemsRows *
+  AddButtons(kUnifiedFeaturePodItemsInRow * kUnifiedFeaturePodMaxRows *
              kNumberOfPages);
 
   gfx::Point container_origin = container()->GetBoundsInScreen().origin();

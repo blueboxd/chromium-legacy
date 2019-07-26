@@ -12,11 +12,6 @@ import android.widget.TextView;
 
 /**
  * Contains the basic functionality that should be shared by all CheckBoxPreference in Chrome.
- *
- * TODO(crbug.com/967022): This class is a duplicate of {@link ChromeBaseCheckBoxPreference} that
- * extends the Preference Support Library instead of the Framework Preference classes. {@link
- * ChromeBaseCheckBoxPreference} will be removed in favor of this class once migration to the
- * Preference Support library is complete.
  */
 public class ChromeBaseCheckBoxPreferenceCompat extends CheckBoxPreference {
     private ManagedPreferenceDelegateCompat mManagedPrefDelegate;

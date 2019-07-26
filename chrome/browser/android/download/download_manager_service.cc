@@ -220,8 +220,14 @@ void DownloadManagerService::Init(JNIEnv* env,
 void DownloadManagerService::OnFullBrowserStarted(JNIEnv* env, jobject obj) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  // Register coordinator for each available profile.
+  Profile* profile =
+      ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
   ResetCoordinatorIfNeeded(profile->GetProfileKey());
+  if (profile->HasOffTheRecordProfile()) {
+    ResetCoordinatorIfNeeded(
+        profile->GetOffTheRecordProfile()->GetProfileKey());
+  }
 }
 
 void DownloadManagerService::Observe(

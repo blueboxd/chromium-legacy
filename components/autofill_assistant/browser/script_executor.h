@@ -193,6 +193,7 @@ class ScriptExecutor : public ActionDelegate,
   bool SetForm(std::unique_ptr<FormProto> form,
                base::RepeatingCallback<void(const FormProto::Result*)> callback)
       override;
+  void RequireUI() override;
 
  private:
   // Helper for WaitForElementVisible that keeps track of the state required to
@@ -328,6 +329,8 @@ class ScriptExecutor : public ActionDelegate,
       std::unique_ptr<PaymentInformation> result);
   void OnAdditionalActionTriggered(base::OnceCallback<void(int)> callback,
                                    int index);
+  void OnTermsAndConditionsLinkClicked(base::OnceCallback<void(int)> callback,
+                                       int link);
   void OnGetFullCard(GetFullCardCallback callback,
                      std::unique_ptr<autofill::CreditCard> card,
                      const base::string16& cvc);

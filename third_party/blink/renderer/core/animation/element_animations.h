@@ -84,6 +84,8 @@ class CORE_EXPORT ElementAnimations
   void UpdateBaseComputedStyle(const ComputedStyle*);
   void ClearBaseComputedStyle();
 
+  bool AnimationsPreserveAxisAlignment() const;
+
   void Trace(blink::Visitor*);
 
  private:

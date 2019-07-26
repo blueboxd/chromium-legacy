@@ -132,6 +132,39 @@ TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
   EXPECT_FALSE(IsContentRequirementsMet(url_, incognito_profile_));
 }
 
+TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForTelephoneLink) {
+  url_ = GURL("tel:07387252578");
+
+  // Set the IsSendingEnable, IsUserSyncTypeActive and
+  // HasValidTargetDevice to true
+  scoped_feature_list_.InitWithFeatures(
+      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
+  AddTab(browser(), url_);
+  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
+
+  // get web contents
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_FALSE(ShouldOfferFeatureForLink(web_contents, url_));
+}
+
+TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
+  // Set the IsSendingEnable, IsUserSyncTypeActive and
+  // HasValidTargetDevice to true
+  scoped_feature_list_.InitWithFeatures(
+      {switches::kSyncSendTabToSelf, kSendTabToSelfShowSendingUI}, {});
+  AddTab(browser(), url_);
+  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
+
+  // get web contents
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_TRUE(ShouldOfferFeatureForLink(web_contents, url_));
+}
 }  // namespace
 
 }  // namespace send_tab_to_self

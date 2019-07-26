@@ -961,9 +961,9 @@ IN_PROC_BROWSER_TEST_F(BeforeUnloadAtQuitWithTwoWindows,
   content::PrepContentsForBeforeUnloadTest(contents);
 
   // Open a second browser window at about:blank.
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewEmptyWindow(browser()->profile());
-  Browser* second_window = browser_added_observer.WaitForSingleNewBrowser();
+  Browser* second_window = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(second_window, browser());
   ui_test_utils::NavigateToURL(second_window, GURL(url::kAboutBlankURL));
 
   // Tell the application to quit. IDC_EXIT calls AttemptUserExit, which on
@@ -2164,9 +2164,7 @@ IN_PROC_BROWSER_TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   CloseBrowserSynchronously(browser());
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewEmptyWindow(profile);
-  browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
@@ -2196,9 +2194,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(0u, chrome::GetTotalBrowserCount());
 
   // Starting a browser window should work just fine.
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   CreateBrowser(ProfileManager::GetActiveUserProfile());
-  browser_added_observer.WaitForSingleNewBrowser();
 
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
@@ -2215,9 +2211,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
       session_service->GetBaseSessionServiceForTest();
   ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   CreateBrowserForApp("blah", profile);
-  browser_added_observer.WaitForSingleNewBrowser();
 
   ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 }
@@ -2682,9 +2676,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ChangeDisplayMode) {
                      browser()->tab_strip_model()->GetActiveWebContents());
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   Browser* app_browser = CreateBrowserForApp("blah", profile);
-  browser_added_observer.WaitForSingleNewBrowser();
   auto* app_contents = app_browser->tab_strip_model()->GetActiveWebContents();
   CheckDisplayModeMQ(ASCIIToUTF16("standalone"), app_contents);
 

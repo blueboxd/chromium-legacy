@@ -42,7 +42,7 @@ class WebContentCaptureClient;
 class WebContentSettingsClient;
 class WebDocument;
 class WebDoubleSize;
-class WebDOMEvent;
+class WebDOMMessageEvent;
 class WebLocalFrameClient;
 class WebFrameWidget;
 class WebInputMethodController;
@@ -609,7 +609,7 @@ class WebLocalFrame : public WebFrame {
   // Dispatches a message event on the current DOMWindow in this WebFrame.
   virtual void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
-      const WebDOMEvent&,
+      const WebDOMMessageEvent&,
       bool has_user_gesture) = 0;
 
   // TEMP: Usage count for chrome.loadtimes deprecation.

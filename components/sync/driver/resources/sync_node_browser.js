@@ -12,9 +12,9 @@
    *
    * @param {!Object} node The node to check.
    */
-  const isTypeRootNode = function(node) {
+  function isTypeRootNode(node) {
     return node.PARENT_ID == 'r' && node.UNIQUE_SERVER_TAG != '';
-  };
+  }
 
   /**
    * A helper function to determine if a node is a child of the given parent.
@@ -22,13 +22,13 @@
    * @param {!Object} parent node.
    * @param {!Object} node The node to check.
    */
-  const isChildOf = function(parentNode, node) {
+  function isChildOf(parentNode, node) {
     if (node.PARENT_ID != '') {
       return node.PARENT_ID == parentNode.ID;
     } else {
       return node.modelType == parentNode.modelType;
     }
-  };
+  }
 
   /**
    * A helper function to sort sync nodes.
@@ -39,7 +39,7 @@
    * If this proves to be slow and expensive, we should experiment with moving
    * this functionality to C++ instead.
    */
-  const nodeComparator = function(nodeA, nodeB) {
+  function nodeComparator(nodeA, nodeB) {
     if (nodeA.hasOwnProperty('positionIndex') &&
         nodeB.hasOwnProperty('positionIndex')) {
       return nodeA.positionIndex - nodeB.positionIndex;
@@ -48,7 +48,7 @@
     } else {
       return nodeA.METAHANDLE - nodeB.METAHANDLE;
     }
-  };
+  }
 
   /**
    * Updates the node detail view with the details for the given node.
@@ -76,7 +76,7 @@
    *     chrome.sync.getAllNodes().
    * @extends {cr.ui.TreeItem}
    */
-  const SyncNodeTreeItem = function(node) {
+  function SyncNodeTreeItem(node) {
     const treeItem = new cr.ui.TreeItem();
     treeItem.__proto__ = SyncNodeTreeItem.prototype;
 
@@ -93,7 +93,7 @@
       treeItem.classList.add('leaf');
     }
     return treeItem;
-  };
+  }
 
   SyncNodeTreeItem.prototype = {
     __proto__: cr.ui.TreeItem.prototype,

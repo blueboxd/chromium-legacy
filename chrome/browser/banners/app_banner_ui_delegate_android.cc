@@ -34,11 +34,12 @@ std::unique_ptr<AppBannerUiDelegateAndroid> AppBannerUiDelegateAndroid::Create(
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
     WebappInstallSource install_source,
-    bool is_webapk) {
+    bool is_webapk,
+    bool has_primary_maskable_icon) {
   return std::unique_ptr<AppBannerUiDelegateAndroid>(
       new AppBannerUiDelegateAndroid(weak_manager, std::move(shortcut_info),
                                      primary_icon, badge_icon, install_source,
-                                     is_webapk));
+                                     is_webapk, has_primary_maskable_icon));
 }
 
 // static
@@ -239,12 +240,14 @@ AppBannerUiDelegateAndroid::AppBannerUiDelegateAndroid(
     const SkBitmap& primary_icon,
     const SkBitmap& badge_icon,
     WebappInstallSource install_source,
-    bool is_webapk)
+    bool is_webapk,
+    bool has_primary_maskable_icon)
     : weak_manager_(weak_manager),
       app_title_(shortcut_info->name),
       shortcut_info_(std::move(shortcut_info)),
       primary_icon_(primary_icon),
       badge_icon_(badge_icon),
+      has_primary_maskable_icon_(has_primary_maskable_icon),
       type_(is_webapk ? AppType::WEBAPK : AppType::LEGACY_WEBAPP),
       install_source_(install_source),
       has_user_interaction_(false) {
@@ -305,8 +308,8 @@ void AppBannerUiDelegateAndroid::InstallWebApk(
       web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
 
   WebApkInstallService::Get(web_contents->GetBrowserContext())
-      ->InstallAsync(web_contents, *shortcut_info_, primary_icon_, badge_icon_,
-                     install_source_);
+      ->InstallAsync(web_contents, *shortcut_info_, primary_icon_,
+                     has_primary_maskable_icon_, badge_icon_, install_source_);
 }
 
 void AppBannerUiDelegateAndroid::InstallLegacyWebApp(

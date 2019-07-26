@@ -6875,4 +6875,49 @@ TEST_P(PaintPropertyTreeBuilderTest, IsAffectedByOuterViewportBoundsDelta) {
                false);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, TransformAnimationAxisAlignment) {
+  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        @keyframes transform_translation {
+          0% { transform: translate(10px, 11px); }
+          100% { transform: translate(20px, 21px); }
+        }
+        #translation_animation {
+          animation-name: transform_translation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+        @keyframes transform_rotation {
+          0% { transform: rotateZ(10deg); }
+          100% { transform: rotateZ(20deg); }
+        }
+        #rotation_animation {
+          animation-name: transform_rotation;
+          animation-duration: 1s;
+          width: 100px;
+          height: 100px;
+          will-change: transform;
+        }
+      </style>
+      <div id="translation_animation"></div>
+      <div id="rotation_animation"></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  const auto* translation =
+      PaintPropertiesForElement("translation_animation")->Transform();
+  EXPECT_TRUE(translation->HasActiveTransformAnimation());
+  EXPECT_TRUE(translation->TransformAnimationIsAxisAligned());
+
+  const auto* rotation =
+      PaintPropertiesForElement("rotation_animation")->Transform();
+  EXPECT_TRUE(rotation->HasActiveTransformAnimation());
+  EXPECT_FALSE(rotation->TransformAnimationIsAxisAligned());
+}
+
 }  // namespace blink

@@ -29,7 +29,7 @@ class SystemProducer;
 //   in PerfettoProducer::StartDataSource.
 class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
  public:
-  class DataSourceBase {
+  class COMPONENT_EXPORT(TRACING_CPP) DataSourceBase {
    public:
     explicit DataSourceBase(const std::string& name);
     virtual ~DataSourceBase();

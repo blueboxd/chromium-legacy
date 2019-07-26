@@ -10,6 +10,5 @@
     ImplementedAs=NativeFileSystemFileHandle
 ] interface FileSystemFileHandle : FileSystemHandle {
     [CallWith=ScriptState] Promise<FileSystemWriter> createWriter();
-    [CallWith=ScriptState] Promise<FileSystemWritableFileStream> createWritable();
     [CallWith=ScriptState] Promise<File> getFile();
 };

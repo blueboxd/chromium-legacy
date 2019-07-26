@@ -6,8 +6,9 @@
 
 #include <memory>
 
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +64,7 @@ class MockWebMediaPlayerForOrientationLockDelegate final
 class MockScreenOrientation final
     : public device::mojom::blink::ScreenOrientation {
  public:
-  MockScreenOrientation() : binding_(this) {}
+  MockScreenOrientation() = default;
 
   // device::mojom::blink::ScreenOrientation overrides:
   void LockOrientation(WebScreenOrientationLockType type,
@@ -73,19 +74,21 @@ class MockScreenOrientation final
     LockOrientation(type);
   }
 
-  void BindRequest(
-      device::mojom::blink::ScreenOrientationAssociatedRequest request) {
-    binding_.Bind(std::move(request));
+  void BindPendingReceiver(
+      mojo::PendingAssociatedReceiver<device::mojom::blink::ScreenOrientation>
+          pending_receiver) {
+    receiver_.Bind(std::move(pending_receiver));
   }
 
-  void Close() { binding_.Close(); }
+  void Close() { receiver_.reset(); }
 
   MOCK_METHOD0(UnlockOrientation, void());
 
   MOCK_METHOD1(LockOrientation, void(WebScreenOrientationLockType));
 
  private:
-  mojo::AssociatedBinding<device::mojom::blink::ScreenOrientation> binding_;
+  mojo::AssociatedReceiver<device::mojom::blink::ScreenOrientation> receiver_{
+      this};
 };
 
 void DidEnterFullscreen(Document* document) {
@@ -107,11 +110,12 @@ class MockChromeClientForOrientationLockDelegate final
   void InstallSupplements(LocalFrame& frame) override {
     EmptyChromeClient::InstallSupplements(frame);
     ScreenOrientationControllerImpl::ProvideTo(frame);
-    device::mojom::blink::ScreenOrientationAssociatedPtr screen_orientation;
-    ScreenOrientationClient().BindRequest(
-        mojo::MakeRequestAssociatedWithDedicatedPipe(&screen_orientation));
+    mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>
+        screen_orientation;
+    ScreenOrientationClient().BindPendingReceiver(
+        screen_orientation.BindNewEndpointAndPassDedicatedReceiverForTesting());
     ScreenOrientationControllerImpl::From(frame)
-        ->SetScreenOrientationAssociatedPtrForTests(
+        ->SetScreenOrientationAssociatedRemoteForTests(
             std::move(screen_orientation));
   }
   // The real ChromeClient::EnterFullscreen/ExitFullscreen implementation is

@@ -996,6 +996,7 @@ class BBJSONGenerator(object):
     # exist on any of the waterfalls or consoles.
     return [
       'GPU FYI Fuchsia Builder',
+      'ANGLE GPU Android Release (Nexus 5X)',
       'ANGLE GPU Linux Release (Intel HD 630)',
       'ANGLE GPU Linux Release (NVIDIA)',
       'ANGLE GPU Mac Release (Intel)',

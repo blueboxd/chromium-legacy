@@ -1,6 +1,5 @@
 # Speech recognition
 olka@chromium.org
-maxmorin@chromium.org
 
 # Text-to-speech
 per-file *tts_*=dmazzoni@chromium.org

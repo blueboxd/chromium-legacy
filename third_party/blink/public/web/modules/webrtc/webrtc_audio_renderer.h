@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/unguessable_token.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
@@ -84,7 +85,7 @@ class BLINK_MODULES_EXPORT WebRtcAudioRenderer
       const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
       const blink::WebMediaStream& media_stream,
       WebLocalFrame* web_frame,
-      int session_id,
+      const base::UnguessableToken& session_id,
       const std::string& device_id);
 
   // Initialize function called by clients like WebRtcAudioDeviceImpl.
@@ -212,7 +213,7 @@ class BLINK_MODULES_EXPORT WebRtcAudioRenderer
   class InternalFrame;
   std::unique_ptr<InternalFrame> source_internal_frame_;
 
-  const int session_id_;
+  const base::UnguessableToken session_id_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
 

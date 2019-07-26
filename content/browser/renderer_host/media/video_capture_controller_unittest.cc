@@ -64,30 +64,33 @@ class MockVideoCaptureControllerEventHandler
 
   // These mock methods are delegated to by our fake implementation of
   // VideoCaptureControllerEventHandler, to be used in EXPECT_CALL().
-  MOCK_METHOD2(DoBufferCreated, void(VideoCaptureControllerID, int buffer_id));
+  MOCK_METHOD2(DoBufferCreated,
+               void(const VideoCaptureControllerID&, int buffer_id));
   MOCK_METHOD2(DoBufferDestroyed,
-               void(VideoCaptureControllerID, int buffer_id));
-  MOCK_METHOD2(DoBufferReady, void(VideoCaptureControllerID, const gfx::Size&));
-  MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
+               void(const VideoCaptureControllerID&, int buffer_id));
+  MOCK_METHOD2(DoBufferReady,
+               void(const VideoCaptureControllerID&, const gfx::Size&));
+  MOCK_METHOD1(DoEnded, void(const VideoCaptureControllerID&));
   MOCK_METHOD2(DoError,
-               void(VideoCaptureControllerID, media::VideoCaptureError));
-  MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID));
-  MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID));
+               void(const VideoCaptureControllerID&, media::VideoCaptureError));
+  MOCK_METHOD1(OnStarted, void(const VideoCaptureControllerID&));
+  MOCK_METHOD1(OnStartedUsingGpuDecode, void(const VideoCaptureControllerID&));
 
-  void OnError(VideoCaptureControllerID id,
+  void OnError(const VideoCaptureControllerID& id,
                media::VideoCaptureError error) override {
     DoError(id, error);
   }
-  void OnNewBuffer(VideoCaptureControllerID id,
+  void OnNewBuffer(const VideoCaptureControllerID& id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
                    int buffer_id) override {
     DoBufferCreated(id, buffer_id);
   }
-  void OnBufferDestroyed(VideoCaptureControllerID id, int buffer_id) override {
+  void OnBufferDestroyed(const VideoCaptureControllerID& id,
+                         int buffer_id) override {
     DoBufferDestroyed(id, buffer_id);
   }
   void OnBufferReady(
-      VideoCaptureControllerID id,
+      const VideoCaptureControllerID& id,
       int buffer_id,
       const media::mojom::VideoFrameInfoPtr& frame_info) override {
     EXPECT_EQ(expected_pixel_format_, frame_info->pixel_format);
@@ -105,7 +108,7 @@ class MockVideoCaptureControllerEventHandler
                                     buffer_id, resource_utilization_));
     }
   }
-  void OnEnded(VideoCaptureControllerID id) override {
+  void OnEnded(const VideoCaptureControllerID& id) override {
     DoEnded(id);
     // OnEnded() must respond by (eventually) unregistering the client.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -132,8 +135,8 @@ class VideoCaptureControllerTest
   VideoCaptureControllerTest()
       : arbitrary_format_(gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420),
         arbitrary_color_space_(gfx::ColorSpace::CreateREC709()),
-        arbitrary_route_id_(0x99),
-        arbitrary_session_id_(100) {}
+        arbitrary_route_id_(base::UnguessableToken::Create()),
+        arbitrary_session_id_(base::UnguessableToken::Create()) {}
   ~VideoCaptureControllerTest() override {}
 
  protected:
@@ -221,55 +224,71 @@ class VideoCaptureControllerTest
 // A simple test of VideoCaptureController's ability to add, remove, and keep
 // track of clients.
 TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
-  media::VideoCaptureParams session_100;
-  session_100.requested_format = media::VideoCaptureFormat(
+  media::VideoCaptureParams session_params_1;
+  session_params_1.requested_format = media::VideoCaptureFormat(
       gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
-  media::VideoCaptureParams session_200 = session_100;
-
-  media::VideoCaptureParams session_300 = session_100;
-
-  media::VideoCaptureParams session_400 = session_100;
+  media::VideoCaptureParams session_params_2 = session_params_1;
+  media::VideoCaptureParams session_params_3 = session_params_1;
+  media::VideoCaptureParams session_params_4 = session_params_1;
 
   // Intentionally use the same route ID for two of the clients: the device_ids
   // are a per-VideoCaptureHost namespace, and can overlap across hosts.
-  const VideoCaptureControllerID client_a_route_1(44);
-  const VideoCaptureControllerID client_a_route_2(30);
-  const VideoCaptureControllerID client_b_route_1(30);
-  const VideoCaptureControllerID client_b_route_2(1);
+  const VideoCaptureControllerID client_a_route_1 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_a_route_2 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_b_route_1 = client_a_route_2;
+  const VideoCaptureControllerID client_b_route_2 =
+      base::UnguessableToken::Create();
+
+  const media::VideoCaptureSessionId session_id_1 =
+      base::UnguessableToken::Create();
+  const media::VideoCaptureSessionId session_id_2 =
+      base::UnguessableToken::Create();
+  const media::VideoCaptureSessionId session_id_3 =
+      base::UnguessableToken::Create();
+  const media::VideoCaptureSessionId session_id_4 =
+      base::UnguessableToken::Create();
 
   // Clients in controller: []
   ASSERT_EQ(0u, controller_->GetClientCount())
       << "Client count should initially be zero.";
-  controller_->AddClient(client_a_route_1, client_a_.get(), 100, session_100);
+  controller_->AddClient(client_a_route_1, client_a_.get(), session_id_1,
+                         session_params_1);
   // Clients in controller: [A/1]
   ASSERT_EQ(1u, controller_->GetClientCount())
       << "Adding client A/1 should bump client count.";
-  controller_->AddClient(client_a_route_2, client_a_.get(), 200, session_200);
+  controller_->AddClient(client_a_route_2, client_a_.get(), session_id_2,
+                         session_params_2);
   // Clients in controller: [A/1, A/2]
   ASSERT_EQ(2u, controller_->GetClientCount())
       << "Adding client A/2 should bump client count.";
-  controller_->AddClient(client_b_route_1, client_b_.get(), 300, session_300);
+  controller_->AddClient(client_b_route_1, client_b_.get(), session_id_3,
+                         session_params_3);
   // Clients in controller: [A/1, A/2, B/1]
   ASSERT_EQ(3u, controller_->GetClientCount())
       << "Adding client B/1 should bump client count.";
-  ASSERT_EQ(200, controller_->RemoveClient(client_a_route_2, client_a_.get()))
+  ASSERT_EQ(session_id_2,
+            controller_->RemoveClient(client_a_route_2, client_a_.get()))
       << "Removing client A/1 should return its session_id.";
   // Clients in controller: [A/1, B/1]
   ASSERT_EQ(2u, controller_->GetClientCount());
-  ASSERT_EQ(static_cast<int>(kInvalidMediaCaptureSessionId),
-            controller_->RemoveClient(client_a_route_2, client_a_.get()))
+  ASSERT_TRUE(
+      controller_->RemoveClient(client_a_route_2, client_a_.get()).is_empty())
       << "Removing a nonexistant client should fail.";
   // Clients in controller: [A/1, B/1]
   ASSERT_EQ(2u, controller_->GetClientCount());
-  ASSERT_EQ(300, controller_->RemoveClient(client_b_route_1, client_b_.get()))
+  ASSERT_EQ(session_id_3,
+            controller_->RemoveClient(client_b_route_1, client_b_.get()))
       << "Removing client B/1 should return its session_id.";
   // Clients in controller: [A/1]
   ASSERT_EQ(1u, controller_->GetClientCount());
-  controller_->AddClient(client_b_route_2, client_b_.get(), 400, session_400);
+  controller_->AddClient(client_b_route_2, client_b_.get(), session_id_4,
+                         session_params_4);
   // Clients in controller: [A/1, B/2]
 
   EXPECT_CALL(*client_a_, DoEnded(client_a_route_1)).Times(1);
-  controller_->StopSession(100);  // Session 100 == client A/1
+  controller_->StopSession(session_id_1);  // Session 100 == client A/1
   Mock::VerifyAndClearExpectations(client_a_.get());
   ASSERT_EQ(2u, controller_->GetClientCount())
       << "Client should be closed but still exist after StopSession.";
@@ -278,21 +297,23 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
   // Clients in controller: [B/2]
   ASSERT_EQ(1u, controller_->GetClientCount())
       << "Client A/1 should be deleted by now.";
-  controller_->StopSession(200);  // Session 200 does not exist anymore
+  controller_->StopSession(session_id_2);  // Session 200 does not exist anymore
   // Clients in controller: [B/2]
   ASSERT_EQ(1u, controller_->GetClientCount())
       << "Stopping non-existent session 200 should be a no-op.";
-  controller_->StopSession(256);  // Session 256 never existed.
+  controller_->StopSession(
+      base::UnguessableToken::Create());  // Session never existed.
   // Clients in controller: [B/2]
   ASSERT_EQ(1u, controller_->GetClientCount())
-      << "Stopping non-existent session 256 should be a no-op.";
-  ASSERT_EQ(static_cast<int>(kInvalidMediaCaptureSessionId),
-            controller_->RemoveClient(client_a_route_1, client_a_.get()))
+      << "Stopping non-existent session should be a no-op.";
+  ASSERT_TRUE(
+      controller_->RemoveClient(client_a_route_1, client_a_.get()).is_empty())
       << "Removing already-removed client A/1 should fail.";
   // Clients in controller: [B/2]
   ASSERT_EQ(1u, controller_->GetClientCount())
       << "Removing non-existent session 200 should be a no-op.";
-  ASSERT_EQ(400, controller_->RemoveClient(client_b_route_2, client_b_.get()))
+  ASSERT_EQ(session_id_4,
+            controller_->RemoveClient(client_b_route_2, client_b_.get()))
       << "Removing client B/2 should return its session_id.";
   // Clients in controller: []
   ASSERT_EQ(0u, controller_->GetClientCount())
@@ -303,7 +324,7 @@ TEST_F(VideoCaptureControllerTest, AddAndRemoveClients) {
 // active capture device being started and generating frames. It runs on one
 // thread and is intended to behave deterministically.
 TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
-  media::VideoCaptureParams session_100;
+  media::VideoCaptureParams session_params_1;
   const media::VideoPixelFormat format = GetParam();
   client_a_->expected_pixel_format_ = format;
   client_b_->expected_pixel_format_ = format;
@@ -312,25 +333,39 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   client_a_->expected_color_space_ = gfx::ColorSpace();
   client_b_->expected_color_space_ = gfx::ColorSpace();
 
-  session_100.requested_format =
+  session_params_1.requested_format =
       media::VideoCaptureFormat(gfx::Size(320, 240), 30, format);
 
-  media::VideoCaptureParams session_200 = session_100;
+  media::VideoCaptureParams session_params_2 = session_params_1;
 
-  media::VideoCaptureParams session_300 = session_100;
+  media::VideoCaptureParams session_params_3 = session_params_1;
 
-  media::VideoCaptureParams session_1 = session_100;
+  media::VideoCaptureParams session_params_4 = session_params_1;
 
   media::VideoCaptureFormat device_format(gfx::Size(444, 200), 25, format);
 
-  const VideoCaptureControllerID client_a_route_1(0xa1a1a1a1);
-  const VideoCaptureControllerID client_a_route_2(0xa2a2a2a2);
-  const VideoCaptureControllerID client_b_route_1(0xb1b1b1b1);
-  const VideoCaptureControllerID client_b_route_2(0xb2b2b2b2);
+  const VideoCaptureControllerID client_a_route_1 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_a_route_2 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_b_route_1 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_b_route_2 =
+      base::UnguessableToken::Create();
 
-  controller_->AddClient(client_a_route_1, client_a_.get(), 100, session_100);
-  controller_->AddClient(client_b_route_1, client_b_.get(), 300, session_300);
-  controller_->AddClient(client_a_route_2, client_a_.get(), 200, session_200);
+  const media::VideoCaptureSessionId session_id_1 =
+      base::UnguessableToken::Create();
+  const media::VideoCaptureSessionId session_id_2 =
+      base::UnguessableToken::Create();
+  const media::VideoCaptureSessionId session_id_3 =
+      base::UnguessableToken::Create();
+
+  controller_->AddClient(client_a_route_1, client_a_.get(), session_id_1,
+                         session_params_1);
+  controller_->AddClient(client_b_route_1, client_b_.get(), session_id_3,
+                         session_params_3);
+  controller_->AddClient(client_a_route_2, client_a_.get(), session_id_2,
+                         session_params_2);
   ASSERT_EQ(3u, controller_->GetClientCount());
 
   // Now, simulate an incoming captured buffer from the capture device. As a
@@ -417,7 +452,8 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   Mock::VerifyAndClearExpectations(mock_launched_device_);
 
   // Add a fourth client now that some buffers have come through.
-  controller_->AddClient(client_b_route_2, client_b_.get(), 1, session_1);
+  controller_->AddClient(client_b_route_2, client_b_.get(),
+                         base::UnguessableToken::Create(), session_params_4);
   Mock::VerifyAndClearExpectations(client_b_.get());
 
   // Third, fourth, and fifth buffers. Pretend they all arrive at the same time.
@@ -474,7 +510,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   controller_->RemoveClient(client_a_route_1, client_a_.get());
   // Kill B1 via session close (posts a task to disconnect).
   EXPECT_CALL(*client_b_, DoEnded(client_b_route_1)).Times(1);
-  controller_->StopSession(300);
+  controller_->StopSession(session_id_3);
   // Queue up another buffer.
   media::VideoCaptureDevice::Client::Buffer buffer3;
   const auto result_code_3 = device_client_->ReserveOutputBuffer(
@@ -496,7 +532,7 @@ TEST_P(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     // Kill A2 via session close (posts a task to disconnect, but A2 must not
     // be sent either of these two buffers).
     EXPECT_CALL(*client_a_, DoEnded(client_a_route_2)).Times(1);
-    controller_->StopSession(200);
+    controller_->StopSession(session_id_2);
   }
   ASSERT_EQ(media::VideoCaptureDevice::Client::ReserveResult::kSucceeded,
             result_code_4);
@@ -523,18 +559,21 @@ INSTANTIATE_TEST_SUITE_P(,
 // Exercises the OnError() codepath of VideoCaptureController, and tests the
 // behavior of various operations after the error state has been signalled.
 TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
-  media::VideoCaptureParams session_100;
-  session_100.requested_format = media::VideoCaptureFormat(
+  media::VideoCaptureParams session_params_1;
+  session_params_1.requested_format = media::VideoCaptureFormat(
       gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
-  media::VideoCaptureParams session_200 = session_100;
+  media::VideoCaptureParams session_params_2 = session_params_1;
 
   const gfx::Size capture_resolution(320, 240);
 
-  const VideoCaptureControllerID route_id(0x99);
+  const VideoCaptureControllerID route_id(base::UnguessableToken::Create());
 
+  const base::UnguessableToken session_id_1 = base::UnguessableToken::Create();
+  const base::UnguessableToken session_id_2 = base::UnguessableToken::Create();
   // Start with one client.
-  controller_->AddClient(route_id, client_a_.get(), 100, session_100);
+  controller_->AddClient(route_id, client_a_.get(), session_id_1,
+                         session_params_1);
   device_client_->OnError(
       media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest, FROM_HERE,
       "Test Error");
@@ -553,7 +592,8 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
       DoError(route_id, media::VideoCaptureError::
                             kVideoCaptureControllerIsAlreadyInErrorState))
       .Times(1);
-  controller_->AddClient(route_id, client_b_.get(), 200, session_200);
+  controller_->AddClient(route_id, client_b_.get(), session_id_2,
+                         session_params_2);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_b_.get());
 
@@ -576,16 +616,17 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 // Exercises the OnError() codepath of VideoCaptureController, and tests the
 // behavior of various operations after the error state has been signalled.
 TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
-  media::VideoCaptureParams session_100;
-  session_100.requested_format = media::VideoCaptureFormat(
+  media::VideoCaptureParams session_params_1;
+  session_params_1.requested_format = media::VideoCaptureFormat(
       gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
-  media::VideoCaptureParams session_200 = session_100;
+  media::VideoCaptureParams session_params_2 = session_params_1;
 
-  const VideoCaptureControllerID route_id(0x99);
+  const VideoCaptureControllerID route_id(base::UnguessableToken::Create());
 
   // Start with one client.
-  controller_->AddClient(route_id, client_a_.get(), 100, session_100);
+  controller_->AddClient(route_id, client_a_.get(),
+                         base::UnguessableToken::Create(), session_params_1);
 
   // Start the device. Then, before the first buffer, signal an error and
   // deliver the buffer. The error should be propagated to clients; the buffer
@@ -625,7 +666,8 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
       DoError(route_id, media::VideoCaptureError::
                             kVideoCaptureControllerIsAlreadyInErrorState))
       .Times(1);
-  controller_->AddClient(route_id, client_b_.get(), 200, session_200);
+  controller_->AddClient(route_id, client_b_.get(),
+                         base::UnguessableToken::Create(), session_params_2);
   Mock::VerifyAndClearExpectations(client_b_.get());
 }
 
@@ -641,10 +683,11 @@ TEST_F(VideoCaptureControllerTest, FrameFeedbackIsReportedForSequenceOfFrames) {
   client_a_->expected_color_space_ = gfx::ColorSpace();
 
   // Register |client_a_| at |controller_|.
-  media::VideoCaptureParams session_100;
-  session_100.requested_format = arbitrary_format;
-  const VideoCaptureControllerID route_id(0x99);
-  controller_->AddClient(route_id, client_a_.get(), 100, session_100);
+  media::VideoCaptureParams session_params_1;
+  session_params_1.requested_format = arbitrary_format;
+  const VideoCaptureControllerID route_id = base::UnguessableToken::Create();
+  controller_->AddClient(route_id, client_a_.get(),
+                         base::UnguessableToken::Create(), session_params_1);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
@@ -842,18 +885,23 @@ TEST_F(VideoCaptureControllerTest,
 // even if they connect after VideoCaptureController::OnStarted() has been
 // invoked.
 TEST_F(VideoCaptureControllerTest, OnStartedForMultipleClients) {
-  media::VideoCaptureParams session_100;
-  session_100.requested_format = media::VideoCaptureFormat(
+  media::VideoCaptureParams session_params_1;
+  session_params_1.requested_format = media::VideoCaptureFormat(
       gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
-  media::VideoCaptureParams session_200 = session_100;
-  media::VideoCaptureParams session_300 = session_100;
+  media::VideoCaptureParams session_params_2 = session_params_1;
+  media::VideoCaptureParams session_params_3 = session_params_1;
 
-  const VideoCaptureControllerID client_a_route_1(1);
-  const VideoCaptureControllerID client_a_route_2(2);
-  const VideoCaptureControllerID client_b_route_1(3);
+  const VideoCaptureControllerID client_a_route_1 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_a_route_2 =
+      base::UnguessableToken::Create();
+  const VideoCaptureControllerID client_b_route_1 =
+      base::UnguessableToken::Create();
 
-  controller_->AddClient(client_a_route_1, client_a_.get(), 100, session_100);
-  controller_->AddClient(client_b_route_1, client_b_.get(), 300, session_300);
+  controller_->AddClient(client_a_route_1, client_a_.get(),
+                         base::UnguessableToken::Create(), session_params_1);
+  controller_->AddClient(client_b_route_1, client_b_.get(),
+                         base::UnguessableToken::Create(), session_params_3);
   ASSERT_EQ(2u, controller_->GetClientCount());
 
   {
@@ -866,7 +914,8 @@ TEST_F(VideoCaptureControllerTest, OnStartedForMultipleClients) {
     // VideoCaptureController will take care of the OnStarted event for the
     // clients who join later.
     EXPECT_CALL(*client_a_, OnStarted(_));
-    controller_->AddClient(client_a_route_2, client_a_.get(), 200, session_200);
+    controller_->AddClient(client_a_route_2, client_a_.get(),
+                           base::UnguessableToken::Create(), session_params_2);
   }
 }
 

@@ -8,7 +8,7 @@ import "gpu/ipc/common/mailbox.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "services/viz/public/interfaces/compositing/copy_output_result.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // See components/viz/common/frame_sinks/copy_output_request.h.
 struct CopyOutputRequest {

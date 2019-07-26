@@ -1098,7 +1098,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (!root->IsUserAgent())
           return false;
         const ComputedStyle* style = root->host().GetComputedStyle();
-        return style && style->HasAppearance();
+        return style && style->HasEffectiveAppearance();
       }
       return false;
     case CSSSelector::kPseudoWindowInactive:

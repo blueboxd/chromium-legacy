@@ -70,7 +70,8 @@ class BrowsingHistoryService : public HistoryServiceObserver,
                  const std::string& client_id,
                  bool is_search_result,
                  const base::string16& snippet,
-                 bool blocked_visit);
+                 bool blocked_visit,
+                 const GURL& remote_icon_url_for_uma);
     HistoryEntry();
     HistoryEntry(const HistoryEntry& other);
     virtual ~HistoryEntry();
@@ -105,6 +106,9 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
     // Whether this entry was blocked when it was attempted.
     bool blocked_visit;
+
+    // Optional parameter used to plumb footprints associated icon url.
+    GURL remote_icon_url_for_uma;
   };
 
   // Contains information about a completed history query.

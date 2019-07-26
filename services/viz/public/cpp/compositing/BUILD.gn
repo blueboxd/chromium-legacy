@@ -22,7 +22,7 @@ source_set("tests") {
     "//skia/public/interfaces",
     "//testing/gtest",
     "//ui/gfx:test_support",
-    "//ui/gfx/geometry/mojo:struct_traits",
+    "//ui/gfx/geometry/mojom:mojom_traits",
     "//ui/gfx/mojo",
   ]
 }
@@ -47,6 +47,6 @@ source_set("perftests") {
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo:struct_traits",
+    "//ui/gfx/geometry/mojom:mojom_traits",
   ]
 }

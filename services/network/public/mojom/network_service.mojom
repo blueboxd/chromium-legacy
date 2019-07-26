@@ -211,17 +211,17 @@ struct HttpAuthStaticParams {
 
 // Values for configurating HTTP authentication that can be changed as needed.
 struct HttpAuthDynamicParams {
-  // Comma / semi-colon delimited whitelist of server origins which the network
+  // Comma / semi-colon delimited allowlist of server origins which the network
   // service may send the default credentials for NTLM or Negotiate
   // authentication.
-  string server_whitelist;
+  string server_allowlist;
 
-  // Comma / semi-colon delimited whitelist of server origins for which Kerberos
+  // Comma / semi-colon delimited allowlist of server origins for which Kerberos
   // delegation is allowed for NTLM or Negotiate authentication.
-  string delegate_whitelist;
+  string delegate_allowlist;
 
   // True if OK-AS-DELEGATE flag from KDC should be used to allow delegation for
-  // Negotiate authentication along with delegate_whitelist;
+  // Negotiate authentication along with delegate_allowlist;
   bool delegate_by_kdc_policy = false;
 
   // True if canonical hostnames should be resolved when using Negotiate.

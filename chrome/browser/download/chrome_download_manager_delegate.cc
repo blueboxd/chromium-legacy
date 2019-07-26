@@ -60,6 +60,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
@@ -115,7 +116,7 @@ using safe_browsing::DownloadProtectionService;
 
 namespace {
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 
 // String pointer used for identifying safebrowing data associated with
 // a download item.
@@ -173,7 +174,7 @@ base::FilePath GetPlatformDownloadPath(Profile* profile,
   return download->GetFullPath();
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 // Callback invoked by DownloadProtectionService::CheckClientDownload.
 // |is_content_check_supported| is true if the SB service supports scanning the
 // download for malicious content.
@@ -454,7 +455,7 @@ bool ChromeDownloadManagerDelegate::ShouldOpenFileBasedOnExtension(
 // static
 void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
       item->GetUserData(&kSafeBrowsingUserDataKey));
   if (!state) {
@@ -469,7 +470,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     DownloadItem* item,
     const base::Closure& internal_complete_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (!download_prefs_->safebrowsing_for_trusted_sources_enabled() &&
       download_prefs_->IsFromTrustedSource(*item)) {
     return true;
@@ -782,7 +783,7 @@ ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() {
 DownloadProtectionService*
     ChromeDownloadManagerDelegate::GetDownloadProtectionService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   if (sb_service && sb_service->download_protection_service() &&
@@ -1103,7 +1104,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
     const CheckDownloadUrlCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::DownloadProtectionService* service =
       GetDownloadProtectionService();
   if (service) {
@@ -1128,7 +1129,7 @@ void ChromeDownloadManagerDelegate::GetFileMimeType(
       FROM_HERE, {base::MayBlock()}, base::Bind(&GetMimeType, path), callback);
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     uint32_t download_id,
     safe_browsing::DownloadCheckResult result) {
@@ -1393,7 +1394,7 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
 void ChromeDownloadManagerDelegate::MaybeSendDangerousDownloadOpenedReport(
     DownloadItem* download,
     bool show_download_in_folder) {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::DownloadProtectionService* service =
       GetDownloadProtectionService();
   if (service) {

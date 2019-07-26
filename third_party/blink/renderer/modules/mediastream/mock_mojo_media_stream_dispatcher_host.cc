@@ -37,12 +37,13 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     mojom::blink::MediaStreamDevicePtr audio_device =
         mojom::blink::MediaStreamDevice::New();
     audio_device->id =
-        controls->audio->device_id + WTF::String::Number(session_id_);
+        controls->audio->device_id + session_id_.ToString().c_str();
     audio_device->name = "microphone";
     audio_device->type = controls->audio->stream_type;
     audio_device->session_id = session_id_;
     audio_device->matched_output_device_id =
-        "associated_output_device_id" + WTF::String::Number(request_id_);
+        WTF::String("associated_output_device_id") +
+        session_id_.ToString().c_str();
     audio_devices_.push_back(std::move(audio_device));
   }
 
@@ -50,7 +51,7 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
     mojom::blink::MediaStreamDevicePtr video_device =
         mojom::blink::MediaStreamDevice::New();
     video_device->id =
-        controls->video->device_id + WTF::String::Number(session_id_);
+        controls->video->device_id + session_id_.ToString().c_str();
     video_device->name = "usb video camera";
     video_device->type = controls->video->stream_type;
     video_device->video_facing = media::mojom::blink::VideoFacingMode::USER;
@@ -74,7 +75,7 @@ void MockMojoMediaStreamDispatcherHost::CancelRequest(int32_t request_id) {
 
 void MockMojoMediaStreamDispatcherHost::StopStreamDevice(
     const WTF::String& device_id,
-    int32_t session_id) {
+    const base::Optional<base::UnguessableToken>& session_id) {
   for (const mojom::blink::MediaStreamDevicePtr& device : audio_devices_) {
     if (device->id == device_id && device->session_id == session_id) {
       ++stop_audio_device_counter_;

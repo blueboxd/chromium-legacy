@@ -40,6 +40,9 @@ class StyleAdjuster {
  public:
   static void AdjustComputedStyle(StyleResolverState&, Element*);
   static void AdjustStyleForEditing(ComputedStyle&);
+
+ private:
+  static void AdjustOverflow(ComputedStyle& style);
 };
 
 }  // namespace blink

@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -84,7 +85,7 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
       ui_manager_(std::move(ui_manager)),
       threat_types_(CreateSBThreatTypeSet({
 // TODO(crbug.com/835961): Enable on Android when list is available.
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
         safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
 #endif
             safe_browsing::SB_THREAT_TYPE_URL_MALWARE,

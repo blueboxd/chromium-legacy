@@ -4,8 +4,6 @@
 
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
 
-#include <va/va.h>
-
 #include <utility>
 
 #include "base/bind.h"
@@ -21,9 +19,12 @@
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
-#include "media/gpu/vaapi/vaapi_utils.h"
+#include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -44,7 +45,7 @@ void ReportToVAJDAWorkerDecoderFailureUMA(VAJDAWorkerDecoderFailure failure) {
 // |decode_cb| is called when finished or when an error is encountered. We don't
 // support decoding to scale, so |output_size| is only used for tracing.
 void DecodeTask(
-    VaapiJpegDecoder* decoder,
+    VaapiImageDecoder* decoder,
     std::vector<uint8_t> encoded_data,
     const gfx::Size& output_size,
     gpu::ImageDecodeAcceleratorWorker::CompletedDecodeCB decode_cb) {
@@ -54,6 +55,8 @@ void DecodeTask(
   gpu::ImageDecodeAcceleratorWorker::CompletedDecodeCB scoped_decode_callback =
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(decode_cb),
                                                   nullptr);
+
+  // Decode into a VAAPI surface.
   DCHECK(decoder);
   VaapiImageDecodeStatus status = decoder->Decode(
       base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()));
@@ -62,17 +65,38 @@ void DecodeTask(
               << static_cast<uint32_t>(status);
     return;
   }
-  std::unique_ptr<ScopedVAImage> scoped_image =
-      decoder->GetImage(VA_FOURCC_RGBX /* preferred_image_fourcc */, &status);
+
+  // Export the decode result as a NativePixmap.
+  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
+      decoder->ExportAsNativePixmapDmaBuf(&status);
   if (status != VaapiImageDecodeStatus::kSuccess) {
-    DVLOGF(1) << "Failed to get image - status = "
+    DVLOGF(1) << "Failed to export surface - status = "
               << static_cast<uint32_t>(status);
     return;
   }
+  DCHECK(exported_pixmap);
+  DCHECK(exported_pixmap->pixmap);
+  if (exported_pixmap->pixmap->GetBufferSize() != output_size) {
+    DVLOGF(1) << "Scaling is not supported";
+    return;
+  }
 
-  // TODO(crbug.com/868400): output the decoded data.
-  DCHECK(scoped_image);
-  std::move(scoped_decode_callback).Run(nullptr);
+  // Output the decoded data.
+  gfx::NativePixmapHandle pixmap_handle =
+      exported_pixmap->pixmap->ExportHandle();
+  // If a dup() failed while exporting the handle, we would get no planes.
+  if (pixmap_handle.planes.empty()) {
+    DVLOGF(1) << "Could not export the NativePixmapHandle";
+    return;
+  }
+  auto result =
+      std::make_unique<gpu::ImageDecodeAcceleratorWorker::DecodeResult>();
+  result->handle.type = gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
+  result->handle.native_pixmap_handle = std::move(pixmap_handle);
+  result->visible_size = exported_pixmap->pixmap->GetBufferSize();
+  result->buffer_format = exported_pixmap->pixmap->GetBufferFormat();
+  result->buffer_byte_size = exported_pixmap->byte_size;
+  std::move(scoped_decode_callback).Run(std::move(result));
 }
 
 }  // namespace

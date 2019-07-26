@@ -192,8 +192,9 @@ void PepperMediaDeviceManager::CloseDevice(const std::string& label) {
   GetMediaStreamDispatcherHost()->CloseDevice(label);
 }
 
-int PepperMediaDeviceManager::GetSessionID(PP_DeviceType_Dev type,
-                                           const std::string& label) {
+base::UnguessableToken PepperMediaDeviceManager::GetSessionID(
+    PP_DeviceType_Dev type,
+    const std::string& label) {
   switch (type) {
     case PP_DEVICETYPE_DEV_AUDIOCAPTURE:
       return GetMediaStreamDeviceObserver()->audio_session_id(label);
@@ -201,7 +202,7 @@ int PepperMediaDeviceManager::GetSessionID(PP_DeviceType_Dev type,
       return GetMediaStreamDeviceObserver()->video_session_id(label);
     default:
       NOTREACHED();
-      return 0;
+      return base::UnguessableToken();
   }
 }
 

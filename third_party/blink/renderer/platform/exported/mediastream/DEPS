@@ -1,5 +1,9 @@
 include_rules = [
+    "+base/metrics/field_trial.h",
+    "+base/path_service.h",
+    "+base/strings/string_number_conversions.h",
     "+media/base",
+    "+media/webrtc/webrtc_switches.h",
 ]
 
 specific_include_rules = {

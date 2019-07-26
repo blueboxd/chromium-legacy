@@ -38,6 +38,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/ping_manager.h"
@@ -56,7 +57,7 @@
 #include "chrome/install_static/install_util.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
@@ -70,7 +71,7 @@ using content::NonNestable;
 
 namespace safe_browsing {
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 namespace {
 
 // 50 was chosen as an arbitrary upper bound on the likely font sizes. For
@@ -256,7 +257,7 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 void SafeBrowsingService::RegisterAllDelayedAnalysis() {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   RegisterBinaryIntegrityAnalysis();
 #endif
 }
@@ -403,7 +404,7 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   // Extended Reporting metrics are handled together elsewhere.
   RecordExtendedReportingMetrics(*pref_service);
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   RecordFontSizeMetrics(*pref_service);
 #endif
 }

@@ -76,7 +76,7 @@ class BoxDecorationData {
         style_(style),
         is_painting_scrolling_background_(
             IsPaintingScrollingBackground(paint_info, layout_box)),
-        has_appearance_(style.HasAppearance()),
+        has_appearance_(style.HasEffectiveAppearance()),
         should_paint_background_(ComputeShouldPaintBackground()),
         should_paint_border_(ComputeShouldPaintBorder()),
         should_paint_shadow_(ComputeShouldPaintShadow()) {}

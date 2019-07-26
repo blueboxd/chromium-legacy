@@ -31,6 +31,7 @@ include_rules = [
   "+components/printing/common",
   "+components/printing/renderer",
   "+components/rappor/public/mojom",
+  "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/common",
   "+components/safe_browsing/features.h",
   "+components/safe_browsing/renderer",

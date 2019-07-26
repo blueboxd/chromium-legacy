@@ -182,20 +182,4 @@ String CaseMap::ToUpper(const String& source, TextOffsetMap* offset_map) const {
                      offset_map);
 }
 
-UChar32 CaseMap::ToUpper(UChar32 c) const {
-  if (UNLIKELY(case_map_locale_)) {
-    if (case_map_locale_ == Locale::turkic_or_azeri_) {
-      if (c == 'i')
-        return kLatinCapitalLetterIWithDotAbove;
-      if (c == kLatinSmallLetterDotlessI)
-        return 'I';
-    } else if (case_map_locale_ == Locale::lithuanian_) {
-      // TODO(rob.buis) implement upper-casing rules for lt
-      // like in StringImpl::upper(locale).
-    }
-  }
-
-  return unicode::ToUpper(c);
-}
-
 }  // namespace WTF

@@ -8,7 +8,7 @@ import "media/mojo/interfaces/media_types.mojom";
 import "media/mojo/interfaces/video_decode_stats_recorder.mojom";
 import "media/mojo/interfaces/watch_time_recorder.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Used for reporting to UMA and UKM. Represents the URL scheme of the src URL
 // given to an <audio> or <video> tag. Always add new entries to the end.

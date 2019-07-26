@@ -39,9 +39,17 @@ bool TouchIdAuthenticator::IsAvailable(const AuthenticatorConfig& config) {
 }
 
 // static
-std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::Create(
+std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
     AuthenticatorConfig config) {
-  DCHECK(IsAvailable(config));
+  return IsAvailable(config) ? base::WrapUnique(new TouchIdAuthenticator(
+                                   std::move(config.keychain_access_group),
+                                   std::move(config.metadata_secret)))
+                             : nullptr;
+}
+
+// static
+std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateForTesting(
+    AuthenticatorConfig config) {
   return base::WrapUnique(
       new TouchIdAuthenticator(std::move(config.keychain_access_group),
                                std::move(config.metadata_secret)));

@@ -22,7 +22,7 @@ mojom_component("mojom") {
     "//services/network/public/mojom:websocket_mojom",
     "//ui/accessibility/mojom",
     "//ui/base/mojom",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 

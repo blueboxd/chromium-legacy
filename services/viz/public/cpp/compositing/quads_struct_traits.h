@@ -25,7 +25,7 @@
 #include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_range_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/quads.mojom-shared.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {

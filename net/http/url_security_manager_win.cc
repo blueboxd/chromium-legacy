@@ -26,7 +26,7 @@
 
 namespace net {
 
-class URLSecurityManagerWin : public URLSecurityManagerWhitelist {
+class URLSecurityManagerWin : public URLSecurityManagerAllowlist {
  public:
   URLSecurityManagerWin();
   ~URLSecurityManagerWin() override;
@@ -47,8 +47,8 @@ URLSecurityManagerWin::~URLSecurityManagerWin() {}
 
 bool URLSecurityManagerWin::CanUseDefaultCredentials(
     const GURL& auth_origin) const {
-  if (HasDefaultWhitelist())
-    return URLSecurityManagerWhitelist::CanUseDefaultCredentials(auth_origin);
+  if (HasDefaultAllowlist())
+    return URLSecurityManagerAllowlist::CanUseDefaultCredentials(auth_origin);
   if (!const_cast<URLSecurityManagerWin*>(this)->EnsureSystemSecurityManager())
     return false;
 

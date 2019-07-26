@@ -1258,13 +1258,13 @@ class PathBuilderSimpleChainTest : public ::testing::Test {
   }
 
   // Runs the path builder for the target certificate while |distrusted_cert| is
-  // blacklisted, and |delegate| if non-null.
+  // blocked, and |delegate| if non-null.
   void RunPathBuilder(const scoped_refptr<ParsedCertificate>& distrusted_cert,
                       CertPathBuilderDelegate* optional_delegate,
                       CertPathBuilder::Result* result) {
     ASSERT_EQ(3u, test_.chain.size());
 
-    // Set up the trust store such that |distrusted_cert| is blacklisted, and
+    // Set up the trust store such that |distrusted_cert| is blocked, and
     // the root is trusted (except if it was |distrusted_cert|).
     TrustStoreInMemory trust_store;
     if (distrusted_cert != test_.chain.back())
@@ -1309,7 +1309,7 @@ class PathBuilderDistrustTest : public PathBuilderSimpleChainTest {
 
  protected:
   // Runs the path builder for the target certificate while |distrusted_cert| is
-  // blacklisted.
+  // blocked.
   void RunPathBuilderWithDistrustedCert(
       const scoped_refptr<ParsedCertificate>& distrusted_cert,
       CertPathBuilder::Result* result) {
@@ -1321,7 +1321,7 @@ class PathBuilderDistrustTest : public PathBuilderSimpleChainTest {
 // distrusted (but the path is otherwise valid).
 TEST_F(PathBuilderDistrustTest, TargetIntermediateRoot) {
   CertPathBuilder::Result result;
-  // First do a control test -- path building without any blacklisted
+  // First do a control test -- path building without any blocked
   // certificates should work.
   RunPathBuilderWithDistrustedCert(nullptr, &result);
   {
@@ -1333,7 +1333,7 @@ TEST_F(PathBuilderDistrustTest, TargetIntermediateRoot) {
       EXPECT_EQ(test_.chain[i], path.certs[i]);
   }
 
-  // Try path building when only the target is blacklisted - should fail.
+  // Try path building when only the target is blocked - should fail.
   RunPathBuilderWithDistrustedCert(test_.chain[0], &result);
   {
     EXPECT_FALSE(result.HasValidPath());
@@ -1341,14 +1341,14 @@ TEST_F(PathBuilderDistrustTest, TargetIntermediateRoot) {
     const auto& best_path = result.paths[result.best_result_index];
 
     // The built chain has length 1 since path building stopped once
-    // it encountered the blacklisted certificate (target).
+    // it encountered the blocked certificate (target).
     ASSERT_EQ(1u, best_path->certs.size());
     EXPECT_EQ(best_path->certs[0], test_.chain[0]);
     EXPECT_TRUE(best_path->errors.ContainsHighSeverityErrors());
     best_path->errors.ContainsError(cert_errors::kDistrustedByTrustStore);
   }
 
-  // Try path building when only the intermediate is blacklisted - should fail.
+  // Try path building when only the intermediate is blocked - should fail.
   RunPathBuilderWithDistrustedCert(test_.chain[1], &result);
   {
     EXPECT_FALSE(result.HasValidPath());
@@ -1356,7 +1356,7 @@ TEST_F(PathBuilderDistrustTest, TargetIntermediateRoot) {
     const auto& best_path = result.paths[result.best_result_index];
 
     // The built chain has length 2 since path building stopped once
-    // it encountered the blacklisted certificate (intermediate).
+    // it encountered the blocked certificate (intermediate).
     ASSERT_EQ(2u, best_path->certs.size());
     EXPECT_EQ(best_path->certs[0], test_.chain[0]);
     EXPECT_EQ(best_path->certs[1], test_.chain[1]);
@@ -1364,7 +1364,7 @@ TEST_F(PathBuilderDistrustTest, TargetIntermediateRoot) {
     best_path->errors.ContainsError(cert_errors::kDistrustedByTrustStore);
   }
 
-  // Try path building when only the root is blacklisted - should fail.
+  // Try path building when only the root is blocked - should fail.
   RunPathBuilderWithDistrustedCert(test_.chain[2], &result);
   {
     EXPECT_FALSE(result.HasValidPath());
@@ -1372,7 +1372,7 @@ TEST_F(PathBuilderDistrustTest, TargetIntermediateRoot) {
     const auto& best_path = result.paths[result.best_result_index];
 
     // The built chain has length 3 since path building stopped once
-    // it encountered the blacklisted certificate (root).
+    // it encountered the blocked certificate (root).
     ASSERT_EQ(3u, best_path->certs.size());
     EXPECT_EQ(best_path->certs[0], test_.chain[0]);
     EXPECT_EQ(best_path->certs[1], test_.chain[1]);

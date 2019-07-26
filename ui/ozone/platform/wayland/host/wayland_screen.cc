@@ -81,7 +81,8 @@ void WaylandScreen::OnOutputMetricsChanged(uint32_t output_id,
       changed_display, is_primary ? display::DisplayList::Type::PRIMARY
                                   : display::DisplayList::Type::NOT_PRIMARY);
 
-  for (auto* window : connection_->GetWindowsOnOutput(output_id))
+  auto* wayland_window_manager = connection_->wayland_window_manager();
+  for (auto* window : wayland_window_manager->GetWindowsOnOutput(output_id))
     window->UpdateBufferScale(true);
 }
 
@@ -101,7 +102,7 @@ display::Display WaylandScreen::GetPrimaryDisplay() const {
 
 display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
     gfx::AcceleratedWidget widget) const {
-  auto* window = connection_->GetWindow(widget);
+  auto* window = connection_->wayland_window_manager()->GetWindow(widget);
   // A window might be destroyed by this time on shutting down the browser.
   if (!window)
     return GetPrimaryDisplay();
@@ -139,6 +140,7 @@ display::Display WaylandScreen::GetDisplayForAcceleratedWidget(
 }
 
 gfx::Point WaylandScreen::GetCursorScreenPoint() const {
+  auto* wayland_window_manager = connection_->wayland_window_manager();
   // Wayland does not provide either location of surfaces in global space
   // coordinate system or location of a pointer. Instead, only locations of
   // mouse/touch events are known. Given that Chromium assumes top-level windows
@@ -149,10 +151,10 @@ gfx::Point WaylandScreen::GetCursorScreenPoint() const {
   // last known cursor position. Otherwise, return such a point, which is not
   // contained by any of the windows.
   auto* cursor_position = connection_->wayland_cursor_position();
-  if (connection_->GetCurrentFocusedWindow() && cursor_position)
+  if (wayland_window_manager->GetCurrentFocusedWindow() && cursor_position)
     return cursor_position->GetCursorSurfacePoint();
 
-  WaylandWindow* window = connection_->GetWindowWithLargestBounds();
+  auto* window = wayland_window_manager->GetWindowWithLargestBounds();
   DCHECK(window);
   const gfx::Rect bounds = window->GetBounds();
   return gfx::Point(bounds.width() + 10, bounds.height() + 10);
@@ -162,7 +164,8 @@ gfx::AcceleratedWidget WaylandScreen::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
   // It is safe to check only for focused windows and test if they contain the
   // point or not.
-  auto* window = connection_->GetCurrentFocusedWindow();
+  auto* window =
+      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   if (window && window->GetBounds().Contains(point))
     return window->GetWidget();
   return gfx::kNullAcceleratedWidget;

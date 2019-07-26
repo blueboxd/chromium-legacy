@@ -503,7 +503,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       blink::mojom::ControllerServiceWorkerPurpose purpose) override;
   void CloneContainerHost(blink::mojom::ServiceWorkerContainerHostRequest
                               container_host_request) override;
-  void Ping(PingCallback callback) override;
   void HintToUpdateServiceWorker() override;
   void OnExecutionReady() override;
 

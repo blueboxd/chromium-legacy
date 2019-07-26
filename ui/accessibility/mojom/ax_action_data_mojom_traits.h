@@ -8,7 +8,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/mojom/ax_action_data.mojom-shared.h"
 #include "ui/accessibility/mojom/ax_tree_id_mojom_traits.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

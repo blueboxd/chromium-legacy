@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -974,7 +975,7 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
     if (IsUsernameOrPasswordField(element)) {
       WebLocalFrame* frame = render_frame()->GetWebFrame();
       GURL frame_url = GURL(frame->GetDocument().Url());
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
       if (!checked_safe_browsing_reputation_) {
         checked_safe_browsing_reputation_ = true;
         GURL action_url =

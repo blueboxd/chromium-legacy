@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/copy_output_result_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/copy_output_request.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

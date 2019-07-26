@@ -89,7 +89,7 @@ VaapiImageDecoder::GetSupportedProfile() const {
   return profile;
 }
 
-scoped_refptr<gfx::NativePixmapDmaBuf>
+std::unique_ptr<NativePixmapAndSizeInfo>
 VaapiImageDecoder::ExportAsNativePixmapDmaBuf(VaapiImageDecodeStatus* status) {
   DCHECK(status);
 
@@ -108,24 +108,18 @@ VaapiImageDecoder::ExportAsNativePixmapDmaBuf(VaapiImageDecodeStatus* status) {
   }
   DCHECK(temp_scoped_va_surface->IsValid());
 
-  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
       vaapi_wrapper_->ExportVASurfaceAsNativePixmapDmaBuf(
-          temp_scoped_va_surface->id());
-  if (!pixmap) {
+          *temp_scoped_va_surface);
+  if (!exported_pixmap) {
     *status = VaapiImageDecodeStatus::kCannotExportSurface;
     return nullptr;
   }
 
-  // In Intel's iHD driver the size requested for the surface may be different
-  // than the buffer size of the NativePixmap because of additional alignment.
-  // See https://git.io/fj6nA.
-  DCHECK_LE(temp_scoped_va_surface->size().width(),
-            pixmap->GetBufferSize().width());
-  DCHECK_LE(temp_scoped_va_surface->size().height(),
-            pixmap->GetBufferSize().height());
-
+  DCHECK_EQ(temp_scoped_va_surface->size(),
+            exported_pixmap->pixmap->GetBufferSize());
   *status = VaapiImageDecodeStatus::kSuccess;
-  return pixmap;
+  return exported_pixmap;
 }
 
 }  // namespace media

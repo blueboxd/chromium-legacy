@@ -154,7 +154,7 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
   network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
       network::mojom::HttpAuthDynamicParams::New();
 
-  auth_dynamic_params->server_whitelist =
+  auth_dynamic_params->server_allowlist =
       local_state()->GetString(prefs::kAuthServerWhitelist);
   auth_dynamic_params->android_negotiate_account_type =
       local_state()->GetString(prefs::kAuthAndroidNegotiateAccountType);

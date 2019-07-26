@@ -133,6 +133,10 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // that testing is possible.
   virtual bool IsFocused();
 
+  // Returns whether IsUVPAA() should always return false, regardless of
+  // hardware support or enrollment status.
+  virtual bool ShouldDisablePlatformAuthenticators();
+
 #if defined(OS_MACOSX)
   using TouchIdAuthenticatorConfig = device::fido::mac::AuthenticatorConfig;
 
@@ -141,15 +145,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // available.
   virtual base::Optional<TouchIdAuthenticatorConfig>
   GetTouchIdAuthenticatorConfig();
-#endif  // defined(OS_MACOSX)
-
-  // Returns true if a user verifying platform authenticator is available and
-  // configured.
-  virtual bool IsUserVerifyingPlatformAuthenticatorAvailable();
-
-  // Returns a FidoDiscoveryFactory that has been configured for the current
-  // environment.
-  virtual device::FidoDiscoveryFactory* GetDiscoveryFactory();
+#endif
 
   // Saves transport type the user used during WebAuthN API so that the
   // WebAuthN UI will default to the same transport type during next API call.
@@ -192,10 +188,6 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void FinishCollectPIN() override;
 
  private:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
-#endif  // !defined(OS_ANDROID)
-
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);
 };
 

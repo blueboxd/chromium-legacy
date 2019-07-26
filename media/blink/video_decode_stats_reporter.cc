@@ -188,7 +188,6 @@ bool VideoDecodeStatsReporter::UpdateDecodeProgress(
     const PipelineStatistics& stats) {
   DCHECK_GE(stats.video_frames_decoded, last_frames_decoded_);
   DCHECK_GE(stats.video_frames_dropped, last_frames_dropped_);
-  DCHECK_GE(stats.video_frames_decoded, stats.video_frames_dropped);
 
   // Check if additional frames decoded since last stats update.
   if (stats.video_frames_decoded == last_frames_decoded_) {
@@ -309,11 +308,20 @@ void VideoDecodeStatsReporter::UpdateStats() {
   if (stats.video_frames_decoded == frames_decoded_offset_)
     return;
 
+  // Cap all counts to |frames_decoded|. We should never exceed this cap, but
+  // we have some hard to track bug where we accumulate 1 extra dropped frame
+  // in a tiny minority of cases. Dropping all frames is a strong signal we
+  // don't want to discard, so just sanitize the data and carry on.
+  uint32_t frames_decoded = stats.video_frames_decoded - frames_decoded_offset_;
+  uint32_t frames_dropped = std::min(
+      stats.video_frames_dropped - frames_dropped_offset_, frames_decoded);
+  uint32_t frames_power_efficient =
+      std::min(stats.video_frames_decoded_power_efficient -
+                   frames_decoded_power_efficient_offset_,
+               frames_decoded);
+
   mojom::PredictionTargetsPtr targets = mojom::PredictionTargets::New(
-      stats.video_frames_decoded - frames_decoded_offset_,
-      stats.video_frames_dropped - frames_dropped_offset_,
-      stats.video_frames_decoded_power_efficient -
-          frames_decoded_power_efficient_offset_);
+      frames_decoded, frames_dropped, frames_power_efficient);
 
   DVLOG(2) << __func__ << " Recording -- dropped:" << targets->frames_dropped
            << "/" << targets->frames_decoded

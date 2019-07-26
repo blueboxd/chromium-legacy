@@ -33,7 +33,7 @@ int MockFrameIdFromCurrentContext() {
 
 media::AudioParameters MockGetOutputDeviceParameters(
     int frame_id,
-    int session_id,
+    const base::UnguessableToken& session_id,
     const std::string& device_id) {
   return media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                                 media::CHANNEL_LAYOUT_STEREO,
@@ -47,7 +47,7 @@ class RendererWebAudioDeviceImplUnderTest : public RendererWebAudioDeviceImpl {
       int channels,
       const blink::WebAudioLatencyHint& latency_hint,
       blink::WebAudioDevice::RenderCallback* callback,
-      int session_id)
+      const base::UnguessableToken& session_id)
       : RendererWebAudioDeviceImpl(layout,
                                    channels,
                                    latency_hint,
@@ -69,7 +69,8 @@ class RendererWebAudioDeviceImplTest
 
   void SetupDevice(blink::WebAudioLatencyHint latencyHint) {
     webaudio_device_.reset(new RendererWebAudioDeviceImplUnderTest(
-        media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this, 0));
+        media::CHANNEL_LAYOUT_MONO, 1, latencyHint, this,
+        base::UnguessableToken()));
     webaudio_device_->SetMediaTaskRunnerForTesting(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
@@ -79,7 +80,7 @@ class RendererWebAudioDeviceImplTest
         layout, channels,
         blink::WebAudioLatencyHint(
             blink::WebAudioLatencyHint::kCategoryInteractive),
-        this, 0));
+        this, base::UnguessableToken()));
     webaudio_device_->SetMediaTaskRunnerForTesting(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }

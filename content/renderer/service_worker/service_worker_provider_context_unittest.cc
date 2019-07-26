@@ -253,7 +253,6 @@ class FakeServiceWorkerContainerHost
       blink::mojom::ServiceWorkerContainerHostRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
-  void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
   void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
   void OnExecutionReady() override {}
 
@@ -748,7 +747,6 @@ TEST_F(ServiceWorkerProviderContextTest, OnNetworkProviderDestroyed) {
   // Calling these in the weird state shouldn't crash.
   EXPECT_FALSE(provider_context->container_host());
   EXPECT_FALSE(provider_context->CloneContainerHostPtrInfo());
-  provider_context->PingContainerHost(base::DoNothing());
   provider_context->DispatchNetworkQuiet();
   provider_context->NotifyExecutionReady();
 }

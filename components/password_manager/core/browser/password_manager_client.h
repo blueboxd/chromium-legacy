@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/safe_browsing/buildflags.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
@@ -36,7 +37,7 @@ class FaviconService;
 
 class GURL;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 namespace safe_browsing {
 class PasswordProtectionService;
 }
@@ -244,7 +245,7 @@ class PasswordManagerClient {
   // Returns the current best guess as to the page's display language.
   virtual std::string GetPageLanguage() const;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Return the PasswordProtectionService associated with this instance.
   virtual safe_browsing::PasswordProtectionService*
   GetPasswordProtectionService() const = 0;

@@ -216,9 +216,7 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   content::WebContents* web_contents = nullptr;
   if (!ExtensionTabUtil::GetTabById(params->options.tab_id, browser_context(),
                                     true /* include incognito windows */,
-                                    nullptr /* out_browser */,
-                                    nullptr /* out_tab_strip */, &web_contents,
-                                    nullptr /* out_tab_index */)) {
+                                    &web_contents)) {
     return RespondNow(Error("cannot find specified tab"));
   }
 

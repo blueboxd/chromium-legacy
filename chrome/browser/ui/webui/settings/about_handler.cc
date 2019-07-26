@@ -364,8 +364,9 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 
   html_source->AddString("aboutUserAgent", GetUserAgent());
   html_source->AddString("aboutJsEngineVersion", V8_VERSION_STRING);
-  html_source->AddString("endOfLifeMessage",
-                         l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_EOL));
+  html_source->AddString("endOfLifeMessage", l10n_util::GetStringFUTF16(
+                                                 IDS_EOL_NOTIFICATION_EOL,
+                                                 ui::GetChromeOSDeviceName()));
   html_source->AddString("endOfLifeLearnMoreURL",
                          base::ASCIIToUTF16(chrome::kEolNotificationURL));
 #endif

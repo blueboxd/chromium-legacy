@@ -23,6 +23,8 @@ source_set("exo") {
     "data_source_observer.h",
     "display.cc",
     "display.h",
+    "drag_drop_operation.cc",
+    "drag_drop_operation.h",
     "frame_sink_resource_manager.cc",
     "frame_sink_resource_manager.h",
     "input_trace.h",

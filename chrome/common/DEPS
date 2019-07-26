@@ -37,6 +37,7 @@ include_rules = [
   "+components/policy/core/common",
   "+components/prefs",
   "+components/printing/common",
+  "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/proto/csd.pb.h",
   "+components/safe_browsing/web_ui/constants.h",
   "+components/services/app_service/public",

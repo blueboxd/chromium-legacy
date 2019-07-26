@@ -8,6 +8,7 @@
 #include <wayland-server-protocol-core.h>
 
 #include "base/containers/flat_map.h"
+#include "components/exo/wayland/serial_tracker.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace exo {
@@ -15,9 +16,11 @@ namespace wayland {
 
 #if BUILDFLAG(USE_XKBCOMMON)
 
-WaylandKeyboardDelegate::WaylandKeyboardDelegate(wl_resource* keyboard_resource)
+WaylandKeyboardDelegate::WaylandKeyboardDelegate(wl_resource* keyboard_resource,
+                                                 SerialTracker* serial_tracker)
     : keyboard_resource_(keyboard_resource),
-      xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)) {
+      xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)),
+      serial_tracker_(serial_tracker) {
 #if defined(OS_CHROMEOS)
   ash::ImeController* ime_controller = ash::Shell::Get()->ime_controller();
   ime_controller->AddObserver(this);
@@ -59,8 +62,10 @@ void WaylandKeyboardDelegate::OnKeyboardEnter(
     DCHECK(value);
     *value = DomCodeToKey(entry.second);
   }
-  wl_keyboard_send_enter(keyboard_resource_, next_serial(), surface_resource,
-                         &keys);
+  wl_keyboard_send_enter(
+      keyboard_resource_,
+      serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
+      surface_resource, &keys);
   wl_array_release(&keys);
   wl_client_flush(client());
 }
@@ -68,14 +73,18 @@ void WaylandKeyboardDelegate::OnKeyboardEnter(
 void WaylandKeyboardDelegate::OnKeyboardLeave(Surface* surface) {
   wl_resource* surface_resource = GetSurfaceResource(surface);
   DCHECK(surface_resource);
-  wl_keyboard_send_leave(keyboard_resource_, next_serial(), surface_resource);
+  wl_keyboard_send_leave(
+      keyboard_resource_,
+      serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
+      surface_resource);
   wl_client_flush(client());
 }
 
 uint32_t WaylandKeyboardDelegate::OnKeyboardKey(base::TimeTicks time_stamp,
                                                 ui::DomCode key,
                                                 bool pressed) {
-  uint32_t serial = next_serial();
+  uint32_t serial =
+      serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT);
   SendTimestamp(time_stamp);
   wl_keyboard_send_key(
       keyboard_resource_, serial, TimeTicksToMilliseconds(time_stamp),
@@ -147,7 +156,8 @@ void WaylandKeyboardDelegate::SendKeyboardModifiers() {
   xkb_state_update_mask(xkb_state_.get(), ModifierFlagsToXkbModifiers(), 0, 0,
                         0, 0, 0);
   wl_keyboard_send_modifiers(
-      keyboard_resource_, next_serial(),
+      keyboard_resource_,
+      serial_tracker_->GetNextSerial(SerialTracker::EventType::OTHER_EVENT),
       xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_DEPRESSED),
       xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LOCKED),
       xkb_state_serialize_mods(xkb_state_.get(), XKB_STATE_MODS_LATCHED),
@@ -195,10 +205,6 @@ void WaylandKeyboardDelegate::SendLayout(const xkb_rule_names* names) {
 
 wl_client* WaylandKeyboardDelegate::client() const {
   return wl_resource_get_client(keyboard_resource_);
-}
-
-uint32_t WaylandKeyboardDelegate::next_serial() const {
-  return wl_display_next_serial(wl_client_get_display(client()));
 }
 
 #endif

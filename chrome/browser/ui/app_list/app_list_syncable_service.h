@@ -218,6 +218,11 @@ class AppListSyncableService : public syncer::SyncableService,
   // item and returns false.
   bool RemoveDefaultApp(const ChromeAppListItem* item, SyncItem* sync_item);
 
+  // Returns whether the delete-sync-item request was for a default app. If
+  // true, the |sync_item| is set to REMOVE_DEFAULT and bounced back to the
+  // sync server. The caller should abort deleting the |sync_item|.
+  bool InterceptDeleteDefaultApp(SyncItem* sync_item);
+
   // Deletes a sync item from |sync_items_| and sends a DELETE action.
   void DeleteSyncItem(const std::string& item_id);
 

@@ -8,16 +8,16 @@
  */
 (function() {
 
-/** @type {mojom.ResetPasswordHandlerProxy} */
-let uiHandler;
+/** @type {mojom.ResetPasswordHandlerRemote} */
+let pageHandler;
 
 function initialize() {
-  uiHandler = mojom.ResetPasswordHandler.getProxy();
+  pageHandler = mojom.ResetPasswordHandler.getRemote();
 
   /** @type {?HTMLElement} */
   const resetPasswordButton = $('reset-password-button');
   resetPasswordButton.addEventListener('click', function() {
-    uiHandler.handlePasswordReset();
+    pageHandler.handlePasswordReset();
   });
 }
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/page_info/page_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/safe_browsing/buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if !defined(OS_ANDROID)
@@ -226,7 +227,7 @@ class PageInfoUI {
   std::unique_ptr<PageInfoUI::SecurityDescription> GetSecurityDescription(
       const IdentityInfo& identity_info) const;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Creates security description for password reuse case.
   virtual std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(

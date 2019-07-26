@@ -98,9 +98,10 @@ int FrameIdFromCurrentContext() {
   return render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE;
 }
 
-media::AudioParameters GetOutputDeviceParameters(int frame_id,
-                                                 int session_id,
-                                                 const std::string& device_id) {
+media::AudioParameters GetOutputDeviceParameters(
+    int frame_id,
+    const base::UnguessableToken& session_id,
+    const std::string& device_id) {
   return AudioDeviceFactory::GetOutputDeviceInfo(frame_id,
                                                  {session_id, device_id})
       .output_params();
@@ -113,7 +114,7 @@ std::unique_ptr<RendererWebAudioDeviceImpl> RendererWebAudioDeviceImpl::Create(
     int channels,
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
-    int session_id) {
+    const base::UnguessableToken& session_id) {
   return std::unique_ptr<RendererWebAudioDeviceImpl>(
       new RendererWebAudioDeviceImpl(
           layout, channels, latency_hint, callback, session_id,
@@ -126,7 +127,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     int channels,
     const blink::WebAudioLatencyHint& latency_hint,
     WebAudioDevice::RenderCallback* callback,
-    int session_id,
+    const base::UnguessableToken& session_id,
     OutputDeviceParamsCallback device_params_cb,
     RenderFrameIdCallback render_frame_id_cb)
     : latency_hint_(latency_hint),
@@ -134,7 +135,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
       session_id_(session_id),
       frame_id_(std::move(render_frame_id_cb).Run()) {
   DCHECK(client_callback_);
-  DCHECK(session_id_ == 0 || frame_id_ != MSG_ROUTING_NONE);
+  DCHECK(session_id.is_empty() || frame_id_ != MSG_ROUTING_NONE);
 
   media::AudioParameters hardware_params(
       std::move(device_params_cb).Run(frame_id_, session_id_, std::string()));

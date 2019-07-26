@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 686 tests; 659 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 808 tests; 778 PASS, 30 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -686,5 +686,127 @@ PASS Document interface: new Document() must inherit property "onwaiting" with t
 PASS Document interface: new Document() must inherit property "oncopy" with the proper type
 PASS Document interface: new Document() must inherit property "oncut" with the proper type
 PASS Document interface: new Document() must inherit property "onpaste" with the proper type
+PASS Document interface: documentWithHandlers must have own property "location"
+PASS Document interface: documentWithHandlers must inherit property "domain" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "referrer" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "cookie" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "lastModified" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "readyState" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "title" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "dir" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "body" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "head" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "images" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "embeds" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "plugins" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "links" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "forms" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "scripts" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "getElementsByName(DOMString)" with the proper type
+PASS Document interface: calling getElementsByName(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "currentScript" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "open(DOMString, DOMString)" with the proper type
+PASS Document interface: calling open(DOMString, DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "open(USVString, DOMString, DOMString)" with the proper type
+PASS Document interface: calling open(USVString, DOMString, DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "close()" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "write(DOMString)" with the proper type
+PASS Document interface: calling write(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "writeln(DOMString)" with the proper type
+PASS Document interface: calling writeln(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "defaultView" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "activeElement" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "hasFocus()" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "designMode" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "execCommand(DOMString, boolean, DOMString)" with the proper type
+PASS Document interface: calling execCommand(DOMString, boolean, DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "queryCommandEnabled(DOMString)" with the proper type
+PASS Document interface: calling queryCommandEnabled(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "queryCommandIndeterm(DOMString)" with the proper type
+PASS Document interface: calling queryCommandIndeterm(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "queryCommandState(DOMString)" with the proper type
+PASS Document interface: calling queryCommandState(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "queryCommandSupported(DOMString)" with the proper type
+PASS Document interface: calling queryCommandSupported(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "queryCommandValue(DOMString)" with the proper type
+PASS Document interface: calling queryCommandValue(DOMString) on documentWithHandlers with too few arguments must throw TypeError
+PASS Document interface: documentWithHandlers must inherit property "onreadystatechange" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "fgColor" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "linkColor" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "vlinkColor" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "alinkColor" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "bgColor" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "anchors" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "applets" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "clear()" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "captureEvents()" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "releaseEvents()" with the proper type
+FAIL Document interface: documentWithHandlers must inherit property "all" with the proper type assert_in_array: wrong type: not object or function value "undefined" not in array ["object", "function"]
+PASS Document interface: documentWithHandlers must inherit property "onabort" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onauxclick" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onblur" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncancel" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncanplay" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncanplaythrough" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onchange" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onclick" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onclose" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncontextmenu" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncuechange" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondblclick" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondrag" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondragend" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondragenter" with the proper type
+FAIL Document interface: documentWithHandlers must inherit property "ondragexit" with the proper type assert_inherits: property "ondragexit" found on object expected in prototype chain
+PASS Document interface: documentWithHandlers must inherit property "ondragleave" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondragover" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondragstart" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondrop" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ondurationchange" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onemptied" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onended" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onerror" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onfocus" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onformdata" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oninput" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oninvalid" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onkeydown" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onkeypress" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onkeyup" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onload" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onloadeddata" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onloadedmetadata" with the proper type
+FAIL Document interface: documentWithHandlers must inherit property "onloadend" with the proper type assert_inherits: property "onloadend" found on object expected in prototype chain
+PASS Document interface: documentWithHandlers must inherit property "onloadstart" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmousedown" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmouseenter" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmouseleave" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmousemove" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmouseout" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmouseover" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onmouseup" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onwheel" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onpause" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onplay" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onplaying" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onprogress" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onratechange" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onreset" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onresize" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onscroll" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onsecuritypolicyviolation" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onseeked" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onseeking" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onselect" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onstalled" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onsubmit" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onsuspend" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ontimeupdate" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "ontoggle" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onvolumechange" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onwaiting" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncopy" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "oncut" with the proper type
+PASS Document interface: documentWithHandlers must inherit property "onpaste" with the proper type
 Harness: the test ran to completion.
 

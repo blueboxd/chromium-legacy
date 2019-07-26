@@ -58,16 +58,18 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                       bool user_gesture,
                       GenerateStreamCallback callback) override;
   void CancelRequest(int32_t request_id) override;
-  void StopStreamDevice(const std::string& device_id,
-                        int32_t session_id) override;
+  void StopStreamDevice(
+      const std::string& device_id,
+      const base::Optional<base::UnguessableToken>& session_id) override;
   void OpenDevice(int32_t request_id,
                   const std::string& device_id,
                   blink::mojom::MediaStreamType type,
                   OpenDeviceCallback callback) override;
   void CloseDevice(const std::string& label) override;
-  void SetCapturingLinkSecured(int32_t session_id,
-                               blink::mojom::MediaStreamType type,
-                               bool is_secure) override;
+  void SetCapturingLinkSecured(
+      const base::Optional<base::UnguessableToken>& session_id,
+      blink::mojom::MediaStreamType type,
+      bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
 
   void DoGenerateStream(int32_t request_id,

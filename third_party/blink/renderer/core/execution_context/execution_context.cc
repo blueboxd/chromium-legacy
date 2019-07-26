@@ -192,6 +192,10 @@ ContentSecurityPolicy* ExecutionContext::GetContentSecurityPolicy() {
   return GetSecurityContext().GetContentSecurityPolicy();
 }
 
+const base::UnguessableToken& ExecutionContext::GetAgentClusterID() const {
+  return agent_->cluster_id();
+}
+
 void ExecutionContext::AllowWindowInteraction() {
   ++window_interaction_tokens_;
 }

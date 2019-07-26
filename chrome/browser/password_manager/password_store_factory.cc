@@ -27,6 +27,7 @@
 #include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -203,6 +204,10 @@ PasswordStoreFactory::BuildServiceInstanceFor(
       profile);
   password_manager_util::RemoveUselessCredentials(ps, profile->GetPrefs(), 60,
                                                   network_context_getter);
+
+  // Update the |kPasswordManagerOnboardingState| pref in the background.
+  UpdateOnboardingState(ps, profile->GetPrefs(),
+                        base::TimeDelta::FromSeconds(20));
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

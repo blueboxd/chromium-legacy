@@ -16,6 +16,7 @@
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,12 +55,12 @@ ServicesDelegateDesktop::~ServicesDelegateDesktop() {
 void ServicesDelegateDesktop::InitializeCsdService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if defined(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_CSD)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableClientSidePhishingDetection)) {
     csd_service_ = ClientSideDetectionService::Create(url_loader_factory);
   }
-#endif  // defined(SAFE_BROWSING_CSD)
+#endif  // BUILDFLAG(SAFE_BROWSING_CSD)
 }
 
 ExtendedReportingLevel

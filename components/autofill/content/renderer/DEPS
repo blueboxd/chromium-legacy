@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/common",
   "+content/public/renderer",
+  "+components/safe_browsing/buildflags.h",
   "+third_party/re2",
   # Allow inclusion of WebKit API files.
   "+third_party/blink/public/common",

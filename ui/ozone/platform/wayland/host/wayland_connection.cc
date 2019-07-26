@@ -122,72 +122,6 @@ void WaylandConnection::ScheduleFlush() {
   scheduled_flush_ = true;
 }
 
-WaylandWindow* WaylandConnection::GetWindow(
-    gfx::AcceleratedWidget widget) const {
-  auto it = window_map_.find(widget);
-  return it == window_map_.end() ? nullptr : it->second;
-}
-
-WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() const {
-  WaylandWindow* window_with_largest_bounds = nullptr;
-  for (auto entry : window_map_) {
-    if (!window_with_largest_bounds) {
-      window_with_largest_bounds = entry.second;
-      continue;
-    }
-    WaylandWindow* window = entry.second;
-    if (window_with_largest_bounds->GetBounds() < window->GetBounds())
-      window_with_largest_bounds = window;
-  }
-  return window_with_largest_bounds;
-}
-
-WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() const {
-  for (auto entry : window_map_) {
-    WaylandWindow* window = entry.second;
-    if (window->has_pointer_focus())
-      return window;
-  }
-  return nullptr;
-}
-
-WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
-  for (auto entry : window_map_) {
-    WaylandWindow* window = entry.second;
-    if (window->has_keyboard_focus())
-      return window;
-  }
-  return nullptr;
-}
-
-std::vector<WaylandWindow*> WaylandConnection::GetWindowsOnOutput(
-    uint32_t output_id) {
-  std::vector<WaylandWindow*> result;
-  for (auto entry : window_map_) {
-    if (entry.second->entered_outputs_ids().count(output_id) > 0)
-      result.push_back(entry.second);
-  }
-  return result;
-}
-
-void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
-                                  WaylandWindow* window) {
-  DCHECK(buffer_manager_host_);
-  buffer_manager_host_->OnWindowAdded(window);
-
-  window_map_[widget] = window;
-}
-
-void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
-  if (touch_)
-    touch_->RemoveTouchPoints(window_map_[widget]);
-
-  DCHECK(buffer_manager_host_);
-  buffer_manager_host_->OnWindowRemoved(window_map_[widget]);
-
-  window_map_.erase(widget);
-}
-
 void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
                                         const gfx::Point& location) {
   if (!pointer_ || !pointer_->cursor())
@@ -260,8 +194,9 @@ void WaylandConnection::DispatchUiEvent(Event* event) {
 
 void WaylandConnection::OnFileCanReadWithoutBlocking(int fd) {
   wl_display_dispatch(display_.get());
-  for (const auto& window : window_map_)
-    window.second->ApplyPendingBounds();
+  std::vector<WaylandWindow*> windows = wayland_window_manager_.GetAllWindows();
+  for (auto* window : windows)
+    window->ApplyPendingBounds();
 }
 
 void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
@@ -464,7 +399,7 @@ void WaylandConnection::Capabilities(void* data,
       connection->touch_ = std::make_unique<WaylandTouch>(
           touch, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
                                      base::Unretained(connection)));
-      connection->touch_->set_connection(connection);
+      connection->touch_->SetConnection(connection);
     }
   } else if (connection->touch_) {
     connection->touch_.reset();

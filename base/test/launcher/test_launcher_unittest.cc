@@ -10,11 +10,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -58,11 +56,6 @@ class MockTestLauncher : public TestLauncher {
       : TestLauncher(launcher_delegate, parallel_jobs) {}
 
   void CreateAndStartThreadPool(int parallel_jobs) override {}
-
-  MOCK_METHOD3(LaunchChildGTestProcess,
-               void(scoped_refptr<TaskRunner> task_runner,
-                    const std::vector<std::string>& test_names,
-                    const FilePath& temp_dir));
 };
 
 // Simple TestLauncherDelegate mock to test TestLauncher flow.
@@ -72,23 +65,12 @@ class MockTestLauncherDelegate : public TestLauncherDelegate {
   MOCK_METHOD2(WillRunTest,
                bool(const std::string& test_case_name,
                     const std::string& test_name));
-  MOCK_METHOD6(
-      ProcessTestResults,
-      std::vector<TestResult>(const std::vector<std::string>& test_names,
-                              const base::FilePath& output_file,
-                              const std::string& output,
-                              const base::TimeDelta& elapsed_time,
-                              int exit_code,
-                              bool was_timeout));
-  MOCK_METHOD3(GetCommandLine,
-               CommandLine(const std::vector<std::string>& test_names,
-                           const FilePath& temp_dir_,
-                           FilePath* output_file_));
-  MOCK_METHOD1(IsPreTask, bool(const std::vector<std::string>& test_names));
-  MOCK_METHOD0(GetWrapper, std::string());
-  MOCK_METHOD0(GetLaunchOptions, int());
-  MOCK_METHOD0(GetTimeout, TimeDelta());
-  MOCK_METHOD0(GetBatchSize, size_t());
+  MOCK_METHOD2(RunTests,
+               size_t(TestLauncher* test_launcher,
+                      const std::vector<std::string>& test_names));
+  MOCK_METHOD2(RetryTests,
+               size_t(TestLauncher* test_launcher,
+                      const std::vector<std::string>& test_names));
 };
 
 // Using MockTestLauncher to test TestLauncher.
@@ -116,25 +98,13 @@ class TestLauncherTest : public testing::Test {
   }
 
   // Setup expected delegate calls, and which tests the delegate will return.
-  void SetUpExpectCalls(size_t batch_size = 10) {
+  void SetUpExpectCalls() {
     using ::testing::_;
     EXPECT_CALL(delegate, GetTests(_))
         .WillOnce(::testing::DoAll(testing::SetArgPointee<0>(tests_),
                                    testing::Return(true)));
     EXPECT_CALL(delegate, WillRunTest(_, _))
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(delegate, ProcessTestResults(_, _, _, _, _, _)).Times(0);
-    EXPECT_CALL(delegate, GetCommandLine(_, _, _))
-        .WillRepeatedly(testing::Return(CommandLine(CommandLine::NO_PROGRAM)));
-    EXPECT_CALL(delegate, GetWrapper())
-        .WillRepeatedly(testing::Return(std::string()));
-    EXPECT_CALL(delegate, IsPreTask(_)).WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(delegate, GetLaunchOptions())
-        .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(delegate, GetTimeout())
-        .WillRepeatedly(testing::Return(TimeDelta()));
-    EXPECT_CALL(delegate, GetBatchSize())
-        .WillRepeatedly(testing::Return(batch_size));
   }
 
   void ReadSummary(FilePath path) {
@@ -157,16 +127,18 @@ class TestLauncherTest : public testing::Test {
 };
 
 // Action to mock delegate invoking OnTestFinish on test launcher.
-ACTION_P3(OnTestResult, launcher, full_name, status) {
+ACTION_P2(OnTestResult, full_name, status) {
   TestResult result = GenerateTestResult(full_name, status);
-  arg0->PostTask(FROM_HERE, BindOnce(&TestLauncher::OnTestFinished,
-                                     Unretained(launcher), result));
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      BindOnce(&TestLauncher::OnTestFinished, Unretained(arg0), result));
 }
 
 // Action to mock delegate invoking OnTestFinish on test launcher.
-ACTION_P2(OnTestResult, launcher, result) {
-  arg0->PostTask(FROM_HERE, BindOnce(&TestLauncher::OnTestFinished,
-                                     Unretained(launcher), result));
+ACTION_P(OnTestResult, result) {
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      BindOnce(&TestLauncher::OnTestFinished, Unretained(arg0), result));
 }
 
 // A test and a disabled test cannot share a name.
@@ -191,11 +163,11 @@ TEST_F(TestLauncherTest, OrphanePreTest) {
   EXPECT_FALSE(test_launcher.Run(command_line.get()));
 }
 
-// When There are no tests, delegate should not be called.
+// When There are no tests, RunLoop should not be called.
 TEST_F(TestLauncherTest, EmptyTestSetPasses) {
   SetUpExpectCalls();
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _)).Times(0);
+  EXPECT_CALL(delegate, RunTests(_, _)).WillOnce(testing::Return(0));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -205,17 +177,15 @@ TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
   AddMockedTests("Test",
                  {"firstTest", "secondTest", "DISABLED_firstTestDisabled"});
   SetUpExpectCalls();
-  std::vector<std::string> tests_names = {"Test.firstTest", "Test.secondTest"};
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .WillOnce(::testing::DoAll(OnTestResult(&test_launcher, "Test.firstTest",
-                                              TestResult::TEST_SUCCESS),
-                                 OnTestResult(&test_launcher, "Test.secondTest",
-                                              TestResult::TEST_SUCCESS)));
+  std::vector<std::string> tests_names = {"Test.firstTest", "Test.secondTest"};
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.secondTest", TestResult::TEST_SUCCESS),
+          testing::Return(2)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -223,15 +193,13 @@ TEST_F(TestLauncherTest, FilterDisabledTestByDefault) {
 TEST_F(TestLauncherTest, ReorderPreTests) {
   AddMockedTests("Test", {"firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
   SetUpExpectCalls();
+  using ::testing::_;
   std::vector<std::string> tests_names = {
       "Test.PRE_PRE_firstTest", "Test.PRE_firstTest", "Test.firstTest"};
-  using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .Times(1);
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(testing::Return(0));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -243,14 +211,12 @@ TEST_F(TestLauncherTest, UsingCommandLineFilter) {
   command_line->AppendSwitchASCII("gtest_filter", "Test*.first*");
   using ::testing::_;
   std::vector<std::string> tests_names = {"Test.firstTest"};
-  using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
-                             TestResult::TEST_SUCCESS));
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -259,15 +225,13 @@ TEST_F(TestLauncherTest, FilterIncludePreTest) {
   AddMockedTests("Test", {"firstTest", "secondTest", "PRE_firstTest"});
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("gtest_filter", "Test.firstTest");
+  using ::testing::_;
   std::vector<std::string> tests_names = {"Test.PRE_firstTest",
                                           "Test.firstTest"};
-  using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .Times(1);
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(testing::Return(0));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -277,10 +241,11 @@ TEST_F(TestLauncherTest, RunningMultipleIterations) {
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("gtest_repeat", "2");
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
+  EXPECT_CALL(delegate, RunTests(_, _))
       .Times(2)
-      .WillRepeatedly(OnTestResult(&test_launcher, "Test.firstTest",
-                                   TestResult::TEST_SUCCESS));
+      .WillRepeatedly(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -289,16 +254,17 @@ TEST_F(TestLauncherTest, SuccessOnRetryTests) {
   AddMockedTests("Test", {"firstTest"});
   SetUpExpectCalls();
   using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
+          testing::Return(1)));
   std::vector<std::string> tests_names = {"Test.firstTest"};
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
-                             TestResult::TEST_FAILURE))
-      .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
-                             TestResult::TEST_SUCCESS));
+  EXPECT_CALL(delegate,
+              RetryTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                      tests_names.cend())))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -308,15 +274,18 @@ TEST_F(TestLauncherTest, FailOnRetryTests) {
   AddMockedTests("Test", {"firstTest"});
   SetUpExpectCalls();
   using ::testing::_;
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
+          testing::Return(1)));
   std::vector<std::string> tests_names = {"Test.firstTest"};
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .Times(4)
-      .WillRepeatedly(OnTestResult(&test_launcher, "Test.firstTest",
-                                   TestResult::TEST_FAILURE));
+  EXPECT_CALL(delegate,
+              RetryTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                      tests_names.cend())))
+      .Times(3)
+      .WillRepeatedly(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_FAILURE),
+          testing::Return(1)));
   EXPECT_FALSE(test_launcher.Run(command_line.get()));
 }
 
@@ -324,43 +293,23 @@ TEST_F(TestLauncherTest, FailOnRetryTests) {
 TEST_F(TestLauncherTest, RetryPreTests) {
   AddMockedTests("Test", {"firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
   SetUpExpectCalls();
-  std::vector<TestResult> results = {
-      GenerateTestResult("Test.PRE_PRE_firstTest", TestResult::TEST_SUCCESS),
-      GenerateTestResult("Test.PRE_firstTest", TestResult::TEST_FAILURE),
-      GenerateTestResult("Test.firstTest", TestResult::TEST_SUCCESS)};
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
+  EXPECT_CALL(delegate, RunTests(_, _))
       .WillOnce(::testing::DoAll(
-          OnTestResult(&test_launcher, "Test.PRE_PRE_firstTest",
-                       TestResult::TEST_SUCCESS),
-          OnTestResult(&test_launcher, "Test.PRE_firstTest",
-                       TestResult::TEST_FAILURE),
-          OnTestResult(&test_launcher, "Test.firstTest",
-                       TestResult::TEST_SUCCESS)));
-  std::vector<std::string> tests_names = {"Test.PRE_PRE_firstTest"};
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .WillOnce(OnTestResult(&test_launcher, "Test.PRE_PRE_firstTest",
-                             TestResult::TEST_SUCCESS));
-  tests_names = {"Test.PRE_firstTest"};
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .WillOnce(OnTestResult(&test_launcher, "Test.PRE_firstTest",
-                             TestResult::TEST_SUCCESS));
-  tests_names = {"Test.firstTest"};
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
-                             TestResult::TEST_SUCCESS));
+          OnTestResult("Test.PRE_PRE_firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.PRE_firstTest", TestResult::TEST_FAILURE),
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(3)));
+  std::vector<std::string> tests_names = {
+      "Test.PRE_PRE_firstTest", "Test.PRE_firstTest", "Test.firstTest"};
+  EXPECT_CALL(delegate,
+              RetryTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                      tests_names.cend())))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.PRE_PRE_firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.PRE_firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(3)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -372,38 +321,34 @@ TEST_F(TestLauncherTest, RunDisabledTests) {
   SetUpExpectCalls();
   command_line->AppendSwitch("gtest_also_run_disabled_tests");
   command_line->AppendSwitchASCII("gtest_filter", "Test*.first*");
+  using ::testing::_;
   std::vector<std::string> tests_names = {"DISABLED_TestDisabled.firstTest",
                                           "Test.firstTest",
                                           "Test.DISABLED_firstTestDisabled"};
-  using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
       .WillOnce(::testing::DoAll(
-          OnTestResult(&test_launcher, "Test.firstTest",
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          OnTestResult("DISABLED_TestDisabled.firstTest",
                        TestResult::TEST_SUCCESS),
-          OnTestResult(&test_launcher, "DISABLED_TestDisabled.firstTest",
+          OnTestResult("Test.DISABLED_firstTestDisabled",
                        TestResult::TEST_SUCCESS),
-          OnTestResult(&test_launcher, "Test.DISABLED_firstTestDisabled",
-                       TestResult::TEST_SUCCESS)));
+          testing::Return(3)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
 // Disabled test should disable all pre tests
 TEST_F(TestLauncherTest, DisablePreTests) {
-  AddMockedTests("Test", {"DISABLED_firstTest", "PRE_PRE_firstTest",
-                          "PRE_firstTest", "secondTest"});
+  AddMockedTests("Test",
+                 {"DISABLED_firstTest", "PRE_PRE_firstTest", "PRE_firstTest"});
   SetUpExpectCalls();
-  std::vector<std::string> tests_names = {"Test.secondTest"};
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(
-                                 _,
-                                 testing::ElementsAreArray(tests_names.cbegin(),
-                                                           tests_names.cend()),
-                                 _))
-      .Times(1);
+  std::vector<std::string> tests_names;
+  EXPECT_CALL(delegate,
+              RunTests(_, testing::ElementsAreArray(tests_names.cbegin(),
+                                                    tests_names.cend())))
+      .WillOnce(testing::Return(0));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -411,18 +356,21 @@ TEST_F(TestLauncherTest, DisablePreTests) {
 TEST_F(TestLauncherTest, FaultyShardSetup) {
   command_line->AppendSwitchASCII("test-launcher-total-shards", "2");
   command_line->AppendSwitchASCII("test-launcher-shard-index", "2");
+  using ::testing::_;
+  std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_FALSE(test_launcher.Run(command_line.get()));
 }
 
 // Shard index must be lesser than total shards
 TEST_F(TestLauncherTest, RedirectStdio) {
-  AddMockedTests("Test", {"firstTest"});
   SetUpExpectCalls();
   command_line->AppendSwitchASCII("test-launcher-print-test-stdio", "always");
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
-      .WillOnce(OnTestResult(&test_launcher, "Test.firstTest",
-                             TestResult::TEST_SUCCESS));
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(::testing::DoAll(
+          OnTestResult("Test.firstTest", TestResult::TEST_SUCCESS),
+          testing::Return(1)));
+  std::vector<std::string> tests_names = {"Test.firstTest"};
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 }
 
@@ -515,11 +463,11 @@ TEST_F(TestLauncherTest, JsonSummary) {
                          TimeDelta::FromMilliseconds(50), "output_second");
 
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
+  EXPECT_CALL(delegate, RunTests(_, _))
       .Times(2)
-      .WillRepeatedly(
-          ::testing::DoAll(OnTestResult(&test_launcher, first_result),
-                           OnTestResult(&test_launcher, second_result)));
+      .WillRepeatedly(::testing::DoAll(OnTestResult(first_result),
+                                       OnTestResult(second_result),
+                                       testing::Return(2)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 
   // Validate the resulting JSON file is the expected output.
@@ -566,8 +514,9 @@ TEST_F(TestLauncherTest, JsonSummaryWithDisabledTests) {
                          TimeDelta::FromMilliseconds(50), "output_second");
 
   using ::testing::_;
-  EXPECT_CALL(test_launcher, LaunchChildGTestProcess(_, _, _))
-      .WillOnce(OnTestResult(&test_launcher, test_result));
+  EXPECT_CALL(delegate, RunTests(_, _))
+      .WillOnce(
+          ::testing::DoAll(OnTestResult(test_result), testing::Return(1)));
   EXPECT_TRUE(test_launcher.Run(command_line.get()));
 
   // Validate the resulting JSON file is the expected output.

@@ -312,7 +312,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 }
 
-static void AdjustOverflow(ComputedStyle& style) {
+void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
   DCHECK(style.OverflowX() != EOverflow::kVisible ||
          style.OverflowY() != EOverflow::kVisible);
 
@@ -591,8 +591,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   style.AdjustMaskLayers();
 
   // Let the theme also have a crack at adjusting the style.
-  if (style.HasAppearance())
-    LayoutTheme::GetTheme().AdjustStyle(style, element);
+  LayoutTheme::GetTheme().AdjustStyle(style, element);
 
   AdjustStyleForEditing(style);
 
@@ -650,7 +649,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   bool is_media_control =
       element && element->ShadowPseudoId().StartsWith("-webkit-media-controls");
-  if (is_media_control && style.Appearance() == kNoControlPart) {
+  if (is_media_control && !style.HasEffectiveAppearance()) {
     // For compatibility reasons if the element is a media control and the
     // -webkit-appearance is none then we should clear the background image.
     if (!StyleResolver::HasAuthorBackground(state)) {

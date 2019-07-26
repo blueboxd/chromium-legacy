@@ -241,20 +241,28 @@ VaapiImageDecodeStatus VaapiJpegDecoder::AllocateVASurfaceAndSubmitVABuffers(
   }
 
   // Prepare the VaSurface for decoding.
-  const gfx::Size new_coded_size(
-      base::strict_cast<int>(parse_result.frame_header.coded_width),
-      base::strict_cast<int>(parse_result.frame_header.coded_height));
+  const gfx::Size new_visible_size(
+      base::strict_cast<int>(parse_result.frame_header.visible_width),
+      base::strict_cast<int>(parse_result.frame_header.visible_height));
   DCHECK(!scoped_va_context_and_surface_ ||
          scoped_va_context_and_surface_->IsValid());
   if (!scoped_va_context_and_surface_ ||
-      new_coded_size != scoped_va_context_and_surface_->size() ||
+      new_visible_size != scoped_va_context_and_surface_->size() ||
       picture_va_rt_format != scoped_va_context_and_surface_->format()) {
     scoped_va_context_and_surface_.reset();
-    scoped_va_context_and_surface_ =
-        ScopedVAContextAndSurface(vaapi_wrapper_
-                                      ->CreateContextAndScopedVASurface(
-                                          picture_va_rt_format, new_coded_size)
-                                      .release());
+
+    // We'll request a surface of |new_coded_size| from the VAAPI, but we will
+    // keep track of the |new_visible_size| inside the ScopedVASurface so that
+    // when we create a VAImage or export the surface as a NativePixmapDmaBuf,
+    // we can report the size that clients should be using to read the contents.
+    const gfx::Size new_coded_size(
+        base::strict_cast<int>(parse_result.frame_header.coded_width),
+        base::strict_cast<int>(parse_result.frame_header.coded_height));
+    scoped_va_context_and_surface_.reset(
+        vaapi_wrapper_
+            ->CreateContextAndScopedVASurface(picture_va_rt_format,
+                                              new_coded_size, new_visible_size)
+            .release());
     if (!scoped_va_context_and_surface_) {
       VLOGF(1) << "CreateContextAndScopedVASurface() failed";
       return VaapiImageDecodeStatus::kSurfaceCreationFailed;
@@ -330,6 +338,18 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoder::GetImage(
     return nullptr;
   }
   VAImageFormat image_format{.fourcc = image_fourcc};
+  // In at least one driver, the VPP seems to have problems if we request a
+  // VAImage with odd dimensions. Rather than debugging the issue in depth, we
+  // disable support for odd dimensions since the VAImage path is only expected
+  // to be used in camera captures (and we don't expect JPEGs with odd
+  // dimensions in that path).
+  if ((scoped_va_context_and_surface_->size().width() & 1) ||
+      (scoped_va_context_and_surface_->size().height() & 1)) {
+    VLOGF(1) << "Getting images with odd dimensions is not supported";
+    *status = VaapiImageDecodeStatus::kCannotGetImage;
+    NOTREACHED();
+    return nullptr;
+  }
   auto scoped_image = vaapi_wrapper_->CreateVaImage(
       scoped_va_context_and_surface_->id(), &image_format,
       scoped_va_context_and_surface_->size());

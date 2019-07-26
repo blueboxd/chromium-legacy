@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
@@ -235,7 +234,7 @@ void NFC::OnRequestCompleted(ScriptPromiseResolver* resolver,
   if (error.is_null())
     resolver->Resolve();
   else
-    resolver->Reject(NFCError::Take(resolver, error->error_type));
+    resolver->Reject(NFCErrorTypeToDOMException(error->error_type));
 }
 
 void NFC::OnConnectionError() {
@@ -245,9 +244,10 @@ void NFC::OnConnectionError() {
 
   // If NFCService is not available or disappears when NFC hardware is
   // disabled, reject promise with NotSupportedError exception.
-  for (ScriptPromiseResolver* resolver : requests_)
-    resolver->Reject(NFCError::Take(
-        resolver, device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
+  for (ScriptPromiseResolver* resolver : requests_) {
+    resolver->Reject(NFCErrorTypeToDOMException(
+        device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
+  }
 
   requests_.clear();
 }
@@ -315,8 +315,8 @@ void NFC::OnWatchRegistered(V8MessageCallback* callback,
   // 8. If the request fails, reject promise with "NotSupportedError"
   // and abort these steps.
   if (!id) {
-    resolver->Reject(NFCError::Take(
-        resolver, device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
+    resolver->Reject(NFCErrorTypeToDOMException(
+        device::mojom::blink::NFCErrorType::NOT_SUPPORTED));
     return;
   }
 
@@ -324,7 +324,7 @@ void NFC::OnWatchRegistered(V8MessageCallback* callback,
     callbacks_.insert(id, callback);
     resolver->Resolve(id);
   } else {
-    resolver->Reject(NFCError::Take(resolver, error->error_type));
+    resolver->Reject(NFCErrorTypeToDOMException(error->error_type));
   }
 }
 

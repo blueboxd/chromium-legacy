@@ -249,14 +249,14 @@ TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
 }
 #endif  // BUILDFLAG(USE_EXTERNAL_GSSAPI)
 
-TEST_F(NetworkServiceTest, AuthServerWhitelist) {
-  // Add one server to the whitelist before creating any NetworkContexts.
+TEST_F(NetworkServiceTest, AuthServerAllowlist) {
+  // Add one server to the allowlist before creating any NetworkContexts.
   mojom::HttpAuthDynamicParamsPtr auth_params =
       mojom::HttpAuthDynamicParams::New();
-  auth_params->server_whitelist = "server1";
+  auth_params->server_allowlist = "server1";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
 
-  // Create a network context, which should reflect the whitelist.
+  // Create a network context, which should reflect the allowlist.
   mojom::NetworkContextPtr network_context_ptr;
   NetworkContext network_context(service(),
                                  mojo::MakeRequest(&network_context_ptr),
@@ -272,10 +272,10 @@ TEST_F(NetworkServiceTest, AuthServerWhitelist) {
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
           GURL("https://server2/")));
 
-  // Change whitelist to only have a different server on it. The pre-existing
+  // Change allowlist to only have a different server on it. The pre-existing
   // NetworkContext should be using the new list.
   auth_params = mojom::HttpAuthDynamicParams::New();
-  auth_params->server_whitelist = "server2";
+  auth_params->server_allowlist = "server2";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_FALSE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
@@ -284,10 +284,10 @@ TEST_F(NetworkServiceTest, AuthServerWhitelist) {
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
           GURL("https://server2/")));
 
-  // Change whitelist to have multiple servers. The pre-existing NetworkContext
+  // Change allowlist to have multiple servers. The pre-existing NetworkContext
   // should be using the new list.
   auth_params = mojom::HttpAuthDynamicParams::New();
-  auth_params->server_whitelist = "server1,server2";
+  auth_params->server_allowlist = "server1,server2";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_TRUE(
       auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
@@ -297,16 +297,16 @@ TEST_F(NetworkServiceTest, AuthServerWhitelist) {
           GURL("https://server2/")));
 }
 
-TEST_F(NetworkServiceTest, AuthDelegateWhitelist) {
+TEST_F(NetworkServiceTest, AuthDelegateAllowlist) {
   using DelegationType = net::HttpAuth::DelegationType;
 
-  // Add one server to the whitelist before creating any NetworkContexts.
+  // Add one server to the allowlist before creating any NetworkContexts.
   mojom::HttpAuthDynamicParamsPtr auth_params =
       mojom::HttpAuthDynamicParams::New();
-  auth_params->delegate_whitelist = "server1";
+  auth_params->delegate_allowlist = "server1";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
 
-  // Create a network context, which should reflect the whitelist.
+  // Create a network context, which should reflect the allowlist.
   mojom::NetworkContextPtr network_context_ptr;
   NetworkContext network_context(service(),
                                  mojo::MakeRequest(&network_context_ptr),
@@ -322,20 +322,20 @@ TEST_F(NetworkServiceTest, AuthDelegateWhitelist) {
   EXPECT_EQ(DelegationType::kNone,
             auth_prefs->GetDelegationType(GURL("https://server2/")));
 
-  // Change whitelist to only have a different server on it. The pre-existing
+  // Change allowlist to only have a different server on it. The pre-existing
   // NetworkContext should be using the new list.
   auth_params = mojom::HttpAuthDynamicParams::New();
-  auth_params->delegate_whitelist = "server2";
+  auth_params->delegate_allowlist = "server2";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_EQ(DelegationType::kNone,
             auth_prefs->GetDelegationType(GURL("https://server1/")));
   EXPECT_EQ(DelegationType::kUnconstrained,
             auth_prefs->GetDelegationType(GURL("https://server2/")));
 
-  // Change whitelist to have multiple servers. The pre-existing NetworkContext
+  // Change allowlist to have multiple servers. The pre-existing NetworkContext
   // should be using the new list.
   auth_params = mojom::HttpAuthDynamicParams::New();
-  auth_params->delegate_whitelist = "server1,server2";
+  auth_params->delegate_allowlist = "server1,server2";
   service()->ConfigureHttpAuthPrefs(std::move(auth_params));
   EXPECT_EQ(DelegationType::kUnconstrained,
             auth_prefs->GetDelegationType(GURL("https://server1/")));
@@ -356,7 +356,7 @@ TEST_F(NetworkServiceTest, DelegateByKdcPolicy) {
   EXPECT_FALSE(
       auth_handler_factory->http_auth_preferences()->delegate_by_kdc_policy());
 
-  // Change whitelist to only have a different server on it. The pre-existing
+  // Change allowlist to only have a different server on it. The pre-existing
   // NetworkContext should be using the new list.
   mojom::HttpAuthDynamicParamsPtr auth_params =
       mojom::HttpAuthDynamicParams::New();
@@ -1045,7 +1045,7 @@ TEST_F(NetworkServiceTestWithService, CRLSetIsUpdatedIfNewer) {
 
   uint32_t options = mojom::kURLLoadOptionSendSSLInfoWithResponse |
                      mojom::kURLLoadOptionSendSSLInfoForCertificateError;
-  // Make sure the connection loads, due to the root being whitelisted.
+  // Make sure the connection loads, due to the root being permitted.
   LoadURL(test_server.GetURL("/echo"), options);
   ASSERT_EQ(net::OK, client()->completion_status().error_code);
 

@@ -819,7 +819,11 @@ bool EventTarget::FireEventListeners(Event& event,
 
   if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
     if (Document* document = executing_window->document()) {
-      if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
+      if (event.type() == event_type_names::kToggle &&
+          document->ToggleDuringParsing()) {
+        UseCounter::Count(*document,
+                          WebFeature::kToggleEventHandlerDuringParsing);
+      } else if (CheckTypeThenUseCount(event, event_type_names::kBeforeunload,
                                 WebFeature::kDocumentBeforeUnloadFired,
                                 document)) {
         if (executing_window != executing_window->top())

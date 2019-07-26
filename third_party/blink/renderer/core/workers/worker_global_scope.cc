@@ -466,7 +466,11 @@ WorkerGlobalScope::WorkerGlobalScope(
     : WorkerOrWorkletGlobalScope(
           thread->GetIsolate(),
           CreateSecurityOrigin(creation_params.get()),
-          Agent::CreateForWorkerOrWorklet(thread->GetIsolate()),
+          Agent::CreateForWorkerOrWorklet(
+              thread->GetIsolate(),
+              (creation_params->agent_cluster_id.is_empty()
+                   ? base::UnguessableToken::Create()
+                   : creation_params->agent_cluster_id)),
           creation_params->off_main_thread_fetch_option,
           creation_params->global_scope_name,
           creation_params->parent_devtools_token,
@@ -484,9 +488,6 @@ WorkerGlobalScope::WorkerGlobalScope(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,
               creation_params->begin_frame_provider_params)),
-      agent_cluster_id_(creation_params->agent_cluster_id.is_empty()
-                            ? base::UnguessableToken::Create()
-                            : creation_params->agent_cluster_id),
       script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);

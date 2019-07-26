@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 

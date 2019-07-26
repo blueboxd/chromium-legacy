@@ -4,6 +4,7 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/pref_registry",
   "+components/security_state",
+  "+components/safe_browsing/buildflags.h",
   "+components/safe_browsing/common/safe_browsing_prefs.h",
   "+components/safe_browsing/features.h",
   "+components/sync/base",

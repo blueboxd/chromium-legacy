@@ -21,7 +21,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/link.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -59,6 +59,21 @@ std::unique_ptr<views::ImageView> CreateDeviceIcon(
   return CreateIconView(*vector_icon);
 }
 
+std::unique_ptr<views::StyledLabel> CreateHelpText(
+    views::StyledLabelListener* listener) {
+  const base::string16 link = l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
+  size_t offset;
+  const base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES, link,
+      &offset);
+  auto label = std::make_unique<views::StyledLabel>(text, listener);
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
+  return label;
+}
+
 }  // namespace
 
 ClickToCallDialogView::ClickToCallDialogView(
@@ -85,27 +100,12 @@ std::unique_ptr<views::View> ClickToCallDialogView::CreateFootnoteView() {
   if (!devices_.empty() || apps_.empty() || send_failed_)
     return nullptr;
 
-  auto view = std::make_unique<views::View>();
-  view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(
-          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES),
-      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  view->AddChildView(std::move(label));
-
-  auto link = std::make_unique<views::Link>(l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SYNC_HELP_TEXT));
-  link->set_listener(this);
-  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  view->AddChildView(std::move(link));
-
-  return view;
+  return CreateHelpText(this);
 }
 
-void ClickToCallDialogView::LinkClicked(views::Link* source, int event_flags) {
+void ClickToCallDialogView::StyledLabelLinkClicked(views::StyledLabel* label,
+                                                   const gfx::Range& range,
+                                                   int event_flags) {
   controller_->OnHelpTextClicked();
 }
 
@@ -195,18 +195,7 @@ void ClickToCallDialogView::InitListView() {
 void ClickToCallDialogView::InitEmptyView() {
   LogClickToCallDialogShown(SharingClickToCallDialogType::kEducationalDialog);
 
-  auto label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(
-          IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES),
-      views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(std::move(label));
-
-  auto link = std::make_unique<views::Link>(l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SYNC_HELP_TEXT));
-  link->set_listener(this);
-  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(std::move(link));
+  AddChildView(CreateHelpText(this));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   auto image_view = std::make_unique<NonAccessibleImageView>();

@@ -15,9 +15,9 @@ import * as reflection from '../internal/reflection.mjs';
 const DEFAULT_DURATION = 3000;
 const TYPES = new Set(['success', 'warning', 'error']);
 
-function stylesheetFactory() {
+function styleSheetFactory() {
   let stylesheet;
-  return function generate() {
+  return () => {
     if (!stylesheet) {
       stylesheet = new CSSStyleSheet();
       stylesheet.replaceSync(`
@@ -59,7 +59,7 @@ function stylesheetFactory() {
   };
 }
 
-const generateStylesheet = stylesheetFactory();
+const generateStyleSheet = styleSheetFactory();
 
 export class StdToastElement extends HTMLElement {
   static observedAttributes = ['open', 'closebutton'];
@@ -82,7 +82,7 @@ export class StdToastElement extends HTMLElement {
   constructor(message) {
     super();
 
-    this.#shadow.adoptedStyleSheets = [generateStylesheet()];
+    this.#shadow.adoptedStyleSheets = [generateStyleSheet()];
 
     this.#shadow.appendChild(document.createElement('slot'));
 

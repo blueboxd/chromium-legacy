@@ -64,6 +64,7 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/metadata.pb.h"
 #include "components/safe_browsing/db/test_database_manager.h"
@@ -107,7 +108,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #endif
 
-#if !defined(SAFE_BROWSING_DB_LOCAL)
+#if !BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #error This test requires SAFE_BROWSING_DB_LOCAL.
 #endif
 
@@ -573,7 +574,7 @@ class V4SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void CreateCSDService() {
-#if defined(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_CSD)
     SafeBrowsingService* sb_service =
         g_browser_process->safe_browsing_service();
 

@@ -329,7 +329,7 @@ class PolicyTemplateChecker(object):
 
     # There should not be any unknown keys in |policy|.
     for key in policy:
-      if key not in ('name', 'type', 'caption', 'desc', 'device_only',
+      if key not in ('name', 'owners', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future', 'id',
                      'schema', 'validation_schema', 'description_schema',
@@ -406,6 +406,11 @@ class PolicyTemplateChecker(object):
       # Each policy must have a protobuf ID.
       id = self._CheckContains(policy, 'id', int)
       self._AddPolicyID(id, policy_ids, policy, deleted_policy_ids)
+
+      # Each policy must have an owner.
+      # TODO(pastarmovj): Verify that each owner is either an OWNERS file or an
+      # email of a committer.
+      self._CheckContains(policy, 'owners', list)
 
       # Each policy must have a tag list.
       self._CheckContains(policy, 'tags', list)

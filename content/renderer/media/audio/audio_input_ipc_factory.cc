@@ -99,7 +99,7 @@ AudioInputIPCFactory::~AudioInputIPCFactory() {
 std::unique_ptr<media::AudioInputIPC> AudioInputIPCFactory::CreateAudioInputIPC(
     int frame_id,
     const media::AudioSourceParameters& source_params) const {
-  DCHECK_NE(0, source_params.session_id);
+  CHECK(!source_params.session_id.is_empty());
   return std::make_unique<MojoAudioInputIPC>(
       source_params,
       base::BindRepeating(&CreateMojoAudioInputStream, main_task_runner_,

@@ -578,6 +578,7 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
   return false;
 }
 
+// static
 bool ExtensionTabUtil::GetTabById(int tab_id,
                                   content::BrowserContext* browser_context,
                                   bool include_incognito,
@@ -613,6 +614,15 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
     }
   }
   return false;
+}
+
+// static
+bool ExtensionTabUtil::GetTabById(int tab_id,
+                                  content::BrowserContext* browser_context,
+                                  bool include_incognito,
+                                  WebContents** contents) {
+  return GetTabById(tab_id, browser_context, include_incognito, nullptr,
+                    nullptr, contents, nullptr);
 }
 
 GURL ExtensionTabUtil::ResolvePossiblyRelativeURL(const std::string& url_string,

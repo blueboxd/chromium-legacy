@@ -31,16 +31,16 @@ from devil.android.sdk import intent # pylint: disable=import-error
 # 1. Configure for Release Official flavor to get the most representative
 #    results:
 #    shell> gn gen --args='use_goma=true target_os="android" target_cpu="arm" \
-#           is_debug=false is_official_build=true' gn_android/ReleaseOfficial
+#           is_debug=false is_official_build=true' out/AndroidReleaseOfficial
 #
 # 2.1. Build Monochrome:
-#    shell> autoninja -C gn_android/ReleaseOfficial monochrome_apk
+#    shell> autoninja -C out/AndroidReleaseOfficial monochrome_apk
 #
 # 2.2. Build the (pseudo) Maps PWA launcher (it will be auto-installed later):
-#    shell> autoninja -C gn_android/Release/ maps_go_webapk
+#    shell> autoninja -C out/AndroidReleaseOfficial/ maps_go_webapk
 #
 # 3. Invoke Telemetry:
-#    shell> CHROMIUM_OUTPUT_DIR=gn_android/ReleaseOfficial \
+#    shell> CHROMIUM_OUTPUT_DIR=out/AndroidReleaseOfficial \
 #               tools/perf/run_benchmark -v startup.mobile \
 #               --browser=android-chrome \
 #               --output-dir=/tmp/avoid-polluting-chrome-tree \
@@ -59,7 +59,7 @@ from devil.android.sdk import intent # pylint: disable=import-error
 #     unknown.
 #
 # Recording a WPR archive and uploading it:
-# shell> CHROMIUM_OUTPUT_DIR=gn_android/Release tools/perf/record_wpr \
+# shell> CHROMIUM_OUTPUT_DIR=out/AndroidReleaseOfficial tools/perf/record_wpr \
 #            mobile_startup_benchmark --browser=android-chrome \
 #            --also-run-disabled-tests --story-filter=maps_pwa:with_http_cache \
 #            --output-dir=/tmp/maps_pwa_output --upload

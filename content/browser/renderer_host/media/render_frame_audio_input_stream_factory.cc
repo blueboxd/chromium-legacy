@@ -112,7 +112,7 @@ class RenderFrameAudioInputStreamFactory::Core final
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
       mojom::RendererAudioInputStreamFactoryClientPtr client,
-      int32_t session_id,
+      const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
       uint32_t shared_memory_count,
@@ -216,14 +216,14 @@ void RenderFrameAudioInputStreamFactory::Core::Init(
 
 void RenderFrameAudioInputStreamFactory::Core::CreateStream(
     mojom::RendererAudioInputStreamFactoryClientPtr client,
-    int32_t session_id,
+    const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count,
     audio::mojom::AudioProcessingConfigPtr processing_config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT1("audio", "RenderFrameAudioInputStreamFactory::CreateStream",
-               "session id", session_id);
+               "session id", session_id.ToString());
 
   if (!forwarding_factory_)
     return;

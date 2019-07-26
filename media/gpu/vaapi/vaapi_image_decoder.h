@@ -23,6 +23,7 @@ class NativePixmapDmaBuf;
 
 namespace media {
 
+struct NativePixmapAndSizeInfo;
 class ScopedVASurface;
 class VaapiWrapper;
 
@@ -59,7 +60,7 @@ class VaapiImageDecoder {
 
   // Initializes |vaapi_wrapper_| in kDecode mode with the
   // appropriate VAAPI profile and |error_uma_cb| for error reporting.
-  bool Initialize(const base::RepeatingClosure& error_uma_cb);
+  virtual bool Initialize(const base::RepeatingClosure& error_uma_cb);
 
   // Decodes a picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the image in |encoded_image|.
@@ -68,22 +69,24 @@ class VaapiImageDecoder {
   // destruction of this class. Returns a VaapiImageDecodeStatus that will
   // indicate whether the decode succeeded or the reason it failed. Note that
   // the internal ScopedVASurface is destroyed on failure.
-  VaapiImageDecodeStatus Decode(base::span<const uint8_t> encoded_image);
+  virtual VaapiImageDecodeStatus Decode(
+      base::span<const uint8_t> encoded_image);
 
   // Returns a pointer to the internally managed ScopedVASurface.
-  const ScopedVASurface* GetScopedVASurface() const;
+  virtual const ScopedVASurface* GetScopedVASurface() const;
 
   // Returns the type of image supported by this decoder.
   virtual gpu::ImageDecodeAcceleratorType GetType() const = 0;
 
   // Returns the image profile supported by this decoder.
-  gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile() const;
+  virtual gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile()
+      const;
 
   // Exports the decoded data from the last Decode() call as a
   // gfx::NativePixmapDmaBuf. Returns nullptr on failure and sets *|status| to
   // the reason for failure. On success, the image decoder gives up ownership of
   // the buffer underlying the NativePixmapDmaBuf.
-  scoped_refptr<gfx::NativePixmapDmaBuf> ExportAsNativePixmapDmaBuf(
+  virtual std::unique_ptr<NativePixmapAndSizeInfo> ExportAsNativePixmapDmaBuf(
       VaapiImageDecodeStatus* status);
 
  protected:

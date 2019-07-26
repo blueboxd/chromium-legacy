@@ -31,6 +31,8 @@ function styleSheetFactory() {
   };
 }
 
+const generateStyleSheet = styleSheetFactory();
+
 /**
  * The class backing the virtual-scroller custom element.
  */
@@ -39,7 +41,7 @@ export class VirtualScrollerElement extends HTMLElement {
     super();
 
     const shadowRoot = this.attachShadow({mode: 'closed'});
-    shadowRoot.adoptedStyleSheets = [styleSheetFactory()()];
+    shadowRoot.adoptedStyleSheets = [generateStyleSheet()];
     shadowRoot.appendChild(document.createElement('slot'));
 
     const visibilityManager = new VisibilityManager(this.children);

@@ -43,7 +43,7 @@ class LayoutThemeMac final : public LayoutTheme {
                          const ComputedStyle&,
                          IntRect& border_box) override;
 
-  bool IsControlStyled(const ComputedStyle&) const override;
+  bool IsControlStyled(ControlPart part, const ComputedStyle&) const override;
 
   Color PlatformActiveSelectionBackgroundColor() const override;
   Color PlatformInactiveSelectionBackgroundColor() const override;

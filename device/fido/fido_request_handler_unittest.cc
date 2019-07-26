@@ -331,6 +331,7 @@ class FidoRequestHandlerTest : public ::testing::Test {
             {FidoTransportProtocol::kUsbHumanInterfaceDevice,
              FidoTransportProtocol::kBluetoothLowEnergy}),
         cb_.callback());
+    handler->SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
     return handler;
   }
 
@@ -555,7 +556,8 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
 // pending authenticators.
 TEST_F(FidoRequestHandlerTest,
        TestRequestWithOperationDeniedErrorInternalTransport) {
-  TestObserver observer;
+  auto request_handler = CreateFakeHandler();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
 
   // Device will send CTAP2_ERR_OPERATION_DENIED.
   auto device0 = MockFidoDevice::MakeCtapWithGetInfoExpectation(
@@ -565,23 +567,12 @@ TEST_F(FidoRequestHandlerTest,
                                        CreateFakeOperationDeniedError(),
                                        base::TimeDelta::FromMicroseconds(10));
 
-  ForgeNextHidDiscovery();
-  auto* platform_discovery =
-      fake_discovery_factory_.ForgeNextPlatformDiscovery();
-  auto request_handler = std::make_unique<FakeFidoRequestHandler>(
-      &fake_discovery_factory_,
-      base::flat_set<FidoTransportProtocol>(
-          {FidoTransportProtocol::kInternal,
-           FidoTransportProtocol::kUsbHumanInterfaceDevice}),
-      callback().callback());
-  request_handler->set_observer(&observer);
-
   auto device1 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
   device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
   EXPECT_CALL(*device1, Cancel(_));
 
   discovery()->AddDevice(std::move(device0));
-  platform_discovery->AddDevice(std::move(device1));
+  discovery()->AddDevice(std::move(device1));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
@@ -615,8 +606,9 @@ TEST_F(FidoRequestHandlerTest,
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
 
-// Requests should be dispatched to the platform authenticator.
-TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
+// Requests should be dispatched to the authenticator passed to
+// SetPlatformAuthenticatorOrMarkUnavailable.
+TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
   // A platform authenticator usually wouldn't usually use a FidoDevice, but
   // that's not the point of the test here. The test is only trying to ensure
   // the authenticator gets injected and used.
@@ -629,7 +621,8 @@ TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
-  auto* fake_discovery = fake_discovery_factory_.ForgeNextPlatformDiscovery();
+  auto authenticator =
+      std::make_unique<FidoDeviceAuthenticator>(std::move(device));
 
   TestObserver observer;
   auto request_handler = std::make_unique<FakeFidoRequestHandler>(
@@ -637,11 +630,49 @@ TEST_F(FidoRequestHandlerTest, TestWithPlatformAuthenticator) {
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
   request_handler->set_observer(&observer);
-  fake_discovery->AddDevice(std::move(device));
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(
+      PlatformAuthenticatorInfo(std::move(authenticator), false));
 
   observer.WaitForAndExpectAvailableTransportsAre(
       {FidoTransportProtocol::kInternal},
       false /* has_recognized_mac_touch_id_credential */);
+
+  callback().WaitForCallback();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+}
+
+// SetPlatformAuthenticatorOrMarkUnavailable should propagate the
+// has_recognized_mac_touch_id_credential field.
+TEST_F(FidoRequestHandlerTest,
+       TestSetPlatformAuthenticatorHasTouchIdCredential) {
+  // A platform authenticator usually wouldn't usually use a FidoDevice, but
+  // that's not the point of the test here. The test is only trying to ensure
+  // the authenticator gets injected and used.
+  auto device = MockFidoDevice::MakeCtap();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  // Device returns success response.
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                      CreateFakeSuccessDeviceResponse());
+  device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  auto authenticator =
+      std::make_unique<FidoDeviceAuthenticator>(std::move(device));
+
+  TestObserver observer;
+  auto request_handler = std::make_unique<FakeFidoRequestHandler>(
+      &fake_discovery_factory_,
+      base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
+      callback().callback());
+  request_handler->set_observer(&observer);
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(
+      PlatformAuthenticatorInfo(std::move(authenticator), true));
+
+  observer.WaitForAndExpectAvailableTransportsAre(
+      {FidoTransportProtocol::kInternal},
+      true /* has_recognized_mac_touch_id_credential */);
 
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
@@ -655,6 +686,7 @@ TEST_F(FidoRequestHandlerTest, InternalTransportDisallowedIfMarkedUnavailable) {
       base::flat_set<FidoTransportProtocol>({FidoTransportProtocol::kInternal}),
       callback().callback());
   request_handler->set_observer(&observer);
+  request_handler->SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
 
   observer.WaitForAndExpectAvailableTransportsAre({});
 }
@@ -724,6 +756,7 @@ TEST_F(FidoRequestHandlerTest, TransportAvailabilityOfWindowsAuthenticator) {
     EmptyRequestHandler request_handler(
         {FidoTransportProtocol::kUsbHumanInterfaceDevice},
         &fake_discovery_factory_);
+    request_handler.SetPlatformAuthenticatorOrMarkUnavailable(base::nullopt);
     request_handler.set_observer(&observer);
     scoped_task_environment_.FastForwardUntilNoTasksRemain();
 

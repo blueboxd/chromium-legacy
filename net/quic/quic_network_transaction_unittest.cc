@@ -6523,8 +6523,8 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
 
-TEST_P(QuicNetworkTransactionTest, HostInWhitelist) {
-  session_params_.quic_host_whitelist.insert("mail.example.org");
+TEST_P(QuicNetworkTransactionTest, HostInAllowlist) {
+  session_params_.quic_host_allowlist.insert("mail.example.org");
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternativeServiceHeader),
@@ -6565,8 +6565,8 @@ TEST_P(QuicNetworkTransactionTest, HostInWhitelist) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
-TEST_P(QuicNetworkTransactionTest, HostNotInWhitelist) {
-  session_params_.quic_host_whitelist.insert("mail.example.com");
+TEST_P(QuicNetworkTransactionTest, HostNotInAllowlist) {
+  session_params_.quic_host_allowlist.insert("mail.example.com");
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"), MockRead(kQuicAlternativeServiceHeader),

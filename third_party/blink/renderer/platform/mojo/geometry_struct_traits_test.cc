@@ -7,8 +7,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom-blink.h"
-#include "ui/gfx/geometry/mojo/geometry_traits_test_service.mojom-blink.h"
+#include "ui/gfx/geometry/mojom/geometry.mojom-blink.h"
+#include "ui/gfx/geometry/mojom/geometry_traits_test_service.mojom-blink.h"
 
 namespace blink {
 

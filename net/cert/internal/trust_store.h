@@ -15,7 +15,7 @@
 namespace net {
 
 enum class CertificateTrustType {
-  // This certificate is explicitly blacklisted (distrusted).
+  // This certificate is explicitly blocked (distrusted).
   DISTRUSTED,
 
   // The trustedness of this certificate is unknown (inherits trust from

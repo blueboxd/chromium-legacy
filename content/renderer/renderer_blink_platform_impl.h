@@ -155,6 +155,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSinkParameters& params) override;
   media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) override;
+  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override;
+  base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() override;
+  base::Optional<int> GetAgcStartupMinimumVolume() override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(

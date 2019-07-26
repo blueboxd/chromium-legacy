@@ -33,7 +33,6 @@
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/media/webrtc/video_codec_factory.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/p2p/empty_network_manager.h"
 #include "content/renderer/p2p/filtering_network_manager.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
@@ -57,6 +56,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/call/call_factory_interface.h"
@@ -533,7 +533,7 @@ PeerConnectionDependencyFactory::CreateIceCandidate(
   return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp, nullptr);
 }
 
-WebRtcAudioDeviceImpl*
+blink::WebRtcAudioDeviceImpl*
 PeerConnectionDependencyFactory::GetWebRtcAudioDevice() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   EnsureWebRtcAudioDeviceImpl();
@@ -643,7 +643,7 @@ void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
   if (audio_device_.get())
     return;
 
-  audio_device_ = new rtc::RefCountedObject<WebRtcAudioDeviceImpl>();
+  audio_device_ = new rtc::RefCountedObject<blink::WebRtcAudioDeviceImpl>();
 }
 
 std::unique_ptr<webrtc::RtpCapabilities>

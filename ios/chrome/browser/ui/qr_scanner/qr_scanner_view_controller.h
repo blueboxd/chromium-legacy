@@ -8,11 +8,15 @@
 #import <UIKit/UIKit.h>
 
 #include "ios/chrome/browser/ui/qr_scanner/camera_controller.h"
+#include "ios/chrome/browser/ui/qr_scanner/qr_scanner_view.h"
 
 @protocol LoadQueryCommands;
 @protocol QRScannerPresenting;
 
-@interface QRScannerViewController : UIViewController<CameraControllerDelegate>
+// View controller for the QR scanner. Subclass can inherit
+// QRScannerViewDelegate.
+@interface QRScannerViewController
+    : UIViewController <CameraControllerDelegate, QRScannerViewDelegate>
 
 - (instancetype)initWithPresentationProvider:
                     (id<QRScannerPresenting>)presentationProvider
@@ -28,6 +32,9 @@
 // |self| if the camera is available or an appropriate UIAlertController if
 // there was an error loading the camera.
 - (UIViewController*)getViewControllerToPresent;
+
+// Builds a scanner view overlay. Can be overridden by a subclass.
+- (QRScannerView*)scannerView;
 
 @end
 

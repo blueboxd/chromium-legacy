@@ -8,7 +8,7 @@ import "components/mirroring/mojom/cast_message_channel.mojom";
 import "components/mirroring/mojom/resource_provider.mojom";
 import "components/mirroring/mojom/session_observer.mojom";
 import "components/mirroring/mojom/session_parameters.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // This interface is used to control a mirroring session.
 interface MirroringService {

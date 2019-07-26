@@ -1875,6 +1875,7 @@ if (is_android) {
       "//chrome/renderer",
       "//components/gwp_asan/buildflags",
       "//components/minidump_uploader",
+      "//components/safe_browsing:buildflags",
       "//components/safe_browsing/android:safe_browsing_mobile",
       "//components/services/heap_profiling",
       "//content/public/app:both",

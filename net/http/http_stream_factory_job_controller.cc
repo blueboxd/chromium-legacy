@@ -1079,7 +1079,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
                                                                destination))
       return alternative_service_info;
 
-    if (!IsQuicWhitelistedForHost(destination.host()))
+    if (!IsQuicAllowedForHost(destination.host()))
       continue;
 
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
@@ -1233,15 +1233,15 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
   return OK;
 }
 
-bool HttpStreamFactory::JobController::IsQuicWhitelistedForHost(
+bool HttpStreamFactory::JobController::IsQuicAllowedForHost(
     const std::string& host) {
-  const base::flat_set<std::string>& host_whitelist =
-      session_->params().quic_host_whitelist;
-  if (host_whitelist.empty())
+  const base::flat_set<std::string>& host_allowlist =
+      session_->params().quic_host_allowlist;
+  if (host_allowlist.empty())
     return true;
 
   std::string lowered_host = base::ToLowerASCII(host);
-  return base::Contains(host_whitelist, lowered_host);
+  return base::Contains(host_allowlist, lowered_host);
 }
 
 }  // namespace net

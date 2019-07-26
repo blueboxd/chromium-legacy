@@ -54,6 +54,7 @@
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -147,7 +148,7 @@
 #include "chrome/browser/ui/webui/settings/printing_handler.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ui/webui/settings/change_password_handler.h"
 #endif
@@ -269,7 +270,7 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #endif  // OS_WIN && defined(GOOGLE_CHROME_BUILD)
 
   bool password_protection_available = false;
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::ChromePasswordProtectionService* password_protection =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(profile);

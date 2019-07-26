@@ -44,7 +44,7 @@ mojom("interfaces") {
     "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
     "//skia/public/interfaces",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
     "//ui/latency/mojo:interfaces",
   ]

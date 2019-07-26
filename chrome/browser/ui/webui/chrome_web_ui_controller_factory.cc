@@ -81,6 +81,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
@@ -231,7 +232,7 @@
 #include "extensions/common/manifest.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 #endif
 
@@ -713,7 +714,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<MediaEngagementUI>;
   }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (url.host_piece() == chrome::kChromeUIResetPasswordHost) {
     return &NewWebUI<ResetPasswordUI>;
   }

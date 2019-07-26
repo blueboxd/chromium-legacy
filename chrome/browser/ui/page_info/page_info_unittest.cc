@@ -30,6 +30,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
@@ -102,7 +103,7 @@ class MockPageInfoUI : public PageInfoUI {
     }
   }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
       bool unused_is_enterprise_password) const override {
@@ -470,7 +471,7 @@ TEST_F(PageInfoTest, UnwantedSoftware) {
             page_info()->safe_browsing_status());
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 TEST_F(PageInfoTest, SignInPasswordReuse) {
   security_level_ = security_state::DANGEROUS;
   visible_security_state_.malicious_content_status =

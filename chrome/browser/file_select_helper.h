@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -79,7 +80,7 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   void GetFileTypesInThreadPool(blink::mojom::FileChooserParamsPtr params);
   void GetSanitizedFilenameOnUIThread(
       blink::mojom::FileChooserParamsPtr params);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   void CheckDownloadRequestWithSafeBrowsing(
       const base::FilePath& default_path,
       blink::mojom::FileChooserParamsPtr params);

@@ -6,7 +6,7 @@ module device.mojom;
 
 import "device/vr/public/mojom/vr_service.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 const string kVrIsolatedServiceName = "xr_device_service";
 

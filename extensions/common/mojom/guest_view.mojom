@@ -6,7 +6,7 @@ module extensions.mojom;
 
 import "content/public/common/transferrable_url_loader.mojom";
 import "extensions/common/api/mime_handler.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
 interface GuestView {

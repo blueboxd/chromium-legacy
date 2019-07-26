@@ -248,6 +248,7 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/features.h"
@@ -618,11 +619,11 @@
 #include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
 #endif
 
@@ -3746,7 +3747,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
         ui_task_runner);
   }
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   if (safe_browsing_service_) {
     content::ResourceContext* resource_context =
         render_process_host->GetBrowserContext()->GetResourceContext();
@@ -3759,7 +3760,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                 base::Unretained(this), resource_context)),
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
   }
-#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#endif
 
   if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
     registry->AddInterface(base::BindRepeating(
@@ -4220,7 +4221,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(background_tab_navigation_throttle));
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<content::NavigationThrottle>
       password_protection_navigation_throttle =
           safe_browsing::MaybeCreateNavigationThrottle(handle);
@@ -4616,7 +4617,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
         headers, data_reduction_proxy_throttle_manager_.get()));
   }
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   if (io_data && safe_browsing_service_) {
     bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
         request.url, io_data->safe_browsing_whitelist_domains());
@@ -4628,7 +4629,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottlesOnIO(
           wc_getter, frame_tree_node_id, resource_context));
     }
   }
-#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#endif
 
   if (chrome_navigation_ui_data &&
       chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
@@ -4718,7 +4719,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         headers, data_reduction_proxy_throttle_manager_.get()));
   }
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
@@ -4728,7 +4729,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             base::Unretained(this)),
         wc_getter, frame_tree_node_id, profile->GetResourceContext()));
   }
-#endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#endif
 
   if (chrome_navigation_ui_data &&
       chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
@@ -5208,6 +5209,13 @@ ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
   return AuthenticatorRequestScheduler::CreateRequestDelegate(render_frame_host,
                                                               relying_party_id);
 }
+
+#if defined(OS_MACOSX)
+bool ChromeContentBrowserClient::
+    IsWebAuthenticationTouchIdAuthenticatorSupported() {
+  return true;
+}
+#endif
 
 std::unique_ptr<net::ClientCertStore>
 ChromeContentBrowserClient::CreateClientCertStore(

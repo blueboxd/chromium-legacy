@@ -21,6 +21,7 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_buffer_manager.mojom.h"
 
 namespace ui {
@@ -32,13 +33,15 @@ class WaylandWindow;
 // accelerated compositing) or shared memory (software compositing) and uses
 // internal representation of surfaces, which are used to store buffers
 // associated with the WaylandWindow.
-class WaylandBufferManagerHost : ozone::mojom::WaylandBufferManagerHost {
+class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
+                                 public WaylandWindowObserver {
  public:
   explicit WaylandBufferManagerHost(WaylandConnection* connection);
   ~WaylandBufferManagerHost() override;
 
-  void OnWindowAdded(WaylandWindow* window);
-  void OnWindowRemoved(WaylandWindow* window);
+  // WaylandWindowObserver implements:
+  void OnWindowAdded(WaylandWindow* window) override;
+  void OnWindowRemoved(WaylandWindow* window) override;
 
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);

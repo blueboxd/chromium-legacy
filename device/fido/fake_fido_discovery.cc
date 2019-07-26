@@ -80,13 +80,6 @@ FakeFidoDiscovery* FakeFidoDiscoveryFactory::ForgeNextCableDiscovery(
   return next_cable_discovery_.get();
 }
 
-FakeFidoDiscovery* FakeFidoDiscoveryFactory::ForgeNextPlatformDiscovery(
-    FakeFidoDiscovery::StartMode mode) {
-  next_platform_discovery_ = std::make_unique<FakeFidoDiscovery>(
-      FidoTransportProtocol::kInternal, mode);
-  return next_platform_discovery_.get();
-}
-
 std::unique_ptr<FidoDiscoveryBase> FakeFidoDiscoveryFactory::Create(
     FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
@@ -101,7 +94,8 @@ std::unique_ptr<FidoDiscoveryBase> FakeFidoDiscoveryFactory::Create(
       NOTREACHED() << "CaBLE should be handled by CreateCable().";
       return nullptr;
     case FidoTransportProtocol::kInternal:
-      return std::move(next_platform_discovery_);
+      NOTREACHED() << "Internal authenticators should be handled separately.";
+      return nullptr;
   }
   NOTREACHED();
   return nullptr;

@@ -81,6 +81,9 @@ extern const char kLastTimeObsoleteHttpCredentialsRemoved[];
 // List that contains captured password hashes.
 extern const char kPasswordHashDataList[];
 
+// Integer indicating the state of the password manager onboarding experience.
+extern const char kPasswordManagerOnboardingState[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

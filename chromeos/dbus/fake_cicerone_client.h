@@ -158,6 +158,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       DBusMethodCallback<vm_tools::cicerone::ImportLxdContainerResponse>
           callback) override;
 
+  // Fake version of the method that cancels the in progress Lxd container
+  // export. |callback| is called when the method completes.
+  void CancelExportLxdContainer(
+      const vm_tools::cicerone::CancelExportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelExportLxdContainerResponse>
+          callback) override;
+
+  // Fake version of the method that cancels the in progress Lxd container
+  // import. |callback| is called when the method completes.
+  void CancelImportLxdContainer(
+      const vm_tools::cicerone::CancelImportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelImportLxdContainerResponse>
+          callback) override;
+
   // Fake version of the method that waits for the Cicerone service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -314,6 +328,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
     import_lxd_container_response_ = import_lxd_container_response;
   }
 
+  void set_cancel_export_lxd_container_response(
+      vm_tools::cicerone::CancelExportLxdContainerResponse
+          cancel_export_lxd_container_response) {
+    cancel_export_lxd_container_response_ =
+        std::move(cancel_export_lxd_container_response);
+  }
+
+  void set_cancel_import_lxd_container_response(
+      vm_tools::cicerone::CancelImportLxdContainerResponse
+          cancel_import_lxd_container_response) {
+    cancel_import_lxd_container_response_ =
+        std::move(cancel_import_lxd_container_response);
+  }
+
   // Additional functions to allow tests to trigger Signals.
   void NotifyLxdContainerCreated(
       const vm_tools::cicerone::LxdContainerCreatedSignal& signal);
@@ -385,6 +413,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       setup_lxd_container_user_response_;
   vm_tools::cicerone::ExportLxdContainerResponse export_lxd_container_response_;
   vm_tools::cicerone::ImportLxdContainerResponse import_lxd_container_response_;
+  vm_tools::cicerone::CancelExportLxdContainerResponse
+      cancel_export_lxd_container_response_;
+  vm_tools::cicerone::CancelImportLxdContainerResponse
+      cancel_import_lxd_container_response_;
 
   UninstallPackageOwningFileCallback uninstall_package_owning_file_callback_;
 

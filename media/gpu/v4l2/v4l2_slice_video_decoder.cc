@@ -463,7 +463,7 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
                             frame_layout->coded_size().height());
     base::Optional<struct v4l2_format> format =
         SetFormatOnOutputQueue(format_fourcc, adjusted_size);
-    if (!format) {
+    if (format) {
       num_output_planes_ = format->fmt.pix_mp.num_planes;
       return frame_layout;
     }

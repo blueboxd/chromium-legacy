@@ -8,7 +8,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/referrer_policy.mojom";
 import "url/mojom/url.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // This file contains the mojo IDL definitions for PageState and its constituent
 // parts. The resultant generated code is used to serialize and deserialize

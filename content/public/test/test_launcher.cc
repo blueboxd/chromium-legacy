@@ -82,6 +82,13 @@ TestLauncherDelegate* g_launcher_delegate = nullptr;
 ContentMainParams* g_params = nullptr;
 #endif
 
+std::string RemoveAnyPrePrefixes(const std::string& test_name) {
+  std::string result(test_name);
+  base::ReplaceSubstringsAfterOffset(
+      &result, 0, kPreTestPrefix, base::StringPiece());
+  return result;
+}
+
 void PrintUsage() {
   fprintf(stdout,
           "Runs tests using the gtest framework, each batch of tests being\n"
@@ -128,28 +135,70 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
  public:
   explicit WrapperTestLauncherDelegate(
       content::TestLauncherDelegate* launcher_delegate)
-      : launcher_delegate_(launcher_delegate) {}
+      : launcher_delegate_(launcher_delegate) {
+    CHECK(temp_dir_.CreateUniqueTempDir());
+  }
 
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
   bool WillRunTest(const std::string& test_case_name,
                    const std::string& test_name) override;
-  base::CommandLine GetCommandLine(const std::vector<std::string>& test_names,
-                                   const base::FilePath& temp_dir,
-                                   base::FilePath* output_file) override;
-
-  size_t GetBatchSize() override;
-
-  std::string GetWrapper() override;
-
-  int GetLaunchOptions() override;
-
-  base::TimeDelta GetTimeout() override;
+  size_t RunTests(base::TestLauncher* test_launcher,
+                  const std::vector<std::string>& test_names) override;
+  size_t RetryTests(base::TestLauncher* test_launcher,
+                    const std::vector<std::string>& test_names) override;
 
  private:
+  class ChildProcessLifetimeObserver : public base::ProcessLifetimeObserver {
+   public:
+    ChildProcessLifetimeObserver(
+        WrapperTestLauncherDelegate* test_launcher_delegate,
+        base::TestLauncher* test_launcher,
+        std::vector<std::string>&& next_test_names,
+        const std::string& test_name,
+        const base::FilePath& output_file)
+        : base::ProcessLifetimeObserver(),
+          test_launcher_delegate_(test_launcher_delegate),
+          test_launcher_(test_launcher),
+          next_test_names_(std::move(next_test_names)),
+          test_name_(test_name),
+          output_file_(output_file) {}
+    ~ChildProcessLifetimeObserver() override {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    }
+
+   private:
+
+    void OnTimedOut(const base::CommandLine& command_line) override {
+      test_launcher_delegate_->OnTestTimedOut(command_line);
+    }
+
+    void OnCompleted(int exit_code,
+                     base::TimeDelta elapsed_time,
+                     bool was_timeout,
+                     const std::string& output) override {
+      DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      test_launcher_delegate_->GTestCallback(
+          test_launcher_, next_test_names_, test_name_, output_file_, exit_code,
+          elapsed_time, was_timeout, output);
+    }
+
+    SEQUENCE_CHECKER(sequence_checker_);
+    WrapperTestLauncherDelegate* test_launcher_delegate_;
+    base::TestLauncher* test_launcher_;
+    std::vector<std::string> next_test_names_;
+    std::string test_name_;
+    base::FilePath output_file_;
+
+    DISALLOW_COPY_AND_ASSIGN(ChildProcessLifetimeObserver);
+  };
+
+  void DoRunTests(base::TestLauncher* test_launcher,
+                  const std::vector<std::string>& test_names);
+
   // Relays timeout notification from the TestLauncher (by way of a
   // ProcessLifetimeObserver) to the caller's content::TestLauncherDelegate.
-  void OnTestTimedOut(const base::CommandLine& command_line) override;
+  void OnTestTimedOut(const base::CommandLine& command_line);
 
   // Callback to receive result of a test.
   // |output_file| is a path to xml file written by test-launcher
@@ -157,17 +206,28 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
   // file to get additional information about test run (status,
   // error-messages, stack-traces and file/line for failures).
-  std::vector<base::TestResult> ProcessTestResults(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const std::string& output,
-      const base::TimeDelta& elapsed_time,
-      int exit_code,
-      bool was_timeout) override;
+  void GTestCallback(base::TestLauncher* test_launcher,
+                     const std::vector<std::string>& test_names,
+                     const std::string& test_name,
+                     const base::FilePath& output_file,
+                     int exit_code,
+                     const base::TimeDelta& elapsed_time,
+                     bool was_timeout,
+                     const std::string& output);
 
   content::TestLauncherDelegate* launcher_delegate_;
 
+  // Store unique data directory prefix for test names (without PRE_ prefixes).
+  // PRE_ tests and tests that depend on them must share the same
+  // data directory. Using test name as directory name leads to too long
+  // names (exceeding UNIX_PATH_MAX, which creates a problem with
+  // process_singleton_linux). Create a randomly-named temporary directory
+  // and keep track of the names so that PRE_ tests can still re-use them.
+  typedef std::map<std::string, base::FilePath> UserDataDirMap;
+  UserDataDirMap user_data_dir_map_;
 
+  // Temporary directory for user data directories.
+  base::ScopedTempDir temp_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
@@ -193,26 +253,81 @@ bool WrapperTestLauncherDelegate::WillRunTest(const std::string& test_case_name,
   return true;
 }
 
-size_t WrapperTestLauncherDelegate::GetBatchSize() {
-  return 1u;
+size_t WrapperTestLauncherDelegate::RunTests(
+    base::TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names) {
+  user_data_dir_map_.clear();
+
+  std::vector<std::string> test_list;
+  for (const std::string& test_name : test_names) {
+    // Stack all dependent tests and run them sequentially.
+    test_list.push_back(test_name);
+    if (!IsPreTestName(test_name)) {
+      if (!base::Contains(user_data_dir_map_, test_name)) {
+        base::FilePath temp_dir;
+        CHECK(base::CreateTemporaryDirInDir(temp_dir_.GetPath(),
+                                            FILE_PATH_LITERAL("d"), &temp_dir));
+        user_data_dir_map_[test_name] = temp_dir;
+      }
+      DoRunTests(test_launcher, test_list);
+      test_list.clear();
+    }
+  }
+  return test_names.size();
 }
 
-base::CommandLine WrapperTestLauncherDelegate::GetCommandLine(
-    const std::vector<std::string>& test_names,
-    const base::FilePath& temp_dir,
-    base::FilePath* output_file) {
-  DCHECK_EQ(1u, test_names.size());
+size_t WrapperTestLauncherDelegate::RetryTests(
+    base::TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names) {
+  // Discard user data directories from any previous runs. Start with
+  // fresh state.
+  for (const auto& it : user_data_dir_map_) {
+    // Delete temporary directories now to avoid using too much space in /tmp.
+    if (!base::DeleteFile(it.second, true)) {
+      LOG(WARNING) << "Failed to delete " << it.second.value();
+    }
+  }
+  user_data_dir_map_.clear();
+
+  for (const std::string& full_name : test_names) {
+    // Make sure PRE_ tests and tests that depend on them share the same
+    // data directory - based it on the test name without prefixes.
+    std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
+    if (!base::Contains(user_data_dir_map_, test_name_no_pre)) {
+      base::FilePath temp_dir;
+      CHECK(base::CreateTemporaryDirInDir(temp_dir_.GetPath(),
+                                          FILE_PATH_LITERAL("d"), &temp_dir));
+      user_data_dir_map_[test_name_no_pre] = temp_dir;
+    }
+  }
+
+  DoRunTests(test_launcher, test_names);
+
+  return test_names.size();
+}
+
+void WrapperTestLauncherDelegate::DoRunTests(
+    base::TestLauncher* test_launcher,
+    const std::vector<std::string>& test_names) {
+  if (test_names.empty())
+    return;
+
   std::string test_name(test_names.front());
-  // Chained pre tests must share the same temp directory,
-  // TestLauncher should guarantee that for the delegate.
-  base::FilePath user_data_dir = temp_dir.AppendASCII("user_data");
-  CreateDirectory(user_data_dir);
+  std::vector<std::string> test_names_copy(
+      test_names.begin() + 1, test_names.end());
+
+  std::string test_name_no_pre(RemoveAnyPrePrefixes(test_name));
+
   base::CommandLine cmd_line(*base::CommandLine::ForCurrentProcess());
+  base::TestLauncher::LaunchOptions test_launch_options;
+  test_launch_options.flags = base::TestLauncher::USE_JOB_OBJECTS |
+                              base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB;
   launcher_delegate_->PreRunTest();
-  CHECK(launcher_delegate_->AdjustChildProcessCommandLine(&cmd_line,
-                                                          user_data_dir));
+  CHECK(launcher_delegate_->AdjustChildProcessCommandLine(
+            &cmd_line, user_data_dir_map_[test_name_no_pre]));
   base::CommandLine new_cmd_line(cmd_line.GetProgram());
   base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
+
   // Strip out gtest_output flag because otherwise we would overwrite results
   // of the other tests.
   switches.erase(base::kGTestOutputFlag);
@@ -220,11 +335,12 @@ base::CommandLine WrapperTestLauncherDelegate::GetCommandLine(
   // Create a dedicated temporary directory to store the xml result data
   // per run to ensure clean state and make it possible to launch multiple
   // processes in parallel.
-  CHECK(base::CreateTemporaryDirInDir(temp_dir, FILE_PATH_LITERAL("results"),
-                                      output_file));
-  *output_file = output_file->AppendASCII("test_results.xml");
+  base::FilePath output_file;
+  CHECK(base::CreateTemporaryDirInDir(
+      temp_dir_.GetPath(), FILE_PATH_LITERAL("results"), &output_file));
+  output_file = output_file.AppendASCII("test_results.xml");
 
-  new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, *output_file);
+  new_cmd_line.AppendSwitchPath(switches::kTestLauncherOutput, output_file);
 
   for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
        iter != switches.end(); ++iter) {
@@ -236,21 +352,18 @@ base::CommandLine WrapperTestLauncherDelegate::GetCommandLine(
   new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
   new_cmd_line.AppendSwitchASCII("gtest_filter", test_name);
   new_cmd_line.AppendSwitch(kSingleProcessTestsFlag);
-  return new_cmd_line;
-}
 
-std::string WrapperTestLauncherDelegate::GetWrapper() {
   char* browser_wrapper = getenv("BROWSER_WRAPPER");
-  return browser_wrapper ? browser_wrapper : std::string();
-}
 
-int WrapperTestLauncherDelegate::GetLaunchOptions() {
-  return base::TestLauncher::USE_JOB_OBJECTS |
-         base::TestLauncher::ALLOW_BREAKAWAY_FROM_JOB;
-}
+  auto observer = std::make_unique<ChildProcessLifetimeObserver>(
+      this, test_launcher, std::move(test_names_copy), test_name, output_file);
 
-base::TimeDelta WrapperTestLauncherDelegate::GetTimeout() {
-  return TestTimeouts::test_launcher_timeout();
+  // Must use test_launcher_timeout() here because this process is allowed to
+  // assume that it can use an entire action_max_timeout() in its lifespan.
+  test_launcher->LaunchChildGTestProcess(
+      new_cmd_line, browser_wrapper ? browser_wrapper : std::string(),
+      TestTimeouts::test_launcher_timeout(), test_launch_options,
+      std::move(observer));
 }
 
 void WrapperTestLauncherDelegate::OnTestTimedOut(
@@ -258,16 +371,16 @@ void WrapperTestLauncherDelegate::OnTestTimedOut(
   launcher_delegate_->OnTestTimedOut(command_line);
 }
 
-std::vector<base::TestResult> WrapperTestLauncherDelegate::ProcessTestResults(
+void WrapperTestLauncherDelegate::GTestCallback(
+    base::TestLauncher* test_launcher,
     const std::vector<std::string>& test_names,
+    const std::string& test_name,
     const base::FilePath& output_file,
-    const std::string& output,
-    const base::TimeDelta& elapsed_time,
     int exit_code,
-    bool was_timeout) {
+    const base::TimeDelta& elapsed_time,
+    bool was_timeout,
+    const std::string& output) {
   base::TestResult result;
-  DCHECK_EQ(1u, test_names.size());
-  std::string test_name = test_names.front();
   result.full_name = test_name;
 
   bool crashed = false;
@@ -317,7 +430,19 @@ std::vector<base::TestResult> WrapperTestLauncherDelegate::ProcessTestResults(
 
   launcher_delegate_->PostRunTest(&result);
 
-  return std::vector<base::TestResult>({result});
+    // No other tests depend on this, we can delete the temporary directory now.
+    // Do so to avoid too many temporary files using lots of disk space.
+  if (base::Contains(user_data_dir_map_, test_name)) {
+    if (!base::DeleteFile(user_data_dir_map_[test_name], true)) {
+      LOG(WARNING) << "Failed to delete "
+                   << user_data_dir_map_[test_name].value();
+    }
+    user_data_dir_map_.erase(test_name);
+  }
+
+  test_launcher->OnTestFinished(result);
+
+  DoRunTests(test_launcher, test_names);
 }
 
 }  // namespace

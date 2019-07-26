@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 interface FindInPage {
   // If |options.find_next| is false, this is a "Start Find" call.

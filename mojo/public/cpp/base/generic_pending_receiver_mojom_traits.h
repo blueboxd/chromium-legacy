@@ -17,6 +17,9 @@ template <>
 struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     StructTraits<mojo_base::mojom::GenericPendingReceiverDataView,
                  GenericPendingReceiver> {
+  static bool IsNull(const GenericPendingReceiver& receiver);
+  static void SetToNull(GenericPendingReceiver* receiver);
+
   static base::StringPiece interface_name(
       const GenericPendingReceiver& receiver) {
     DCHECK(receiver.interface_name().has_value());

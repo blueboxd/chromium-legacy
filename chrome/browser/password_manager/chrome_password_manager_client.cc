@@ -57,6 +57,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
@@ -84,7 +85,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "url/url_constants.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -520,7 +521,7 @@ void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
     pps->MaybeLogPasswordReuseDetectedEvent(web_contents());
   }
 }
-#endif  // defined(FULL_SAFE_BROWSING)
+#endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   return ukm::GetSourceIdForWebContentsDocument(web_contents());
@@ -935,7 +936,7 @@ favicon::FaviconService* ChromePasswordManagerClient::GetFaviconService() {
 }
 
 bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   return safe_browsing::AdvancedProtectionStatusManager::
       IsUnderAdvancedProtection(profile_);
 #else

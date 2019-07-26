@@ -631,6 +631,15 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual void AddLayerBeneathView(ui::Layer* new_layer);
   virtual void RemoveLayerBeneathView(ui::Layer* old_layer);
 
+  // This is like RemoveLayerBeneathView() but doesn't remove |old_layer| from
+  // its parent. This is useful for when a layer beneth this view is owned by a
+  // ui::LayerOwner which just recreated it (by calling RecreateLayer()). In
+  // this case, this function can be called to remove it from |layers_beneath_|,
+  // and to stop observing it, but it remains in the layer tree since the
+  // expectation of ui::LayerOwner::RecreateLayer() is that the old layer
+  // remains under the same parent, and stacked above the newly cloned layer.
+  void RemoveLayerBeneathViewKeepInLayerTree(ui::Layer* old_layer);
+
   // Gets the layers associated with this view that should be immediate children
   // of the parent layer. They are returned in bottom-to-top order. This
   // includes |this->layer()| and any layers added with |AddLayerBeneathView()|.

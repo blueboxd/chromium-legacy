@@ -1599,14 +1599,12 @@ class TestAuthenticatorRequestDelegate
       base::OnceClosure action_callbacks_registered_callback,
       IndividualAttestation individual_attestation,
       AttestationConsent attestation_consent,
-      bool is_focused,
-      bool is_uvpaa)
+      bool is_focused)
       : action_callbacks_registered_callback_(
             std::move(action_callbacks_registered_callback)),
         individual_attestation_(individual_attestation),
         attestation_consent_(attestation_consent),
-        is_focused_(is_focused),
-        is_uvpaa_(is_uvpaa) {}
+        is_focused_(is_focused) {}
   ~TestAuthenticatorRequestDelegate() override {}
 
   void RegisterActionCallbacks(
@@ -1634,17 +1632,12 @@ class TestAuthenticatorRequestDelegate
                             AttestationConsent::GRANTED);
   }
 
-  bool IsUserVerifyingPlatformAuthenticatorAvailable() override {
-    return is_uvpaa_;
-  }
-
   bool IsFocused() override { return is_focused_; }
 
   base::OnceClosure action_callbacks_registered_callback_;
   const IndividualAttestation individual_attestation_;
   const AttestationConsent attestation_consent_;
   const bool is_focused_;
-  const bool is_uvpaa_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAuthenticatorRequestDelegate);
@@ -1663,7 +1656,7 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
         action_callbacks_registered_callback
             ? std::move(action_callbacks_registered_callback)
             : base::DoNothing(),
-        individual_attestation, attestation_consent, is_focused, is_uvpaa);
+        individual_attestation, attestation_consent, is_focused);
   }
 
   // If set, this closure will be called when the subsequently constructed
@@ -1674,8 +1667,6 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
       IndividualAttestation::NOT_REQUESTED;
   AttestationConsent attestation_consent = AttestationConsent::DENIED;
   bool is_focused = true;
-
-  bool is_uvpaa = false;
 
   // This emulates scenarios where a nullptr RequestClientDelegate is returned
   // because a request is already in progress.
@@ -2081,8 +2072,8 @@ TEST_F(AuthenticatorContentBrowserClientTest,
        PlatformAuthenticatorAttestation) {
   virtual_device_factory_->SetSupportedProtocol(
       device::ProtocolVersion::kCtap2);
-  virtual_device_factory_->SetTransport(
-      device::FidoTransportProtocol::kInternal);
+  virtual_device_factory_->mutable_state()->transport =
+      device::FidoTransportProtocol::kInternal;
   virtual_device_factory_->mutable_state()->self_attestation = true;
   virtual_device_factory_->mutable_state()
       ->non_zero_aaguid_with_self_attestation = true;
@@ -2314,20 +2305,43 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   }
 }
 
-TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAA) {
-  for (const bool is_uvpaa : {false, true}) {
-    SCOPED_TRACE(::testing::Message() << "is_uvpaa=" << is_uvpaa);
-    test_client_.is_uvpaa = is_uvpaa;
+#if defined(OS_WIN)
+TEST_F(AuthenticatorContentBrowserClientTest, WinIsUVPAA) {
+  for (const bool enable_win_webauthn_api : {false, true}) {
+    SCOPED_TRACE(enable_win_webauthn_api ? "enable_win_webauthn_api"
+                                         : "!enable_win_webauthn_api");
+    for (const bool is_uvpaa : {false, true}) {
+      SCOPED_TRACE(is_uvpaa ? "is_uvpaa" : "!is_uvpaa");
 
-    mojo::Remote<blink::mojom::Authenticator> authenticator =
-        ConnectToAuthenticator();
+      win_webauthn_api_.set_available(enable_win_webauthn_api);
+      win_webauthn_api_.set_is_uvpaa(is_uvpaa);
 
-    TestIsUvpaaCallback cb;
-    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
-    cb.WaitForCallback();
-    EXPECT_EQ(is_uvpaa, cb.value());
+      mojo::Remote<blink::mojom::Authenticator> authenticator =
+          ConnectToAuthenticator();
+      TestIsUvpaaCallback cb;
+      authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+          cb.callback());
+      cb.WaitForCallback();
+      EXPECT_EQ(enable_win_webauthn_api && is_uvpaa, cb.value());
+    }
   }
 }
+#endif  // defined(OS_WIN)
+
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
+TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAAFalse) {
+  // There are no platform authenticators other than Windows Hello and macOS
+  // Touch ID.
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  TestIsUvpaaCallback cb;
+  authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+  cb.WaitForCallback();
+  EXPECT_FALSE(cb.value());
+}
+#endif  // !defined(OS_MACOSX) && !defined(OS_WIN)
 
 TEST_F(AuthenticatorContentBrowserClientTest,
        CryptotokenBypassesAttestationConsentPrompt) {
@@ -2372,8 +2386,7 @@ class MockAuthenticatorRequestDelegateObserver
             base::DoNothing() /* did_start_request_callback */,
             IndividualAttestation::NOT_REQUESTED,
             AttestationConsent::DENIED,
-            true /* is_focused */,
-            /*is_uvpaa=*/false),
+            true /* is_focused */),
         failure_reasons_callback_(std::move(failure_reasons_callback)) {}
   ~MockAuthenticatorRequestDelegateObserver() override = default;
 
@@ -4158,5 +4171,99 @@ TEST_F(InternalAuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
   }
 }
+
+#if defined(OS_MACOSX)
+class TouchIdAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  using TouchIdAuthenticatorConfig = ::device::fido::mac::AuthenticatorConfig;
+
+  explicit TouchIdAuthenticatorRequestDelegate(
+      TouchIdAuthenticatorConfig config)
+      : config_(std::move(config)) {}
+
+  base::Optional<TouchIdAuthenticatorConfig> GetTouchIdAuthenticatorConfig()
+      override {
+    return config_;
+  }
+
+ private:
+  TouchIdAuthenticatorConfig config_;
+  DISALLOW_COPY_AND_ASSIGN(TouchIdAuthenticatorRequestDelegate);
+};
+
+class TouchIdAuthenticatorContentBrowserClient : public ContentBrowserClient {
+ public:
+  using TouchIdAuthenticatorConfig = ::device::fido::mac::AuthenticatorConfig;
+
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host,
+      const std::string& relying_party_id) override {
+    return std::make_unique<TouchIdAuthenticatorRequestDelegate>(
+        touch_id_config);
+  }
+
+  bool IsWebAuthenticationTouchIdAuthenticatorSupported() override {
+    return supports_touch_id;
+  }
+
+  bool supports_touch_id = true;
+
+  TouchIdAuthenticatorConfig touch_id_config;
+};
+
+class TouchIdAuthenticatorContentBrowserClientTest
+    : public AuthenticatorContentBrowserClientTest {
+ protected:
+  TouchIdAuthenticatorContentBrowserClientTest() = default;
+
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+    NavigateAndCommit(GURL(kTestOrigin1));
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+  TouchIdAuthenticatorContentBrowserClient test_client_;
+
+  API_AVAILABLE(macos(10.12.2))
+  device::fido::mac::ScopedTouchIdTestEnvironment touch_id_test_environment_;
+
+ private:
+  ContentBrowserClient* old_client_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchIdAuthenticatorContentBrowserClientTest);
+};
+
+TEST_F(TouchIdAuthenticatorContentBrowserClientTest, IsUVPAA) {
+  if (__builtin_available(macOS 10.12.2, *)) {
+    for (const bool touch_id_enabled_in_browser_client : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "touch_id_enabled_in_browser_client="
+                                        << touch_id_enabled_in_browser_client);
+      for (const bool touch_id_available : {false, true}) {
+        SCOPED_TRACE(::testing::Message()
+                     << "touch_id_available=" << touch_id_available);
+        touch_id_test_environment_.SetTouchIdAvailable(touch_id_available);
+        test_client_.supports_touch_id = touch_id_enabled_in_browser_client;
+
+        mojo::Remote<blink::mojom::Authenticator> authenticator =
+            ConnectToAuthenticator();
+
+        TestIsUvpaaCallback cb;
+        authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(
+            cb.callback());
+        cb.WaitForCallback();
+        EXPECT_EQ(cb.value(),
+                  touch_id_enabled_in_browser_client && touch_id_available);
+      }
+    }
+  }
+}
+#endif  // defined(OS_MACOSX)
 
 }  // namespace content

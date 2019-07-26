@@ -25,6 +25,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_pointer.h"
 #include "ui/ozone/platform/wayland/host/wayland_touch.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
 
@@ -57,16 +58,6 @@ class WaylandConnection : public PlatformEventSource,
   zwp_text_input_manager_v1* text_input_manager_v1() const {
     return text_input_manager_v1_.get();
   }
-
-  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
-  WaylandWindow* GetWindowWithLargestBounds() const;
-  WaylandWindow* GetCurrentFocusedWindow() const;
-  WaylandWindow* GetCurrentKeyboardFocusedWindow() const;
-  // TODO(crbug.com/971525): remove this in favor of targeted subscription of
-  // windows to their outputs.
-  std::vector<WaylandWindow*> GetWindowsOnOutput(uint32_t output_id);
-  void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
-  void RemoveWindow(gfx::AcceleratedWidget widget);
 
   void set_serial(uint32_t serial) { serial_ = serial; }
   uint32_t serial() const { return serial_; }
@@ -101,6 +92,10 @@ class WaylandConnection : public PlatformEventSource,
   WaylandZwpLinuxDmabuf* zwp_dmabuf() const { return zwp_dmabuf_.get(); }
 
   WaylandShm* shm() const { return shm_.get(); }
+
+  WaylandWindowManager* wayland_window_manager() {
+    return &wayland_window_manager_;
+  }
 
   std::vector<gfx::BufferFormat> GetSupportedBufferFormats();
 
@@ -166,8 +161,6 @@ class WaylandConnection : public PlatformEventSource,
   // xdg_shell_listener
   static void Ping(void* data, xdg_shell* shell, uint32_t serial);
 
-  base::flat_map<gfx::AcceleratedWidget, WaylandWindow*> window_map_;
-
   wl::Object<wl_display> display_;
   wl::Object<wl_registry> registry_;
   wl::Object<wl_compositor> compositor_;
@@ -190,6 +183,9 @@ class WaylandConnection : public PlatformEventSource,
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
   std::unique_ptr<WaylandShm> shm_;
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
+
+  // Manages Wayland windows.
+  WaylandWindowManager wayland_window_manager_;
 
   bool scheduled_flush_ = false;
   bool watching_ = false;

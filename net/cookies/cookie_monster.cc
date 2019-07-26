@@ -1715,7 +1715,7 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
     }
   }
 
-  // The scheme didn't match any in our whitelist.
+  // The scheme didn't match any in our allowed list.
   DVLOG(net::cookie_util::kVlogPerCookieMonster)
       << "WARNING: Unsupported cookie scheme: " << url.scheme();
   return false;

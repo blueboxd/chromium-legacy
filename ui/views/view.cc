@@ -552,7 +552,9 @@ void View::AddLayerBeneathView(ui::Layer* new_layer) {
   // correctly. If not, this will happen on layer creation.
   if (layer()) {
     ui::Layer* parent_layer = layer()->parent();
-    if (parent_layer)
+    // Note that |new_layer| may have already been added to the parent, for
+    // example when the layer of a LayerOwner is recreated.
+    if (parent_layer && parent_layer != new_layer->parent())
       parent_layer->Add(new_layer);
     new_layer->SetBounds(gfx::Rect(new_layer->size()) +
                          layer()->bounds().OffsetFromOrigin());
@@ -566,18 +568,23 @@ void View::AddLayerBeneathView(ui::Layer* new_layer) {
 }
 
 void View::RemoveLayerBeneathView(ui::Layer* old_layer) {
+  RemoveLayerBeneathViewKeepInLayerTree(old_layer);
+
+  // Note that |old_layer| may have already been removed from its parent.
+  ui::Layer* parent_layer = layer()->parent();
+  if (parent_layer && parent_layer == old_layer->parent())
+    parent_layer->Remove(old_layer);
+
+  CreateOrDestroyLayer();
+}
+
+void View::RemoveLayerBeneathViewKeepInLayerTree(ui::Layer* old_layer) {
   auto layer_pos =
       std::find(layers_beneath_.begin(), layers_beneath_.end(), old_layer);
   DCHECK(layer_pos != layers_beneath_.end())
       << "Attempted to remove a layer that was never added.";
   layers_beneath_.erase(layer_pos);
   old_layer->RemoveObserver(this);
-
-  ui::Layer* parent_layer = layer()->parent();
-  if (parent_layer)
-    parent_layer->Remove(old_layer);
-
-  CreateOrDestroyLayer();
 }
 
 std::vector<ui::Layer*> View::GetLayersInOrder() {

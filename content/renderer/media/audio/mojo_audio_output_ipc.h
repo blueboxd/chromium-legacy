@@ -42,7 +42,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
 
   // AudioOutputIPC implementation.
   void RequestDeviceAuthorization(media::AudioOutputIPCDelegate* delegate,
-                                  int session_id,
+                                  const base::UnguessableToken& session_id,
                                   const std::string& device_id) override;
   void CreateStream(
       media::AudioOutputIPCDelegate* delegate,
@@ -75,7 +75,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   // Tries to acquire a RendererAudioOutputStreamFactory and requests device
   // authorization. On failure to aquire a factory, |callback| is destructed
   // asynchronously.
-  void DoRequestDeviceAuthorization(int session_id,
+  void DoRequestDeviceAuthorization(const base::UnguessableToken& session_id,
                                     const std::string& device_id,
                                     AuthorizationCB callback);
 

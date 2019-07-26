@@ -56,7 +56,7 @@ class NET_EXPORT CertVerifier {
 
     // Provides an optional CRLSet structure that can be used to avoid
     // revocation checks over the network. CRLSets can be used to add
-    // additional certificates to be blacklisted beyond the internal blacklist,
+    // additional certificates to be blocked beyond the internal block list,
     // whether leaves or intermediates.
     scoped_refptr<CRLSet> crl_set;
 

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "media/base/sample_format.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_platform_media_stream_source.h"
 #include "third_party/blink/public/platform/modules/mediastream/webaudio_media_stream_source.h"
@@ -19,6 +18,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/public/web/modules/mediastream/webaudio_media_stream_audio_sink.h"
 
 namespace content {

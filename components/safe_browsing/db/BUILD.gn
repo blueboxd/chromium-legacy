@@ -273,89 +273,12 @@ static_library("v4_update_protocol_manager") {
     ":util",
     ":v4_protocol_manager_util",
     "//base",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing:webui_proto",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//net",
     "//services/network/public/cpp",
     "//url",
-  ]
-}
-
-source_set("v4_database_unittest") {
-  testonly = true
-  sources = [
-    "v4_database_unittest.cc",
-  ]
-  deps = [
-    ":v4_database",
-    ":v4_store",
-    "//base",
-    "//base/test:test_support",
-    "//content/test:test_support",
-    "//testing/gtest",
-  ]
-}
-
-source_set("v4_get_hash_protocol_manager_unittest") {
-  testonly = true
-  sources = [
-    "v4_get_hash_protocol_manager_unittest.cc",
-  ]
-  deps = [
-    ":safebrowsing_proto",
-    ":util",
-    ":v4_database",
-    ":v4_get_hash_protocol_manager",
-    ":v4_local_database_manager",
-    ":v4_test_util",
-    "//base",
-    "//base/test:test_support",
-    "//content/test:test_support",
-    "//net",
-    "//net:test_support",
-    "//services/network:test_support",
-    "//testing/gtest",
-  ]
-}
-
-source_set("v4_local_database_manager_unittest") {
-  testonly = true
-  sources = [
-    "v4_local_database_manager_unittest.cc",
-  ]
-  deps = [
-    ":v4_database",
-    ":v4_local_database_manager",
-    ":v4_protocol_manager_util",
-    ":v4_test_util",
-    "//base",
-    "//base/test:test_support",
-    "//components/safe_browsing:features",
-    "//content/test:test_support",
-    "//net",
-    "//net:test_support",
-    "//services/network:test_support",
-    "//testing/gtest",
-  ]
-}
-
-source_set("v4_update_protocol_manager_unittest") {
-  testonly = true
-  sources = [
-    "v4_update_protocol_manager_unittest.cc",
-  ]
-  deps = [
-    ":safebrowsing_proto",
-    ":util",
-    ":v4_test_util",
-    ":v4_update_protocol_manager",
-    "//base",
-    "//base/test:test_support",
-    "//content/public/common",
-    "//net",
-    "//net:test_support",
-    "//services/network:test_support",
-    "//testing/gtest",
   ]
 }
 
@@ -413,6 +336,7 @@ source_set("unit_tests_desktop") {
     ":v4_update_protocol_manager",
     "//base",
     "//components/prefs:test_support",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing:features",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//content/test:test_support",
@@ -440,24 +364,6 @@ static_library("allowlist_checker_client") {
     "//base:base",
     "//content/public/browser",
     "//url:url",
-  ]
-}
-
-source_set("allowlist_checker_client_unittest") {
-  testonly = true
-  sources = [
-    "allowlist_checker_client_unittest.cc",
-  ]
-  deps = [
-    ":allowlist_checker_client",
-    ":database_manager",
-    ":test_database_manager",
-    "//base:base",
-    "//base/test:test_support",
-    "//content/public/browser",
-    "//content/test:test_support",
-    "//testing/gmock:gmock",
-    "//testing/gtest:gtest",
   ]
 }
 

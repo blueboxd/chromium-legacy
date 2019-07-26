@@ -1929,7 +1929,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
 #endif
-  AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    AddFilter(new BlobDispatcherHost(GetID(), blob_storage_context));
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter());
 #endif

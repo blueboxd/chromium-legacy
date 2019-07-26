@@ -111,26 +111,26 @@ void LogMaxConsecutiveVideoFrameDropCountExceeded(
 
 void CallOnError(media::VideoCaptureError error,
                  VideoCaptureControllerEventHandler* client,
-                 VideoCaptureControllerID id) {
+                 const VideoCaptureControllerID& id) {
   client->OnError(id, error);
 }
 
 void CallOnStarted(VideoCaptureControllerEventHandler* client,
-                   VideoCaptureControllerID id) {
+                   const VideoCaptureControllerID& id) {
   client->OnStarted(id);
 }
 
 void CallOnStartedUsingGpuDecode(VideoCaptureControllerEventHandler* client,
-                                 VideoCaptureControllerID id) {
+                                 const VideoCaptureControllerID& id) {
   client->OnStartedUsingGpuDecode(id);
 }
 
 }  // anonymous namespace
 
 struct VideoCaptureController::ControllerClient {
-  ControllerClient(VideoCaptureControllerID id,
+  ControllerClient(const VideoCaptureControllerID& id,
                    VideoCaptureControllerEventHandler* handler,
-                   media::VideoCaptureSessionId session_id,
+                   const media::VideoCaptureSessionId& session_id,
                    const media::VideoCaptureParams& params)
       : controller_id(id),
         event_handler(handler),
@@ -279,14 +279,14 @@ VideoCaptureController::GetWeakPtrForIOThread() {
 }
 
 void VideoCaptureController::AddClient(
-    VideoCaptureControllerID id,
+    const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
-    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureSessionId& session_id,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::ostringstream string_stream;
   string_stream << "VideoCaptureController::AddClient(): id = " << id
-                << ", session_id = " << session_id
+                << ", session_id = " << session_id.ToString()
                 << ", params.requested_format = "
                 << media::VideoCaptureFormat::ToString(params.requested_format);
   EmitLogMessage(string_stream.str(), 1);
@@ -337,8 +337,8 @@ void VideoCaptureController::AddClient(
   }
 }
 
-int VideoCaptureController::RemoveClient(
-    VideoCaptureControllerID id,
+base::UnguessableToken VideoCaptureController::RemoveClient(
+    const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::ostringstream string_stream;
@@ -347,7 +347,7 @@ int VideoCaptureController::RemoveClient(
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
   if (!client)
-    return kInvalidMediaCaptureSessionId;
+    return base::UnguessableToken();
 
   for (const auto& buffer_id : client->buffers_in_use) {
     OnClientFinishedConsumingBuffer(
@@ -356,7 +356,7 @@ int VideoCaptureController::RemoveClient(
   }
   client->buffers_in_use.clear();
 
-  int session_id = client->session_id;
+  base::UnguessableToken session_id = client->session_id;
   controller_clients_.remove_if(
       [client](const std::unique_ptr<ControllerClient>& ptr) {
         return ptr.get() == client;
@@ -366,7 +366,7 @@ int VideoCaptureController::RemoveClient(
 }
 
 void VideoCaptureController::PauseClient(
-    VideoCaptureControllerID id,
+    const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::PauseClient: id = " << id;
@@ -381,7 +381,7 @@ void VideoCaptureController::PauseClient(
 }
 
 bool VideoCaptureController::ResumeClient(
-    VideoCaptureControllerID id,
+    const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::ResumeClient: id = " << id;
@@ -422,7 +422,8 @@ bool VideoCaptureController::HasPausedClient() const {
   return false;
 }
 
-void VideoCaptureController::StopSession(int session_id) {
+void VideoCaptureController::StopSession(
+    const base::UnguessableToken& session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::ostringstream string_stream;
   string_stream << "VideoCaptureController::StopSession: session_id = "
@@ -438,7 +439,7 @@ void VideoCaptureController::StopSession(int session_id) {
 }
 
 void VideoCaptureController::ReturnBuffer(
-    VideoCaptureControllerID id,
+    const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
     double consumer_resource_utilization) {
@@ -773,7 +774,7 @@ void VideoCaptureController::SetDesktopCaptureWindowIdAsync(
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
-    VideoCaptureControllerID id,
+    const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* handler,
     const ControllerClients& clients) {
   for (const auto& client : clients) {
@@ -784,7 +785,7 @@ VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
-    int session_id,
+    const base::UnguessableToken& session_id,
     const ControllerClients& clients) {
   for (const auto& client : clients) {
     if (client->session_id == session_id)

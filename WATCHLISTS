@@ -1962,7 +1962,6 @@
             'sadrul@chromium.org'],
     'assistant': ['croissant-eng+reviews@chromium.org'],
     'audio_service': ['marinaciocea+watch@chromium.org',
-                      'maxmorin+watch@chromium.org',
                       'olka+watch@chromium.org'],
     'aura': ['kalyan.kondapally@intel.com',
              'sadrul@chromium.org'],

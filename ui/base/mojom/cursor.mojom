@@ -6,7 +6,7 @@ module ui.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "skia/public/interfaces/bitmap.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Standard Cursor numbers. These are the same as Chrome's ui::Cursor and
 // blink's WebCursorInfo.

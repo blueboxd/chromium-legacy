@@ -11,7 +11,7 @@ import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_metadata.mojom";
 import "services/viz/public/interfaces/compositing/frame_timing_details.mojom";
 import "services/viz/public/interfaces/compositing/returned_resource.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 [Native]
 struct SyncCompositorDemandDrawHwParams;

@@ -19,8 +19,10 @@ import org.junit.runner.RunWith;
 import org.chromium.net.UrlResponseInfo;
 import org.chromium.net.impl.UrlResponseInfoImpl;
 
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +54,7 @@ public class FakeUrlResponseTest {
                                 .addHeader(TEST_HEADER_NAME, TEST_HEADER_VALUE)
                                 .setNegotiatedProtocol(TEST_NEGOTIATED_PROTOCOL)
                                 .setProxyServer(TEST_PROXY_SERVER)
-                                .setResponseBody(TEST_BODY)
+                                .setResponseBody(TEST_BODY.getBytes())
                                 .build();
     }
 
@@ -74,11 +76,25 @@ public class FakeUrlResponseTest {
     public void testEquals() {
         FakeUrlResponse responseEqualToTestResponse = mTestResponse.toBuilder().build();
         FakeUrlResponse responseNotEqualToTestResponse =
-                mTestResponse.toBuilder().setResponseBody("").build();
+                mTestResponse.toBuilder().setResponseBody("Not equal".getBytes()).build();
 
         assertEquals(mTestResponse, mTestResponse);
         assertEquals(mTestResponse, responseEqualToTestResponse);
         assertNotEquals(mTestResponse, responseNotEqualToTestResponse);
+    }
+
+    @Test
+    @SmallTest
+    public void testResponseBodyIsSame() {
+        try {
+            FakeUrlResponse responseWithBodySetAsBytes =
+                    mTestResponse.toBuilder().setResponseBody(TEST_BODY.getBytes("UTF-8")).build();
+            assertTrue(Arrays.equals(
+                    mTestResponse.getResponseBody(), responseWithBodySetAsBytes.getResponseBody()));
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(
+                    "Exception occurred while encoding response body: " + TEST_BODY);
+        }
     }
 
     @Test
@@ -128,7 +144,7 @@ public class FakeUrlResponseTest {
         String expectedString = "HTTP Status Code: " + TEST_HTTP_STATUS_CODE
                 + " Headers: " + mTestHeaders.toString() + " Was Cached: " + TEST_WAS_CACHED
                 + " Negotiated Protocol: " + TEST_NEGOTIATED_PROTOCOL
-                + " Proxy Server: " + TEST_PROXY_SERVER + " Response Body: " + TEST_BODY;
+                + " Proxy Server: " + TEST_PROXY_SERVER + " Response Body (UTF-8): " + TEST_BODY;
         String responseToString = mTestResponse.toString();
 
         assertEquals(expectedString, responseToString);

@@ -21,6 +21,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -42,7 +43,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -173,7 +174,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
         return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
       case safe_browsing::SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(), PasswordType::PRIMARY_ACCOUNT_PASSWORD)) {
@@ -185,7 +186,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
       case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(), PasswordType::ENTERPRISE_PASSWORD)) {

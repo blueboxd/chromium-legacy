@@ -119,8 +119,6 @@ class FakeFidoDiscoveryFactory : public device::FidoDiscoveryFactory {
   FakeFidoDiscovery* ForgeNextBleDiscovery(StartMode mode = StartMode::kManual);
   FakeFidoDiscovery* ForgeNextCableDiscovery(
       StartMode mode = StartMode::kManual);
-  FakeFidoDiscovery* ForgeNextPlatformDiscovery(
-      StartMode mode = StartMode::kManual);
 
   // device::FidoDiscoveryFactory:
   std::unique_ptr<FidoDiscoveryBase> Create(
@@ -134,7 +132,6 @@ class FakeFidoDiscoveryFactory : public device::FidoDiscoveryFactory {
   std::unique_ptr<FakeFidoDiscovery> next_nfc_discovery_;
   std::unique_ptr<FakeFidoDiscovery> next_ble_discovery_;
   std::unique_ptr<FakeFidoDiscovery> next_cable_discovery_;
-  std::unique_ptr<FakeFidoDiscovery> next_platform_discovery_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFidoDiscoveryFactory);
 };

@@ -8,7 +8,7 @@ import "gpu/ipc/common/mailbox_holder.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 [EnableIf=is_chromeos]
 import "ui/gfx/mojo/buffer_types.mojom";
 import "ui/gfx/mojo/color_space.mojom";

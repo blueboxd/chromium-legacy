@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "base/unguessable_token.h"
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
@@ -65,7 +66,7 @@ class BLINK_MODULES_EXPORT TrackAudioRenderer
   // Called on the main thread.
   TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
                      WebLocalFrame* playout_web_frame,
-                     int session_id,
+                     const base::UnguessableToken& session_id,
                      const std::string& device_id);
 
   // WebMediaStreamAudioRenderer implementation.
@@ -129,7 +130,7 @@ class BLINK_MODULES_EXPORT TrackAudioRenderer
 
   // The WebLocalFrame in which the audio is rendered into |sink_|.
   std::unique_ptr<MediaStreamInternalFrameWrapper> internal_playout_frame_;
-  const int session_id_;
+  const base::UnguessableToken session_id_;
 
   // MessageLoop associated with the single thread that performs all control
   // tasks.  Set to the MessageLoop that invoked the ctor.

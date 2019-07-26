@@ -11,7 +11,7 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom-blink.h"
+#include "ui/gfx/geometry/mojom/geometry.mojom-blink.h"
 
 namespace mojo {
 

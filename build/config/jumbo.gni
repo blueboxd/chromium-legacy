@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")  # To see if jumbo should be turned off
 import("//build/split_static_library.gni")  # When someone uses that target_type
 import("//build/toolchain/goma.gni")
 
@@ -76,6 +77,11 @@ template("internal_jumbo_target") {
     use_jumbo_build_for_target = true
   }
   if (defined(invoker.never_build_jumbo) && invoker.never_build_jumbo) {
+    use_jumbo_build_for_target = false
+  }
+  if (is_nacl_irt || is_nacl_nonsfi) {
+    # The code is barely compatible with the nacl toolchain anymore and we
+    # don't want to stress it further with jumbo compilation units.
     use_jumbo_build_for_target = false
   }
 

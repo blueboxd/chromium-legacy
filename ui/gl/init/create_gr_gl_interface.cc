@@ -128,18 +128,23 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   const bool apply_version_override = use_version_es2 ||
                                       version_info.IsAtLeastGL(4, 2) ||
                                       version_info.IsAtLeastGLES(3, 1);
-  if (apply_version_override) {
-    const char* fake_gl_version = nullptr;
-    const char* fake_glsl_version = nullptr;
-    if (use_version_es2) {
-      fake_gl_version = "OpenGL ES 2.0";
-      fake_glsl_version = "OpenGL ES GLSL ES 1.00";
+
+  if (apply_version_override || version_info.IsVersionSubstituted()) {
+    GLVersionInfo::VersionStrings version;
+    if (version_info.IsVersionSubstituted()) {
+      version = version_info.GetFakeVersionStrings(version_info.major_version,
+                                                   version_info.minor_version);
+    } else if (version_info.is_es) {
+      if (use_version_es2)
+        version = version_info.GetFakeVersionStrings(2, 0);
+      else
+        version = version_info.GetFakeVersionStrings(3, 0);
     } else {
-      fake_gl_version = version_info.is_es ? "OpenGL ES 3.0" : "4.1";
-      fake_glsl_version = version_info.is_es ? "OpenGL ES GLSL ES 3.00" : "4.10";
+      version = version_info.GetFakeVersionStrings(4, 1);
     }
-    get_string = [fake_gl_version, fake_glsl_version](GLenum name) {
-      return GetStringHook(fake_gl_version, fake_glsl_version, name);
+
+    get_string = [version](GLenum name) {
+      return GetStringHook(version.gl_version, version.glsl_version, name);
     };
   } else {
     get_string = bind(&gl::GLApi::glGetStringFn, api);

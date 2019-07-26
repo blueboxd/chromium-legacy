@@ -602,11 +602,13 @@ class UserMediaClientImplTest : public ::testing::Test {
     EXPECT_EQ(REQUEST_SUCCEEDED, request_state());
     EXPECT_EQ(1U, mock_dispatcher_host_.audio_devices().size());
     EXPECT_EQ(1U, mock_dispatcher_host_.video_devices().size());
-    // MockMojoMediaStreamDispatcherHost appends the session ID to its internal
-    // device IDs.
-    EXPECT_EQ(std::string(expected_audio_device_id) + "0",
+    // MockMojoMediaStreamDispatcherHost appends its internal session ID to its
+    // internal device IDs.
+    EXPECT_EQ(std::string(expected_audio_device_id) +
+                  mock_dispatcher_host_.session_id().ToString(),
               mock_dispatcher_host_.audio_devices()[0].id);
-    EXPECT_EQ(std::string(expected_video_device_id) + "0",
+    EXPECT_EQ(std::string(expected_video_device_id) +
+                  mock_dispatcher_host_.session_id().ToString(),
               mock_dispatcher_host_.video_devices()[0].id);
   }
 
@@ -690,7 +692,7 @@ TEST_F(UserMediaClientImplTest, GenerateTwoMediaStreamsWithDifferentSources) {
   blink::WebMediaStream desc1 = RequestLocalMediaStream();
   // Make sure another device is selected (another |session_id|) in  the next
   // gUM request.
-  mock_dispatcher_host_.IncrementSessionId();
+  mock_dispatcher_host_.ResetSessionId();
   blink::WebMediaStream desc2 = RequestLocalMediaStream();
 
   blink::WebVector<blink::WebMediaStreamTrack> desc1_video_tracks =

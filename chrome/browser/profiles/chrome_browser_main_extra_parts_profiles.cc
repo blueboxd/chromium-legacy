@@ -88,6 +88,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "components/feature_engagement/buildflags.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -175,7 +176,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #endif
 
@@ -366,7 +367,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !defined(OS_ANDROID)
   resource_coordinator::LocalSiteCharacteristicsDataStoreFactory::GetInstance();
 #endif
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
 #endif
 #if defined(OS_ANDROID)

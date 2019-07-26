@@ -27,6 +27,7 @@
 #ifndef CHROME_COMMON_TTS_MESSAGES_H_
 #error "Failed to include header chrome/common/tts_messages.h"
 #endif
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "extensions/buildflags/buildflags.h"
@@ -55,6 +56,6 @@
 #endif
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer_param_traits.h"
 #endif

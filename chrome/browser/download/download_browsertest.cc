@@ -88,6 +88,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/safe_browsing_service_interface.h"
@@ -132,7 +133,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -3789,7 +3790,7 @@ IN_PROC_BROWSER_TEST_F(DownloadWakeLockTest, WakeLockAcquireAndCancel) {
                    device::mojom::WakeLockType::kPreventAppSuspension));
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 
 namespace {
 

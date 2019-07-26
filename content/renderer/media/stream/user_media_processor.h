@@ -29,6 +29,7 @@ class Size;
 
 namespace blink {
 class AudioCaptureSettings;
+class AudioDeviceCaptureCapability;
 class MediaStreamAudioSource;
 class MediaStreamVideoSource;
 class VideoCaptureSettings;
@@ -39,7 +40,6 @@ class WebString;
 
 namespace content {
 
-class AudioDeviceCaptureCapability;
 class MediaStreamDeviceObserver;
 class PeerConnectionDependencyFactory;
 class RenderFrameImpl;
@@ -266,7 +266,7 @@ class CONTENT_EXPORT UserMediaProcessor
           audio_input_capabilities);
   void SelectAudioSettings(
       const blink::WebUserMediaRequest& web_request,
-      const std::vector<AudioDeviceCaptureCapability>& capabilities);
+      const std::vector<blink::AudioDeviceCaptureCapability>& capabilities);
 
   void SetupVideoInput();
   void SelectVideoDeviceSettings(

@@ -16,7 +16,7 @@ public_deps = [
   "//skia",
 ]
 deps = [
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 type_mappings = [
   "media_session.mojom.MediaImage=media_session::MediaImage",

@@ -1756,7 +1756,7 @@ bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
   // We cannot be sure if theme paints the background opaque.
   // In this case it is safe to not assume opaqueness.
   // FIXME: May be ask theme if it paints opaque.
-  if (StyleRef().HasAppearance())
+  if (StyleRef().HasEffectiveAppearance())
     return false;
   // FIXME: Check the opaqueness of background images.
 

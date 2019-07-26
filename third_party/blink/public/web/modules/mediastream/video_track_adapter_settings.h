@@ -60,18 +60,6 @@ class BLINK_MODULES_EXPORT VideoTrackAdapterSettings {
   double max_frame_rate_;
 };
 
-// Exported for testing.
-//
-// Calculates the desired size of a VideoTrack instance, and returns true if
-// |desired_size| is updated successfully, false otherwise.
-// |desired_size| is not updated if |settings| has rescaling disabled and
-// |input_size| is invalid.
-BLINK_MODULES_EXPORT bool CalculateDesiredVideoTrackSize(
-    bool is_rotated,
-    const gfx::Size& input_size,
-    const VideoTrackAdapterSettings& settings,
-    gfx::Size* desired_size);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_MEDIASTREAM_VIDEO_TRACK_ADAPTER_SETTINGS_H_

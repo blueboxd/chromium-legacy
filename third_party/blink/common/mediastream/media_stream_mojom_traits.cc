@@ -8,6 +8,7 @@
 #include "media/base/ipc/media_param_traits.h"
 #include "media/capture/mojom/video_capture_types_mojom_traits.h"
 #include "media/mojo/interfaces/display_media_information.mojom.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 
 namespace mojo {
 
@@ -30,7 +31,12 @@ bool StructTraits<blink::mojom::MediaStreamDeviceDataView,
     return false;
   if (!input.ReadInput(&out->input))
     return false;
-  out->session_id = input.session_id();
+  base::Optional<base::UnguessableToken> session_id;
+  if (input.ReadSessionId(&session_id)) {
+    out->set_session_id(session_id ? *session_id : base::UnguessableToken());
+  } else {
+    return false;
+  }
   if (!input.ReadDisplayMediaInfo(&out->display_media_info))
     return false;
   return true;

@@ -96,11 +96,17 @@ make_core_generated_deps = [
 template("blink_python_runner") {
   action(target_name) {
     script = "$_scripts_dir/run_with_pythonpath.py"
-    inputs = [
+    sources = [
       invoker.script,
     ]
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
+    }
     if (defined(invoker.inputs)) {
-      inputs += invoker.inputs
+      inputs = invoker.inputs
+    }
+    if (defined(invoker.data)) {
+      data = invoker.data
     }
     outputs = invoker.outputs
     args = [
@@ -114,6 +120,9 @@ template("blink_python_runner") {
            ] + invoker.args
     if (defined(invoker.deps)) {
       deps = invoker.deps
+    }
+    if (defined(invoker.data_deps)) {
+      data_deps = invoker.data_deps
     }
     forward_variables_from(invoker, [ "visibility" ])
   }

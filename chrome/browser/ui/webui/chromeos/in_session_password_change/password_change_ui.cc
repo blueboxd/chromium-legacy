@@ -38,12 +38,6 @@ namespace chromeos {
 
 namespace {
 
-PasswordChangeDialog* g_dialog = nullptr;
-
-ConfirmPasswordChangeDialog* g_confirm_dialog = nullptr;
-
-UrgentPasswordExpiryNotificationDialog* g_notification_dialog = nullptr;
-
 std::string GetPasswordChangeUrl(Profile* profile) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSamlPasswordChangeUrl)) {
@@ -73,78 +67,7 @@ base::string16 GetHostedHeaderText(const std::string& password_change_url) {
                                     host);
 }
 
-constexpr int kMaxPasswordChangeDialogWidth = 768;
-constexpr int kMaxPasswordChangeDialogHeight = 640;
-
-// TODO(https://crbug.com/930109): Change these numbers depending on what is
-// shown in the dialog.
-constexpr int kMaxConfirmPasswordChangeDialogWidth = 520;
-constexpr int kMaxConfirmPasswordChangeDialogHeight = 380;
-
-constexpr int kMaxNotificationDialogWidth = 768;
-constexpr int kMaxNotificationDialogHeight = 640;
-
-// Given a desired width and height, returns the same size if it fits on screen,
-// or the closest possible size that will fit on the screen.
-gfx::Size FitSizeToDisplay(int max_width, int max_height) {
-  const display::Display display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-
-  gfx::Size display_size = display.size();
-
-  if (display.rotation() == display::Display::ROTATE_90 ||
-      display.rotation() == display::Display::ROTATE_270) {
-    display_size = gfx::Size(display_size.height(), display_size.width());
-  }
-
-  display_size = gfx::Size(std::min(display_size.width(), max_width),
-                           std::min(display_size.height(), max_height));
-
-  return display_size;
-}
-
 }  // namespace
-
-PasswordChangeDialog::PasswordChangeDialog()
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIPasswordChangeUrl),
-                              /*title=*/base::string16()) {}
-
-PasswordChangeDialog::~PasswordChangeDialog() {
-  DCHECK_EQ(this, g_dialog);
-  g_dialog = nullptr;
-}
-
-void PasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
-  *size = FitSizeToDisplay(kMaxPasswordChangeDialogWidth,
-                           kMaxPasswordChangeDialogHeight);
-}
-
-void PasswordChangeDialog::AdjustWidgetInitParams(
-    views::Widget::InitParams* params) {
-  params->type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-}
-
-ui::ModalType PasswordChangeDialog::GetDialogModalType() const {
-  return ui::ModalType::MODAL_TYPE_SYSTEM;
-}
-
-// static
-void PasswordChangeDialog::Show() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_dialog) {
-    g_dialog->Focus();
-    return;
-  }
-  g_dialog = new PasswordChangeDialog();
-  g_dialog->ShowSystemDialog();
-}
-
-// static
-void PasswordChangeDialog::Dismiss() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_dialog)
-    g_dialog->Close();
-}
 
 PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
@@ -172,66 +95,6 @@ PasswordChangeUI::PasswordChangeUI(content::WebUI* web_ui)
 }
 
 PasswordChangeUI::~PasswordChangeUI() = default;
-
-// static
-void ConfirmPasswordChangeDialog::Show(const std::string& scraped_old_password,
-                                       const std::string& scraped_new_password,
-                                       bool show_spinner_initially) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_confirm_dialog) {
-    g_confirm_dialog->Focus();
-    return;
-  }
-  g_confirm_dialog = new ConfirmPasswordChangeDialog(
-      scraped_old_password, scraped_new_password, show_spinner_initially);
-  g_confirm_dialog->ShowSystemDialog();
-}
-
-// static
-void ConfirmPasswordChangeDialog::Dismiss() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_confirm_dialog)
-    g_confirm_dialog->Close();
-}
-
-ConfirmPasswordChangeDialog::ConfirmPasswordChangeDialog(
-    const std::string& scraped_old_password,
-    const std::string& scraped_new_password,
-    bool show_spinner_initially)
-    : SystemWebDialogDelegate(GURL(chrome::kChromeUIConfirmPasswordChangeUrl),
-                              /*title=*/base::string16()),
-      scraped_old_password_(scraped_old_password),
-      scraped_new_password_(scraped_new_password),
-      show_spinner_initially_(show_spinner_initially) {}
-
-ConfirmPasswordChangeDialog::~ConfirmPasswordChangeDialog() {
-  DCHECK_EQ(this, g_confirm_dialog);
-  g_confirm_dialog = nullptr;
-}
-
-void ConfirmPasswordChangeDialog::GetDialogSize(gfx::Size* size) const {
-  *size = FitSizeToDisplay(kMaxConfirmPasswordChangeDialogWidth,
-                           kMaxConfirmPasswordChangeDialogHeight);
-}
-
-std::string ConfirmPasswordChangeDialog::GetDialogArgs() const {
-  // TODO(https://crbug.com/930109): Configure the embedded UI to only display
-  // prompts for the passwords that were not scraped.
-  std::string data;
-  base::DictionaryValue dialog_args;
-  dialog_args.SetBoolean("showSpinnerInitially", show_spinner_initially_);
-  base::JSONWriter::Write(dialog_args, &data);
-  return data;
-}
-
-void ConfirmPasswordChangeDialog::AdjustWidgetInitParams(
-    views::Widget::InitParams* params) {
-  params->type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-}
-
-ui::ModalType ConfirmPasswordChangeDialog::GetDialogModalType() const {
-  return ui::ModalType::MODAL_TYPE_SYSTEM;
-}
 
 ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {
@@ -269,51 +132,6 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
 }
 
 ConfirmPasswordChangeUI::~ConfirmPasswordChangeUI() = default;
-
-UrgentPasswordExpiryNotificationDialog::UrgentPasswordExpiryNotificationDialog()
-    : SystemWebDialogDelegate(
-          GURL(chrome::kChromeUIUrgentPasswordExpiryNotificationUrl),
-          /*title=*/base::string16()) {}
-
-UrgentPasswordExpiryNotificationDialog::
-    ~UrgentPasswordExpiryNotificationDialog() {
-  DCHECK_EQ(this, g_notification_dialog);
-  g_notification_dialog = nullptr;
-}
-
-void UrgentPasswordExpiryNotificationDialog::GetDialogSize(
-    gfx::Size* size) const {
-  *size = FitSizeToDisplay(kMaxNotificationDialogWidth,
-                           kMaxNotificationDialogHeight);
-}
-
-void UrgentPasswordExpiryNotificationDialog::AdjustWidgetInitParams(
-    views::Widget::InitParams* params) {
-  params->type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-}
-
-ui::ModalType UrgentPasswordExpiryNotificationDialog::GetDialogModalType()
-    const {
-  return ui::ModalType::MODAL_TYPE_SYSTEM;
-}
-
-// static
-void UrgentPasswordExpiryNotificationDialog::Show() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_notification_dialog) {
-    g_notification_dialog->Focus();
-    return;
-  }
-  g_notification_dialog = new UrgentPasswordExpiryNotificationDialog();
-  g_notification_dialog->ShowSystemDialog();
-}
-
-// static
-void UrgentPasswordExpiryNotificationDialog::Dismiss() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (g_notification_dialog)
-    g_notification_dialog->Close();
-}
 
 UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
     content::WebUI* web_ui)

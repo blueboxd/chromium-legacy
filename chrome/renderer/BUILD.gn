@@ -145,6 +145,7 @@ jumbo_static_library("renderer") {
     "//components/plugins/renderer",
     "//components/rappor/public/mojom",
     "//components/resources:components_resources",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing/common:interfaces",
     "//components/safe_browsing/renderer:throttles",
     "//components/security_interstitials/core:",

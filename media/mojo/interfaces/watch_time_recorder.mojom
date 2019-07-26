@@ -6,7 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/origin.mojom";
 
 // Structure describing immutable properties for the current watch time report.

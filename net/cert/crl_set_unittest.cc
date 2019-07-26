@@ -126,9 +126,9 @@ TEST(CRLSetTest, BlockedSPKIs) {
             set->CheckSPKI(reinterpret_cast<const char*>(spki_hash)));
 }
 
-TEST(CertVerifyProcTest, CRLSetIncorporatesStaticBlacklist) {
+TEST(CertVerifyProcTest, CRLSetIncorporatesStaticBlocklist) {
   // Test both the builtin CRLSet and a parsed CRLSet to be sure that both
-  // include the blacklist.
+  // include the block list.
   scoped_refptr<CRLSet> set1 = CRLSet::BuiltinCRLSet();
   ASSERT_TRUE(set1);
   base::StringPiece s(reinterpret_cast<const char*>(kGIACRLSet),

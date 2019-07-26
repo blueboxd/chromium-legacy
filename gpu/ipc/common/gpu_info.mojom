@@ -7,7 +7,7 @@ module gpu.mojom;
 
 import "gpu/ipc/common/dx_diag_node.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {

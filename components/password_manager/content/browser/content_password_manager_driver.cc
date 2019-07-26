@@ -18,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -298,7 +299,7 @@ void ContentPasswordManagerDriver::UserModifiedNonPasswordField(
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   client_->CheckSafeBrowsingReputation(form_action, frame_url);
 #endif
 }

@@ -89,6 +89,8 @@ std::unique_ptr<base::DictionaryValue> SessionTabToValue(
       new base::DictionaryValue());
   NewTabUI::SetUrlTitleAndDirection(dictionary.get(),
                                     current_navigation.title(), tab_url);
+  dictionary->SetString("remoteIconUrlForUma",
+                        current_navigation.favicon_url().spec());
   dictionary->SetString("type", "tab");
   dictionary->SetDouble("timestamp",
                         static_cast<double>(tab.timestamp.ToInternalValue()));

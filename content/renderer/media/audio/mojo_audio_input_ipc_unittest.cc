@@ -44,7 +44,8 @@ media::AudioParameters Params() {
 }
 
 media::AudioSourceParameters SourceParams() {
-  return media::AudioSourceParameters(1234);
+  return media::AudioSourceParameters(
+      base::UnguessableToken::Deserialize(1234, 5678));
 }
 
 class MockStream : public media::mojom::AudioInputStream {

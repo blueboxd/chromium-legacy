@@ -31,7 +31,8 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
   LayoutWorkletGlobalScope(LocalFrame*,
                            std::unique_ptr<GlobalScopeCreationParams>,
                            WorkerReportingProxy&,
-                           PendingLayoutRegistry*);
+                           PendingLayoutRegistry*,
+                           Agent*);
   ~LayoutWorkletGlobalScope() override;
   void Dispose() final;
 

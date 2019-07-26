@@ -222,7 +222,10 @@ public class PasswordEntryViewer extends Fragment {
             return true;
         }
         if (id == R.id.action_edit_saved_password) {
-            PreferencesLauncher.launchSettingsPageCompat(getActivity(), PasswordEntryEditor.class);
+            Bundle fragmentArgs = new Bundle();
+            fragmentArgs.putInt(SavePasswordsPreferences.PASSWORD_LIST_ID, mID);
+            PreferencesLauncher.launchSettingsPageCompat(
+                    getActivity(), PasswordEntryEditor.class, fragmentArgs);
             return true;
         }
         return super.onOptionsItemSelected(item);

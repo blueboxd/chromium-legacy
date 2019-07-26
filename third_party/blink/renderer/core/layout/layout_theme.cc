@@ -80,12 +80,34 @@ LayoutTheme& LayoutTheme::GetTheme() {
 
 LayoutTheme::LayoutTheme() : has_custom_focus_ring_color_(false) {}
 
+ControlPart LayoutTheme::AdjustAppearanceWithAuthorStyle(
+    ControlPart part,
+    const ComputedStyle& style) {
+  if (IsControlStyled(part, style))
+    return part == kMenulistPart ? kMenulistButtonPart : kNoControlPart;
+  return part;
+}
+
+ControlPart LayoutTheme::AdjustAppearanceWithElementType(
+    const ComputedStyle& style,
+    const Element* element) {
+  ControlPart part = style.EffectiveAppearance();
+  // TODO(crbug.com/981720): Implement element type restriction, and apply
+  // 'auto' if |part| doesn't support |element|.
+  // e.g.  kSearchFieldPart for input[type=search] ==> kSearchFieldPart
+  //       kSearchFieldPart for div ==> kNoControlPart
+  //       kSearchFieldPart for button ==> kButtonPart
+  return part;
+}
+
 void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
-  DCHECK(style.HasAppearance());
+  ControlPart original_part = style.Appearance();
+  style.SetEffectiveAppearance(original_part);
+  if (original_part == ControlPart::kNoControlPart)
+    return;
 
   // Force inline and table display styles to be inline-block (except for table-
   // which is block)
-  ControlPart part = style.Appearance();
   if (style.Display() == EDisplay::kInline ||
       style.Display() == EDisplay::kInlineTable ||
       style.Display() == EDisplay::kTableRowGroup ||
@@ -101,15 +123,16 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
            style.Display() == EDisplay::kTable)
     style.SetDisplay(EDisplay::kBlock);
 
-  if (IsControlStyled(style)) {
-    if (part == kMenulistPart) {
-      style.SetAppearance(kMenulistButtonPart);
-      part = kMenulistButtonPart;
-    } else {
-      style.SetAppearance(kNoControlPart);
-      return;
-    }
-  }
+  // TODO(tkent): We should not update Appearance, which is a source of
+  // getComputedStyle(). https://drafts.csswg.org/css-ui-4/#propdef-appearance
+  // says "Computed value: specified keyword".
+  style.SetAppearance(AdjustAppearanceWithAuthorStyle(original_part, style));
+
+  ControlPart part = AdjustAppearanceWithAuthorStyle(
+      AdjustAppearanceWithElementType(style, e), style);
+  style.SetEffectiveAppearance(part);
+  if (part == kNoControlPart)
+    return;
 
   if (ShouldUseFallbackTheme(style)) {
     AdjustStyleUsingFallbackTheme(style);
@@ -120,7 +143,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 
   // Call the appropriate style adjustment method based off the appearance
   // value.
-  switch (style.Appearance()) {
+  switch (part) {
     case kMenulistPart:
       return AdjustMenuListStyle(style, e);
     case kMenulistButtonPart:
@@ -246,8 +269,9 @@ bool LayoutTheme::IsControlContainer(ControlPart appearance) const {
   return appearance != kCheckboxPart && appearance != kRadioPart;
 }
 
-bool LayoutTheme::IsControlStyled(const ComputedStyle& style) const {
-  switch (style.Appearance()) {
+bool LayoutTheme::IsControlStyled(ControlPart part,
+                                  const ComputedStyle& style) const {
+  switch (part) {
     case kPushButtonPart:
     case kSquareButtonPart:
     case kButtonPart:
@@ -272,7 +296,7 @@ bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
     return false;
   if (!node)
     return true;
-  if (!style.HasAppearance() && !node->IsLink())
+  if (!style.HasEffectiveAppearance() && !node->IsLink())
     return true;
   // We can't use LayoutTheme::isFocused because outline:auto might be
   // specified to non-:focus rulesets.
@@ -284,7 +308,7 @@ bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
 bool LayoutTheme::ControlStateChanged(const Node* node,
                                       const ComputedStyle& style,
                                       ControlState state) const {
-  if (!style.HasAppearance())
+  if (!style.HasEffectiveAppearance())
     return false;
 
   // Default implementation assumes the controls don't respond to changes in
@@ -461,12 +485,12 @@ void LayoutTheme::AdjustSliderContainerStyle(ComputedStyle& style,
                                              Element* e) const {
   if (e && (e->ShadowPseudoId() == "-webkit-media-slider-container" ||
             e->ShadowPseudoId() == "-webkit-slider-container")) {
-    if (style.Appearance() == kSliderVerticalPart) {
+    if (style.EffectiveAppearance() == kSliderVerticalPart) {
       style.SetTouchAction(TouchAction::kTouchActionPanX);
-      style.SetAppearance(kNoControlPart);
+      style.SetEffectiveAppearance(kNoControlPart);
     } else {
       style.SetTouchAction(TouchAction::kTouchActionPanY);
-      style.SetAppearance(kNoControlPart);
+      style.SetEffectiveAppearance(kNoControlPart);
     }
   }
 }
@@ -697,7 +721,7 @@ bool LayoutTheme::ShouldUseFallbackTheme(const ComputedStyle&) const {
 }
 
 void LayoutTheme::AdjustStyleUsingFallbackTheme(ComputedStyle& style) {
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   switch (part) {
     case kCheckboxPart:
       return AdjustCheckboxStyleUsingFallbackTheme(style);
@@ -835,7 +859,7 @@ LengthBox LayoutTheme::ControlBorder(ControlPart part,
 void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style) {
   // Call the appropriate style adjustment method based off the appearance
   // value.
-  switch (style.Appearance()) {
+  switch (style.EffectiveAppearance()) {
     case kCheckboxPart:
       return AdjustCheckboxStyle(style);
     case kRadioPart:

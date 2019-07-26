@@ -233,8 +233,8 @@ viz_component("service") {
     sources += [
       "display/ca_layer_overlay.cc",
       "display/ca_layer_overlay.h",
-      "display_embedder/overlay_candidate_validator_mac.cc",
-      "display_embedder/overlay_candidate_validator_mac.h",
+      "display/overlay_processor_ca.cc",
+      "display/overlay_processor_ca.h",
       "display_embedder/software_output_device_mac.cc",
       "display_embedder/software_output_device_mac.h",
     ]

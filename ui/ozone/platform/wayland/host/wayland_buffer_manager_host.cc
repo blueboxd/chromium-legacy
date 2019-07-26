@@ -470,7 +470,9 @@ WaylandBufferManagerHost::Surface::WaylandBuffer::~WaylandBuffer() = default;
 
 WaylandBufferManagerHost::WaylandBufferManagerHost(
     WaylandConnection* connection)
-    : connection_(connection), binding_(this), weak_factory_(this) {}
+    : connection_(connection), binding_(this), weak_factory_(this) {
+  connection_->wayland_window_manager()->AddObserver(this);
+}
 
 WaylandBufferManagerHost::~WaylandBufferManagerHost() {
   DCHECK(surfaces_.empty());

@@ -5,7 +5,7 @@
 module viz.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // The syscalls needed to update a layered window are blocked by the GPU
 // sandbox. This interface lets the GPU draw into shared memory and then send

@@ -43,6 +43,7 @@ jumbo_static_library("renderer") {
     "//base:i18n",
     "//components/autofill/content/common/mojom",
     "//components/autofill/core/common",
+    "//components/safe_browsing:buildflags",
     "//components/strings",
     "//content/public/common",
     "//content/public/renderer",

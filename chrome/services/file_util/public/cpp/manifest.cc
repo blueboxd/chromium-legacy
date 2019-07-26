@@ -8,13 +8,14 @@
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
+#include "components/safe_browsing/buildflags.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/services/file_util/public/mojom/zip_file_creator.mojom.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
 #endif
 
@@ -36,7 +37,7 @@ const service_manager::Manifest& GetFileUtilManifest() {
         .ExposeCapability("zip_file", service_manager::Manifest::InterfaceList<
                                           chrome::mojom::ZipFileCreator>())
 #endif
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
         .ExposeCapability("analyze_archive",
                           service_manager::Manifest::InterfaceList<
                               chrome::mojom::SafeArchiveAnalyzer>())

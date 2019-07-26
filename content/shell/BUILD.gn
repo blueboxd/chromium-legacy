@@ -942,7 +942,7 @@ mojom("mojo_bindings") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//skia/public/interfaces",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

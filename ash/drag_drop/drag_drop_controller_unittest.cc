@@ -329,6 +329,10 @@ class DragDropControllerTest : public AshTestBase {
     drag_source_window->AddObserver(drag_drop_controller_.get());
   }
 
+  const gfx::ImageSkia& GetDragImage() {
+    return drag_drop_controller_->drag_image_.get()->GetImage();
+  }
+
   aura::Window* GetDragImageWindow() {
     return drag_drop_controller_->drag_image_.get()
                ? drag_drop_controller_->drag_image_->GetWidget()
@@ -918,6 +922,76 @@ TEST_F(DragDropControllerTest, TouchDragDropLongTapGestureIsForwarded) {
   DispatchGesture(ui::ET_GESTURE_LONG_TAP, point);
   CompleteCancelAnimation();
   EXPECT_TRUE(drag_view->long_tap_received_);
+}
+
+TEST_F(DragDropControllerTest, DragDropWithChangingIcon) {
+  std::unique_ptr<views::Widget> widget = CreateFramelessWidget();
+  DragTestView* drag_view1 = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view1);
+  DragTestView* drag_view2 = new DragTestView;
+  AddViewToWidgetAndResize(widget.get(), drag_view2);
+
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.MoveMouseRelativeTo(widget->GetNativeView(),
+                                drag_view1->bounds().CenterPoint());
+  generator.PressLeftButton();
+
+  int num_drags = drag_view1->width();
+  int icon_replacements = 0;
+  for (int i = 0; i < num_drags; ++i) {
+    // Because we are not doing a blocking drag and drop, the original
+    // OSDragExchangeData object is lost as soon as we return from the drag
+    // initiation in DragDropController::StartDragAndDrop(). Hence we set the
+    // drag_data_ to a fake drag data object that we create.
+    if (i > 0) {
+      UpdateDragData();
+    }
+
+    if (drag_drop_controller_->IsDragDropInProgress()) {
+      if (!GetDragSourceWindow())
+        SetDragSourceWindow(widget->GetNativeWindow());
+
+      gfx::ImageSkia new_icon;
+      new_icon.AddRepresentation(gfx::ImageSkiaRep(gfx::Size(10, 10), 1.0f));
+
+      EXPECT_FALSE(GetDragImage().BackedBySameObjectAs(new_icon));
+      drag_drop_controller_->SetDragImage(new_icon, gfx::Vector2d());
+      EXPECT_TRUE(GetDragImage().BackedBySameObjectAs(new_icon));
+      icon_replacements++;
+    }
+
+    generator.MoveMouseBy(1, 0);
+
+    // Execute any scheduled draws to process deferred mouse events.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  generator.ReleaseLeftButton();
+
+  EXPECT_GT(icon_replacements, 0);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_EQ(num_drags - 1 - drag_view1->HorizontalDragThreshold(),
+            drag_drop_controller_->num_drag_updates_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(base::UTF8ToUTF16("I am being dragged"),
+            drag_drop_controller_->drag_string_);
+
+  EXPECT_EQ(1, drag_view1->num_drag_enters_);
+  int num_expected_updates =
+      drag_view1->bounds().width() - drag_view1->bounds().CenterPoint().x() - 2;
+  EXPECT_EQ(num_expected_updates - drag_view1->HorizontalDragThreshold(),
+            drag_view1->num_drag_updates_);
+  EXPECT_EQ(0, drag_view1->num_drops_);
+  EXPECT_EQ(1, drag_view1->num_drag_exits_);
+  EXPECT_TRUE(drag_view1->drag_done_received_);
+
+  EXPECT_EQ(1, drag_view2->num_drag_enters_);
+  num_expected_updates = num_drags - num_expected_updates - 1;
+  EXPECT_EQ(num_expected_updates, drag_view2->num_drag_updates_);
+  EXPECT_EQ(1, drag_view2->num_drops_);
+  EXPECT_EQ(0, drag_view2->num_drag_exits_);
+  EXPECT_FALSE(drag_view2->drag_done_received_);
 }
 
 namespace {

@@ -76,6 +76,8 @@ static_library("storage_monitor") {
         "storage_monitor_linux.cc",
         "storage_monitor_linux.h",
       ]
+    } else {
+      sources += [ "storage_monitor_dummy.cc" ]
     }
   }
 

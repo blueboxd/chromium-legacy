@@ -773,7 +773,7 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       // C=FR, ST=France, L=Paris, O=PM/SGDN, OU=DCSSI,
       // CN=IGC/A/emailAddress=igca@sgdn.pm.gouv.fr
       //
-      // net/data/ssl/blacklist/b9bea7860a962ea3611dab97ab6da3e21c1068b97d55575ed0e11279c11c8932.pem
+      // net/data/ssl/blocklist/b9bea7860a962ea3611dab97ab6da3e21c1068b97d55575ed0e11279c11c8932.pem
       {
           {{0x86, 0xc1, 0x3a, 0x34, 0x08, 0xdd, 0x1a, 0xa7, 0x7e, 0xe8, 0xb6,
             0x94, 0x7c, 0x03, 0x95, 0x87, 0x72, 0xf5, 0x31, 0x24, 0x8c, 0x16,
@@ -783,7 +783,7 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       // C=IN, O=India PKI, CN=CCA India 2007
       // Expires: July 4th 2015.
       //
-      // net/data/ssl/blacklist/f375e2f77a108bacc4234894a9af308edeca1acd8fbde0e7aaa9634e9daf7e1c.pem
+      // net/data/ssl/blocklist/f375e2f77a108bacc4234894a9af308edeca1acd8fbde0e7aaa9634e9daf7e1c.pem
       {
           {{0x7e, 0x6a, 0xcd, 0x85, 0x3c, 0xac, 0xc6, 0x93, 0x2e, 0x9b, 0x51,
             0x9f, 0xda, 0xd1, 0xbe, 0xb5, 0x15, 0xed, 0x2a, 0x2d, 0x00, 0x25,
@@ -793,7 +793,7 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       // C=IN, O=India PKI, CN=CCA India 2011
       // Expires: March 11 2016.
       //
-      // net/data/ssl/blacklist/2d66a702ae81ba03af8cff55ab318afa919039d9f31b4d64388680f81311b65a.pem
+      // net/data/ssl/blocklist/2d66a702ae81ba03af8cff55ab318afa919039d9f31b4d64388680f81311b65a.pem
       {
           {{0x42, 0xa7, 0x09, 0x84, 0xff, 0xd3, 0x99, 0xc4, 0xea, 0xf0, 0xe7,
             0x02, 0xa4, 0x4b, 0xef, 0x2a, 0xd8, 0xa7, 0x9b, 0x8b, 0xf4, 0x64,
@@ -803,7 +803,7 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       // C=IN, O=India PKI, CN=CCA India 2014
       // Expires: March 5 2024.
       //
-      // net/data/ssl/blacklist/60109bc6c38328598a112c7a25e38b0f23e5a7511cb815fb64e0c4ff05db7df7.pem
+      // net/data/ssl/blocklist/60109bc6c38328598a112c7a25e38b0f23e5a7511cb815fb64e0c4ff05db7df7.pem
       {
           {{0x9c, 0xf4, 0x70, 0x4f, 0x3e, 0xe5, 0xa5, 0x98, 0x94, 0xb1, 0x6b,
             0xf0, 0x0c, 0xfe, 0x73, 0xd5, 0x88, 0xda, 0xe2, 0x69, 0xf5, 0x1d,

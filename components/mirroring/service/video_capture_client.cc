@@ -5,6 +5,7 @@
 #include "components/mirroring/service/video_capture_client.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
@@ -12,8 +13,21 @@
 namespace mirroring {
 
 namespace {
-// Required by mojom::VideoCaptureHost interface. Can be any number.
-constexpr int kDeviceId = 0;
+
+// Required by mojom::VideoCaptureHost interface. Can be any nonzero value.
+const base::UnguessableToken& DeviceId() {
+  static const base::NoDestructor<base::UnguessableToken> device_id(
+      base::UnguessableToken::Deserialize(1, 1));
+  return *device_id;
+}
+
+// Required by mojom::VideoCaptureHost interface. Can be any nonzero value.
+const base::UnguessableToken& SessionId() {
+  static const base::NoDestructor<base::UnguessableToken> session_id(
+      base::UnguessableToken::Deserialize(1, 1));
+  return *session_id;
+}
+
 }  // namespace
 
 VideoCaptureClient::VideoCaptureClient(const media::VideoCaptureParams& params,
@@ -37,13 +51,14 @@ void VideoCaptureClient::Start(FrameDeliverCallback deliver_callback,
 
   media::mojom::VideoCaptureObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
-  video_capture_host_->Start(kDeviceId, 0, params_, std::move(observer));
+  video_capture_host_->Start(DeviceId(), SessionId(), params_,
+                             std::move(observer));
 }
 
 void VideoCaptureClient::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << __func__;
-  video_capture_host_->Stop(kDeviceId);
+  video_capture_host_->Stop(DeviceId());
 }
 
 void VideoCaptureClient::Pause() {
@@ -52,7 +67,7 @@ void VideoCaptureClient::Pause() {
   if (frame_deliver_callback_.is_null())
     return;
   frame_deliver_callback_.Reset();
-  video_capture_host_->Pause(kDeviceId);
+  video_capture_host_->Pause(DeviceId());
 }
 
 void VideoCaptureClient::Resume(FrameDeliverCallback deliver_callback) {
@@ -63,14 +78,14 @@ void VideoCaptureClient::Resume(FrameDeliverCallback deliver_callback) {
     return;
   }
   frame_deliver_callback_ = std::move(deliver_callback);
-  video_capture_host_->Resume(kDeviceId, 0, params_);
+  video_capture_host_->Resume(DeviceId(), SessionId(), params_);
 }
 
 void VideoCaptureClient::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (frame_deliver_callback_.is_null())
     return;
-  video_capture_host_->RequestRefreshFrame(kDeviceId);
+  video_capture_host_->RequestRefreshFrame(DeviceId());
 }
 
 void VideoCaptureClient::OnStateChanged(media::mojom::VideoCaptureState state) {
@@ -129,7 +144,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
                 << VideoPixelFormatToString(info->pixel_format);
   }
   if (!consume_buffer) {
-    video_capture_host_->ReleaseBuffer(kDeviceId, buffer_id, -1.0);
+    video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, -1.0);
     return;
   }
 
@@ -179,7 +194,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
       mojo::ScopedSharedBufferMapping mapping =
           buffer_iter->second->get_shared_buffer_handle()->Map(buffer_size);
       if (!mapping) {
-        video_capture_host_->ReleaseBuffer(kDeviceId, buffer_id, -1.0);
+        video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, -1.0);
         return;
       }
       mapping_iter =
@@ -216,7 +231,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
 
   if (!frame) {
     LOG(DFATAL) << "Unable to wrap shared memory mapping.";
-    video_capture_host_->ReleaseBuffer(kDeviceId, buffer_id, -1.0);
+    video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id, -1.0);
     OnStateChanged(media::mojom::VideoCaptureState::FAILED);
     return;
   }
@@ -256,7 +271,7 @@ void VideoCaptureClient::OnClientBufferFinished(
     return;
   }
 
-  video_capture_host_->ReleaseBuffer(kDeviceId, buffer_id,
+  video_capture_host_->ReleaseBuffer(DeviceId(), buffer_id,
                                      consumer_resource_utilization);
 }
 

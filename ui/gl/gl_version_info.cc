@@ -232,4 +232,55 @@ void GLVersionInfo::DisableES3ForTesting() {
   disable_es3_for_testing = true;
 }
 
+bool GLVersionInfo::IsVersionSubstituted() const {
+  // This is the only reason we're changing versions right now
+  return disable_es3_for_testing;
+}
+
+GLVersionInfo::VersionStrings GLVersionInfo::GetFakeVersionStrings(
+    unsigned major,
+    unsigned minor) const {
+  VersionStrings result;
+  if (is_es) {
+    if (major == 2) {
+      result.gl_version = "OpenGL ES 2.0";
+      result.glsl_version = "OpenGL ES GLSL ES 1.00";
+    } else if (major == 3) {
+      result.gl_version = "OpenGL ES 3.0";
+      result.glsl_version = "OpenGL ES GLSL ES 3.00";
+    } else {
+      NOTREACHED();
+    }
+  } else {
+    if (major == 4 && minor == 1) {
+      result.gl_version = "4.1";
+      result.glsl_version = "4.10";
+    } else if (major == 4 && minor == 0) {
+      result.gl_version = "4.0";
+      result.glsl_version = "4.00";
+    } else if (major == 3 && minor == 3) {
+      result.gl_version = "3.3";
+      result.glsl_version = "3.30";
+    } else if (major == 3 && minor == 2) {
+      result.gl_version = "3.2";
+      result.glsl_version = "1.50";
+    } else if (major == 3 && minor == 1) {
+      result.gl_version = "3.1";
+      result.glsl_version = "1.40";
+    } else if (major == 3 && minor == 0) {
+      result.gl_version = "3.0";
+      result.glsl_version = "1.30";
+    } else if (major == 2 && minor == 1) {
+      result.gl_version = "2.1";
+      result.glsl_version = "1.20";
+    } else if (major == 2 && minor == 0) {
+      result.gl_version = "2.0";
+      result.glsl_version = "1.10";
+    } else {
+      NOTREACHED();
+    }
+  }
+  return result;
+}
+
 }  // namespace gl

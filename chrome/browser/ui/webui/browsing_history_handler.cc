@@ -245,6 +245,8 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   result->SetInteger("hostFilteringBehavior", host_filtering_behavior);
   result->SetBoolean("blockedVisit", is_blocked_visit);
   result->SetBoolean("isUrlInRemoteUserData", IsEntryInRemoteUserData(entry));
+  result->SetString("remoteIconUrlForUma",
+                    entry.remote_icon_url_for_uma.spec());
 
   return result;
 }

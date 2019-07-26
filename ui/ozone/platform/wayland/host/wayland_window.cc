@@ -105,7 +105,7 @@ WaylandWindow::~WaylandWindow() {
   }
 
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  connection_->RemoveWindow(GetWidget());
+  connection_->wayland_window_manager()->RemoveWindow(GetWidget());
 
   if (parent_window_)
     parent_window_->set_child_window(nullptr);
@@ -165,7 +165,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
 
   connection_->ScheduleFlush();
 
-  connection_->AddWindow(GetWidget(), this);
+  connection_->wayland_window_manager()->AddWindow(GetWidget(), this);
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 
@@ -249,7 +249,8 @@ void WaylandWindow::CreateXdgSurface() {
 void WaylandWindow::CreateAndShowTooltipSubSurface() {
   // Since Aura does not not provide a reference parent window, needed by
   // Wayland, we get the current focused window to place and show the tooltips.
-  parent_window_ = connection_->GetCurrentFocusedWindow();
+  parent_window_ =
+      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
 
   // Tooltip creation is an async operation. By the time Aura actually creates
   // the tooltip, it is possible that the user has already moved the
@@ -566,7 +567,8 @@ uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
     // Parent window of the main menu window is not a popup, but rather an
     // xdg surface.
     DCHECK(!parent_window_->xdg_popup() && parent_window_->xdg_surface());
-    WaylandWindow* window = connection_->GetCurrentFocusedWindow();
+    auto* window =
+        connection_->wayland_window_manager()->GetCurrentFocusedWindow();
     if (window) {
       ConvertEventLocationToTargetWindowLocation(GetBounds().origin(),
                                                  window->GetBounds().origin(),
@@ -803,7 +805,8 @@ void WaylandWindow::MaybeTriggerPendingStateChange() {
 
 WaylandWindow* WaylandWindow::GetParentWindow(
     gfx::AcceleratedWidget parent_widget) {
-  WaylandWindow* parent_window = connection_->GetWindow(parent_widget);
+  auto* parent_window =
+      connection_->wayland_window_manager()->GetWindow(parent_widget);
 
   // If propagated parent has already had a child, it means that |this| is a
   // submenu of a 3-dot menu. In aura, the parent of a 3-dot menu and its
@@ -817,7 +820,7 @@ WaylandWindow* WaylandWindow::GetParentWindow(
   if (parent_window && parent_window->child_window_)
     return parent_window->child_window_;
   if (!parent_window)
-    return connection_->GetCurrentFocusedWindow();
+    return connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   return parent_window;
 }
 
@@ -874,7 +877,8 @@ void WaylandWindow::RemoveEnteredOutputId(struct wl_output* output) {
 void WaylandWindow::UpdateCursorPositionFromEvent(
     std::unique_ptr<Event> event) {
   DCHECK(event->IsLocatedEvent());
-  auto* window = connection_->GetCurrentFocusedWindow();
+  auto* window =
+      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   // This is a tricky part. Initially, Wayland sends events to surfaces the
   // events are targeted for. But, in order to fulfill Chromium's assumptions
   // about event targets, some of the events are rerouted and their locations

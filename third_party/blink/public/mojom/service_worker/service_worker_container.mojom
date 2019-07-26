@@ -89,11 +89,6 @@ interface ServiceWorkerContainerHost {
   // Makes a new endpoint to this ServiceWorkerContainerHost.
   CloneContainerHost(ServiceWorkerContainerHost& container_host);
 
-  // Does nothing but calls the callback. Useful for pumping the message pipe
-  // for this interface and associated interfaces: when the callback is called,
-  // you know all incoming messages up to the Ping() call have been received.
-  Ping() => ();
-
   // Gives a hint to the browser process to update the service worker after a
   // controlled page load. This message is meant to be sent at a time when page
   // load is no longer busy, so update doesn't adversely affect performance.

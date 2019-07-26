@@ -182,7 +182,7 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& signaling_thread,
     const WebMediaStream& media_stream,
     WebLocalFrame* web_frame,
-    int session_id,
+    const base::UnguessableToken& session_id,
     const std::string& device_id)
     : state_(UNINITIALIZED),
       source_internal_frame_(std::make_unique<InternalFrame>(web_frame)),
@@ -194,8 +194,9 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       start_ref_count_(0),
       sink_params_(kFormat, media::CHANNEL_LAYOUT_STEREO, 0, 0),
       output_device_id_(device_id) {
-  WebRtcLogMessage(base::StringPrintf("WAR::WAR. session_id=%d, effects=%i",
-                                      session_id, sink_params_.effects()));
+  WebRtcLogMessage(base::StringPrintf("WAR::WAR. session_id=%s, effects=%i",
+                                      session_id.ToString().c_str(),
+                                      sink_params_.effects()));
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {
@@ -208,7 +209,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(source);
   DCHECK(!sink_.get());
-  DCHECK_GE(session_id_, 0);
+  // DCHECK_GE(session_id_, 0);
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_EQ(state_, UNINITIALIZED);
@@ -399,7 +400,6 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
     return;
   }
 
-  DCHECK_GE(session_id_, 0);
   {
     base::AutoLock auto_lock(lock_);
     DCHECK_NE(state_, UNINITIALIZED);

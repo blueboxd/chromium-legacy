@@ -133,7 +133,8 @@ class MockVideoCaptureObserver final
   void Start() {
     media::mojom::VideoCaptureObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(0, 0, VideoCaptureParams(), std::move(observer));
+    host_->Start(device_id_, session_id_, VideoCaptureParams(),
+                 std::move(observer));
   }
 
   void FinishConsumingBuffer(int32_t buffer_id, double utilization) {
@@ -141,12 +142,14 @@ class MockVideoCaptureObserver final
     const auto iter = frame_infos_.find(buffer_id);
     EXPECT_TRUE(iter != frame_infos_.end());
     frame_infos_.erase(iter);
-    host_->ReleaseBuffer(0, buffer_id, utilization);
+    host_->ReleaseBuffer(device_id_, buffer_id, utilization);
   }
 
-  void Stop() { host_->Stop(0); }
+  void Stop() { host_->Stop(device_id_); }
 
  private:
+  const base::UnguessableToken device_id_ = base::UnguessableToken::Create();
+  const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
   media::mojom::VideoCaptureHostPtr host_;
   mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;

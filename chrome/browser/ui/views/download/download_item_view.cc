@@ -41,6 +41,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
@@ -713,7 +714,7 @@ void DownloadItemView::OpenDownload() {
 
 bool DownloadItemView::SubmitDownloadToFeedbackService(
     DownloadCommands::Command download_command) {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::SafeBrowsingService* sb_service =
       g_browser_process->safe_browsing_service();
   if (!sb_service)
@@ -904,7 +905,7 @@ void DownloadItemView::ShowWarningDialog() {
   time_download_warning_shown_ = base::Time::Now();
   download::DownloadDangerType danger_type = model_->GetDangerType();
   RecordDangerousDownloadWarningShown(danger_type);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (model_->ShouldAllowDownloadFeedback()) {
     safe_browsing::DownloadFeedbackService::RecordEligibleDownloadShown(
         danger_type);

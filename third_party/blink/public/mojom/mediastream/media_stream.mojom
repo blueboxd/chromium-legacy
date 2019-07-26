@@ -7,6 +7,7 @@ module blink.mojom;
 import "media/capture/mojom/video_capture_types.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "media/mojo/interfaces/display_media_information.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // Types of media streams. When updating this list, make sure to update the
 // predicates declared in public/common/media_stream_request.h,
@@ -71,7 +72,7 @@ struct MediaStreamDevice {
   string? matched_output_device_id;
   string name;
   media.mojom.AudioParameters input;
-  int32 session_id;
+  mojo_base.mojom.UnguessableToken? session_id;
   media.mojom.DisplayMediaInformation? display_media_info;
 };
 
@@ -112,7 +113,7 @@ interface MediaStreamDispatcherHost {
   CancelRequest(int32 request_id);
 
   // Closes a stream device that has been opened by GenerateStream.
-  StopStreamDevice(string device_id, int32 session_id);
+  StopStreamDevice(string device_id, mojo_base.mojom.UnguessableToken? session_id);
 
   // Opens a device identified by |device_id|.
   OpenDevice(int32 request_id, string device_id, MediaStreamType type)
@@ -129,7 +130,7 @@ interface MediaStreamDispatcherHost {
   // for a user's visit to a malicious web page to compromise a render process
   // running a trusted extension to make it report falsehood in this Mojo
   // message.
-  SetCapturingLinkSecured(int32 session_id, MediaStreamType type,
+  SetCapturingLinkSecured(mojo_base.mojom.UnguessableToken? session_id, MediaStreamType type,
                           bool is_secure);
 
   // Tells the browser process that the stream has been started successfully.

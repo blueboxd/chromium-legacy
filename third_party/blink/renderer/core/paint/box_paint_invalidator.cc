@@ -155,7 +155,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
   if (box_.BorderRight() || box_.BorderBottom())
     return PaintInvalidationReason::kGeometry;
 
-  if (style.HasVisualOverflowingEffect() || style.HasAppearance() ||
+  if (style.HasVisualOverflowingEffect() || style.HasEffectiveAppearance() ||
       style.HasFilterInducingProperty() || style.HasMask() || style.ClipPath())
     return PaintInvalidationReason::kGeometry;
 

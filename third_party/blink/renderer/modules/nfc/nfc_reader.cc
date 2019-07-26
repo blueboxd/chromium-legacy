@@ -10,11 +10,11 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_error_event.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reading_event.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
 
 namespace blink {
 
@@ -71,7 +71,7 @@ void NFCReader::OnReading(const String& serial_number,
 
 void NFCReader::OnError(device::mojom::blink::NFCErrorType error) {
   DispatchEvent(*MakeGarbageCollected<NFCErrorEvent>(
-      event_type_names::kError, NFCError::Take(nullptr, error)));
+      event_type_names::kError, NFCErrorTypeToDOMException(error)));
 }
 
 void NFCReader::ContextDestroyed(ExecutionContext*) {

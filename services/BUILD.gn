@@ -151,7 +151,7 @@ if (is_android) {
       "//skia/public/interfaces:interfaces_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/junit",
-      "//ui/gfx/geometry/mojo:mojo_java",
+      "//ui/gfx/geometry/mojom:mojom_java",
     ]
     data = [
       "test/data/",

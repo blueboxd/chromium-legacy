@@ -65,11 +65,15 @@ void VideoInputDevicesEnumerated(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
-}  // namespace
-
 // Id used to identify the capture session between renderer and
 // video_capture_host. This is an arbitrary value.
-static const int kDeviceId = 555;
+const base::UnguessableToken& DeviceId() {
+  static const base::NoDestructor<base::UnguessableToken> device_id(
+      base::UnguessableToken::Deserialize(555, 555));
+  return *device_id;
+}
+
+}  // namespace
 
 ACTION_P2(ExitMessageLoop, task_runner, quit_closure) {
   task_runner->PostTask(FROM_HERE, quit_closure);
@@ -95,7 +99,6 @@ class VideoCaptureTest : public testing::Test,
         audio_system_(
             std::make_unique<media::AudioSystemImpl>(audio_manager_.get())),
         task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        opened_session_id_(kInvalidMediaCaptureSessionId),
         observer_binding_(this) {}
   ~VideoCaptureTest() override { audio_manager_->Shutdown(); }
 
@@ -166,7 +169,7 @@ class VideoCaptureTest : public testing::Test,
           MediaStreamManager::DeviceStoppedCallback());
       run_loop.Run();
     }
-    ASSERT_NE(blink::MediaStreamDevice::kNoId, opened_session_id_);
+    ASSERT_FALSE(opened_session_id_.is_empty());
   }
 
   void CloseSession() {
@@ -174,7 +177,7 @@ class VideoCaptureTest : public testing::Test,
       return;
     media_stream_manager_->CancelRequest(opened_device_label_);
     opened_device_label_.clear();
-    opened_session_id_ = kInvalidMediaCaptureSessionId;
+    opened_session_id_ = base::UnguessableToken();
   }
 
  protected:
@@ -209,7 +212,7 @@ class VideoCaptureTest : public testing::Test,
 
     media::mojom::VideoCaptureObserverPtr observer;
     observer_binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(kDeviceId, opened_session_id_, params, std::move(observer));
+    host_->Start(DeviceId(), opened_session_id_, params, std::move(observer));
 
     run_loop.Run();
   }
@@ -230,11 +233,11 @@ class VideoCaptureTest : public testing::Test,
         .Times(AtMost(1));
     media::mojom::VideoCaptureObserverPtr observer;
     observer_binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(kDeviceId, opened_session_id_, params, std::move(observer));
+    host_->Start(DeviceId(), opened_session_id_, params, std::move(observer));
 
     EXPECT_CALL(*this,
                 OnStateChanged(media::mojom::VideoCaptureState::STOPPED));
-    host_->Stop(kDeviceId);
+    host_->Stop(DeviceId());
     run_loop.RunUntilIdle();
   }
 
@@ -243,7 +246,7 @@ class VideoCaptureTest : public testing::Test,
     base::RunLoop run_loop;
 
     EXPECT_CALL(*this, OnStateChanged(media::mojom::VideoCaptureState::PAUSED));
-    host_->Pause(kDeviceId);
+    host_->Pause(DeviceId());
 
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
@@ -251,7 +254,7 @@ class VideoCaptureTest : public testing::Test,
 
     EXPECT_CALL(*this,
                 OnStateChanged(media::mojom::VideoCaptureState::RESUMED));
-    host_->Resume(kDeviceId, opened_session_id_, params);
+    host_->Resume(DeviceId(), opened_session_id_, params);
     run_loop.RunUntilIdle();
   }
 
@@ -260,7 +263,7 @@ class VideoCaptureTest : public testing::Test,
 
     EXPECT_CALL(*this, OnStateChanged(media::mojom::VideoCaptureState::STOPPED))
         .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
-    host_->Stop(kDeviceId);
+    host_->Stop(DeviceId());
 
     run_loop.Run();
 
@@ -279,8 +282,7 @@ class VideoCaptureTest : public testing::Test,
 
   void SimulateError() {
     EXPECT_CALL(*this, OnStateChanged(media::mojom::VideoCaptureState::FAILED));
-    VideoCaptureControllerID id(kDeviceId);
-    host_->OnError(id,
+    host_->OnError(DeviceId(),
                    media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest);
     base::RunLoop().RunUntilIdle();
   }
@@ -297,7 +299,7 @@ class VideoCaptureTest : public testing::Test,
                       const blink::MediaStreamDevice& opened_device) {
     if (success) {
       opened_device_label_ = label;
-      opened_session_id_ = opened_device.session_id;
+      opened_session_id_ = opened_device.session_id();
     }
     std::move(quit_closure).Run();
   }
@@ -311,7 +313,7 @@ class VideoCaptureTest : public testing::Test,
   content::TestBrowserContext browser_context_;
   content::TestContentBrowserClient browser_client_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  int opened_session_id_;
+  base::UnguessableToken opened_session_id_;
   std::string opened_device_label_;
 
   std::unique_ptr<VideoCaptureHost> host_;

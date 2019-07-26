@@ -18,6 +18,7 @@ ViewShadow::ViewShadow(views::View* view, int elevation)
   view_->AddLayerBeneathView(shadow_->layer());
   shadow_->SetContentBounds(view_->layer()->bounds());
   view_->AddObserver(this);
+  shadow_->AddObserver(this);
 }
 
 ViewShadow::~ViewShadow() {
@@ -32,11 +33,19 @@ void ViewShadow::SetRoundedCornerRadius(int corner_radius) {
   shadow_->SetRoundedCornerRadius(corner_radius);
 }
 
+void ViewShadow::OnLayerRecreated(ui::Layer* old_layer) {
+  if (!view_)
+    return;
+  view_->RemoveLayerBeneathViewKeepInLayerTree(old_layer);
+  view_->AddLayerBeneathView(shadow_->layer());
+}
+
 void ViewShadow::OnLayerTargetBoundsChanged(views::View* view) {
   shadow_->SetContentBounds(view->layer()->bounds());
 }
 
 void ViewShadow::OnViewIsDeleting(views::View* view) {
+  shadow_->RemoveObserver(this);
   shadow_.reset();
   view_->RemoveObserver(this);
   view_ = nullptr;

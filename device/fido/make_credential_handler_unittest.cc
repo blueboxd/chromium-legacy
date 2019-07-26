@@ -66,7 +66,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
     discovery_ = fake_discovery_factory_->ForgeNextHidDiscovery();
     ble_discovery_ = fake_discovery_factory_->ForgeNextBleDiscovery();
     nfc_discovery_ = fake_discovery_factory_->ForgeNextNfcDiscovery();
-    platform_discovery_ = fake_discovery_factory_->ForgeNextPlatformDiscovery();
   }
 
   std::unique_ptr<MakeCredentialRequestHandler> CreateMakeCredentialHandler() {
@@ -92,8 +91,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         nullptr, fake_discovery_factory_.get(), supported_transports_,
         std::move(request_parameter),
         std::move(authenticator_selection_criteria), cb_.callback());
-    if (pending_mock_platform_device_)
-      platform_discovery_->AddDevice(std::move(pending_mock_platform_device_));
+    handler->SetPlatformAuthenticatorOrMarkUnavailable(
+        CreatePlatformAuthenticator());
     return handler;
   }
 
@@ -138,6 +137,15 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   }
 
  protected:
+  base::Optional<PlatformAuthenticatorInfo> CreatePlatformAuthenticator() {
+    if (!pending_mock_platform_device_)
+      return base::nullopt;
+    return PlatformAuthenticatorInfo(
+        std::make_unique<FidoDeviceAuthenticator>(
+            std::move(pending_mock_platform_device_)),
+        false /* has_recognized_mac_touch_id_credential_available */);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_{
       base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<test::FakeFidoDiscoveryFactory> fake_discovery_factory_ =
@@ -145,7 +153,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
   test::FakeFidoDiscovery* discovery_;
   test::FakeFidoDiscovery* ble_discovery_;
   test::FakeFidoDiscovery* nfc_discovery_;
-  test::FakeFidoDiscovery* platform_discovery_;
   scoped_refptr<::testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<MockFidoDevice> pending_mock_platform_device_;
   TestMakeCredentialRequestCallback cb_;
@@ -253,6 +260,34 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(FidoReturnCode::kAuthenticatorMissingUserVerification,
             callback().status());
+}
+
+// TODO(crbug.com/873710): Platform authenticators are temporarily disabled if
+// AuthenticatorAttachment is unset (kAny).
+TEST_F(FidoMakeCredentialHandlerTest, AnyAttachment) {
+  auto platform_device = MockFidoDevice::MakeCtap(
+      ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
+  platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  set_mock_platform_device(std::move(platform_device));
+  EXPECT_CALL(*mock_adapter_, IsPresent()).WillOnce(::testing::Return(true));
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorAttachment::kAny, /*require_resident_key=*/false,
+              UserVerificationRequirement::kPreferred));
+
+  // MakeCredentialHandler will not dispatch the kAny request to the platform
+  // authenticator since the request does not get dispatched through UI. Despite
+  // setting a platform authenticator, the internal transport never becomes
+  // available.
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+
+  // kCloudAssistedBluetoothLowEnergy not yet supported for MakeCredential.
+  ExpectAllowedTransportsForRequestAre(
+      request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
+                              FidoTransportProtocol::kNearFieldCommunication,
+                              FidoTransportProtocol::kUsbHumanInterfaceDevice});
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, CrossPlatformAttachment) {

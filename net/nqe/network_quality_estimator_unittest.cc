@@ -1419,9 +1419,6 @@ TEST_F(NetworkQualityEstimatorTest, TestGetMetricsSince) {
       EXPECT_EQ(test.expected_transport_rtt, transport_rtt);
       EXPECT_EQ(test.expected_downstream_throughput,
                 downstream_throughput_kbps);
-      EXPECT_EQ(
-          test.expected_effective_connection_type,
-          estimator.GetRecentEffectiveConnectionType(test.start_timestamp));
     }
   }
 }

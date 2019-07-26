@@ -507,10 +507,10 @@ void NetworkService::SetUpHttpAuth(
 
 void NetworkService::ConfigureHttpAuthPrefs(
     mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) {
-  http_auth_preferences_.SetServerWhitelist(
-      http_auth_dynamic_params->server_whitelist);
-  http_auth_preferences_.SetDelegateWhitelist(
-      http_auth_dynamic_params->delegate_whitelist);
+  http_auth_preferences_.SetServerAllowlist(
+      http_auth_dynamic_params->server_allowlist);
+  http_auth_preferences_.SetDelegateAllowlist(
+      http_auth_dynamic_params->delegate_allowlist);
   http_auth_preferences_.set_delegate_by_kdc_policy(
       http_auth_dynamic_params->delegate_by_kdc_policy);
   http_auth_preferences_.set_negotiate_disable_cname_lookup(

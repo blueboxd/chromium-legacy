@@ -12,6 +12,7 @@
 #include "chrome/common/search.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
@@ -68,7 +69,7 @@ const service_manager::Manifest& GetChromeContentRendererOverlayManifest() {
                 extensions::mojom::MimeHandlerViewContainerManager,
 #endif  // TODO: need gated include back
                 safe_browsing::mojom::ThreatReporter,
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
                 safe_browsing::mojom::PhishingDetector,
 #endif
 #if defined(OS_MACOSX)

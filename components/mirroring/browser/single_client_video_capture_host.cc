@@ -61,12 +61,12 @@ SingleClientVideoCaptureHost::SingleClientVideoCaptureHost(
 
 SingleClientVideoCaptureHost::~SingleClientVideoCaptureHost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Stop(0);
+  Stop(base::UnguessableToken());
 }
 
 void SingleClientVideoCaptureHost::Start(
-    int32_t device_id,
-    int32_t session_id,
+    const base::UnguessableToken& device_id,
+    const base::UnguessableToken& session_id,
     const VideoCaptureParams& params,
     media::mojom::VideoCaptureObserverPtr observer) {
   DVLOG(1) << __func__;
@@ -98,7 +98,8 @@ void SingleClientVideoCaptureHost::Start(
                      std::move(device_launcher_callbacks)));
 }
 
-void SingleClientVideoCaptureHost::Stop(int32_t device_id) {
+void SingleClientVideoCaptureHost::Stop(
+    const base::UnguessableToken& device_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << __func__;
 
@@ -124,28 +125,31 @@ void SingleClientVideoCaptureHost::Stop(int32_t device_id) {
   retired_buffers_.clear();
 }
 
-void SingleClientVideoCaptureHost::Pause(int32_t device_id) {
+void SingleClientVideoCaptureHost::Pause(
+    const base::UnguessableToken& device_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (launched_device_)
     launched_device_->MaybeSuspendDevice();
 }
 
-void SingleClientVideoCaptureHost::Resume(int32_t device_id,
-                                          int32_t session_id,
-                                          const VideoCaptureParams& params) {
+void SingleClientVideoCaptureHost::Resume(
+    const base::UnguessableToken& device_id,
+    const base::UnguessableToken& session_id,
+    const VideoCaptureParams& params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (launched_device_)
     launched_device_->ResumeDevice();
 }
 
-void SingleClientVideoCaptureHost::RequestRefreshFrame(int32_t device_id) {
+void SingleClientVideoCaptureHost::RequestRefreshFrame(
+    const base::UnguessableToken& device_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (launched_device_)
     launched_device_->RequestRefreshFrame();
 }
 
 void SingleClientVideoCaptureHost::ReleaseBuffer(
-    int32_t device_id,
+    const base::UnguessableToken& device_id,
     int32_t buffer_id,
     double consumer_resource_utilization) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -155,8 +159,8 @@ void SingleClientVideoCaptureHost::ReleaseBuffer(
 }
 
 void SingleClientVideoCaptureHost::GetDeviceSupportedFormats(
-    int32_t device_id,
-    int32_t session_id,
+    const base::UnguessableToken& device_id,
+    const base::UnguessableToken& session_id,
     GetDeviceSupportedFormatsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
@@ -164,8 +168,8 @@ void SingleClientVideoCaptureHost::GetDeviceSupportedFormats(
 }
 
 void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
-    int32_t device_id,
-    int32_t session_id,
+    const base::UnguessableToken& device_id,
+    const base::UnguessableToken& session_id,
     GetDeviceFormatsInUseCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
@@ -173,14 +177,15 @@ void SingleClientVideoCaptureHost::GetDeviceFormatsInUse(
 }
 
 void SingleClientVideoCaptureHost::OnFrameDropped(
-    int32_t device_id,
+    const base::UnguessableToken& device_id,
     media::VideoCaptureFrameDropReason reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ignore this call.
 }
 
-void SingleClientVideoCaptureHost::OnLog(int32_t device_id,
-                                         const std::string& message) {
+void SingleClientVideoCaptureHost::OnLog(
+    const base::UnguessableToken& device_id,
+    const std::string& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ignore this call.
 }

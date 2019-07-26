@@ -77,6 +77,10 @@ class Surface final : public ui::PropertyHandler {
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
   void Attach(Buffer* buffer);
+  void Attach(Buffer* buffer, gfx::Vector2d offset);
+
+  gfx::Vector2d GetBufferOffset();
+
   // Returns whether the surface has an uncommitted attached buffer.
   bool HasPendingAttachedBuffer() const;
 
@@ -286,6 +290,7 @@ class Surface final : public ui::PropertyHandler {
     bool only_visible_on_secure_output = false;
     SkBlendMode blend_mode = SkBlendMode::kSrcOver;
     float alpha = 1.0f;
+    gfx::Vector2d offset;
   };
   class BufferAttachment {
    public:
@@ -436,6 +441,19 @@ class Surface final : public ui::PropertyHandler {
 #endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
+};
+
+class ScopedSurface {
+ public:
+  ScopedSurface(Surface* surface, SurfaceObserver* observer);
+  ~ScopedSurface();
+  Surface* get() { return surface_; }
+
+ private:
+  Surface* const surface_;
+  SurfaceObserver* const observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSurface);
 };
 
 }  // namespace exo

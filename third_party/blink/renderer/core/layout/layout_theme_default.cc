@@ -63,9 +63,9 @@ LayoutThemeDefault::~LayoutThemeDefault() = default;
 bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
   if (UseMockTheme()) {
     // Don't use focus rings for buttons when mocking controls.
-    return style.Appearance() == kButtonPart ||
-           style.Appearance() == kPushButtonPart ||
-           style.Appearance() == kSquareButtonPart;
+    return style.EffectiveAppearance() == kButtonPart ||
+           style.EffectiveAppearance() == kPushButtonPart ||
+           style.EffectiveAppearance() == kSquareButtonPart;
   }
 
   // This causes Blink to draw the focus rings for us.
@@ -180,10 +180,10 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
 
   // FIXME: Mock theme doesn't handle zoomed sliders.
   float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
-  if (style.Appearance() == kSliderThumbHorizontalPart) {
+  if (style.EffectiveAppearance() == kSliderThumbHorizontalPart) {
     style.SetWidth(Length::Fixed(size.Width() * zoom_level));
     style.SetHeight(Length::Fixed(size.Height() * zoom_level));
-  } else if (style.Appearance() == kSliderThumbVerticalPart) {
+  } else if (style.EffectiveAppearance() == kSliderThumbVerticalPart) {
     style.SetWidth(Length::Fixed(size.Height() * zoom_level));
     style.SetHeight(Length::Fixed(size.Width() * zoom_level));
   }
@@ -248,7 +248,7 @@ bool LayoutThemeDefault::ShouldUseFallbackTheme(
   if (UseMockTheme()) {
     // The mock theme can't handle zoomed controls, so we fall back to the
     // "fallback" theme.
-    ControlPart part = style.Appearance();
+    ControlPart part = style.EffectiveAppearance();
     if (part == kCheckboxPart || part == kRadioPart)
       return style.EffectiveZoom() != 1;
   }
@@ -289,7 +289,7 @@ IntRect Center(const IntRect& original, int width, int height) {
 }
 
 void LayoutThemeDefault::AdjustButtonStyle(ComputedStyle& style) const {
-  if (style.Appearance() == kPushButtonPart) {
+  if (style.EffectiveAppearance() == kPushButtonPart) {
     // Ignore line-height.
     style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
   }
@@ -333,7 +333,7 @@ int LayoutThemeDefault::PopupInternalPaddingStart(
 int LayoutThemeDefault::PopupInternalPaddingEnd(
     const ChromeClient* client,
     const ComputedStyle& style) const {
-  if (style.Appearance() == kNoControlPart)
+  if (!style.HasEffectiveAppearance())
     return 0;
   return 1 * style.EffectiveZoom() +
          ClampedMenuListArrowPaddingSize(client, style);
@@ -389,7 +389,7 @@ void LayoutThemeDefault::DidChangeThemeEngine() {
 
 int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
                                                 int padding) const {
-  if (style.Appearance() == kNoControlPart)
+  if (!style.HasEffectiveAppearance())
     return 0;
   return padding * style.EffectiveZoom();
 }

@@ -22,7 +22,7 @@ mojom("mojo") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 
   if (is_linux || use_ozone) {

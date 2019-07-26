@@ -101,18 +101,21 @@ class MockVideoCaptureObserver final
   void Start() {
     media::mojom::VideoCaptureObserverPtr observer;
     binding_.Bind(mojo::MakeRequest(&observer));
-    host_->Start(0, 0, DefaultVideoCaptureParams(), std::move(observer));
+    host_->Start(device_id_, session_id_, DefaultVideoCaptureParams(),
+                 std::move(observer));
   }
 
-  void Stop() { host_->Stop(0); }
+  void Stop() { host_->Stop(device_id_); }
 
-  void RequestRefreshFrame() { host_->RequestRefreshFrame(0); }
+  void RequestRefreshFrame() { host_->RequestRefreshFrame(device_id_); }
 
  private:
   media::mojom::VideoCaptureHostPtr host_;
   mojo::Binding<media::mojom::VideoCaptureObserver> binding_;
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
+  const base::UnguessableToken device_id_ = base::UnguessableToken::Create();
+  const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureObserver);
 };

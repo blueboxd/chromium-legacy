@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_ui.h"
+#include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_dialogs.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"

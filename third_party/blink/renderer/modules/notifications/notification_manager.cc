@@ -214,14 +214,17 @@ void NotificationManager::DidGetNotifications(
     const Vector<String>& notification_ids,
     Vector<mojom::blink::NotificationDataPtr> notification_datas) {
   DCHECK_EQ(notification_ids.size(), notification_datas.size());
+  ExecutionContext* context = resolver->GetExecutionContext();
+  if (!context)
+    return;
 
   HeapVector<Member<Notification>> notifications;
   notifications.ReserveInitialCapacity(notification_ids.size());
 
   for (wtf_size_t i = 0; i < notification_ids.size(); ++i) {
     notifications.push_back(Notification::Create(
-        resolver->GetExecutionContext(), notification_ids[i],
-        std::move(notification_datas[i]), true /* showing */));
+        context, notification_ids[i], std::move(notification_datas[i]),
+        true /* showing */));
   }
 
   resolver->Resolve(notifications);

@@ -12,8 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
-#include "third_party/blink/renderer/modules/webmidi/midi_accessor_client.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_options.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_port.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -23,7 +22,7 @@ namespace blink {
 class ScriptState;
 
 class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
-                                             public MIDIAccessorClient {
+                                             public MIDIDispatcher::Client {
   USING_PRE_FINALIZER(MIDIAccessInitializer, Dispose);
 
  public:
@@ -63,7 +62,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
 
   void Dispose();
 
-  // MIDIAccessorClient
+  // MIDIDispatcher::Client
   void DidAddInputPort(const String& id,
                        const String& manufacturer,
                        const String& name,
@@ -92,10 +91,12 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
 
   void ContextDestroyed(ExecutionContext*) override;
 
+  void StartSession();
+
   void OnPermissionsUpdated(mojom::blink::PermissionStatus);
   void OnPermissionUpdated(mojom::blink::PermissionStatus);
 
-  std::unique_ptr<MIDIAccessor> accessor_;
+  std::unique_ptr<MIDIDispatcher> dispatcher_;
   Vector<PortDescriptor> port_descriptors_;
   Member<const MIDIOptions> options_;
 

@@ -6,6 +6,9 @@ import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/blink/public/public_features.gni")
+if (is_android) {
+  import("//build/config/android/config.gni")
+}
 
 if (is_component_build) {
   link_target_type = "source_set"

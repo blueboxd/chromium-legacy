@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import org.chromium.chrome.R;
 
@@ -16,6 +17,11 @@ import org.chromium.chrome.R;
  * Password entry editor that allows editing passwords stored in Chrome.
  */
 public class PasswordEntryEditor extends Fragment {
+    private EditText mSiteText;
+    private EditText mUsernameText;
+    private EditText mPasswordText;
+    private SavedPasswordEntry mSavedPasswordEntry;
+
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -26,5 +32,16 @@ public class PasswordEntryEditor extends Fragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Editing action in PasswordEntryViewer sets extras and launches PasswordEntryEditor.
+        mSavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
+                                      .getPasswordManagerHandler()
+                                      .getSavedPasswordEntry(getArguments().getInt(
+                                              SavePasswordsPreferences.PASSWORD_LIST_ID));
+        mSiteText = (EditText) view.findViewById(R.id.site_edit);
+        mUsernameText = (EditText) view.findViewById(R.id.username_edit);
+        mPasswordText = (EditText) view.findViewById(R.id.password_edit);
+        mSiteText.setText(mSavedPasswordEntry.getUrl());
+        mUsernameText.setText(mSavedPasswordEntry.getUserName());
+        mPasswordText.setText(mSavedPasswordEntry.getPassword());
     }
 }

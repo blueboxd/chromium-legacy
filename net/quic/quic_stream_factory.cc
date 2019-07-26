@@ -2064,10 +2064,10 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   if (!session_was_active)
     return;
 
-  // TODO(rch):  In the special case where the session has received no
-  // packets from the peer, we should consider blacklisting this
-  // differently so that we still race TCP but we don't consider the
-  // session connected until the handshake has been confirmed.
+  // TODO(rch):  In the special case where the session has received no packets
+  // from the peer, we should consider blocking this differently so that we
+  // still race TCP but we don't consider the session connected until the
+  // handshake has been confirmed.
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_QUIC_STREAM_FACTORY);
 

@@ -37,6 +37,12 @@
 // Returns the displayed preview layer.
 - (AVCaptureVideoPreviewLayer*)getPreviewLayer;
 
+// Returns the viewport size which can be overridden in a subclass.
+- (CGSize)viewportSize;
+
+// Returns scanner caption which can be overridden in a subclass.
+- (NSString*)scannerCaption;
+
 // Sets the state of the torch button to enabled or disabled according to the
 // value of |torchIsAvailable|.
 - (void)enableTorchButton:(BOOL)torchIsAvailable;

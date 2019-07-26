@@ -52,7 +52,7 @@ class CONTENT_EXPORT OldRenderFrameAudioInputStreamFactory
               keyboard_mic_registration,
           uint32_t shared_memory_count,
           int stream_id,
-          int session_id,
+          const base::UnguessableToken& session_id,
           bool automatic_gain_control,
           const media::AudioParameters& parameters,
           media::AudioInputDelegate::EventHandler* event_handler)>;
@@ -72,14 +72,14 @@ class CONTENT_EXPORT OldRenderFrameAudioInputStreamFactory
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
       mojom::RendererAudioInputStreamFactoryClientPtr client,
-      int32_t session_id,
+      const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
       uint32_t shared_memory_count,
       audio::mojom::AudioProcessingConfigPtr processing_config) override;
 
   void DoCreateStream(mojom::RendererAudioInputStreamFactoryClientPtr client,
-                      int session_id,
+                      const base::UnguessableToken& session_id,
                       const media::AudioParameters& audio_params,
                       bool automatic_gain_control,
                       uint32_t shared_memory_count,

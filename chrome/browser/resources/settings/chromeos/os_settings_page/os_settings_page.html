@@ -127,14 +127,12 @@
             </os-settings-people-page>
           </settings-section>
         </template>
-        <!-- TODO(hsuregan): Change from appearance to personalization once
-          pageVisibility is forked for OS Settings.-->
-        <template is="dom-if" if="[[showPage_(pageVisibility.appearance)]]"
+        <template is="dom-if" if="[[showPage_(pageVisibility.personalization)]]"
             restamp>
           <settings-section page-title="$i18n{personalizationPageTitle}"
               section="personalization">
             <settings-personalization-page
-                page-visibility="[[pageVisibility.appearance]]">
+                page-visibility="[[pageVisibility.personalization]]">
             </settings-personalization-page>
           </settings-section>
         </template>

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
+mojom = "//ui/gfx/geometry/mojom/geometry.mojom"
 public_headers = [
   "//ui/gfx/geometry/quaternion.h",
   "//ui/gfx/geometry/vector3d_f.h",
@@ -15,7 +15,7 @@ public_headers = [
 ]
 traits_headers = [
   "//third_party/blink/renderer/platform/mojo/geometry_struct_traits.h",
-  "//ui/gfx/geometry/mojo/geometry_struct_traits.h",
+  "//ui/gfx/geometry/mojom/geometry_mojom_traits.h",
 ]
 
 # Note: consumers of this typemap must themselves depend on platform.

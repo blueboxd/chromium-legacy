@@ -13,7 +13,7 @@ mojom("video_capture") {
   public_deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
   ]
 }

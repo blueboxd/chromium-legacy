@@ -20,7 +20,7 @@
 #include "services/viz/public/cpp/compositing/surface_id_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame.mojom.h"
 #include "testing/perf/perf_test.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 

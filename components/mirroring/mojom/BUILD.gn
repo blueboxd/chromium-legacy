@@ -45,6 +45,6 @@ mojom("service") {
     "//media/mojo/interfaces:interfaces",
     "//media/mojo/interfaces:remoting",
     "//services/network/public/mojom",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 }

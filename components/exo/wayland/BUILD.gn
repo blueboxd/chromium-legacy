@@ -19,6 +19,8 @@ source_set("wayland") {
   sources = [
     "scoped_wl.cc",
     "scoped_wl.h",
+    "serial_tracker.cc",
+    "serial_tracker.h",
     "server.cc",
     "server.h",
     "server_util.cc",

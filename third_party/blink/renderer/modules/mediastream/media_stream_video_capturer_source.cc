@@ -61,10 +61,11 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     const media::VideoCaptureParams& capture_params,
     DeviceCapturerFactoryCallback device_capturer_factory_callback)
     : internal_state_(std::make_unique<InternalState>(web_frame)),
-      source_(device_capturer_factory_callback.Run(device.session_id)),
+      source_(device_capturer_factory_callback.Run(device.session_id())),
       capture_params_(capture_params),
       device_capturer_factory_callback_(
           std::move(device_capturer_factory_callback)) {
+  DCHECK(!device.session_id().is_empty());
   SetStopCallback(stop_callback);
   SetDevice(device);
   SetDeviceRotationDetection(true /* enabled */);
@@ -108,7 +109,7 @@ void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
   if (!internal_state_->frame())
     return;
   internal_state_->GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
-      device().session_id,
+      device().serializable_session_id(),
       static_cast<mojom::blink::MediaStreamType>(device().type), is_secure);
 }
 
@@ -179,7 +180,7 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
   state_ = STOPPING_FOR_CHANGE_SOURCE;
   source_->StopCapture();
   SetDevice(new_device);
-  source_ = device_capturer_factory_callback_.Run(new_device.session_id);
+  source_ = device_capturer_factory_callback_.Run(new_device.session_id());
   source_->StartCapture(
       capture_params_, frame_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,

@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -374,6 +375,8 @@ void PasswordManager::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterDoublePref(prefs::kLastTimeObsoleteHttpCredentialsRemoved,
                                0.0);
+  registry->RegisterIntegerPref(prefs::kPasswordManagerOnboardingState,
+                                static_cast<int>(OnboardingState::kDoNotShow));
 
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,

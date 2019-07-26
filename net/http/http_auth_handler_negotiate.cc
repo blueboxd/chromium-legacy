@@ -191,7 +191,7 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
   }
   // GSSAPI does not provide a way to enter username/password to
   // obtain a TGT. If the default credentials are not allowed for
-  // a particular site (based on whitelist), fall back to a
+  // a particular site (based on allowlist), fall back to a
   // different scheme.
   if (!AllowsDefaultCredentials())
     return false;

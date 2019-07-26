@@ -13,7 +13,7 @@ mojom("common") {
   public_deps = [
     "//media/mojo/interfaces",
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 
   # TODO(https://crbug.com/968369): Change to use new names.

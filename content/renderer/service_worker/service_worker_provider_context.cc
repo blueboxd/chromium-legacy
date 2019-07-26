@@ -204,14 +204,6 @@ void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
   container_host_.reset();
 }
 
-void ServiceWorkerProviderContext::PingContainerHost(
-    base::OnceClosure callback) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  if (!container_host_)
-    return;
-  container_host_->Ping(std::move(callback));
-}
-
 void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
 

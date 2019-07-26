@@ -448,12 +448,12 @@ Color LayoutThemeMac::SystemColor(CSSValueID css_value_id) const {
   return color;
 }
 
-bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
-  if (style.Appearance() == kTextFieldPart ||
-      style.Appearance() == kTextAreaPart)
+bool LayoutThemeMac::IsControlStyled(ControlPart part,
+                                     const ComputedStyle& style) const {
+  if (part == kTextFieldPart || part == kTextAreaPart)
     return style.HasAuthorBorder() || style.BoxShadow();
 
-  if (style.Appearance() == kMenulistPart) {
+  if (part == kMenulistPart) {
     // FIXME: This is horrible, but there is not much else that can be done.
     // Menu lists cannot draw properly when scaled. They can't really draw
     // properly when transformed either. We can't detect the transform case
@@ -472,7 +472,7 @@ bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
   }
   // Some other cells don't work well when scaled.
   if (style.EffectiveZoom() != 1) {
-    switch (style.Appearance()) {
+    switch (part) {
       case kButtonPart:
       case kPushButtonPart:
       case kSearchFieldPart:
@@ -482,13 +482,13 @@ bool LayoutThemeMac::IsControlStyled(const ComputedStyle& style) const {
         break;
     }
   }
-  return LayoutTheme::IsControlStyled(style);
+  return LayoutTheme::IsControlStyled(part, style);
 }
 
 void LayoutThemeMac::AddVisualOverflow(const Node* node,
                                        const ComputedStyle& style,
                                        IntRect& rect) {
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   switch (part) {
     case kCheckboxPart:
     case kRadioPart:
@@ -496,8 +496,7 @@ void LayoutThemeMac::AddVisualOverflow(const Node* node,
     case kSquareButtonPart:
     case kButtonPart:
     case kInnerSpinButtonPart:
-      return AddVisualOverflowHelper(style.Appearance(),
-                                     ControlStatesForNode(node, style),
+      return AddVisualOverflowHelper(part, ControlStatesForNode(node, style),
                                      style.EffectiveZoom(), rect);
     default:
       break;
@@ -733,20 +732,20 @@ static const int kStyledPopupPaddingBottom = 2;
 // by LayoutMenuList.
 int LayoutThemeMac::PopupInternalPaddingStart(
     const ComputedStyle& style) const {
-  if (style.Appearance() == kMenulistPart)
+  if (style.EffectiveAppearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kLeftMargin] *
            style.EffectiveZoom();
-  if (style.Appearance() == kMenulistButtonPart)
+  if (style.EffectiveAppearance() == kMenulistButtonPart)
     return kStyledPopupPaddingStart * style.EffectiveZoom();
   return 0;
 }
 
 int LayoutThemeMac::PopupInternalPaddingEnd(const ChromeClient*,
                                             const ComputedStyle& style) const {
-  if (style.Appearance() == kMenulistPart)
+  if (style.EffectiveAppearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kRightMargin] *
            style.EffectiveZoom();
-  if (style.Appearance() != kMenulistButtonPart)
+  if (style.EffectiveAppearance() != kMenulistButtonPart)
     return 0;
   float font_scale = style.FontSize() / kBaseFontSize;
   float arrow_width = kMenuListBaseArrowWidth * font_scale;
@@ -756,20 +755,20 @@ int LayoutThemeMac::PopupInternalPaddingEnd(const ChromeClient*,
 }
 
 int LayoutThemeMac::PopupInternalPaddingTop(const ComputedStyle& style) const {
-  if (style.Appearance() == kMenulistPart)
+  if (style.EffectiveAppearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kTopMargin] *
            style.EffectiveZoom();
-  if (style.Appearance() == kMenulistButtonPart)
+  if (style.EffectiveAppearance() == kMenulistButtonPart)
     return kStyledPopupPaddingTop * style.EffectiveZoom();
   return 0;
 }
 
 int LayoutThemeMac::PopupInternalPaddingBottom(
     const ComputedStyle& style) const {
-  if (style.Appearance() == kMenulistPart)
+  if (style.EffectiveAppearance() == kMenulistPart)
     return PopupButtonPadding(ControlSizeForFont(style))[kBottomMargin] *
            style.EffectiveZoom();
-  if (style.Appearance() == kMenulistButtonPart)
+  if (style.EffectiveAppearance() == kMenulistButtonPart)
     return kStyledPopupPaddingBottom * style.EffectiveZoom();
   return 0;
 }
@@ -918,8 +917,8 @@ void LayoutThemeMac::AdjustProgressBarBounds(ComputedStyle& style) const {
 
 void LayoutThemeMac::AdjustSliderThumbSize(ComputedStyle& style) const {
   float zoom_level = style.EffectiveZoom();
-  if (style.Appearance() == kSliderThumbHorizontalPart ||
-      style.Appearance() == kSliderThumbVerticalPart) {
+  if (style.EffectiveAppearance() == kSliderThumbHorizontalPart ||
+      style.EffectiveAppearance() == kSliderThumbVerticalPart) {
     style.SetWidth(
         Length::Fixed(static_cast<int>(kSliderThumbWidth * zoom_level)));
     style.SetHeight(
@@ -1075,7 +1074,7 @@ String LayoutThemeMac::ExtraDefaultStyleSheet() {
 bool LayoutThemeMac::ThemeDrawsFocusRing(const ComputedStyle& style) const {
   if (ShouldUseFallbackTheme(style))
     return false;
-  switch (style.Appearance()) {
+  switch (style.EffectiveAppearance()) {
     case kCheckboxPart:
     case kRadioPart:
     case kPushButtonPart:
@@ -1100,7 +1099,7 @@ bool LayoutThemeMac::ThemeDrawsFocusRing(const ComputedStyle& style) const {
 }
 
 bool LayoutThemeMac::ShouldUseFallbackTheme(const ComputedStyle& style) const {
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   if (part == kCheckboxPart || part == kRadioPart)
     return style.EffectiveZoom() != 1;
   return false;
@@ -1186,7 +1185,7 @@ NSView* LayoutThemeMac::EnsuredView(const IntSize& size) {
 
 LayoutUnit LayoutThemeMac::BaselinePositionAdjustment(
     const ComputedStyle& style) const {
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   if (part == kCheckboxPart || part == kRadioPart)
     return LayoutUnit(style.EffectiveZoom() * -2);
   return LayoutTheme::BaselinePositionAdjustment(style);
@@ -1371,7 +1370,7 @@ void LayoutThemeMac::AddVisualOverflowHelper(ControlPart part,
 }
 
 void LayoutThemeMac::AdjustControlPartStyle(ComputedStyle& style) {
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   switch (part) {
     case kCheckboxPart:
     case kInnerSpinButtonPart:

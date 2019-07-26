@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_track.h"
 #include "third_party/blink/public/platform/modules/webrtc/peer_connection_remote_audio_source.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_renderer_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/modules/mediastream/track_audio_renderer.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
@@ -36,12 +36,12 @@ PeerConnectionDependencyFactory* GetPeerConnectionDependencyFactory() {
 // be rendered to a matching output device, should one exist.
 // Note that if there are more than one open capture devices the function
 // will not be able to pick an appropriate device and return 0.
-int GetSessionIdForWebRtcAudioRenderer() {
-  WebRtcAudioDeviceImpl* audio_device =
+base::UnguessableToken GetSessionIdForWebRtcAudioRenderer() {
+  blink::WebRtcAudioDeviceImpl* audio_device =
       GetPeerConnectionDependencyFactory()->GetWebRtcAudioDevice();
   return audio_device
              ? audio_device->GetAuthorizedDeviceSessionIdForAudioRenderer()
-             : 0;
+             : base::UnguessableToken();
 }
 
 }  // namespace
@@ -116,12 +116,13 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     DVLOG(1) << "Creating TrackAudioRenderer for "
              << (audio_track->is_local_track() ? "local" : "remote")
              << " track.";
-    return new blink::TrackAudioRenderer(audio_tracks[0], web_frame,
-                                         0 /* no session_id */, device_id);
+    return new blink::TrackAudioRenderer(
+        audio_tracks[0], web_frame,
+        /*session_id=*/base::UnguessableToken(), device_id);
   }
 
   // This is a remote WebRTC media stream.
-  WebRtcAudioDeviceImpl* audio_device =
+  blink::WebRtcAudioDeviceImpl* audio_device =
       GetPeerConnectionDependencyFactory()->GetWebRtcAudioDevice();
   DCHECK(audio_device);
 

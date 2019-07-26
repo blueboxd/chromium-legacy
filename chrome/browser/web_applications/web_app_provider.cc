@@ -7,10 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/feature_list.h"
-#include "base/one_shot_event.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
@@ -20,14 +17,13 @@
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_install_finalizer.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
-#include "chrome/browser/web_applications/external_web_apps.h"
+#include "chrome/browser/web_applications/external_web_app_manager.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database.h"
@@ -43,24 +39,12 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
-
-namespace web_app {
-
-namespace {
 
 #define DCHECK_IS_CONNECTED()                                          \
   DCHECK(connected_) << "Attempted to access Web App subsystem while " \
                         "WebAppProvider is not connected."
 
-void OnExternalWebAppsSynchronized(
-    std::map<GURL, InstallResultCode> install_results,
-    std::map<GURL, bool> uninstall_results) {
-  RecordExternalAppInstallResultCode("Webapp.InstallResult.Default",
-                                     install_results);
-}
-
-}  // namespace
+namespace web_app {
 
 // static
 WebAppProvider* WebAppProvider::Get(Profile* profile) {
@@ -141,8 +125,9 @@ void WebAppProvider::Shutdown() {
   // The order of destruction is the reverse order of creation:
   // TODO(calamity): Make subsystem destruction happen in destructor.
   ui_manager_.reset();
-  web_app_policy_manager_.reset();
   system_web_app_manager_.reset();
+  web_app_policy_manager_.reset();
+  external_web_app_manager_.reset();
   pending_app_manager_.reset();
 
   install_manager_.reset();
@@ -192,6 +177,8 @@ void WebAppProvider::CreateBookmarkAppsSubsystems(Profile* profile) {
   pending_app_manager_ =
       std::make_unique<extensions::PendingBookmarkAppManager>(profile);
 
+  external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
+
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
 
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
@@ -207,6 +194,7 @@ void WebAppProvider::ConnectSubsystems() {
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     pending_app_manager_->SetSubsystems(registrar_.get(), ui_manager_.get(),
                                         install_finalizer_.get());
+    external_web_app_manager_->SetSubsystems(pending_app_manager_.get());
     web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
     system_web_app_manager_->SetSubsystems(pending_app_manager_.get(),
                                            registrar_.get(), ui_manager_.get());
@@ -224,13 +212,9 @@ void WebAppProvider::OnRegistryReady() {
   DCHECK(!on_registry_ready_.is_signaled());
 
   if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    external_web_app_manager_->Start();
     web_app_policy_manager_->Start();
     system_web_app_manager_->Start();
-
-    // Start ExternalWebApps subsystem:
-    ScanForExternalWebApps(
-        profile_, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
-                                 weak_ptr_factory_.GetWeakPtr()));
   }
 
   on_registry_ready_.Signal();
@@ -286,14 +270,6 @@ void WebAppProvider::ProfileDestroyed() {
     pending_app_manager_->Shutdown();
 
   install_manager_->Shutdown();
-}
-
-void WebAppProvider::OnScanForExternalWebApps(
-    std::vector<ExternalInstallOptions> desired_apps_install_options) {
-  pending_app_manager_->SynchronizeInstalledApps(
-      std::move(desired_apps_install_options),
-      ExternalInstallSource::kExternalDefault,
-      base::BindOnce(&OnExternalWebAppsSynchronized));
 }
 
 }  // namespace web_app

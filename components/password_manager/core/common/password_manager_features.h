@@ -25,7 +25,6 @@ extern const base::Feature kGenerationNoOverwrites;
 extern const base::Feature kGooglePasswordManager;
 extern const base::Feature kLeakDetection;
 extern const base::Feature kManualPasswordGenerationAndroid;
-extern const base::Feature kMigrateLinuxToLoginDB;
 extern const base::Feature kNewPasswordFormParsing;
 extern const base::Feature kNewPasswordFormParsingForSaving;
 extern const base::Feature kOnlyNewParser;

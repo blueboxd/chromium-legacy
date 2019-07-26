@@ -62,8 +62,13 @@ bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
              Traversal<HTMLSummaryElement>::FirstChild(*node.parentElement());
 }
 
-void HTMLDetailsElement::DispatchPendingEvent() {
+void HTMLDetailsElement::DispatchPendingEvent(
+    const AttributeModificationReason reason) {
+  if (reason == AttributeModificationReason::kByParser)
+    GetDocument().SetToggleDuringParsing(true);
   DispatchEvent(*Event::Create(event_type_names::kToggle));
+  if (reason == AttributeModificationReason::kByParser)
+    GetDocument().SetToggleDuringParsing(false);
 }
 
 LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle& style,
@@ -117,7 +122,7 @@ void HTMLDetailsElement::ParseAttribute(
     pending_event_ = PostCancellableTask(
         *GetDocument().GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
         WTF::Bind(&HTMLDetailsElement::DispatchPendingEvent,
-                  WrapPersistent(this)));
+                  WrapPersistent(this), params.reason));
 
     Element* content = EnsureUserAgentShadowRoot().getElementById(
         shadow_element_names::DetailsContent());

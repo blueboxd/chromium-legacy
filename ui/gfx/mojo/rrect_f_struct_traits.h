@@ -5,7 +5,7 @@
 #ifndef UI_GFX_MOJO_RRECT_F_STRUCT_TRAITS_H_
 #define UI_GFX_MOJO_RRECT_F_STRUCT_TRAITS_H_
 
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/rrect_f.mojom-shared.h"
 #include "ui/gfx/rrect_f.h"
 

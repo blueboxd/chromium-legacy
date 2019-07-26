@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/unguessable_token.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
@@ -47,35 +48,43 @@ BLINK_COMMON_EXPORT bool IsDeviceMediaType(mojom::MediaStreamType type);
 // TODO(xians): Change the structs to classes.
 // Represents one device in a request for media stream(s).
 struct BLINK_COMMON_EXPORT MediaStreamDevice {
-  static const int kNoId;
-
   MediaStreamDevice();
-
   MediaStreamDevice(mojom::MediaStreamType type,
                     const std::string& id,
                     const std::string& name);
-
   MediaStreamDevice(
       mojom::MediaStreamType type,
       const std::string& id,
       const std::string& name,
       media::VideoFacingMode facing,
       const base::Optional<std::string>& group_id = base::nullopt);
-
   MediaStreamDevice(mojom::MediaStreamType type,
                     const std::string& id,
                     const std::string& name,
                     int sample_rate,
                     int channel_layout,
                     int frames_per_buffer);
-
   MediaStreamDevice(const MediaStreamDevice& other);
-
   ~MediaStreamDevice();
 
   MediaStreamDevice& operator=(const MediaStreamDevice& other);
 
   bool IsSameDevice(const MediaStreamDevice& other_device) const;
+
+  base::UnguessableToken session_id() const {
+    return session_id_ ? *session_id_ : base::UnguessableToken();
+  }
+
+  const base::Optional<base::UnguessableToken>& serializable_session_id()
+      const {
+    return session_id_;
+  }
+
+  void set_session_id(const base::UnguessableToken& session_id) {
+    session_id_ = session_id.is_empty()
+                      ? base::Optional<base::UnguessableToken>()
+                      : session_id;
+  }
 
   // The device's type.
   mojom::MediaStreamType type;
@@ -101,11 +110,12 @@ struct BLINK_COMMON_EXPORT MediaStreamDevice {
   media::AudioParameters input =
       media::AudioParameters::UnavailableDeviceParams();
 
-  // Id for this capture session. Unique for all sessions of the same type.
-  int session_id = kNoId;
-
   // This field is optional and available only for display media devices.
   base::Optional<media::mojom::DisplayMediaInformationPtr> display_media_info;
+
+ private:
+  // Id for this capture session. Unique for all sessions of the same type.
+  base::Optional<base::UnguessableToken> session_id_;  // = kNoId;
 };
 
 using MediaStreamDevices = std::vector<MediaStreamDevice>;

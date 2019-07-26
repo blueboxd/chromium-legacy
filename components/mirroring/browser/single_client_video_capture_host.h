@@ -45,29 +45,30 @@ class SingleClientVideoCaptureHost final
   // media::mojom::VideoCaptureHost implementations
   // |device_id| and |session_id| are ignored since there will be only one
   // device and one client.
-  void Start(int32_t device_id,
-             int32_t session_id,
+  void Start(const base::UnguessableToken& device_id,
+             const base::UnguessableToken& session_id,
              const VideoCaptureParams& params,
              media::mojom::VideoCaptureObserverPtr observer) override;
-  void Stop(int32_t device_id) override;
-  void Pause(int32_t device_id) override;
-  void Resume(int32_t device_id,
-              int32_t session_id,
+  void Stop(const base::UnguessableToken& device_id) override;
+  void Pause(const base::UnguessableToken& device_id) override;
+  void Resume(const base::UnguessableToken& device_id,
+              const base::UnguessableToken& session_id,
               const VideoCaptureParams& params) override;
-  void RequestRefreshFrame(int32_t device_id) override;
-  void ReleaseBuffer(int32_t device_id,
+  void RequestRefreshFrame(const base::UnguessableToken& device_id) override;
+  void ReleaseBuffer(const base::UnguessableToken& device_id,
                      int32_t buffer_id,
                      double consumer_resource_utilization) override;
   void GetDeviceSupportedFormats(
-      int32_t device_id,
-      int32_t session_id,
+      const base::UnguessableToken& device_id,
+      const base::UnguessableToken& session_id,
       GetDeviceSupportedFormatsCallback callback) override;
-  void GetDeviceFormatsInUse(int32_t device_id,
-                             int32_t session_id,
+  void GetDeviceFormatsInUse(const base::UnguessableToken& device_id,
+                             const base::UnguessableToken& session_id,
                              GetDeviceFormatsInUseCallback callback) override;
-  void OnFrameDropped(int32_t device_id,
+  void OnFrameDropped(const base::UnguessableToken& device_id,
                       media::VideoCaptureFrameDropReason reason) override;
-  void OnLog(int32_t device_id, const std::string& message) override;
+  void OnLog(const base::UnguessableToken& device_id,
+             const std::string& message) override;
 
   // media::VideoFrameReceiver implementations
   using Buffer = VideoCaptureDevice::Client::Buffer;

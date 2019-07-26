@@ -56,7 +56,7 @@ AccessibilityOrientation AXSlider::Orientation() const {
   if (!style)
     return kAccessibilityOrientationHorizontal;
 
-  ControlPart style_appearance = style->Appearance();
+  ControlPart style_appearance = style->EffectiveAppearance();
   switch (style_appearance) {
     case kSliderThumbHorizontalPart:
     case kSliderHorizontalPart:

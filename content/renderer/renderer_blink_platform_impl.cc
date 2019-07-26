@@ -48,6 +48,7 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
@@ -65,6 +66,7 @@
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -507,14 +509,9 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
   if (layout == media::CHANNEL_LAYOUT_UNSUPPORTED)
     layout = media::CHANNEL_LAYOUT_DISCRETE;
 
-  int session_id = 0;
-  if (input_device_id.IsNull() ||
-      !base::StringToInt(input_device_id.Utf8(), &session_id)) {
-    session_id = 0;
-  }
-
-  return RendererWebAudioDeviceImpl::Create(layout, channels, latency_hint,
-                                            callback, session_id);
+  return RendererWebAudioDeviceImpl::Create(
+      layout, channels, latency_hint, callback,
+      /*session_id=*/base::UnguessableToken());
 }
 
 bool RendererBlinkPlatformImpl::DecodeAudioFileData(
@@ -689,6 +686,32 @@ media::AudioLatency::LatencyType
 RendererBlinkPlatformImpl::GetAudioSourceLatencyType(
     blink::WebAudioDeviceSourceType source_type) {
   return AudioDeviceFactory::GetSourceLatencyType(source_type);
+}
+
+blink::WebRtcAudioDeviceImpl*
+RendererBlinkPlatformImpl::GetWebRtcAudioDevice() {
+  PeerConnectionDependencyFactory* pc_dependency_factory =
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
+  return pc_dependency_factory->GetWebRtcAudioDevice();
+}
+
+base::Optional<std::string>
+RendererBlinkPlatformImpl::GetWebRTCAudioProcessingConfiguration() {
+  return GetContentClient()
+      ->renderer()
+      ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+}
+
+base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {
+  std::string min_volume_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAgcStartupMinVolume);
+  int startup_min_volume;
+  if (min_volume_str.empty() ||
+      !base::StringToInt(min_volume_str, &startup_min_volume)) {
+    return base::Optional<int>();
+  }
+  return base::Optional<int>(startup_min_volume);
 }
 
 //------------------------------------------------------------------------------

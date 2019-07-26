@@ -74,9 +74,11 @@ class FilterOperations;
 class Font;
 class FloatRoundedRect;
 class Hyphenation;
+class LayoutTheme;
 class NinePieceImage;
 class ShadowList;
 class ShapeValue;
+class StyleAdjuster;
 class StyleContentAlignmentData;
 class StyleDifference;
 class StyleImage;
@@ -119,6 +121,7 @@ class OutlineColor;
 class StopColor;
 class Stroke;
 class TextDecorationColor;
+class WebkitAppearance;
 class WebkitTapHighlightColor;
 class WebkitTextEmphasisColor;
 class WebkitTextFillColor;
@@ -224,6 +227,10 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::WebkitTextEmphasisColor;
   friend class css_longhand::WebkitTextFillColor;
   friend class css_longhand::WebkitTextStrokeColor;
+  // Access to private Appearance() and HasAppearance().
+  friend class LayoutTheme;
+  friend class StyleAdjuster;
+  friend class css_longhand::WebkitAppearance;
   // Editing has to only reveal unvisited info.
   friend class ApplyStyleCommand;
   // Editing has to only reveal unvisited info.
@@ -2315,16 +2322,17 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool HasBoxDecorations() const {
     return HasBorderDecoration() || HasBorderRadius() || HasOutline() ||
-           HasAppearance() || BoxShadow() || HasFilterInducingProperty() ||
-           HasBackdropFilter() || Resize() != EResize::kNone;
+           HasEffectiveAppearance() || BoxShadow() ||
+           HasFilterInducingProperty() || HasBackdropFilter() ||
+           Resize() != EResize::kNone;
   }
 
   // "Box decoration background" includes all box decorations and backgrounds
   // that are painted as the background of the object. It includes borders,
   // box-shadows, background-color and background-image, etc.
   bool HasBoxDecorationBackground() const {
-    return HasBackground() || HasBorderDecoration() || HasAppearance() ||
-           BoxShadow();
+    return HasBackground() || HasBorderDecoration() ||
+           HasEffectiveAppearance() || BoxShadow();
   }
 
   LayoutRectOutsets BoxDecorationOutsets() const;
@@ -2358,7 +2366,9 @@ class ComputedStyle : public ComputedStyleBase,
   VisitedDependentColor(const CSSProperty& color_property) const;
 
   // -webkit-appearance utility functions.
-  bool HasAppearance() const { return Appearance() != kNoControlPart; }
+  bool HasEffectiveAppearance() const {
+    return EffectiveAppearance() != kNoControlPart;
+  }
 
   // Other utility functions.
   bool RequireTransformOrigin(ApplyTransformOrigin apply_origin,
@@ -2619,6 +2629,11 @@ class ComputedStyle : public ComputedStyleBase,
   const StyleColor& StopColor() const { return SvgStyle().StopColor(); }
   StyleColor FloodColor() const { return SvgStyle().FloodColor(); }
   StyleColor LightingColor() const { return SvgStyle().LightingColor(); }
+
+  // Appearance accessors are private to make sure callers use
+  // EffectiveAppearance in almost all cases.
+  ControlPart Appearance() const { return AppearanceInternal(); }
+  bool HasAppearance() const { return Appearance() != kNoControlPart; }
 
   void AddAppliedTextDecoration(const AppliedTextDecoration&);
   void OverrideTextDecorationColors(Color propagated_color);

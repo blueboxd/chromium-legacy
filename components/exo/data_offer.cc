@@ -164,6 +164,16 @@ void ReadPNGFromClipboard(base::ScopedFD fd) {
 
 }  // namespace
 
+ScopedDataOffer::ScopedDataOffer(DataOffer* data_offer,
+                                 DataOfferObserver* observer)
+    : data_offer_(data_offer), observer_(observer) {
+  data_offer_->AddObserver(observer_);
+}
+
+ScopedDataOffer::~ScopedDataOffer() {
+  data_offer_->RemoveObserver(observer_);
+}
+
 DataOffer::DataOffer(DataOfferDelegate* delegate, Purpose purpose)
     : delegate_(delegate), purpose_(purpose), weak_ptr_factory_(this) {}
 

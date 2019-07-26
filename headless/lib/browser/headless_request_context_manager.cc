@@ -162,7 +162,7 @@ HeadlessRequestContextManager::CreateSystemContext(
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   auto auth_params = ::network::mojom::HttpAuthDynamicParams::New();
-  auth_params->server_whitelist =
+  auth_params->server_allowlist =
       command_line->GetSwitchValueASCII(switches::kAuthServerWhitelist);
   auto* network_service = content::GetNetworkService();
   network_service->ConfigureHttpAuthPrefs(std::move(auth_params));

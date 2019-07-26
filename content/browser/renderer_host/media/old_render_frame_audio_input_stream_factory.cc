@@ -125,7 +125,7 @@ OldRenderFrameAudioInputStreamFactory::
 
 void OldRenderFrameAudioInputStreamFactory::CreateStream(
     mojom::RendererAudioInputStreamFactoryClientPtr client,
-    int32_t session_id,
+    const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count,
@@ -152,7 +152,7 @@ void OldRenderFrameAudioInputStreamFactory::CreateStream(
 
 void OldRenderFrameAudioInputStreamFactory::DoCreateStream(
     mojom::RendererAudioInputStreamFactoryClientPtr client,
-    int session_id,
+    const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
     uint32_t shared_memory_count,

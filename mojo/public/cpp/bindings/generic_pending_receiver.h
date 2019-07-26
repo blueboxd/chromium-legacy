@@ -41,6 +41,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) GenericPendingReceiver {
   bool is_valid() const { return pipe_.is_valid(); }
   explicit operator bool() const { return is_valid(); }
 
+  void reset();
+
   const base::Optional<std::string>& interface_name() const {
     return interface_name_;
   }

@@ -71,6 +71,9 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Overridden from aura::WindowObserver.
   void OnWindowDestroyed(aura::Window* window) override;
 
+  void SetDragImage(const gfx::ImageSkia& image,
+                    const gfx::Vector2d& image_offset);
+
  protected:
   // Helper method to create a LinearAnimation object that will run the drag
   // cancel animation. Caller take ownership of the returned object. Protected
@@ -141,6 +144,9 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Holds a synthetic long tap event to be sent to the |drag_source_window_|.
   // See comment in OnGestureEvent() on why we need this.
   std::unique_ptr<ui::GestureEvent> pending_long_tap_;
+
+  gfx::Point start_location_;
+  gfx::Point current_location_;
 
   base::ObserverList<aura::client::DragDropClientObserver>::Unchecked
       observers_;

@@ -52,9 +52,6 @@ bool IsDeviceMediaType(mojom::MediaStreamType type) {
           type == mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE);
 }
 
-// static
-const int MediaStreamDevice::kNoId = -1;
-
 MediaStreamDevice::MediaStreamDevice()
     : type(mojom::MediaStreamType::NO_SERVICE),
       video_facing(media::MEDIA_VIDEO_FACING_NONE) {}
@@ -104,7 +101,8 @@ MediaStreamDevice::MediaStreamDevice(const MediaStreamDevice& other) {
   matched_output_device_id = other.matched_output_device_id;
   name = other.name;
   input = other.input;
-  session_id = other.session_id;
+  session_id_ = other.session_id_;
+  DCHECK(!session_id_.has_value() || !session_id_->is_empty());
   if (other.display_media_info.has_value())
     display_media_info = other.display_media_info->Clone();
 }
@@ -122,7 +120,8 @@ MediaStreamDevice& MediaStreamDevice::operator=(
   matched_output_device_id = other.matched_output_device_id;
   name = other.name;
   input = other.input;
-  session_id = other.session_id;
+  session_id_ = other.session_id_;
+  DCHECK(!session_id_.has_value() || !session_id_->is_empty());
   if (other.display_media_info.has_value())
     display_media_info = other.display_media_info->Clone();
   return *this;
@@ -134,7 +133,7 @@ bool MediaStreamDevice::IsSameDevice(
          id == other_device.id &&
          input.sample_rate() == other_device.input.sample_rate() &&
          input.channel_layout() == other_device.input.channel_layout() &&
-         session_id == other_device.session_id;
+         session_id_ == other_device.session_id_;
 }
 
 }  // namespace blink

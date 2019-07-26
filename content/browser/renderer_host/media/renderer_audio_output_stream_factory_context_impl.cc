@@ -42,7 +42,7 @@ int RendererAudioOutputStreamFactoryContextImpl::GetRenderProcessId() const {
 
 void RendererAudioOutputStreamFactoryContextImpl::RequestDeviceAuthorization(
     int render_frame_id,
-    int session_id,
+    const base::UnguessableToken& session_id,
     const std::string& device_id,
     AuthorizationCompletedCallback cb) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

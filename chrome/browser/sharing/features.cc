@@ -5,4 +5,4 @@
 #include "chrome/browser/sharing/features.h"
 
 const base::Feature kSharingDeviceRegistration{
-    "SharingDeviceRegistration", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SharingDeviceRegistration", base::FEATURE_ENABLED_BY_DEFAULT};

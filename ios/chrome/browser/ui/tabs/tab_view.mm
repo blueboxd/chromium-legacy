@@ -22,7 +22,6 @@
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "third_party/google_toolbox_for_mac/src/iPhone/GTMFadeTruncatingLabel.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -54,6 +53,8 @@ const CGFloat kTitleRightMargin = 0.0;
 
 const CGFloat kCloseButtonSize = 24.0;
 const CGFloat kFaviconSize = 16.0;
+
+const CGFloat kFontSize = 14.0;
 
 // Returns a default favicon with |UIImageRenderingModeAlwaysTemplate|.
 UIImage* DefaultFaviconImage() {
@@ -112,13 +113,16 @@ UIImage* DefaultFaviconImage() {
   if ((self = [super initWithFrame:CGRectZero])) {
     [self setOpaque:NO];
     [self createCommonViews];
-    // -setSelected only calls -updateBackgroundImage if the selected state
-    // changes.  |isSelected| defaults to NO, so if |selected| is also NO,
-    // -updateBackgroundImage needs to be called explicitly.
-    [self setSelected:selected];
-    [self updateStyleForSelected:selected];
     if (!emptyView)
       [self createButtonsAndLabel];
+
+    // -setSelected only calls -updateStyleForSelected if the selected state
+    // changes.  |isSelected| defaults to NO, so if |selected| is also NO,
+    // -updateStyleForSelected needs to be called explicitly.
+    [self setSelected:selected];
+    if (!selected) {
+      [self updateStyleForSelected:selected];
+    }
 
     [self addTarget:self
                   action:@selector(tabWasTapped)
@@ -134,17 +138,11 @@ UIImage* DefaultFaviconImage() {
 }
 
 - (void)setSelected:(BOOL)selected {
-  BOOL wasSelected = [self isSelected];
+  if ([super isSelected] == selected) {
+    return;
+  }
   [super setSelected:selected];
-
-  if (selected != wasSelected)
-    [self updateStyleForSelected:selected];
-
-  // It would make more sense to set active/inactive on tab_view itself, but
-  // tab_view is not an an accessible element, and making it one would add
-  // several complicated layers to UIA.  Instead, simply set active/inactive
-  // here to be used by UIA.
-  [_titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
+  [self updateStyleForSelected:selected];
 }
 
 - (void)setCollapsed:(BOOL)collapsed {
@@ -309,7 +307,7 @@ UIImage* DefaultFaviconImage() {
   // Add fade truncating label.
   _titleLabel = [[GTMFadeTruncatingLabel alloc] initWithFrame:CGRectZero];
   [_titleLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [_titleLabel setFont:[MDCTypography body1Font]];
+
   // Setting NSLineBreakByCharWrapping fixes an issue where the beginning of the
   // text is truncated for RTL text writing direction. Anyway since the label is
   // only one line and the end of the text is faded behind a gradient mask, it
@@ -412,6 +410,16 @@ UIImage* DefaultFaviconImage() {
                                ? [UIColor whiteColor]
                                : [UIColor colorNamed:faviconColorName];
   self.titleLabel.textColor = _faviconView.tintColor;
+
+  // Update font weight and accessibility label.
+  UIFontWeight fontWeight =
+      selected ? UIFontWeightSemibold : UIFontWeightMedium;
+  self.titleLabel.font = [UIFont systemFontOfSize:kFontSize weight:fontWeight];
+  // It would make more sense to set active/inactive on tab_view itself, but
+  // tab_view is not an an accessible element, and making it one would add
+  // several complicated layers to UIA.  Instead, simply set active/inactive
+  // here to be used by UIA.
+  [self.titleLabel setAccessibilityValue:(selected ? @"active" : @"inactive")];
 }
 
 #pragma mark - DropAndNavigateDelegate

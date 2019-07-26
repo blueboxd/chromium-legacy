@@ -34,12 +34,12 @@ MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* script_state,
     : ScriptPromiseResolver(script_state), options_(options) {}
 
 void MIDIAccessInitializer::Dispose() {
-  accessor_.reset();
+  dispatcher_.reset();
   permission_service_.reset();
 }
 
 void MIDIAccessInitializer::ContextDestroyed(ExecutionContext* context) {
-  accessor_.reset();
+  dispatcher_.reset();
   permission_service_.reset();
 
   ScriptPromiseResolver::ContextDestroyed(context);
@@ -51,7 +51,6 @@ ScriptPromise MIDIAccessInitializer::Start() {
   // See https://bit.ly/2S0zRAS for task types.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  accessor_ = std::make_unique<MIDIAccessor>(this, task_runner);
 
   ConnectToPermissionService(
       GetExecutionContext(),
@@ -72,7 +71,7 @@ void MIDIAccessInitializer::DidAddInputPort(const String& id,
                                             const String& name,
                                             const String& version,
                                             PortState state) {
-  DCHECK(accessor_);
+  DCHECK(dispatcher_);
   port_descriptors_.push_back(PortDescriptor(
       id, manufacturer, name, MIDIPort::kTypeInput, version, state));
 }
@@ -82,7 +81,7 @@ void MIDIAccessInitializer::DidAddOutputPort(const String& id,
                                              const String& name,
                                              const String& version,
                                              PortState state) {
-  DCHECK(accessor_);
+  DCHECK(dispatcher_);
   port_descriptors_.push_back(PortDescriptor(
       id, manufacturer, name, MIDIPort::kTypeOutput, version, state));
 }
@@ -102,7 +101,7 @@ void MIDIAccessInitializer::DidSetOutputPortState(unsigned port_index,
 }
 
 void MIDIAccessInitializer::DidStartSession(Result result) {
-  DCHECK(accessor_);
+  DCHECK(dispatcher_);
   // We would also have AbortError and SecurityError according to the spec.
   // SecurityError is handled in onPermission(s)Updated().
   switch (result) {
@@ -110,7 +109,7 @@ void MIDIAccessInitializer::DidStartSession(Result result) {
       break;
     case Result::OK:
       return Resolve(MIDIAccess::Create(
-          std::move(accessor_), options_->hasSysex() && options_->sysex(),
+          std::move(dispatcher_), options_->hasSysex() && options_->sysex(),
           port_descriptors_, GetExecutionContext()));
     case Result::NOT_SUPPORTED:
       return Reject(MakeGarbageCollected<DOMException>(
@@ -135,10 +134,20 @@ ExecutionContext* MIDIAccessInitializer::GetExecutionContext() const {
   return ExecutionContext::From(GetScriptState());
 }
 
+void MIDIAccessInitializer::StartSession() {
+  DCHECK(!dispatcher_);
+
+  // See https://bit.ly/2S0zRAS for task types.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+  dispatcher_ = std::make_unique<MIDIDispatcher>(task_runner);
+  dispatcher_->SetClient(this);
+}
+
 void MIDIAccessInitializer::OnPermissionsUpdated(PermissionStatus status) {
   permission_service_.reset();
   if (status == PermissionStatus::GRANTED) {
-    accessor_->StartSession();
+    StartSession();
   } else {
     Reject(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));
@@ -148,7 +157,7 @@ void MIDIAccessInitializer::OnPermissionsUpdated(PermissionStatus status) {
 void MIDIAccessInitializer::OnPermissionUpdated(PermissionStatus status) {
   permission_service_.reset();
   if (status == PermissionStatus::GRANTED) {
-    accessor_->StartSession();
+    StartSession();
   } else {
     Reject(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kSecurityError));

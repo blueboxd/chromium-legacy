@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/rrect_f.mojom";
 import "ui/gfx/mojo/transform.mojom";
 

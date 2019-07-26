@@ -192,31 +192,10 @@ int DragDropController::StartDragAndDrop(
   drag_data_ = std::move(data);
   drag_operation_ = operation;
 
-  float drag_image_scale = 1;
-  int drag_image_vertical_offset = 0;
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
-    drag_image_scale = kTouchDragImageScale;
-    drag_image_vertical_offset = kTouchDragImageVerticalOffset;
-  }
-  gfx::Point start_location = screen_location;
-  drag_image_final_bounds_for_cancel_animation_ =
-      gfx::Rect(start_location - provider->GetDragImageOffset(),
-                provider->GetDragImage().size());
-  drag_image_ =
-      std::make_unique<DragImageView>(source_window->GetRootWindow(), source);
-  drag_image_->SetImage(provider->GetDragImage());
-  drag_image_offset_ = provider->GetDragImageOffset();
-  gfx::Rect drag_image_bounds(start_location, drag_image_->GetPreferredSize());
-  drag_image_bounds = AdjustDragImageBoundsForScaleAndOffset(
-      drag_image_bounds, drag_image_vertical_offset, drag_image_scale,
-      &drag_image_offset_);
-  drag_image_->SetBoundsInScreen(drag_image_bounds);
-  drag_image_->SetWidgetVisible(true);
-  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
-    drag_image_->SetTouchDragOperationHintPosition(
-        gfx::Point(drag_image_offset_.x(),
-                   drag_image_offset_.y() + drag_image_vertical_offset));
-  }
+  start_location_ = screen_location;
+  current_location_ = screen_location;
+
+  SetDragImage(provider->GetDragImage(), provider->GetDragImageOffset());
 
   drag_window_ = NULL;
 
@@ -251,6 +230,39 @@ int DragDropController::StartDragAndDrop(
   }
 
   return drag_operation_;
+}
+
+void DragDropController::SetDragImage(const gfx::ImageSkia& image,
+                                      const gfx::Vector2d& image_offset) {
+  auto source = current_drag_event_source_;
+  auto* source_window = drag_source_window_;
+
+  float drag_image_scale = 1;
+  int drag_image_vertical_offset = 0;
+  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+    drag_image_scale = kTouchDragImageScale;
+    drag_image_vertical_offset = kTouchDragImageVerticalOffset;
+  }
+  drag_image_final_bounds_for_cancel_animation_ =
+      gfx::Rect(start_location_ - image_offset, image.size());
+  if (!drag_image_) {
+    drag_image_ =
+        std::make_unique<DragImageView>(source_window->GetRootWindow(), source);
+  }
+  drag_image_->SetImage(image);
+  drag_image_offset_ = image_offset;
+  gfx::Rect drag_image_bounds(current_location_,
+                              drag_image_->GetPreferredSize());
+  drag_image_bounds = AdjustDragImageBoundsForScaleAndOffset(
+      drag_image_bounds, drag_image_vertical_offset, drag_image_scale,
+      &drag_image_offset_);
+  drag_image_->SetBoundsInScreen(drag_image_bounds);
+  drag_image_->SetWidgetVisible(true);
+  if (source == ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH) {
+    drag_image_->SetTouchDragOperationHintPosition(
+        gfx::Point(drag_image_offset_.x(),
+                   drag_image_offset_.y() + drag_image_vertical_offset));
+  }
 }
 
 void DragDropController::DragCancel() {
@@ -460,6 +472,7 @@ void DragDropController::DragUpdate(aura::Window* target,
     gfx::Point root_location_in_screen = event.root_location();
     ::wm::ConvertPointToScreen(target->GetRootWindow(),
                                &root_location_in_screen);
+    current_location_ = root_location_in_screen;
     drag_image_->SetScreenPosition(root_location_in_screen -
                                    drag_image_offset_);
     drag_image_->SetTouchDragOperation(op);

@@ -17,6 +17,6 @@ source_set("tests") {
     "//services/viz/public/interfaces",
     "//testing/gtest",
     "//ui/gfx:test_support",
-    "//ui/gfx/geometry/mojo:struct_traits",
+    "//ui/gfx/geometry/mojom:mojom_traits",
   ]
 }

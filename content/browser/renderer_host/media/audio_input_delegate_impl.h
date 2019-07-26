@@ -51,7 +51,7 @@ class CONTENT_EXPORT AudioInputDelegateImpl : public media::AudioInputDelegate {
           keyboard_mic_registration,
       uint32_t shared_memory_count,
       int stream_id,
-      int session_id,
+      const base::UnguessableToken& session_id,
       bool automatic_gain_control,
       const media::AudioParameters& audio_parameters,
       EventHandler* subscriber);

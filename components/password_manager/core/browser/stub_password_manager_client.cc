@@ -76,7 +76,7 @@ const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 safe_browsing::PasswordProtectionService*
 StubPasswordManagerClient::GetPasswordProtectionService() const {
   return nullptr;

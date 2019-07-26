@@ -45,7 +45,7 @@ HTMLMeterElement::~HTMLMeterElement() = default;
 
 LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style,
                                                    LegacyLayout legacy) {
-  switch (style.Appearance()) {
+  switch (style.EffectiveAppearance()) {
     case kMeterPart:
       UseCounter::Count(GetDocument(),
                         WebFeature::kMeterElementWithMeterAppearance);
@@ -217,7 +217,7 @@ void HTMLMeterElement::UpdateValueAppearance(double percentage) {
 
 bool HTMLMeterElement::CanContainRangeEndPoint() const {
   GetDocument().UpdateStyleAndLayoutTreeForNode(this);
-  return GetComputedStyle() && !GetComputedStyle()->HasAppearance();
+  return GetComputedStyle() && !GetComputedStyle()->HasEffectiveAppearance();
 }
 
 void HTMLMeterElement::Trace(Visitor* visitor) {

@@ -2995,19 +2995,19 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetAlternativeServiceInfoFor) {
   EXPECT_EQ(0u, alt_svc_info.advertised_versions().size());
 }
 
-// Tests that if HttpNetworkSession has a non-empty QUIC host whitelist,
+// Tests that if HttpNetworkSession has a non-empty QUIC host allowlist,
 // then GetAlternativeServiceFor() will not return any QUIC alternative service
-// that's not on the whitelist.
-TEST_F(HttpStreamFactoryJobControllerTest, QuicHostWhitelist) {
+// that's not on the allowlist.
+TEST_F(HttpStreamFactoryJobControllerTest, QuicHostAllowlist) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
 
   Initialize(request_info);
 
-  // Set HttpNetworkSession's QUIC host whitelist to only have www.example.com
+  // Set HttpNetworkSession's QUIC host allowlist to only have www.example.com
   HttpNetworkSessionPeer session_peer(session_.get());
-  session_peer.params()->quic_host_whitelist.insert("www.example.com");
+  session_peer.params()->quic_host_allowlist.insert("www.example.com");
   session_peer.params()->quic_params.allow_remote_alt_svc = true;
 
   // Set alternative service for www.google.com to be www.example.com over QUIC.

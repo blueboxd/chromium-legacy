@@ -129,7 +129,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_params.go_away_on_path_degrading);
   EXPECT_TRUE(params_.quic_params.initial_rtt_for_handshake.is_zero());
   EXPECT_FALSE(params_.quic_params.allow_server_migration);
-  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_TRUE(params_.quic_host_allowlist.empty());
   EXPECT_TRUE(params_.quic_params.retransmittable_on_wire_timeout.is_zero());
 
   net::HttpNetworkSession::Params default_params;
@@ -580,7 +580,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   EXPECT_EQ(options, params_.quic_params.client_connection_options);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelist) {
+TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlist) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["host_whitelist"] = "www.example.org, www.example.com";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
@@ -588,12 +588,12 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelist) {
 
   ParseFieldTrials();
 
-  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
-  EXPECT_TRUE(base::Contains(params_.quic_host_whitelist, "www.example.com"));
-  EXPECT_TRUE(base::Contains(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_EQ(2u, params_.quic_host_allowlist.size());
+  EXPECT_TRUE(base::Contains(params_.quic_host_allowlist, "www.example.com"));
+  EXPECT_TRUE(base::Contains(params_.quic_host_allowlist, "www.example.org"));
 }
 
-TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelistEmpty) {
+TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["host_whitelist"] = "";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
@@ -601,7 +601,7 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelistEmpty) {
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_TRUE(params_.quic_host_allowlist.empty());
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {

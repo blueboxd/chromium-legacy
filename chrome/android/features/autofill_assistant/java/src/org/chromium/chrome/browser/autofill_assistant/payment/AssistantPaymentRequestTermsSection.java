@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -85,6 +86,8 @@ public class AssistantPaymentRequestTermsSection {
             ApiCompatibilityUtils.setTextAppearance(
                     mTermsRequiresReview, R.style.TextAppearance_BlackCaption);
             mTermsRequiresReview.setGravity(Gravity.CENTER_VERTICAL);
+            mTermsRequiresReview.setTag(
+                    AssistantTagsForTesting.PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW);
             mTermsList.addItem(mTermsRequiresReview, /*hasEditButton=*/false, selected -> {
                 if (selected && mDelegate != null) {
                     mDelegate.onStateChanged(AssistantTermsAndConditionsState.REQUIRES_REVIEW);

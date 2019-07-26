@@ -67,7 +67,7 @@ bool LayoutThemeMobile::ShouldUseFallbackTheme(
     const ComputedStyle& style) const {
 #if defined(OS_MACOSX)
   // Mac WebThemeEngine cannot handle these controls.
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   if (part == kCheckboxPart || part == kRadioPart)
     return true;
 #endif

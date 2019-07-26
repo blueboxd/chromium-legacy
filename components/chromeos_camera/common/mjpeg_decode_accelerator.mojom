@@ -6,7 +6,7 @@ module chromeos_camera.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Decode errors (see media/video/jpeg_decode_accelerator.h).
 enum DecodeError {

@@ -13,7 +13,7 @@ mojom("mojom") {
   public_deps = [
     "//components/autofill/core/common/mojom:mojo_types",
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
   ]
 }

@@ -27,6 +27,7 @@ include_rules = [
   "+components/mirroring/mojom",
   "+components/mirroring/service",
   "+components/payments/content/utility",
+  "+components/safe_browsing/buildflags.h",
   "+components/services/patch",
   "+components/services/pdf_compositor/public/cpp",
   "+components/services/pdf_compositor/public/mojom",

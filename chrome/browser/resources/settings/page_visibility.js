@@ -22,6 +22,7 @@
  *   multidevice: (boolean|undefined),
  *   onStartup: (boolean|undefined),
  *   people: (boolean|undefined|PeoplePageVisibility),
+ *   personalization: (boolean|undefined|PersonalizationPageVisibility),
  *   printing: (boolean|undefined),
  *   privacy: (boolean|undefined|PrivacyPageVisibility),
  *   reset:(boolean|undefined|ResetPageVisibility),
@@ -37,6 +38,7 @@ let PageVisibility;
 let A11yPageVisibility;
 
 /**
+ * TODO(crbug.com/950007): Remove setWallpaper after SplitSettings launch.
  * @typedef {{
  *   bookmarksBar: boolean,
  *   homeButton: boolean,
@@ -64,6 +66,13 @@ let DownloadsPageVisibility;
  * }}
  */
 let PeoplePageVisibility;
+
+/**
+ * @typedef {{
+ *   setWallpaper: boolean,
+ * }}
+ */
+let PersonalizationPageVisibility;
 
 /**
  * @typedef {{
@@ -123,6 +132,7 @@ cr.define('settings', function() {
       multidevice: false,
       autofill: false,
       people: false,
+      personalization: false,
       onStartup: false,
       reset: false,
       appearance: {
@@ -170,6 +180,10 @@ cr.define('settings', function() {
         kerberosAccounts: showOSSettings,
         googleAccounts: showOSSettings,
         manageUsers: showOSSettings,
+      },
+      personalization: {
+        // Personalization is in OS settings only, so section always shows.
+        setWallpaper: true,
       },
       onStartup: true,
       reset: {

@@ -87,7 +87,7 @@ class ChromeAuthenticatorRequestDelegate
       device::FidoTransportProtocol transport) override;
   void DisableUI() override;
   bool IsWebAuthnUIEnabled() override;
-  bool IsUserVerifyingPlatformAuthenticatorAvailable() override;
+  bool ShouldDisablePlatformAuthenticators() override;
 
   // device::FidoRequestHandlerBase::Observer:
   void OnTransportAvailabilityEnumerated(

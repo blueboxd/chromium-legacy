@@ -49,7 +49,7 @@ ProgressShadowElement::CustomStyleForLayoutObject() {
   scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
   const ComputedStyle* progress_style = ProgressElement()->GetComputedStyle();
   DCHECK(progress_style);
-  if (progress_style->HasAppearance())
+  if (progress_style->HasEffectiveAppearance())
     style->SetDisplay(EDisplay::kNone);
   return style;
 }

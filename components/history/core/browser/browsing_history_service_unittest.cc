@@ -43,6 +43,7 @@ const char kUrl4[] = "http://www.four.com";
 const char kUrl5[] = "http://www.five.com";
 const char kUrl6[] = "http://www.six.com";
 const char kUrl7[] = "http://www.seven.com";
+const char kIconUrl1[] = "http://www.one.com/favicon.ico";
 
 const HistoryEntry::EntryType kLocal = HistoryEntry::LOCAL_ENTRY;
 const HistoryEntry::EntryType kRemote = HistoryEntry::REMOTE_ENTRY;
@@ -52,6 +53,7 @@ struct TestResult {
   std::string url;
   int64_t hour_offset;  // Visit time in hours past the baseline time.
   HistoryEntry::EntryType type;
+  std::string remote_icon_url_for_uma;
 };
 
 class TestSyncService : public syncer::FakeSyncService {
@@ -224,7 +226,8 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
                                  OffsetToTime(entry.hour_offset),
                                  VisitSource::SOURCE_BROWSED);
       } else if (entry.type == kRemote) {
-        web_history->AddSyncedVisit(entry.url, OffsetToTime(entry.hour_offset));
+        web_history->AddSyncedVisit(entry.url, OffsetToTime(entry.hour_offset),
+                                    entry.remote_icon_url_for_uma);
       } else {
         NOTREACHED();
       }
@@ -240,6 +243,8 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
     EXPECT_EQ(OffsetToTime(expected.hour_offset), actual.time);
     EXPECT_EQ(static_cast<int>(expected.type),
               static_cast<int>(actual.entry_type));
+    EXPECT_EQ(GURL(expected.remote_icon_url_for_uma),
+              actual.remote_icon_url_for_uma);
   }
 
   TestBrowsingHistoryDriver::QueryResult QueryHistory(size_t max_count = 0) {
@@ -488,6 +493,18 @@ TEST_F(BrowsingHistoryServiceTest, MergeDuplicatesVerifyTimestamps) {
                     {{kUrl1, 3, kRemote}, {kUrl2, 1, kRemote}}, results);
   EXPECT_EQ(3U, results.first[0].all_timestamps.size());
   EXPECT_EQ(1U, results.first[1].all_timestamps.size());
+}
+
+TEST_F(BrowsingHistoryServiceTest, MergeDuplicatesKeepNonEmptyIconUrl) {
+  AddHistory({{kUrl1, 0, kRemote, kIconUrl1}, {kUrl1, 1, kLocal}});
+  auto results = QueryHistory();
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 1, kBoth, kIconUrl1}}, results);
+
+  AddHistory({{kUrl1, 0, kLocal}, {kUrl1, 1, kRemote, kIconUrl1}});
+  results = QueryHistory();
+  VerifyQueryResult(/*reached_beginning*/ true, /*has_synced_results*/ true,
+                    {{kUrl1, 1, kBoth, kIconUrl1}}, results);
 }
 
 TEST_F(BrowsingHistoryServiceTest, QueryHistoryMerge) {

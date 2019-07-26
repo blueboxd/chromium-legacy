@@ -21,6 +21,11 @@ import("//build/config/pch.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/goma.gni")
+
+if (is_android) {
+  import("//build/config/android/abi.gni")
+}
+
 declare_args() {
   # When set (the default) enables C++ iterator debugging in debug builds.
   # Iterator debugging is always off in release builds (technically, this flag
@@ -114,15 +119,6 @@ config("feature_flags") {
   }
   if (is_ubsan || is_ubsan_null || is_ubsan_vptr || is_ubsan_security) {
     defines += [ "UNDEFINED_SANITIZER" ]
-  }
-  if (safe_browsing_mode == 1) {
-    defines += [ "FULL_SAFE_BROWSING" ]
-    defines += [ "SAFE_BROWSING_CSD" ]
-    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
-  } else if (safe_browsing_mode == 2) {
-    defines += [ "SAFE_BROWSING_DB_REMOTE" ]
-  } else if (safe_browsing_mode == 3) {
-    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   }
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]

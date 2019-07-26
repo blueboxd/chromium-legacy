@@ -5,7 +5,7 @@
 module ui.ozone.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
 import "ui/gfx/mojo/presentation_feedback.mojom";
 import "ui/gfx/mojo/swap_result.mojom";

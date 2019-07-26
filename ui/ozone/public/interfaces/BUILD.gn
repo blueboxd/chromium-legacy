@@ -17,7 +17,7 @@ mojom("interfaces") {
     "//mojo/public/mojom/base",
     "//skia/public/interfaces:interfaces",
     "//ui/display/mojom",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
   ]
 }
@@ -37,7 +37,7 @@ source_set("struct_traits") {
     "overlay_surface_candidate_struct_traits.h",
   ]
   deps = [
-    "//ui/gfx/geometry/mojo:mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo:mojo",
   ]
   public_deps = [

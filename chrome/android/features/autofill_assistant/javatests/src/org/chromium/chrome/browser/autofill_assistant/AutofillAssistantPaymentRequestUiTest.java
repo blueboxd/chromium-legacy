@@ -21,11 +21,13 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertThat;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -522,6 +524,81 @@ public class AutofillAssistantPaymentRequestUiTest {
         assertThat(delegate.mContact, nullValue());
         assertThat(delegate.mAddress, nullValue());
         assertThat(delegate.mPaymentMethod, nullValue());
+    }
+
+    @Test
+    @MediumTest
+    public void testTermsAndConditions() throws Exception {
+        AssistantPaymentRequestModel model = new AssistantPaymentRequestModel();
+        createPaymentRequestCoordinator(model);
+        AutofillAssistantPaymentRequestTestHelper.MockDelegate delegate =
+                new AutofillAssistantPaymentRequestTestHelper.MockDelegate();
+
+        String acceptTermsText = "I accept";
+
+        // Display terms as 2 radio buttons "I accept" vs "I don't".
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(
+                    AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT, acceptTermsText);
+            model.set(AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX, false);
+            model.set(AssistantPaymentRequestModel.DELEGATE, delegate);
+
+            // Setting web contents will set the origin and the decline terms text.
+            model.set(AssistantPaymentRequestModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantPaymentRequestModel.VISIBLE, true);
+        });
+
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
+
+        // Adding #isDisplayed as a requirement makes sure only one of the accept terms text is
+        // shown (plus #onView requires the matcher to match exactly one view).
+        Matcher<View> acceptMatcher = allOf(withText(acceptTermsText), isDisplayed());
+        Matcher<View> declineMatcher = withTagValue(is(PAYMENT_REQUEST_TERMS_REQUIRE_REVIEW));
+
+        onView(acceptMatcher).perform(click());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.ACCEPTED));
+
+        // Second click on accept doesn't change the state.
+        onView(acceptMatcher).perform(click());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.ACCEPTED));
+
+        onView(declineMatcher).check(matches(isDisplayed())).perform(click());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.REQUIRES_REVIEW));
+
+        // Display the terms as a single checbox.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> model.set(AssistantPaymentRequestModel.SHOW_TERMS_AS_CHECKBOX, true));
+
+        // The decline choice is not shown.
+        onView(declineMatcher).check(matches(not(isDisplayed())));
+
+        // First click marks the terms as accepted.
+        onView(acceptMatcher).perform(click());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.ACCEPTED));
+
+        // Second click marks the terms as not selected.
+        onView(acceptMatcher).perform(click());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.NOT_SELECTED));
+
+        // Change the "I accept" text to be a clickable link.
+        String acceptTermsText2 =
+                "<link42>I accept</link42>"; // second variable is necessary because used in lambda
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> model.set(AssistantPaymentRequestModel.ACCEPT_TERMS_AND_CONDITIONS_TEXT,
+                                acceptTermsText2));
+        acceptMatcher = allOf(withText(acceptTermsText), isDisplayed());
+
+        assertThat(delegate.mLastLinkClicked, nullValue());
+
+        // First click marks the terms as accepted and ignores the link.
+        onView(acceptMatcher).perform(click());
+        assertThat(delegate.mTermsStatus, is(AssistantTermsAndConditionsState.ACCEPTED));
+        assertThat(delegate.mLastLinkClicked, nullValue());
+
+        // Second click will trigger the link.
+        onView(acceptMatcher).perform(click());
+        assertThat(delegate.mLastLinkClicked, is(42));
     }
 
     private void testContact(String expectedContactSummary, String expectedContactFullDescription,

@@ -36,7 +36,6 @@ namespace {
 using testing::Test;
 
 const size_t kShmemSize = 1234;
-const int kSessionId = 234;
 const bool kAGC = false;
 const uint32_t kSharedMemoryCount = 345;
 const int kSampleFrequency = 44100;
@@ -97,7 +96,7 @@ std::unique_ptr<media::AudioInputDelegate> CreateFakeDelegate(
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
     uint32_t shared_memory_count,
     int stream_id,
-    int session_id,
+    const base::UnguessableToken& session_id,
     bool automatic_gain_control,
     const media::AudioParameters& parameters,
     media::AudioInputDelegate::EventHandler* event_handler) {
@@ -155,6 +154,7 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
 };
 
 TEST_F(OldOldRenderFrameAudioInputStreamFactoryTest, CreateStream) {
+  const base::UnguessableToken kSessionId = base::UnguessableToken::Create();
   factory_ptr_->CreateStream(std::move(client_ptr_), kSessionId,
                              GetTestAudioParameters(), kAGC, kSharedMemoryCount,
                              nullptr);

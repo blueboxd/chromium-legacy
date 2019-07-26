@@ -119,8 +119,9 @@ public final class FakeCronetController {
      * URL when requested by a {@link UrlRequest}.
      *
      * @param url the URL that triggers the successful response
+     * @param body the body of the response as a byte array
      */
-    public void addSuccessResponse(String url, String body) {
+    public void addSuccessResponse(String url, byte[] body) {
         addResponseForUrl(new FakeUrlResponse.Builder().setResponseBody(body).build(), url);
     }
 

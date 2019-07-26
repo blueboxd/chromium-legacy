@@ -31,7 +31,9 @@
 #include "media/parsers/vp8_parser.h"
 #include "media/parsers/webp_parser.h"
 #include "third_party/libwebp/src/webp/decode.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -103,26 +105,27 @@ class VaapiWebPDecoderTest
     return GetTestDataFilePath(file_name);
   }
 
-  scoped_refptr<gfx::NativePixmapDmaBuf> DecodeToNativePixmapDmaBuf(
+  std::unique_ptr<NativePixmapAndSizeInfo> Decode(
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status = nullptr) {
     const VaapiImageDecodeStatus decode_status = decoder_.Decode(encoded_image);
     EXPECT_EQ(!!decoder_.GetScopedVASurface(),
               decode_status == VaapiImageDecodeStatus::kSuccess);
 
-    // Still try to get the pixmap when decode fails.
-    VaapiImageDecodeStatus pixmap_status;
-    scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
-        decoder_.ExportAsNativePixmapDmaBuf(&pixmap_status);
-    EXPECT_EQ(!!pixmap, pixmap_status == VaapiImageDecodeStatus::kSuccess);
+    // Still try to export the surface when decode fails.
+    VaapiImageDecodeStatus export_status;
+    std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
+        decoder_.ExportAsNativePixmapDmaBuf(&export_status);
+    EXPECT_EQ(!!exported_pixmap,
+              export_status == VaapiImageDecodeStatus::kSuccess);
 
     // Return the first fail status.
     if (status) {
       *status = decode_status != VaapiImageDecodeStatus::kSuccess
                     ? decode_status
-                    : pixmap_status;
+                    : export_status;
     }
-    return pixmap;
+    return exported_pixmap;
   }
 
  protected:
@@ -144,18 +147,36 @@ TEST_P(VaapiWebPDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
       VAProfileVP8Version0_3, VA_RT_FORMAT_YUV420));
 
   VaapiImageDecodeStatus status;
-  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
-      DecodeToNativePixmapDmaBuf(encoded_image, &status);
+  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
+      Decode(encoded_image, &status);
   ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
   EXPECT_FALSE(decoder_.GetScopedVASurface());
-  ASSERT_TRUE(pixmap);
-  ASSERT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR, pixmap->GetBufferFormat());
+  ASSERT_TRUE(exported_pixmap);
+  ASSERT_TRUE(exported_pixmap->pixmap);
+  ASSERT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR,
+            exported_pixmap->pixmap->GetBufferFormat());
 
-  gfx::NativePixmapHandle handle = pixmap->ExportHandle();
+  // Make sure the visible area is contained by the surface.
+  EXPECT_FALSE(exported_pixmap->va_surface_resolution.IsEmpty());
+  EXPECT_FALSE(exported_pixmap->pixmap->GetBufferSize().IsEmpty());
+  ASSERT_TRUE(
+      gfx::Rect(exported_pixmap->va_surface_resolution)
+          .Contains(gfx::Rect(exported_pixmap->pixmap->GetBufferSize())));
+
+  // TODO(andrescj): we could get a better lower bound based on the dimensions
+  // and the format.
+  ASSERT_GT(exported_pixmap->byte_size, 0u);
+
+  gfx::NativePixmapHandle handle = exported_pixmap->pixmap->ExportHandle();
+  ASSERT_EQ(gfx::NumberOfPlanesForLinearBufferFormat(
+                exported_pixmap->pixmap->GetBufferFormat()),
+            handle.planes.size());
+
   LocalGpuMemoryBufferManager gpu_memory_buffer_manager;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
-      gpu_memory_buffer_manager.ImportDmaBuf(handle, pixmap->GetBufferSize(),
-                                             pixmap->GetBufferFormat());
+      gpu_memory_buffer_manager.ImportDmaBuf(
+          handle, exported_pixmap->pixmap->GetBufferSize(),
+          exported_pixmap->pixmap->GetBufferFormat());
   ASSERT_TRUE(gpu_memory_buffer);
   ASSERT_TRUE(gpu_memory_buffer->Map());
   ASSERT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR,

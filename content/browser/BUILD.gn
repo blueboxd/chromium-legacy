@@ -230,7 +230,7 @@ jumbo_source_set("browser") {
     "//ui/gfx",
     "//ui/gfx/animation",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gl",
     "//ui/gl:buildflags",
     "//ui/latency",

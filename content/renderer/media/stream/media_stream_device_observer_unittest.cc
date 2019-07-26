@@ -84,12 +84,12 @@ TEST_F(MediaStreamDeviceObserverTest, GetNonScreenCaptureDevices) {
   // Close the device from request 2.
   observer_->RemoveStream(stream_label2);
   EXPECT_EQ(observer_->video_session_id(stream_label2),
-            blink::MediaStreamDevice::kNoId);
+            MediaStreamDeviceObserver::NoSessionId());
 
   // Close the device from request 1.
   observer_->RemoveStream(stream_label1);
   EXPECT_EQ(observer_->video_session_id(stream_label1),
-            blink::MediaStreamDevice::kNoId);
+            MediaStreamDeviceObserver::NoSessionId());
 
   // Verify that the request have been completed.
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);
@@ -119,7 +119,7 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceStopped) {
 
 TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   const int kRequestId1 = 5;
-  const int kRequestId2 = 7;
+  const base::UnguessableToken kSessionId = base::UnguessableToken::Create();
   const std::string example_video_id1 = "fake_video_device1";
   const std::string example_video_id2 = "fake_video_device2";
 
@@ -144,7 +144,7 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   blink::MediaStreamDevice fake_video_device(
       blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, example_video_id2,
       "Fake Video Device");
-  fake_video_device.session_id = kRequestId2;
+  fake_video_device.set_session_id(kSessionId);
   observer_->OnDeviceChanged(stream_label_, current_device_, fake_video_device);
 
   // Verify that the device has been changed to the new |fake_video_device|.
@@ -152,12 +152,12 @@ TEST_F(MediaStreamDeviceObserverTest, OnDeviceChanged) {
   video_devices = observer_->GetNonScreenCaptureDevices();
   EXPECT_EQ(video_devices.size(), 1u);
   EXPECT_EQ(video_devices[0].id, example_video_id2);
-  EXPECT_EQ(video_devices[0].session_id, kRequestId2);
+  EXPECT_EQ(video_devices[0].session_id(), kSessionId);
 
   // Close the device from request.
   observer_->RemoveStream(stream_label_);
   EXPECT_EQ(observer_->video_session_id(stream_label_),
-            blink::MediaStreamDevice::kNoId);
+            MediaStreamDeviceObserver::NoSessionId());
 
   // Verify that the request have been completed.
   EXPECT_EQ(observer_->label_stream_map_.size(), 0u);

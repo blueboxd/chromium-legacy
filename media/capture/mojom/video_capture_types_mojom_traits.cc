@@ -5,8 +5,8 @@
 #include "media/capture/mojom/video_capture_types_mojom_traits.h"
 
 #include "media/base/ipc/media_param_traits_macros.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry.mojom.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

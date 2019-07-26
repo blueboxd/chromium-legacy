@@ -525,6 +525,7 @@ source_set("chrome_content_renderer_overlay_manifest") {
     "//components/dom_distiller/content/common/mojom",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
     "//components/rappor/public/mojom",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing/common:interfaces",
     "//components/services/heap_profiling/public/mojom",
     "//components/subresource_filter/content/mojom",

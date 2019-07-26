@@ -13,7 +13,7 @@ public_deps = [
 ]
 deps = [
   "//ui/gfx/geometry",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 type_mappings = [

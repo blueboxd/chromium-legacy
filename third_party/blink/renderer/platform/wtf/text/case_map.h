@@ -52,8 +52,6 @@ class WTF_EXPORT CaseMap {
   String ToLower(const String& source, TextOffsetMap* offset_map) const;
   String ToUpper(const String& source, TextOffsetMap* offset_map) const;
 
-  UChar32 ToUpper(UChar32 c) const;
-
  private:
   const char* case_map_locale_;
 };

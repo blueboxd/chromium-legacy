@@ -52,7 +52,6 @@ mojom("mojom_platform") {
     "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
-    "frame/surrounding_text.mojom",
     "geolocation/geolocation_service.mojom",
     "hid/hid.mojom",
     "hyphenation/hyphenation.mojom",
@@ -169,7 +168,7 @@ mojom("mojom_platform") {
     "//skia/public/interfaces",
     "//third_party/blink/public/mojom/usb",
     "//ui/base/ime/mojo",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
@@ -239,7 +238,7 @@ mojom("android_mojo_bindings") {
   # This Android unhandled-tap feature uses another mojo source, add it in.
   if (enable_unhandled_tap) {
     sources += [ "unhandled_tap_notifier/unhandled_tap_notifier.mojom" ]
-    public_deps += [ "//ui/gfx/geometry/mojo" ]
+    public_deps += [ "//ui/gfx/geometry/mojom" ]
   }
 
   export_class_attribute = "BLINK_COMMON_EXPORT"

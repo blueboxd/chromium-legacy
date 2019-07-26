@@ -54,7 +54,7 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
   void CheckSafeBrowsingReputation(const GURL& form_action,

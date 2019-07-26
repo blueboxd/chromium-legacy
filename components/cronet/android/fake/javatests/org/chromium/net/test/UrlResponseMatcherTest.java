@@ -48,7 +48,7 @@ public class UrlResponseMatcherTest {
     public void testGetMatchingUrlResponse() {
         String url = "url";
         FakeUrlResponse response =
-                new FakeUrlResponse.Builder().setResponseBody("TestBody").build();
+                new FakeUrlResponse.Builder().setResponseBody("TestBody".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
 
         FakeUrlResponse found = matcher.getMatchingResponse(url, null, null);
@@ -63,7 +63,7 @@ public class UrlResponseMatcherTest {
         String url = "url";
         String urlWithoutResponse = "NO_RESPONSE";
         FakeUrlResponse response =
-                new FakeUrlResponse.Builder().setResponseBody("TestBody").build();
+                new FakeUrlResponse.Builder().setResponseBody("TestBody".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
 
         FakeUrlResponse notFound = matcher.getMatchingResponse(urlWithoutResponse, null, null);

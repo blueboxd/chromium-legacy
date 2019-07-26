@@ -37,6 +37,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_view_host.h"
@@ -689,7 +690,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   ASSERT_EQ("3.0", extension->version().GetString());
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
   scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
       new FakeSafeBrowsingDatabaseManager(true));

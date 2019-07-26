@@ -979,11 +979,11 @@ need to be translated for each locale.-->
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TITLE_FAILED_TO_SEND" desc="The label to be shown as the title of the dialog when user click on a phone number, if sending it to a device failed.">
         Can't send number
       </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones or apps to choose from.">
-        To make a call from your phone, turn on sync.
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES" desc="The label to be shown as a help text of the dialog when user click on a phone number, if there are no phones to choose from.">
+        To send a number from here to your phone, <ph name="TROUBLESHOOT_LINK">$1<ex>turn on sync</ex></ph> for both devices in settings.
       </message>
-      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_SYNC_HELP_TEXT" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
-        Learn how to turn on sync
+      <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK" desc="The label to be shown on the dialog when user click on a phone number for the link to a help page to turn on sync.">
+        turn on sync
       </message>
       <message name="IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_FAILED_MESSAGE" desc="The label to be shown on the dialog when user click on a phone number, if sending it to a device failed.">
         Check your phone's connection and try again

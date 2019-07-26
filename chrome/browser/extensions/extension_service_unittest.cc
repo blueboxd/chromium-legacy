@@ -88,6 +88,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -155,7 +156,7 @@
 #include "url/origin.h"
 
 // The blacklist tests rely on the safe-browsing database.
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #define ENABLE_BLACKLIST_TESTS
 #endif
 

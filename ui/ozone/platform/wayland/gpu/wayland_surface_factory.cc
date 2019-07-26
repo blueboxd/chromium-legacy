@@ -16,6 +16,7 @@
 #include "ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 #if defined(WAYLAND_GBM)
 #include "ui/ozone/platform/wayland/gpu/gbm_pixmap_wayland.h"
@@ -61,7 +62,8 @@ scoped_refptr<gl::GLSurface> GLOzoneEGLWayland::CreateViewGLSurface(
       !connection_)
     return nullptr;
 
-  WaylandWindow* window = connection_->GetWindow(widget);
+  WaylandWindow* window =
+      connection_->wayland_window_manager()->GetWindow(widget);
   if (!window)
     return nullptr;
 

@@ -109,7 +109,7 @@ if (is_android) {
       "//services/service_manager/public/mojom:mojom_java",
       "//services/shape_detection/public/mojom:mojom_java",
       "//skia/public/interfaces:interfaces_java",
-      "//ui/gfx/geometry/mojo:mojo_java",
+      "//ui/gfx/geometry/mojom:mojom_java",
     ]
   }
 }

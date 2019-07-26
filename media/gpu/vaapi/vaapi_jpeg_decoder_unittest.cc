@@ -42,6 +42,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
@@ -55,14 +56,18 @@ using DecodedImagePtr = std::unique_ptr<vaapi_test_utils::DecodedImage>;
 constexpr const char* kYuv422Filename = "pixel-1280x720.jpg";
 constexpr const char* kYuv420Filename = "pixel-1280x720-yuv420.jpg";
 constexpr const char* kYuv444Filename = "pixel-1280x720-yuv444.jpg";
-constexpr const char* kOddHeightImageFilename = "peach_pi-40x23.jpg";
-constexpr const char* kOddWidthImageFilename = "peach_pi-41x22.jpg";
-constexpr const char* kOddDimensionsImageFilename = "peach_pi-41x23.jpg";
+constexpr const char* kOddHeightImageFilename = "pixel-40x23-yuv420.jpg";
+constexpr const char* kOddWidthImageFilename = "pixel-41x22-yuv420.jpg";
+constexpr const char* kOddDimensionsImageFilename = "pixel-41x23-yuv420.jpg";
 
-const vaapi_test_utils::TestParam kTestCases[] = {
+const vaapi_test_utils::TestParam kVAImageTestCases[] = {
     {"YUV422", kYuv422Filename},
     {"YUV420", kYuv420Filename},
     {"YUV444", kYuv444Filename},
+};
+
+const vaapi_test_utils::TestParam kDmaBufTestCases[] = {
+    {"YUV420", kYuv420Filename},
     {"OddHeightImage40x23", kOddHeightImageFilename},
     {"OddWidthImage41x22", kOddWidthImageFilename},
     {"OddDimensionsImage41x23", kOddDimensionsImageFilename},
@@ -266,7 +271,7 @@ class VaapiJpegDecoderTest
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status = nullptr);
 
-  scoped_refptr<gfx::NativePixmapDmaBuf> DecodeToNativePixmapDmaBuf(
+  std::unique_ptr<NativePixmapAndSizeInfo> DecodeToNativePixmapDmaBuf(
       base::span<const uint8_t> encoded_image,
       VaapiImageDecodeStatus* status = nullptr);
 
@@ -317,7 +322,7 @@ std::unique_ptr<ScopedVAImage> VaapiJpegDecoderTest::Decode(
   return Decode(encoded_image, VA_FOURCC_I420, status);
 }
 
-scoped_refptr<gfx::NativePixmapDmaBuf>
+std::unique_ptr<NativePixmapAndSizeInfo>
 VaapiJpegDecoderTest::DecodeToNativePixmapDmaBuf(
     base::span<const uint8_t> encoded_image,
     VaapiImageDecodeStatus* status) {
@@ -325,18 +330,19 @@ VaapiJpegDecoderTest::DecodeToNativePixmapDmaBuf(
   EXPECT_EQ(!!decoder_.GetScopedVASurface(),
             decode_status == VaapiImageDecodeStatus::kSuccess);
 
-  // Still try to get the pixmap when decode fails.
-  VaapiImageDecodeStatus pixmap_status;
-  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
-      decoder_.ExportAsNativePixmapDmaBuf(&pixmap_status);
-  EXPECT_EQ(!!pixmap, pixmap_status == VaapiImageDecodeStatus::kSuccess);
+  // Still try to export the surface when decode fails.
+  VaapiImageDecodeStatus export_status;
+  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
+      decoder_.ExportAsNativePixmapDmaBuf(&export_status);
+  EXPECT_EQ(!!exported_pixmap,
+            export_status == VaapiImageDecodeStatus::kSuccess);
 
   // Return the first fail status.
   if (status) {
     *status = decode_status != VaapiImageDecodeStatus::kSuccess ? decode_status
-                                                                : pixmap_status;
+                                                                : export_status;
   }
-  return pixmap;
+  return exported_pixmap;
 }
 
 // The intention of this test is to ensure that the workarounds added in
@@ -431,9 +437,9 @@ TEST_P(VaapiJpegDecoderTest, DecodeSucceeds) {
     ASSERT_TRUE(decoder_.GetScopedVASurface());
     EXPECT_TRUE(decoder_.GetScopedVASurface()->IsValid());
     EXPECT_EQ(decoder_.GetScopedVASurface()->size().width(),
-              base::strict_cast<int>(parse_result.frame_header.coded_width));
+              base::strict_cast<int>(parse_result.frame_header.visible_width));
     EXPECT_EQ(decoder_.GetScopedVASurface()->size().height(),
-              base::strict_cast<int>(parse_result.frame_header.coded_height));
+              base::strict_cast<int>(parse_result.frame_header.visible_height));
     EXPECT_EQ(rt_format, decoder_.GetScopedVASurface()->format());
     const uint32_t actual_fourcc = scoped_image->image()->format.fourcc;
     // TODO(andrescj): CompareImages() only supports I420, NV12, YUY2, and YUYV.
@@ -515,8 +521,16 @@ TEST_F(VaapiJpegDecoderTest, DecodeSucceedsForSupportedSizes) {
   }
 }
 
+class VaapiJpegDecoderWithDmaBufsTest : public VaapiJpegDecoderTest {
+ public:
+  VaapiJpegDecoderWithDmaBufsTest() = default;
+  ~VaapiJpegDecoderWithDmaBufsTest() override = default;
+
+  // TODO(andrescj): move DecodeToNativePixmapDmaBuf() to here.
+};
+
 // TODO(andrescj): test other JPEG formats besides YUV 4:2:0.
-TEST_F(VaapiJpegDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
+TEST_P(VaapiJpegDecoderWithDmaBufsTest, DecodeSucceeds) {
   if (base::StartsWith(VaapiWrapper::GetVendorStringForTesting(),
                        "Mesa Gallium driver", base::CompareCase::SENSITIVE)) {
     // TODO(crbug.com/974438): until we support surfaces with multiple buffer
@@ -530,18 +544,30 @@ TEST_F(VaapiJpegDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
     GTEST_SKIP();
   }
 
-  base::FilePath input_file = FindTestDataFilePath(kYuv420Filename);
+  base::FilePath input_file = FindTestDataFilePath(GetParam().filename);
   std::string jpeg_data;
   ASSERT_TRUE(base::ReadFileToString(input_file, &jpeg_data))
       << "failed to read input data from " << input_file.value();
   const auto encoded_image = base::make_span<const uint8_t>(
       reinterpret_cast<const uint8_t*>(jpeg_data.data()), jpeg_data.size());
   VaapiImageDecodeStatus status;
-  scoped_refptr<gfx::NativePixmapDmaBuf> pixmap =
+  std::unique_ptr<NativePixmapAndSizeInfo> exported_pixmap =
       DecodeToNativePixmapDmaBuf(encoded_image, &status);
   ASSERT_EQ(VaapiImageDecodeStatus::kSuccess, status);
   EXPECT_FALSE(decoder_.GetScopedVASurface());
-  ASSERT_TRUE(pixmap);
+  ASSERT_TRUE(exported_pixmap);
+  ASSERT_TRUE(exported_pixmap->pixmap);
+
+  // Make sure the visible area is contained by the surface.
+  EXPECT_FALSE(exported_pixmap->va_surface_resolution.IsEmpty());
+  EXPECT_FALSE(exported_pixmap->pixmap->GetBufferSize().IsEmpty());
+  ASSERT_TRUE(
+      gfx::Rect(exported_pixmap->va_surface_resolution)
+          .Contains(gfx::Rect(exported_pixmap->pixmap->GetBufferSize())));
+
+  // TODO(andrescj): we could get a better lower bound based on the dimensions
+  // and the format.
+  ASSERT_GT(exported_pixmap->byte_size, 0u);
 
   // After exporting the surface, we should not be able to obtain a VAImage with
   // the decoded data.
@@ -558,14 +584,18 @@ TEST_F(VaapiJpegDecoderTest, DecodeAndExportAsNativePixmapDmaBuf) {
   // think that it is mapping a YVU_420, but it's actually mapping a YUV_420.
   //
   // TODO(andrescj): revisit this once crrev.com/c/1573718 lands.
-  gfx::NativePixmapHandle handle = pixmap->ExportHandle();
-  if (pixmap->GetBufferFormat() == gfx::BufferFormat::YVU_420)
+  gfx::NativePixmapHandle handle = exported_pixmap->pixmap->ExportHandle();
+  ASSERT_EQ(gfx::NumberOfPlanesForLinearBufferFormat(
+                exported_pixmap->pixmap->GetBufferFormat()),
+            handle.planes.size());
+  if (exported_pixmap->pixmap->GetBufferFormat() == gfx::BufferFormat::YVU_420)
     std::swap(handle.planes[1], handle.planes[2]);
 
   LocalGpuMemoryBufferManager gpu_memory_buffer_manager;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
-      gpu_memory_buffer_manager.ImportDmaBuf(handle, pixmap->GetBufferSize(),
-                                             pixmap->GetBufferFormat());
+      gpu_memory_buffer_manager.ImportDmaBuf(
+          handle, exported_pixmap->pixmap->GetBufferSize(),
+          exported_pixmap->pixmap->GetBufferFormat());
   ASSERT_TRUE(gpu_memory_buffer);
   ASSERT_TRUE(gpu_memory_buffer->Map());
   vaapi_test_utils::DecodedImage decoded_image{};
@@ -723,7 +753,12 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
 
 INSTANTIATE_TEST_SUITE_P(,
                          VaapiJpegDecoderTest,
-                         testing::ValuesIn(kTestCases),
+                         testing::ValuesIn(kVAImageTestCases),
+                         vaapi_test_utils::TestParamToString);
+
+INSTANTIATE_TEST_SUITE_P(,
+                         VaapiJpegDecoderWithDmaBufsTest,
+                         testing::ValuesIn(kDmaBufTestCases),
                          vaapi_test_utils::TestParamToString);
 
 }  // namespace media

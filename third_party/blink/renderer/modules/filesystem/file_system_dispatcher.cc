@@ -593,9 +593,10 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
 }
 
 void FileSystemDispatcher::RemoveOperationPtr(int operation_id) {
-  DCHECK(cancellable_operations_.find(operation_id) !=
-         cancellable_operations_.end());
-  cancellable_operations_.erase(operation_id);
+  auto it = cancellable_operations_.find(operation_id);
+  if (it == cancellable_operations_.end())
+    return;
+  cancellable_operations_.erase(it);
 }
 
 }  // namespace blink

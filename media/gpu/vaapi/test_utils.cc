@@ -52,13 +52,8 @@ bool CompareImages(const DecodedImage& reference_image,
     return false;
 
   // Uses the reference image's size as the ground truth.
-  // Note the use of > instead of !=. This is to handle the case in the Intel
-  // iHD driver where, for example, the size of an image is 1280x720 while the
-  // size of the VAAPI surface is 1280x736 because of additional alignment. See
-  // https://git.io/fj6nA.
   const gfx::Size image_size = reference_image.size;
-  if (image_size.width() > hw_decoded_image.size.width() ||
-      image_size.height() > hw_decoded_image.size.height()) {
+  if (image_size != hw_decoded_image.size) {
     DLOG(ERROR) << "Wrong expected software decoded image size, "
                 << image_size.ToString() << " versus VaAPI provided "
                 << hw_decoded_image.size.ToString();

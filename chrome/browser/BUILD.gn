@@ -1873,6 +1873,7 @@ jumbo_split_static_library("browser") {
     "//components/autofill/core/browser",
     "//components/nacl/common:buildflags",
     "//components/payments/core",
+    "//components/safe_browsing:buildflags",
     "//components/sync",
     "//components/sync_device_info",
     "//content/public/browser",

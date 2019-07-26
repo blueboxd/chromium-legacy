@@ -54,7 +54,7 @@ class CONTENT_EXPORT AudioOutputAuthorizationHandler {
   // device id (if |session_id| is used for device selection) and default
   // device parameters. This function will always call |cb|.
   void RequestDeviceAuthorization(int render_frame_id,
-                                  int session_id,
+                                  const base::UnguessableToken& session_id,
                                   const std::string& device_id,
                                   AuthorizationCompletedCallback cb) const;
 

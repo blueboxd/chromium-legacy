@@ -39,23 +39,23 @@ class MockVideoCaptureControllerEventHandler
     : public VideoCaptureControllerEventHandler {
  public:
   MOCK_METHOD3(DoOnNewBuffer,
-               void(VideoCaptureControllerID id,
+               void(const VideoCaptureControllerID& id,
                     media::mojom::VideoBufferHandlePtr* buffer_handle,
                     int buffer_id));
   MOCK_METHOD2(OnBufferDestroyed,
-               void(VideoCaptureControllerID, int buffer_id));
+               void(const VideoCaptureControllerID&, int buffer_id));
   MOCK_METHOD3(OnBufferReady,
-               void(VideoCaptureControllerID id,
+               void(const VideoCaptureControllerID& id,
                     int buffer_id,
                     const media::mojom::VideoFrameInfoPtr& frame_info));
-  MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID));
-  MOCK_METHOD1(OnEnded, void(VideoCaptureControllerID));
+  MOCK_METHOD1(OnStarted, void(const VideoCaptureControllerID&));
+  MOCK_METHOD1(OnEnded, void(const VideoCaptureControllerID&));
   MOCK_METHOD2(OnError,
-               void(VideoCaptureControllerID, media::VideoCaptureError));
-  MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID));
-  MOCK_METHOD1(OnStoppedUsingGpuDecode, void(VideoCaptureControllerID));
+               void(const VideoCaptureControllerID&, media::VideoCaptureError));
+  MOCK_METHOD1(OnStartedUsingGpuDecode, void(const VideoCaptureControllerID&));
+  MOCK_METHOD1(OnStoppedUsingGpuDecode, void(const VideoCaptureControllerID&));
 
-  void OnNewBuffer(VideoCaptureControllerID id,
+  void OnNewBuffer(const VideoCaptureControllerID& id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
                    int buffer_id) override {
     DoOnNewBuffer(id, &buffer_handle, buffer_id);
@@ -64,9 +64,15 @@ class MockVideoCaptureControllerEventHandler
 
 class MockMediaStreamProviderListener : public MediaStreamProviderListener {
  public:
-  MOCK_METHOD2(Opened, void(blink::mojom::MediaStreamType, int));
-  MOCK_METHOD2(Closed, void(blink::mojom::MediaStreamType, int));
-  MOCK_METHOD2(Aborted, void(blink::mojom::MediaStreamType, int));
+  MOCK_METHOD2(Opened,
+               void(blink::mojom::MediaStreamType,
+                    const base::UnguessableToken&));
+  MOCK_METHOD2(Closed,
+               void(blink::mojom::MediaStreamType,
+                    const base::UnguessableToken&));
+  MOCK_METHOD2(Aborted,
+               void(blink::mojom::MediaStreamType,
+                    const base::UnguessableToken&));
 };
 
 using DeviceIndex = size_t;
@@ -217,8 +223,9 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
   TestParams params_;
   MediaStreamManager* media_stream_manager_ = nullptr;
   VideoCaptureManager* video_capture_manager_ = nullptr;
-  int session_id_ = 0;
-  const VideoCaptureControllerID stub_client_id_ = 123;
+  base::UnguessableToken session_id_;
+  const VideoCaptureControllerID stub_client_id_ =
+      base::UnguessableToken::Create();
   MockMediaStreamProviderListener mock_stream_provider_listener_;
   MockVideoCaptureControllerEventHandler mock_controller_event_handler_;
   base::WeakPtr<VideoCaptureController> controller_;

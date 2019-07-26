@@ -39,7 +39,7 @@ import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
 import "url/mojom/origin.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose frame-specific interfaces between renderer and browser.
@@ -63,6 +63,12 @@ interface Frame {
 
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);
+
+  // Retrieves the text surrounding the current selection for the frame up to
+  // the length specified by |max_length|, along with its start and end offsets.
+  GetTextSurroundingSelection(uint32 max_length)
+      => (mojo_base.mojom.String16 content, uint32 start_offset,
+          uint32 end_offset);
 
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.

@@ -504,7 +504,7 @@ struct EVENTS_EXPORT PointerDetails {
   // Note: offset_.x() > 0/offset_.y() > 0 means scroll left/up.
   gfx::Vector2d offset;
 
-  // If you add fields please update ui/events/mojo/event.mojom.
+  // If you add fields please update ui/events/mojom/event.mojom.
 };
 
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {

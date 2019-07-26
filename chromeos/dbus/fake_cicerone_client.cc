@@ -259,6 +259,24 @@ void FakeCiceroneClient::ImportLxdContainer(
       base::BindOnce(std::move(callback), import_lxd_container_response_));
 }
 
+void FakeCiceroneClient::CancelExportLxdContainer(
+    const vm_tools::cicerone::CancelExportLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::CancelExportLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                cancel_export_lxd_container_response_));
+}
+
+void FakeCiceroneClient::CancelImportLxdContainer(
+    const vm_tools::cicerone::CancelImportLxdContainerRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::CancelImportLxdContainerResponse>
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                cancel_import_lxd_container_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {

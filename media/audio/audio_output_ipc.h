@@ -71,9 +71,10 @@ class MEDIA_EXPORT AudioOutputIPC {
   // the default device.
   // Once the authorization process is complete, the implementation will
   // notify |delegate| by calling OnDeviceAuthorized().
-  virtual void RequestDeviceAuthorization(AudioOutputIPCDelegate* delegate,
-                                          int session_id,
-                                          const std::string& device_id) = 0;
+  virtual void RequestDeviceAuthorization(
+      AudioOutputIPCDelegate* delegate,
+      const base::UnguessableToken& session_id,
+      const std::string& device_id) = 0;
 
   // Sends a request to create an AudioOutputController object in the peer
   // process and configures it to use the specified audio |params| including

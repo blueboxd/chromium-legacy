@@ -70,7 +70,7 @@ source_set("tests") {
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 
   if (use_x11) {

@@ -36,7 +36,7 @@
 #include "chrome/browser/ui/android/device_dialog/bluetooth_chooser_android.h"
 #include "chrome/browser/ui/android/device_dialog/bluetooth_scanning_prompt_android.h"
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
-#include "chrome/browser/ui/android/sms_dialog_android.h"
+#include "chrome/browser/ui/android/sms/sms_dialog_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"

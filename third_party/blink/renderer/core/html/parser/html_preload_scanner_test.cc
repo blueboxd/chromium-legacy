@@ -1274,8 +1274,6 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   LazyLoadImageTestCase test_cases[] = {
@@ -1335,8 +1333,6 @@ TEST_F(HTMLPreloadScannerTest,
   ScopedLazyImageLoadingForTest scoped_lazy_image_loading_for_test(true);
   ScopedLazyImageLoadingMetadataFetchForTest
       scoped_lazy_image_loading_metadata_fetch_for_test(true);
-  ScopedAutomaticLazyImageLoadingForTest
-      scoped_automatic_lazy_image_loading_for_test(false);
   GetDocument().GetSettings()->SetLazyLoadEnabled(true);
   RunSetUp(kViewportEnabled);
   PreloadScannerTestCase test_cases[] = {

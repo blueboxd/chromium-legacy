@@ -85,6 +85,7 @@
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "components/pdf/renderer/pepper_pdf_host.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/renderer/threat_dom_details.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/common/startup_metric.mojom.h"
@@ -154,7 +155,7 @@
 #if defined(OS_WIN)
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #endif
 
@@ -365,7 +366,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   if (!spellcheck_)
     InitSpellCheck();
 #endif
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   registry_.AddInterface(
       base::BindRepeating(&safe_browsing::PhishingClassifierFilter::Create));
 #endif
@@ -486,7 +487,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new nacl::NaClHelper(render_frame);
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL) || BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   safe_browsing::ThreatDOMDetails::Create(render_frame, registry);
 #endif
 

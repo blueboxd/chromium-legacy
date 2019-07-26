@@ -63,7 +63,7 @@ bool ThemePainterMac::PaintTextField(const Node* node,
   LocalCurrentGraphicsContext local_context(paint_info.context, r);
 
   bool use_ns_text_field_cell =
-      style.HasAppearance() &&
+      style.HasEffectiveAppearance() &&
       style.VisitedDependentColor(GetCSSPropertyBackgroundColor()) ==
           Color::kWhite &&
       !style.HasBackgroundImage();
@@ -327,13 +327,13 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
   float zoom_level = o.StyleRef().EffectiveZoom();
   FloatRect unzoomed_rect(r);
 
-  if (o.StyleRef().Appearance() == kSliderHorizontalPart ||
-      o.StyleRef().Appearance() == kMediaSliderPart) {
+  if (o.StyleRef().EffectiveAppearance() == kSliderHorizontalPart ||
+      o.StyleRef().EffectiveAppearance() == kMediaSliderPart) {
     unzoomed_rect.SetY(
         ceilf(unzoomed_rect.Y() + unzoomed_rect.Height() / 2 -
               zoom_level * LayoutThemeMac::kSliderTrackWidth / 2));
     unzoomed_rect.SetHeight(zoom_level * LayoutThemeMac::kSliderTrackWidth);
-  } else if (o.StyleRef().Appearance() == kSliderVerticalPart) {
+  } else if (o.StyleRef().EffectiveAppearance() == kSliderVerticalPart) {
     unzoomed_rect.SetX(
         ceilf(unzoomed_rect.X() + unzoomed_rect.Width() / 2 -
               zoom_level * LayoutThemeMac::kSliderTrackWidth / 2));
@@ -370,7 +370,8 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
   if (!LayoutTheme::IsEnabled(o.GetNode()))
     tint_color = Color(255, 255, 255, 128);
 
-  bool is_vertical_slider = o.StyleRef().Appearance() == kSliderVerticalPart;
+  bool is_vertical_slider =
+      o.StyleRef().EffectiveAppearance() == kSliderVerticalPart;
 
   float fill_radius_size = (LayoutThemeMac::kSliderTrackWidth -
                             LayoutThemeMac::kSliderTrackBorderWidth) /
@@ -709,8 +710,8 @@ bool ThemePainterMac::PaintButton(const Node* node,
 
   // Determine the width and height needed for the control and prepare the cell
   // for painting.
-  NSButtonCell* button_cell = LayoutThemeMac::Button(style.Appearance(), states,
-                                                     zoomed_rect, zoom_factor);
+  NSButtonCell* button_cell = LayoutThemeMac::Button(
+      style.EffectiveAppearance(), states, zoomed_rect, zoom_factor);
   GraphicsContextStateSaver state_saver(paint_info.context);
 
   NSControlSize control_size = [button_cell controlSize];

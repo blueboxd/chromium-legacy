@@ -82,6 +82,8 @@ public class AutofillAssistantPaymentRequestTestHelper {
         AutofillPaymentInstrument mPaymentMethod;
         @AssistantTermsAndConditionsState
         int mTermsStatus;
+        @Nullable
+        Integer mLastLinkClicked;
 
         @Override
         public void onContactInfoChanged(@Nullable AutofillContact contact) {
@@ -105,7 +107,7 @@ public class AutofillAssistantPaymentRequestTestHelper {
 
         @Override
         public void onTermsAndConditionsLinkClicked(int link) {
-            // TODO(crbug.com/860868): Add tests that use this method.
+            mLastLinkClicked = link;
         }
     }
 

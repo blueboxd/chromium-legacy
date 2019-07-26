@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,7 +40,7 @@ namespace {
 class LazySafeBrowsingDatabaseManager {
  public:
   LazySafeBrowsingDatabaseManager() {
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
     if (g_browser_process && g_browser_process->safe_browsing_service()) {
       instance_ =
           g_browser_process->safe_browsing_service()->database_manager();

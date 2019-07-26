@@ -123,10 +123,12 @@ cr.define('cr.icon', function() {
    * @param {boolean} isSyncedUrlForHistoryUi Should be set to true only if the
    *     caller is an UI aimed at displaying user history, and the requested url
    *     is known to be present in Chrome sync data.
+   * @param {string} remoteIconUrlForUma In case the entry is contained in
+   * sync data, we can pass the associated icon url.
    *
    * @return {string} -webkit-image-set for the favicon.
    */
-  function getFavicon(url, isSyncedUrlForHistoryUi) {
+  function getFavicon(url, isSyncedUrlForHistoryUi, remoteIconUrlForUma = '') {
     const isIconUrl = FAVICON_URL_REGEX.test(url);
     // Note: Literal strings used below must match those in the description of
     // chrome://favicon2 format in components/favicon_base/favicon_url_parser.h.
@@ -135,6 +137,9 @@ cr.define('cr.icon', function() {
     if (!isIconUrl) {
       path += '&allow_google_server_fallback=' +
           (isSyncedUrlForHistoryUi ? '1' : '0');
+      if (isSyncedUrlForHistoryUi) {
+        path += '&icon_url=' + encodeURIComponent(remoteIconUrlForUma);
+      }
     }
     return getImageSet(path);
   }

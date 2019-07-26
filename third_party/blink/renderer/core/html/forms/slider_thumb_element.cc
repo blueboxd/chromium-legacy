@@ -53,7 +53,7 @@ namespace blink {
 using namespace html_names;
 
 inline static bool HasVerticalAppearance(HTMLInputElement* input) {
-  return input->ComputedStyleRef().Appearance() == kSliderVerticalPart;
+  return input->ComputedStyleRef().EffectiveAppearance() == kSliderVerticalPart;
 }
 
 SliderThumbElement::SliderThumbElement(Document& document)
@@ -296,7 +296,7 @@ const AtomicString& SliderThumbElement::ShadowPseudoId() const {
     return SliderThumbShadowPartId();
 
   const ComputedStyle& slider_style = input->GetLayoutObject()->StyleRef();
-  switch (slider_style.Appearance()) {
+  switch (slider_style.EffectiveAppearance()) {
     case kMediaSliderPart:
     case kMediaSliderThumbPart:
     case kMediaVolumeSliderPart:
@@ -313,15 +313,15 @@ scoped_refptr<ComputedStyle> SliderThumbElement::CustomStyleForLayoutObject() {
   const ComputedStyle& host_style = host->ComputedStyleRef();
   scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
 
-  if (host_style.Appearance() == kSliderVerticalPart)
-    style->SetAppearance(kSliderThumbVerticalPart);
-  else if (host_style.Appearance() == kSliderHorizontalPart)
-    style->SetAppearance(kSliderThumbHorizontalPart);
-  else if (host_style.Appearance() == kMediaSliderPart)
-    style->SetAppearance(kMediaSliderThumbPart);
-  else if (host_style.Appearance() == kMediaVolumeSliderPart)
-    style->SetAppearance(kMediaVolumeSliderThumbPart);
-  if (style->HasAppearance())
+  if (host_style.EffectiveAppearance() == kSliderVerticalPart)
+    style->SetEffectiveAppearance(kSliderThumbVerticalPart);
+  else if (host_style.EffectiveAppearance() == kSliderHorizontalPart)
+    style->SetEffectiveAppearance(kSliderThumbHorizontalPart);
+  else if (host_style.EffectiveAppearance() == kMediaSliderPart)
+    style->SetEffectiveAppearance(kMediaSliderThumbPart);
+  else if (host_style.EffectiveAppearance() == kMediaVolumeSliderPart)
+    style->SetEffectiveAppearance(kMediaVolumeSliderThumbPart);
+  if (style->HasEffectiveAppearance())
     LayoutTheme::GetTheme().AdjustSliderThumbSize(*style);
 
   return style;
@@ -431,9 +431,9 @@ bool SliderContainerElement::CanSlide() {
     }
   }
   if ((sliding_direction_ == kVertical &&
-       slider_style->Appearance() == kSliderHorizontalPart) ||
+       slider_style->EffectiveAppearance() == kSliderHorizontalPart) ||
       (sliding_direction_ == kHorizontal &&
-       slider_style->Appearance() == kSliderVerticalPart)) {
+       slider_style->EffectiveAppearance() == kSliderVerticalPart)) {
     return false;
   }
   return true;
@@ -450,7 +450,7 @@ const AtomicString& SliderContainerElement::ShadowPseudoId() const {
 
   const ComputedStyle& slider_style =
       OwnerShadowHost()->GetLayoutObject()->StyleRef();
-  switch (slider_style.Appearance()) {
+  switch (slider_style.EffectiveAppearance()) {
     case kMediaSliderPart:
     case kMediaSliderThumbPart:
     case kMediaVolumeSliderPart:

@@ -37,7 +37,7 @@ enum DismissalReason {
 
 }  // namespace
 
-@interface QRScannerViewController ()<QRScannerViewDelegate> {
+@interface QRScannerViewController () {
   // The CameraController managing the camera connection.
   CameraController* _cameraController;
   // The view displaying the QR scanner.
@@ -118,8 +118,8 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
   [super viewDidLoad];
   DCHECK(_cameraController);
 
-  _qrScannerView =
-      [[QRScannerView alloc] initWithFrame:self.view.frame delegate:self];
+  _qrScannerView = [self scannerView];
+
   [self.view addSubview:_qrScannerView];
 
   // Constraints for |_qrScannerView|.
@@ -225,6 +225,10 @@ initWithPresentationProvider:(id<QRScannerPresenting>)presentationProvider
       return qr_scanner::DialogForCameraState(
           qr_scanner::CAMERA_PERMISSION_DENIED, nil);
   }
+}
+
+- (QRScannerView*)scannerView {
+  return [[QRScannerView alloc] initWithFrame:self.view.frame delegate:self];
 }
 
 #pragma mark private methods

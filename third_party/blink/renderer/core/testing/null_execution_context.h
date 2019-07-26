@@ -47,9 +47,6 @@ class NullExecutionContext
   SecurityContext& GetSecurityContext() final { return *this; }
   const SecurityContext& GetSecurityContext() const final { return *this; }
   DOMTimerCoordinator* Timers() override { return nullptr; }
-  const base::UnguessableToken& GetAgentClusterID() const final {
-    return base::UnguessableToken::Null();
-  }
 
   void AddConsoleMessageImpl(ConsoleMessage*,
                              bool discard_duplicates) override {}

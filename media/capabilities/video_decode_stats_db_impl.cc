@@ -166,8 +166,40 @@ void VideoDecodeStatsDBImpl::GetDecodeStats(const VideoDescKey& key,
                      weak_ptr_factory_.GetWeakPtr(), std::move(get_stats_cb)));
 }
 
-bool VideoDecodeStatsDBImpl::AreStatsExpired(
+bool VideoDecodeStatsDBImpl::AreStatsUsable(
     const DecodeStatsProto* const stats_proto) {
+  // CHECK FOR CORRUPTION
+  // We've observed this in a tiny fraction of reports, but the consequences can
+  // lead to crashes due floating point math exceptions. http://crbug.com/982009
+
+  bool are_stats_valid =
+      // All frame counts should be capped by |frames_decoded|.
+      stats_proto->frames_dropped() <= stats_proto->frames_decoded() &&
+      stats_proto->frames_power_efficient() <= stats_proto->frames_decoded() &&
+
+      // You can't drop or power-efficiently decode more than 100% of frames.
+      stats_proto->unweighted_average_frames_dropped() <= 1 &&
+      stats_proto->unweighted_average_frames_efficient() <= 1 &&
+
+      // |last_write_date| represents base::Time::ToJsTime(), a number of msec
+      // since the epoch, so it should never be negative (zero is valid, as a
+      // default for this field, indicating the last write was made before we
+      // added time stamping). The converted time should also never be in the
+      // future.
+      stats_proto->last_write_date() >= 0 &&
+      base::Time::FromJsTime(stats_proto->last_write_date()) <=
+          wall_clock_->Now();
+
+  UMA_HISTOGRAM_BOOLEAN("Media.VideoDecodeStatsDB.OpSuccess.Validate",
+                        are_stats_valid);
+
+  if (!are_stats_valid)
+    return false;
+
+  // CHECK FOR EXPIRATION
+  // Avoid keeping old data forever so users aren't stuck with predictions after
+  // upgrading their machines (e.g. driver updates or new hardware).
+
   double last_write_date = stats_proto->last_write_date();
   if (last_write_date == 0) {
     // Set a default time if the write date is zero (no write since proto was
@@ -178,7 +210,7 @@ bool VideoDecodeStatsDBImpl::AreStatsExpired(
   const int kMaxDaysToKeepStats = GetMaxDaysToKeepStats();
   DCHECK_GT(kMaxDaysToKeepStats, 0);
 
-  return wall_clock_->Now() - base::Time::FromJsTime(last_write_date) >
+  return wall_clock_->Now() - base::Time::FromJsTime(last_write_date) <=
          base::TimeDelta::FromDays(kMaxDaysToKeepStats);
 }
 
@@ -202,7 +234,7 @@ void VideoDecodeStatsDBImpl::WriteUpdatedEntry(
     return;
   }
 
-  if (!stats_proto || AreStatsExpired(stats_proto.get())) {
+  if (!stats_proto || !AreStatsUsable(stats_proto.get())) {
     // Default instance will have all zeros for numeric types.
     stats_proto.reset(new DecodeStatsProto());
   }
@@ -319,7 +351,7 @@ void VideoDecodeStatsDBImpl::OnGotDecodeStats(
 
   std::unique_ptr<DecodeStatsEntry> entry;
 
-  if (stats_proto && !AreStatsExpired(stats_proto.get())) {
+  if (stats_proto && AreStatsUsable(stats_proto.get())) {
     DCHECK(success);
 
     if (GetEnableUnweightedEntries()) {

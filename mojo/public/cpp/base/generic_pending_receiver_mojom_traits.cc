@@ -8,6 +8,20 @@ namespace mojo {
 
 // static
 bool StructTraits<mojo_base::mojom::GenericPendingReceiverDataView,
+                  GenericPendingReceiver>::IsNull(const GenericPendingReceiver&
+                                                      receiver) {
+  return !receiver.is_valid();
+}
+
+// static
+void StructTraits<mojo_base::mojom::GenericPendingReceiverDataView,
+                  GenericPendingReceiver>::SetToNull(GenericPendingReceiver*
+                                                         receiver) {
+  receiver->reset();
+}
+
+// static
+bool StructTraits<mojo_base::mojom::GenericPendingReceiverDataView,
                   GenericPendingReceiver>::
     Read(mojo_base::mojom::GenericPendingReceiverDataView data,
          GenericPendingReceiver* out) {

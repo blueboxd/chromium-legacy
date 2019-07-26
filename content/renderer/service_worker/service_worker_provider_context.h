@@ -165,10 +165,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // see comments of |container_host_|.
   blink::mojom::ServiceWorkerContainerHost* container_host() const;
 
-  // Pings the container host and calls |callback| once a pong arrived. Useful
-  // for waiting for all messages the host sent thus far to arrive.
-  void PingContainerHost(base::OnceClosure callback);
-
   // Called when blink::IdlenessDetector emits its network idle signal. Tells
   // the browser process that this page is quiet soon after page load, as a
   // hint to start the service worker update check.

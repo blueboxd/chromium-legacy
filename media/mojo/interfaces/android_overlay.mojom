@@ -6,7 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Provides mojo clients with AndroidOverlay instances.  This will live in the
 // browser, with clients in the GPU process or renderer.  Note that if you're

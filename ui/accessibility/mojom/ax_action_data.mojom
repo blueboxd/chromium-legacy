@@ -6,7 +6,7 @@ module ax.mojom;
 
 import "ui/accessibility/ax_enums.mojom";
 import "ui/accessibility/mojom/ax_tree_id.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // A compact representation of an accessibility action and the arguments
 // associated with that action. See ui::AXActionData for full documentation.

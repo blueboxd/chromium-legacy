@@ -12,12 +12,14 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/arc_features.h"
+#include "components/prefs/pref_service.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -90,6 +92,14 @@ void ChromeFeaturesServiceProvider::Start(
       kChromeFeaturesServiceIsUsbguardEnabledMethod,
       base::BindRepeating(&ChromeFeaturesServiceProvider::IsUsbguardEnabled,
                           weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
+                          weak_ptr_factory_.GetWeakPtr()));
+  exported_object->ExportMethod(
+      kChromeFeaturesServiceInterface,
+      kChromeFeaturesServiceIsVmManagementCliAllowedMethod,
+      base::BindRepeating(
+          &ChromeFeaturesServiceProvider::IsVmManagementCliAllowed,
+          weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChromeFeaturesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -165,6 +175,21 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
     dbus::ExportedObject::ResponseSender response_sender) {
   SendResponse(method_call, response_sender,
                base::FeatureList::IsEnabled(features::kUsbguard));
+}
+
+void ChromeFeaturesServiceProvider::IsVmManagementCliAllowed(
+    dbus::MethodCall* method_call,
+    dbus::ExportedObject::ResponseSender response_sender) {
+  bool is_allowed = true;
+  // The policy is experimental; check that the corresponding feature flag
+  // is enabled.
+  if (base::FeatureList::IsEnabled(features::kCrostiniAdvancedAccessControls)) {
+    Profile* profile = GetSenderProfile(method_call, response_sender);
+    is_allowed = profile->GetPrefs()->GetBoolean(
+        crostini::prefs::kVmManagementCliAllowedByPolicy);
+  }
+
+  SendResponse(method_call, response_sender, is_allowed);
 }
 
 }  // namespace chromeos

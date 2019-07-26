@@ -539,7 +539,7 @@ if (!is_ios) {
       "keycodes/keyboard_code_conversion_unittest.cc",
       "keycodes/platform_key_map_win_unittest.cc",
       "mobile_scroller_unittest.cc",
-      "mojo/struct_traits_unittest.cc",
+      "mojom/mojom_traits_unittest.cc",
       "platform/platform_event_source_unittest.cc",
       "scoped_target_handler_unittest.cc",
       "win/event_utils_win_unittest.cc",
@@ -570,9 +570,9 @@ if (!is_ios) {
       "//ui/events/blink",
       "//ui/events/devices",
       "//ui/events/gestures/blink",
-      "//ui/events/mojo:interfaces",
+      "//ui/events/mojom",
       "//ui/events/platform",
-      "//ui/gfx/geometry/mojo:struct_traits",
+      "//ui/gfx/geometry/mojom:mojom_traits",
       "//ui/gfx/ipc/geometry",
     ]
 

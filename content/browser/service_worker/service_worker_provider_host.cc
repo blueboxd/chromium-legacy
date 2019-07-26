@@ -1158,10 +1158,6 @@ void ServiceWorkerProviderHost::CloneContainerHost(
   additional_bindings_.AddBinding(this, std::move(container_host_request));
 }
 
-void ServiceWorkerProviderHost::Ping(PingCallback callback) {
-  std::move(callback).Run();
-}
-
 void ServiceWorkerProviderHost::HintToUpdateServiceWorker() {
   if (!IsProviderForClient()) {
     mojo::ReportBadMessage("SWPH_HTUSW_NOT_CLIENT");

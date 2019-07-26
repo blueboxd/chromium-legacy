@@ -41,7 +41,7 @@ class HTMLDetailsElement final : public HTMLElement {
   static bool IsFirstSummary(const Node&);
 
  private:
-  void DispatchPendingEvent();
+  void DispatchPendingEvent(const AttributeModificationReason);
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void ParseAttribute(const AttributeModificationParams&) override;

@@ -791,17 +791,21 @@ void KerberosCredentialsManager::UpdateAccountsFromPref() {
   if (!IsKerberosEnabled()) {
     VLOG(1) << "Kerberos disabled";
     NotifyRequiresLoginPassword(false);
-    // All managed accounts have already been removed here. No need to call
-    // RemoveAllManagedAccountsExcept().
+    // All managed accounts have already been removed here.
+    // No need to call RemoveAllManagedAccountsExcept().
     return;
   }
 
-  // Principal names of all accounts added.
   const base::Value* accounts = local_state_->GetList(prefs::kKerberosAccounts);
-  if (!accounts) {
-    VLOG(1) << "No KerberosAccounts policy";
+  if (!accounts || accounts->GetList().empty()) {
+    VLOG(1) << "No or empty KerberosAccounts policy";
     NotifyRequiresLoginPassword(false);
-    RemoveAllManagedAccountsExcept({});
+
+    // https://crbug.com/963824: The active principal is empty if there are no
+    // accounts, so no need to remove accounts. It would just up the daemon
+    // unnecessarily.
+    if (!GetActivePrincipalName().empty())
+      RemoveAllManagedAccountsExcept({});
     return;
   }
 

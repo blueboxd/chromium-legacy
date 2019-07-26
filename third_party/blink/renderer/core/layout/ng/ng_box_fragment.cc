@@ -21,8 +21,9 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetricsWithoutSynthesize(
   const LayoutBox& layout_box =
       ToLayoutBox(*physical_fragment_.GetLayoutObject());
   const ComputedStyle& style = physical_fragment.Style();
-  if (style.HasAppearance() &&
-      !LayoutTheme::GetTheme().IsControlContainer(style.Appearance())) {
+  if (style.HasEffectiveAppearance() &&
+      !LayoutTheme::GetTheme().IsControlContainer(
+          style.EffectiveAppearance())) {
     return NGLineHeightMetrics(
         BlockSize() + layout_box.MarginOver() +
             LayoutTheme::GetTheme().BaselinePositionAdjustment(style),

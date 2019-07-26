@@ -7,6 +7,8 @@ source_set("qr_scanner") {
   sources = [
     "camera_controller.h",
     "camera_controller.mm",
+    "preview_overlay_view.h",
+    "preview_overlay_view.mm",
     "qr_scanner_alerts.h",
     "qr_scanner_alerts.mm",
     "qr_scanner_presenting.h",
@@ -16,6 +18,8 @@ source_set("qr_scanner") {
     "qr_scanner_view.mm",
     "qr_scanner_view_controller.h",
     "qr_scanner_view_controller.mm",
+    "video_preview_view.h",
+    "video_preview_view.mm",
   ]
   deps = [
     "resources:qr_scanner_torch_off",

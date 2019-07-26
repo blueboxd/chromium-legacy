@@ -5,7 +5,7 @@
 #include "components/content_capture/common/content_capture_struct_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

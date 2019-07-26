@@ -31,6 +31,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/download_item_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -273,7 +274,7 @@ bool DownloadItemModel::IsMalicious() const {
 }
 
 bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (!IsDangerous())
     return false;
   return safe_browsing::DownloadFeedbackService::IsEnabledForDownload(
@@ -621,7 +622,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
 // 2. Download verdict is uncommon, and
 // 3. Download URL is not empty, and
 // 4. User is not in incognito mode.
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
           !GetURL().is_empty() && !profile()->IsOffTheRecord()) {
         safe_browsing::SafeBrowsingService* sb_service =
@@ -651,7 +652,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       download_->ValidateDangerousDownload();
       break;
     case DownloadCommands::LEARN_MORE_SCANNING: {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       using safe_browsing::DownloadProtectionService;
 
       safe_browsing::SafeBrowsingService* sb_service =

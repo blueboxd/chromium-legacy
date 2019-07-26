@@ -8,7 +8,7 @@ import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/viz/public/interfaces/compositing/surface_range.mojom";
 import "services/viz/public/interfaces/compositing/shared_quad_state.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/transform.mojom";
 

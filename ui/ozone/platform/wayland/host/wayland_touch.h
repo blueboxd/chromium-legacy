@@ -11,20 +11,19 @@
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
 
 namespace ui {
 
 class WaylandConnection;
 class WaylandWindow;
 
-class WaylandTouch {
+class WaylandTouch : public WaylandWindowObserver {
  public:
   WaylandTouch(wl_touch* touch, const EventDispatchCallback& callback);
-  virtual ~WaylandTouch();
+  ~WaylandTouch() override;
 
-  void set_connection(WaylandConnection* connection) {
-    connection_ = connection;
-  }
+  void SetConnection(WaylandConnection* connection);
 
   void RemoveTouchPoints(const WaylandWindow* window);
 
@@ -43,6 +42,9 @@ class WaylandTouch {
   void MaybeUnsetFocus(const TouchPoints& points,
                        int32_t id,
                        wl_surface* surface);
+
+  // WaylandWindowObserver implements:
+  void OnWindowRemoved(WaylandWindow* window) override;
 
   // wl_touch_listener
   static void Down(void* data,

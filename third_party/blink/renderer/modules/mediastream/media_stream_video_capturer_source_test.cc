@@ -167,7 +167,7 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
   MOCK_METHOD0(MockNotification, void());
 
   std::unique_ptr<media::VideoCapturerSource> RecreateVideoCapturerSource(
-      int session_id) {
+      const base::UnguessableToken& session_id) {
     auto delegate = std::make_unique<MockVideoCapturerSource>();
     delegate_ = delegate.get();
     EXPECT_CALL(*delegate_, MockStartCapture(_, _, _));

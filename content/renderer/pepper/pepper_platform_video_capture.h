@@ -53,7 +53,7 @@ class PepperPlatformVideoCapture {
   const std::string device_id_;
 
   std::string label_;
-  int session_id_;
+  base::UnguessableToken session_id_;
   base::OnceClosure release_device_cb_;
   base::OnceClosure stop_capture_cb_;
 

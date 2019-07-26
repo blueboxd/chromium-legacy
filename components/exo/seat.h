@@ -13,6 +13,7 @@
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/keycodes/dom/dom_codes.h"
 #include "ui/events/platform/platform_event_observer.h"
@@ -26,6 +27,10 @@ namespace exo {
 class ScopedDataSource;
 class SeatObserver;
 class Surface;
+
+// The maximum number of different data types that we will write to the
+// clipboard (plain text, RTF, HTML, image)
+constexpr int kMaxClipboardDataTypes = 4;
 
 // Seat object represent a group of input devices such as keyboard, pointer and
 // touch devices and keeps track of input focus.
@@ -60,6 +65,11 @@ class Seat : public aura::client::FocusChangeObserver,
 
   // Sets clipboard data from |source|.
   void SetSelection(DataSource* source);
+
+  void StartDrag(DataSource* source,
+                 Surface* origin,
+                 Surface* icon,
+                 ui::DragDropTypes::DragEventSource event_source);
 
   // Overridden from aura::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
@@ -103,7 +113,7 @@ class Seat : public aura::client::FocusChangeObserver,
   void OnTextRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                   base::OnceClosure callback,
                   const std::string& mime_type,
-                  const std::vector<uint8_t>& data);
+                  base::string16 data);
   void OnRTFRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                  base::OnceClosure callback,
                  const std::string& mime_type,
@@ -111,7 +121,7 @@ class Seat : public aura::client::FocusChangeObserver,
   void OnHTMLRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                   base::OnceClosure callback,
                   const std::string& mime_type,
-                  const std::vector<uint8_t>& data);
+                  base::string16 data);
   void OnImageRead(scoped_refptr<RefCountedScopedClipboardWriter> writer,
                    base::OnceClosure callback,
                    const std::string& mime_type,

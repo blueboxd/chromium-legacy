@@ -52,6 +52,15 @@ void CheckMimeType(const std::string& expected,
   std::move(counter).Run();
 }
 
+void CheckTextMimeType(const std::string& expected,
+                       base::OnceClosure counter,
+                       const std::string& mime_type,
+                       base::string16 data) {
+  EXPECT_FALSE(expected.empty());
+  EXPECT_EQ(mime_type, expected);
+  std::move(counter).Run();
+}
+
 void IncrementCounter(base::RepeatingClosure counter) {
   std::move(counter).Run();
 }
@@ -65,9 +74,9 @@ void CheckMimeTypesRecieved(DataSource* data_source,
   base::RepeatingClosure counter =
       base::BarrierClosure(4, run_loop.QuitClosure());
   data_source->GetDataForPreferredMimeTypes(
-      base::BindOnce(&CheckMimeType, text_mime, counter),
+      base::BindOnce(&CheckTextMimeType, text_mime, counter),
       base::BindOnce(&CheckMimeType, rtf_mime, counter),
-      base::BindOnce(&CheckMimeType, html_mime, counter),
+      base::BindOnce(&CheckTextMimeType, html_mime, counter),
       base::BindOnce(&CheckMimeType, image_mime, counter),
       base::BindRepeating(&IncrementCounter, counter));
   run_loop.Run();

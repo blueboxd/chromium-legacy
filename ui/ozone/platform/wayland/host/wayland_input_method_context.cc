@@ -103,7 +103,8 @@ void WaylandInputMethodContext::Reset() {
 }
 
 void WaylandInputMethodContext::Focus() {
-  WaylandWindow* window = connection_->GetCurrentKeyboardFocusedWindow();
+  WaylandWindow* window =
+      connection_->wayland_window_manager()->GetCurrentKeyboardFocusedWindow();
   if (!text_input_ || !window)
     return;
 

@@ -4,7 +4,7 @@
 
 module ui.ozone.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 import "ui/gfx/mojo/overlay_transform.mojom";
 

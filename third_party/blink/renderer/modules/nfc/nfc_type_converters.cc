@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_record.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"

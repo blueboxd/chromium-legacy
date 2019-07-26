@@ -91,7 +91,7 @@ void LayoutProgress::UpdateAnimationState() {
   animation_repeat_interval_ =
       LayoutTheme::GetTheme().AnimationRepeatIntervalForProgressBar();
 
-  bool animating = !IsDeterminate() && StyleRef().HasAppearance() &&
+  bool animating = !IsDeterminate() && StyleRef().HasEffectiveAppearance() &&
                    animation_duration_ > base::TimeDelta();
   if (animating == animating_)
     return;

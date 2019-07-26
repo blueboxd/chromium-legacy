@@ -7,7 +7,7 @@ module viz.mojom;
 import "services/viz/public/interfaces/compositing/copy_output_request.mojom";
 import "services/viz/public/interfaces/compositing/filter_operations.mojom";
 import "services/viz/public/interfaces/compositing/quads.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/rrect_f.mojom";
 import "ui/gfx/mojo/transform.mojom";

@@ -15,14 +15,11 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/favicon/core/history_ui_favicon_request_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/sync_sessions/open_tabs_ui_delegate.h"
-#include "components/sync_sessions/session_sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/layout.h"
@@ -164,10 +161,6 @@ void FaviconSource::StartDataRequest(
       SendDefaultResponse(callback);
       return;
     }
-    sync_sessions::SessionSyncService* session_sync_service =
-        SessionSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-    sync_sessions::OpenTabsUIDelegate* open_tabs =
-        session_sync_service->GetOpenTabsUIDelegate();
     history_ui_favicon_request_handler->GetRawFaviconForPageURL(
         page_url, desired_size_in_pixel,
         base::BindOnce(&FaviconSource::OnFaviconDataAvailable,
@@ -175,8 +168,7 @@ void FaviconSource::StartDataRequest(
                        parsed.device_scale_factor),
         favicon::FaviconRequestPlatform::kDesktop, parsed_history_ui_origin,
         /*icon_url_for_uma=*/
-        open_tabs ? open_tabs->GetIconUrlForPageUrl(page_url) : GURL(),
-        &cancelable_task_tracker_);
+        GURL(parsed.icon_url), &cancelable_task_tracker_);
   }
 }
 

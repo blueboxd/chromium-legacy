@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chrome/common/features.gni")
+import("//components/safe_browsing/buildflags.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {

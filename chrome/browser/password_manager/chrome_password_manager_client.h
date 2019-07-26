@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/password_reuse_detection_manager.h"
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/prefs/pref_member.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -154,7 +155,7 @@ class ChromePasswordManagerClient
   void FrameWasScrolled() override;
   void GenerationElementLostFocus() override;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()

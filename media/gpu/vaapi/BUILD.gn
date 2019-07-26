@@ -162,12 +162,15 @@ source_set("vaapi_test_utils") {
 source_set("unit_test") {
   testonly = true
   sources = [
+    "vaapi_jpeg_decode_accelerator_worker_unittest.cc",
     "vaapi_video_decode_accelerator_unittest.cc",
   ]
   deps = [
     ":vaapi",
+    "//base",
     "//base/test:test_support",
     "//gpu:test_support",
+    "//gpu/ipc/service",
     "//media/gpu:common",
     "//mojo/core/embedder",
     "//testing/gmock",

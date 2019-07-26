@@ -133,10 +133,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   // TODO(weiliangc): Eventually the asymmetry between primary plane and
   // non-primary places should be internalized and should not have a special
   // API.
-  base::Optional<OutputSurfaceOverlayPlane> ProcessOutputSurfaceAsOverlay(
-      const gfx::Size& viewport_size,
-      const gfx::BufferFormat& buffer_format,
-      const gfx::ColorSpace& color_space) const;
+  virtual base::Optional<OutputSurfaceOverlayPlane>
+  ProcessOutputSurfaceAsOverlay(const gfx::Size& viewport_size,
+                                const gfx::BufferFormat& buffer_format,
+                                const gfx::ColorSpace& color_space) const;
 
 #if defined(OS_WIN)
   void SetDCHasHwOverlaySupportForTesting() {
@@ -149,6 +149,14 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   void SetOverlayCandidateValidator(
       std::unique_ptr<OverlayCandidateValidator> overlay_validator);
 
+  virtual bool ProcessForOverlayInternal(
+      DisplayResourceProvider* resource_provider,
+      RenderPassList* render_passes,
+      const FilterOperationsMap& render_pass_filters,
+      const FilterOperationsMap& render_pass_backdrop_filters,
+      CandidateList* overlay_candidates,
+      gfx::Rect* damage_rect);
+
   StrategyList strategies_;
   std::unique_ptr<OverlayCandidateValidator> overlay_validator_;
   gfx::Rect overlay_damage_rect_;
@@ -156,13 +164,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   bool previous_frame_underlay_was_unoccluded_ = false;
 
  private:
-  bool ProcessForCALayers(
-      DisplayResourceProvider* resource_provider,
-      RenderPass* render_pass,
-      const FilterOperationsMap& render_pass_filters,
-      const FilterOperationsMap& render_pass_backdrop_filters,
-      CandidateList* overlay_candidates,
-      gfx::Rect* damage_rect);
   bool ProcessForDCLayers(
       DisplayResourceProvider* resource_provider,
       RenderPassList* render_passes,
@@ -181,7 +182,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   std::unique_ptr<DCLayerOverlayProcessor> dc_processor_;
 #endif
 
-  bool output_surface_already_handled_;
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessor);
 };
 

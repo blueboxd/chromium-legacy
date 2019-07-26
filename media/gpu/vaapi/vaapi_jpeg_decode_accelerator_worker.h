@@ -47,13 +47,13 @@ class VaapiJpegDecodeAcceleratorWorker
               CompletedDecodeCB decode_cb) override;
 
  private:
+  friend class VaapiJpegDecodeAcceleratorWorkerTest;
+
   explicit VaapiJpegDecodeAcceleratorWorker(
       std::unique_ptr<VaapiJpegDecoder> decoder);
 
-  // We delegate the decoding to |decoder_| which is constructed on the ctor and
-  // then used and destroyed on |decoder_task_runner_| (unless initialization
-  // failed, in which case it doesn't matter where it's destroyed since no tasks
-  // using |decoder_| should have been posted to |decoder_task_runner_|).
+  // We delegate the decoding to |decoder_| which is used and destroyed on
+  // |decoder_task_runner_|.
   std::unique_ptr<VaapiJpegDecoder> decoder_;
   scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 

@@ -21,7 +21,7 @@
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace content {

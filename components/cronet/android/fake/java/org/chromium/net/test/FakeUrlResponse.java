@@ -6,8 +6,10 @@ package org.chromium.net.test;
 
 import org.chromium.net.UrlResponseInfo;
 
+import java.io.UnsupportedEncodingException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,7 @@ public class FakeUrlResponse {
     private final boolean mWasCached;
     private final String mNegotiatedProtocol;
     private final String mProxyServer;
-    private final String mResponseBody;
+    private final byte[] mResponseBody;
 
     private static <T extends Object> T getNullableOrDefault(T nullableObject, T defaultObject) {
         if (nullableObject != null) {
@@ -74,7 +76,7 @@ public class FakeUrlResponse {
         private static final boolean DEFAULT_WAS_CACHED = false;
         private static final String DEFAULT_NEGOTIATED_PROTOCOL = "";
         private static final String DEFAULT_PROXY_SERVER = "";
-        private static final String DEFAULT_RESPONSE_BODY = "";
+        private static final byte[] DEFAULT_RESPONSE_BODY = new byte[0];
 
         private int mHttpStatusCode = DEFAULT_HTTP_STATUS_CODE;
         // Entries to mAllHeadersList should never be mutated.
@@ -83,7 +85,7 @@ public class FakeUrlResponse {
         private boolean mWasCached = DEFAULT_WAS_CACHED;
         private String mNegotiatedProtocol = DEFAULT_NEGOTIATED_PROTOCOL;
         private String mProxyServer = DEFAULT_PROXY_SERVER;
-        private String mResponseBody = DEFAULT_RESPONSE_BODY;
+        private byte[] mResponseBody = DEFAULT_RESPONSE_BODY;
 
         /**
          * Constructs a {@link FakeUrlResponse.Builder} with the default parameters.
@@ -163,13 +165,13 @@ public class FakeUrlResponse {
         }
 
         /**
-         * Sets the response body for a response. The default response body is an empty string.
+         * Sets the response body for a response. The default response body is an empty byte array.
          *
          * @param responseBody all the information the server returns
          * @return a builder with the corresponding responseBody field set
          */
-        public Builder setResponseBody(String responseBody) {
-            mResponseBody = responseBody;
+        public Builder setResponseBody(byte[] body) {
+            mResponseBody = body;
             return this;
         }
 
@@ -229,12 +231,12 @@ public class FakeUrlResponse {
     }
 
     /**
-     * Returns the body of the response as a String. Used for {@link UrlRequest.Callback}
+     * Returns the body of the response as a byte array. Used for {@link UrlRequest.Callback}
      * {@code read()} callback.
      *
      * @return the response body
      */
-    String getResponseBody() {
+    byte[] getResponseBody() {
         return mResponseBody;
     }
 
@@ -257,19 +259,35 @@ public class FakeUrlResponse {
                 && mAllHeadersList.equals(other.mAllHeadersList) && mWasCached == other.mWasCached
                 && mNegotiatedProtocol.equals(other.mNegotiatedProtocol)
                 && mProxyServer.equals(other.mProxyServer)
-                && mResponseBody.equals(other.mResponseBody));
+                && Arrays.equals(mResponseBody, other.mResponseBody));
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mHttpStatusCode, mAllHeadersList, mWasCached, mNegotiatedProtocol,
-                mProxyServer, mResponseBody);
+                mProxyServer, Arrays.hashCode(mResponseBody));
     }
 
     @Override
     public String toString() {
-        return "HTTP Status Code: " + mHttpStatusCode + " Headers: " + mAllHeadersList.toString()
-                + " Was Cached: " + mWasCached + " Negotiated Protocol: " + mNegotiatedProtocol
-                + " Proxy Server: " + mProxyServer + " Response Body: " + mResponseBody;
+        String outputString = "HTTP Status Code: " + mHttpStatusCode
+                + " Headers: " + mAllHeadersList.toString() + " Was Cached: " + mWasCached
+                + " Negotiated Protocol: " + mNegotiatedProtocol + " Proxy Server: " + mProxyServer
+                + " Response Body ";
+        try {
+            String bodyString = new String(mResponseBody, "UTF-8");
+            outputString += "(UTF-8): " + bodyString;
+        } catch (UnsupportedEncodingException e) {
+            outputString += "(hexadecimal): " + getHexStringFromBytes(mResponseBody);
+        }
+        return outputString;
+    }
+
+    private String getHexStringFromBytes(byte[] bytes) {
+        StringBuilder bytesToHexStringBuilder = new StringBuilder();
+        for (byte b : mResponseBody) {
+            bytesToHexStringBuilder.append(String.format("%02x", b));
+        }
+        return bytesToHexStringBuilder.toString();
     }
 }

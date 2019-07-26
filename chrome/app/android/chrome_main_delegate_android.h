@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/app/chrome_main_delegate.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_main_runner.h"
 
 namespace safe_browsing {
@@ -33,7 +34,7 @@ class ChromeMainDelegateAndroid : public ChromeMainDelegate {
  private:
   std::unique_ptr<content::BrowserMainRunner> browser_runner_;
 
-#if defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   std::unique_ptr<safe_browsing::SafeBrowsingApiHandler>
       safe_browsing_api_handler_;
 #endif

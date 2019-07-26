@@ -655,6 +655,7 @@ if (!is_android) {
       "//components/optimization_guide:test_support",
       "//components/policy:chrome_settings_proto_generated_compile",
       "//components/resources",
+      "//components/safe_browsing:buildflags",
       "//components/safe_browsing/db:test_database_manager",
       "//components/services/quarantine:test_support",
       "//components/signin/core/browser",
@@ -3371,6 +3372,7 @@ test("unit_tests") {
     "//components/optimization_guide",
     "//components/os_crypt:test_support",
     "//components/resources",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing:features",
     "//components/safe_browsing/db",
     "//components/safe_browsing/db:test_database_manager",
@@ -4380,6 +4382,7 @@ test("unit_tests") {
       "//chrome/browser/web_applications:web_applications_unit_tests",
       "//chrome/browser/web_applications/extensions:unit_tests",
       "//chrome/common/extensions/api",
+      "//components/safe_browsing:buildflags",
       "//extensions:extensions_resources",
       "//extensions/browser:test_support",
       "//extensions/common",
@@ -5656,6 +5659,7 @@ test("chrome_app_unittests") {
     "//chrome/gpu",
     "//components/crash/core/common",
     "//components/flags_ui:switches",
+    "//components/safe_browsing:buildflags",
     "//components/tracing",
   ]
   if (!is_fuchsia) {

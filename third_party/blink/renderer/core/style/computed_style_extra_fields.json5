@@ -498,6 +498,14 @@
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
+      name: "EffectiveAppearance",
+      field_group: "*",
+      field_size: 5,
+      field_template: "primitive",
+      default_value: "kNoControlPart",
+      type_name: "ControlPart",
+    },
+    {
       name: "TextEmphasisCustomMark",
       inherited: true,
       field_template: "external",

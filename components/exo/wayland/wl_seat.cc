@@ -9,6 +9,7 @@
 
 #include "components/exo/pointer.h"
 #include "components/exo/touch.h"
+#include "components/exo/wayland/serial_tracker.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/wayland_touch_delegate.h"
@@ -72,25 +73,29 @@ const struct wl_touch_interface touch_implementation = {touch_release};
 // wl_seat_interface:
 
 void seat_get_pointer(wl_client* client, wl_resource* resource, uint32_t id) {
+  auto* data = GetUserDataAs<WaylandSeat>(resource);
+
   wl_resource* pointer_resource = wl_resource_create(
       client, &wl_pointer_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(
-      pointer_resource, &pointer_implementation,
-      std::make_unique<Pointer>(new WaylandPointerDelegate(pointer_resource)));
+  SetImplementation(pointer_resource, &pointer_implementation,
+                    std::make_unique<Pointer>(new WaylandPointerDelegate(
+                        pointer_resource, data->serial_tracker)));
 }
 
 void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
 #if defined(OS_CHROMEOS)
 #if BUILDFLAG(USE_XKBCOMMON)
+  auto* data = GetUserDataAs<WaylandSeat>(resource);
+
   uint32_t version = wl_resource_get_version(resource);
   wl_resource* keyboard_resource =
       wl_resource_create(client, &wl_keyboard_interface, version, id);
 
   WaylandKeyboardDelegate* delegate =
-      new WaylandKeyboardDelegate(keyboard_resource);
+      new WaylandKeyboardDelegate(keyboard_resource, data->serial_tracker);
   std::unique_ptr<Keyboard> keyboard =
-      std::make_unique<Keyboard>(delegate, GetUserDataAs<Seat>(resource));
+      std::make_unique<Keyboard>(delegate, data->seat);
   keyboard->AddObserver(delegate);
   SetImplementation(keyboard_resource, &keyboard_implementation,
                     std::move(keyboard));
@@ -107,12 +112,14 @@ void seat_get_keyboard(wl_client* client, wl_resource* resource, uint32_t id) {
 }
 
 void seat_get_touch(wl_client* client, wl_resource* resource, uint32_t id) {
+  auto* data = GetUserDataAs<WaylandSeat>(resource);
+
   wl_resource* touch_resource = wl_resource_create(
       client, &wl_touch_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(
-      touch_resource, &touch_implementation,
-      std::make_unique<Touch>(new WaylandTouchDelegate(touch_resource)));
+  SetImplementation(touch_resource, &touch_implementation,
+                    std::make_unique<Touch>(new WaylandTouchDelegate(
+                        touch_resource, data->serial_tracker)));
 }
 
 void seat_release(wl_client* client, wl_resource* resource) {

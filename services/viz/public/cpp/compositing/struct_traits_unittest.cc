@@ -56,7 +56,7 @@
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkString.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
 #include "ui/gfx/mojo/color_space_mojom_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"

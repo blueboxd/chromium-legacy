@@ -169,9 +169,9 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
       network::mojom::HttpAuthDynamicParams::New();
 
-  auth_dynamic_params->server_whitelist =
+  auth_dynamic_params->server_allowlist =
       local_state->GetString(prefs::kAuthServerWhitelist);
-  auth_dynamic_params->delegate_whitelist =
+  auth_dynamic_params->delegate_allowlist =
       local_state->GetString(prefs::kAuthNegotiateDelegateWhitelist);
   auth_dynamic_params->negotiate_disable_cname_lookup =
       local_state->GetBoolean(prefs::kDisableAuthNegotiateCnameLookup);

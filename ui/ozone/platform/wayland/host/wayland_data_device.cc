@@ -146,7 +146,9 @@ void WaylandDataDevice::DeliverDragData(const std::string& mime_type,
 void WaylandDataDevice::StartDrag(wl_data_source* data_source,
                                   const ui::OSExchangeData& data) {
   DCHECK(data_source);
-  WaylandWindow* window = connection_->GetCurrentFocusedWindow();
+
+  WaylandWindow* window =
+      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   if (!window) {
     LOG(ERROR) << "Failed to get focused window.";
     return;

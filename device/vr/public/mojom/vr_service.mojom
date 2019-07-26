@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "ui/display/mojom/display.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/gpu_fence_handle.mojom";
 import "ui/gfx/mojo/transform.mojom";
 

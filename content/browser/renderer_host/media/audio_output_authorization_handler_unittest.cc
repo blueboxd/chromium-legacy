@@ -35,7 +35,6 @@ namespace content {
 
 namespace {
 
-const int kSessionId = 1618;
 const char kSecurityOriginString[] = "http://localhost";
 const char kDefaultDeviceId[] = "default";
 const char kEmptyDeviceId[] = "";
@@ -208,8 +207,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeDefaultDevice_Ok) {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          kDefaultDeviceId, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), kDefaultDeviceId, listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -230,8 +229,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          kEmptyDeviceId, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), kEmptyDeviceId, listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -264,8 +263,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          hashed_id, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), hashed_id, listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -296,8 +295,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          hashed_id, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), hashed_id, listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -318,8 +317,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest, AuthorizeInvalidDeviceId_NotFound) {
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          kInvalidDeviceId, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), kInvalidDeviceId, listener.Get()));
 
   SyncWithAllThreads();
   // It is possible to request an invalid device id from JS APIs,
@@ -353,8 +352,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          hashed_id, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), hashed_id, listener.Get()));
   SyncWithAllThreads();
 
   EXPECT_EQ(process()->bad_msg_count(), 0);
@@ -378,7 +377,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
           base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
-          kSessionId, std::string(), listener.Get()));
+          base::UnguessableToken::Create(), std::string(), listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());
@@ -407,8 +406,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          hashed_id, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), hashed_id, listener.Get()));
   SyncWithAllThreads();
 
   // Reset the salt and expect authorization of the device ID hashed with
@@ -423,8 +422,8 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &AudioOutputAuthorizationHandler::RequestDeviceAuthorization,
-          base::Unretained(handler.get()), main_rfh()->GetRoutingID(), 0,
-          hashed_id, listener.Get()));
+          base::Unretained(handler.get()), main_rfh()->GetRoutingID(),
+          base::UnguessableToken(), hashed_id, listener.Get()));
 
   SyncWithAllThreads();
   BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, handler.release());

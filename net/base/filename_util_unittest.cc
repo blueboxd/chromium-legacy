@@ -192,8 +192,8 @@ TEST(FilenameUtilTest, FileURLConversion) {
     // Other percent-encoded characters that are left alone when displaying a
     // URL are decoded in a file path (https://crbug.com/585422).
     {L"C:\\foo\\\U0001F512.txt",
-     "file:///C:/foo/%F0%9F%94%92.txt"},                       // Blacklisted.
-    {L"C:\\foo\\\u2001.txt", "file:///C:/foo/%E2%80%81.txt"},  // Blacklisted.
+     "file:///C:/foo/%F0%9F%94%92.txt"},                       // Blocked.
+    {L"C:\\foo\\\u2001.txt", "file:///C:/foo/%E2%80%81.txt"},  // Blocked.
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     {L"/foo/bar.txt", "file:///foo/bar.txt"},
     {L"/foo/BAR.txt", "file:///foo/BAR.txt"},
@@ -213,8 +213,8 @@ TEST(FilenameUtilTest, FileURLConversion) {
      "file:///plane1/%F0%9D%90%80%F0%9D%90%81.txt"},
     // Other percent-encoded characters that are left alone when displaying a
     // URL are decoded in a file path (https://crbug.com/585422).
-    {L"/foo/\U0001F512.txt", "file:///foo/%F0%9F%94%92.txt"},  // Blacklisted.
-    {L"/foo/\u2001.txt", "file:///foo/%E2%80%81.txt"},         // Blacklisted.
+    {L"/foo/\U0001F512.txt", "file:///foo/%F0%9F%94%92.txt"},  // Blocked.
+    {L"/foo/\u2001.txt", "file:///foo/%E2%80%81.txt"},         // Blocked.
 #endif
   };
 

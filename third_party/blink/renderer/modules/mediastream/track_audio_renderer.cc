@@ -136,7 +136,7 @@ void TrackAudioRenderer::OnSetFormat(const media::AudioParameters& params) {
 
 TrackAudioRenderer::TrackAudioRenderer(const WebMediaStreamTrack& audio_track,
                                        WebLocalFrame* playout_web_frame,
-                                       int session_id,
+                                       const base::UnguessableToken& session_id,
                                        const std::string& device_id)
     : audio_track_(audio_track),
       internal_playout_frame_(

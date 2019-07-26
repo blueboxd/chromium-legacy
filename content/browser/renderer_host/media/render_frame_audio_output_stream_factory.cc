@@ -107,7 +107,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
   // mojom::RendererAudioOutputStreamFactory implementation.
   void RequestDeviceAuthorization(
       media::mojom::AudioOutputStreamProviderRequest provider_request,
-      int32_t session_id,
+      const base::Optional<base::UnguessableToken>& session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) final;
 
@@ -214,14 +214,15 @@ void RenderFrameAudioOutputStreamFactory::Core::Init(
 
 void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(
     media::mojom::AudioOutputStreamProviderRequest provider_request,
-    int32_t session_id,
+    const base::Optional<base::UnguessableToken>& session_id,
     const std::string& device_id,
     RequestDeviceAuthorizationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT2(
       "audio",
       "RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization",
-      "device id", device_id, "session_id", session_id);
+      "device id", device_id, "session_id",
+      session_id.value_or(base::UnguessableToken()).ToString());
 
   const base::TimeTicks auth_start_time = base::TimeTicks::Now();
 
@@ -232,7 +233,8 @@ void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(
           std::move(provider_request), std::move(callback));
 
   authorization_handler_.RequestDeviceAuthorization(
-      frame_id_, session_id, device_id, std::move(completed_callback));
+      frame_id_, session_id.value_or(base::UnguessableToken()), device_id,
+      std::move(completed_callback));
 }
 
 void RenderFrameAudioOutputStreamFactory::Core::AuthorizationCompleted(

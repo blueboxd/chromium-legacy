@@ -160,6 +160,10 @@ class ExtensionTabUtil {
                          TabStripModel** tab_strip,
                          content::WebContents** contents,
                          int* tab_index);
+  static bool GetTabById(int tab_id,
+                         content::BrowserContext* browser_context,
+                         bool include_incognito,
+                         content::WebContents** contents);
 
   // Takes |url_string| and returns a GURL which is either valid and absolute
   // or invalid. If |url_string| is not directly interpretable as a valid (it is

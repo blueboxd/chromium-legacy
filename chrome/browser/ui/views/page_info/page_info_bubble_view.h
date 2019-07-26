@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/page_info/page_info_hover_button.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
@@ -155,7 +156,7 @@ class PageInfoBubbleView : public PageInfoBubbleViewBase,
   // WebContentsObserver:
   void DidChangeVisibleSecurityState() override;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<PageInfoUI::SecurityDescription>
   CreateSecurityDescriptionForPasswordReuse(
       bool is_enterprise_password) const override;

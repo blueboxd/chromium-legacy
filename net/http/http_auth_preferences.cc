@@ -63,20 +63,20 @@ DelegationType HttpAuthPreferences::GetDelegationType(
   return DelegationType::kUnconstrained;
 }
 
-void HttpAuthPreferences::SetServerWhitelist(
-    const std::string& server_whitelist) {
-  std::unique_ptr<HttpAuthFilter> whitelist;
-  if (!server_whitelist.empty())
-    whitelist = std::make_unique<HttpAuthFilterWhitelist>(server_whitelist);
-  security_manager_->SetDefaultWhitelist(std::move(whitelist));
+void HttpAuthPreferences::SetServerAllowlist(
+    const std::string& server_allowlist) {
+  std::unique_ptr<HttpAuthFilter> allowlist;
+  if (!server_allowlist.empty())
+    allowlist = std::make_unique<HttpAuthFilterAllowlist>(server_allowlist);
+  security_manager_->SetDefaultAllowlist(std::move(allowlist));
 }
 
-void HttpAuthPreferences::SetDelegateWhitelist(
-    const std::string& delegate_whitelist) {
-  std::unique_ptr<HttpAuthFilter> whitelist;
-  if (!delegate_whitelist.empty())
-    whitelist = std::make_unique<HttpAuthFilterWhitelist>(delegate_whitelist);
-  security_manager_->SetDelegateWhitelist(std::move(whitelist));
+void HttpAuthPreferences::SetDelegateAllowlist(
+    const std::string& delegate_allowlist) {
+  std::unique_ptr<HttpAuthFilter> allowlist;
+  if (!delegate_allowlist.empty())
+    allowlist = std::make_unique<HttpAuthFilterAllowlist>(delegate_allowlist);
+  security_manager_->SetDelegateAllowlist(std::move(allowlist));
 }
 
 }  // namespace net

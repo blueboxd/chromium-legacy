@@ -44,7 +44,6 @@ ScopedTouchIdTestEnvironment::~ScopedTouchIdTestEnvironment() {
       touch_id_context_touch_id_available_ptr_;
 
   Keychain::ClearInstanceOverride();
-  g_current_environment = nullptr;
 }
 
 // static

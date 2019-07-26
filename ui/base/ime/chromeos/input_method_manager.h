@@ -17,7 +17,7 @@
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
+#include "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom.h"
 
 class Profile;
 

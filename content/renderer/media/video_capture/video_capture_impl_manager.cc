@@ -50,8 +50,7 @@ struct VideoCaptureImplManager::DeviceEntry {
   // See also: VideoCaptureImplManager::is_suspending_all_.
   bool is_individually_suspended;
 
-  DeviceEntry()
-      : session_id(0), client_count(0), is_individually_suspended(false) {}
+  DeviceEntry() : client_count(0), is_individually_suspended(false) {}
   DeviceEntry(DeviceEntry&& other) = default;
   DeviceEntry& operator=(DeviceEntry&& other) = default;
   ~DeviceEntry() = default;
@@ -75,7 +74,7 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
 }
 
 base::OnceClosure VideoCaptureImplManager::UseDevice(
-    media::VideoCaptureSessionId id) {
+    const media::VideoCaptureSessionId& id) {
   DVLOG(1) << __func__ << " session id: " << id;
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   auto it = std::find_if(
@@ -105,7 +104,7 @@ base::OnceClosure VideoCaptureImplManager::UseDevice(
 }
 
 base::OnceClosure VideoCaptureImplManager::StartCapture(
-    media::VideoCaptureSessionId id,
+    const media::VideoCaptureSessionId& id,
     const media::VideoCaptureParams& params,
     const blink::VideoCaptureStateUpdateCB& state_update_cb,
     const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb) {
@@ -129,7 +128,7 @@ base::OnceClosure VideoCaptureImplManager::StartCapture(
 }
 
 void VideoCaptureImplManager::RequestRefreshFrame(
-    media::VideoCaptureSessionId id) {
+    const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -142,7 +141,7 @@ void VideoCaptureImplManager::RequestRefreshFrame(
                                 base::Unretained(it->impl.get())));
 }
 
-void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
+void VideoCaptureImplManager::Suspend(const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -162,7 +161,7 @@ void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
                                 base::Unretained(it->impl.get()), true));
 }
 
-void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
+void VideoCaptureImplManager::Resume(const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -181,7 +180,7 @@ void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
 }
 
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
-    media::VideoCaptureSessionId id,
+    const media::VideoCaptureSessionId& id,
     blink::VideoCaptureDeviceFormatsCB callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
@@ -197,7 +196,7 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
 }
 
 void VideoCaptureImplManager::GetDeviceFormatsInUse(
-    media::VideoCaptureSessionId id,
+    const media::VideoCaptureSessionId& id,
     blink::VideoCaptureDeviceFormatsCB callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
@@ -214,12 +213,13 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
 
 std::unique_ptr<VideoCaptureImpl>
 VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
-    media::VideoCaptureSessionId session_id) const {
+    const media::VideoCaptureSessionId& session_id) const {
   return nullptr;
 }
 
-void VideoCaptureImplManager::StopCapture(int client_id,
-                                          media::VideoCaptureSessionId id) {
+void VideoCaptureImplManager::StopCapture(
+    int client_id,
+    const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -232,7 +232,8 @@ void VideoCaptureImplManager::StopCapture(int client_id,
                                 base::Unretained(it->impl.get()), client_id));
 }
 
-void VideoCaptureImplManager::UnrefDevice(media::VideoCaptureSessionId id) {
+void VideoCaptureImplManager::UnrefDevice(
+    const media::VideoCaptureSessionId& id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
       devices_.begin(), devices_.end(),
@@ -255,7 +256,7 @@ void VideoCaptureImplManager::SuspendDevices(
     return;
   is_suspending_all_ = suspend;
   for (const blink::MediaStreamDevice& device : video_devices) {
-    const media::VideoCaptureSessionId id = device.session_id;
+    const media::VideoCaptureSessionId id = device.session_id();
     const auto it = std::find_if(
         devices_.begin(), devices_.end(),
         [id](const DeviceEntry& entry) { return entry.session_id == id; });
@@ -271,7 +272,7 @@ void VideoCaptureImplManager::SuspendDevices(
 }
 
 void VideoCaptureImplManager::OnFrameDropped(
-    media::VideoCaptureSessionId id,
+    const media::VideoCaptureSessionId& id,
     media::VideoCaptureFrameDropReason reason) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(
@@ -283,7 +284,7 @@ void VideoCaptureImplManager::OnFrameDropped(
                                 base::Unretained(it->impl.get()), reason));
 }
 
-void VideoCaptureImplManager::OnLog(media::VideoCaptureSessionId id,
+void VideoCaptureImplManager::OnLog(const media::VideoCaptureSessionId& id,
                                     const std::string& message) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const auto it = std::find_if(

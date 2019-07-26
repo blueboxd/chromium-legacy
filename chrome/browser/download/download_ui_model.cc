@@ -12,6 +12,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/safe_browsing/buildflags.h"
 #include "net/base/mime_util.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
@@ -275,7 +276,7 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       bool request_ap_verdicts = false;
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       request_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
           RequestsAdvancedProtectionVerdicts(profile());
 #endif

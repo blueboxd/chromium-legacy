@@ -14,7 +14,7 @@ sources = [
 deps = [
   "//base",
   "//components/content_capture/common:common",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 type_mappings = [ "content_capture.mojom.ContentCaptureData=content_capture::ContentCaptureData" ]

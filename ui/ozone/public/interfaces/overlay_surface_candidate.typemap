@@ -5,7 +5,7 @@
 mojom = "//ui/ozone/public/interfaces/overlay_surface_candidate.mojom"
 public_headers = [ "//ui/ozone/public/overlay_surface_candidate.h" ]
 public_deps = [
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
   "//ui/ozone:ozone_base",
 ]
 traits_headers =

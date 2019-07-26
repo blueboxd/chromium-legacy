@@ -690,6 +690,7 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
       std::unique_ptr<media::test::ClientStateNotification<ClientState>>>
       notes;
   std::vector<std::unique_ptr<JpegClient>> clients;
+  std::vector<ClientState> results;
 
   for (size_t i = 0; i < num_concurrent_encoders; i++) {
     notes.push_back(
@@ -699,7 +700,11 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
     encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&JpegClient::CreateJpegEncoder,
                                   base::Unretained(clients.back().get())));
-    ASSERT_EQ(notes[i]->Wait(), ClientState::INITIALIZED);
+    results.push_back(notes[i]->Wait());
+  }
+
+  for (size_t i = 0; i < num_concurrent_encoders; i++) {
+    ASSERT_EQ(results[i], ClientState::INITIALIZED);
   }
 
   for (size_t index = 0; index < test_aligned_images_.size(); index++) {
@@ -723,7 +728,11 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
       }
     }
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
-      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+      results[i] = notes[i]->Wait();
+    }
+
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      ASSERT_EQ(results[i], ClientState::ENCODE_PASS);
     }
   }
 
@@ -754,7 +763,11 @@ void JpegEncodeAcceleratorTest::TestEncode(size_t num_concurrent_encoders,
       }
     }
     for (size_t i = 0; i < num_concurrent_encoders; i++) {
-      ASSERT_EQ(notes[i]->Wait(), ClientState::ENCODE_PASS);
+      results[i] = notes[i]->Wait();
+    }
+
+    for (size_t i = 0; i < num_concurrent_encoders; i++) {
+      ASSERT_EQ(results[i], ClientState::ENCODE_PASS);
     }
   }
 #endif

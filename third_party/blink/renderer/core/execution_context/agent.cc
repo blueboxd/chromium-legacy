@@ -9,8 +9,9 @@
 
 namespace blink {
 
-Agent::Agent(v8::Isolate* isolate)
-    : event_loop_(base::AdoptRef(new scheduler::EventLoop(isolate))) {}
+Agent::Agent(v8::Isolate* isolate, const base::UnguessableToken& cluster_id)
+    : event_loop_(base::AdoptRef(new scheduler::EventLoop(isolate))),
+      cluster_id_(cluster_id) {}
 
 Agent::~Agent() = default;
 

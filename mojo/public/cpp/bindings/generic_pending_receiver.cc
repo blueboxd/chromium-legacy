@@ -22,6 +22,11 @@ GenericPendingReceiver::~GenericPendingReceiver() = default;
 GenericPendingReceiver& GenericPendingReceiver::operator=(
     GenericPendingReceiver&&) = default;
 
+void GenericPendingReceiver::reset() {
+  interface_name_.reset();
+  pipe_.reset();
+}
+
 mojo::ScopedMessagePipeHandle GenericPendingReceiver::PassPipe() {
   DCHECK(is_valid());
   interface_name_.reset();

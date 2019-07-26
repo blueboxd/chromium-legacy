@@ -110,6 +110,19 @@ class DataOffer final : public ui::PropertyHandler {
   DISALLOW_COPY_AND_ASSIGN(DataOffer);
 };
 
+class ScopedDataOffer {
+ public:
+  ScopedDataOffer(DataOffer* data_offer, DataOfferObserver* observer);
+  ~ScopedDataOffer();
+  DataOffer* get() { return data_offer_; }
+
+ private:
+  DataOffer* const data_offer_;
+  DataOfferObserver* const observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDataOffer);
+};
+
 }  // namespace exo
 
 #endif  // COMPONENTS_EXO_DATA_OFFER_H_

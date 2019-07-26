@@ -589,7 +589,7 @@ void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
 }
 
 void LayoutBlock::AddVisualOverflowFromTheme() {
-  if (!StyleRef().HasAppearance())
+  if (!StyleRef().HasEffectiveAppearance())
     return;
 
   IntRect inflated_rect = PixelSnappedBorderBoxRect();
@@ -1747,8 +1747,9 @@ LayoutUnit LayoutBlock::BaselinePosition(
     //        the theme is turned off, checkboxes/radios will still have decent
     //        baselines.
     // FIXME: Need to patch form controls to deal with vertical lines.
-    if (StyleRef().HasAppearance() &&
-        !LayoutTheme::GetTheme().IsControlContainer(StyleRef().Appearance())) {
+    if (StyleRef().HasEffectiveAppearance() &&
+        !LayoutTheme::GetTheme().IsControlContainer(
+            StyleRef().EffectiveAppearance())) {
       return Size().Height() + MarginTop() +
              LayoutTheme::GetTheme().BaselinePositionAdjustment(StyleRef());
     }

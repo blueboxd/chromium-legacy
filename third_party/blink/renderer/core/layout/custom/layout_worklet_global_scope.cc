@@ -30,9 +30,16 @@ LayoutWorkletGlobalScope* LayoutWorkletGlobalScope::Create(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy,
     PendingLayoutRegistry* pending_layout_registry) {
+  // Enable a separate microtask queue for LayoutWorklet.
+  // TODO(yutak): Set agent for all worklets and workers,
+  // not just LayoutWorklet.
+  auto* agent = Agent::CreateForWorkerOrWorklet(
+      ToIsolate(frame), creation_params->agent_cluster_id.is_empty()
+                            ? base::UnguessableToken::Create()
+                            : creation_params->agent_cluster_id);
   auto* global_scope = MakeGarbageCollected<LayoutWorkletGlobalScope>(
       frame, std::move(creation_params), reporting_proxy,
-      pending_layout_registry);
+      pending_layout_registry, agent);
   global_scope->ScriptController()->Initialize(NullURL());
   MainThreadDebugger::Instance()->ContextCreated(
       global_scope->ScriptController()->GetScriptState(),
@@ -44,14 +51,12 @@ LayoutWorkletGlobalScope::LayoutWorkletGlobalScope(
     LocalFrame* frame,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerReportingProxy& reporting_proxy,
-    PendingLayoutRegistry* pending_layout_registry)
+    PendingLayoutRegistry* pending_layout_registry,
+    Agent* agent)
     : WorkletGlobalScope(std::move(creation_params),
                          reporting_proxy,
                          frame,
-                         // Enable a separate microtask queue for LayoutWorklet.
-                         // TODO(yutak): Set agent for all worklets and workers,
-                         // not just LayoutWorklet.
-                         Agent::CreateForWorkerOrWorklet(ToIsolate(frame))),
+                         agent),
       pending_layout_registry_(pending_layout_registry) {}
 
 LayoutWorkletGlobalScope::~LayoutWorkletGlobalScope() = default;

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/unguessable_token.h"
 #include "media/capture/video_capture_types.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/common/media/video_capture.h"
@@ -32,10 +33,10 @@ class LocalVideoCapturerSource : public media::VideoCapturerSource {
  public:
   static std::unique_ptr<media::VideoCapturerSource> Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      int session_id);
+      const base::UnguessableToken& session_id);
   LocalVideoCapturerSource(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      int session_id);
+      const base::UnguessableToken& session_id);
   ~LocalVideoCapturerSource() override;
 
   // VideoCaptureSource Implementation.

@@ -48,7 +48,7 @@ TEST_P(URLRequestContextMemoryDumpTest, MemoryDumpProvider) {
     const std::string& dump_name = it.first;
     if (dump_name.find("net/http_network_session") != std::string::npos)
       did_dump_http_network_session = true;
-    // Match against a relaxed form of the memory dump whitelist pattern.
+    // Match against a relaxed form of the memory dump permitted pattern.
     if (base::MatchPattern(
             dump_name, "net/http_network_session_0x*/ssl_client_session_cache"))
       did_dump_ssl_client_session_cache = true;

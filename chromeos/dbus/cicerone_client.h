@@ -224,6 +224,20 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::ImportLxdContainerResponse>
           callback) = 0;
 
+  // Cancels the in progress Lxd container export.
+  // |callback| is called when the method completes.
+  virtual void CancelExportLxdContainer(
+      const vm_tools::cicerone::CancelExportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelExportLxdContainerResponse>
+          callback) = 0;
+
+  // Cancels the in progress Lxd container import.
+  // |callback| is called when the method completes.
+  virtual void CancelImportLxdContainer(
+      const vm_tools::cicerone::CancelImportLxdContainerRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::CancelImportLxdContainerResponse>
+          callback) = 0;
+
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.

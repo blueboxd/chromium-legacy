@@ -22,7 +22,7 @@ import "gpu/ipc/common/memory_stats.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/video_encode_accelerator.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
 interface GpuService {

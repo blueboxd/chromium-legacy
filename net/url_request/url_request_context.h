@@ -310,7 +310,7 @@ class NET_EXPORT URLRequestContext
   }
 
  private:
-  // Whitelist legacy usage of now-deprecated CopyFrom().
+  // Allowed legacy usage of now-deprecated CopyFrom().
   friend class ::ChromeBrowserStateImplIOData;
   friend class ::ProfileImplIOData;
   friend class safe_browsing::SafeBrowsingURLRequestContextGetter;

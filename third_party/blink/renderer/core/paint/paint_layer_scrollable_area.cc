@@ -1374,9 +1374,9 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
   }
 
   ScrollbarControlSize scrollbar_size = kRegularScrollbar;
-  if (style_source.StyleRef().HasAppearance()) {
+  if (style_source.StyleRef().HasEffectiveAppearance()) {
     scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
-        style_source.StyleRef().Appearance());
+        style_source.StyleRef().EffectiveAppearance());
   }
   ScrollbarTheme& theme = GetPageScrollbarTheme();
   if (theme.UsesOverlayScrollbars())
@@ -2437,9 +2437,9 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
         ScrollableArea(), orientation, To<Element>(style_source.GetNode()));
   } else {
     ScrollbarControlSize scrollbar_size = kRegularScrollbar;
-    if (style_source.StyleRef().HasAppearance()) {
+    if (style_source.StyleRef().HasEffectiveAppearance()) {
       scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
-          style_source.StyleRef().Appearance());
+          style_source.StyleRef().EffectiveAppearance());
     }
     scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
                                                 scrollbar_size,

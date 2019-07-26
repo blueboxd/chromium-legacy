@@ -838,7 +838,7 @@ test("gfx_unittests") {
       "//mojo/core/embedder",
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/test_support:test_utils",
-      "//ui/gfx/geometry/mojo:unit_test",
+      "//ui/gfx/geometry/mojom:unit_test",
       "//ui/gfx/image/mojo:unit_test",
       "//ui/gfx/mojo:test_interfaces",
       "//ui/gfx/range/mojo:unit_test",

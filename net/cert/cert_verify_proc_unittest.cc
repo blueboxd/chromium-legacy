@@ -1185,7 +1185,7 @@ TEST_P(CertVerifyProcInternalTest, DISABLED_PaypalNullCertParsing) {
   }
 
   // Either the system crypto library should correctly report a certificate
-  // name mismatch, or our certificate blacklist should cause us to report an
+  // name mismatch, or our certificate block list should cause us to report an
   // invalid certificate.
   if (verify_proc_type() == CERT_VERIFY_PROC_NSS ||
       verify_proc_type() == CERT_VERIFY_PROC_WIN) {
@@ -2246,14 +2246,14 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     EXPECT_THAT(error, IsError(ERR_CERT_SYMANTEC_LEGACY));
     EXPECT_TRUE(test_result_1.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
 
-    // ... Unless the Symantec cert chains through a whitelisted intermediate.
-    CertVerifyResult whitelisted_result;
-    whitelisted_result.verified_cert = cert;
-    whitelisted_result.public_key_hashes.push_back(
+    // ... Unless the Symantec cert chains through a allowlisted intermediate.
+    CertVerifyResult allowlisted_result;
+    allowlisted_result.verified_cert = cert;
+    allowlisted_result.public_key_hashes.push_back(
         HashValue(kSymantecHashValue));
-    whitelisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
-    whitelisted_result.is_issued_by_known_root = true;
-    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(whitelisted_result);
+    allowlisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
+    allowlisted_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(allowlisted_result);
 
     CertVerifyResult test_result_2;
     error = verify_proc->Verify(
@@ -2311,14 +2311,14 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
       EXPECT_FALSE(test_result_1.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
     }
 
-    // ... Unless the Symantec cert chains through a whitelisted intermediate.
-    CertVerifyResult whitelisted_result;
-    whitelisted_result.verified_cert = cert;
-    whitelisted_result.public_key_hashes.push_back(
+    // ... Unless the Symantec cert chains through a allowlisted intermediate.
+    CertVerifyResult allowlisted_result;
+    allowlisted_result.verified_cert = cert;
+    allowlisted_result.public_key_hashes.push_back(
         HashValue(kSymantecHashValue));
-    whitelisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
-    whitelisted_result.is_issued_by_known_root = true;
-    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(whitelisted_result);
+    allowlisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
+    allowlisted_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(allowlisted_result);
 
     CertVerifyResult test_result_2;
     error = verify_proc->Verify(

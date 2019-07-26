@@ -39,9 +39,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   // off-the-record/incognito context.
   static bool IsAvailable(const AuthenticatorConfig& config);
 
-  // CreateIfAvailable returns a TouchIdAuthenticator. Callers must check
-  // IsAvailable() first.
-  static std::unique_ptr<TouchIdAuthenticator> Create(
+  // CreateIfAvailable returns a TouchIdAuthenticator if IsAvailable() returns
+  // true and nullptr otherwise.
+  static std::unique_ptr<TouchIdAuthenticator> CreateIfAvailable(
+      AuthenticatorConfig config);
+
+  static std::unique_ptr<TouchIdAuthenticator> CreateForTesting(
       AuthenticatorConfig config);
 
   ~TouchIdAuthenticator() override;

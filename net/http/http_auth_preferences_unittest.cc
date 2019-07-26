@@ -59,11 +59,11 @@ TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoad) {
 }
 #endif
 
-TEST(HttpAuthPreferencesTest, AuthServerWhitelist) {
+TEST(HttpAuthPreferencesTest, AuthServerAllowlist) {
   HttpAuthPreferences http_auth_preferences;
   // Check initial value
   EXPECT_FALSE(http_auth_preferences.CanUseDefaultCredentials(GURL("abc")));
-  http_auth_preferences.SetServerWhitelist("*");
+  http_auth_preferences.SetServerAllowlist("*");
   EXPECT_TRUE(http_auth_preferences.CanUseDefaultCredentials(GURL("abc")));
 }
 
@@ -74,7 +74,7 @@ TEST(HttpAuthPreferencesTest, DelegationType) {
   EXPECT_EQ(DelegationType::kNone,
             http_auth_preferences.GetDelegationType(GURL("abc")));
 
-  http_auth_preferences.SetDelegateWhitelist("*");
+  http_auth_preferences.SetDelegateAllowlist("*");
   EXPECT_EQ(DelegationType::kUnconstrained,
             http_auth_preferences.GetDelegationType(GURL("abc")));
 
@@ -82,7 +82,7 @@ TEST(HttpAuthPreferencesTest, DelegationType) {
   EXPECT_EQ(DelegationType::kByKdcPolicy,
             http_auth_preferences.GetDelegationType(GURL("abc")));
 
-  http_auth_preferences.SetDelegateWhitelist("");
+  http_auth_preferences.SetDelegateAllowlist("");
   EXPECT_EQ(DelegationType::kNone,
             http_auth_preferences.GetDelegationType(GURL("abc")));
 }

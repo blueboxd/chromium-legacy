@@ -154,11 +154,25 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
   TRACE_EVENT1("jpeg", "VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner",
                "input_buffer_id", input_buffer_id);
 
+  DCHECK(scoped_image);
+  const VAImage* image = scoped_image->image();
+
+  // For camera captures, we assume that the visible size is the same as the
+  // coded size.
+  DCHECK_EQ(video_frame->visible_rect().size(), video_frame->coded_size());
+  DCHECK_EQ(0, video_frame->visible_rect().x());
+  DCHECK_EQ(0, video_frame->visible_rect().y());
+  DCHECK(decoder_.GetScopedVASurface());
+  const gfx::Size visible_size(base::strict_cast<int>(image->width),
+                               base::strict_cast<int>(image->height));
+  if (visible_size != video_frame->visible_rect().size()) {
+    VLOGF(1) << "The decoded visible size is not the same as the video frame's";
+    return false;
+  }
+
   // Copy image content from VAImage to VideoFrame. If the image is not in the
   // I420 format we'll have to convert it.
-  DCHECK(scoped_image);
   auto* mem = static_cast<uint8_t*>(scoped_image->va_buffer()->data());
-  const VAImage* image = scoped_image->image();
   DCHECK_GE(base::strict_cast<int>(image->width),
             video_frame->coded_size().width());
   DCHECK_GE(base::strict_cast<int>(image->height),
@@ -183,8 +197,7 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
       if (libyuv::I420Copy(src_y, src_y_stride, src_u, src_u_stride, src_v,
                            src_v_stride, dst_y, dst_y_stride, dst_u,
                            dst_u_stride, dst_v, dst_v_stride,
-                           video_frame->coded_size().width(),
-                           video_frame->coded_size().height())) {
+                           visible_size.width(), visible_size.height())) {
         VLOGF(1) << "I420Copy failed";
         return false;
       }
@@ -197,8 +210,7 @@ bool VaapiMjpegDecodeAccelerator::OutputPictureOnTaskRunner(
       const size_t src_yuy2_stride = image->pitches[0];
       if (libyuv::YUY2ToI420(src_yuy2, src_yuy2_stride, dst_y, dst_y_stride,
                              dst_u, dst_u_stride, dst_v, dst_v_stride,
-                             video_frame->coded_size().width(),
-                             video_frame->coded_size().height())) {
+                             visible_size.width(), visible_size.height())) {
         VLOGF(1) << "YUY2ToI420 failed";
         return false;
       }

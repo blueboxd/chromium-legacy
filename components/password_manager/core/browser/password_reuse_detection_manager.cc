@@ -9,6 +9,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 using base::Time;
@@ -123,7 +124,7 @@ void PasswordReuseDetectionManager::OnReuseFound(
   metrics_util::LogPasswordReuse(password_length, saved_passwords,
                                  matching_domains.size(),
                                  password_field_detected, reused_password_type);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // TODO(crbug/1673863): Log password reuse event for signed in non sync
   // account.
   if (reused_password_type ==

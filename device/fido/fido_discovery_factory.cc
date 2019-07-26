@@ -5,6 +5,7 @@
 #include "device/fido/fido_discovery_factory.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "device/fido/ble/fido_ble_discovery.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"
@@ -20,10 +21,6 @@
 #include "device/fido/win/discovery.h"
 #include "device/fido/win/webauthn_api.h"
 #endif  // defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-#include "device/fido/mac/discovery.h"
-#endif  // defined(OSMACOSX)
 
 namespace device {
 
@@ -43,9 +40,6 @@ std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery(
 
 }  // namespace
 
-FidoDiscoveryFactory::FidoDiscoveryFactory() = default;
-FidoDiscoveryFactory::~FidoDiscoveryFactory() = default;
-
 std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     FidoTransportProtocol transport,
     service_manager::Connector* connector) {
@@ -62,14 +56,8 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
       // TODO(https://crbug.com/825949): Add NFC support.
       return nullptr;
     case FidoTransportProtocol::kInternal:
-#if defined(OS_MACOSX)
-      return mac_touch_id_config_
-                 ? std::make_unique<fido::mac::FidoTouchIdDiscovery>(
-                       *mac_touch_id_config_)
-                 : nullptr;
-#else
+      NOTREACHED() << "Internal authenticators should be handled separately.";
       return nullptr;
-#endif  // defined(OS_MACOSX)
   }
   NOTREACHED() << "Unhandled transport type";
   return nullptr;

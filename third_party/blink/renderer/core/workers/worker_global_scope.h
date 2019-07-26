@@ -120,9 +120,6 @@ class CORE_EXPORT WorkerGlobalScope
   const KURL& BaseURL() const final;
   String UserAgent() const final { return user_agent_; }
   HttpsState GetHttpsState() const override { return https_state_; }
-  const base::UnguessableToken& GetAgentClusterID() const final {
-    return agent_cluster_id_;
-  }
   scheduler::WorkerScheduler* GetScheduler() final;
 
   DOMTimerCoordinator* Timers() final { return &timers_; }
@@ -269,8 +266,6 @@ class CORE_EXPORT WorkerGlobalScope
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
 
   service_manager::InterfaceProvider interface_provider_;
-
-  const base::UnguessableToken agent_cluster_id_;
 
   // State transition about worker-toplevel script evaluation.
   enum class ScriptEvalState {

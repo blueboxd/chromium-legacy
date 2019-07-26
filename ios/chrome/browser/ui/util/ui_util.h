@@ -69,6 +69,9 @@ CGRect CGRectCopyWithOrigin(CGRect rect, CGFloat x, CGFloat y);
 // Both the position and the size of the CGRect will be aligned to points.
 CGRect CGRectMakeAlignedAndCenteredAt(CGFloat x, CGFloat y, CGFloat width);
 
+// Returns a rectangle of size |rectSize| centered inside |frameSize|.
+CGRect CGRectMakeCenteredRectInFrame(CGSize frameSize, CGSize rectSize);
+
 // Returns whether |a| and |b| are within CGFloat's epsilon value.
 bool AreCGFloatsEqual(CGFloat a, CGFloat b);
 

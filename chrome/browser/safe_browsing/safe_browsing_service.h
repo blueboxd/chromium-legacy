@@ -21,6 +21,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/safe_browsing_service_interface.h"
@@ -29,7 +30,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
 #endif
 

@@ -19,7 +19,7 @@ mojom_component("mojom") {
     "//gpu/ipc/common:interfaces",
     "//mojo/public/mojom/base",
     "//ui/display/mojom:mojom",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo:mojo",
   ]
 
@@ -47,7 +47,7 @@ mojom_component("test_mojom") {
   ]
 
   public_deps = [
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo:mojo",
   ]
 }

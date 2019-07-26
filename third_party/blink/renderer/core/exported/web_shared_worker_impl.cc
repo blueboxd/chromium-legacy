@@ -301,15 +301,7 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
                         main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
 
-  // The browser process is expected to send a SetController IPC before sending
-  // the script response, but there is no guarantee of the ordering as the
-  // messages arrive on different message pipes. Wait for the SetController IPC
-  // to be received before starting the worker; otherwise fetches from the
-  // worker might not go through the appropriate controller.
-  client_->WaitForServiceWorkerControllerInfo(
-      shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider(),
-      WTF::Bind(&WebSharedWorkerImpl::ContinueStartWorkerContext,
-                weak_ptr_factory_.GetWeakPtr()));
+  ContinueStartWorkerContext();
 }
 
 void WebSharedWorkerImpl::OnAppCacheSelected() {

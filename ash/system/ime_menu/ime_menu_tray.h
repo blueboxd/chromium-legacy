@@ -15,7 +15,7 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
+#include "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom.h"
 
 namespace views {
 class ImageView;

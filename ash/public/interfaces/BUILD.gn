@@ -28,10 +28,10 @@ mojom("interfaces") {
     "//services/content/public/mojom",
     "//services/preferences/public/mojom",
     "//skia/public/interfaces",
-    "//ui/base/ime/chromeos/public/interfaces",
+    "//ui/base/ime/chromeos/public/mojom",
     "//ui/base/mojom",
     "//ui/display/mojom:mojom",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//ui/gfx/image/mojo:interfaces",
     "//ui/gfx/range/mojo",
     "//url/mojom:url_mojom_gurl",
@@ -53,6 +53,6 @@ mojom("test_interfaces") {
     ":interfaces",
     "//components/account_id/mojom",
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 }

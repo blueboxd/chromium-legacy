@@ -31,6 +31,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
@@ -3496,7 +3497,7 @@ TEST_F(PasswordAutofillAgentTest,
       SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION);
 }
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 // Verify CheckSafeBrowsingReputation() is called when user starts filling
 // username or password field, and that this function is only called once.
 TEST_F(PasswordAutofillAgentTest,

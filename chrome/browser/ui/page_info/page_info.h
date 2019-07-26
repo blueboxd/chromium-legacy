@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -235,7 +236,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
   // presented in a headset.
   void PresentPageFeatureInfo();
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Records a password reuse event. If FULL_SAFE_BROWSING is defined, this
   // function WILL record an event. Callers should check conditions beforehand.
   void RecordPasswordReuseEvent();
@@ -321,7 +322,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   security_state::SecurityLevel security_level_;
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   // Used to handle changing password, and whitelisting site.
   safe_browsing::ChromePasswordProtectionService* password_protection_service_;
 #endif

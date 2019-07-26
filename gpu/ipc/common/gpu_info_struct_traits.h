@@ -10,7 +10,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/dx_diag_node_struct_traits.h"
 #include "gpu/ipc/common/gpu_info.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

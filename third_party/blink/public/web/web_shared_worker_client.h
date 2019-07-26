@@ -68,15 +68,6 @@ class WebSharedWorkerClient {
   // WebServiceWorkerNetworkProvider.
   virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext(
       WebServiceWorkerNetworkProvider*) = 0;
-
-  // Called on the main thread during initialization. The browser process is
-  // expected to send a SetController IPC before sending the script response if
-  // appropriate, but there is no ordering guarantee of the messages on the
-  // renderer. This waits for the SetController IPC to be received if it was
-  // sent.
-  virtual void WaitForServiceWorkerControllerInfo(
-      blink::WebServiceWorkerNetworkProvider* web_network_provider,
-      base::OnceClosure callback) = 0;
 };
 
 }  // namespace blink

@@ -375,6 +375,7 @@ jumbo_split_static_library("ui") {
   # browser, then we can clean up these dependencies.
   public_deps = [
     "//components/dom_distiller/core",
+    "//components/safe_browsing:buildflags",
     "//components/sync",
     "//components/sync_user_events",
     "//components/translate/content/browser",
@@ -724,8 +725,8 @@ jumbo_split_static_library("ui") {
       "android/passwords/password_generation_editing_popup_view_android.cc",
       "android/passwords/password_generation_editing_popup_view_android.h",
       "android/simple_message_box_android.cc",
-      "android/sms_dialog_android.cc",
-      "android/sms_dialog_android.h",
+      "android/sms/sms_dialog_android.cc",
+      "android/sms/sms_dialog_android.h",
       "android/snackbars/auto_signin_prompt_controller.cc",
       "android/snackbars/auto_signin_prompt_controller.h",
       "android/ssl_client_certificate_request.cc",
@@ -1645,6 +1646,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/image_source.h",
       "webui/chromeos/in_session_password_change/confirm_password_change_handler.cc",
       "webui/chromeos/in_session_password_change/confirm_password_change_handler.h",
+      "webui/chromeos/in_session_password_change/password_change_dialogs.cc",
+      "webui/chromeos/in_session_password_change/password_change_dialogs.h",
       "webui/chromeos/in_session_password_change/password_change_handler.cc",
       "webui/chromeos/in_session_password_change/password_change_handler.h",
       "webui/chromeos/in_session_password_change/password_change_ui.cc",

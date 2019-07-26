@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {

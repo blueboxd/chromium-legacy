@@ -50,6 +50,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser:test_support",
     "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
+    "//components/safe_browsing:buildflags",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

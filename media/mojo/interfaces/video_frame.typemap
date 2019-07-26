@@ -30,7 +30,7 @@ deps = [
   "//gpu/ipc/common:struct_traits",
   "//media/base/ipc",
   "//media/mojo/common:mojo_shared_buffer_video_frame",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 type_mappings = [ "media.mojom.VideoFrame=scoped_refptr<media::VideoFrame>[nullable_is_same_type]" ]

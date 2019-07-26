@@ -44,6 +44,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/sessions/content/content_record_password_state.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -66,7 +67,7 @@
 #include "extensions/common/constants.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #endif
 
@@ -100,14 +101,14 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
   explicit MockChromePasswordManagerClient(content::WebContents* web_contents)
       : ChromePasswordManagerClient(web_contents, nullptr) {
     ON_CALL(*this, GetMainFrameCertStatus()).WillByDefault(testing::Return(0));
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
     password_protection_service_ =
         std::make_unique<safe_browsing::MockPasswordProtectionService>();
 #endif
   }
   ~MockChromePasswordManagerClient() override {}
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override {
     return password_protection_service_.get();
@@ -119,7 +120,7 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
 #endif
 
  private:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   std::unique_ptr<safe_browsing::MockPasswordProtectionService>
       password_protection_service_;
 #endif
@@ -686,7 +687,7 @@ TEST_F(ChromePasswordManagerClientTest, CanShowBubbleOnURL) {
   }
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 TEST_F(ChromePasswordManagerClientTest,
        VerifyMaybeStartPasswordFieldOnFocusRequestCalled) {
   std::unique_ptr<WebContents> test_web_contents(

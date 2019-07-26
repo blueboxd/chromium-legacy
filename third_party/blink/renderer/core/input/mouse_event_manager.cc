@@ -435,7 +435,6 @@ void MouseEventManager::CancelFakeMouseMoveEvent() {
 }
 
 void MouseEventManager::MarkHoverStateDirty() {
-  LOG(ERROR) << "MouseEventManager::MarkHoverStateDirty ";
   DCHECK(RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled());
   DCHECK(frame_->IsLocalRoot());
   hover_state_dirty_ = true;

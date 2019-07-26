@@ -3,7 +3,7 @@ importScripts("file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js");
 importScripts("file:///gen/mojo/public/mojom/base/big_buffer.mojom.js");
 importScripts("file:///gen/skia/public/interfaces/image_info.mojom.js");
 importScripts("file:///gen/skia/public/interfaces/bitmap.mojom.js");
-importScripts("file:///gen/ui/gfx/geometry/mojo/geometry.mojom.js");
+importScripts("file:///gen/ui/gfx/geometry/mojom/geometry.mojom.js");
 importScripts("file:///gen/services/shape_detection/public/mojom/textdetection.mojom.js");
 importScripts("big-buffer-helpers.js");
 importScripts("mock-textdetection.js");

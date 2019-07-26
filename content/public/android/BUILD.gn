@@ -87,7 +87,7 @@ android_library("content_java") {
     "//third_party/blink/public/mojom:mojom_platform_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
-    "//ui/gfx/geometry/mojo:mojo_java",
+    "//ui/gfx/geometry/mojom:mojom_java",
   ]
 
   srcjar_deps = [
@@ -486,7 +486,7 @@ android_library("content_javatests") {
     "//third_party/junit",
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
-    "//ui/gfx/geometry/mojo:mojo_java",
+    "//ui/gfx/geometry/mojom:mojom_java",
   ]
 
   java_files = [
@@ -588,6 +588,6 @@ junit_binary("content_junit_tests") {
     "//mojo/public/java:bindings_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//ui/android:ui_java",
-    "//ui/gfx/geometry/mojo:mojo_java",
+    "//ui/gfx/geometry/mojom:mojom_java",
   ]
 }

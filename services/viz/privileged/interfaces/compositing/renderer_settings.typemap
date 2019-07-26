@@ -10,7 +10,7 @@ deps = [
   "//cc",
 ]
 public_deps = [
-  "//ui/gfx/geometry/mojo",
+  "//ui/gfx/geometry/mojom",
 ]
 sources = [
   "renderer_settings_struct_traits.cc",

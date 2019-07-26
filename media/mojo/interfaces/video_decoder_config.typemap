@@ -20,7 +20,7 @@ public_deps = [
 
 deps = [
   "//media/base/ipc",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 # See media_types.typemap for enum mappings.

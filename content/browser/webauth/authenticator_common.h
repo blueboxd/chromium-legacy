@@ -35,6 +35,7 @@ class OneShotTimer;
 
 namespace device {
 
+struct PlatformAuthenticatorInfo;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
@@ -85,6 +86,11 @@ class CONTENT_EXPORT AuthenticatorCommon {
       blink::mojom::Authenticator::
           IsUserVerifyingPlatformAuthenticatorAvailableCallback callback);
   void Cancel();
+
+  // Synchronous implementation of
+  // IsUserVerifyingPlatformAuthenticatorAvailable.
+  bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+      AuthenticatorRequestClientDelegate* request_delegate);
 
   void Cleanup();
 
@@ -182,6 +188,12 @@ class CONTENT_EXPORT AuthenticatorCommon {
       blink::mojom::Authenticator::GetAssertionCallback callback,
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::GetAssertionAuthenticatorResponsePtr response = nullptr);
+
+  base::Optional<device::PlatformAuthenticatorInfo>
+  CreatePlatformAuthenticatorIfAvailable();
+  base::Optional<device::PlatformAuthenticatorInfo>
+  CreatePlatformAuthenticatorIfAvailableAndCheckIfCredentialExists(
+      const device::CtapGetAssertionRequest& request);
 
   BrowserContext* browser_context() const;
 

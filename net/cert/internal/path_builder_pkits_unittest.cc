@@ -50,7 +50,7 @@ class CrlCheckingPathBuilderDelegate : public SimplePathBuilderDelegate {
       size_t i = certs.size() - reverse_i - 1;
 
       // Trust anchors bypass OCSP/CRL revocation checks. (The only way to
-      // revoke trust anchors is via CRLSet or the built-in SPKI blacklist).
+      // revoke trust anchors is via CRLSet or the built-in SPKI block list).
       if (reverse_i == 0 && path->last_cert_trust.IsTrustAnchor())
         continue;
 

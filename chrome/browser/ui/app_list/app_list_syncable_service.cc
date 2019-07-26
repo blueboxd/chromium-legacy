@@ -710,6 +710,22 @@ bool AppListSyncableService::RemoveDefaultApp(const ChromeAppListItem* item,
   return false;
 }
 
+bool AppListSyncableService::InterceptDeleteDefaultApp(SyncItem* sync_item) {
+  if (sync_item->item_type != sync_pb::AppListSpecifics::TYPE_APP ||
+      !AppIsDefaultForExtensionService(extension_system_->extension_service(),
+                                       sync_item->item_id)) {
+    return false;
+  }
+
+  // This is a Default app; update the entry to a REMOVE_DEFAULT entry.
+  // This will overwrite any existing entry for the item.
+  VLOG(2) << this << " -> SYNC UPDATE: REMOVE_DEFAULT: " << sync_item->item_id;
+  sync_item->item_type = sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP;
+  UpdateSyncItemInLocalStorage(profile_, sync_item);
+  SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
+  return true;
+}
+
 void AppListSyncableService::DeleteSyncItem(const std::string& item_id) {
   SyncItem* sync_item = FindSyncItem(item_id);
   if (!sync_item) {
@@ -783,18 +799,9 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
     return;
   }
 
-  if (type == sync_pb::AppListSpecifics::TYPE_APP &&
-      AppIsDefaultForExtensionService(extension_system_->extension_service(),
-                                      id)) {
-    // This is a Default app; update the entry to a REMOVE_DEFAULT entry. This
-    // will overwrite any existing entry for the item.
-    VLOG(2) << this
-            << " -> SYNC UPDATE: REMOVE_DEFAULT: " << sync_item->item_id;
-    sync_item->item_type = sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP;
-    UpdateSyncItemInLocalStorage(profile_, sync_item);
-    SendSyncChange(sync_item, SyncChange::ACTION_UPDATE);
+  // Check if we're asked to remove a default-installed app.
+  if (InterceptDeleteDefaultApp(sync_item))
     return;
-  }
 
   DeleteSyncItem(iter->first);
 }
@@ -1221,6 +1228,11 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   auto iter = sync_items_.find(item_id);
   if (iter == sync_items_.end())
     return;
+
+  // Check if we're asked to remove a default-installed app.
+  if (InterceptDeleteDefaultApp(iter->second.get()))
+    return;
+
   sync_pb::AppListSpecifics::AppListItemType item_type =
       iter->second->item_type;
   VLOG(2) << this << " <- SYNC DELETE: " << iter->second->ToString();

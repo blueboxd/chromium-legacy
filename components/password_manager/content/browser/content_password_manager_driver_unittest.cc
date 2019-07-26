@@ -15,6 +15,7 @@
 #include "components/autofill/core/browser/logging/stub_log_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -47,7 +48,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   ~MockPasswordManagerClient() override = default;
 
   MOCK_CONST_METHOD0(GetLogManager, const autofill::LogManager*());
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
   MOCK_METHOD2(CheckSafeBrowsingReputation, void(const GURL&, const GURL&));
 #endif
 

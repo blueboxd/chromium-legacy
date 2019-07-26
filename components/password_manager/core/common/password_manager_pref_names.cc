@@ -49,5 +49,8 @@ const char kLastTimeObsoleteHttpCredentialsRemoved[] =
 
 const char kPasswordHashDataList[] = "profile.password_hash_data_list";
 
+const char kPasswordManagerOnboardingState[] =
+    "profile.password_manager_onboarding_state";
+
 }  // namespace prefs
 }  // namespace password_manager

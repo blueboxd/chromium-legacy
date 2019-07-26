@@ -978,12 +978,10 @@ class GoogleMapsStory(_BrowsingStory):
     action_runner.Wait(1)
 
     # ZoomIn two times.
+    action_runner.WaitForElement(selector='[data-result-index="1"]')
     prev_restaurant_hash = action_runner.EvaluateJavaScript(
         self._GET_RESTAURANT_RESPONSE_HASH)
     action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
-    action_runner.WaitForJavaScriptCondition(
-        self._CHECK_RESTAURANTS_UPDATED,
-        old_restaurant=prev_restaurant_hash, timeout=90)
     # This wait is required to fetch the data for all the tiles in the map.
     action_runner.Wait(1)
 

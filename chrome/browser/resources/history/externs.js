@@ -12,6 +12,7 @@
  * chrome/browser/ui/webui/browsing_history_handler.cc:
  *     BrowsingHistoryHandler::HistoryEntry::ToValue()
  * @typedef {{allTimestamps: Array<number>,
+ *            remoteIconUrlForUma: string,
  *            isUrlInRemoteUserData: boolean,
  *            blockedVisit: boolean,
  *            dateRelativeDay: string,
@@ -43,6 +44,7 @@ let HistoryQuery;
  * The type of the foreign session tab object. This definition is based on
  * chrome/browser/ui/webui/foreign_session_handler.cc:
  * @typedef {{direction: string,
+ *            remoteIconUrlForUma: string,
  *            sessionId: number,
  *            timestamp: number,
  *            title: string,

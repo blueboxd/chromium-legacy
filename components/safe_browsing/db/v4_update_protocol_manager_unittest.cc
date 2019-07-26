@@ -14,6 +14,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
@@ -27,7 +28,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-#if !defined(FULL_SAFE_BROWSING)
+#if !BUILDFLAG(FULL_SAFE_BROWSING)
 #include "base/system/sys_info.h"
 #endif
 
@@ -289,7 +290,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestBase64EncodingUsesUrlEncoding) {
 
   std::string expected =
       "Cg8KCHVuaXR0ZXN0EgMxLjAaGAgBEAIaCmg4eGZZcVk-OlIiBCABIAIoASICCAE=";
-#if !defined(FULL_SAFE_BROWSING)
+#if !BUILDFLAG(FULL_SAFE_BROWSING)
   if (base::SysInfo::IsLowEndDevice()) {
     expected =
         "Cg8KCHVuaXR0ZXN0EgMxLjAaGwgBEAIaCmg4eGZZcVk-OlIiBxCAICABIAIoASICCAE=";
@@ -360,7 +361,7 @@ TEST_F(V4UpdateProtocolManagerTest, TestExtendedReportingLevelIncluded) {
   (*store_state_map_)[ListIdentifier(LINUX_PLATFORM, URL, MALWARE_THREAT)] =
       "state";
   std::string base = "Cg8KCHVuaXR0ZXN0EgMxLjAaEwgBEAIaBXN0YXRlIgQgASACKAEiAgg";
-#if !defined(FULL_SAFE_BROWSING)
+#if !BUILDFLAG(FULL_SAFE_BROWSING)
   if (base::SysInfo::IsLowEndDevice()) {
     base = "Cg8KCHVuaXR0ZXN0EgMxLjAaFggBEAIaBXN0YXRlIgcQgCAgASACKAEiAgg";
   }

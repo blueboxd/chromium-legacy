@@ -116,7 +116,7 @@ bool IsPortAllowedForScheme(int port, base::StringPiece url_scheme) {
   if (g_explicitly_allowed_ports.Get().count(port) > 0)
     return true;
 
-  // FTP requests have an extra set of whitelisted schemes.
+  // FTP requests have an extra set of allowed schemes.
   if (base::LowerCaseEqualsASCII(url_scheme, url::kFtpScheme)) {
     for (int allowed_ftp_port : kAllowedFtpPorts) {
       if (allowed_ftp_port == port)

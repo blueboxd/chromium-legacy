@@ -196,8 +196,6 @@ component("fido") {
       "mac/credential_metadata.h",
       "mac/credential_store.h",
       "mac/credential_store.mm",
-      "mac/discovery.cc",
-      "mac/discovery.h",
       "mac/get_assertion_operation.h",
       "mac/get_assertion_operation.mm",
       "mac/keychain.h",

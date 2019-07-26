@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/i18n/character_encoding.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
@@ -18,6 +19,7 @@
 #include "components/exo/mime_utils.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/icu/source/common/unicode/ucnv.h"
 
 namespace exo {
 
@@ -32,6 +34,12 @@ constexpr char kEncoding16[] = "16";
 constexpr char kEncodingASCII[] = "ASCII";
 constexpr char kEncodingUTF8Legacy[] = "UTF8_STRING";
 constexpr char kEncodingUTF8Charset[] = "UTF-8";
+
+constexpr char kUTF16Unspecified[] = "UTF-16";
+constexpr char kUTF16LittleEndian[] = "UTF-16LE";
+constexpr char kUTF16BigEndian[] = "UTF-16BE";
+constexpr uint8_t kByteOrderMark[] = {0xFE, 0xFF};
+constexpr int kByteOrderMarkSize = sizeof(kByteOrderMark);
 
 constexpr char kImageBitmap[] = "image/bmp";
 constexpr char kImagePNG[] = "image/png";
@@ -92,6 +100,38 @@ int GetImageTypeRank(const std::string& mime_type) {
   return 2;
 }
 
+base::string16 CodepageToUTF16(const std::vector<uint8_t>& data,
+                               const std::string& charset_input) {
+  base::string16 output;
+  base::StringPiece piece(reinterpret_cast<const char*>(data.data()),
+                          data.size());
+  const char* charset = charset_input.c_str();
+
+  // Despite claims in the documentation to the contrary, the ICU UTF-16
+  // converter does not automatically detect and interpret the byte order
+  // mark. Therefore, we must do this ourselves.
+  if (!ucnv_compareNames(charset, kUTF16Unspecified) &&
+      data.size() >= kByteOrderMarkSize) {
+    if (static_cast<uint8_t>(piece.data()[0]) == kByteOrderMark[0] &&
+        static_cast<uint8_t>(piece.data()[1]) == kByteOrderMark[1]) {
+      // BOM is in big endian format. Consume the BOM so it doesn't get
+      // interpreted as a character.
+      piece.remove_prefix(2);
+      charset = kUTF16BigEndian;
+    } else if (static_cast<uint8_t>(piece.data()[0]) == kByteOrderMark[1] &&
+               static_cast<uint8_t>(piece.data()[1]) == kByteOrderMark[0]) {
+      // BOM is in little endian format. Consume the BOM so it doesn't get
+      // interpreted as a character.
+      piece.remove_prefix(2);
+      charset = kUTF16LittleEndian;
+    }
+  }
+
+  base::CodepageToUTF16(
+      piece, charset, base::OnStringConversionError::Type::SUBSTITUTE, &output);
+  return output;
+}
+
 }  // namespace
 
 ScopedDataSource::ScopedDataSource(DataSource* data_source,
@@ -106,7 +146,7 @@ ScopedDataSource::~ScopedDataSource() {
 
 DataSource::DataSource(DataSourceDelegate* delegate)
     : delegate_(delegate),
-      cancelled_(false),
+      finished_(false),
       read_data_weak_ptr_factory_(this) {}
 
 DataSource::~DataSource() {
@@ -129,13 +169,31 @@ void DataSource::Offer(const std::string& mime_type) {
 }
 
 void DataSource::SetActions(const base::flat_set<DndAction>& dnd_actions) {
-  NOTIMPLEMENTED();
+  dnd_actions_ = dnd_actions;
+}
+
+void DataSource::Target(const std::string& mime_type) {
+  delegate_->OnTarget(mime_type);
+}
+
+void DataSource::Action(DndAction action) {
+  delegate_->OnAction(action);
+}
+
+void DataSource::DndDropPerformed() {
+  delegate_->OnDndDropPerformed();
 }
 
 void DataSource::Cancelled() {
-  cancelled_ = true;
+  finished_ = true;
   read_data_weak_ptr_factory_.InvalidateWeakPtrs();
   delegate_->OnCancelled();
+}
+
+void DataSource::DndFinished() {
+  finished_ = true;
+  read_data_weak_ptr_factory_.InvalidateWeakPtrs();
+  delegate_->OnDndFinished();
 }
 
 void DataSource::ReadDataForTesting(const std::string& mime_type,
@@ -147,7 +205,7 @@ void DataSource::ReadData(const std::string& mime_type,
                           ReadDataCallback callback,
                           base::OnceClosure failure_callback) {
   // This DataSource does not contain the requested MIME type.
-  if (!mime_types_.count(mime_type) || cancelled_) {
+  if (mime_type.empty() || !mime_types_.count(mime_type) || finished_) {
     std::move(failure_callback).Run();
     return;
   }
@@ -174,9 +232,9 @@ void DataSource::OnDataRead(ReadDataCallback callback,
 }
 
 void DataSource::GetDataForPreferredMimeTypes(
-    ReadDataCallback text_reader,
+    ReadTextDataCallback text_reader,
     ReadDataCallback rtf_reader,
-    ReadDataCallback html_reader,
+    ReadTextDataCallback html_reader,
     ReadDataCallback image_reader,
     base::RepeatingClosure failure_callback) {
   std::string text_mime, rtf_mime, html_mime, image_mime;
@@ -188,6 +246,9 @@ void DataSource::GetDataForPreferredMimeTypes(
   for (auto mime_type : mime_types_) {
     if (net::MatchesMimeType(std::string(kTextPlain), mime_type) ||
         mime_type == kEncodingUTF8Legacy) {
+      if (text_reader.is_null())
+        continue;
+
       std::string charset;
       // We special case UTF8_STRING to provide minimal handling of X11 apps.
       if (mime_type == kEncodingUTF8Legacy)
@@ -200,10 +261,16 @@ void DataSource::GetDataForPreferredMimeTypes(
         text_rank = new_rank;
       }
     } else if (net::MatchesMimeType(std::string(kTextRTF), mime_type)) {
+      if (rtf_reader.is_null())
+        continue;
+
       // The RTF MIME type will never have a character set because it only uses
       // 7-bit bytes and stores character set information internally.
       rtf_mime = mime_type;
     } else if (net::MatchesMimeType(std::string(kTextHTML), mime_type)) {
+      if (html_reader.is_null())
+        continue;
+
       auto charset = GetCharset(mime_type);
       int new_rank = GetCharsetRank(charset);
       if (new_rank < html_rank) {
@@ -211,6 +278,9 @@ void DataSource::GetDataForPreferredMimeTypes(
         html_rank = new_rank;
       }
     } else if (blink::IsSupportedImageMimeType(mime_type)) {
+      if (image_reader.is_null())
+        continue;
+
       int new_rank = GetImageTypeRank(mime_type);
       if (new_rank < image_rank) {
         image_mime = mime_type;
@@ -219,10 +289,25 @@ void DataSource::GetDataForPreferredMimeTypes(
     }
   }
 
-  ReadData(text_mime, std::move(text_reader), failure_callback);
+  ReadData(text_mime,
+           base::BindOnce(&DataSource::OnTextRead,
+                          read_data_weak_ptr_factory_.GetWeakPtr(),
+                          std::move(text_reader)),
+           failure_callback);
   ReadData(rtf_mime, std::move(rtf_reader), failure_callback);
-  ReadData(html_mime, std::move(html_reader), failure_callback);
+  ReadData(html_mime,
+           base::BindOnce(&DataSource::OnTextRead,
+                          read_data_weak_ptr_factory_.GetWeakPtr(),
+                          std::move(html_reader)),
+           failure_callback);
   ReadData(image_mime, std::move(image_reader), failure_callback);
+}
+
+void DataSource::OnTextRead(ReadTextDataCallback callback,
+                            const std::string& mime_type,
+                            const std::vector<uint8_t>& data) {
+  base::string16 output = CodepageToUTF16(data, GetCharset(mime_type));
+  std::move(callback).Run(mime_type, std::move(output));
 }
 
 }  // namespace exo

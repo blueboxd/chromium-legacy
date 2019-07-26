@@ -32,6 +32,7 @@ using apps_helper::InstallAppsPendingForSync;
 using apps_helper::IsAppEnabled;
 using apps_helper::IsIncognitoEnabled;
 using apps_helper::UninstallApp;
+using apps_helper::WaitForAppService;
 
 namespace {
 
@@ -401,6 +402,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   // Re-Install the same app in Profile 0.
   std::string app_id2 = InstallApp(GetProfile(0), default_app_index);
   EXPECT_EQ(default_app_id, app_id2);
+  WaitForAppService(GetProfile(0));
   sync_item = GetSyncItem(GetProfile(0), app_id2);
   EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
   AwaitQuiescenceAndInstallAppsPendingForSync();

@@ -113,7 +113,7 @@ class WebRtcAudioRendererTest : public testing::Test,
   void SetupRenderer(const std::string& device_id) {
     renderer_ = new blink::WebRtcAudioRenderer(
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(), stream_,
-        nullptr, 1, device_id);
+        nullptr, base::UnguessableToken::Create(), device_id);
 
     EXPECT_CALL(
         audio_device_factory_platform_,
@@ -144,7 +144,7 @@ class WebRtcAudioRendererTest : public testing::Test,
   MOCK_METHOD5(MockCreateAudioRendererSink,
                void(blink::WebAudioDeviceSourceType,
                     int,
-                    int,
+                    const base::UnguessableToken&,
                     const std::string&,
                     const base::Optional<base::UnguessableToken>&));
 
@@ -339,7 +339,8 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
 TEST_F(WebRtcAudioRendererTest, InitializeWithInvalidDevice) {
   renderer_ = new blink::WebRtcAudioRenderer(
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(), stream_,
-      nullptr /*blink::WebLocalFrame*/, 1, kInvalidOutputDeviceId);
+      nullptr /*blink::WebLocalFrame*/, base::UnguessableToken::Create(),
+      kInvalidOutputDeviceId);
 
   EXPECT_CALL(*this, MockCreateAudioRendererSink(
                          blink::WebAudioDeviceSourceType::kWebRtc, _, _,

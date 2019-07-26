@@ -90,7 +90,7 @@ NET_ERROR(BLOCKED_BY_CLIENT, -20)
 // The network changed.
 NET_ERROR(NETWORK_CHANGED, -21)
 
-// The request was blocked by the URL blacklist configured by the domain
+// The request was blocked by the URL block list configured by the domain
 // administrator.
 NET_ERROR(BLOCKED_BY_ADMINISTRATOR, -22)
 

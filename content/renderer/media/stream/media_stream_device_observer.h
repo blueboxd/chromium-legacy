@@ -34,6 +34,8 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
     : public RenderFrameObserver,
       public blink::mojom::MediaStreamDeviceObserver {
  public:
+  static const base::UnguessableToken& NoSessionId();
+
   explicit MediaStreamDeviceObserver(RenderFrame* render_frame);
   ~MediaStreamDeviceObserver() override;
 
@@ -53,9 +55,13 @@ class CONTENT_EXPORT MediaStreamDeviceObserver
   void RemoveStreamDevice(const blink::MediaStreamDevice& device);
 
   // Get the video session_id given a label. The label identifies a stream.
-  int video_session_id(const std::string& label);
+  // If the label does not designate a valid video session, the value of
+  // NoSessionId() will be returned.
+  base::UnguessableToken video_session_id(const std::string& label);
   // Returns an audio session_id given a label.
-  int audio_session_id(const std::string& label);
+  // If the label does not designate a valid video session, the value of
+  // NoSessionId() will be returned.
+  base::UnguessableToken audio_session_id(const std::string& label);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest,

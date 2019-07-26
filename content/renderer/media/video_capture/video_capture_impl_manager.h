@@ -48,7 +48,7 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // is used.
   // Returns a callback that should be used to release the acquired
   // resources.
-  base::OnceClosure UseDevice(media::VideoCaptureSessionId id);
+  base::OnceClosure UseDevice(const media::VideoCaptureSessionId& id);
 
   // Start receiving video frames for the given session ID.
   //
@@ -68,27 +68,27 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   // callbacks are called after capturing is instructed to stop, typically
   // by binding the passed callbacks on a WeakPtr.
   base::OnceClosure StartCapture(
-      media::VideoCaptureSessionId id,
+      const media::VideoCaptureSessionId& id,
       const media::VideoCaptureParams& params,
       const blink::VideoCaptureStateUpdateCB& state_update_cb,
       const blink::VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
   // Requests that the video capturer send a frame "soon" (e.g., to resolve
   // picture loss or quality issues).
-  void RequestRefreshFrame(media::VideoCaptureSessionId id);
+  void RequestRefreshFrame(const media::VideoCaptureSessionId& id);
 
   // Requests frame delivery be suspended/resumed for a given capture session.
-  void Suspend(media::VideoCaptureSessionId id);
-  void Resume(media::VideoCaptureSessionId id);
+  void Suspend(const media::VideoCaptureSessionId& id);
+  void Resume(const media::VideoCaptureSessionId& id);
 
   // Get supported formats supported by the device for the given session
   // ID. |callback| will be called on the IO thread.
-  void GetDeviceSupportedFormats(media::VideoCaptureSessionId id,
+  void GetDeviceSupportedFormats(const media::VideoCaptureSessionId& id,
                                  blink::VideoCaptureDeviceFormatsCB callback);
 
   // Get supported formats currently in use for the given session ID.
   // |callback| will be called on the IO thread.
-  void GetDeviceFormatsInUse(media::VideoCaptureSessionId id,
+  void GetDeviceFormatsInUse(const media::VideoCaptureSessionId& id,
                              blink::VideoCaptureDeviceFormatsCB callback);
 
   // Make all VideoCaptureImpl instances in the input |video_devices|
@@ -100,19 +100,20 @@ class CONTENT_EXPORT VideoCaptureImplManager {
   void SuspendDevices(const blink::MediaStreamDevices& video_devices,
                       bool suspend);
 
-  void OnLog(media::VideoCaptureSessionId id, const std::string& message);
-  void OnFrameDropped(media::VideoCaptureSessionId id,
+  void OnLog(const media::VideoCaptureSessionId& id,
+             const std::string& message);
+  void OnFrameDropped(const media::VideoCaptureSessionId& id,
                       media::VideoCaptureFrameDropReason reason);
 
   virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
-      media::VideoCaptureSessionId session_id) const;
+      const media::VideoCaptureSessionId& session_id) const;
 
  private:
   // Holds bookkeeping info for each VideoCaptureImpl shared by clients.
   struct DeviceEntry;
 
-  void StopCapture(int client_id, media::VideoCaptureSessionId id);
-  void UnrefDevice(media::VideoCaptureSessionId id);
+  void StopCapture(int client_id, const media::VideoCaptureSessionId& id);
+  void UnrefDevice(const media::VideoCaptureSessionId& id);
 
   // Devices currently in use.
   std::vector<DeviceEntry> devices_;

@@ -10,7 +10,7 @@
 #include "components/viz/common/display/renderer_settings.h"
 #include "services/viz/privileged/cpp/overlay_strategy_struct_traits.h"
 #include "services/viz/privileged/interfaces/compositing/renderer_settings.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 #if defined(USE_OZONE)
 #include "components/viz/common/display/overlay_strategy.h"

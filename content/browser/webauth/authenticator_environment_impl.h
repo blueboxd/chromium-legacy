@@ -35,9 +35,11 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
  public:
   static AuthenticatorEnvironmentImpl* GetInstance();
 
-  // Returns the FidoDiscoveryFactory acting as replacement for the |node|.
-  device::FidoDiscoveryFactory* GetDiscoveryFactoryOverride(
-      FrameTreeNode* node);
+  // Returns a FidoDiscoveryFactory for the given node.
+  device::FidoDiscoveryFactory* GetFactory(FrameTreeNode* node);
+
+  // Returns the default FidoDiscoveryFactory.
+  device::FidoDiscoveryFactory* GetFactory();
 
   // Enables the scoped virtual authenticator environment for the |node| and its
   // descendants.
@@ -78,7 +80,7 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
  private:
   friend class base::NoDestructor<AuthenticatorEnvironmentImpl>;
 
-  std::unique_ptr<device::FidoDiscoveryFactory> replaced_discovery_factory_;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
 
   std::map<FrameTreeNode*, std::unique_ptr<VirtualFidoDiscoveryFactory>>
       virtual_discovery_factories_;

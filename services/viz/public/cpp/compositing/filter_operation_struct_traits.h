@@ -13,7 +13,7 @@
 #include "services/viz/public/cpp/compositing/paint_filter_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/filter_operation.mojom-shared.h"
 #include "skia/public/interfaces/blur_image_filter_tile_mode_struct_traits.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

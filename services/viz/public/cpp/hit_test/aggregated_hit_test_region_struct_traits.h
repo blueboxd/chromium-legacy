@@ -8,7 +8,7 @@
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "services/viz/public/cpp/compositing/frame_sink_id_struct_traits.h"
 #include "services/viz/public/interfaces/hit_test/aggregated_hit_test_region.mojom-shared.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
 
 namespace mojo {

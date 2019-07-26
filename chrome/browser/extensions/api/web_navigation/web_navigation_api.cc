@@ -271,7 +271,7 @@ void WebNavigationTabObserver::DidStartNavigation(
   // now.
   if (ExtensionTabUtil::GetTabById(ExtensionTabUtil::GetTabId(web_contents()),
                                    web_contents()->GetBrowserContext(), false,
-                                   nullptr, nullptr, nullptr, nullptr)) {
+                                   nullptr)) {
     DispatchCachedOnBeforeNavigate();
   }
 }
@@ -500,8 +500,8 @@ ExtensionFunction::ResponseAction WebNavigationGetFrameFunction::Run() {
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id, browser_context(),
-                                    include_incognito_information(), nullptr,
-                                    nullptr, &web_contents, nullptr) ||
+                                    include_incognito_information(),
+                                    &web_contents) ||
       !web_contents) {
     return RespondNow(OneArgument(std::make_unique<base::Value>()));
   }
@@ -540,8 +540,8 @@ ExtensionFunction::ResponseAction WebNavigationGetAllFramesFunction::Run() {
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id, browser_context(),
-                                    include_incognito_information(), nullptr,
-                                    nullptr, &web_contents, nullptr) ||
+                                    include_incognito_information(),
+                                    &web_contents) ||
       !web_contents) {
     return RespondNow(OneArgument(std::make_unique<base::Value>()));
   }

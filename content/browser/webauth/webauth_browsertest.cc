@@ -933,7 +933,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // signal's aborted flag set after sending request, we get an AbortError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithAbortSetAfterCreate) {
-  InjectVirtualFidoDeviceFactory();
   CreateParameters parameters;
   parameters.signal = "authAbortSignal";
   std::string result;
@@ -1028,7 +1027,6 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // signal's aborted flag set after sending request, we get an AbortError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialWithAbortSetAfterGet) {
-  InjectVirtualFidoDeviceFactory();
   GetParameters parameters;
   parameters.signal = "authAbortSignal";
   std::string result;

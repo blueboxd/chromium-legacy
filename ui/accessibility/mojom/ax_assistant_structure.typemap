@@ -13,8 +13,8 @@ sources = [
 public_deps = [
   "//ui/accessibility:ax_assistant",
   "//ui/gfx",
-  "//ui/gfx/geometry/mojo",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom",
+  "//ui/gfx/geometry/mojom:mojom_traits",
   "//ui/gfx/range/mojo",
 ]
 type_mappings = [

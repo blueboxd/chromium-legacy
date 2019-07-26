@@ -20,28 +20,32 @@ class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
   ~FakeVideoCaptureHost() override;
 
   // mojom::VideoCaptureHost implementations
-  MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
-  MOCK_METHOD3(ReleaseBuffer, void(int32_t, int32_t, double));
-  MOCK_METHOD1(Pause, void(int32_t));
+  MOCK_METHOD1(RequestRefreshFrame, void(const base::UnguessableToken&));
+  MOCK_METHOD3(ReleaseBuffer,
+               void(const base::UnguessableToken&, int32_t, double));
+  MOCK_METHOD1(Pause, void(const base::UnguessableToken&));
   MOCK_METHOD3(Resume,
-               void(int32_t, int32_t, const media::VideoCaptureParams&));
+               void(const base::UnguessableToken&,
+                    const base::UnguessableToken&,
+                    const media::VideoCaptureParams&));
   MOCK_METHOD0(OnStopped, void());
-  MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
+  MOCK_METHOD2(OnLog, void(const base::UnguessableToken&, const std::string&));
   MOCK_METHOD2(OnFrameDropped,
-               void(int32_t, media::VideoCaptureFrameDropReason));
+               void(const base::UnguessableToken&,
+                    media::VideoCaptureFrameDropReason));
 
-  void Start(int32_t device_id,
-             int32_t session_id,
+  void Start(const base::UnguessableToken& device_id,
+             const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
              media::mojom::VideoCaptureObserverPtr observer) override;
-  void Stop(int32_t device_id) override;
+  void Stop(const base::UnguessableToken& device_id) override;
 
   void GetDeviceSupportedFormats(
-      int32_t device_id,
-      int32_t session_id,
+      const base::UnguessableToken& device_id,
+      const base::UnguessableToken& session_id,
       GetDeviceSupportedFormatsCallback callback) override {}
-  void GetDeviceFormatsInUse(int32_t device_id,
-                             int32_t session_id,
+  void GetDeviceFormatsInUse(const base::UnguessableToken& device_id,
+                             const base::UnguessableToken& session_id,
                              GetDeviceFormatsInUseCallback callback) override {}
 
   // Create one video frame and send it to |observer_|.

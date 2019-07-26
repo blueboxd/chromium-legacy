@@ -1492,18 +1492,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   WindowAgent& GetWindowAgent();
 
-  // TODO(binji): See http://crbug.com/798572. This implementation shares the
-  // same agent cluster ID for any one document. The proper implementation of
-  // this function must follow the rules described here:
-  // https://html.spec.whatwg.org/C/#integration-with-the-javascript-agent-cluster-formalism.
-  //
-  // Even with this simple implementation, we can prevent sharing
-  // SharedArrayBuffers and WebAssembly modules with workers that happen to be
-  // in the same process.
-  const base::UnguessableToken& GetAgentClusterID() const final {
-    return agent_cluster_id_;
-  }
-
   void CountPotentialFeaturePolicyViolation(
       mojom::FeaturePolicyFeature) const override;
   void ReportFeaturePolicyViolation(
@@ -1582,6 +1570,13 @@ class CORE_EXPORT Document : public ContainerNode,
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.
   void BindContentSecurityPolicy();
+
+  // Capture the toggle event during parsing either by HTML parser or XML
+  // parser.
+  void SetToggleDuringParsing(bool toggle_during_parsing) {
+    toggle_during_parsing_ = toggle_during_parsing;
+  }
+  bool ToggleDuringParsing() { return toggle_during_parsing_; }
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -2051,9 +2046,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<LazyLoadImageObserver> lazy_load_image_observer_;
 
-  // https://tc39.github.io/ecma262/#sec-agent-clusters
-  const base::UnguessableToken agent_cluster_id_;
-
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.
   mutable std::bitset<
@@ -2095,6 +2087,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(altimin): We should be able to remove it after we complete
   // frame:document lifetime refactoring.
   std::unique_ptr<FrameOrWorkerScheduler> detached_scheduler_;
+
+  bool toggle_during_parsing_ = false;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

@@ -15,7 +15,7 @@ Polymer({
   properties: {
     /**
      * Dictionary defining page visibility.
-     * @type {!AppearancePageVisibility}
+     * @type {!PersonalizationPageVisibility}
      */
     pageVisibility: Object,
 
@@ -47,10 +47,8 @@ Polymer({
   ready: function() {
     this.browserProxy_.isWallpaperSettingVisible().then(
         isWallpaperSettingVisible => {
-            // TODO(hsuregan): Uncomment after forking new pageVisibility for
-            // OS settings.
-            // assert(this.pageVisibility);
-            // this.pageVisibility.setWallpaper = isWallpaperSettingVisible;
+          assert(this.pageVisibility);
+          this.pageVisibility.setWallpaper = isWallpaperSettingVisible;
         });
     this.browserProxy_.isWallpaperPolicyControlled().then(
         isPolicyControlled => {

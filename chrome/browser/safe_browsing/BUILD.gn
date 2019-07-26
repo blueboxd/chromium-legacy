@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//components/safe_browsing/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 jumbo_static_library("safe_browsing") {
@@ -27,6 +28,7 @@ jumbo_static_library("safe_browsing") {
     "//components/password_manager/core/browser:hash_password_manager",
     "//components/pref_registry",
     "//components/resources:components_resources_grit",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing:features",
     "//components/safe_browsing:ping_manager",
     "//components/safe_browsing/browser:referrer_chain_provider",
@@ -231,6 +233,7 @@ jumbo_static_library("safe_browsing") {
       ]
       deps += [
         "//chrome/android:jni_headers",
+        "//components/safe_browsing:buildflags",
         "//components/safe_browsing/android:safe_browsing_mobile",
       ]
     } else if (safe_browsing_mode == 3) {
@@ -277,6 +280,7 @@ source_set("test_support") {
     deps = [
       ":safe_browsing",
       "//chrome/common/safe_browsing:proto",
+      "//components/safe_browsing:buildflags",
       "//components/safe_browsing/db:database_manager",
       "//components/safe_browsing/db:test_database_manager",
       "//components/safe_browsing/db:v4_protocol_manager_util",

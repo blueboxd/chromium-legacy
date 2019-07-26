@@ -9,7 +9,6 @@ include_rules = [
   "+cc/scheduler",
   "+components/viz/service/surfaces",
   "+components/viz/service/display_embedder/overlay_candidate_validator_android.h",
-  "+components/viz/service/display_embedder/overlay_candidate_validator_mac.h",
   "+components/viz/service/display_embedder/overlay_candidate_validator_ozone.h",
   "+components/viz/service/display_embedder/overlay_candidate_validator_surface_control.h",
   "+components/viz/service/display_embedder/overlay_candidate_validator_win.h",

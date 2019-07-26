@@ -111,7 +111,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   // Whether or not the control has been styled enough by the author to disable
   // the native appearance.
-  virtual bool IsControlStyled(const ComputedStyle&) const;
+  virtual bool IsControlStyled(ControlPart part, const ComputedStyle&) const;
 
   // Some controls may spill out of their containers (e.g., the check on an OSX
   // 10.9 checkbox). Add this "visual overflow" to the object's border box rect.
@@ -352,6 +352,12 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // This function is to be implemented in your platform-specific theme
   // implementation to hand back the appropriate platform theme.
   static LayoutTheme& NativeTheme();
+
+  ControlPart AdjustAppearanceWithAuthorStyle(ControlPart part,
+                                              const ComputedStyle& style);
+
+  ControlPart AdjustAppearanceWithElementType(const ComputedStyle& style,
+                                              const Element* element);
 
   Color custom_focus_ring_color_;
   bool has_custom_focus_ring_color_;

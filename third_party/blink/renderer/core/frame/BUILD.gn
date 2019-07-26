@@ -170,8 +170,6 @@ blink_core_sources("frame") {
     "settings_delegate.h",
     "smart_clip.cc",
     "smart_clip.h",
-    "surrounding_text_impl.cc",
-    "surrounding_text_impl.h",
     "test_report_body.h",
     "use_counter_helper.cc",
     "use_counter_helper.h",

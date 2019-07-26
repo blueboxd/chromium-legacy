@@ -56,11 +56,8 @@ bool ChromeAutomationInternalApiDelegate::GetTabById(
     content::WebContents** contents,
     std::string* error_msg) {
   *error_msg = tabs_constants::kTabNotFoundError;
-  return ExtensionTabUtil::GetTabById(
-      tab_id, browser_context, include_incognito,
-      nullptr, /* browser out param */
-      nullptr, /* tab strip out param */
-      contents, nullptr /* tab_index out param */);
+  return ExtensionTabUtil::GetTabById(tab_id, browser_context,
+                                      include_incognito, contents);
 }
 
 int ChromeAutomationInternalApiDelegate::GetTabId(

@@ -5,7 +5,7 @@
 module ash.mojom;
 
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
 // Interface to AssistantController which is owned by Shell in Ash. This is

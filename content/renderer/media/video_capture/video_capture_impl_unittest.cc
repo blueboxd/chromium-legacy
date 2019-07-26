@@ -29,7 +29,6 @@ using ::testing::WithArgs;
 
 namespace content {
 
-const int kSessionId = 11;
 
 void RunEmptyFormatsCallback(
     media::mojom::VideoCaptureHost::GetDeviceSupportedFormatsCallback&
@@ -54,37 +53,47 @@ class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
   }
 
   // Start() can't be mocked directly due to move-only |observer|.
-  void Start(int32_t device_id,
-             int32_t session_id,
+  void Start(const base::UnguessableToken& device_id,
+             const base::UnguessableToken& session_id,
              const media::VideoCaptureParams& params,
              media::mojom::VideoCaptureObserverPtr observer) override {
     DoStart(device_id, session_id, params);
   }
   MOCK_METHOD3(DoStart,
-               void(int32_t, int32_t, const media::VideoCaptureParams&));
-  MOCK_METHOD1(Stop, void(int32_t));
-  MOCK_METHOD1(Pause, void(int32_t));
+               void(const base::UnguessableToken&,
+                    const base::UnguessableToken&,
+                    const media::VideoCaptureParams&));
+  MOCK_METHOD1(Stop, void(const base::UnguessableToken&));
+  MOCK_METHOD1(Pause, void(const base::UnguessableToken&));
   MOCK_METHOD3(Resume,
-               void(int32_t, int32_t, const media::VideoCaptureParams&));
-  MOCK_METHOD1(RequestRefreshFrame, void(int32_t));
-  MOCK_METHOD3(ReleaseBuffer, void(int32_t, int32_t, double));
+               void(const base::UnguessableToken&,
+                    const base::UnguessableToken&,
+                    const media::VideoCaptureParams&));
+  MOCK_METHOD1(RequestRefreshFrame, void(const base::UnguessableToken&));
+  MOCK_METHOD3(ReleaseBuffer,
+               void(const base::UnguessableToken&, int32_t, double));
   MOCK_METHOD3(GetDeviceSupportedFormatsMock,
-               void(int32_t, int32_t, GetDeviceSupportedFormatsCallback&));
+               void(const base::UnguessableToken&,
+                    const base::UnguessableToken&,
+                    GetDeviceSupportedFormatsCallback&));
   MOCK_METHOD3(GetDeviceFormatsInUseMock,
-               void(int32_t, int32_t, GetDeviceFormatsInUseCallback&));
+               void(const base::UnguessableToken&,
+                    const base::UnguessableToken&,
+                    GetDeviceFormatsInUseCallback&));
   MOCK_METHOD2(OnFrameDropped,
-               void(int32_t, media::VideoCaptureFrameDropReason));
-  MOCK_METHOD2(OnLog, void(int32_t, const std::string&));
+               void(const base::UnguessableToken&,
+                    media::VideoCaptureFrameDropReason));
+  MOCK_METHOD2(OnLog, void(const base::UnguessableToken&, const std::string&));
 
   void GetDeviceSupportedFormats(
-      int32_t arg1,
-      int32_t arg2,
+      const base::UnguessableToken& arg1,
+      const base::UnguessableToken& arg2,
       GetDeviceSupportedFormatsCallback arg3) override {
     GetDeviceSupportedFormatsMock(arg1, arg2, arg3);
   }
 
-  void GetDeviceFormatsInUse(int32_t arg1,
-                             int32_t arg2,
+  void GetDeviceFormatsInUse(const base::UnguessableToken& arg1,
+                             const base::UnguessableToken& arg2,
                              GetDeviceFormatsInUseCallback arg3) override {
     GetDeviceFormatsInUseMock(arg1, arg2, arg3);
   }
@@ -106,7 +115,7 @@ class MockMojoVideoCaptureHost : public media::mojom::VideoCaptureHost {
 class VideoCaptureImplTest : public ::testing::Test {
  public:
   VideoCaptureImplTest()
-      : video_capture_impl_(new VideoCaptureImpl(kSessionId)) {
+      : video_capture_impl_(new VideoCaptureImpl(session_id_)) {
     params_small_.requested_format = media::VideoCaptureFormat(
         gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
     params_large_.requested_format = media::VideoCaptureFormat(
@@ -208,6 +217,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     video_capture_impl_->OnStateChanged(state);
   }
 
+  const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
   const std::unique_ptr<VideoCaptureImpl> video_capture_impl_;
@@ -222,7 +232,7 @@ class VideoCaptureImplTest : public ::testing::Test {
 TEST_F(VideoCaptureImplTest, Simple) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
 
   StartCapture(0, params_small_);
@@ -233,7 +243,7 @@ TEST_F(VideoCaptureImplTest, TwoClientsInSequence) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED))
       .Times(2);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
 
   StartCapture(0, params_small_);
@@ -246,7 +256,7 @@ TEST_F(VideoCaptureImplTest, LargeAndSmall) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED))
       .Times(2);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
 
   StartCapture(0, params_large_);
@@ -259,7 +269,7 @@ TEST_F(VideoCaptureImplTest, SmallAndLarge) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED))
       .Times(2);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
 
   StartCapture(0, params_small_);
@@ -273,7 +283,7 @@ TEST_F(VideoCaptureImplTest, SmallAndLarge) {
 TEST_F(VideoCaptureImplTest, GetDeviceFormats) {
   EXPECT_CALL(*this, OnDeviceSupportedFormats(_));
   EXPECT_CALL(mock_video_capture_host_,
-              GetDeviceSupportedFormatsMock(_, kSessionId, _));
+              GetDeviceSupportedFormatsMock(_, session_id_, _));
 
   GetDeviceSupportedFormats();
 }
@@ -283,7 +293,7 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormats) {
 TEST_F(VideoCaptureImplTest, TwoClientsGetDeviceFormats) {
   EXPECT_CALL(*this, OnDeviceSupportedFormats(_)).Times(2);
   EXPECT_CALL(mock_video_capture_host_,
-              GetDeviceSupportedFormatsMock(_, kSessionId, _))
+              GetDeviceSupportedFormatsMock(_, session_id_, _))
       .Times(2);
 
   GetDeviceSupportedFormats();
@@ -295,7 +305,7 @@ TEST_F(VideoCaptureImplTest, TwoClientsGetDeviceFormats) {
 TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
   EXPECT_CALL(*this, OnDeviceFormatsInUse(_));
   EXPECT_CALL(mock_video_capture_host_,
-              GetDeviceFormatsInUseMock(_, kSessionId, _));
+              GetDeviceFormatsInUseMock(_, session_id_, _));
 
   GetDeviceFormatsInUse();
 }
@@ -311,7 +321,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
   EXPECT_CALL(*this, OnFrameReady(_, _));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
       .Times(0);
@@ -338,7 +348,7 @@ TEST_F(VideoCaptureImplTest, BufferReceived_ReadOnlyShmemRegion) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
   EXPECT_CALL(*this, OnFrameReady(_, _));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_, ReleaseBuffer(_, kArbitraryBufferId, _))
       .Times(0);
@@ -364,7 +374,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
   EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_,
               ReleaseBuffer(_, kArbitraryBufferId, _));
@@ -392,7 +402,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop_ReadOnlyShmemRegion) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
   EXPECT_CALL(*this, OnFrameReady(_, _)).Times(0);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_large_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_large_));
   EXPECT_CALL(mock_video_capture_host_, Stop(_));
   EXPECT_CALL(mock_video_capture_host_,
               ReleaseBuffer(_, kArbitraryBufferId, _));
@@ -413,7 +423,7 @@ TEST_F(VideoCaptureImplTest, AlreadyStarted) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED))
       .Times(2);
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_))
       .WillOnce(DoAll(InvokeWithoutArgs([this]() {
                         video_capture_impl_->OnStateChanged(
                             media::mojom::VideoCaptureState::STARTED);
@@ -431,7 +441,7 @@ TEST_F(VideoCaptureImplTest, AlreadyStarted) {
 TEST_F(VideoCaptureImplTest, EndedBeforeStop) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STOPPED));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
 
   StartCapture(0, params_small_);
 
@@ -443,7 +453,7 @@ TEST_F(VideoCaptureImplTest, EndedBeforeStop) {
 TEST_F(VideoCaptureImplTest, ErrorBeforeStop) {
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(blink::VIDEO_CAPTURE_STATE_ERROR));
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_));
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_));
 
   StartCapture(0, params_small_);
 
@@ -461,7 +471,7 @@ TEST_F(VideoCaptureImplTest, BufferReceivedBeforeOnStarted) {
   ASSERT_TRUE(CreateAndMapSharedMemory(frame_size, &shm));
 
   InSequence s;
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_))
       .WillOnce(DoNothing());
   EXPECT_CALL(mock_video_capture_host_,
               ReleaseBuffer(_, kArbitraryBufferId, _));
@@ -495,7 +505,7 @@ TEST_F(VideoCaptureImplTest,
   ASSERT_TRUE(shm.IsValid());
 
   InSequence s;
-  EXPECT_CALL(mock_video_capture_host_, DoStart(_, kSessionId, params_small_))
+  EXPECT_CALL(mock_video_capture_host_, DoStart(_, session_id_, params_small_))
       .WillOnce(DoNothing());
   EXPECT_CALL(mock_video_capture_host_,
               ReleaseBuffer(_, kArbitraryBufferId, _));

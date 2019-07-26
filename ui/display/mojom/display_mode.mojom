@@ -4,7 +4,7 @@
 
 module display.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Corresponds to display::DisplayMode
 struct DisplayMode {

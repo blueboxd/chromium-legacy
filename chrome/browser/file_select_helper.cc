@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/safe_browsing/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/file_select_listener.h"
@@ -47,7 +48,7 @@
 #include "content/public/browser/site_instance.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -93,7 +94,7 @@ bool IsValidProfile(Profile* profile) {
   return g_browser_process->profile_manager()->IsValidProfile(profile);
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 
 bool IsDownloadAllowedBySafeBrowsing(
     safe_browsing::DownloadCheckResult result) {
@@ -532,7 +533,7 @@ void FileSelectHelper::GetSanitizedFilenameOnUIThread(
 
   base::FilePath default_file_path = profile_->last_selected_directory().Append(
       GetSanitizedFileName(params->default_file_name));
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   if (params->mode == FileChooserParams::Mode::kSave) {
     CheckDownloadRequestWithSafeBrowsing(default_file_path, std::move(params));
     return;
@@ -541,7 +542,7 @@ void FileSelectHelper::GetSanitizedFilenameOnUIThread(
   RunFileChooserOnUIThread(default_file_path, std::move(params));
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
     const base::FilePath& default_file_path,
     FileChooserParamsPtr params) {

@@ -7,9 +7,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -121,6 +123,29 @@ class VideoDecodeStatsDBImplTest : public ::testing::Test {
   // Unwraps move-only parameters to pass to the mock function.
   void GetDecodeStatsCb(bool success, std::unique_ptr<DecodeStatsEntry> entry) {
     MockGetDecodeStatsCb(success, entry.get());
+  }
+
+  void AppendToProtoDB(const VideoDescKey& key,
+                       const DecodeStatsProto* const proto) {
+    base::RunLoop run_loop;
+    base::OnceCallback<void(bool)> update_done_cb = base::BindOnce(
+        [](base::RunLoop* run_loop, bool success) {
+          ASSERT_TRUE(success);
+          run_loop->Quit();
+        },
+        Unretained(&run_loop));
+
+    using DBType = leveldb_proto::ProtoDatabase<DecodeStatsProto>;
+    std::unique_ptr<DBType::KeyEntryVector> entries =
+        std::make_unique<DBType::KeyEntryVector>();
+    entries->emplace_back(key.Serialize(), *proto);
+
+    fake_db_->UpdateEntries(std::move(entries),
+                            std::make_unique<leveldb_proto::KeyVector>(),
+                            std::move(update_done_cb));
+
+    fake_db_->UpdateCallback(true);
+    run_loop.Run();
   }
 
   MOCK_METHOD1(OnInitialize, void(bool success));
@@ -600,6 +625,85 @@ TEST_F(VideoDecodeStatsDBImplTest, EnableUnweightedEntries) {
       DecodeStatsEntry(expected_denominator,
                        unweighted_smoothness_avg * expected_denominator,
                        unweighted_efficiency_avg * expected_denominator));
+}
+
+TEST_F(VideoDecodeStatsDBImplTest, DiscardCorruptedDBData) {
+  InitializeDB();
+
+  // Inject a test clock and initialize with the current time.
+  base::SimpleTestClock clock;
+  SetDBClock(&clock);
+  clock.SetNow(base::Time::Now());
+
+  // Construct several distinct key values for storing/retrieving the corrupted
+  // data. The details of the keys are not important.
+  const auto keyA = VideoDescKey::MakeBucketedKey(
+      VP9PROFILE_PROFILE0, gfx::Size(1024, 768), 60, "", false);
+  const auto keyB = VideoDescKey::MakeBucketedKey(
+      VP9PROFILE_PROFILE1, gfx::Size(1024, 768), 60, "", false);
+  const auto keyC = VideoDescKey::MakeBucketedKey(
+      VP9PROFILE_PROFILE2, gfx::Size(1024, 768), 60, "", false);
+  const auto keyD = VideoDescKey::MakeBucketedKey(
+      VP9PROFILE_PROFILE3, gfx::Size(1024, 768), 60, "", false);
+  const auto keyE = VideoDescKey::MakeBucketedKey(
+      H264PROFILE_BASELINE, gfx::Size(1024, 768), 60, "", false);
+  const auto keyF = VideoDescKey::MakeBucketedKey(
+      H264PROFILE_MAIN, gfx::Size(1024, 768), 60, "", false);
+  const auto keyG = VideoDescKey::MakeBucketedKey(
+      H264PROFILE_EXTENDED, gfx::Size(1024, 768), 60, "", false);
+
+  // Start with a proto that represents a valid uncorrupted and unexpired entry.
+  DecodeStatsProto protoA;
+  protoA.set_frames_decoded(100);
+  protoA.set_frames_dropped(15);
+  protoA.set_frames_power_efficient(50);
+  protoA.set_last_write_date(clock.Now().ToJsTime());
+  protoA.set_unweighted_average_frames_dropped(15.0 / 100);
+  protoA.set_unweighted_average_frames_efficient(50.0 / 100);
+  protoA.set_num_unweighted_playbacks(1);
+
+  // Append it and read it back without issue.
+  AppendToProtoDB(keyA, &protoA);
+  VerifyReadStats(keyA, DecodeStatsEntry(100, 15, 50));
+
+  // Make the valid proto invalid with more dropped frames than decoded. Verify
+  // you can't read it back (filtered for corruption).
+  DecodeStatsProto protoB(protoA);
+  protoB.set_frames_dropped(150);
+  AppendToProtoDB(keyB, &protoB);
+  VerifyEmptyStats(keyB);
+
+  // Make an invalid proto with more power efficient frames than decoded. Verify
+  // you can't read it back (filtered for corruption).
+  DecodeStatsProto protoC(protoA);
+  protoC.set_frames_power_efficient(150);
+  AppendToProtoDB(keyC, &protoC);
+  VerifyEmptyStats(keyC);
+
+  // Make an invalid proto with an unweighted average dropped ratio > 1.
+  DecodeStatsProto protoD(protoA);
+  protoD.set_unweighted_average_frames_dropped(2.0);
+  AppendToProtoDB(keyD, &protoD);
+  VerifyEmptyStats(keyD);
+
+  // Make an invalid proto with an unweighted average efficient ratio > 1.
+  DecodeStatsProto protoE(protoA);
+  protoE.set_unweighted_average_frames_efficient(2.0);
+  AppendToProtoDB(keyE, &protoE);
+  VerifyEmptyStats(keyE);
+
+  // Make an invalid proto with a negative last write date.
+  DecodeStatsProto protoF(protoA);
+  protoF.set_last_write_date(-1.0);
+  AppendToProtoDB(keyF, &protoF);
+  VerifyEmptyStats(keyF);
+
+  // Make an invalid  proto with a last write date in the future.
+  DecodeStatsProto protoG(protoA);
+  protoG.set_last_write_date(
+      (clock.Now() + base::TimeDelta::FromDays(1)).ToJsTime());
+  AppendToProtoDB(keyG, &protoG);
+  VerifyEmptyStats(keyG);
 }
 
 }  // namespace media

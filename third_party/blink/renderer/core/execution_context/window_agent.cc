@@ -9,7 +9,7 @@
 namespace blink {
 
 WindowAgent::WindowAgent(v8::Isolate* isolate)
-    : Agent(isolate),
+    : Agent(isolate, base::UnguessableToken::Create()),
       mutation_observer_notifier_(
           MakeGarbageCollected<MutationObserverNotifier>()) {}
 

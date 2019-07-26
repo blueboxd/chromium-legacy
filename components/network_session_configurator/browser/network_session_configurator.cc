@@ -411,12 +411,12 @@ int GetQuicInitialRttForHandshakeMilliseconds(
   return 0;
 }
 
-base::flat_set<std::string> GetQuicHostWhitelist(
+base::flat_set<std::string> GetQuicHostAllowlist(
     const VariationParameters& quic_trial_params) {
-  std::string host_whitelist =
+  std::string host_allowlist =
       GetVariationParam(quic_trial_params, "host_whitelist");
   std::vector<std::string> host_vector = base::SplitString(
-      host_whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      host_allowlist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   return base::flat_set<std::string>(std::move(host_vector));
 }
 
@@ -560,7 +560,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     }
     params->quic_params.allow_server_migration =
         ShouldQuicAllowServerMigration(quic_trial_params);
-    params->quic_host_whitelist = GetQuicHostWhitelist(quic_trial_params);
+    params->quic_host_allowlist = GetQuicHostAllowlist(quic_trial_params);
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(quic_trial_params);

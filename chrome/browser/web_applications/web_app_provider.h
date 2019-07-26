@@ -31,13 +31,14 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
-class PendingAppManager;
+class AppRegistrar;
+class ExternalWebAppManager;
 class InstallManager;
 class InstallFinalizer;
+class PendingAppManager;
+class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
 class WebAppTabHelperBase;
-class SystemWebAppManager;
-class AppRegistrar;
 class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
@@ -115,8 +116,6 @@ class WebAppProvider : public WebAppProviderBase,
   void StartRegistry();
   void OnRegistryReady();
 
-  void OnScanForExternalWebApps(std::vector<ExternalInstallOptions>);
-
   // Called just before profile destruction. All WebContents must be destroyed
   // by the end of this method.
   void ProfileDestroyed();
@@ -134,6 +133,7 @@ class WebAppProvider : public WebAppProviderBase,
   std::unique_ptr<InstallFinalizer> install_finalizer_;
   std::unique_ptr<InstallManager> install_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
+  std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
 
   // Legacy extension-based subsystems:

@@ -186,16 +186,6 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
       std::move(response_override_));
 }
 
-void EmbeddedSharedWorkerStub::WaitForServiceWorkerControllerInfo(
-    blink::WebServiceWorkerNetworkProvider* web_network_provider,
-    base::OnceClosure callback) {
-  ServiceWorkerProviderContext* context =
-      static_cast<ServiceWorkerNetworkProviderForSharedWorker*>(
-          web_network_provider)
-          ->context();
-  context->PingContainerHost(std::move(callback));
-}
-
 scoped_refptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {

@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -56,7 +57,12 @@ void LogVideoCaptureError(media::VideoCaptureError error) {
       static_cast<int>(media::VideoCaptureError::kMaxValue) + 1);
 }
 
-const media::VideoCaptureSessionId kFakeSessionId = -1;
+const base::UnguessableToken& FakeSessionId() {
+  static const base::NoDestructor<base::UnguessableToken> fake_session_id(
+      base::UnguessableToken::Deserialize(0xFFFFFFFFFFFFFFFFU,
+                                          0xFFFFFFFFFFFFFFFFU));
+  return *fake_session_id;
+}
 
 }  // namespace
 
@@ -66,21 +72,21 @@ namespace content {
 class VideoCaptureManager::CaptureDeviceStartRequest {
  public:
   CaptureDeviceStartRequest(VideoCaptureController* controller,
-                            media::VideoCaptureSessionId session_id,
+                            const media::VideoCaptureSessionId& session_id,
                             const media::VideoCaptureParams& params);
   VideoCaptureController* controller() const { return controller_; }
-  media::VideoCaptureSessionId session_id() const { return session_id_; }
+  const base::UnguessableToken& session_id() const { return session_id_; }
   media::VideoCaptureParams params() const { return params_; }
 
  private:
   VideoCaptureController* const controller_;
-  const media::VideoCaptureSessionId session_id_;
+  const base::UnguessableToken session_id_;
   const media::VideoCaptureParams params_;
 };
 
 VideoCaptureManager::CaptureDeviceStartRequest::CaptureDeviceStartRequest(
     VideoCaptureController* controller,
-    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureSessionId& session_id,
     const media::VideoCaptureParams& params)
     : controller_(controller), session_id_(session_id), params_(params) {}
 
@@ -88,8 +94,7 @@ VideoCaptureManager::VideoCaptureManager(
     std::unique_ptr<VideoCaptureProvider> video_capture_provider,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb,
     ScreenlockMonitor* monitor)
-    : new_capture_session_id_(1),
-      video_capture_provider_(std::move(video_capture_provider)),
+    : video_capture_provider_(std::move(video_capture_provider)),
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       screenlock_monitor_(monitor) {
   if (screenlock_monitor_) {
@@ -147,14 +152,15 @@ void VideoCaptureManager::EnumerateDevices(
                           base::Passed(&client_callback))));
 }
 
-int VideoCaptureManager::Open(const blink::MediaStreamDevice& device) {
+base::UnguessableToken VideoCaptureManager::Open(
+    const blink::MediaStreamDevice& device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                        "VideoCaptureManager::Open", TRACE_EVENT_SCOPE_PROCESS);
 
   // Generate a new id for the session being opened.
-  const media::VideoCaptureSessionId capture_session_id =
-      new_capture_session_id_++;
+  const base::UnguessableToken capture_session_id =
+      base::UnguessableToken::Create();
 
   DCHECK(sessions_.find(capture_session_id) == sessions_.end());
   std::ostringstream string_stream;
@@ -175,7 +181,8 @@ int VideoCaptureManager::Open(const blink::MediaStreamDevice& device) {
   return capture_session_id;
 }
 
-void VideoCaptureManager::Close(int capture_session_id) {
+void VideoCaptureManager::Close(
+    const base::UnguessableToken& capture_session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
                        "VideoCaptureManager::Close", TRACE_EVENT_SCOPE_PROCESS);
@@ -211,7 +218,7 @@ void VideoCaptureManager::Close(int capture_session_id) {
 }
 
 void VideoCaptureManager::QueueStartDevice(
-    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureSessionId& session_id,
     VideoCaptureController* controller,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -328,7 +335,7 @@ void VideoCaptureManager::OnDeviceLaunched(VideoCaptureController* controller) {
   if (blink::IsVideoDesktopCaptureMediaType(controller->stream_type())) {
     const media::VideoCaptureSessionId session_id =
         device_start_request_queue_.front().session_id();
-    DCHECK(session_id != kFakeSessionId);
+    DCHECK_NE(session_id, FakeSessionId());
     MaybePostDesktopCaptureWindowId(session_id);
   }
 
@@ -377,7 +384,7 @@ void VideoCaptureManager::OnDeviceConnectionLost(
 }
 
 void VideoCaptureManager::ConnectClient(
-    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureSessionId& session_id,
     const media::VideoCaptureParams& params,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
@@ -496,7 +503,7 @@ void VideoCaptureManager::PauseCaptureForClient(
 }
 
 void VideoCaptureManager::ResumeCaptureForClient(
-    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureSessionId& session_id,
     const media::VideoCaptureParams& params,
     VideoCaptureController* controller,
     VideoCaptureControllerID client_id,
@@ -529,7 +536,7 @@ void VideoCaptureManager::RequestRefreshFrameForClient(
 }
 
 bool VideoCaptureManager::GetDeviceSupportedFormats(
-    media::VideoCaptureSessionId capture_session_id,
+    const media::VideoCaptureSessionId& capture_session_id,
     media::VideoCaptureFormats* supported_formats) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(supported_formats->empty());
@@ -558,7 +565,7 @@ bool VideoCaptureManager::GetDeviceSupportedFormats(
 }
 
 bool VideoCaptureManager::GetDeviceFormatsInUse(
-    media::VideoCaptureSessionId capture_session_id,
+    const media::VideoCaptureSessionId& capture_session_id,
     media::VideoCaptureFormats* formats_in_use) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(formats_in_use->empty());
@@ -590,7 +597,7 @@ VideoCaptureManager::GetDeviceFormatInUse(
 }
 
 void VideoCaptureManager::SetDesktopCaptureWindowId(
-    media::VideoCaptureSessionId session_id,
+    const media::VideoCaptureSessionId& session_id,
     gfx::NativeViewId window_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(2) << "SetDesktopCaptureWindowId called for session " << session_id;
@@ -600,7 +607,7 @@ void VideoCaptureManager::SetDesktopCaptureWindowId(
 }
 
 void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
-    media::VideoCaptureSessionId session_id) {
+    const media::VideoCaptureSessionId& session_id) {
   auto session_it = sessions_.find(session_id);
   if (session_it == sessions_.end())
     return;
@@ -637,7 +644,7 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
 }
 
 void VideoCaptureManager::GetPhotoState(
-    int session_id,
+    const base::UnguessableToken& session_id,
     media::VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -657,7 +664,7 @@ void VideoCaptureManager::GetPhotoState(
 }
 
 void VideoCaptureManager::SetPhotoOptions(
-    int session_id,
+    const base::UnguessableToken& session_id,
     media::mojom::PhotoSettingsPtr settings,
     media::VideoCaptureDevice::SetPhotoOptionsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -677,7 +684,7 @@ void VideoCaptureManager::SetPhotoOptions(
 }
 
 void VideoCaptureManager::TakePhoto(
-    int session_id,
+    const base::UnguessableToken& session_id,
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_INSTANT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
@@ -703,7 +710,7 @@ void VideoCaptureManager::TakePhoto(
 
 void VideoCaptureManager::OnOpened(
     blink::mojom::MediaStreamType stream_type,
-    media::VideoCaptureSessionId capture_session_id) {
+    const media::VideoCaptureSessionId& capture_session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (auto& listener : listeners_)
     listener.Opened(stream_type, capture_session_id);
@@ -711,7 +718,7 @@ void VideoCaptureManager::OnOpened(
 
 void VideoCaptureManager::OnClosed(
     blink::mojom::MediaStreamType stream_type,
-    media::VideoCaptureSessionId capture_session_id) {
+    const media::VideoCaptureSessionId& capture_session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (auto& listener : listeners_)
     listener.Closed(stream_type, capture_session_id);
@@ -786,7 +793,7 @@ void VideoCaptureManager::DestroyControllerIfNoClients(
 }
 
 VideoCaptureController* VideoCaptureManager::LookupControllerBySessionId(
-    int session_id) {
+    const base::UnguessableToken& session_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SessionMap::const_iterator session_it = sessions_.find(session_id);
   if (session_it == sessions_.end())
@@ -837,7 +844,7 @@ media::VideoCaptureDeviceInfo* VideoCaptureManager::GetDeviceInfoById(
 }
 
 VideoCaptureController* VideoCaptureManager::GetOrCreateController(
-    media::VideoCaptureSessionId capture_session_id,
+    const media::VideoCaptureSessionId& capture_session_id,
     const media::VideoCaptureParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -915,7 +922,7 @@ void VideoCaptureManager::ResumeDevices() {
     if (!device_in_queue) {
       // Session ID is only valid for Screen capture. So we can fake it to
       // resume video capture devices here.
-      QueueStartDevice(kFakeSessionId, controller.get(),
+      QueueStartDevice(FakeSessionId(), controller.get(),
                        controller->parameters());
     }
   }

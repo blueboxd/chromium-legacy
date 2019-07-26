@@ -45,6 +45,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -79,7 +80,7 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -1078,7 +1079,7 @@ void PageInfoBubbleView::DidChangeVisibleSecurityState() {
                                   *helper->GetVisibleSecurityState());
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 std::unique_ptr<PageInfoUI::SecurityDescription>
 PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse(
     bool is_enterprise_password) const {

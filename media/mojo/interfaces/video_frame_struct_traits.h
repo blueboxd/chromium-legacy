@@ -14,7 +14,7 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
 namespace mojo {

@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class DOMException;
+
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
                                         const NDEFRecordInit* record);
 
@@ -56,6 +58,9 @@ device::mojom::blink::NDEFRecordType StringToNDEFRecordType(
 
 device::mojom::blink::NFCPushTarget StringToNFCPushTarget(
     const WTF::String& target);
+
+DOMException* NFCErrorTypeToDOMException(
+    device::mojom::blink::NFCErrorType error_type);
 
 }  // namespace blink
 

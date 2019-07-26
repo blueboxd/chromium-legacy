@@ -140,7 +140,7 @@ class NET_EXPORT HttpNetworkSession {
     QuicParams quic_params;
 
     // If non-empty, QUIC will only be spoken to hosts in this list.
-    base::flat_set<std::string> quic_host_whitelist;
+    base::flat_set<std::string> quic_host_allowlist;
 
     // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
     // each protocol.

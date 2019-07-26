@@ -228,7 +228,7 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   if (paint_info.context.dark_mode_settings().mode != DarkMode::kOff)
     return true;
 
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
 
   WebThemeEngine::ExtraParams extra_params;
   extra_params.text_field.is_text_area = part == kTextAreaPart;
@@ -352,7 +352,7 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = i.context.Canvas();
   extra_params.slider.vertical =
-      o.StyleRef().Appearance() == kSliderVerticalPart;
+      o.StyleRef().EffectiveAppearance() == kSliderVerticalPart;
   extra_params.slider.in_drag = false;
 
   PaintSliderTicks(o, i, rect);
@@ -399,7 +399,8 @@ bool ThemePainterDefault::PaintSliderThumb(const Node* node,
                                            const IntRect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   cc::PaintCanvas* canvas = paint_info.context.Canvas();
-  extra_params.slider.vertical = style.Appearance() == kSliderThumbVerticalPart;
+  extra_params.slider.vertical =
+      style.EffectiveAppearance() == kSliderThumbVerticalPart;
   extra_params.slider.in_drag = LayoutTheme::IsPressed(node);
 
   // FIXME: Mock theme doesn't handle zoomed sliders.

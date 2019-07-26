@@ -16,7 +16,6 @@
 #include "ui/gl/ca_renderer_layer_params.h"
 
 namespace viz {
-class DisplayResourceProvider;
 class DrawQuad;
 class RenderPassDrawQuad;
 
@@ -73,18 +72,6 @@ class VIZ_SERVICE_EXPORT CALayerOverlay {
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;
-
-// Returns true if all quads in the root render pass have been replaced by
-// CALayerOverlays.
-bool ProcessForCALayerOverlays(
-    DisplayResourceProvider* resource_provider,
-    const gfx::RectF& display_rect,
-    const QuadList& quad_list,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
-        render_pass_filters,
-    const base::flat_map<RenderPassId, cc::FilterOperations*>&
-        render_pass_backdrop_filters,
-    CALayerOverlayList* ca_layer_overlays);
 
 }  // namespace viz
 

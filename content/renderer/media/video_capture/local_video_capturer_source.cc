@@ -15,7 +15,7 @@ namespace content {
 
 LocalVideoCapturerSource::LocalVideoCapturerSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int session_id)
+    const base::UnguessableToken& session_id)
     : session_id_(session_id),
       manager_(RenderThreadImpl::current()->video_capture_impl_manager()),
       release_device_cb_(manager_->UseDevice(session_id_)),
@@ -122,7 +122,7 @@ void LocalVideoCapturerSource::OnStateUpdate(blink::VideoCaptureState state) {
 // static
 std::unique_ptr<media::VideoCapturerSource> LocalVideoCapturerSource::Create(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    int session_id) {
+    const base::UnguessableToken& session_id) {
   return std::make_unique<LocalVideoCapturerSource>(std::move(task_runner),
                                                     session_id);
 }

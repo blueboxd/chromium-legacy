@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -41,7 +42,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #endif
 
@@ -262,14 +263,14 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_SUMMARY,
                                        IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
     case PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       return CreateSecurityDescriptionForPasswordReuse(
           /*is_enterprise_password=*/false);
 #endif
       NOTREACHED();
       break;
     case PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       return CreateSecurityDescriptionForPasswordReuse(
           /*is_enterprise_password=*/true);
 #endif

@@ -5,7 +5,7 @@
 module ui.ozone.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
 
 // The DeviceCursor setting interface provided by a Mojo-enabled Ozone platform

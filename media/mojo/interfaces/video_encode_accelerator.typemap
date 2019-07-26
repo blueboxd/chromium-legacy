@@ -23,7 +23,7 @@ deps = [
   "//base",
   "//media",
   "//media/base/ipc",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 type_mappings = [

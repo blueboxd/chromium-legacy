@@ -8,7 +8,7 @@ import "gpu/ipc/common/mailbox.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "services/viz/public/interfaces/compositing/texture_releaser.mojom";
 import "skia/public/interfaces/bitmap.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 
 // See components/viz/common/frame_sinks/copy_output_result.h.

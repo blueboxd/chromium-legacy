@@ -52,7 +52,7 @@ if (enable_extensions) {
       "//content/public/common:interfaces",
       "//extensions/common/api:mojom",
       "//mojo/public/mojom/base",
-      "//ui/gfx/geometry/mojo",
+      "//ui/gfx/geometry/mojom",
       "//url/mojom:url_mojom_gurl",
     ]
 

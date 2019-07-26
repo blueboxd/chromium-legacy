@@ -42,7 +42,7 @@ class GuestOsSharePath : public KeyedService,
  public:
   using SharePathCallback =
       base::OnceCallback<void(const base::FilePath&, bool, std::string)>;
-  using MountEventSeneschalCallback =
+  using SeneschalCallback =
       base::RepeatingCallback<void(const std::string& operation,
                                    const base::FilePath& cros_path,
                                    const base::FilePath& container_path,
@@ -134,14 +134,9 @@ class GuestOsSharePath : public KeyedService,
   // Visible for testing.
   void PathDeleted(const base::FilePath& path);
 
-  // Don't run file watchers for tests.
-  void set_no_file_watchers_for_testing() {
-    no_file_watchers_for_testing_ = true;
-  }
-  // Allow seneschal callback for mount events to be overridden for testing.
-  void set_mount_event_seneschal_callback_for_testing(
-      MountEventSeneschalCallback callback) {
-    mount_event_seneschal_callback_ = std::move(callback);
+  // Allow seneschal callback to be overridden for testing.
+  void set_seneschal_callback_for_testing(SeneschalCallback callback) {
+    seneschal_callback_ = std::move(callback);
   }
 
  private:
@@ -160,8 +155,12 @@ class GuestOsSharePath : public KeyedService,
   // Callback for FilePathWatcher.
   void OnFileChanged(const base::FilePath& path, bool error);
 
-  // Blocking function to check if a path is deleted.
-  void CheckIfPathDeleted(const base::FilePath& path);
+  // Gets the Volume mount that this path belongs to on UI thread.
+  base::FilePath GetVolumeMountOnUIThread(const base::FilePath& path);
+
+  // Blocking function to check if the mount_path of a path is removed.
+  void CheckIfVolumeMountRemoved(const base::FilePath& path,
+                                 const base::FilePath& mount_path);
 
   // Returns info for specified path or nullptr if not found.
   SharedPathInfo* FindSharedPathInfo(const base::FilePath& path);
@@ -170,11 +169,10 @@ class GuestOsSharePath : public KeyedService,
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   bool first_for_session_ = true;
 
-  // Allow callback for mount event to be overidden for testing.
-  MountEventSeneschalCallback mount_event_seneschal_callback_;
+  // Allow seneschal callback to be overridden for testing.
+  SeneschalCallback seneschal_callback_;
   base::ObserverList<Observer>::Unchecked observers_;
   std::map<base::FilePath, SharedPathInfo> shared_paths_;
-  bool no_file_watchers_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GuestOsSharePath);
 };  // class

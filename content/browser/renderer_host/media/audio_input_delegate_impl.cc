@@ -113,7 +113,7 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
     uint32_t shared_memory_count,
     int stream_id,
-    int session_id,
+    const base::UnguessableToken& session_id,
     bool automatic_gain_control,
     const media::AudioParameters& audio_parameters,
     EventHandler* subscriber) {
@@ -147,10 +147,10 @@ std::unique_ptr<media::AudioInputDelegate> AudioInputDelegateImpl::Create(
 
   LogMessage(
       stream_id,
-      base::StringPrintf("OnCreateStream(render_frame_id=%d, session_id=%d): "
+      base::StringPrintf("OnCreateStream(render_frame_id=%d, session_id=%s): "
                          "device_name=%s, AGC=%d",
-                         render_frame_id, session_id, device->name.c_str(),
-                         automatic_gain_control));
+                         render_frame_id, session_id.ToString().c_str(),
+                         device->name.c_str(), automatic_gain_control));
 
   return base::WrapUnique(new AudioInputDelegateImpl(
       audio_manager, mirroring_manager, user_input_monitor,

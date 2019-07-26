@@ -9,7 +9,7 @@
 #include "media/mojo/interfaces/media_types.mojom.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
 #include "media/video/supported_video_decoder_config.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
 namespace mojo {
 

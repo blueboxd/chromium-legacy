@@ -172,7 +172,8 @@ bool PepperPlatformAudioInput::Initialize(
   return true;
 }
 
-void PepperPlatformAudioInput::InitializeOnIOThread(int session_id) {
+void PepperPlatformAudioInput::InitializeOnIOThread(
+    const base::UnguessableToken& session_id) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
   if (ipc_startup_state_ != kStopped)
@@ -241,8 +242,8 @@ void PepperPlatformAudioInput::OnDeviceOpened(int request_id,
     label_ = label;
 
     if (client_) {
-      int session_id = device_manager->GetSessionID(
-          PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
+      base::UnguessableToken session_id =
+          device_manager->GetSessionID(PP_DEVICETYPE_DEV_AUDIOCAPTURE, label);
       io_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&PepperPlatformAudioInput::InitializeOnIOThread, this,

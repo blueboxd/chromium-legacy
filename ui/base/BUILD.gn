@@ -999,7 +999,7 @@ test("ui_base_unittests") {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   } else {
     deps += [
-      "//ui/base/accelerators/mojo:unittests",
+      "//ui/base/accelerators/mojom:unittests",
       "//ui/base/mojom:unittests",
     ]
   }

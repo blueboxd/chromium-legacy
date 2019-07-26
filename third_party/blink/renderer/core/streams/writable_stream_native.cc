@@ -5,10 +5,11 @@
 #include "third_party/blink/renderer/core/streams/writable_stream_native.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/streams/count_queuing_strategy.h"
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
+#include "third_party/blink/renderer/core/streams/queuing_strategy_init.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_native.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
@@ -225,12 +226,14 @@ WritableStreamNative* WritableStreamNative::CreateWithCountQueueingStrategy(
     UnderlyingSinkBase* underlying_sink,
     size_t high_water_mark) {
   // TODO(crbug.com/902633): This method of constructing a WritableStream
-  // introduces unnecessary trips through the V8. Perhaps we should implement
-  // algorithms based on an UnderlyingSinkBase, or C++ stream implementations
-  // should provide the algorithms directly.
-  ScriptValue strategy = ReadableStreamOperations::CreateCountQueuingStrategy(
-      script_state, high_water_mark);
-  if (strategy.IsEmpty())
+  // introduces unnecessary trips through V8. Implement algorithms based on an
+  // UnderlyingSinkBase.
+  auto* init = QueuingStrategyInit::Create();
+  init->setHighWaterMark(
+      ScriptValue::From(script_state, static_cast<double>(high_water_mark)));
+  auto* strategy = CountQueuingStrategy::Create(script_state, init);
+  ScriptValue strategy_value = ScriptValue::From(script_state, strategy);
+  if (strategy_value.IsEmpty())
     return nullptr;
 
   auto underlying_sink_value = ScriptValue::From(script_state, underlying_sink);
@@ -239,7 +242,7 @@ WritableStreamNative* WritableStreamNative::CreateWithCountQueueingStrategy(
                                  ExceptionState::kConstructionContext,
                                  "WritableStream");
   auto* stream = MakeGarbageCollected<WritableStreamNative>(
-      script_state, underlying_sink_value, strategy, exception_state);
+      script_state, underlying_sink_value, strategy_value, exception_state);
   if (exception_state.HadException())
     return nullptr;
   return stream;

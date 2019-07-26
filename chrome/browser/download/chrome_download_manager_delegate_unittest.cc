@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,7 +24,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -38,6 +39,7 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -49,7 +51,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #endif
 
@@ -1059,7 +1061,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
 }
 #endif  // OS_ANDROID
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 namespace {
 
 struct SafeBrowsingTestParameters {

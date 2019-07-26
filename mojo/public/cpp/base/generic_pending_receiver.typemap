@@ -12,4 +12,4 @@ public_deps = [
 deps = [
   "//mojo/public/cpp/base:shared_typemap_traits",
 ]
-type_mappings = [ "mojo_base.mojom.GenericPendingReceiver=::mojo::GenericPendingReceiver[move_only]" ]
+type_mappings = [ "mojo_base.mojom.GenericPendingReceiver=::mojo::GenericPendingReceiver[move_only,nullable_is_same_type]" ]

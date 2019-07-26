@@ -16,8 +16,6 @@ blink_modules_sources("nfc") {
     "nfc.h",
     "nfc_constants.cc",
     "nfc_constants.h",
-    "nfc_error.cc",
-    "nfc_error.h",
     "nfc_error_event.cc",
     "nfc_error_event.h",
     "nfc_proxy.cc",

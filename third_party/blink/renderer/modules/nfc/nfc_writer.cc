@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
@@ -116,8 +115,8 @@ void NFCWriter::OnMojoConnectionError() {
   // If the mojo connection breaks, all push requests will be reject with a
   // default error.
   for (ScriptPromiseResolver* resolver : requests_) {
-    resolver->Reject(NFCError::Take(
-        resolver, device::mojom::blink::NFCErrorType::NOT_READABLE));
+    resolver->Reject(NFCErrorTypeToDOMException(
+        device::mojom::blink::NFCErrorType::NOT_READABLE));
   }
   requests_.clear();
 }
@@ -156,7 +155,7 @@ void NFCWriter::OnRequestCompleted(ScriptPromiseResolver* resolver,
   if (error.is_null())
     resolver->Resolve();
   else
-    resolver->Reject(NFCError::Take(resolver, error->error_type));
+    resolver->Reject(NFCErrorTypeToDOMException(error->error_type));
 }
 
 }  // namespace blink

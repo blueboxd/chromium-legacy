@@ -40,7 +40,7 @@ MojoAudioOutputIPC::~MojoAudioOutputIPC() {
 
 void MojoAudioOutputIPC::RequestDeviceAuthorization(
     media::AudioOutputIPCDelegate* delegate,
-    int session_id,
+    const base::UnguessableToken& session_id,
     const std::string& device_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate);
@@ -76,7 +76,8 @@ void MojoAudioOutputIPC::CreateStream(
     // Since the delegate didn't explicitly request authorization, we shouldn't
     // send a callback to it.
     DoRequestDeviceAuthorization(
-        0, media::AudioDeviceDescription::kDefaultDeviceId,
+        /*session_id=*/base::UnguessableToken(),
+        media::AudioDeviceDescription::kDefaultDeviceId,
         base::BindOnce(&TrivialAuthorizedCallback));
   }
 
@@ -179,7 +180,7 @@ MojoAudioOutputIPC::MakeProviderRequest() {
 }
 
 void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
-    int session_id,
+    const base::UnguessableToken& session_id,
     const std::string& device_id,
     AuthorizationCB callback) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
@@ -201,8 +202,11 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
 
   static_assert(sizeof(int) == sizeof(int32_t),
                 "sizeof(int) == sizeof(int32_t)");
-  factory->RequestDeviceAuthorization(MakeProviderRequest(), session_id,
-                                      device_id, std::move(callback));
+  factory->RequestDeviceAuthorization(
+      MakeProviderRequest(),
+      session_id.is_empty() ? base::Optional<base::UnguessableToken>()
+                            : session_id,
+      device_id, std::move(callback));
 }
 
 void MojoAudioOutputIPC::ReceivedDeviceAuthorization(

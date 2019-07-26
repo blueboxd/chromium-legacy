@@ -67,7 +67,8 @@ class PepperMediaDeviceManager
   void CancelOpenDevice(int request_id);
   void CloseDevice(const std::string& label);
   // Gets audio/video session ID given a label.
-  int GetSessionID(PP_DeviceType_Dev type, const std::string& label);
+  base::UnguessableToken GetSessionID(PP_DeviceType_Dev type,
+                                      const std::string& label);
 
   // Stream type conversion.
   static blink::mojom::MediaStreamType FromPepperDeviceType(

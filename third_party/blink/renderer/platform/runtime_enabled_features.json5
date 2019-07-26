@@ -135,12 +135,10 @@
     {
       name: "AutomaticLazyFrameLoading",
       depends_on: ["LazyFrameLoading"],
-      status: "experimental",
     },
     {
       name: "AutomaticLazyImageLoading",
       depends_on: ["LazyImageLoading"],
-      status: "experimental",
     },
     {
       name: "AutomationControlled",

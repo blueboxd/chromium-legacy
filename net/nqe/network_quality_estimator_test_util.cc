@@ -129,16 +129,7 @@ TestNetworkQualityEstimator::GetEffectiveConnectionType() const {
 }
 
 EffectiveConnectionType
-TestNetworkQualityEstimator::GetRecentEffectiveConnectionType(
-    const base::TimeTicks& start_time) const {
-  if (recent_effective_connection_type_)
-    return recent_effective_connection_type_.value();
-  return NetworkQualityEstimator::GetRecentEffectiveConnectionType(start_time);
-}
-
-EffectiveConnectionType
-TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
-    const base::TimeTicks& start_time,
+TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     base::TimeDelta* http_rtt,
     base::TimeDelta* transport_rtt,
     base::TimeDelta* end_to_end_rtt,
@@ -146,18 +137,17 @@ TestNetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     size_t* observations_count,
     size_t* end_to_end_rtt_observation_count) const {
   if (recent_effective_connection_type_) {
-    GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, start_time, http_rtt,
-                 nullptr);
-    GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT, start_time,
-                 transport_rtt, observations_count);
-    GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps);
+    GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, base::TimeTicks(),
+                 http_rtt, nullptr);
+    GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
+                 base::TimeTicks(), transport_rtt, observations_count);
+    GetRecentDownlinkThroughputKbps(base::TimeTicks(),
+                                    downstream_throughput_kbps);
     return recent_effective_connection_type_.value();
   }
-  return NetworkQualityEstimator::
-      GetRecentEffectiveConnectionTypeAndNetworkQuality(
-          start_time, http_rtt, transport_rtt, end_to_end_rtt,
-          downstream_throughput_kbps, observations_count,
-          end_to_end_rtt_observation_count);
+  return NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
+      http_rtt, transport_rtt, end_to_end_rtt, downstream_throughput_kbps,
+      observations_count, end_to_end_rtt_observation_count);
 }
 
 bool TestNetworkQualityEstimator::GetRecentRTT(

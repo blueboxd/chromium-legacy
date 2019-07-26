@@ -77,14 +77,15 @@ OldRenderFrameAudioOutputStreamFactory::
 
 void OldRenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization(
     media::mojom::AudioOutputStreamProviderRequest stream_provider_request,
-    int32_t session_id,
+    const base::Optional<base::UnguessableToken>& session_id,
     const std::string& device_id,
     RequestDeviceAuthorizationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const base::TimeTicks auth_start_time = base::TimeTicks::Now();
 
   context_->RequestDeviceAuthorization(
-      render_frame_id_, session_id, device_id,
+      render_frame_id_, session_id.value_or(base::UnguessableToken()),
+      device_id,
       base::BindOnce(
           &OldRenderFrameAudioOutputStreamFactory::AuthorizationCompleted,
           weak_ptr_factory_.GetWeakPtr(), auth_start_time,

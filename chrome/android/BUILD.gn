@@ -383,7 +383,7 @@ android_library("chrome_java") {
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/base/mojom:mojom_java",
-    "//ui/gfx/geometry/mojo:mojo_java",
+    "//ui/gfx/geometry/mojom:mojom_java",
     "//url/mojom:url_mojom_gurl_java",
   ]
 

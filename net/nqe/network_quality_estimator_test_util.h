@@ -91,18 +91,11 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
 
   // Returns the effective connection type that was set using
   // |set_effective_connection_type|. If the connection type has not been set,
-  // then the base implementation is called.
-  EffectiveConnectionType GetRecentEffectiveConnectionType(
-      const base::TimeTicks& start_time) const override;
-
-  // Returns the effective connection type that was set using
-  // |set_effective_connection_type|. If the connection type has not been set,
   // then the base implementation is called. |http_rtt|, |transport_rtt| and
   // |downstream_throughput_kbps| are set to the values that were previously
   // set by calling set_recent_http_rtt(), set_recent_transport_rtt()
   // and set_recent_transport_rtt() methods, respectively.
-  EffectiveConnectionType GetRecentEffectiveConnectionTypeAndNetworkQuality(
-      const base::TimeTicks& start_time,
+  EffectiveConnectionType GetRecentEffectiveConnectionTypeUsingMetrics(
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
       base::TimeDelta* end_to_end_rtt,

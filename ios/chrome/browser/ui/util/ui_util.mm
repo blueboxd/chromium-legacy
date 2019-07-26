@@ -97,6 +97,12 @@ CGRect CGRectMakeAlignedAndCenteredAt(CGFloat x, CGFloat y, CGFloat width) {
       CGRectMake(x - width / 2.0, y - width / 2.0, width, width));
 }
 
+CGRect CGRectMakeCenteredRectInFrame(CGSize frameSize, CGSize rectSize) {
+  CGFloat rectX = AlignValueToPixel((frameSize.width - rectSize.width) / 2);
+  CGFloat rectY = AlignValueToPixel((frameSize.height - rectSize.height) / 2);
+  return CGRectMake(rectX, rectY, rectSize.width, rectSize.height);
+}
+
 bool AreCGFloatsEqual(CGFloat a, CGFloat b) {
   return std::fabs(a - b) <= std::numeric_limits<CGFloat>::epsilon();
 }

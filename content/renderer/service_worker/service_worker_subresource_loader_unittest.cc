@@ -402,7 +402,6 @@ class FakeServiceWorkerContainerHost
       blink::mojom::ServiceWorkerContainerHostRequest request) override {
     bindings_.AddBinding(this, std::move(request));
   }
-  void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
   void HintToUpdateServiceWorker() override { NOTIMPLEMENTED(); }
   void OnExecutionReady() override {}
 

@@ -1,0 +1,190 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/password_manager/core/browser/password_manager_onboarding.h"
+
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "base/bind_helpers.h"
+#include "base/macros.h"
+#include "base/stl_util.h"
+#include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
+#include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+using autofill::PasswordForm;
+using base::ASCIIToUTF16;
+
+namespace password_manager {
+
+class OnboardingStateUpdateTest : public testing::Test {
+ public:
+  OnboardingStateUpdateTest() = default;
+
+  void SetUp() override {
+    store_ = new TestPasswordStore;
+    store_->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+    prefs_.reset(new TestingPrefServiceSimple());
+    prefs_->registry()->RegisterIntegerPref(
+        prefs::kPasswordManagerOnboardingState,
+        static_cast<int>(OnboardingState::kDoNotShow));
+  }
+
+  void TearDown() override {
+    store_->ShutdownOnUIThread();
+
+    // It's needed to cleanup the password store asynchronously.
+    RunAllPendingTasks();
+  }
+
+  PrefService* GetPrefs() { return prefs_.get(); }
+
+  void RunAllPendingTasks() { scoped_task_environment_.RunUntilIdle(); }
+
+  PasswordForm MakeSimpleForm(int id) {
+    PasswordForm form;
+    form.origin = GURL("https://example.org/");
+    form.signon_realm = "https://example.org/";
+    form.username_value = ASCIIToUTF16("username") + base::NumberToString16(id);
+    form.password_value = ASCIIToUTF16("p4ssword") + base::NumberToString16(id);
+    return form;
+  }
+
+  PasswordForm MakeSimpleBlacklistedForm(int id) {
+    PasswordForm form;
+    std::string link = "https://example" + base::NumberToString(id) + ".org/";
+    form.origin = GURL(link);
+    form.signon_realm = link;
+    form.blacklisted_by_user = true;
+    return form;
+  }
+
+ protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  scoped_refptr<TestPasswordStore> store_;
+  std::unique_ptr<TestingPrefServiceSimple> prefs_;
+};
+
+TEST_F(OnboardingStateUpdateTest, CredentialsCountUnderThreshold) {
+  // Check that the count of credentials is handled correctly.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  for (int id = 0; id < kOnboardingCredentialsThreshold - 1; ++id) {
+    store_->AddLogin(MakeSimpleForm(id));
+  }
+  constexpr int kNumberOfBlacklistedLogins = 5;
+  for (int id = 0; id < kNumberOfBlacklistedLogins; ++id) {
+    store_->AddLogin(MakeSimpleBlacklistedForm(id));
+  }
+  RunAllPendingTasks();
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kShouldShow));
+}
+
+TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterDoNotShow) {
+  // Check that the threshold is handled correctly.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  for (int id = 0; id < kOnboardingCredentialsThreshold; ++id) {
+    store_->AddLogin(MakeSimpleForm(id));
+  }
+  RunAllPendingTasks();
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kDoNotShow));
+}
+
+TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterShouldShow) {
+  // Check that the threshold is handled correctly
+  // in case the current state is |kShouldShow|.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShouldShow));
+  for (int id = 0; id < kOnboardingCredentialsThreshold; ++id) {
+    store_->AddLogin(MakeSimpleForm(id));
+  }
+  RunAllPendingTasks();
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kDoNotShow));
+}
+
+TEST_F(OnboardingStateUpdateTest, CredentialsCountThresholdHitAfterShown) {
+  // Check that the threshold is handled correctly
+  // in case the current state is |kShown|.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShown));
+  for (int id = 0; id < kOnboardingCredentialsThreshold; ++id) {
+    store_->AddLogin(MakeSimpleForm(id));
+  }
+  RunAllPendingTasks();
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kShown));
+}
+
+TEST_F(OnboardingStateUpdateTest, DoNotShowAfterShown) {
+  // If the current state is |kShown| it should stay this way,
+  // so that the onboarding won't be shown twice.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShown));
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kShown));
+}
+
+TEST_F(OnboardingStateUpdateTest, FeatureDisabledNotShown) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kDoNotShow));
+}
+
+TEST_F(OnboardingStateUpdateTest, FeatureDisabledAfterShowing) {
+  prefs_->SetInteger(prefs::kPasswordManagerOnboardingState,
+                     static_cast<int>(OnboardingState::kShown));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPasswordManagerOnboardingAndroid);
+  UpdateOnboardingState(store_, GetPrefs(), base::TimeDelta::FromSeconds(0));
+  RunAllPendingTasks();
+  EXPECT_EQ(prefs_->GetInteger(prefs::kPasswordManagerOnboardingState),
+            static_cast<int>(OnboardingState::kShown));
+}
+
+}  // namespace password_manager

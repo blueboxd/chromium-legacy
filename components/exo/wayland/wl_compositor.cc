@@ -63,12 +63,8 @@ void surface_attach(wl_client* client,
                     wl_resource* buffer,
                     int32_t x,
                     int32_t y) {
-  // TODO(reveman): Implement buffer offset support.
-  DLOG_IF(WARNING, x || y) << "Unsupported buffer offset: "
-                           << gfx::Point(x, y).ToString();
-
   GetUserDataAs<Surface>(resource)->Attach(
-      buffer ? GetUserDataAs<Buffer>(buffer) : nullptr);
+      buffer ? GetUserDataAs<Buffer>(buffer) : nullptr, gfx::Vector2d(x, y));
 }
 
 void surface_damage(wl_client* client,

@@ -7,6 +7,8 @@ import * as reflection from '../internal/reflection.mjs';
 import { SwitchTrack } from './track.mjs';
 import * as style from './style.mjs';
 
+const generateStyleSheet = style.styleSheetFactory();
+
 // https://github.com/tkent-google/std-switch/issues/2
 const STATE_ATTR = 'on';
 
@@ -84,7 +86,7 @@ export class StdSwitchElement extends HTMLElement {
     this[_rippleElement] = thumbElement.appendChild(factory.createElement('span'));
     this[_rippleElement].id = 'ripple';
 
-    root.adoptedStyleSheets = [style.styleSheetFactory()()];
+    root.adoptedStyleSheets = [generateStyleSheet()];
   }
 
   // TODO(tkent): Make this private.

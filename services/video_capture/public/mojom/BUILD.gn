@@ -23,7 +23,7 @@ mojom("mojom") {
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:video_capture",
     "//media/mojo/interfaces",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 
   if (is_chromeos) {

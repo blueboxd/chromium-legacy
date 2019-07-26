@@ -135,6 +135,11 @@ mojom("test_mojom") {
   sources = [
     "connection_group_unittest.test-mojom",
     "idle_tracking_unittest.test-mojom",
+    "receiver_unittest.test-mojom",
+  ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
   ]
 
   support_lazy_serialization = true

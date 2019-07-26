@@ -6,7 +6,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
 struct DevToolsMessage {

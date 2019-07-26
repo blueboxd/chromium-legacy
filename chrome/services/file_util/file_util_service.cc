@@ -8,9 +8,10 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "components/safe_browsing/buildflags.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/services/file_util/safe_archive_analyzer.h"
 #endif
 
@@ -20,7 +21,7 @@
 
 namespace {
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void OnSafeArchiveAnalyzerRequest(
     service_manager::ServiceKeepalive* keepalive,
     chrome::mojom::SafeArchiveAnalyzerRequest request) {
@@ -52,7 +53,7 @@ void FileUtilService::OnStart() {
   registry_.AddInterface(
       base::BindRepeating(&OnZipFileCreatorRequest, &service_keepalive_));
 #endif
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   registry_.AddInterface(
       base::BindRepeating(&OnSafeArchiveAnalyzerRequest, &service_keepalive_));
 #endif

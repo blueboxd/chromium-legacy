@@ -117,7 +117,7 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
   if (ContainsEncodedBytes(path, illegal_encoded_bytes))
     return false;
 
-  // Unescape all percent-encoded sequences, including blacklisted-for-display
+  // Unescape all percent-encoded sequences, including blocked-for-display
   // characters, control characters and invalid UTF-8 byte sequences.
   // Percent-encoded bytes are not meaningful in a file system.
   path = UnescapeBinaryURLComponent(path);

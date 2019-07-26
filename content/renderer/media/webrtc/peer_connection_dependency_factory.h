@@ -36,6 +36,7 @@ namespace blink {
 class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
+class WebRtcAudioDeviceImpl;
 }
 
 namespace content {
@@ -44,7 +45,6 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PPortAllocator;
-class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC PeerConnections.
 class CONTENT_EXPORT PeerConnectionDependencyFactory
@@ -111,7 +111,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   virtual std::unique_ptr<webrtc::RtpCapabilities> GetReceiverCapabilities(
       const std::string& kind);
 
-  WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
+  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice();
 
   void EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() const;
@@ -164,7 +164,7 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   scoped_refptr<webrtc::PeerConnectionFactoryInterface> pc_factory_;
 
   scoped_refptr<P2PSocketDispatcher> p2p_socket_dispatcher_;
-  scoped_refptr<WebRtcAudioDeviceImpl> audio_device_;
+  scoped_refptr<blink::WebRtcAudioDeviceImpl> audio_device_;
 
   std::unique_ptr<StunProberTrial> stun_trial_;
 

@@ -68,9 +68,9 @@ class NET_EXPORT HttpAuthPreferences {
   }
 #endif
 
-  void SetServerWhitelist(const std::string& server_whitelist);
+  void SetServerAllowlist(const std::string& server_allowlist);
 
-  void SetDelegateWhitelist(const std::string& delegate_whitelist);
+  void SetDelegateAllowlist(const std::string& delegate_allowlist);
 
 #if defined(OS_ANDROID)
   void set_auth_android_negotiate_account_type(

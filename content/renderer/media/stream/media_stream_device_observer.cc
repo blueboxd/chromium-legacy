@@ -43,6 +43,14 @@ struct MediaStreamDeviceObserver::Stream {
   blink::MediaStreamDevices video_devices;
 };
 
+// static
+const base::UnguessableToken& MediaStreamDeviceObserver::NoSessionId() {
+  static const base::NoDestructor<base::UnguessableToken> fake_session_id(
+      base::UnguessableToken::Deserialize(0xFFFFFFFFFFFFFFFFU,
+                                          0xFFFFFFFFFFFFFFFFU));
+  return *fake_session_id;
+}
+
 MediaStreamDeviceObserver::MediaStreamDeviceObserver(RenderFrame* render_frame)
     : RenderFrameObserver(render_frame), binding_(this) {
   registry_.AddInterface(base::BindRepeating(
@@ -213,24 +221,26 @@ void MediaStreamDeviceObserver::RemoveStreamDevice(
   DCHECK(device_found);
 }
 
-int MediaStreamDeviceObserver::audio_session_id(const std::string& label) {
+base::UnguessableToken MediaStreamDeviceObserver::audio_session_id(
+    const std::string& label) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() || it->second.audio_devices.empty())
-    return blink::MediaStreamDevice::kNoId;
+    return NoSessionId();
 
-  return it->second.audio_devices[0].session_id;
+  return it->second.audio_devices[0].session_id();
 }
 
-int MediaStreamDeviceObserver::video_session_id(const std::string& label) {
+base::UnguessableToken MediaStreamDeviceObserver::video_session_id(
+    const std::string& label) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = label_stream_map_.find(label);
   if (it == label_stream_map_.end() || it->second.video_devices.empty())
-    return blink::MediaStreamDevice::kNoId;
+    return NoSessionId();
 
-  return it->second.video_devices[0].session_id;
+  return it->second.video_devices[0].session_id();
 }
 
 }  // namespace content

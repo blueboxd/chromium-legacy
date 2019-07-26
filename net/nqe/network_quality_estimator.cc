@@ -807,12 +807,10 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   base::TimeDelta end_to_end_rtt = nqe::internal::InvalidRTT();
   int32_t downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
 
-  effective_connection_type_ =
-      GetRecentEffectiveConnectionTypeAndNetworkQuality(
-          base::TimeTicks(), &http_rtt, &transport_rtt, &end_to_end_rtt,
-          &downstream_throughput_kbps,
-          &transport_rtt_observation_count_last_ect_computation_,
-          &end_to_end_rtt_observation_count_at_last_ect_computation_);
+  effective_connection_type_ = GetRecentEffectiveConnectionTypeUsingMetrics(
+      &http_rtt, &transport_rtt, &end_to_end_rtt, &downstream_throughput_kbps,
+      &transport_rtt_observation_count_last_ect_computation_,
+      &end_to_end_rtt_observation_count_at_last_ect_computation_);
 
   network_quality_ = nqe::internal::NetworkQuality(http_rtt, transport_rtt,
                                                    downstream_throughput_kbps);
@@ -905,19 +903,17 @@ void NetworkQualityEstimator::ClampKbpsBasedOnEct() {
   // for that ECT.
   DCHECK_LE(1.0, params_->upper_bound_typical_kbps_multiplier());
 
-  if (effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
-      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_2G ||
-      effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_3G) {
-    // Put an upper bound on Kbps.
-    network_quality_.set_downstream_throughput_kbps(
-        std::min(network_quality_.downstream_throughput_kbps(),
-                 static_cast<int>(
-                     params_->TypicalNetworkQuality(effective_connection_type_)
-                         .downstream_throughput_kbps() *
-                     params_->upper_bound_typical_kbps_multiplier())));
-    return;
-  }
-  NOTREACHED();
+  DCHECK(effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_SLOW_2G ||
+         effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_2G ||
+         effective_connection_type_ == EFFECTIVE_CONNECTION_TYPE_3G);
+
+  // Put an upper bound on Kbps.
+  network_quality_.set_downstream_throughput_kbps(
+      std::min(network_quality_.downstream_throughput_kbps(),
+               static_cast<int>(
+                   params_->TypicalNetworkQuality(effective_connection_type_)
+                       .downstream_throughput_kbps() *
+                   params_->upper_bound_typical_kbps_multiplier())));
 }
 
 EffectiveConnectionType
@@ -1022,39 +1018,6 @@ EffectiveConnectionType NetworkQualityEstimator::GetEffectiveConnectionType()
   return effective_connection_type_;
 }
 
-EffectiveConnectionType
-NetworkQualityEstimator::GetRecentEffectiveConnectionType(
-    const base::TimeTicks& start_time) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  base::TimeDelta http_rtt = nqe::internal::InvalidRTT();
-  base::TimeDelta transport_rtt = nqe::internal::InvalidRTT();
-  base::TimeDelta end_to_end_rtt = nqe::internal::InvalidRTT();
-
-  int32_t downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
-
-  return GetRecentEffectiveConnectionTypeAndNetworkQuality(
-      start_time, &http_rtt, &transport_rtt, &end_to_end_rtt,
-      &downstream_throughput_kbps, nullptr, nullptr);
-}
-
-EffectiveConnectionType
-NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
-    const base::TimeTicks& start_time,
-    base::TimeDelta* http_rtt,
-    base::TimeDelta* transport_rtt,
-    base::TimeDelta* end_to_end_rtt,
-    int32_t* downstream_throughput_kbps,
-    size_t* transport_rtt_observation_count,
-    size_t* end_to_end_rtt_observation_count) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  return GetRecentEffectiveConnectionTypeUsingMetrics(
-      start_time,
-      http_rtt, transport_rtt, end_to_end_rtt, downstream_throughput_kbps,
-      transport_rtt_observation_count, end_to_end_rtt_observation_count);
-}
-
 void NetworkQualityEstimator::UpdateHttpRttUsingAllRttValues(
     base::TimeDelta* http_rtt,
     const base::TimeDelta transport_rtt,
@@ -1104,7 +1067,6 @@ void NetworkQualityEstimator::UpdateHttpRttUsingAllRttValues(
 
 EffectiveConnectionType
 NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
-    const base::TimeTicks& start_time,
     base::TimeDelta* http_rtt,
     base::TimeDelta* transport_rtt,
     base::TimeDelta* end_to_end_rtt,
@@ -1137,25 +1099,29 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
   }
 
-  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, start_time,
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP, base::TimeTicks(),
                     http_rtt, nullptr)) {
     *http_rtt = nqe::internal::InvalidRTT();
   }
 
-  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT, start_time,
-                    transport_rtt, transport_rtt_observation_count)) {
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
+                    base::TimeTicks(), transport_rtt,
+                    transport_rtt_observation_count)) {
     *transport_rtt = nqe::internal::InvalidRTT();
   }
 
-  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_END_TO_END, start_time,
-                    end_to_end_rtt, end_to_end_rtt_observation_count)) {
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_END_TO_END,
+                    base::TimeTicks(), end_to_end_rtt,
+                    end_to_end_rtt_observation_count)) {
     *end_to_end_rtt = nqe::internal::InvalidRTT();
   }
 
   UpdateHttpRttUsingAllRttValues(http_rtt, *transport_rtt, *end_to_end_rtt);
 
-  if (!GetRecentDownlinkThroughputKbps(start_time, downstream_throughput_kbps))
+  if (!GetRecentDownlinkThroughputKbps(base::TimeTicks(),
+                                       downstream_throughput_kbps)) {
     *downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
+  }
 
   if (*http_rtt == nqe::internal::InvalidRTT()) {
     return EFFECTIVE_CONNECTION_TYPE_UNKNOWN;

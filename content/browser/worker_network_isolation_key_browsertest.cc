@@ -36,17 +36,8 @@ enum class WorkerType {
   kSharedWorker,
 };
 
-class WorkerNetworkIsolationKeyBrowserTest
-    : public ContentBrowserTest,
-      public ::testing::WithParamInterface<
-          std::tuple<bool /* test_same_network_isolation_key */, WorkerType>> {
+class WorkerNetworkIsolationKeyBrowserTest : public ContentBrowserTest {
  public:
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(
-        net::features::kSplitCacheByNetworkIsolationKey);
-    ContentBrowserTest::SetUp();
-  }
-
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
@@ -109,6 +100,20 @@ class WorkerNetworkIsolationKeyBrowserTest
     return subframe_rfh;
   }
 
+ protected:
+  void InitFeatures(bool append_frame_origin_to_network_isolation_key) {
+    if (append_frame_origin_to_network_isolation_key) {
+      feature_list_.InitWithFeatures(
+          {net::features::kSplitCacheByNetworkIsolationKey,
+           net::features::kAppendFrameOriginToNetworkIsolationKey},
+          {});
+    } else {
+      feature_list_.InitWithFeatures(
+          {net::features::kSplitCacheByNetworkIsolationKey},
+          {net::features::kAppendFrameOriginToNetworkIsolationKey});
+    }
+  }
+
  private:
   void RegisterWorkerWithUrlParameters(
       RenderFrameHost* subframe_rfh,
@@ -147,6 +152,22 @@ class WorkerNetworkIsolationKeyBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
+class WorkerImportScriptsAndFetchRequestNetworkIsolationKeyBrowserTest
+    : public WorkerNetworkIsolationKeyBrowserTest,
+      public ::testing::WithParamInterface<
+          std::tuple<bool /* append_frame_origin_to_network_isolation_key */,
+                     bool /* test_same_network_isolation_key */,
+                     WorkerType>> {
+ public:
+  void SetUp() override {
+    bool append_frame_origin_to_network_isolation_key;
+    std::tie(append_frame_origin_to_network_isolation_key, std::ignore,
+             std::ignore) = GetParam();
+    InitFeatures(append_frame_origin_to_network_isolation_key);
+    ContentBrowserTest::SetUp();
+  }
+};
+
 // Test that network isolation key is filled in correctly for service/shared
 // workers. The test navigates to "a.com" and creates two cross-origin iframes
 // that each start a worker. The frames/workers may have the same origin, so
@@ -156,11 +177,13 @@ class WorkerNetworkIsolationKeyBrowserTest
 // same network isolation key), we expect the second importScripts() and fetch()
 // request to exist in the cache. When the origins are different, we expect the
 // second requests to not exist in the cache.
-IN_PROC_BROWSER_TEST_P(WorkerNetworkIsolationKeyBrowserTest,
-                       ImportScriptsAndFetchRequest) {
+IN_PROC_BROWSER_TEST_P(
+    WorkerImportScriptsAndFetchRequestNetworkIsolationKeyBrowserTest,
+    ImportScriptsAndFetchRequest) {
   bool test_same_network_isolation_key;
   WorkerType worker_type;
-  std::tie(test_same_network_isolation_key, worker_type) = GetParam();
+  std::tie(std::ignore, test_same_network_isolation_key, worker_type) =
+      GetParam();
 
   // TODO(http://crbug.com/984099): Fix this with network service disabled.
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
@@ -238,10 +261,23 @@ IN_PROC_BROWSER_TEST_P(WorkerNetworkIsolationKeyBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
-    WorkerNetworkIsolationKeyBrowserTest,
+    WorkerImportScriptsAndFetchRequestNetworkIsolationKeyBrowserTest,
     ::testing::Combine(testing::Bool(),
+                       testing::Bool(),
                        ::testing::Values(WorkerType::kServiceWorker,
                                          WorkerType::kSharedWorker)));
+
+class ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest
+    : public WorkerNetworkIsolationKeyBrowserTest,
+      public ::testing::WithParamInterface<
+          bool /* append_frame_origin_to_network_isolation_key */> {
+ public:
+  void SetUp() override {
+    bool append_frame_origin_to_network_isolation_key = GetParam();
+    InitFeatures(append_frame_origin_to_network_isolation_key);
+    ContentBrowserTest::SetUp();
+  }
+};
 
 // Test that network isolation key is filled in correctly for service worker's
 // main script request. The test navigates to "a.com" and creates an iframe
@@ -258,8 +294,9 @@ INSTANTIATE_TEST_SUITE_P(
 // Note that it's sufficient not to test the cache miss when subframe origins
 // are different as in that case the two script urls must be different and it
 // also won't trigger an update.
-IN_PROC_BROWSER_TEST_F(WorkerNetworkIsolationKeyBrowserTest,
-                       ServiceWorkerMainScriptRequest) {
+IN_PROC_BROWSER_TEST_P(
+    ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
+    ServiceWorkerMainScriptRequest) {
   // TODO(http://crbug.com/984099): Fix this with network service disabled.
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
@@ -323,5 +360,10 @@ IN_PROC_BROWSER_TEST_F(WorkerNetworkIsolationKeyBrowserTest,
 
   cache_status_waiter.Run();
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    ServiceWorkerMainScriptRequestNetworkIsolationKeyBrowserTest,
+    testing::Bool());
 
 }  // namespace content

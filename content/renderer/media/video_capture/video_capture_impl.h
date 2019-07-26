@@ -65,7 +65,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   void OnFrameDropped(media::VideoCaptureFrameDropReason reason);
   void OnLog(const std::string& message);
 
-  media::VideoCaptureSessionId session_id() const { return session_id_; }
+  const media::VideoCaptureSessionId& session_id() const { return session_id_; }
 
   void SetVideoCaptureHostForTesting(media::mojom::VideoCaptureHost* service) {
     video_capture_host_for_testing_ = service;
@@ -123,8 +123,8 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   // |device_id_| and |session_id_| are different concepts, but we reuse the
   // same numerical value, passed on construction.
-  const int device_id_;
-  const int session_id_;
+  const base::UnguessableToken device_id_;
+  const base::UnguessableToken session_id_;
 
   // |video_capture_host_| is an IO-thread InterfacePtr to a remote service
   // implementation and is created by binding |video_capture_host_info_|,

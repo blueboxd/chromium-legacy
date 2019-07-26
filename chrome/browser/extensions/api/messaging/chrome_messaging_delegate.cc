@@ -98,8 +98,7 @@ content::WebContents* ChromeMessagingDelegate::GetWebContentsByTabId(
     int tab_id) {
   content::WebContents* contents = nullptr;
   if (!ExtensionTabUtil::GetTabById(tab_id, browser_context,
-                                    /*incognito_enabled=*/true, nullptr,
-                                    nullptr, &contents, nullptr)) {
+                                    /*incognito_enabled=*/true, &contents)) {
     return nullptr;
   }
   return contents;

@@ -4,7 +4,7 @@
 
 module ash.mojom;
 
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/display/mojom/display.mojom";
 
 // All points, bounds, and insets are in display pixels unless otherwise

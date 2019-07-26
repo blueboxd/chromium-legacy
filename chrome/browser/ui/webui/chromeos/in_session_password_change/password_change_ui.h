@@ -12,25 +12,6 @@
 
 namespace chromeos {
 
-// System dialog wrapping chrome:://password-change
-class PasswordChangeDialog : public SystemWebDialogDelegate {
- public:
-  static void Show();
-  static void Dismiss();
-
- protected:
-  PasswordChangeDialog();
-  ~PasswordChangeDialog() override;
-
-  // ui::WebDialogDelegate:
-  void GetDialogSize(gfx::Size* size) const override;
-  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
-  ui::ModalType GetDialogModalType() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordChangeDialog);
-};
-
 // For chrome:://password-change
 class PasswordChangeUI : public ui::WebDialogUI {
  public:
@@ -41,34 +22,6 @@ class PasswordChangeUI : public ui::WebDialogUI {
   DISALLOW_COPY_AND_ASSIGN(PasswordChangeUI);
 };
 
-// System dialog wrapping chrome://confirm-password-change
-class ConfirmPasswordChangeDialog : public SystemWebDialogDelegate {
- public:
-  static void Show(const std::string& scraped_old_password,
-                   const std::string& scraped_new_password,
-                   bool show_spinner_initially);
-  static void Dismiss();
-
- protected:
-  ConfirmPasswordChangeDialog(const std::string& scraped_old_password,
-                              const std::string& scraped_new_password,
-                              bool show_spinner_initially);
-  ~ConfirmPasswordChangeDialog() override;
-
-  // ui::WebDialogDelegate:
-  void GetDialogSize(gfx::Size* size) const override;
-  std::string GetDialogArgs() const override;
-  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
-  ui::ModalType GetDialogModalType() const override;
-
- private:
-  std::string scraped_old_password_;
-  std::string scraped_new_password_;
-  bool show_spinner_initially_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ConfirmPasswordChangeDialog);
-};
-
 // For chrome:://confirm-password-change
 class ConfirmPasswordChangeUI : public ui::WebDialogUI {
  public:
@@ -77,25 +30,6 @@ class ConfirmPasswordChangeUI : public ui::WebDialogUI {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConfirmPasswordChangeUI);
-};
-
-// System dialog wrapping chrome://urgent-password-expiry-notification
-class UrgentPasswordExpiryNotificationDialog : public SystemWebDialogDelegate {
- public:
-  static void Show();
-  static void Dismiss();
-
- protected:
-  UrgentPasswordExpiryNotificationDialog();
-  ~UrgentPasswordExpiryNotificationDialog() override;
-
-  // ui::WebDialogDelegate:
-  void GetDialogSize(gfx::Size* size) const override;
-  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
-  ui::ModalType GetDialogModalType() const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UrgentPasswordExpiryNotificationDialog);
 };
 
 // For chrome:://urgent-password-expiry-notification

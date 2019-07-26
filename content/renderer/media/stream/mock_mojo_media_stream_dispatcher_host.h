@@ -29,8 +29,9 @@ class MockMojoMediaStreamDispatcherHost
                       bool user_gesture,
                       GenerateStreamCallback callback) override;
   void CancelRequest(int32_t request_id) override;
-  void StopStreamDevice(const std::string& device_id,
-                        int32_t session_id) override;
+  void StopStreamDevice(
+      const std::string& device_id,
+      const base::Optional<base::UnguessableToken>& session_id) override;
   void OpenDevice(int32_t request_id,
                   const std::string& device_id,
                   blink::mojom::MediaStreamType type,
@@ -38,11 +39,14 @@ class MockMojoMediaStreamDispatcherHost
 
   MOCK_METHOD1(CloseDevice, void(const std::string&));
   MOCK_METHOD3(SetCapturingLinkSecured,
-               void(int32_t, blink::mojom::MediaStreamType, bool));
+               void(const base::Optional<base::UnguessableToken>&,
+                    blink::mojom::MediaStreamType,
+                    bool));
   MOCK_METHOD1(OnStreamStarted, void(const std::string&));
 
-  void IncrementSessionId() { ++session_id_; }
+  void ResetSessionId() { session_id_ = base::UnguessableToken::Create(); }
   void DoNotRunCallback() { do_not_run_cb_ = true; }
+  const base::UnguessableToken& session_id() { return session_id_; }
 
   int request_stream_counter() const { return request_stream_counter_; }
   int stop_audio_device_counter() const { return stop_audio_device_counter_; }
@@ -60,7 +64,7 @@ class MockMojoMediaStreamDispatcherHost
   int request_stream_counter_ = 0;
   int stop_audio_device_counter_ = 0;
   int stop_video_device_counter_ = 0;
-  int session_id_ = 0;
+  base::UnguessableToken session_id_;
   bool do_not_run_cb_ = false;
   blink::MediaStreamDevices audio_devices_;
   blink::MediaStreamDevices video_devices_;

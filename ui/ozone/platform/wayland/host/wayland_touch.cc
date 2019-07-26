@@ -12,6 +12,7 @@
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
 
@@ -40,6 +41,13 @@ WaylandTouch::~WaylandTouch() {
   DCHECK(current_points_.empty());
 }
 
+void WaylandTouch::SetConnection(WaylandConnection* connection) {
+  connection_ = connection;
+
+  // Observs remove changes to know when touch points can be removed.
+  connection_->wayland_window_manager()->AddObserver(this);
+}
+
 void WaylandTouch::RemoveTouchPoints(const WaylandWindow* window) {
   base::EraseIf(current_points_,
                 [window](const TouchPoints::value_type& point) {
@@ -57,6 +65,10 @@ void WaylandTouch::MaybeUnsetFocus(const WaylandTouch::TouchPoints& points,
   }
   DCHECK(surface);
   WaylandWindow::FromSurface(surface)->set_touch_focus(false);
+}
+
+void WaylandTouch::OnWindowRemoved(WaylandWindow* window) {
+  RemoveTouchPoints(window);
 }
 
 void WaylandTouch::Down(void* data,

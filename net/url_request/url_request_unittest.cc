@@ -881,20 +881,20 @@ class URLRequestTest : public PlatformTest, public WithScopedTaskEnvironment {
 };
 
 // This NetworkDelegate is picky about what files are accessible. Only
-// whitelisted files are allowed.
+// allowlisted files are allowed.
 class CookieBlockingNetworkDelegate : public TestNetworkDelegate {
  public:
   CookieBlockingNetworkDelegate() = default;
 
-  // Adds |directory| to the access white list.
-  void AddToWhitelist(const base::FilePath& directory) {
-    whitelist_.insert(directory);
+  // Adds |directory| to the access allow list.
+  void AddToAllowlist(const base::FilePath& directory) {
+    allowlist_.insert(directory);
   }
 
  private:
-  // Returns true if |path| matches the white list.
+  // Returns true if |path| matches the allow list.
   bool OnCanAccessFileInternal(const base::FilePath& path) const {
-    for (const auto& directory : whitelist_) {
+    for (const auto& directory : allowlist_) {
       if (directory == path || directory.IsParent(path))
         return true;
     }
@@ -902,7 +902,7 @@ class CookieBlockingNetworkDelegate : public TestNetworkDelegate {
   }
 
   // Returns true only if both |original_path| and |absolute_path| match the
-  // white list.
+  // allow list.
   bool OnCanAccessFile(const URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override {
@@ -910,7 +910,7 @@ class CookieBlockingNetworkDelegate : public TestNetworkDelegate {
             OnCanAccessFileInternal(absolute_path));
   }
 
-  std::set<base::FilePath> whitelist_;
+  std::set<base::FilePath> allowlist_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieBlockingNetworkDelegate);
 };
@@ -1151,19 +1151,19 @@ TEST_F(URLRequestTest, AllowFileURLs) {
   // can be slightly different from |absolute_temp_dir| on Windows.
   // Example: C:\\Users\\CHROME~2 -> C:\\Users\\chrome-bot
   // Hence the test should use the directory name of |test_file|, rather than
-  // |absolute_temp_dir|, for whitelisting.
+  // |absolute_temp_dir|, for allowlisting.
   base::FilePath real_temp_dir = test_file.DirName();
   GURL test_file_url = FilePathToFileURL(test_file);
   {
     TestDelegate d;
     CookieBlockingNetworkDelegate network_delegate;
-    network_delegate.AddToWhitelist(real_temp_dir);
+    network_delegate.AddToAllowlist(real_temp_dir);
     default_context().set_network_delegate(&network_delegate);
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         test_file_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
     d.RunUntilComplete();
-    // This should be allowed as the file path is whitelisted.
+    // This should be allowed as the file path is allowlisted.
     EXPECT_FALSE(d.request_failed());
     EXPECT_EQ(test_data, d.data_received());
   }
@@ -1176,7 +1176,7 @@ TEST_F(URLRequestTest, AllowFileURLs) {
         test_file_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
     d.RunUntilComplete();
-    // This should be rejected as the file path is not whitelisted.
+    // This should be rejected as the file path is not allowlisted.
     EXPECT_TRUE(d.request_failed());
     EXPECT_EQ("", d.data_received());
     EXPECT_EQ(ERR_ACCESS_DENIED, d.request_status());
@@ -1191,7 +1191,7 @@ TEST_F(URLRequestTest, SymlinksToFiles) {
   base::FilePath absolute_temp_dir =
       base::MakeAbsoluteFilePath(temp_dir_.GetPath());
 
-  // Create a good directory (will be whitelisted) and a good file.
+  // Create a good directory (will be allowlisted) and a good file.
   base::FilePath good_dir = absolute_temp_dir.AppendASCII("good");
   ASSERT_TRUE(base::CreateDirectory(good_dir));
   base::FilePath good_file;
@@ -1201,7 +1201,7 @@ TEST_F(URLRequestTest, SymlinksToFiles) {
   // See the comment in AllowFileURLs() for why this is done.
   base::FilePath real_good_dir = good_file.DirName();
 
-  // Create a bad directory (will not be whitelisted) and a bad file.
+  // Create a bad directory (will not be allowlisted) and a bad file.
   base::FilePath bad_dir = absolute_temp_dir.AppendASCII("bad");
   ASSERT_TRUE(base::CreateDirectory(bad_dir));
   base::FilePath bad_file;
@@ -1223,7 +1223,7 @@ TEST_F(URLRequestTest, SymlinksToFiles) {
   GURL bad_file_url = FilePathToFileURL(bad_symlink);
 
   CookieBlockingNetworkDelegate network_delegate;
-  network_delegate.AddToWhitelist(real_good_dir);
+  network_delegate.AddToAllowlist(real_good_dir);
   {
     TestDelegate d;
     default_context().set_network_delegate(&network_delegate);
@@ -1256,11 +1256,11 @@ TEST_F(URLRequestTest, SymlinksToDirs) {
   base::FilePath absolute_temp_dir =
       base::MakeAbsoluteFilePath(temp_dir_.GetPath());
 
-  // Create a good directory (will be whitelisted).
+  // Create a good directory (will be allowlisted).
   base::FilePath good_dir = absolute_temp_dir.AppendASCII("good");
   ASSERT_TRUE(base::CreateDirectory(good_dir));
 
-  // Create a bad directory (will not be whitelisted).
+  // Create a bad directory (will not be allowlisted).
   base::FilePath bad_dir = absolute_temp_dir.AppendASCII("bad");
   ASSERT_TRUE(base::CreateDirectory(bad_dir));
 
@@ -1278,7 +1278,7 @@ TEST_F(URLRequestTest, SymlinksToDirs) {
   GURL bad_file_url = FilePathToFileURL(bad_symlink);
 
   CookieBlockingNetworkDelegate network_delegate;
-  network_delegate.AddToWhitelist(good_dir);
+  network_delegate.AddToAllowlist(good_dir);
   {
     TestDelegate d;
     default_context().set_network_delegate(&network_delegate);
@@ -7828,7 +7828,7 @@ TEST_F(URLRequestTestHTTP, NoCacheOnNetworkDelegateRedirect) {
 
 // Tests that redirection to an unsafe URL is allowed when it has been marked as
 // safe.
-TEST_F(URLRequestTestHTTP, UnsafeRedirectToWhitelistedUnsafeURL) {
+TEST_F(URLRequestTestHTTP, UnsafeRedirectToAllowedUnsafeURL) {
   ASSERT_TRUE(http_test_server()->Start());
 
   GURL unsafe_url("data:text/html,this-is-considered-an-unsafe-url");
@@ -7852,7 +7852,7 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectToWhitelistedUnsafeURL) {
 }
 
 // Tests that a redirect to a different unsafe URL is blocked, even after adding
-// some other URL to the whitelist.
+// some other URL to the allowlist.
 TEST_F(URLRequestTestHTTP, UnsafeRedirectToDifferentUnsafeURL) {
   ASSERT_TRUE(http_test_server()->Start());
 

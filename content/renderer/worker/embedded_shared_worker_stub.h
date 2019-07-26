@@ -83,9 +83,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   CreateServiceWorkerNetworkProvider() override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
-  void WaitForServiceWorkerControllerInfo(
-      blink::WebServiceWorkerNetworkProvider* web_network_provider,
-      base::OnceClosure callback) override;
 
  private:
   // WebSharedWorker will own |channel|.

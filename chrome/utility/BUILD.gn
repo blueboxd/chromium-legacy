@@ -32,6 +32,7 @@ static_library("utility") {
     "//chrome/common:mojo_bindings",
     "//components/mirroring/mojom:constants",
     "//components/mirroring/service:mirroring_service",
+    "//components/safe_browsing:buildflags",
     "//components/search_engines",
     "//components/services/patch:lib",
     "//components/services/unzip:lib",

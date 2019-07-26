@@ -11,6 +11,7 @@
 #include "chrome/browser/safe_browsing/telemetry/android/android_telemetry_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,7 +55,7 @@ ServicesDelegateAndroid::database_manager() const {
 
 void ServicesDelegateAndroid::Initialize() {
   if (!database_manager_set_for_tests_) {
-#if defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
     database_manager_ =
         base::WrapRefCounted(new RemoteSafeBrowsingDatabaseManager());
 #else

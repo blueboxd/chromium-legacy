@@ -70,10 +70,10 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
   std::string str = base::StringPrintf(
       "LocalMediaStreamAudioSource::EnsureSourceIsStarted."
       " channel_layout=%d, sample_rate=%d, buffer_size=%d"
-      ", session_id=%d, effects=%d. ",
+      ", session_id=%s, effects=%d. ",
       device().input.channel_layout(), device().input.sample_rate(),
-      device().input.frames_per_buffer(), device().session_id,
-      device().input.effects());
+      device().input.frames_per_buffer(),
+      device().session_id().ToString().c_str(), device().input.effects());
   WebRtcLogMessage(str);
   DVLOG(1) << str;
 
@@ -83,12 +83,12 @@ bool LocalMediaStreamAudioSource::EnsureSourceIsStarted() {
     return false;
 
   VLOG(1) << "Starting local audio input device (session_id="
-          << device().session_id << ") with audio parameters={"
+          << device().session_id() << ") with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 
   source_ = Platform::Current()->NewAudioCapturerSource(
       internal_consumer_frame_->web_frame(),
-      media::AudioSourceParameters(device().session_id));
+      media::AudioSourceParameters(device().session_id()));
   source_->Initialize(GetAudioParameters(), this);
   source_->Start();
   return true;
@@ -104,7 +104,7 @@ void LocalMediaStreamAudioSource::EnsureSourceIsStopped() {
   source_ = nullptr;
 
   VLOG(1) << "Stopped local audio input device (session_id="
-          << device().session_id << ") with audio parameters={"
+          << device().session_id() << ") with audio parameters={"
           << GetAudioParameters().AsHumanReadableString() << "}.";
 }
 

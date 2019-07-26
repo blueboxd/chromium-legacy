@@ -83,7 +83,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
     }
 
     if (!ExtensionTabUtil::GetTabById(*(params->target_tab->id), GetProfile(),
-                                      true, NULL, NULL, &web_contents, NULL)) {
+                                      true, &web_contents)) {
       error_ = kDesktopCaptureApiInvalidTabIdError;
       return false;
     }

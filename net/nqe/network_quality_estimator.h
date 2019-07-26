@@ -114,12 +114,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   ~NetworkQualityEstimator() override;
 
-  // Returns the effective type of the current connection based on only the
-  // samples observed after |start_time|. This should only be used for
-  // recording the metrics. Virtualized for testing.
-  virtual EffectiveConnectionType GetRecentEffectiveConnectionType(
-      const base::TimeTicks& start_time) const;
-
   // Returns the current effective connection type.  The effective connection
   // type is computed by the network quality estimator at regular intervals and
   // at certain events (e.g., connection change). Virtualized for testing.
@@ -318,18 +312,19 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
-  // Returns the effective type of the current connection based on only the
-  // observations received after |start_time|. |http_rtt|, |transport_rtt| and
-  // |downstream_throughput_kbps| must be non-null. |http_rtt|, |transport_rtt|
-  // and |downstream_throughput_kbps| are set to the expected HTTP RTT,
-  // transport RTT and downstream throughput (in kilobits per second) based on
-  // observations taken since |start_time|. Virtualized for testing.
+  // Returns the effective type of the current connection based on the
+  // samples observed. May use HTTP RTT, transport RTT and
+  // downstream throughput to compute the effective connection type based on
+  // |http_rtt_metric|, |transport_rtt_metric| and
+  // |downstream_throughput_kbps_metric|, respectively. |http_rtt|,
+  // |transport_rtt| and |downstream_throughput_kbps| must be non-null.
+  // |http_rtt|, |transport_rtt| and |downstream_throughput_kbps| are
+  // set to the expected HTTP RTT, transport RTT and downstream throughput (in
+  // kilobits per second) based on observations taken since |start_time|.
   // If |transport_rtt_observation_count| is not null, then it is set to the
-  // number of transport RTT observations that are available when computing the
+  // number of transport RTT observations that were available when computing the
   // effective connection type.
-  virtual EffectiveConnectionType
-  GetRecentEffectiveConnectionTypeAndNetworkQuality(
-      const base::TimeTicks& start_time,
+  virtual EffectiveConnectionType GetRecentEffectiveConnectionTypeUsingMetrics(
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
       base::TimeDelta* end_to_end_rtt,
@@ -515,27 +510,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |min_signal_strength_since_connection_change_| and
   // |max_signal_strength_since_connection_change_|.
   void UpdateSignalStrength();
-
-  // Returns the effective type of the current connection based on only the
-  // samples observed after |start_time|. May use HTTP RTT, transport RTT and
-  // downstream throughput to compute the effective connection type based on
-  // |http_rtt_metric|, |transport_rtt_metric| and
-  // |downstream_throughput_kbps_metric|, respectively. |http_rtt|,
-  // |transport_rtt| and |downstream_throughput_kbps| must be non-null.
-  // |http_rtt|, |transport_rtt| and |downstream_throughput_kbps| are
-  // set to the expected HTTP RTT, transport RTT and downstream throughput (in
-  // kilobits per second) based on observations taken since |start_time|.
-  // If |transport_rtt_observation_count| is not null, then it is set to the
-  // number of transport RTT observations that were available when computing the
-  // effective connection type.
-  EffectiveConnectionType GetRecentEffectiveConnectionTypeUsingMetrics(
-      const base::TimeTicks& start_time,
-      base::TimeDelta* http_rtt,
-      base::TimeDelta* transport_rtt,
-      base::TimeDelta* end_to_end_rtt,
-      int32_t* downstream_throughput_kbps,
-      size_t* transport_rtt_observation_count,
-      size_t* end_to_end_rtt_observation_count) const;
 
   // Updates the provided |http_rtt| based on all provided RTT values.
   void UpdateHttpRttUsingAllRttValues(

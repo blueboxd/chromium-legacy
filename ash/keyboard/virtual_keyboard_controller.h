@@ -13,7 +13,7 @@
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
+#include "ui/base/ime/chromeos/public/mojom/ime_keyset.mojom.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ash {

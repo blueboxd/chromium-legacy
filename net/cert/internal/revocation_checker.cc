@@ -273,7 +273,7 @@ void CheckValidatedChainRevocation(const ParsedCertificateList& certs,
     size_t i = certs.size() - reverse_i - 1;
 
     // Trust anchors bypass OCSP/CRL revocation checks. (The only way to revoke
-    // trust anchors is via CRLSet or the built-in SPKI blacklist). Since
+    // trust anchors is via CRLSet or the built-in SPKI block list). Since
     // |certs| must be a validated chain, the final cert must be a trust
     // anchor.
     if (reverse_i == 0)

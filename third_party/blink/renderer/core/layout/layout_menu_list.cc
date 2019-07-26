@@ -334,7 +334,7 @@ void LayoutMenuList::ComputeLogicalHeight(
     LayoutUnit logical_height,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
-  if (StyleRef().HasAppearance())
+  if (StyleRef().HasEffectiveAppearance())
     logical_height = inner_block_height_ + BorderAndPaddingHeight();
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }

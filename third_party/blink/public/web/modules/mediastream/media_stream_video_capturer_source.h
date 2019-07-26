@@ -34,7 +34,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoCapturerSource
  public:
   using DeviceCapturerFactoryCallback =
       base::RepeatingCallback<std::unique_ptr<media::VideoCapturerSource>(
-          int session_id)>;
+          const base::UnguessableToken& session_id)>;
   MediaStreamVideoCapturerSource(
       const SourceStoppedCallback& stop_callback,
       std::unique_ptr<media::VideoCapturerSource> source);

@@ -125,6 +125,7 @@ class WebMediaCapabilitiesClient;
 class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
+class WebRtcAudioDeviceImpl;
 class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -611,6 +612,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
 
+  // Checks if the default minimum starting volume value for the AGC is
+  // overridden on the command line.
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
     return base::nullopt;
   }
@@ -624,6 +627,18 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) {
     return media::AudioLatency::LATENCY_PLAYBACK;
+  }
+
+  virtual blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() {
+    return nullptr;
+  }
+
+  virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {
+    return base::nullopt;
+  }
+
+  virtual base::Optional<int> GetAgcStartupMinimumVolume() {
+    return base::nullopt;
   }
 
   // WebWorker ----------------------------------------------------------

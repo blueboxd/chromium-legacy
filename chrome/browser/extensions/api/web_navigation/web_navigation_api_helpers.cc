@@ -202,7 +202,7 @@ void DispatchOnCreatedNavigationTarget(
   DCHECK(ExtensionTabUtil::GetTabById(
       ExtensionTabUtil::GetTabId(target_web_contents),
       Profile::FromBrowserContext(target_web_contents->GetBrowserContext()),
-      false, NULL, NULL, NULL, NULL));
+      false, nullptr));
 
   web_navigation::OnCreatedNavigationTarget::Details details;
   details.source_tab_id = ExtensionTabUtil::GetTabId(web_contents);

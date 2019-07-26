@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // PictureInPictureSessionObserver is associated to a PictureInPictureSession at
 // its creation. It receives all the events associated to the session lifetime.

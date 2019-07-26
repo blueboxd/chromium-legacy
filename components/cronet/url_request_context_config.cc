@@ -531,14 +531,14 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             quic_race_cert_verification;
       }
 
-      std::string quic_host_whitelist;
-      if (quic_args->GetString(kQuicHostWhitelist, &quic_host_whitelist)) {
+      std::string quic_host_allowlist;
+      if (quic_args->GetString(kQuicHostWhitelist, &quic_host_allowlist)) {
         std::vector<std::string> host_vector =
-            base::SplitString(quic_host_whitelist, ",", base::TRIM_WHITESPACE,
+            base::SplitString(quic_host_allowlist, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_ALL);
-        session_params->quic_host_whitelist.clear();
+        session_params->quic_host_allowlist.clear();
         for (const std::string& host : host_vector) {
-          session_params->quic_host_whitelist.insert(host);
+          session_params->quic_host_allowlist.insert(host);
         }
       }
 

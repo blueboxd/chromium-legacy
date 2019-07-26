@@ -5,7 +5,7 @@
 #ifndef UI_OZONE_PUBLIC_INTERFACES_OVERLAY_SURFACE_CANDIDATE_STRUCT_TRAITS_H_
 #define UI_OZONE_PUBLIC_INTERFACES_OVERLAY_SURFACE_CANDIDATE_STRUCT_TRAITS_H_
 
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/buffer_types_struct_traits.h"
 #include "ui/gfx/mojo/overlay_transform_struct_traits.h"
 #include "ui/ozone/public/interfaces/overlay_surface_candidate.mojom.h"

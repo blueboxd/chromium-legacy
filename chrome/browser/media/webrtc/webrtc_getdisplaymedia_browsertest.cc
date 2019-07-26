@@ -74,6 +74,12 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetDisplayMediaBrowserTestWithPicker,
 // Real desktop capture is flaky on below platforms.
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_GetDisplayMediaVideoAndAudio DISABLED_GetDisplayMediaVideoAndAudio
+// On linux debug bots, it's flaky as well.
+#elif (defined(OS_LINUX) && !defined(NDEBUG))
+#define MAYBE_GetDisplayMediaVideoAndAudio DISABLED_GetDisplayMediaVideoAndAudio
+// On linux asan bots, it's flaky as well - msan and other rel bot are fine.
+#elif (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
+#define MAYBE_GetDisplayMediaVideoAndAudio DISABLED_GetDisplayMediaVideoAndAudio
 #else
 #define MAYBE_GetDisplayMediaVideoAndAudio GetDisplayMediaVideoAndAudio
 #endif  // defined(OS_CHROMEOS) || defined(OS_WIN)

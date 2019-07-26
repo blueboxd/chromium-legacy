@@ -6,7 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // This file is the Mojo version of the media::VideoEncodeAccelerator interface
 // and describes the communication between a Client and a remote "service"

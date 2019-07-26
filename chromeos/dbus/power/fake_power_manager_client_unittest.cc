@@ -5,8 +5,8 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -102,7 +102,8 @@ TEST(FakePowerManagerClientTest, NotifyObserversTest) {
   // RequestStatusUpdate posts to the current message loop. This is
   // necessary because we want to make sure that NotifyObservers() is
   // called as a result of RequestStatusUpdate().
-  base::MessageLoopForUI message_loop;
+  base::test::ScopedTaskEnvironment scoped_task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::UI);
   test_observer.ClearProps();
   client.RequestStatusUpdate();
   base::RunLoop().RunUntilIdle();

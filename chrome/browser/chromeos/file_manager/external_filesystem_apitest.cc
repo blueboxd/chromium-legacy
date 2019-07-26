@@ -826,9 +826,8 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, DefaultFileHandler) {
 //
 // RestrictedFileSystemExtensionApiTests.
 //
-// TODO(crbug.com/986072): Re-enable this.
 IN_PROC_BROWSER_TEST_F(RestrictedFileSystemExtensionApiTest,
-                       DISABLED_FileSystemOperations) {
+                       FileSystemOperations) {
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/filesystem_operations_test",
       FILE_PATH_LITERAL("manifest.json"),

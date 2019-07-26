@@ -12,6 +12,7 @@ if (closure_compile) {
     deps = [
       "engagement:closure_compile",
       "interventions_internals:closure_compile",
+      "reset_password:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {
       deps += [

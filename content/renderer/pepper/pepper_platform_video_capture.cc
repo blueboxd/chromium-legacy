@@ -23,7 +23,6 @@ PepperPlatformVideoCapture::PepperPlatformVideoCapture(
     PepperVideoCaptureHost* handler)
     : render_frame_id_(render_frame_id),
       device_id_(device_id),
-      session_id_(0),
       handler_(handler),
       pending_open_device_(false),
       pending_open_device_id_(-1) {

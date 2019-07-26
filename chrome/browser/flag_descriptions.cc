@@ -252,18 +252,6 @@ const char kCaptionSettingsName[] = "Caption Settings";
 const char kCaptionSettingsDescription[] =
     "Enable the ability to customize captions.";
 
-const char kClickToCallReceiverName[] =
-    "Enable receiver device to handle click to call feature";
-const char kClickToCallReceiverDescription[] =
-    "Enables receiver device to handle click to call feature by showing a "
-    "notification to call the phone number clicked on the desktop.";
-
-const char kClickToCallUIName[] =
-    "Enable click to call feature signals to be handled on desktop";
-const char kClickToCallUIDescription[] =
-    "Enables click to call feature signals to be handled on desktop by showing "
-    "a list of user's available devices with telephony functionality.";
-
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
@@ -1555,12 +1543,6 @@ const char kPasswordImportName[] = "Password import";
 const char kPasswordImportDescription[] =
     "Import functionality in password settings.";
 
-const char kPasswordsMigrateLinuxToLoginDBName[] =
-    "Migrate passwords to \"Login Data\"";
-const char kPasswordsMigrateLinuxToLoginDBDescription[] =
-    "Performs a one-off irreversible migration of passwords from the "
-    "gnome-keyring or kwallet into the profile directory.";
-
 const char kPeriodicBackgroundSyncName[] = "Periodic Background Sync";
 const char kPeriodicBackgroundSyncDescription[] =
     "If enabled, web apps can periodically sync content in the background.";
@@ -2242,6 +2224,12 @@ const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
+
+const char kClickToCallReceiverName[] =
+    "Enable receiver device to handle click to call feature";
+const char kClickToCallReceiverDescription[] =
+    "Enables receiver device to handle click to call feature by showing a "
+    "notification to call the phone number clicked on the desktop.";
 
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
@@ -3490,6 +3478,12 @@ const char kAnimatedAvatarButtonName[] = "Animated avatar button";
 const char kAnimatedAvatarButtonDescription[] =
     "If enabled, Chrome will animate a pill with identity information around "
     "the avatar button on start-up and on sign-in.";
+
+const char kClickToCallUIName[] =
+    "Enable click to call feature signals to be handled on desktop";
+const char kClickToCallUIDescription[] =
+    "Enables click to call feature signals to be handled on desktop by showing "
+    "a list of user's available devices with telephony functionality.";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

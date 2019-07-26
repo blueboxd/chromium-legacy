@@ -1580,7 +1580,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
 
 // Tests that Certificate Transparency is required for Symantec-issued
 // certificates, unless the certificate was issued prior to 1 June 2016
-// or the issuing CA is whitelisted as independently operated.
+// or the issuing CA is permitted as independently operated.
 TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
   // Test certificates before and after the 1 June 2016 deadline.
   scoped_refptr<X509Certificate> before_cert =

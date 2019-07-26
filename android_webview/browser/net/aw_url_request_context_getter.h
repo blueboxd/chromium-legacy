@@ -78,7 +78,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::HttpAuthHandlerFactory> CreateAuthHandlerFactory();
 
   // Update methods for the auth related preferences
-  void UpdateServerWhitelist();
+  void UpdateServerAllowlist();
   void UpdateAndroidAuthNegotiateAccountType();
 
   const base::FilePath cache_path_;
@@ -96,7 +96,7 @@ class AwURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // Store HTTP Auth-related policies in this thread.
   StringPrefMember auth_android_negotiate_account_type_;
-  StringPrefMember auth_server_whitelist_;
+  StringPrefMember auth_server_allowlist_;
 
   // ProtocolHandlers and interceptors are stored here between
   // SetHandlersAndInterceptors() and the first GetURLRequestContext() call.

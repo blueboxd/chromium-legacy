@@ -152,7 +152,7 @@ source_set("host_resolver") {
     "//net",
   ]
 
-  # Whitelist-only access so we can keep track of all usage external to the
+  # Restricted access so we can keep track of all usage external to the
   # network stack and network service.
   friend = [
     # chromecast/browser/url_request_context_factory.cc
@@ -223,7 +223,7 @@ source_set("host_resolver_manager") {
     "//net",
   ]
 
-  # Whitelist-only access so we can keep track of all usage external to the
+  # Restricted access so we can keep track of all usage external to the
   # network stack and network service.
   friend = [
     # chromecast/browser/url_request_context_factory.cc
@@ -268,7 +268,7 @@ source_set("dns_client") {
     "//net",
   ]
 
-  # Whitelist-only access so we can keep track of all usage external to the
+  # Restricted access so we can keep track of all usage external to the
   # network stack.
   friend = [
     # chrome/browser/local_discovery/service_discovery_client_impl.cc
@@ -324,7 +324,7 @@ source_set("mdns_client") {
     "//net",
   ]
 
-  # Whitelist-only access so we can keep track of all usage external to the
+  # Restricted access so we can keep track of all usage external to the
   # network stack.
   friend = [
     # chrome/browser/local_discovery/service_discovery_client_mdns.h

@@ -538,6 +538,30 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
+     * Check that the password data shown in the password editing activity matches the data of the
+     * password that was clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testSelectedStoredPasswordDataIsSameAsEditedPasswordData() throws Exception {
+        setPasswordSourceWithMultipleEntries( // Initialize preferences
+                new SavedPasswordEntry[] {new SavedPasswordEntry("https://example.com",
+                                                  "example user", "example password"),
+                        new SavedPasswordEntry("https://test.com", "test user", "test password")});
+
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        Espresso.onView(withText(containsString("test user"))).perform(click());
+
+        Espresso.onView(withEditMenuIdOrText()).perform(click());
+
+        Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://test.com")));
+    }
+
+    /**
      * Check that if there are no saved passwords, the export menu item is disabled.
      */
     @Test

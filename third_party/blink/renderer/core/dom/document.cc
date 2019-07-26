@@ -1063,7 +1063,6 @@ Document::Document(const DocumentInit& initializer,
       ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()),
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
-      agent_cluster_id_(base::UnguessableToken::Create()),
       isolated_world_csp_map_(
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {

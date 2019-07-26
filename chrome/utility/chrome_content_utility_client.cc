@@ -20,6 +20,7 @@
 #include "components/mirroring/mojom/constants.mojom.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/services/patch/patch_service.h"
 #include "components/services/patch/public/mojom/constants.mojom.h"
 #include "components/services/unzip/public/mojom/constants.mojom.h"
@@ -105,7 +106,7 @@
 #include "chrome/services/cups_ipp_parser/public/mojom/constants.mojom.h"  // nogncheck
 #endif
 
-#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"  // nogncheck
 #endif
@@ -251,7 +252,7 @@ ChromeContentUtilityClient::MaybeCreateMainThreadService(
   }
 #endif
 
-#if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
+#if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
   if (service_name == chrome::mojom::kFileUtilServiceName)
     return std::make_unique<FileUtilService>(std::move(request));
 #endif

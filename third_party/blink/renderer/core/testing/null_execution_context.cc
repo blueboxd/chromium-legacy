@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
@@ -16,9 +17,11 @@ namespace blink {
 
 NullExecutionContext::NullExecutionContext(
     OriginTrialContext* origin_trial_context)
-    : ExecutionContext(v8::Isolate::GetCurrent(),
-                       nullptr,
-                       origin_trial_context),
+    : ExecutionContext(
+          v8::Isolate::GetCurrent(),
+          MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
+                                      base::UnguessableToken::Null()),
+          origin_trial_context),
       tasks_need_pause_(false),
       is_secure_context_(true),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}

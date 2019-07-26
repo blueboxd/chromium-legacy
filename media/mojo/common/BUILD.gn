@@ -25,7 +25,7 @@ jumbo_source_set("common") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//ui/gfx/geometry",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
   ]
 }
 

@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
-#include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
+#include "ui/gfx/geometry/mojom/geometry.mojom-shared.h"
 
 namespace blink {
 

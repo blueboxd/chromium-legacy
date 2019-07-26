@@ -28,6 +28,7 @@
 #include "components/grit/components_scaled_resources.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/safe_browsing/browser/referrer_chain_provider.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -39,7 +40,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
-#if SAFE_BROWSING_DB_LOCAL
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #endif
 
@@ -227,7 +228,7 @@ void WebUIInfoSingleton::InitializeCookieManager() {
 }
 
 namespace {
-#if SAFE_BROWSING_DB_LOCAL
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
 
 base::Value UserReadableTimeFromMillisSinceEpoch(int64_t time_in_milliseconds) {
   base::Time time = base::Time::UnixEpoch() +
@@ -1136,7 +1137,7 @@ void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
     const base::ListValue* args) {
   base::ListValue database_manager_info;
 
-#if SAFE_BROWSING_DB_LOCAL
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
   const V4LocalDatabaseManager* local_database_manager_instance =
       V4LocalDatabaseManager::current_local_database_manager();
   if (local_database_manager_instance) {

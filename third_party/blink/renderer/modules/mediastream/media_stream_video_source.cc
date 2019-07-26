@@ -319,7 +319,7 @@ void MediaStreamVideoSource::DoChangeSource(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "MediaStreamVideoSource::DoChangeSource: "
            << ", new device id = " << new_device.id
-           << ", session id = " << new_device.session_id;
+           << ", session id = " << new_device.session_id();
   if (state_ != STARTED) {
     return;
   }

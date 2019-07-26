@@ -42,7 +42,7 @@ enum class TrustStatus {
   UNSPECIFIED,
   // Certificate is a trust anchor.
   TRUSTED,
-  // Certificate is blacklisted / explicitly distrusted.
+  // Certificate is blocked / explicitly distrusted.
   DISTRUSTED
 };
 

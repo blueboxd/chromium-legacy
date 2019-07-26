@@ -60,6 +60,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -91,7 +92,7 @@
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -329,7 +330,7 @@ PageInfo::PageInfo(
       did_revoke_user_ssl_decisions_(false),
       profile_(profile),
       security_level_(security_state::NONE),
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       password_protection_service_(
           safe_browsing::ChromePasswordProtectionService::
               GetPasswordProtectionService(profile_)),
@@ -551,7 +552,7 @@ void PageInfo::OpenSiteSettingsView() {
 
 void PageInfo::OnChangePasswordButtonPressed(
     content::WebContents* web_contents) {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   DCHECK(password_protection_service_);
   DCHECK(safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE ||
          safe_browsing_status_ ==
@@ -568,7 +569,7 @@ void PageInfo::OnChangePasswordButtonPressed(
 
 void PageInfo::OnWhitelistPasswordReuseButtonPressed(
     content::WebContents* web_contents) {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   DCHECK(password_protection_service_);
   DCHECK(safe_browsing_status_ == SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE ||
          safe_browsing_status_ ==
@@ -735,7 +736,7 @@ void PageInfo::ComputeUIInputs(
     GetSafeBrowsingStatusByMaliciousContentStatus(
         visible_security_state.malicious_content_status, &safe_browsing_status_,
         &site_details_message_);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
     bool old_show_change_pw_buttons = show_change_password_buttons_;
 #endif
     show_change_password_buttons_ =
@@ -744,7 +745,7 @@ void PageInfo::ComputeUIInputs(
          visible_security_state.malicious_content_status ==
              security_state::
                  MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE);
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
     // Only record password reuse when adding the button, not on updates.
     if (show_change_password_buttons_ && !old_show_change_pw_buttons) {
       RecordPasswordReuseEvent();
@@ -975,7 +976,7 @@ void PageInfo::PresentPageFeatureInfo() {
   ui_->SetPageFeatureInfo(info);
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 void PageInfo::RecordPasswordReuseEvent() {
   if (!password_protection_service_) {
     return;
@@ -1034,7 +1035,7 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
           l10n_util::GetStringUTF16(IDS_PAGE_INFO_UNWANTED_SOFTWARE_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       *status = PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE;
       // |password_protection_service_| may be null in test.
       *details = password_protection_service_
@@ -1044,7 +1045,7 @@ void PageInfo::GetSafeBrowsingStatusByMaliciousContentStatus(
 #endif
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
       *status = PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
       // |password_protection_service_| maybe null in test.
       *details = password_protection_service_

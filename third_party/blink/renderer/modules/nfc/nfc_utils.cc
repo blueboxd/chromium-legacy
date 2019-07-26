@@ -9,7 +9,9 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_constants.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 using device::mojom::blink::NDEFCompatibility;
@@ -286,6 +288,43 @@ NFCPushTarget StringToNFCPushTarget(const String& target) {
     return NFCPushTarget::PEER;
 
   return NFCPushTarget::ANY;
+}
+
+DOMException* NFCErrorTypeToDOMException(
+    device::mojom::blink::NFCErrorType error_type) {
+  switch (error_type) {
+    case device::mojom::blink::NFCErrorType::NOT_ALLOWED:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotAllowedError, kNfcNotAllowed);
+    case device::mojom::blink::NFCErrorType::NOT_SUPPORTED:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError, kNfcNotSupported);
+    case device::mojom::blink::NFCErrorType::NOT_READABLE:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotReadableError, kNfcNotReadable);
+    case device::mojom::blink::NFCErrorType::NOT_FOUND:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotFoundError, kNfcWatchIdNotFound);
+    case device::mojom::blink::NFCErrorType::INVALID_MESSAGE:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                                kNfcInvalidMsg);
+    case device::mojom::blink::NFCErrorType::OPERATION_CANCELLED:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                                kNfcCancelled);
+    case device::mojom::blink::NFCErrorType::TIMER_EXPIRED:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
+                                                kNfcTimeout);
+    case device::mojom::blink::NFCErrorType::CANNOT_CANCEL:
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNoModificationAllowedError,
+          kNfcNoModificationAllowed);
+    case device::mojom::blink::NFCErrorType::IO_ERROR:
+      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kNetworkError,
+                                                kNfcDataTransferError);
+  }
+  NOTREACHED();
+  // Don't need to handle the case after a NOTREACHED().
+  return nullptr;
 }
 
 }  // namespace blink

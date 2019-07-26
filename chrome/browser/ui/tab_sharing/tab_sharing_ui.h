@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/desktop_media_id.h"

@@ -10,7 +10,7 @@ sources = [
 ]
 public_deps = [
   "//gpu/config",
-  "//ui/gfx/geometry/mojo",
+  "//ui/gfx/geometry/mojom",
 ]
 type_mappings = [
   "gpu.mojom.GpuExtraInfo=gpu::GpuExtraInfo",

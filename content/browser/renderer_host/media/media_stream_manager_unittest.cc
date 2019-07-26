@@ -314,7 +314,7 @@ class MediaStreamManagerTest : public ::testing::Test {
             MEDIA_REQUEST_STATE_CLOSING));
     media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
                                             requester_id, video_device.id,
-                                            video_device.session_id);
+                                            video_device.session_id());
     if (request_audio) {
       EXPECT_CALL(
           *media_observer_,
@@ -323,7 +323,7 @@ class MediaStreamManagerTest : public ::testing::Test {
               MEDIA_REQUEST_STATE_CLOSING));
       media_stream_manager_->StopStreamDevice(
           render_process_id, render_frame_id, requester_id, audio_device.id,
-          audio_device.session_id);
+          audio_device.session_id());
     }
   }
 
@@ -655,7 +655,7 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceStopped) {
 
   media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
                                           requester_id, video_device.id,
-                                          video_device.session_id);
+                                          video_device.session_id());
 }
 
 TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
@@ -726,7 +726,7 @@ TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
   base::RunLoop().RunUntilIdle();
   media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
                                           requester_id, video_device.id,
-                                          video_device.session_id);
+                                          video_device.session_id());
 }
 
 TEST_F(MediaStreamManagerTest, GetMediaDeviceIDForHMAC) {

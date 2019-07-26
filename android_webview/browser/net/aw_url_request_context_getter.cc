@@ -193,11 +193,11 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
 
-  auth_server_whitelist_.Init(
+  auth_server_allowlist_.Init(
       prefs::kAuthServerWhitelist, user_pref_service,
-      base::BindRepeating(&AwURLRequestContextGetter::UpdateServerWhitelist,
+      base::BindRepeating(&AwURLRequestContextGetter::UpdateServerAllowlist,
                           base::Unretained(this)));
-  auth_server_whitelist_.MoveToSequence(io_thread_proxy);
+  auth_server_allowlist_.MoveToSequence(io_thread_proxy);
 
   auth_android_negotiate_account_type_.Init(
       prefs::kAuthAndroidNegotiateAccountType, user_pref_service,
@@ -374,15 +374,15 @@ void AwURLRequestContextGetter::SetHandlersAndInterceptors(
 std::unique_ptr<net::HttpAuthHandlerFactory>
 AwURLRequestContextGetter::CreateAuthHandlerFactory() {
   http_auth_preferences_.reset(new net::HttpAuthPreferences());
-  UpdateServerWhitelist();
+  UpdateServerAllowlist();
   UpdateAndroidAuthNegotiateAccountType();
 
   return net::HttpAuthHandlerRegistryFactory::Create(
       http_auth_preferences_.get(), AwBrowserContext::GetAuthSchemes());
 }
 
-void AwURLRequestContextGetter::UpdateServerWhitelist() {
-  http_auth_preferences_->SetServerWhitelist(auth_server_whitelist_.GetValue());
+void AwURLRequestContextGetter::UpdateServerAllowlist() {
+  http_auth_preferences_->SetServerAllowlist(auth_server_allowlist_.GetValue());
 }
 
 void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {

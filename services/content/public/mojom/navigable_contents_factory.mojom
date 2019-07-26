@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "services/content/public/mojom/navigable_contents.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Parameters used to configure a newly created NavigableContents.
 struct NavigableContentsParams {

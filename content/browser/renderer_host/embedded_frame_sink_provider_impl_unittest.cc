@@ -21,7 +21,7 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/embedded_frame_sink_impl.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom.h"

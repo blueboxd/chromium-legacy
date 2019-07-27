@@ -25,8 +25,8 @@
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 #include "components/viz/service/surfaces/surface_client.h"
 #include "components/viz/service/viz_service_export.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom.h"
 
 namespace viz {
 

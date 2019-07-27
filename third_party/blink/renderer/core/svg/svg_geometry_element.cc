@@ -131,11 +131,15 @@ Path SVGGeometryElement::ToClipPath() const {
   return path;
 }
 
-float SVGGeometryElement::getTotalLength() {
+float SVGGeometryElement::getTotalLength(ExceptionState& exception_state) {
   GetDocument().UpdateStyleAndLayoutForNode(this);
 
-  if (!GetLayoutObject())
+  if (!GetLayoutObject()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "This element is non-rendered element.");
     return 0;
+  }
+
   return AsPath().length();
 }
 

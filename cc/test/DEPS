@@ -11,7 +11,7 @@ include_rules = [
   "+gpu/config/gpu_info.h",
   "+gpu/ipc",
   "+services/viz/privileged/interfaces/gl/gpu_host.mojom.h",
-  "+services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h",
+  "+services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h",
 ]
 
 specific_include_rules = {

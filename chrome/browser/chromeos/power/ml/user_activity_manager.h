@@ -23,7 +23,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"

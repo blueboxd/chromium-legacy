@@ -51,7 +51,7 @@ viz_source_set("unit_tests") {
     "//components/viz/client",
     "//components/viz/test:test_support",
     "//mojo/public/cpp/bindings",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

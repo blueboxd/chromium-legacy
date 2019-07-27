@@ -396,7 +396,7 @@ jumbo_static_library("test_support") {
     "//services/proxy_resolver:lib",
     "//services/service_manager/public/cpp",
     "//services/viz/public/cpp/gpu",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia",
     "//storage/browser",
     "//storage/browser:test_support",

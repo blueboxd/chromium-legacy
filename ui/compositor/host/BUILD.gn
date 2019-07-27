@@ -33,6 +33,6 @@ source_set("host") {
       "//ui/gfx",
     ]
 
-    public_deps += [ "//services/viz/public/interfaces" ]
+    public_deps += [ "//services/viz/public/mojom" ]
   }
 }

@@ -1820,8 +1820,8 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "//mojo/public/cpp/bindings/tests:for_blink_tests",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/interfaces/bindings/tests:test_interfaces_blink",
-    "//services/viz/public/interfaces",
-    "//services/viz/public/interfaces:interfaces_blink",
+    "//services/viz/public/mojom",
+    "//services/viz/public/mojom:mojom_blink",
     "//skia",
     "//skia:skcms",
     "//skia:test_fonts",
@@ -2126,7 +2126,7 @@ jumbo_source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    "//services/viz/public/interfaces:interfaces_blink",
+    "//services/viz/public/mojom:mojom_blink",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
+import "services/viz/public/mojom/compositing/begin_frame_args.mojom";
 
 // Exposes a way to manually issue BeginFrames to a Display. The client is
 // notified when BeginFrames are needed and completed.

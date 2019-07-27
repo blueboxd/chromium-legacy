@@ -1,5 +1,8 @@
 'use strict';
 
+// Default sensor frequency in default configurations.
+const DEFAULT_FREQUENCY = 5;
+
 // Wraps callback and calls rejectFunc if callback throws an error.
 class CallbackWrapper {
   constructor(callback, rejectFunc) {
@@ -46,7 +49,7 @@ function sensorMocks() {
 
     // Returns default configuration.
     async getDefaultConfiguration() {
-      return { frequency: 5 };
+      return { frequency: DEFAULT_FREQUENCY };
     }
 
     // Adds configuration for the sensor and starts reporting fake data
@@ -123,9 +126,7 @@ function sensorMocks() {
 
     // Zeroes shared buffer.
     resetBuffer() {
-      for (let i = 0; i < this.buffer_.length; ++i) {
-        this.buffer_[i] = 0;
-      }
+      this.buffer_.fill(0);
     }
 
     // Sets fake data that is used to deliver sensor reading updates.
@@ -275,7 +276,7 @@ function sensorMocks() {
 
       assert_equals(rv.result, Mojo.RESULT_OK);
 
-      let defaultConfig = {frequency: 5};
+      let defaultConfig = { frequency: DEFAULT_FREQUENCY };
       // Consider sensor traits to meet assertions in C++ code (see
       // services/device/public/cpp/generic_sensor/sensor_traits.h)
       if (type == device.mojom.SensorType.AMBIENT_LIGHT ||

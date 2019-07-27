@@ -18,7 +18,7 @@ include_rules = [
   "+services/metrics/public",
   "+services/network",
   "+services/tracing/public",
-  "+services/viz/public/interfaces",
+  "+services/viz/public/mojom",
 
   # keyboard::KeyboardController only exists in ash and should not be accessed
   # directly from src/chrome. Use ChromeKeyboardControllerClient instead.

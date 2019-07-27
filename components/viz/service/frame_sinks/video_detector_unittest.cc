@@ -21,7 +21,7 @@
 #include "components/viz/test/fake_compositor_frame_sink_client.h"
 #include "components/viz/test/surface_id_allocator_set.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"

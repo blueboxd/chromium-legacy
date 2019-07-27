@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "content/common/render_frame_metadata.mojom";
-import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
+import "services/viz/public/mojom/compositing/compositor_frame_sink.mojom";
 
 // This interface provides CompositorFrameSink and a
 // RenderFrameMetadataObserverClient for the renderer. While also

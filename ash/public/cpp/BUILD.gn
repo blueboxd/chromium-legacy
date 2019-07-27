@@ -272,7 +272,7 @@ source_set("manifest") {
     "//services/preferences/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
   ]
 }
 

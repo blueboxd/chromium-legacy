@@ -6,11 +6,11 @@ module content.mojom;
 
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
-import "services/viz/public/interfaces/compositing/compositor_frame.mojom";
-import "services/viz/public/interfaces/compositing/compositor_frame_metadata.mojom";
-import "services/viz/public/interfaces/compositing/frame_timing_details.mojom";
-import "services/viz/public/interfaces/compositing/returned_resource.mojom";
+import "services/viz/public/mojom/compositing/begin_frame_args.mojom";
+import "services/viz/public/mojom/compositing/compositor_frame.mojom";
+import "services/viz/public/mojom/compositing/compositor_frame_metadata.mojom";
+import "services/viz/public/mojom/compositing/frame_timing_details.mojom";
+import "services/viz/public/mojom/compositing/returned_resource.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 [Native]

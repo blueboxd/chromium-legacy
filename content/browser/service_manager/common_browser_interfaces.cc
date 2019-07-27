@@ -26,7 +26,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 #if defined(OS_WIN)
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"

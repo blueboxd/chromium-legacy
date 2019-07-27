@@ -15,7 +15,7 @@ static_library("client") {
   deps = [
     "//components/viz/common",
     "//mojo/public/cpp/bindings",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
   ]
 }
 

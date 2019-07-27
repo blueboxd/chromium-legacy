@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
-#include "services/viz/public/cpp/compositing/selection_struct_traits.h"
+#include "services/viz/public/cpp/compositing/selection_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
 

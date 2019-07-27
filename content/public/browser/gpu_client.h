@@ -9,7 +9,7 @@
 
 #include "components/viz/host/gpu_client.h"
 #include "content/common/content_export.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace content {
 

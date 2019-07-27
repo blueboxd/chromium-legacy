@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace viz {
 

@@ -63,7 +63,7 @@ source_set("gfx") {
     "//gpu/skia_bindings",
     "//gpu/vulkan:vulkan",
     "//gpu/vulkan/init",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia",
     "//ui/gfx",
     "//ui/gl",

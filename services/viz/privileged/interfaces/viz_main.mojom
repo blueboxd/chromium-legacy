@@ -6,7 +6,7 @@ module viz.mojom;
 
 import "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
-import "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom";
+import "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom";
 import "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_host.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_service.mojom";

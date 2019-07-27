@@ -14,7 +14,7 @@ include_rules = [
   "+services/service_manager/sandbox",
   "+services/video_capture/public/mojom",
   "+services/viz/public/cpp",
-  "+services/viz/public/interfaces",
+  "+services/viz/public/mojom",
 
   # No inclusion of WebKit from the browser, other than the ones in
   # WebKit/public/{mojom,common}, or the ones that are strictly enum/POD,

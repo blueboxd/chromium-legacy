@@ -9,7 +9,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 
 namespace viz {
 

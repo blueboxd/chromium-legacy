@@ -5,8 +5,8 @@
 module content.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "services/viz/public/interfaces/compositing/local_surface_id_allocation.mojom";
-import "services/viz/public/interfaces/compositing/selection.mojom";
+import "services/viz/public/mojom/compositing/local_surface_id_allocation.mojom";
+import "services/viz/public/mojom/compositing/selection.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // See components/viz/service/quads/render_frame_metadata.h

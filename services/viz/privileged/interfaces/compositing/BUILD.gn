@@ -22,7 +22,7 @@ mojom("compositing") {
     "//media/capture/mojom:video_capture",
     "//media/mojo/interfaces:interfaces",
     "//mojo/public/mojom/base",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",

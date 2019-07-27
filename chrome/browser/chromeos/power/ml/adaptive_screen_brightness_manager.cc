@@ -35,7 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_importance_signals.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 

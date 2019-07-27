@@ -64,7 +64,7 @@ Path SVGPathElement::AsPath() const {
   return GetStylePath()->GetPath();
 }
 
-float SVGPathElement::getTotalLength() {
+float SVGPathElement::getTotalLength(ExceptionState& exception_state) {
   GetDocument().UpdateStyleAndLayoutForNode(this);
   return SVGPathQuery(PathByteStream()).GetTotalLength();
 }

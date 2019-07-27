@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom-shared.h"
-#include "services/viz/public/cpp/compositing/local_surface_id_allocation_struct_traits.h"
+#include "services/viz/public/cpp/compositing/local_surface_id_allocation_mojom_traits.h"
 
 namespace mojo {
 

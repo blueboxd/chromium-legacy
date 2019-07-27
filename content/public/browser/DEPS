@@ -11,7 +11,7 @@ include_rules = [
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/video_capture/public/mojom",
-  "+services/viz/public/interfaces",
+  "+services/viz/public/mojom",
 ]
 
 specific_include_rules = {

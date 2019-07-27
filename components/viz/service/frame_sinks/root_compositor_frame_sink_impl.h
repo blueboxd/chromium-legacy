@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 

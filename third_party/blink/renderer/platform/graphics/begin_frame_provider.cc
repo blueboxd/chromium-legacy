@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "services/viz/public/interfaces/compositing/frame_timing_details.mojom-blink.h"
+#include "services/viz/public/mojom/compositing/frame_timing_details.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"

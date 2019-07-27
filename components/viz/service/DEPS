@@ -9,7 +9,7 @@ include_rules = [
   "+gpu/config/gpu_feature_info.h",
   "+gpu/ipc/common/surface_handle.h",
   "+services/viz/privileged/interfaces",
-  "+services/viz/public/interfaces",
+  "+services/viz/public/mojom",
   "+third_party/skia",
   "+ui/latency",
   "+ui/ozone/public",

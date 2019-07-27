@@ -72,7 +72,7 @@ component("android") {
     "//components/viz/common",
     "//components/viz/host",
     "//components/viz/service",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia",
     "//third_party/blink/public:blink_headers",
     "//ui/base",

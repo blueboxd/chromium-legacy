@@ -32,7 +32,7 @@ include_rules = [
   "+services/network/public/cpp",
   "+services/preferences/tracked",
   "+services/service_manager/public",
-  "+services/viz/public/interfaces",
+  "+services/viz/public/mojom",
   "+skia",
   "+third_party/skia/include",
   "+third_party/boringssl/src/include",

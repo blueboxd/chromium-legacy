@@ -110,7 +110,7 @@ source_set("wayland") {
     "//components/exo/wayland/protocol:aura_shell_protocol",
     "//device/gamepad",
     "//services/viz/privileged/interfaces/compositing",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia",
     "//third_party/libsync",
     "//third_party/wayland:wayland_server",

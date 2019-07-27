@@ -4,7 +4,7 @@
 
 #include "services/viz/privileged/interfaces/compositing/renderer_settings_struct_traits.h"
 
-#include "services/viz/public/cpp/compositing/resource_settings_struct_traits.h"
+#include "services/viz/public/cpp/compositing/resource_settings_mojom_traits.h"
 
 #if defined(OS_ANDROID)
 #include "ui/gfx/mojo/color_space_mojom_traits.h"

@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace base {
 class WaitableEvent;

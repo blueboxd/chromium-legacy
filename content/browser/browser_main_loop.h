@@ -17,7 +17,7 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "ui/base/buildflags.h"
 
 #if defined(OS_CHROMEOS)

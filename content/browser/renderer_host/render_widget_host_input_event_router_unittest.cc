@@ -22,7 +22,7 @@
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
-#include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
+#include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

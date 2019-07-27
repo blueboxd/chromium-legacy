@@ -17,7 +17,7 @@
 #include "components/viz/host/renderer_settings_creation.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/host/external_begin_frame_controller_client_impl.h"
 #include "ui/compositor/reflector.h"
 

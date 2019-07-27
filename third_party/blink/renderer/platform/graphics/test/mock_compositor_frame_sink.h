@@ -8,7 +8,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/ipc/common/mailbox.mojom-blink.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 

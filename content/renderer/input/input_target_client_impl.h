@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_INPUT_INPUT_TARGET_CLIENT_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
+#include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 
 namespace content {
 

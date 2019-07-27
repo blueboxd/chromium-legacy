@@ -57,7 +57,7 @@ include_rules = [
     "+mozilla",
     "+services/metrics/public/cpp/ukm_entry_builder.h",
     "+services/metrics/public/cpp/ukm_recorder.h",
-    "+services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h",
+    "+services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h",
     "+skia/ext",
     #TODO(nverne): remove this
     "+third_party/blink/public/web/blink.h",

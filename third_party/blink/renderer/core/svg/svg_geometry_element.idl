@@ -37,6 +37,6 @@ interface SVGGeometryElement : SVGGraphicsElement {
     // TODO(foolip): SVGPoint should be DOMPoint.
     [HighEntropy, Measure] boolean isPointInFill(SVGPoint point);
     [HighEntropy, Measure] boolean isPointInStroke(SVGPoint point);
-    [HighEntropy, Measure] float getTotalLength();
+    [HighEntropy, Measure, RaisesException] float getTotalLength();
     [HighEntropy, Measure] SVGPoint getPointAtLength(float distance);
 };

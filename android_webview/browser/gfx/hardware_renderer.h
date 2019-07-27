@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/frame_timing_details_map.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/color_space.h"
 
 namespace viz {

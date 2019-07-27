@@ -150,7 +150,7 @@ source_set("gbm") {
     "//ui/ozone/common",
     "//ui/ozone/common/linux:drm",
     "//ui/ozone/common/linux:gbm",
-    "//ui/ozone/public/interfaces",
+    "//ui/ozone/public/mojom",
     "//ui/platform_window",
   ]
 

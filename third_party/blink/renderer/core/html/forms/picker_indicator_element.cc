@@ -57,12 +57,8 @@ PickerIndicatorElement::~PickerIndicatorElement() {
   DCHECK(!chooser_);
 }
 
-LayoutObject* PickerIndicatorElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
-  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled())
-    return HTMLDivElement::CreateLayoutObject(style, legacy);
-
+LayoutObject* PickerIndicatorElement::CreateLayoutObject(const ComputedStyle&,
+                                                         LegacyLayout) {
   return new LayoutDetailsMarker(this);
 }
 

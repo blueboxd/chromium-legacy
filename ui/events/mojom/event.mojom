@@ -8,7 +8,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "ui/events/mojom/event_constants.mojom";
 import "ui/events/mojom/keyboard_codes.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/latency/mojo/latency_info.mojom";
+import "ui/latency/mojom/latency_info.mojom";
 
 // The values here correspond to the values defined in ui::KeyEvent.
 struct KeyData {

@@ -434,11 +434,8 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessFilteredKeyPressEvent(
   if (NeedInsertChar())
     return DispatchKeyEventPostIME(event);
 
-  ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
-                                VKEY_PROCESSKEY,
-                                event->code(),
-                                event->flags(),
-                                event->GetDomKey(),
+  ui::KeyEvent fabricated_event(ET_KEY_PRESSED, VKEY_PROCESSKEY, event->code(),
+                                event->flags(), DomKey::PROCESS,
                                 event->time_stamp());
   ui::EventDispatchDetails dispatch_details =
       DispatchKeyEventPostIME(&fabricated_event);

@@ -19,8 +19,8 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/platform/drm/common/display_types.h"
-#include "ui/ozone/public/interfaces/device_cursor.mojom.h"
-#include "ui/ozone/public/interfaces/drm_device.mojom.h"
+#include "ui/ozone/public/mojom/device_cursor.mojom.h"
+#include "ui/ozone/public/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/swap_completion_callback.h"
 
 namespace base {

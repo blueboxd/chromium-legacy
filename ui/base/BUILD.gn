@@ -937,7 +937,7 @@ test("ui_base_unittests") {
       "ime/candidate_window_unittest.cc",
       "ime/composition_text_unittest.cc",
       "ime/input_method_base_unittest.cc",
-      "ime/mojo/ime_struct_traits_unittest.cc",
+      "ime/mojom/ime_mojom_traits_unittest.cc",
     ]
     if (is_win) {
       sources += [
@@ -991,7 +991,7 @@ test("ui_base_unittests") {
   if (build_ime) {
     deps += [
       "//ui/base/ime",
-      "//ui/base/ime/mojo:test_interfaces",
+      "//ui/base/ime/mojom:test_interfaces",
     ]
   }
 

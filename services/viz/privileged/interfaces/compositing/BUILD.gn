@@ -26,7 +26,7 @@ mojom("compositing") {
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
-    "//ui/latency/mojo:interfaces",
+    "//ui/latency/mojom",
   ]
 
   enabled_features = []

@@ -25,8 +25,6 @@ blink_core_sources("svg") {
     "color_distance.cc",
     "color_distance.h",
     "gradient_attributes.h",
-    "graphics/dark_mode_svg_image_classifier.cc",
-    "graphics/dark_mode_svg_image_classifier.h",
     "graphics/filters/svg_fe_image.cc",
     "graphics/filters/svg_fe_image.h",
     "graphics/filters/svg_filter_builder.cc",

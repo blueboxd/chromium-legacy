@@ -2236,7 +2236,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // Figure out if we will do hardware accelerated decoding. The criteria is as
   // follows:
   //
-  // - The kVaapiJpegImageDecodeAcceleration feature is enabled.
+  // - Either the kVaapiJpegImageDecodeAcceleration or
+  //   kVaapiWebPImageDecodeAcceleration features are enabled.
   // - The caller allows hardware decodes.
   // - We are using the transfer cache (OOP-R).
   // - The image does not require downscaling for uploading (see TODO below).
@@ -2262,8 +2263,10 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // decoded data, but for accelerated decodes we won't know until the driver
   // gives us the result in the GPU process. Figure out what to do.
   bool do_hardware_accelerated_decode = false;
-  if (base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration) &&
+  if ((base::FeatureList::IsEnabled(
+           features::kVaapiJpegImageDecodeAcceleration) ||
+       base::FeatureList::IsEnabled(
+           features::kVaapiWebPImageDecodeAcceleration)) &&
       allow_hardware_decode && mode == DecodedDataMode::kTransferCache &&
       upload_scale_mip_level == 0 &&
       draw_image.paint_image().IsEligibleForAcceleratedDecoding() &&

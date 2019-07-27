@@ -129,7 +129,7 @@ source_set("wayland") {
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
     "//ui/ozone/common/linux:drm",
-    "//ui/ozone/public/interfaces/wayland:wayland_interfaces",
+    "//ui/ozone/public/mojom/wayland:wayland_mojom",
     "//ui/platform_window",
     "//ui/platform_window/platform_window_handler",
   ]

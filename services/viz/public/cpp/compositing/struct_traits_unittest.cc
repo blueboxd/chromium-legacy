@@ -61,7 +61,7 @@
 #include "ui/gfx/mojo/color_space_mojom_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
 #include "ui/gfx/mojo/transform_struct_traits.h"
-#include "ui/latency/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 namespace viz {
 

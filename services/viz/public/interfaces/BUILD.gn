@@ -46,7 +46,7 @@ mojom("interfaces") {
     "//skia/public/interfaces",
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojo",
-    "//ui/latency/mojo:interfaces",
+    "//ui/latency/mojom",
   ]
 
   if (is_chromeos) {

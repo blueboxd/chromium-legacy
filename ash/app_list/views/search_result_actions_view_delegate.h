@@ -15,11 +15,6 @@ class SearchResultActionsViewDelegate {
   // in SearchResultActionsView.
   virtual void OnSearchResultActionActivated(size_t index, int event_flags) = 0;
 
-  // Invoked when result action selection is cleared (it changes from the state
-  // where a result action is selected to the state where no actions are
-  // selected).
-  virtual void OnSearchResultActionsUnSelected() = 0;
-
   // Returns true if the associated search result is hovered by mouse, or
   // or selected by keyboard.
   virtual bool IsSearchResultHoveredOrSelected() = 0;

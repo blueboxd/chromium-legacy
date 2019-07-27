@@ -183,7 +183,7 @@ if (use_ozone) {
         deps += [
           "//third_party/gestures",
           "//third_party/libevdev",
-          "//ui/ozone/public/interfaces:gesture_properties_service",
+          "//ui/ozone/public/mojom:gesture_properties_service",
         ]
 
         public_configs += [ ":evdev_gestures" ]

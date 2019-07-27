@@ -60,7 +60,7 @@ source_set("scenic") {
     "//ui/gfx/geometry",
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
-    "//ui/ozone/public/interfaces",
+    "//ui/ozone/public/mojom",
     "//ui/platform_window",
   ]
 

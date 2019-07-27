@@ -95,7 +95,8 @@ void BindRendererFacingCrosImageCapture(
   auto proxy_request = mojo::MakeRequest(&proxy_ptr);
 
   // Bind the interface through the Video Capture service.
-  content::GetVideoCaptureService().BindCrosImageCapture(std::move(request));
+  content::GetVideoCaptureService().BindCrosImageCapture(
+      std::move(proxy_request));
 
   auto security_origin = source->GetLastCommittedOrigin();
   auto media_device_id_salt =

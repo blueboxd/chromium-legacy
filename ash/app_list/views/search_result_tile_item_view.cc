@@ -290,12 +290,12 @@ void SearchResultTileItemView::OnFocus() {
   } else {
     ScrollRectToVisible(GetLocalBounds());
   }
-  SetSelected(true, base::nullopt);
+  SetBackgroundHighlighted(true);
   UpdateBackgroundColor();
 }
 
 void SearchResultTileItemView::OnBlur() {
-  SetSelected(false, base::nullopt);
+  SetBackgroundHighlighted(false);
   UpdateBackgroundColor();
 }
 
@@ -304,7 +304,7 @@ void SearchResultTileItemView::StateChanged(ButtonState old_state) {
 }
 
 void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
-  if (!result() || !selected())
+  if (!result() || !background_highlighted())
     return;
 
   gfx::Rect rect(GetContentsBounds());

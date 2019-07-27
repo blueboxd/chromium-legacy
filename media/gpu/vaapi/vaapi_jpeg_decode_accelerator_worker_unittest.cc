@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
 #include <stdint.h>
+#include <va/va.h>
 
 #include <memory>
 #include <utility>
@@ -14,12 +16,13 @@
 #include "base/bind.h"
 #include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_task_environment.h"
+#include "gpu/config/gpu_info.h"
 #include "gpu/ipc/service/image_decode_accelerator_worker.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
-#include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,6 +43,30 @@ namespace {
 
 constexpr gfx::BufferFormat kFormatForDecodes = gfx::BufferFormat::YVU_420;
 
+constexpr gfx::Size kVaSurfaceResolution(128, 256);
+
+constexpr gfx::Size kVisibleSize(120, 250);
+
+constexpr size_t kWebPFileAndVp8ChunkHeaderSizeInBytes = 20u;
+
+// clang-format off
+constexpr uint8_t kJpegPFileHeader[] = {0xFF, 0xD8, 0xFF};
+
+constexpr uint8_t kLossyWebPFileHeader[] = {
+    'R', 'I', 'F', 'F',
+    0x0c, 0x00, 0x00, 0x00,  // == 12 (little endian)
+    'W', 'E', 'B', 'P',
+    'V', 'P', '8', ' ',
+    0x00, 0x00, 0x00, 0x00  // == 0
+};
+// clang-format on
+
+constexpr base::span<const uint8_t> kJpegEncodedData(kJpegPFileHeader, 3u);
+
+constexpr base::span<const uint8_t> kLossyWebPEncodedData(
+    kLossyWebPFileHeader,
+    kWebPFileAndVp8ChunkHeaderSizeInBytes);
+
 class MockNativePixmapDmaBuf : public gfx::NativePixmapDmaBuf {
  public:
   MockNativePixmapDmaBuf(const gfx::Size& size)
@@ -58,33 +85,60 @@ class MockNativePixmapDmaBuf : public gfx::NativePixmapDmaBuf {
   ~MockNativePixmapDmaBuf() override = default;
 };
 
-class MockVaapiJpegDecoder : public VaapiJpegDecoder {
+class MockVaapiImageDecoder : public VaapiImageDecoder {
  public:
-  MockVaapiJpegDecoder() = default;
-  ~MockVaapiJpegDecoder() override = default;
+  MockVaapiImageDecoder(gpu::ImageDecodeAcceleratorType type)
+      : VaapiImageDecoder(VAProfileNone), type_(type) {}
+  ~MockVaapiImageDecoder() override = default;
+
+  gpu::ImageDecodeAcceleratorType GetType() const override { return type_; }
+
+  gpu::ImageDecodeAcceleratorSupportedProfile GetSupportedProfile()
+      const override {
+    return gpu::ImageDecodeAcceleratorSupportedProfile();
+  }
 
   MOCK_METHOD1(Initialize, bool(const base::RepeatingClosure&));
   MOCK_METHOD1(Decode, VaapiImageDecodeStatus(base::span<const uint8_t>));
   MOCK_CONST_METHOD0(GetScopedVASurface, const ScopedVASurface*());
-  MOCK_CONST_METHOD0(GetType, gpu::ImageDecodeAcceleratorType());
-  MOCK_CONST_METHOD0(GetSupportedProfile,
-                     gpu::ImageDecodeAcceleratorSupportedProfile());
   MOCK_METHOD1(
       ExportAsNativePixmapDmaBuf,
       std::unique_ptr<NativePixmapAndSizeInfo>(VaapiImageDecodeStatus*));
   MOCK_METHOD1(AllocateVASurfaceAndSubmitVABuffers,
                VaapiImageDecodeStatus(base::span<const uint8_t>));
+
+ private:
+  const gpu::ImageDecodeAcceleratorType type_;
 };
 
 }  // namespace
 
-class VaapiJpegDecodeAcceleratorWorkerTest : public testing::Test {
+class VaapiImageDecodeAcceleratorWorkerTest : public testing::Test {
  public:
-  VaapiJpegDecodeAcceleratorWorkerTest()
-      : worker_(std::make_unique<StrictMock<MockVaapiJpegDecoder>>()) {}
+  VaapiImageDecodeAcceleratorWorkerTest() {
+    VaapiImageDecoderVector decoders;
+    decoders.push_back(std::make_unique<StrictMock<MockVaapiImageDecoder>>(
+        gpu::ImageDecodeAcceleratorType::kJpeg));
+    decoders.push_back(std::make_unique<StrictMock<MockVaapiImageDecoder>>(
+        gpu::ImageDecodeAcceleratorType::kWebP));
+    worker_ = base::WrapUnique(
+        new VaapiImageDecodeAcceleratorWorker(std::move(decoders)));
+  }
 
-  MockVaapiJpegDecoder* decoder() const {
-    return static_cast<MockVaapiJpegDecoder*>(worker_.decoder_.get());
+  MockVaapiImageDecoder* GetJpegDecoder() const {
+    auto result =
+        worker_->decoders_.find(gpu::ImageDecodeAcceleratorType::kJpeg);
+    return result == worker_->decoders_.end()
+               ? nullptr
+               : static_cast<MockVaapiImageDecoder*>(result->second.get());
+  }
+
+  MockVaapiImageDecoder* GetWebPDecoder() const {
+    auto result =
+        worker_->decoders_.find(gpu::ImageDecodeAcceleratorType::kWebP);
+    return result == worker_->decoders_.end()
+               ? nullptr
+               : static_cast<MockVaapiImageDecoder*>(result->second.get());
   }
 
   MOCK_METHOD1(
@@ -93,9 +147,9 @@ class VaapiJpegDecodeAcceleratorWorkerTest : public testing::Test {
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  VaapiJpegDecodeAcceleratorWorker worker_;
+  std::unique_ptr<VaapiImageDecodeAcceleratorWorker> worker_;
 
-  DISALLOW_COPY_AND_ASSIGN(VaapiJpegDecodeAcceleratorWorkerTest);
+  DISALLOW_COPY_AND_ASSIGN(VaapiImageDecodeAcceleratorWorkerTest);
 };
 
 ACTION_P2(ExportAsNativePixmapDmaBufSuccessfully,
@@ -110,46 +164,104 @@ ACTION_P2(ExportAsNativePixmapDmaBufSuccessfully,
   return exported_pixmap;
 }
 
-TEST_F(VaapiJpegDecodeAcceleratorWorkerTest, DecodeSuccess) {
-  constexpr gfx::Size kVaSurfaceResolution(128, 256);
-  constexpr gfx::Size kVisibleSize(120, 250);
-  std::vector<uint8_t> encoded_data = {1u, 2u, 3u};
+TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeSucceeds) {
+  std::vector<uint8_t> jpeg_encoded_data(kJpegEncodedData.cbegin(),
+                                         kJpegEncodedData.cend());
+  std::vector<uint8_t> webp_encoded_data(kLossyWebPEncodedData.cbegin(),
+                                         kLossyWebPEncodedData.cend());
   {
     InSequence sequence;
-    EXPECT_CALL(*decoder(),
-                Decode(AllOf(Property(&base::span<const uint8_t>::data,
-                                      encoded_data.data()),
-                             Property(&base::span<const uint8_t>::size,
-                                      encoded_data.size())) /* encoded_data */))
+    MockVaapiImageDecoder* jpeg_decoder = GetJpegDecoder();
+    ASSERT_TRUE(jpeg_decoder);
+    EXPECT_CALL(
+        *jpeg_decoder,
+        Decode(AllOf(Property(&base::span<const uint8_t>::data,
+                              jpeg_encoded_data.data()),
+                     Property(&base::span<const uint8_t>::size,
+                              jpeg_encoded_data.size())) /* encoded_data */))
         .WillOnce(Return(VaapiImageDecodeStatus::kSuccess));
-    EXPECT_CALL(*decoder(), ExportAsNativePixmapDmaBuf(NotNull() /* status */))
+    EXPECT_CALL(*jpeg_decoder,
+                ExportAsNativePixmapDmaBuf(NotNull() /* status */))
+        .WillOnce(ExportAsNativePixmapDmaBufSuccessfully(kVaSurfaceResolution,
+                                                         kVisibleSize));
+    EXPECT_CALL(*this, OnDecodeCompleted(NotNull()));
+
+    MockVaapiImageDecoder* webp_decoder = GetWebPDecoder();
+    ASSERT_TRUE(webp_decoder);
+    EXPECT_CALL(
+        *webp_decoder,
+        Decode(AllOf(Property(&base::span<const uint8_t>::data,
+                              webp_encoded_data.data()),
+                     Property(&base::span<const uint8_t>::size,
+                              webp_encoded_data.size())) /* encoded_data */))
+        .WillOnce(Return(VaapiImageDecodeStatus::kSuccess));
+    EXPECT_CALL(*webp_decoder,
+                ExportAsNativePixmapDmaBuf(NotNull() /* status */))
         .WillOnce(ExportAsNativePixmapDmaBufSuccessfully(kVaSurfaceResolution,
                                                          kVisibleSize));
     EXPECT_CALL(*this, OnDecodeCompleted(NotNull()));
   }
-  worker_.Decode(
-      std::move(encoded_data), kVisibleSize,
-      base::BindOnce(&VaapiJpegDecodeAcceleratorWorkerTest::OnDecodeCompleted,
+
+  worker_->Decode(
+      std::move(jpeg_encoded_data), kVisibleSize,
+      base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
+                     base::Unretained(this)));
+
+  worker_->Decode(
+      std::move(webp_encoded_data), kVisibleSize,
+      base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
                      base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 }
 
-TEST_F(VaapiJpegDecodeAcceleratorWorkerTest, DecodeFails) {
-  constexpr gfx::Size kVisibleSize(120, 250);
-  std::vector<uint8_t> encoded_data = {1u, 2u, 3u};
+TEST_F(VaapiImageDecodeAcceleratorWorkerTest, ImageDecodeFails) {
+  std::vector<uint8_t> jpeg_encoded_data(kJpegEncodedData.cbegin(),
+                                         kJpegEncodedData.cend());
+  std::vector<uint8_t> webp_encoded_data(kLossyWebPEncodedData.cbegin(),
+                                         kLossyWebPEncodedData.cend());
   {
     InSequence sequence;
-    EXPECT_CALL(*decoder(),
-                Decode(AllOf(Property(&base::span<const uint8_t>::data,
-                                      encoded_data.data()),
-                             Property(&base::span<const uint8_t>::size,
-                                      encoded_data.size())) /* encoded_data */))
+    MockVaapiImageDecoder* jpeg_decoder = GetJpegDecoder();
+    ASSERT_TRUE(jpeg_decoder);
+    EXPECT_CALL(
+        *jpeg_decoder,
+        Decode(AllOf(Property(&base::span<const uint8_t>::data,
+                              jpeg_encoded_data.data()),
+                     Property(&base::span<const uint8_t>::size,
+                              jpeg_encoded_data.size())) /* encoded_data */))
+        .WillOnce(Return(VaapiImageDecodeStatus::kExecuteDecodeFailed));
+    EXPECT_CALL(*this, OnDecodeCompleted(IsNull()));
+
+    MockVaapiImageDecoder* webp_decoder = GetWebPDecoder();
+    ASSERT_TRUE(webp_decoder);
+    EXPECT_CALL(
+        *webp_decoder,
+        Decode(AllOf(Property(&base::span<const uint8_t>::data,
+                              webp_encoded_data.data()),
+                     Property(&base::span<const uint8_t>::size,
+                              webp_encoded_data.size())) /* encoded_data */))
         .WillOnce(Return(VaapiImageDecodeStatus::kExecuteDecodeFailed));
     EXPECT_CALL(*this, OnDecodeCompleted(IsNull()));
   }
-  worker_.Decode(
+
+  worker_->Decode(
+      std::move(jpeg_encoded_data), kVisibleSize,
+      base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
+                     base::Unretained(this)));
+
+  worker_->Decode(
+      std::move(webp_encoded_data), kVisibleSize,
+      base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
+                     base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(VaapiImageDecodeAcceleratorWorkerTest, UnknownImageDecodeFails) {
+  std::vector<uint8_t> encoded_data = {1u, 2u, 3u};
+  EXPECT_CALL(*this, OnDecodeCompleted(IsNull()));
+  worker_->Decode(
       std::move(encoded_data), kVisibleSize,
-      base::BindOnce(&VaapiJpegDecodeAcceleratorWorkerTest::OnDecodeCompleted,
+      base::BindOnce(&VaapiImageDecodeAcceleratorWorkerTest::OnDecodeCompleted,
                      base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
 }

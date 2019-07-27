@@ -77,16 +77,11 @@ class URLLoaderInterceptor::IOState
     subresource_wrappers_.clear();
     navigation_wrappers_.clear();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
-          URLLoaderFactoryGetter::GetNetworkFactoryCallback());
-      if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-        NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
-            NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
-      }
-    } else {
-      NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
-          NavigationURLLoaderImpl::BeginNavigationInterceptor());
+    URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
+        URLLoaderFactoryGetter::GetNetworkFactoryCallback());
+    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+      NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
+          NavigationURLLoaderImpl::URLLoaderFactoryInterceptor());
     }
 
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -695,22 +690,15 @@ void URLLoaderInterceptor::IOState::Initialize(
     const URLLoaderCompletionStatusCallback& completion_status_callback,
     base::OnceClosure closure) {
   completion_status_callback_ = std::move(completion_status_callback);
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
-        base::BindRepeating(
-            &URLLoaderInterceptor::IOState::GetNetworkFactoryCallback,
-            base::Unretained(this)));
+  URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
+      base::BindRepeating(
+          &URLLoaderInterceptor::IOState::GetNetworkFactoryCallback,
+          base::Unretained(this)));
 
-    if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-      NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
-          base::BindRepeating(&URLLoaderInterceptor::IOState::
-                                  InterceptNavigationRequestCallback,
-                              base::Unretained(this)));
-    }
-  } else {
-    NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(
+  if (!NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
+    NavigationURLLoaderImpl::SetURLLoaderFactoryInterceptorForTesting(
         base::BindRepeating(
-            &URLLoaderInterceptor::IOState::BeginNavigationCallback,
+            &URLLoaderInterceptor::IOState::InterceptNavigationRequestCallback,
             base::Unretained(this)));
   }
 

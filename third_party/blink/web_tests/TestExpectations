@@ -6370,4 +6370,4 @@ crbug.com/874866 [ Linux Debug ] media/controls/doubletap-to-jump-backwards.html
 crbug.com/987915 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
 crbug.com/987915 virtual/scalefactor200/external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
 crbug.com/987915 external/wpt/largest-contentful-paint/observe-after-untrusted-scroll.html [ Pass Failure ]
-
+crbug.com/988231 external/wpt/event-timing/observethenonload.html [ Pass Timeout ]

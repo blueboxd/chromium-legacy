@@ -486,6 +486,12 @@ void MediaSessionImpl::Stop(SuspendType suspend_type) {
     }
   }
 
+  if (auto* pip_window_controller_ =
+          PictureInPictureWindowControllerImpl::FromWebContents(
+              web_contents())) {
+    pip_window_controller_->Close(false /* should_pause_video */);
+  }
+
   // TODO(mlamouri): merge the logic between UI and SYSTEM.
   if (suspend_type == SuspendType::kSystem) {
     OnSuspendInternal(suspend_type, State::INACTIVE);

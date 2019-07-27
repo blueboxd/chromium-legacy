@@ -29,6 +29,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/render_frame_host.h"
@@ -2319,6 +2320,24 @@ IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
   // called.
   window_controller()->PreviousTrack();
   base::string16 expected_title = base::ASCIIToUTF16("previoustrack");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+}
+
+// Tests that stopping Media Sessions closes the Picture-in-Picture window.
+IN_PROC_BROWSER_TEST_F(MediaSessionPictureInPictureWindowControllerBrowserTest,
+                       StopMediaSessionClosesPictureInPictureWindow) {
+  LoadTabAndEnterPictureInPicture(
+      browser(), base::FilePath(kPictureInPictureWindowSizePage));
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(active_web_contents, "video.play();"));
+  base::RunLoop().RunUntilIdle();
+
+  content::MediaSession::Get(active_web_contents)
+      ->Stop(content::MediaSession::SuspendType::kUI);
+  base::string16 expected_title = base::ASCIIToUTF16("leavepictureinpicture");
   EXPECT_EQ(expected_title,
             content::TitleWatcher(active_web_contents, expected_title)
                 .WaitAndGetTitle());

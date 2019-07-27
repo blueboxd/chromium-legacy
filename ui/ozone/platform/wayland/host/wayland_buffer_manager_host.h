@@ -22,7 +22,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
-#include "ui/ozone/public/interfaces/wayland/wayland_buffer_manager.mojom.h"
+#include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
 namespace ui {
 
@@ -68,7 +68,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   //
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor using zwp_linux_dmabuf protocol. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
   void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
                                mojo::ScopedHandle dmabuf_fd,
                                const gfx::Size& size,
@@ -80,7 +80,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
                                uint32_t buffer_id) override;
   // Called by the GPU and asks to import a wl_buffer based on a shared memory
   // file descriptor using wl_shm protocol. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
   void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
                             mojo::ScopedHandle shm_fd,
                             uint64_t length,

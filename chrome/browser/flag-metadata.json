@@ -1816,8 +1816,13 @@
   },
   {
     "name": "enable-vaapi-jpeg-image-decode-acceleration",
-    "owners": [ "chromeos-camera-eng@google.com" ],
-    "expiry_milestone": 76
+    "owners": [ "chromeos-gfx@google.com" ],
+    "expiry_milestone": 79
+  },
+  {
+    "name": "enable-vaapi-webp-image-decode-acceleration",
+    "owners": [ "chromeos-gfx@google.com" ],
+    "expiry_milestone": 79
   },
   {
     "name": "enable-virtual-keyboard",

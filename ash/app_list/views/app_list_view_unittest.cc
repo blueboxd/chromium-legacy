@@ -1373,7 +1373,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(list_view->GetResultViewAt(0),
             contents_view()->search_results_page_view()->first_result_view());
-  EXPECT_TRUE(list_view->GetResultViewAt(0)->selected());
+  EXPECT_TRUE(list_view->GetResultViewAt(0)->background_highlighted());
 
   // Populate both fake list results and tile results.
   const int kTileResults = 3;
@@ -1385,7 +1385,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(tile_views[0],
             contents_view()->search_results_page_view()->first_result_view());
-  EXPECT_TRUE(tile_views[0]->selected());
+  EXPECT_TRUE(tile_views[0]->background_highlighted());
 
   // This section should remain after flag is removed.
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
@@ -1399,7 +1399,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
 
     // Ensure current highlighted result loses highlight on transition
     SimulateKeyPress(ui::VKEY_TAB, false);
-    EXPECT_FALSE(tile_views[0]->selected());
+    EXPECT_FALSE(tile_views[0]->background_highlighted());
   }
 
   // Populate only answer card.
@@ -1411,7 +1411,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
           ->GetAnswerCardResultViewForTest());
   EXPECT_EQ(answer_container,
             contents_view()->search_results_page_view()->first_result_view());
-  EXPECT_TRUE(answer_container->selected());
+  EXPECT_TRUE(answer_container->background_highlighted());
 
   // SearchBoxSelection keeps selection within existing results. Tabbing from
   // within a single result has no effect.
@@ -1423,7 +1423,7 @@ TEST_F(AppListViewFocusTest, FirstResultSelectedAfterSearchResultsUpdated) {
     EXPECT_EQ(search_box_view()->close_button(), focused_view());
     EXPECT_EQ(answer_container,
               contents_view()->search_results_page_view()->first_result_view());
-    EXPECT_FALSE(answer_container->selected());
+    EXPECT_FALSE(answer_container->background_highlighted());
     SimulateKeyPress(ui::VKEY_TAB, true);
   }
 
@@ -1458,7 +1458,7 @@ TEST_F(AppListViewFocusTest, FirstResultNotSelectedAfterQuicklyHittingTab) {
       contents_view()->search_results_page_view()->first_result_view();
   EXPECT_EQ(search_box_view()->search_box(), focused_view());
   EXPECT_EQ(list_view->GetResultViewAt(0), first_result_view);
-  EXPECT_TRUE(first_result_view->selected());
+  EXPECT_TRUE(first_result_view->background_highlighted());
 
   // Type something else.
   search_box_view()->search_box()->InsertText(base::ASCIIToUTF16("test2"));
@@ -1470,7 +1470,7 @@ TEST_F(AppListViewFocusTest, FirstResultNotSelectedAfterQuicklyHittingTab) {
   EXPECT_EQ(search_box_view()->close_button(), focused_view());
   SimulateKeyPress(ui::VKEY_TAB, false);
   EXPECT_EQ(list_view->GetResultViewAt(0), focused_view());
-  EXPECT_TRUE(first_result_view->selected());
+  EXPECT_TRUE(first_result_view->background_highlighted());
 
   // Update search results, both list and tile results are populated.
   const int kTileResults = 3;
@@ -1484,7 +1484,7 @@ TEST_F(AppListViewFocusTest, FirstResultNotSelectedAfterQuicklyHittingTab) {
   EXPECT_EQ(list_view->GetResultViewAt(0), focused_view());
   EXPECT_EQ(tile_views[0], first_result_view);
   EXPECT_FALSE(first_result_view->HasFocus());
-  EXPECT_TRUE(list_view->GetResultViewAt(0)->selected());
+  EXPECT_TRUE(list_view->GetResultViewAt(0)->background_highlighted());
 }
 
 // Tests hitting Enter key when focus is on search box.

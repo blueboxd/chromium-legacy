@@ -259,7 +259,6 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
 
   void UpdateGpuInfoPlatform(base::OnceClosure on_gpu_info_updated);
 
-
 #if defined(OS_CHROMEOS)
   void CreateArcVideoDecodeAcceleratorOnMainThread(
       arc::mojom::VideoDecodeAcceleratorRequest vda_request);
@@ -329,10 +328,10 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   base::OnceClosure exit_callback_;
   base::AtomicFlag is_exiting_;
 
-  // Used for performing hardware decode acceleration of JPEG images. This is
-  // shared by all the GPU channels.
+  // Used for performing hardware decode acceleration of images. This is shared
+  // by all the GPU channels.
   std::unique_ptr<gpu::ImageDecodeAcceleratorWorker>
-      jpeg_decode_accelerator_worker_;
+      image_decode_accelerator_worker_;
 
   base::Time start_time_;
 

@@ -366,17 +366,15 @@ void MultipleFieldsTemporalInputTypeView::CreateShadowSubtree() {
       MakeGarbageCollected<DateTimeEditElement, Document&,
                            DateTimeEditElement::EditControlOwner&>(document,
                                                                    *this));
-  if (!RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
-    GetElement().UpdateView();
-    container->AppendChild(
-        MakeGarbageCollected<ClearButtonElement, Document&,
-                             ClearButtonElement::ClearButtonOwner&>(document,
-                                                                    *this));
-    container->AppendChild(
-        MakeGarbageCollected<SpinButtonElement, Document&,
-                             SpinButtonElement::SpinButtonOwner&>(document,
+  GetElement().UpdateView();
+  container->AppendChild(
+      MakeGarbageCollected<ClearButtonElement, Document&,
+                           ClearButtonElement::ClearButtonOwner&>(document,
                                                                   *this));
-  }
+  container->AppendChild(
+      MakeGarbageCollected<SpinButtonElement, Document&,
+                           SpinButtonElement::SpinButtonOwner&>(document,
+                                                                *this));
 
   if (LayoutTheme::GetTheme().SupportsCalendarPicker(
           input_type_->FormControlType()))
@@ -448,8 +446,7 @@ void MultipleFieldsTemporalInputTypeView::ForwardEvent(Event& event) {
 
 void MultipleFieldsTemporalInputTypeView::DisabledAttributeChanged() {
   EventQueueScope scope;
-  if (SpinButtonElement* spin_button = GetSpinButtonElement())
-    spin_button->ReleaseCapture();
+  GetSpinButtonElement()->ReleaseCapture();
   if (DateTimeEditElement* edit = GetDateTimeEditElement())
     edit->DisabledStateChanged();
 }
@@ -495,8 +492,7 @@ void MultipleFieldsTemporalInputTypeView::MinOrMaxAttributeChanged() {
 
 void MultipleFieldsTemporalInputTypeView::ReadonlyAttributeChanged() {
   EventQueueScope scope;
-  if (SpinButtonElement* spin_button = GetSpinButtonElement())
-    spin_button->ReleaseCapture();
+  GetSpinButtonElement()->ReleaseCapture();
   if (DateTimeEditElement* edit = GetDateTimeEditElement())
     edit->ReadOnlyStateChanged();
 }

@@ -35,7 +35,7 @@
 #include <vector>
 
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ime/mojo/ime_types.mojom-shared.h"
+#include "ui/base/ime/mojom/ime_types.mojom-shared.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 
 #include "base/metrics/single_sample_metrics.h"
 #include "base/threading/thread_local.h"
-#include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
+#include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
 
 namespace metrics {

@@ -273,7 +273,7 @@ static_library("single_sample_metrics") {
   ]
 
   public_deps = [
-    "//components/metrics/public/interfaces:single_sample_metrics_mojo_bindings",
+    "//components/metrics/public/mojom:single_sample_metrics_mojo_bindings",
   ]
 }
 
@@ -307,7 +307,7 @@ source_set("child_call_stack_profile_builder") {
   ]
   deps = [
     "//base",
-    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//third_party/metrics_proto",
   ]
 
@@ -336,7 +336,7 @@ source_set("call_stack_profile_collector") {
   deps = [
     ":call_stack_profile_params",
     ":metrics",
-    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
   ]
 }
 

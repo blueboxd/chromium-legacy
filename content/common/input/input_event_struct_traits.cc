@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
-#include "ui/latency/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 namespace mojo {
 namespace {

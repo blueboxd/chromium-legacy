@@ -7,7 +7,7 @@
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
-#include "ui/ozone/public/interfaces/device_cursor.mojom.h"
+#include "ui/ozone/public/mojom/device_cursor.mojom.h"
 
 namespace ui {
 

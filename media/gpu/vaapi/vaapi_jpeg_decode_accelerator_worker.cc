@@ -4,10 +4,13 @@
 
 #include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator_worker.h"
 
+#include "string.h"
+
 #include <utility>
 
 #include "base/bind.h"
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -15,11 +18,14 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_image_decoder.h"
 #include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
+#include "media/gpu/vaapi/vaapi_webp_decoder.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
+#include "media/parsers/webp_parser.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -29,6 +35,12 @@
 namespace media {
 
 namespace {
+
+bool IsJpegImage(base::span<const uint8_t> encoded_data) {
+  if (encoded_data.size() < 3u)
+    return false;
+  return memcmp("\xFF\xD8\xFF", encoded_data.data(), 3u) == 0;
+}
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -41,7 +53,7 @@ void ReportToVAJDAWorkerDecoderFailureUMA(VAJDAWorkerDecoderFailure failure) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAJDAWorker.DecoderFailure", failure);
 }
 
-// Uses |decoder| to decode the JPEG corresponding to |encoded_data|.
+// Uses |decoder| to decode the image corresponding to |encoded_data|.
 // |decode_cb| is called when finished or when an error is encountered. We don't
 // support decoding to scale, so |output_size| is only used for tracing.
 void DecodeTask(
@@ -49,7 +61,7 @@ void DecodeTask(
     std::vector<uint8_t> encoded_data,
     const gfx::Size& output_size,
     gpu::ImageDecodeAcceleratorWorker::CompletedDecodeCB decode_cb) {
-  TRACE_EVENT2("jpeg", "VaapiJpegDecodeAcceleratorWorker::DecodeTask",
+  TRACE_EVENT2("jpeg", "VaapiImageDecodeAcceleratorWorker::DecodeTask",
                "encoded_bytes", encoded_data.size(), "output_size",
                output_size.ToString());
   gpu::ImageDecodeAcceleratorWorker::CompletedDecodeCB scoped_decode_callback =
@@ -57,7 +69,10 @@ void DecodeTask(
                                                   nullptr);
 
   // Decode into a VAAPI surface.
-  DCHECK(decoder);
+  if (!decoder) {
+    DVLOGF(1) << "No decoder is available for supplied image";
+    return;
+  }
   VaapiImageDecodeStatus status = decoder->Decode(
       base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size()));
   if (status != VaapiImageDecodeStatus::kSuccess) {
@@ -102,50 +117,93 @@ void DecodeTask(
 }  // namespace
 
 // static
-std::unique_ptr<VaapiJpegDecodeAcceleratorWorker>
-VaapiJpegDecodeAcceleratorWorker::Create() {
-  auto decoder = std::make_unique<VaapiJpegDecoder>();
-  if (!decoder->Initialize(
-          base::BindRepeating(&ReportToVAJDAWorkerDecoderFailureUMA,
-                              VAJDAWorkerDecoderFailure::kVaapiError))) {
-    return nullptr;
+std::unique_ptr<VaapiImageDecodeAcceleratorWorker>
+VaapiImageDecodeAcceleratorWorker::Create() {
+  // TODO(crbug.com/988123): revisit the Media.VAJDAWorker.DecoderFailure UMA
+  // to be able to record WebP and JPEG failures separately.
+  const auto uma_cb =
+      base::BindRepeating(&ReportToVAJDAWorkerDecoderFailureUMA,
+                          VAJDAWorkerDecoderFailure::kVaapiError);
+  VaapiImageDecoderVector decoders;
+
+  if (base::FeatureList::IsEnabled(
+          features::kVaapiJpegImageDecodeAcceleration)) {
+    auto jpeg_decoder = std::make_unique<VaapiJpegDecoder>();
+    if (jpeg_decoder->Initialize(uma_cb))
+      decoders.push_back(std::move(jpeg_decoder));
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kVaapiWebPImageDecodeAcceleration)) {
+    auto webp_decoder = std::make_unique<VaapiWebPDecoder>();
+    if (webp_decoder->Initialize(uma_cb))
+      decoders.push_back(std::move(webp_decoder));
+  }
+
+  // If there are no decoders due to disabled flags or initialization failure,
+  // return nullptr.
+  if (decoders.empty())
+    return nullptr;
+
   return base::WrapUnique(
-      new VaapiJpegDecodeAcceleratorWorker(std::move(decoder)));
+      new VaapiImageDecodeAcceleratorWorker(std::move(decoders)));
 }
 
-VaapiJpegDecodeAcceleratorWorker::VaapiJpegDecodeAcceleratorWorker(
-    std::unique_ptr<VaapiJpegDecoder> decoder)
-    : decoder_(std::move(decoder)) {
-  DCHECK(decoder_);
+VaapiImageDecodeAcceleratorWorker::VaapiImageDecodeAcceleratorWorker(
+    VaapiImageDecoderVector decoders) {
+  DETACH_FROM_SEQUENCE(io_sequence_checker_);
   decoder_task_runner_ = base::CreateSequencedTaskRunnerWithTraits({});
   DCHECK(decoder_task_runner_);
+
+  DCHECK(!decoders.empty());
+  for (auto& decoder : decoders) {
+    supported_profiles_.push_back(decoder->GetSupportedProfile());
+    const gpu::ImageDecodeAcceleratorType type = decoder->GetType();
+    decoders_[type] = std::move(decoder);
+  }
 }
 
-VaapiJpegDecodeAcceleratorWorker::~VaapiJpegDecodeAcceleratorWorker() {
-  if (decoder_task_runner_)
-    decoder_task_runner_->DeleteSoon(FROM_HERE, std::move(decoder_));
-}
-
-std::vector<gpu::ImageDecodeAcceleratorSupportedProfile>
-VaapiJpegDecodeAcceleratorWorker::GetSupportedProfiles() {
-  DCHECK(decoder_);
-  const gpu::ImageDecodeAcceleratorSupportedProfile supported_profile =
-      decoder_->GetSupportedProfile();
-  DCHECK_EQ(gpu::ImageDecodeAcceleratorType::kJpeg,
-            supported_profile.image_type);
-  return {supported_profile};
-}
-
-void VaapiJpegDecodeAcceleratorWorker::Decode(std::vector<uint8_t> encoded_data,
-                                              const gfx::Size& output_size,
-                                              CompletedDecodeCB decode_cb) {
+VaapiImageDecodeAcceleratorWorker::~VaapiImageDecodeAcceleratorWorker() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
   DCHECK(decoder_task_runner_);
-  DCHECK(!decoder_task_runner_->RunsTasksInCurrentSequence());
+  for (auto& decoder : decoders_)
+    decoder_task_runner_->DeleteSoon(FROM_HERE, std::move(decoder.second));
+}
+
+gpu::ImageDecodeAcceleratorSupportedProfiles
+VaapiImageDecodeAcceleratorWorker::GetSupportedProfiles() {
+  return supported_profiles_;
+}
+
+VaapiImageDecoder* VaapiImageDecodeAcceleratorWorker::GetDecoderForImage(
+    const std::vector<uint8_t>& encoded_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_sequence_checker_);
+  auto encoded_data_span =
+      base::make_span<const uint8_t>(encoded_data.data(), encoded_data.size());
+  auto result = decoders_.end();
+
+  if (IsJpegImage(encoded_data_span))
+    result = decoders_.find(gpu::ImageDecodeAcceleratorType::kJpeg);
+  else if (IsLossyWebPImage(encoded_data_span))
+    result = decoders_.find(gpu::ImageDecodeAcceleratorType::kWebP);
+
+  return result == decoders_.end() ? nullptr : result->second.get();
+}
+
+void VaapiImageDecodeAcceleratorWorker::Decode(
+    std::vector<uint8_t> encoded_data,
+    const gfx::Size& output_size,
+    CompletedDecodeCB decode_cb) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_sequence_checker_);
+  DCHECK(decoder_task_runner_);
+
+  // We defer checking for a null |decoder| until DecodeTask() because the
+  // gpu::ImageDecodeAcceleratorWorker interface mandates that the callback be
+  // called asynchronously.
+  VaapiImageDecoder* decoder = GetDecoderForImage(encoded_data);
   decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DecodeTask, decoder_.get(), std::move(encoded_data),
-                     output_size, std::move(decode_cb)));
+      FROM_HERE, base::BindOnce(&DecodeTask, decoder, std::move(encoded_data),
+                                output_size, std::move(decode_cb)));
 }
 
 }  // namespace media

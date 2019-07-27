@@ -6,7 +6,7 @@
 #define UI_OZONE_TESTHELPERS_MOCK_GESTURE_PROPERTIES_SERVICE_H_
 
 #include "gmock/gmock.h"
-#include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
+#include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 // Mock of GesturePropertiesService's C++ bindings, useful for tests.
 class MockGesturePropertiesService

@@ -13,7 +13,7 @@
 #include "ui/events/mojom/event.mojom.h"
 #include "ui/events/mojom/event_mojom_traits.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
-#include "ui/latency/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 #if defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck

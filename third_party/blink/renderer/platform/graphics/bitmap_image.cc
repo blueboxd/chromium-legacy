@@ -34,7 +34,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
-#include "third_party/blink/renderer/platform/graphics/dark_mode_bitmap_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/dark_mode_image_classifier.h"
 #include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
@@ -50,6 +50,12 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+namespace {
+
+const int kMinImageSizeForClassification1D = 24;
+const int kMaxImageSizeForClassification1D = 100;
+
+}  // namespace
 
 int GetRepetitionCountWithPolicyOverride(int actual_count,
                                          ImageAnimationPolicy policy) {
@@ -443,10 +449,48 @@ void BitmapImage::SetAnimationPolicy(ImageAnimationPolicy policy) {
   ResetAnimation();
 }
 
-DarkModeClassification BitmapImage::ClassifyImageForDarkMode(
-    const FloatRect& src_rect) {
-  DarkModeBitmapImageClassifier dark_mode_bitmap_image_classifier;
-  return dark_mode_bitmap_image_classifier.Classify(*this, src_rect);
+bool BitmapImage::GetImageBitmap(const FloatRect& src_rect, SkBitmap* bitmap) {
+  if (!src_rect.Width() || !src_rect.Height())
+    return false;
+
+  SkScalar sx = SkFloatToScalar(src_rect.X());
+  SkScalar sy = SkFloatToScalar(src_rect.Y());
+  SkScalar sw = SkFloatToScalar(src_rect.Width());
+  SkScalar sh = SkFloatToScalar(src_rect.Height());
+  SkRect src = {sx, sy, sx + sw, sy + sh};
+  SkRect dest = {0, 0, sw, sh};
+
+  if (!bitmap || !bitmap->tryAllocPixels(SkImageInfo::MakeN32(
+                     static_cast<int>(src_rect.Width()),
+                     static_cast<int>(src_rect.Height()), kPremul_SkAlphaType)))
+    return false;
+
+  SkCanvas canvas(*bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawImageRect(this->PaintImageForCurrentFrame().GetSkImage(), src,
+                       dest, nullptr);
+  return true;
+}
+
+DarkModeClassification BitmapImage::CheckTypeSpecificConditionsForDarkMode(
+    const FloatRect& src_rect,
+    DarkModeImageClassifier* classifier) {
+  // This check is needed to prevent division with zero scenarios
+  // while computing the features in DarkModeImageClassifier.
+  DCHECK(kMinImageSizeForClassification1D > 10);
+
+  if (src_rect.Width() < kMinImageSizeForClassification1D ||
+      src_rect.Height() < kMinImageSizeForClassification1D)
+    return DarkModeClassification::kApplyFilter;
+
+  if (src_rect.Width() > kMaxImageSizeForClassification1D ||
+      src_rect.Height() > kMaxImageSizeForClassification1D) {
+    return DarkModeClassification::kDoNotApplyFilter;
+  }
+
+  classifier->SetImageType(DarkModeImageClassifier::ImageType::kBitmap);
+
+  return DarkModeClassification::kNotClassified;
 }
 
 }  // namespace blink

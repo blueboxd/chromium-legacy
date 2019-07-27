@@ -9,12 +9,12 @@ import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
-import "ui/base/ime/mojo/ime_types.mojom";
+import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/events/mojom/event_constants.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
-import "ui/latency/mojo/latency_info.mojom";
+import "ui/latency/mojom/latency_info.mojom";
 
 
 // These structs are purposely duplicated from ui/events/mojom/event.mojom.

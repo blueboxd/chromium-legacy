@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
-#include "ui/ozone/public/interfaces/device_cursor.mojom.h"
+#include "ui/ozone/public/mojom/device_cursor.mojom.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace ui {

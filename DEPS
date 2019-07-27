@@ -145,7 +145,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ff5d7a2f90339e868defc86800cedef537b5868c',
+  'skia_revision': '7217e22822b29b793933276aca162ca9b687595c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -157,7 +157,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'a51232eb2f723b6bb99b23d87edd3f5c3418f8f3',
+  'angle_revision': 'a96b79f909403b53ea4c577912bdf611da9ff064',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -809,7 +809,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8c0f919d41e6efc4456147e4af35479861ebec68',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '6b0c26cbd13b55086afe4ce0f5f6968eb9577580',
       'condition': 'checkout_linux',
   },
 
@@ -834,7 +834,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '602076dcf209cf2630e3976c648f4f4d8da0b553',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'df746d0e6fd46f4817100ccbe6892424daf7e244',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1375,7 +1375,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '9f17aff35bd1f176851f1b5aa568ea374f2b0ecd',
+    Var('webrtc_git') + '/src.git' + '@' + 'fd6d8d7129ee1cdf81850ac71f6cf4452cb1f65c',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1416,7 +1416,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@93622e0fd14bf6f59ef34db93c3dbd272de3ec3f',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0bf17d6966292a22b304faa53f12fd930a4d56a3',
     'condition': 'checkout_src_internal',
   },
 

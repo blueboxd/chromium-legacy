@@ -9,7 +9,7 @@
 #include "services/viz/public/cpp/compositing/selection_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_id_struct_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
-#include "ui/latency/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 namespace mojo {
 

@@ -69,23 +69,6 @@ class CONTENT_EXPORT NavigationURLLoaderImpl : public NavigationURLLoader {
                          base::Time io_post_time);
   void OnComplete(const network::URLLoaderCompletionStatus& status);
 
-  // Overrides loading of frame requests when the network service is disabled.
-  // If the callback returns true, the frame request was intercepted. Otherwise
-  // it should be loaded normally through ResourceDispatcherHost. Passing an
-  // empty callback will restore the default behavior.
-  // This method must be called either on the IO thread or before threads start.
-  // This callback is run on the IO thread.
-  using BeginNavigationInterceptor = base::RepeatingCallback<bool(
-      network::mojom::URLLoaderRequest* request,
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr* client,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)>;
-  static void SetBeginNavigationInterceptorForTesting(
-      const BeginNavigationInterceptor& interceptor);
-
   // Intercepts loading of frame requests when network service is enabled and
   // either a network::mojom::TrustedURLLoaderHeaderClient is being used or for
   // schemes not handled by network service (e.g. files). This must be called on

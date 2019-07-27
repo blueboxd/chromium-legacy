@@ -158,7 +158,7 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
 }
 
-TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
+TEST_F(DelayloadsTest, ChromeChildDllDelayloadsCheck) {
   base::FilePath dll;
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_child.dll");
@@ -209,7 +209,7 @@ TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
   }
 }
 
-TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTest) {
+TEST_F(DelayloadsTest, ChromeChildDllLoadSanityTest) {
   // On Win7 we expect this test to result in user32.dll getting loaded. As a
   // result, we need to ensure it is executed in its own test process. This
   // "test" will re-launch with custom parameters to accomplish that.

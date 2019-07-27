@@ -3448,6 +3448,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
      flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kVaapiJpegImageDecodeAcceleration)},
+
+    {"enable-vaapi-webp-image-decode-acceleration",
+     flag_descriptions::kVaapiWebPImageDecodeAccelerationName,
+     flag_descriptions::kVaapiWebPImageDecodeAccelerationDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kVaapiWebPImageDecodeAcceleration)},
 #endif
 
 #if defined(OS_WIN)

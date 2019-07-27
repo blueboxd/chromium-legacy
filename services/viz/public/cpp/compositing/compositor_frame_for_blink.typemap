@@ -20,7 +20,7 @@ traits_headers = [
   "//services/viz/public/cpp/compositing/transferable_resource_struct_traits.h",
   "//ui/gfx/mojo/selection_bound_struct_traits.h",
   "//ui/gfx/mojo/transform_struct_traits.h",
-  "//ui/latency/mojo/latency_info_struct_traits.h",
+  "//ui/latency/mojom/latency_info_mojom_traits.h",
 ]
 public_deps = [
   "//components/viz/common",
@@ -29,6 +29,6 @@ public_deps = [
   "//skia/public/interfaces",
   "//ui/gfx/geometry/mojom",
   "//ui/gfx/mojo",
-  "//ui/latency/mojo:interfaces",
+  "//ui/latency/mojom",
 ]
 type_mappings = [ "viz.mojom.CompositorFrame=viz::CompositorFrame[move_only]" ]

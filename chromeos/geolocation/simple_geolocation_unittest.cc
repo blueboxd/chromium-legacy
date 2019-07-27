@@ -368,7 +368,8 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<GeolocationHandler> geolocation_handler_;
   ShillManagerClient::TestInterface* manager_test_;
   WifiAccessPointVector wifi_access_points_;

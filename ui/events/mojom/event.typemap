@@ -9,7 +9,7 @@ public_deps = [
   "//ui/events",
   "//ui/events:dom_keycode_converter",
   "//ui/gfx/geometry/mojom",
-  "//ui/latency/mojo:interfaces",
+  "//ui/latency/mojom",
 ]
 deps = [
   "//ipc:param_traits",

@@ -11,7 +11,7 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/mojom/event_constants.mojom.h"
-#include "ui/latency/mojo/latency_info_struct_traits.h"
+#include "ui/latency/mojom/latency_info_mojom_traits.h"
 
 namespace mojo {
 

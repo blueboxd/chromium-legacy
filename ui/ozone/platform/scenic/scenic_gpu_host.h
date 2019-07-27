@@ -14,8 +14,8 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_host.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 
 namespace ui {
 class ScenicWindowManager;

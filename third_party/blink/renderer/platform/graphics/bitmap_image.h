@@ -101,6 +101,12 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
     decoder_ = std::move(decoder);
   }
 
+  bool GetImageBitmap(const FloatRect& src_rect, SkBitmap* bitmap) override;
+
+  DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
+      const FloatRect& src_rect,
+      DarkModeImageClassifier* classifier) override;
+
  protected:
   bool IsSizeAvailable() override;
 
@@ -143,9 +149,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void NotifyMemoryChanged();
 
   int RepetitionCount();
-
-  DarkModeClassification ClassifyImageForDarkMode(
-      const FloatRect& src_rect) override;
 
   // Whether we are ready to record UMAs related to the number of bytes in
   // images.

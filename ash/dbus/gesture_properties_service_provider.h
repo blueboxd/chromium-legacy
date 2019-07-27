@@ -13,7 +13,7 @@
 #include "chromeos/dbus/services/cros_dbus_service.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
-#include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
+#include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 namespace dbus {
 class MethodCall;

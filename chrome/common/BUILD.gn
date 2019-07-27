@@ -239,7 +239,7 @@ static_library("common") {
     "//components/gcm_driver/common",
     "//components/metrics",
     "//components/metrics:net",
-    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/nacl/common:buildflags",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",

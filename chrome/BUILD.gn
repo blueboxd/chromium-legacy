@@ -576,6 +576,7 @@ if (is_win) {
         "/DELAYLOAD:dxgi.dll",
         "/DELAYLOAD:dxva2.dll",
         "/DELAYLOAD:esent.dll",
+        "/DELAYLOAD:gdi32.dll",
         "/DELAYLOAD:imm32.dll",
         "/DELAYLOAD:ole32.dll",
         "/DELAYLOAD:oleacc.dll",

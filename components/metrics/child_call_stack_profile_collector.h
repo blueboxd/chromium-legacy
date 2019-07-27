@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
+#include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
 
 namespace service_manager {
 class InterfaceProvider;

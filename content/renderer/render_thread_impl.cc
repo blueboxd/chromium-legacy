@@ -50,7 +50,7 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
-#include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
+#include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"

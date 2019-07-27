@@ -1420,7 +1420,7 @@ component("ash") {
     "//ui/message_center",
     "//ui/native_theme",
     "//ui/ozone",
-    "//ui/ozone/public/interfaces:gesture_properties_service",
+    "//ui/ozone/public/mojom:gesture_properties_service",
     "//ui/platform_window",
     "//ui/platform_window/stub",
     "//ui/snapshot",

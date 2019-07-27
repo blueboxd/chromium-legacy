@@ -44,8 +44,10 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
   ~GradientGeneratedImage() override = default;
 
   bool ApplyShader(PaintFlags&, const SkMatrix&) override;
-  DarkModeClassification ClassifyImageForDarkMode(
-      const FloatRect& src_rect) override {
+
+  DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
+      const FloatRect& src_rect,
+      DarkModeImageClassifier* classifier) override {
     return DarkModeClassification::kApplyFilter;
   }
 

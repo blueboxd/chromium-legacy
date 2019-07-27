@@ -14,7 +14,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
+#include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 namespace base {
 class TimeDelta;

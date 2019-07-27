@@ -91,7 +91,7 @@ jumbo_component("ime") {
     "//base:i18n",
     "//skia",
     "//third_party/icu",
-    "//ui/base/ime/mojo",
+    "//ui/base/ime/mojom",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events",

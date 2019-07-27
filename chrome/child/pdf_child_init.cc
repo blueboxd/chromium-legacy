@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/win/current_module.h"
 #include "base/win/iat_patch_function.h"
+#include "base/win/windows_version.h"
 #include "content/public/child/child_thread.h"
 #endif
 
@@ -72,6 +73,20 @@ void InitializePDF() {
 #else
   HMODULE module = CURRENT_MODULE();
 #endif  // defined(COMPONENT_BUILD)
+
+  // When GDI is delayloaded, calls into real GDI after these patches are
+  // created result in the delayload handler overwriting the patches when it
+  // resolves the delayed imports with the full import information. To
+  // workaround this, we first call into GDI so that the delayed imports get
+  // resolved, THEN we apply the patches.
+  // On Win10 this isn't necessary because these methods are not used.
+  // TODO(crbug.com/988164): Implement a generic IATPatchFunction fix to handle
+  // these situations.
+  // TODO(crbug.com/988169): This workaround shouldn't be necessary on Win8
+  // either, but is because the win32k process mitigations aren't working
+  // properly.
+  if (base::win::GetVersion() < base::win::Version::WIN10)
+    GetFontData(nullptr, 0, 0, nullptr, 0);
 
   static base::NoDestructor<base::win::IATPatchFunction> patch_createdca;
   patch_createdca->PatchFromModule(module, "gdi32.dll", "CreateDCA",

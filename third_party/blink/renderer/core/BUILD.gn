@@ -117,7 +117,7 @@ source_set("prerequisites") {
     "//third_party/ots",
     "//third_party/snappy",
     "//third_party/zlib",
-    "//ui/base/ime/mojo",
+    "//ui/base/ime/mojom",
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
     "//ui/native_theme",

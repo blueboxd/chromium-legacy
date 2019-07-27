@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
-import "ui/base/ime/mojo/ime_types.mojom";
+import "ui/base/ime/mojom/ime_types.mojom";
 
 struct DateTimeSuggestion {
   // The date/time value represented as a double.

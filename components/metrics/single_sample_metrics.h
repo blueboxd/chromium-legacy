@@ -6,7 +6,7 @@
 #define COMPONENTS_METRICS_SINGLE_SAMPLE_METRICS_H_
 
 #include "base/callback.h"
-#include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
+#include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
 
 namespace metrics {
 

@@ -11,7 +11,7 @@ import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/overlay_transform.mojom";
 import "ui/gfx/mojo/transform.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/latency/mojo/latency_info.mojom";
+import "ui/latency/mojom/latency_info.mojom";
 import "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom";
 import "services/viz/privileged/interfaces/compositing/vsync_parameter_observer.mojom";
 

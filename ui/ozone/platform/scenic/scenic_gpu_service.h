@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_host.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 
 namespace ui {
 

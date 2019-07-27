@@ -116,7 +116,9 @@ ImageDecodeAcceleratorStub::ImageDecodeAcceleratorStub(
 bool ImageDecodeAcceleratorStub::OnMessageReceived(const IPC::Message& msg) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!base::FeatureList::IsEnabled(
-          features::kVaapiJpegImageDecodeAcceleration)) {
+          features::kVaapiJpegImageDecodeAcceleration) &&
+      !base::FeatureList::IsEnabled(
+          features::kVaapiWebPImageDecodeAcceleration)) {
     return false;
   }
 

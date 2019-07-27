@@ -24076,6 +24076,40 @@
     ]
   },
   "Win10 FYI Exp Release (Intel HD 630)": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "noop_sleep",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "noop_sleep_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-24.20.100.6286",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false
+        }
+      }
+    ]
+  },
+  "Win10 FYI Exp Release (NVIDIA)": {
     "gtest_tests": [
       {
         "args": [
@@ -24092,7 +24126,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24115,7 +24149,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24139,7 +24173,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24162,7 +24196,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24188,7 +24222,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24211,7 +24245,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24235,7 +24269,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24257,7 +24291,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24279,7 +24313,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24303,7 +24337,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24328,7 +24362,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24347,7 +24381,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24366,7 +24400,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24391,7 +24425,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24416,7 +24450,32 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
+        },
+        "test": "video_decode_accelerator_unittest"
+      },
+      {
+        "args": [
+          "--use-angle=gl",
+          "--use-test-data-path",
+          "--test_video_data=test-25fps.h264:320:240:250:258:::1"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "video_decode_accelerator_gl_unittest",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24439,7 +24498,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24469,7 +24528,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24498,7 +24557,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24528,7 +24587,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24558,7 +24617,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24588,7 +24647,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24606,9 +24665,9 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--expected-vendor-id",
-          "8086",
+          "10de",
           "--expected-device-id",
-          "5912"
+          "1cb3"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -24622,7 +24681,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24659,13 +24718,43 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
           ],
           "expiration": 21600,
           "idempotent": false
+        }
+      },
+      {
+        "args": [
+          "--gtest-benchmark-name=passthrough_command_buffer_perftests",
+          "-v",
+          "--use-cmd-decoder=passthrough",
+          "--use-angle=gl-null",
+          "--fast-run"
+        ],
+        "isolate_name": "command_buffer_perftests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "passthrough_command_buffer_perftests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-26.21.14.3102",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600
         }
       },
       {
@@ -24704,7 +24793,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24716,32 +24805,27 @@
       },
       {
         "args": [
-          "power",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "../../tools/perf/run_benchmark",
+          "--benchmarks=rendering.desktop"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "experiment_percentage": 100,
+        "isolate_name": "rendering_representative_perf_tests",
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "power_measurement_test",
-        "should_retry_with_patch": false,
+        "name": "rendering_representative_perf_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "idempotent": false
+          "expiration": 21600
         }
       },
       {
@@ -24766,7 +24850,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24796,7 +24880,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24807,35 +24891,32 @@
       },
       {
         "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
+          "--gtest-benchmark-name=validating_command_buffer_perftests",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-cmd-decoder=validating",
-          "--webgl-conformance-version=2.0.1",
-          "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
+          "--use-cmd-decoder=validating",
+          "--use-stub",
+          "--fast-run"
         ],
-        "isolate_name": "telemetry_gpu_integration_test",
+        "isolate_name": "command_buffer_perftests",
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "webgl2_conformance_d3d11_validating_tests",
+        "name": "validating_command_buffer_perftests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
           ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 20
+          "expiration": 21600
         }
       },
       {
@@ -24861,7 +24942,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24894,7 +24975,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24902,6 +24983,37 @@
           "expiration": 21600,
           "idempotent": false,
           "shards": 20
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d11 --use-cmd-decoder=validating"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_d3d11_validating_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-26.21.14.3102",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 2
         }
       },
       {
@@ -24925,7 +25037,38 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "idempotent": false,
+          "shards": 2
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=d3d9 --use-cmd-decoder=validating"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "webgl_conformance_d3d9_validating_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24956,7 +25099,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -24987,7 +25130,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -25018,7 +25161,7 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "gpu": "8086:5912-24.20.100.6286",
+              "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
               "pool": "Chrome-GPU"
             }
@@ -25026,40 +25169,6 @@
           "expiration": 21600,
           "idempotent": false,
           "shards": 2
-        }
-      }
-    ]
-  },
-  "Win10 FYI Exp Release (NVIDIA)": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "noop_sleep",
-          "--show-stdout",
-          "--browser=release",
-          "--passthrough",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "noop_sleep_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3-24.21.14.1195",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false
         }
       }
     ]

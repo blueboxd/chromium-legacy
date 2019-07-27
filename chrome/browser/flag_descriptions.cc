@@ -3425,6 +3425,11 @@ const char kVaapiJpegImageDecodeAccelerationDescription[] =
     "Enable or disable decode acceleration of JPEG images (as opposed to camera"
     " captures) using the VA-API.";
 
+const char kVaapiWebPImageDecodeAccelerationName[] =
+    "VA-API WebP decode acceleration for images";
+const char kVaapiWebPImageDecodeAccelerationDescription[] =
+    "Enable or disable decode acceleration of WebP images using the VA-API.";
+
 const char kVirtualKeyboardName[] = "Virtual Keyboard";
 const char kVirtualKeyboardDescription[] = "Enable virtual keyboard support.";
 

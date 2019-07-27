@@ -43,9 +43,7 @@ ResultSelectionController::~ResultSelectionController() = default;
 bool ResultSelectionController::MoveSelection(const ui::KeyEvent& event) {
   ResultLocationDetails next_location = GetNextResultLocation(event);
   bool selection_changed = !(next_location == *selected_location_details_);
-  if (selection_changed) {
-    SetSelection(next_location, event.IsShiftDown());
-  }
+  SetSelection(next_location);
   return selection_changed;
 }
 
@@ -53,7 +51,7 @@ void ResultSelectionController::ResetSelection() {
   // Prevents crash on start up
   if (result_selection_model_->size() == 0)
     return;
-
+  ClearSelection();
   selected_location_details_ = std::make_unique<ResultLocationDetails>(
       0 /* container_index */,
       result_selection_model_->size() /* container_count */,
@@ -62,23 +60,15 @@ void ResultSelectionController::ResetSelection() {
       result_selection_model_->at(0)
           ->horizontally_traversable() /* container_is_horizontal */);
 
-  auto* new_selection = result_selection_model_->at(0)->GetFirstResultView();
-  if (new_selection && new_selection->selected())
-    return;
-
+  selected_result_ = result_selection_model_->at(0)->GetFirstResultView();
   if (selected_result_)
-    selected_result_->SetSelected(false, base::nullopt);
-
-  selected_result_ = new_selection;
-
-  if (selected_result_)
-    selected_result_->SetSelected(true, base::nullopt);
+    selected_result_->SetBackgroundHighlighted(true);
 }
 
 void ResultSelectionController::ClearSelection() {
   selected_location_details_ = nullptr;
   if (selected_result_)
-    selected_result_->SetSelected(false, base::nullopt);
+    selected_result_->SetBackgroundHighlighted(false);
   selected_result_ = nullptr;
 }
 
@@ -98,27 +88,20 @@ ResultSelectionController::GetNextResultLocationForLocation(
   if (!(IsUnhandledArrowKeyEvent(event) || event.key_code() == ui::VKEY_TAB))
     return new_location;
 
-  if (selected_result_ && event.key_code() == ui::VKEY_TAB &&
-      selected_result_->SelectNextResultAction(event.IsShiftDown())) {
-    return new_location;
-  }
-
   switch (event.key_code()) {
     case ui::VKEY_TAB:
       if (event.IsShiftDown()) {
         // Reverse tab traversal always goes to the 'previous' result.
-        if (location.is_first_result()) {
+        if (location.is_first_result())
           ChangeContainer(&new_location, location.container_index - 1);
-        } else {
+        else
           --new_location.result_index;
-        }
       } else {
         // Forward tab traversal always goes to the 'next' result.
-        if (location.is_last_result()) {
+        if (location.is_last_result())
           ChangeContainer(&new_location, location.container_index + 1);
-        } else {
+        else
           ++new_location.result_index;
-        }
       }
 
       break;
@@ -179,14 +162,13 @@ ResultSelectionController::GetNextResultLocationForLocation(
 }
 
 void ResultSelectionController::SetSelection(
-    const ResultLocationDetails& location,
-    bool reverse_tab_order) {
+    const ResultLocationDetails& location) {
   ClearSelection();
 
   selected_result_ = GetResultAtLocation(location);
   selected_location_details_ =
       std::make_unique<ResultLocationDetails>(location);
-  selected_result_->SetSelected(true, reverse_tab_order);
+  selected_result_->SetBackgroundHighlighted(true);
 }
 
 SearchResultBaseView* ResultSelectionController::GetResultAtLocation(

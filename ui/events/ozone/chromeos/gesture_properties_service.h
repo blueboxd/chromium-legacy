@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
-#include "ui/ozone/public/interfaces/gesture_properties_service.mojom.h"
+#include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
 class GesturePropertyProvider;
 

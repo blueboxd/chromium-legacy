@@ -35505,6 +35505,7 @@ from previous Chrome versions.
   <int value="51793504" label="protect-sync-credential-on-reauth:disabled"/>
   <int value="52368742" label="enable-pixel-canvas-recording:disabled"/>
   <int value="54571864" label="EnableDisplayZoomSetting:enabled"/>
+  <int value="56072855" label="VaapiWebPImageDecodeAcceleration:disabled"/>
   <int value="56723110" label="enable-webfonts-intervention"/>
   <int value="56900498" label="OmniboxOneClickUnelide:enabled"/>
   <int value="57255632" label="site-isolation-for-password-sites:disabled"/>
@@ -36876,6 +36877,7 @@ from previous Chrome versions.
   <int value="2043321329" label="OfflinePagesPrefetchingUI:disabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2047981703" label="IntentPicker:enabled"/>
+  <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2056572020" label="EnableUsernameCorrection:disabled"/>
   <int value="2058148069" label="UseMessagesStagingUrl:enabled"/>

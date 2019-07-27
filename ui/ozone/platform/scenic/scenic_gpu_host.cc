@@ -16,8 +16,8 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/ozone/platform/scenic/scenic_window.h"
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_host.mojom.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_host.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 
 namespace {
 

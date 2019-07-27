@@ -2052,6 +2052,9 @@ extern const char kUseMonitorColorSpaceDescription[];
 extern const char kVaapiJpegImageDecodeAccelerationName[];
 extern const char kVaapiJpegImageDecodeAccelerationDescription[];
 
+extern const char kVaapiWebPImageDecodeAccelerationName[];
+extern const char kVaapiWebPImageDecodeAccelerationDescription[];
+
 extern const char kVirtualKeyboardName[];
 extern const char kVirtualKeyboardDescription[];
 

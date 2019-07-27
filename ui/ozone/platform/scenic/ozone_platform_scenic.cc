@@ -29,7 +29,7 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/interfaces/scenic_gpu_service.mojom.h"
+#include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/public/system_input_injector.h"

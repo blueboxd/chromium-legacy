@@ -3065,10 +3065,11 @@
           'limited_capacity_bot',
           'win10_intel_hd_630_experimental',
         ],
+        # Currently the experimental driver is identical to the stable
+        # driver. If it's upgraded, change these test_suites to be the same as
+        # 'Win10 FYI Release (Intel HD 630)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_win_gtests',
-          'isolated_scripts': 'gpu_angle_perf_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_intel_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       # TODO(kbr): "Experimental" caused too-long path names pre-LUCI.
@@ -3080,11 +3081,10 @@
           'limited_capacity_bot',
           'win10_nvidia_quadro_p400_experimental',
         ],
-        # Currently the experimental driver is identical to the stable
-        # driver. If it's upgraded, change these test_suites to be the same as
-        # 'Win10 FYI Release (NVIDIA)'.
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gtest_tests': 'gpu_fyi_win_gtests',
+          'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
       'Win10 FYI Release (AMD RX 550)': {

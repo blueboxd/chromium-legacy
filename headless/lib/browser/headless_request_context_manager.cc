@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/os_crypt/key_storage_config_linux.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/resource_context.h"
 #include "headless/app/headless_shell_switches.h"
@@ -243,6 +244,7 @@ HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
   } else {
     proxy_config_monitor_->AddToNetworkContextParams(context_params.get());
   }
+  content::UpdateCorsExemptHeader(context_params.get());
   return context_params;
 }
 

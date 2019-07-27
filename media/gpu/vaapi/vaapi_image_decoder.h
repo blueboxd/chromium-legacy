@@ -6,10 +6,10 @@
 #define MEDIA_GPU_VAAPI_VAAPI_IMAGE_DECODER_H_
 
 #include <stdint.h>
+#include <va/va.h>
 
 #include <memory>
 
-#include <va/va.h>
 
 #include "base/callback_forward.h"
 #include "base/containers/span.h"

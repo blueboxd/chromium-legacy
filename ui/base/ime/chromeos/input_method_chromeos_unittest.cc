@@ -1101,7 +1101,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, DeadKeyPressTest) {
   EXPECT_EQ(VKEY_PROCESSKEY, key_event.key_code());
   EXPECT_EQ(eventA.code(), key_event.code());
   EXPECT_EQ(eventA.flags(), key_event.flags());
-  EXPECT_EQ(eventA.GetDomKey(), key_event.GetDomKey());
+  EXPECT_EQ(DomKey::PROCESS, key_event.GetDomKey());
   EXPECT_EQ(eventA.time_stamp(), key_event.time_stamp());
 }
 

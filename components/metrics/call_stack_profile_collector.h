@@ -6,7 +6,7 @@
 #define COMPONENTS_METRICS_CALL_STACK_PROFILE_COLLECTOR_H_
 
 #include "base/macros.h"
-#include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
+#include "components/metrics/public/mojom/call_stack_profile_collector.mojom.h"
 
 namespace metrics {
 
